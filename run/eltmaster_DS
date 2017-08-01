@@ -1,0 +1,8 @@
+#!/opt/aavs/python/bin/python
+
+from path_setter import *
+
+from skabase.src.eltmaster.eltmaster import main
+
+if __name__ == '__main__':
+   main()

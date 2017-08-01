@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="ASCII"?>
+<pogoDsl:PogoSystem xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:pogoDsl="http://www.esrf.fr/tango/pogo/PogoDsl">
+  <classes name="SKAMaster" pogoRevision="9.1">
+    <description description="A master test" title="" sourcePath="/Users/lvdheever/svn/lmc-lab/skabase/skabase/core" language="Python" filestogenerate="XMI   file,Code files,Protected Regions" license="GPL" hasMandatoryProperty="false" hasConcreteProperty="true" hasAbstractCommand="false" hasAbstractAttribute="false">
+      <inheritances classname="Device_Impl" sourcePath=""/>
+      <identification contact="at ska.ac.za - cam" author="cam" emailDomain="ska.ac.za" classFamily="SkaCore" siteSpecific="" platform="All Platforms" bus="Not Applicable" manufacturer="none" reference=""/>
+    </description>
+    <deviceProperties name="WillInheritFrom" description="Inheritance to be added later">
+      <type xsi:type="pogoDsl:StringType"/>
+      <status abstract="false" inherited="false" concrete="true"/>
+      <DefaultPropValue>&quot;SKABaseDevice or SKAObsDevice&quot;</DefaultPropValue>
+    </deviceProperties>
+    <deviceProperties name="ElementLoggerAddress" description="FQDN of the Element Logger DS">
+      <type xsi:type="pogoDsl:StringType"/>
+      <status abstract="false" inherited="false" concrete="true"/>
+    </deviceProperties>
+    <deviceProperties name="ElementAlarmsAddress" description="FQDN of the Element AlarmHandler DS">
+      <type xsi:type="pogoDsl:StringType"/>
+      <status abstract="false" inherited="false" concrete="true"/>
+    </deviceProperties>
+    <deviceProperties name="ElementTelStateAddress" description="FQDN of the Element TelState DS">
+      <type xsi:type="pogoDsl:StringType"/>
+      <status abstract="false" inherited="false" concrete="true"/>
+    </deviceProperties>
+    <deviceProperties name="ElementDatabaseAddress" description="FQDN of the Element Database DS">
+      <type xsi:type="pogoDsl:StringType"/>
+      <status abstract="false" inherited="false" concrete="true"/>
+    </deviceProperties>
+    <deviceProperties name="NrSubarrays" description="Nr of subarrays for this Element">
+      <type xsi:type="pogoDsl:ShortType"/>
+      <status abstract="false" inherited="false" concrete="true"/>
+      <DefaultPropValue>16</DefaultPropValue>
+    </deviceProperties>
+    <deviceProperties name="CapabilityTypes" description="List of Capability Types:&#xA;e.g. for &#xA;CSP_MID : Correlators, PssBeams, PstBeams, VlbiBeams&#xA;CSP_LOW : Correlators, PssBeams, PstBeams, VlbiBeams?&#xA;SDP_MID&amp;LOW:  ImgCont, ImgTranSrch, ImgSpctlLm,&#xA;  ReceivePssBeams, ReceivePstBeams,ReceiveTrnsBuffer&#xA;LFAA_LOW: LStnBeams &#xA;DSH_MID: Band1 to Band5">
+      <type xsi:type="pogoDsl:StringVectorType"/>
+      <status abstract="false" inherited="false" concrete="true"/>
+    </deviceProperties>
+    <commands name="State" description="This command gets the device state (stored in its device_state data member) and returns it to the caller." execMethod="dev_state" displayLevel="OPERATOR" polledPeriod="0">
+      <argin description="none">
+        <type xsi:type="pogoDsl:VoidType"/>
+      </argin>
+      <argout description="Device state">
+        <type xsi:type="pogoDsl:StateType"/>
+      </argout>
+      <status abstract="true" inherited="true" concrete="true"/>
+    </commands>
+    <commands name="Status" description="This command gets the device status (stored in its device_status data member) and returns it to the caller." execMethod="dev_status" displayLevel="OPERATOR" polledPeriod="0">
+      <argin description="none">
+        <type xsi:type="pogoDsl:VoidType"/>
+      </argin>
+      <argout description="Device status">
+        <type xsi:type="pogoDsl:ConstStringType"/>
+      </argout>
+      <status abstract="true" inherited="true" concrete="true"/>
+    </commands>
+    <preferences docHome="./doc_html" makefileHome="$(TANGO_HOME)"/>
+  </classes>
+</pogoDsl:PogoSystem>

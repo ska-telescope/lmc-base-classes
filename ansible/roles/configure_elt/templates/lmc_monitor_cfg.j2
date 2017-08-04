@@ -1,0 +1,365 @@
+<!--<?xml version="1.0" encoding="UTF-8"?>-->
+<!-- ************************************************** -->
+<!-- **                                                 -->
+<!-- **        LMC MONITOR CONFIGURATION                -->
+<!-- **                                                 -->
+<!-- ************************************************** -->
+
+<DeviceConfiguration>
+
+	<!-- ************************************************** -->
+	<!-- **              PROPERTIES                         -->
+	<!-- ************************************************** -->
+	<DeviceProperties>
+
+		<!-- SKA options -->
+		<DeviceProperty name="SkaLevel">
+			<Value> {{eltmon_ska_level}} </Value>
+		</DeviceProperty>
+
+		<!-- General options -->
+		<DeviceProperty name="EnableConfigFromFile">
+			<Value> {{eltmon_enable_config_from_file}} </Value>
+		</DeviceProperty>
+
+		<DeviceProperty name="ConfigFile">
+			<Value> {{eltmon_config_file}} </Value>
+		</DeviceProperty>
+
+		<!-- Dyn attr creation and update options -->
+		<DeviceProperty name="EnableDynAttrCleanup">
+			<Value> {{eltmon_enable_dyn_attr_cleanup}} </Value>
+		</DeviceProperty>
+
+		<DeviceProperty name="EnableDynAttrRandomize">
+			<Value> {{eltmon_enable_dyn_attr_randomize}} </Value>
+		</DeviceProperty>
+
+		<DeviceProperty name="DynAttrRandomizePeriod">
+			<Value> {{eltmon_dyn_attr_randomize_period}} </Value>
+		</DeviceProperty>
+
+		<DeviceProperty name="EnableFwdAttrInitPolling">
+			<Value> {{eltmon_enable_fwd_attr_init_polling}} </Value>
+		</DeviceProperty>
+
+		<DeviceProperty name="FwdAttrInitPollPeriod">
+			<Value> {{eltmon_fwd_attr_init_poll_period}} </Value>
+		</DeviceProperty>
+
+		<DeviceProperty name="EnableStatusAttrUpdatePolling">
+			<Value> {{eltmon_enable_status_attr_update_polling}} </Value>
+		</DeviceProperty>
+
+		<DeviceProperty name="StatusAttrUpdatePollPeriod">
+			<Value> {{eltmon_status_attr_update_poll_period}} </Value>
+		</DeviceProperty>
+
+
+		<!-- Logging options -->
+		<DeviceProperty name="EnableCentralLogTarget">
+			<Value> {{eltmon_enable_central_log_target}} </Value>
+		</DeviceProperty>
+
+		<DeviceProperty name="LoggingTargetCentral">
+			<Value> {{eltmon_central_log_target}} </Value>
+		</DeviceProperty>
+
+		<DeviceProperty name="LoggingLevelCentralDefault">
+			<Value> {{eltmon_central_log_level}}  </Value>
+		</DeviceProperty>
+
+		<DeviceProperty name="EnableElementLogTarget">
+			<Value> {{eltmon_enable_element_log_target}} </Value>
+		</DeviceProperty>
+
+		<DeviceProperty name="LoggingTargetElement">
+			<Value> {{eltmon_element_log_target}} </Value>
+		</DeviceProperty>
+
+		<DeviceProperty name="LoggingLevelElementDefault">
+			<Value> {{eltmon_element_log_level}} </Value>
+		</DeviceProperty>
+
+		<DeviceProperty name="EnableStorageLogTarget">
+			<Value> {{eltmon_enable_storage_log_target}} </Value>
+		</DeviceProperty>
+
+		<DeviceProperty name="LoggingTargetStorage">
+			<Value> {{eltmon_storage_log_target}} </Value>
+		</DeviceProperty>
+
+		<DeviceProperty name="LoggingLevelStorageDefault">
+			<Value> {{eltmon_storage_log_level}} </Value>
+		</DeviceProperty>
+
+		<DeviceProperty name="SyslogFacility">
+			<Value> {{eltmon_syslog_facility}} </Value>
+		</DeviceProperty>
+
+		<DeviceProperty name="SyslogHost">
+			<Value> {{eltmon_syslog_host}} </Value>
+		</DeviceProperty>
+
+		<DeviceProperty name="EnableLoggerInitPolling">
+			<Value> {{eltmon_enable_logger_init_polling}} </Value>
+		</DeviceProperty>
+
+		<DeviceProperty name="LoggerInitPollPeriod">
+			<Value> {{eltmon_logger_init_poll_period}} </Value>
+		</DeviceProperty>
+
+
+		<!-- Proxy options -->
+		<DeviceProperty name="EnableProxyMonitoring">
+			<Value> {{eltmon_enable_proxy_monitoring}} </Value>
+		</DeviceProperty>
+
+		<DeviceProperty name="EnableProxyStatusAttrCreation">
+			<Value> {{eltmon_enable_proxy_status_attr_creation}} </Value>
+		</DeviceProperty>
+
+		<DeviceProperty name="EnableAutoAdminProxyRegistration">
+			<Value> {{eltmon_enable_auto_admin_proxy_registration}} </Value>
+		</DeviceProperty>
+
+		<DeviceProperty name="ProxyMonitoringPeriod">
+			<Value> {{eltmon_proxy_monitoring_period}} </Value>
+		</DeviceProperty>
+
+		<DeviceProperty name="ProxyStatusAttrPollingPeriod">
+			<Value> {{eltmon_proxy_status_attr_polling_period}} </Value>
+		</DeviceProperty>
+
+		<DeviceProperty name="ProxyStatusAttrPeriodicEventPeriod">
+			<Value> {{eltmon_proxy_status_attr_periodic_event_period}} </Value>
+		</DeviceProperty>
+
+		<DeviceProperty name="ProxyStatusAttrArchiveEventPeriod">
+			<Value> {{eltmon_proxy_status_attr_archive_event_period}} </Value>
+		</DeviceProperty>
+
+		<DeviceProperty name="ProxyTimeout">
+			<Value> {{eltmon_proxy_timeout}} </Value>
+		</DeviceProperty>
+
+		<DeviceProperty name="EnableDevProxyInitPolling">
+			<Value> {{eltmon_enable_dev_proxy_init_polling}} </Value>
+		</DeviceProperty>
+
+		<DeviceProperty name="DevProxyInitPollPeriod">
+			<Value> {{eltmon_dev_proxy_init_poll_period}} </Value>
+		</DeviceProperty>
+
+
+		<DeviceProperty name="ProxyDevices">
+			<!--
+      {% if elt_config_mode == 'full' or elt_config_mode == 'rx' %}
+			<Value> {{rx_controller}} </Value>
+			{% endif %}
+			-->
+
+			<!--
+      {% if elt_config_mode == 'full' or elt_config_mode == 'spf' %}
+			<Value> {{spf_controller}} </Value>
+			{% endif %}
+			-->
+
+			{% if elt_config_mode == 'full' or elt_config_mode == 'ds' %}
+			<Value> tango://{{elt_tango_hostname}}:{{elt_tango_port}}/{{elt_domain_name}}/elt/ds_manager </Value>
+			{% endif %}
+
+			<Value> tango://{{elt_tango_hostname}}:{{elt_tango_port}}/{{elt_domain_name}}/elt/master </Value>
+			<Value> tango://{{elt_tango_hostname}}:{{elt_tango_port}}/{{elt_domain_name}}/elt/logger </Value>
+			<Value> tango://{{elt_tango_hostname}}:{{elt_tango_port}}/{{elt_domain_name}}/elt/dish_monitor </Value>
+		</DeviceProperty>
+
+
+		<!-- Formula options -->
+		<DeviceProperty name="EnableFormulaAttrUpdatePolling">
+			<Value> {{eltmon_enable_formula_attr_update_polling}} </Value>
+		</DeviceProperty>
+
+		<DeviceProperty name="FormulaAttrUpdatePollPeriod">
+			<Value> {{eltmon_formula_attr_update_poll_period}} </Value>
+		</DeviceProperty>
+
+		<DeviceProperty name="FormulaVarMaxTimeInterval">
+			<Value> {{eltmon_formula_var_max_time_interval}} </Value>
+		</DeviceProperty>
+
+
+		<!-- Events and handlers options -->
+		<!--
+		<DeviceProperty name="EventSubscriptions">
+			{% if elt_config_mode == 'full' or elt_config_mode == 'ds' %}
+			<Value> tango://{{elt_tango_hostname}}:{{elt_tango_port}}/{{elt_domain_name}}/elt/ds_manager/state </Value>
+			<Value> periodic </Value>
+
+			<Value> tango://{{elt_tango_hostname}}:{{elt_tango_port}}/{{elt_domain_name}}/elt/ds_manager/state </Value>
+			<Value> change_event </Value>
+
+			<Value> tango://{{elt_tango_hostname}}:{{elt_tango_port}}/{{elt_domain_name}}/elt/ds_manager/state </Value>
+			<Value> user_event </Value>
+			{% endif %}
+
+			<Value> tango://{{elt_tango_hostname}}:{{elt_tango_port}}/{{elt_domain_name}}/elt/master/state </Value>
+			<Value> periodic </Value>
+
+			<Value> tango://{{elt_tango_hostname}}:{{elt_tango_port}}/{{elt_domain_name}}/elt/master/state </Value>
+			<Value> change_event </Value>
+
+			<Value> tango://{{elt_tango_hostname}}:{{elt_tango_port}}/{{elt_domain_name}}/elt/master/state </Value>
+			<Value> user_event </Value>
+
+			<Value> tango://{{elt_tango_hostname}}:{{elt_tango_port}}/{{elt_domain_name}}/elt/logger/state </Value>
+			<Value> periodic </Value>
+
+			<Value> tango://{{elt_tango_hostname}}:{{elt_tango_port}}/{{elt_domain_name}}/elt/logger/state </Value>
+			<Value> change_event </Value>
+
+			<Value> tango://{{elt_tango_hostname}}:{{elt_tango_port}}/{{elt_domain_name}}/elt/logger/state </Value>
+			<Value> user_event </Value>
+		</DeviceProperty>
+		-->
+
+		<!--
+		<DeviceProperty name="EventHandlers">
+
+		</DeviceProperty>
+		-->
+
+		<!-- Task management options -->
+		<DeviceProperty name="EnableClearTaskPolling">
+			<Value> {{eltmon_enable_clear_task_polling}} </Value>
+		</DeviceProperty>
+
+		<DeviceProperty name="ClearTaskPollPeriod">
+			<Value> {{eltmon_clear_task_poll_period}} </Value>
+		</DeviceProperty>
+
+		<DeviceProperty name="ProcessEventsInQueueThread">
+			<Value> {{process_events_in_queue_thread}} </Value>
+		</DeviceProperty>
+
+		<!-- ================================= -->
+		<!-- ==     SPECIFIC PROPERTIES        -->
+		<!-- ================================= -->
+
+		<!-- NAGIOS INTERFACE PROPERTIES -->
+		<DeviceProperty name="NagiosQueryHandlerPath">
+			<Value> {{eltmon_nagios_queryhandler_path}} </Value>
+		</DeviceProperty>
+
+		<DeviceProperty name="NagiosAttrPollPeriod">
+			<Value> {{eltmon_nagios_attr_poll_period}} </Value>
+		</DeviceProperty>
+
+		<DeviceProperty name="NagiosAttrPeriodicEventPeriod">
+			<Value> {{eltmon_nagios_attr_periodic_event_period}} </Value>
+		</DeviceProperty>
+
+		<DeviceProperty name="NagiosAttrArchiveEventPeriod">
+			<Value> {{eltmon_nagios_attr_archive_event_period}} </Value>
+		</DeviceProperty>
+
+	</DeviceProperties>
+
+
+	<!-- ************************************************** -->
+	<!-- **              ATTRIBUTES                         -->
+	<!-- ************************************************** -->
+	<Attributes>
+
+		<!-- ************************************************** -->
+		<!-- **      Modes and States Attributes                -->
+		<!-- ************************************************** -->
+		<Attribute name = "eltOperatingState" alias="eltOperatingState">
+			<Description> LMC operating state </Description>
+			<DataType> STATE </DataType>
+			<DataFormat> SCALAR </DataFormat>
+			<RWType> READ </RWType>
+			<Polling>
+				<Period> {{eltmgr_default_poll_period}} </Period>
+			</Polling>
+			<Events>
+				<PushEvent> </PushEvent>
+				<PeriodicEvent>
+					<Period> {{eltmgr_default_periodic_event_period}} </Period>
+				</PeriodicEvent>
+				<ArchiveEvent>
+					<Period> {{eltmgr_default_archive_event_period}} </Period>
+				</ArchiveEvent>
+			</Events>
+			<Value>
+				<InitValue> UNKNOWN </InitValue>
+				<SafeValue> UNKNOWN </SafeValue>
+			</Value>
+
+			<Formula>
+				<Expression>
+					/* Handle ON case */
+					if( state_dsmgr==ON and state_dshmon==ON )
+					{
+						res:= ON;
+						return [0];
+					};
+					/* Handle INIT case */
+					if( state_dsmgr==INIT and state_dshmon==INIT )
+					{
+						res:= INIT;
+						return [0];
+					};
+					/* Handle transient INIT case */
+					if( state_dsmgr==INIT and state_dshmon==ON )
+					{
+						res:= INIT;
+						return [0];
+					};
+					if( state_dsmgr==ON and state_dshmon==INIT )
+					{
+						res:= INIT;
+						return [0];
+					};
+					/* Handle fault case */
+					if( state_dsmgr==FAULT or state_dshmon==FAULT )
+					{
+						res:= FAULT;
+						return [0];
+					};
+
+					res:= UNKNOWN;
+					return [-1];
+				</Expression>
+
+				<FormulaVars>
+
+					<FormulaVar>
+						<Label> state_dsmgr </Label>
+						<Value> tango://{{elt_tango_hostname}}:{{elt_tango_port}}/{{elt_domain_name}}/elt/ds_manager/State </Value>
+						<InitDataValue> UNKNOWN </InitDataValue>
+						<ExpDataType> STATE </ExpDataType>
+						<ExpDataFormat> SCALAR </ExpDataFormat>
+					</FormulaVar>
+
+					<FormulaVar>
+						<Label> state_dshmon </Label>
+						<Value> tango://{{elt_tango_hostname}}:{{elt_tango_port}}/{{elt_domain_name}}/elt/dish_monitor/State </Value>
+						<InitDataValue> UNKNOWN </InitDataValue>
+						<ExpDataType> STATE </ExpDataType>
+						<ExpDataFormat> SCALAR </ExpDataFormat>
+					</FormulaVar>
+
+				</FormulaVars>
+
+				<EvaluationMode>
+					<Value> CHANGE </Value>
+					<Value> PERIODIC </Value>
+					<Value> USER </Value>
+				</EvaluationMode>
+			</Formula>
+		</Attribute>
+
+	</Attributes>
+
+</DeviceConfiguration>

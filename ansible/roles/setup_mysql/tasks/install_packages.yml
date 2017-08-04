@@ -1,0 +1,25 @@
+---
+
+- hosts: elt_servers
+  become: yes
+  become_method: sudo
+  gather_facts: true
+
+#  vars:
+#    mysql_root_password: mysql
+
+  tasks:
+    ## Install Python
+    - name: Install python
+      apt: pkg={{ item }} state=installed update_cache=yes
+      with_items:
+        - python-dev
+        - python-setuptools
+        - python-virtualenv
+
+    ## Install MySQL
+    - include: install_mysql.yml
+
+  handlers:
+    - include: mysql_handlers.yml
+...

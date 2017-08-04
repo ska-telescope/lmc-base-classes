@@ -1,0 +1,141 @@
+---
+
+###########################################
+##     PRINT STUFF
+###########################################
+- name: Printing LMC server names
+  debug: msg="LMC server = {{item.name}}"
+  with_items:
+    - "{{spf_emulator_config}}"
+    - "{{rx_emulator_config}}"
+
+- name: Print TANGO_ROOT directory
+  debug: msg="TANGO_ROOT = {{tango_root}}"
+
+
+###########################################
+##     INSTALL RSYSLOG CONFIG
+###########################################
+- name: Install rsyslog config files
+  template:
+    src: "{{item.src}}"
+    dest: "{{item.dest}}"
+    backup: yes	
+  with_items:
+    - { src: '20-ufw.conf.j2', dest: '/etc/rsyslog.d/20-ufw.conf' }
+    - { src: '50-default.conf.j2', dest: '/etc/rsyslog.d/50-default.conf' }
+    - { src: '60-output_logstash.conf.j2', dest: '/etc/rsyslog.d/60-output_logstash.conf' }
+  notify:
+    - Restart rsyslog
+  become: true
+   
+
+- name: Install rsyslog main config file
+  template:
+    src: rsyslog.conf.j2
+    dest: /etc/rsyslog.conf
+    backup: yes
+  notify:
+    - Restart rsyslog
+  become: true
+
+
+
+###########################################
+##     CREATE CONFIG DIR & COPY CFG FILES
+###########################################
+# Check if config dir is writable
+- name: Check if config dir is writable to user
+  check_write_permission: 
+    path="{{ lmc_config_dir }}"
+  register: writable_result  
+
+- name: Print config dir writable result
+  debug: msg="writable_result= {{writable_result}}, {{writable_result['writable']}}"
+
+
+- name: Create config file directory with become privileges
+  file: path={{ lmc_config_dir }} state=directory mode=0755
+  become: true
+  when: writable_result['writable']==False
+
+- name: Copy main LMC config file with become privileges
+  template:
+    src: lmc_cfg.j2
+    dest: "{{ lmc_config_dir }}/{{ lmc_config_file }}"
+  become: true
+  when: writable_result['writable']==False
+
+- name: Copy main LMC config schema file with become privileges
+  template:
+    src: lmc_cfg_schema.j2
+    dest: "{{ lmc_config_dir }}/{{ lmc_config_schema_file }}"
+  become: true
+  when: writable_result['writable']==False
+
+- name: Copy LMC device server config files with become privileges
+  template:
+    src: "{{item.template}}"
+    dest: "{{ lmc_config_dir }}/{{item.name}}"
+  with_items: "{{ds_config_vars}}"    
+  become: true
+  when: writable_result['writable']==False
+
+
+- name: Create config file directory
+  file: path={{ lmc_config_dir }} state=directory mode=0755
+  when: writable_result['writable']==True
+
+- name: Copy main LMC config file 
+  template:
+    src: lmc_cfg.j2
+    dest: "{{ lmc_config_dir }}/{{ lmc_config_file }}"
+  when: writable_result['writable']==True
+
+- name: Copy main LMC config schema file
+  template:
+    src: lmc_cfg_schema.j2
+    dest: "{{ lmc_config_dir }}/{{ lmc_config_schema_file }}"
+  when: writable_result['writable']==True
+
+- name: Copy LMC device server config files
+  template:
+    src: "{{item.template}}"
+    dest: "{{ lmc_config_dir }}/{{item.name}}"
+  with_items: "{{ds_config_vars}}"    
+  when: writable_result['writable']==True
+  
+
+
+###########################################
+##     Start TangoDB
+###########################################
+#- name: Start TangoDB
+#  shell: "/usr/bin/nohup {{tango_root}}/bin/tango start > /tmp/tango.log 2>&1 & sleep 10s &" 
+#  async: 50
+#  poll: 0
+#  environment:
+#    PATH: "{{ ansible_env.PATH | default([]) }}:{{tango_root}}/bin"
+#    LD_LIBRARY_PATH: "{{ ansible_env.LD_LIBRARY_PATH | default([]) }}:{{tango_root}}/lib:{{omniorb_root}}/lib:{{zmq_root}}/lib;{{boost_root}}/lib"
+#    MYSQL_HOST: "{{mysql_host}}"
+#    MYSQL_USER: "{{mysql_user}}"
+#    MYSQL_PASSWORD: "{{mysql_pass}}"		
+
+###########################################
+##     REGISTER AND CONFIGURE DEVICES
+###########################################
+- name: Register and configure LMC devices
+  configure_lmc: 
+    inputfile={{ lmc_config_dir }}/{{ lmc_config_file }} 
+    schemafile={{ lmc_config_dir }}/{{ lmc_config_schema_file }}
+    clear_servers={{ lmc_clear_servers }}
+    export_servers={{ lmc_export_servers }}
+  environment:
+    PATH: "{{ ansible_env.PATH | default([]) }}:{{tango_root}}/bin"
+    PYTHONPATH: "{{ ansible_env.PYTHONPATH | default([]) }}:{{pytango_path}}"
+    LD_LIBRARY_PATH: "{{ ansible_env.LD_LIBRARY_PATH | default([]) }}:{{tango_root}}/lib:{{omniorb_root}}/lib:{{zmq_root}}/lib;{{boost_root}}/lib"
+    MYSQL_HOST: "{{mysql_host}}"
+    MYSQL_USER: "{{mysql_user}}"
+    MYSQL_PASSWORD: "{{mysql_pass}}"
+    TANGO_HOST: "{{tango_host}}"
+...

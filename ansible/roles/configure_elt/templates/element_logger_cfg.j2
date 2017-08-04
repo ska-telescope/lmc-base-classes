@@ -1,0 +1,307 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- ************************************************** -->
+<!-- **                                                 -->
+<!-- **            ELEMENT LOGGER                       -->
+<!-- **                                                 -->
+<!-- ************************************************** -->
+
+<DeviceConfiguration>
+	
+	<!-- ************************************************** -->
+	<!-- **              PROPERTIES                         -->
+	<!-- ************************************************** -->
+	<DeviceProperties>
+
+		<!-- SKA options -->
+		<DeviceProperty name="SkaLevel">
+			<Value> {{lmclogger_ska_level}} </Value>
+		</DeviceProperty>
+
+		<!-- General options -->
+		<DeviceProperty name="EnableConfigFromFile">
+			<Value> {{lmclogger_enable_config_from_file}} </Value>
+		</DeviceProperty>
+
+		<DeviceProperty name="ConfigFile">
+			<Value> {{lmclogger_config_file}} </Value>
+		</DeviceProperty>
+
+		<!-- Dyn attr creation and update options -->
+		<DeviceProperty name="EnableDynAttrCleanup">
+			<Value> {{lmclogger_enable_dyn_attr_cleanup}} </Value>
+		</DeviceProperty>
+
+		<DeviceProperty name="EnableDynAttrRandomize">
+			<Value> {{lmclogger_enable_dyn_attr_randomize}} </Value>
+		</DeviceProperty>
+
+		<DeviceProperty name="DynAttrRandomizePeriod">
+			<Value> {{lmclogger_dyn_attr_randomize_period}} </Value>
+		</DeviceProperty>
+
+		<DeviceProperty name="EnableFwdAttrInitPolling">
+			<Value> {{lmclogger_enable_fwd_attr_init_polling}} </Value>
+		</DeviceProperty>
+		
+		<DeviceProperty name="EnableStatusAttrUpdatePolling">
+			<Value> {{lmclogger_enable_status_attr_update_polling}} </Value>
+		</DeviceProperty>
+
+		<!-- Logging options -->
+		<DeviceProperty name="EnableCentralLogTarget">
+			<Value> {{lmclogger_enable_central_log_target}} </Value>
+		</DeviceProperty>
+
+		<DeviceProperty name="LoggingTargetCentral">
+			<Value> {{lmclogger_central_log_target}} </Value>
+		</DeviceProperty>
+
+		<DeviceProperty name="LoggingLevelCentralDefault">
+			<Value> {{lmclogger_central_log_level}}  </Value>
+		</DeviceProperty>
+
+		<DeviceProperty name="EnableElementLogTarget">
+			<Value> {{lmclogger_enable_element_log_target}} </Value>
+		</DeviceProperty>
+		
+		<DeviceProperty name="LoggingTargetElement">
+			<Value> {{lmclogger_element_log_target}} </Value>
+		</DeviceProperty>
+
+		<DeviceProperty name="LoggingLevelElementDefault">
+			<Value> {{lmclogger_element_log_level}} </Value>
+		</DeviceProperty>
+		
+		<DeviceProperty name="EnableStorageLogTarget">
+			<Value> {{lmclogger_enable_storage_log_target}} </Value>
+		</DeviceProperty>
+
+		<DeviceProperty name="LoggingTargetStorage">
+			<Value> {{lmclogger_storage_log_target}} </Value>
+		</DeviceProperty>
+
+		<DeviceProperty name="LoggingLevelStorageDefault">
+			<Value> {{lmclogger_storage_log_level}} </Value>
+		</DeviceProperty>
+
+		<DeviceProperty name="SyslogFacility">
+			<Value> {{lmclogger_syslog_facility}} </Value>
+		</DeviceProperty>
+
+		<DeviceProperty name="SyslogHost">
+			<Value> {{lmclogger_syslog_host}} </Value>
+		</DeviceProperty>
+
+
+		<DeviceProperty name="EnableLoggerInitPolling">
+			<Value> {{lmclogger_enable_logger_init_polling}} </Value>
+		</DeviceProperty>
+
+		<DeviceProperty name="LoggerInitPollPeriod">
+			<Value> {{lmclogger_logger_init_poll_period}} </Value>
+		</DeviceProperty>
+
+
+		<!-- Proxy options -->
+		<DeviceProperty name="EnableProxyMonitoring">
+			<Value> {{lmclogger_enable_proxy_monitoring}} </Value>
+		</DeviceProperty>
+
+		<DeviceProperty name="EnableProxyStatusAttrCreation">
+			<Value> {{lmclogger_enable_proxy_status_attr_creation}} </Value>
+		</DeviceProperty>
+
+		<DeviceProperty name="EnableAutoAdminProxyRegistration">
+			<Value> {{lmclogger_enable_auto_admin_proxy_registration}} </Value>
+		</DeviceProperty>
+
+		<DeviceProperty name="EnableDevProxyInitPolling">
+			<Value> {{lmclogger_enable_dev_proxy_init_polling}} </Value>
+		</DeviceProperty>
+
+		<!-- Formula options -->
+		<DeviceProperty name="EnableFormulaAttrUpdatePolling">
+			<Value> {{lmclogger_enable_formula_attr_update_polling}} </Value>
+		</DeviceProperty>
+
+
+		<!-- Task management options -->
+		<DeviceProperty name="EnableClearTaskPolling">
+			<Value> {{lmclogger_enable_clear_task_polling}} </Value>
+		</DeviceProperty>
+
+		<DeviceProperty name="ProcessEventsInQueueThread">
+			<Value> {{process_events_in_queue_thread}} </Value>
+		</DeviceProperty>
+
+		<!-- ================================= -->
+		<!-- ==     SPECIFIC PROPERTIES        -->
+		<!-- ================================= -->
+		<DeviceProperty name="EnableLogForwardDefault">
+			<Value> {{lmclogger_enable_log_forwarding}} </Value>
+		</DeviceProperty>
+
+		<DeviceProperty name="LogForwardSources">
+			{% if lmc_config_mode == 'full' or lmc_config_mode == 'spf' %}
+			<Value> {{spf_controller}} </Value>
+			{% endif %}
+
+			{% if lmc_config_mode == 'full' or lmc_config_mode == 'rx' %}
+			<Value> {{rx_controller}} </Value>
+			{% endif %}
+
+			{% if lmc_config_mode == 'full' or lmc_config_mode == 'ds' %}
+			<Value> tango://{{lmc_tango_hostname}}:{{lmc_tango_port}}/{{lmc_domain_name}}/lmc/ds_manager </Value>
+			{% endif %}
+
+			<Value> tango://{{lmc_tango_hostname}}:{{lmc_tango_port}}/{{lmc_domain_name}}/elt/master </Value>
+			<Value> tango://{{lmc_tango_hostname}}:{{lmc_tango_port}}/{{lmc_domain_name}}/lmc/lmc_manager </Value>
+		</DeviceProperty>
+
+		<DeviceProperty name="ManagedLogDevicesDefault">
+			{% if lmc_config_mode == 'full' or lmc_config_mode == 'ds' %}
+			<Value> tango://{{lmc_tango_hostname}}:{{lmc_tango_port}}/{{lmc_domain_name}}/lmc/ds_manager </Value>
+			{% endif %}
+
+			<Value> tango://{{lmc_tango_hostname}}:{{lmc_tango_port}}/{{lmc_domain_name}}/elt/master </Value>
+			<Value> tango://{{lmc_tango_hostname}}:{{lmc_tango_port}}/{{lmc_domain_name}}/lmc/lmc_manager </Value>
+		</DeviceProperty>
+
+		<DeviceProperty name="ManagedSELogDevicesDefault">
+			{% if lmc_config_mode == 'full' or lmc_config_mode == 'spf' %}
+			<Value> {{spf_controller}} </Value>
+			{% endif %}
+			{% if lmc_config_mode == 'full' or lmc_config_mode == 'rx' %}
+			<Value> {{rx_controller}} </Value>
+			{% endif %}
+		</DeviceProperty>
+
+	</DeviceProperties>
+
+	<!-- ************************************************** -->
+	<!-- **              ATTRIBUTES                         -->
+	<!-- ************************************************** -->
+	<Attributes>
+		
+		<Attribute name = "enableLogForward" alias="enableLogForward">	
+			<Description> Enable log forwarding </Description>
+			<DataType> BOOL </DataType>
+			<DataFormat> SCALAR </DataFormat>
+			<RWType> READ_WRITE </RWType>	 	
+			<Memorized>  </Memorized>
+			<Polling> 
+				<Period> {{lmclogger_medium_poll_period}} </Period>
+			</Polling>
+			<Events>
+				<PushEvent> </PushEvent>
+				<PeriodicEvent>
+					<Period> {{lmclogger_medium_periodic_event_period}} </Period>
+				</PeriodicEvent>
+				<ArchiveEvent>
+					<Period> {{lmclogger_medium_archive_event_period}} </Period>
+				</ArchiveEvent>
+			</Events>
+			<Value>
+				<InitValue> 0 </InitValue>
+			</Value>
+		</Attribute>
+
+		<Attribute name = "logDevices" alias="logDevices">			
+			<Description> Log devices </Description>
+			<DataType> STRING </DataType>
+			<DataFormat> SPECTRUM </DataFormat>
+			<RWType> READ </RWType>	
+			<DimX> 100 </DimX> 	
+			<Polling> 
+				<Period> {{lmclogger_medium_poll_period}} </Period>
+			</Polling>
+			<Events>
+				<PushEvent> </PushEvent>
+				<PeriodicEvent>
+					<Period> {{lmclogger_medium_periodic_event_period}} </Period>
+				</PeriodicEvent>
+				<ArchiveEvent>
+					<Period> {{lmclogger_medium_archive_event_period}} </Period>
+				</ArchiveEvent>
+			</Events>
+			<Value>
+				<InitValue>  </InitValue>
+			</Value>
+		</Attribute>
+
+		<Attribute name = "managedLogDevices" alias="managedLogDevices">			
+			<Description> Managed log devices </Description>
+			<DataType> STRING </DataType>
+			<DataFormat> SPECTRUM </DataFormat>
+			<RWType> READ </RWType>	
+			<DimX> 100 </DimX> 	
+			<Polling> 
+				<Period> {{lmclogger_medium_poll_period}} </Period>
+			</Polling>
+			<Events>
+				<PushEvent> </PushEvent>
+				<PeriodicEvent>
+					<Period> {{lmclogger_medium_periodic_event_period}} </Period>
+				</PeriodicEvent>
+				<ArchiveEvent>
+					<Period> {{lmclogger_medium_archive_event_period}} </Period>
+				</ArchiveEvent>
+			</Events>
+			<Value>
+				<InitValue>  </InitValue>
+			</Value>
+		</Attribute>
+
+		<Attribute name = "managedLogSEDevices" alias="managedSELogDevices">			
+			<Description> Managed Sub-Element log devices </Description>
+			<DataType> STRING </DataType>
+			<DataFormat> SPECTRUM </DataFormat>
+			<RWType> READ </RWType>	
+			<DimX> 100 </DimX> 	
+			<Polling> 
+				<Period> {{lmclogger_medium_poll_period}} </Period>
+			</Polling>
+			<Events>
+				<PushEvent> </PushEvent>
+				<PeriodicEvent>
+					<Period> {{lmclogger_medium_periodic_event_period}} </Period>
+				</PeriodicEvent>
+				<ArchiveEvent>
+					<Period> {{lmclogger_medium_archive_event_period}} </Period>
+				</ArchiveEvent>
+			</Events>
+			<Value>
+				<InitValue>  </InitValue>
+			</Value>
+		</Attribute>
+
+		<Attribute name = "logSEDevices" alias="logSEDevices">			
+			<Description> Log devices </Description>
+			<DataType> STRING </DataType>
+			<DataFormat> SPECTRUM </DataFormat>
+			<RWType> READ </RWType>	
+			<DimX> 100 </DimX> 	
+			<Polling> 
+				<Period> {{lmclogger_medium_poll_period}} </Period>
+			</Polling>
+			<Events>
+				<PushEvent> </PushEvent>
+				<PeriodicEvent>
+					<Period> {{lmclogger_medium_periodic_event_period}} </Period>
+				</PeriodicEvent>
+				<ArchiveEvent>
+					<Period> {{lmclogger_medium_archive_event_period}} </Period>
+				</ArchiveEvent>
+			</Events>
+			<Value>
+				<InitValue>  </InitValue>
+			</Value>
+		</Attribute>
+
+	</Attributes>
+			
+
+</DeviceConfiguration>
+
+
+	

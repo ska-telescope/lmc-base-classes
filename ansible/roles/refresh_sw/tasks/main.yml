@@ -1,0 +1,32 @@
+---
+
+###########################################
+##     PRINT STUFF
+###########################################
+
+- name: Print software_root directory
+  debug: msg="rootdir = {{software_root}}"
+
+###########################################
+##     Update working directories
+###########################################
+
+- name: Refresh tango-simlib
+  command: git -C {{software_root}}/tango-simlib pull
+
+- name: Refresh levpro
+  command: git -C {{software_root}}/levpro pull
+
+
+###########################################
+##     Pip install working directories
+###########################################
+
+- name: Install tango-simlib
+  command: sudo pip install {{software_root}}/tango-simlib -U --no-deps
+
+- name: Install levpro
+  command: sudo pip install {{software_root}}/levpro -U --no-deps
+
+
+...

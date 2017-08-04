@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+
+<!DOCTYPE ControlSystem [
+<!ENTITY RxEmulatorConfig SYSTEM "{{rx_emulator_config.name}}">
+<!ENTITY SPFEmulatorConfig SYSTEM "{{spf_emulator_config.name}}">
+<!ENTITY DSManagerConfig SYSTEM "{{ds_manager_config.name}}">
+<!ENTITY DishManagerConfig SYSTEM "{{dish_manager_config.name}}">
+<!ENTITY ElementLoggerConfig SYSTEM "{{element_logger_config.name}}">
+<!ENTITY LMCManagerConfig SYSTEM "{{elt_manager_config.name}}">
+<!ENTITY DishMonitorConfig SYSTEM "{{dish_monitor_config.name}}">
+<!ENTITY AlarmHandlerConfig SYSTEM "{{alarm_handler_config.name}}">
+<!ENTITY LMCMonitorConfig SYSTEM "{{elt_monitor_config.name}}">
+]>
+
+<ControlSystem xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	   					 xsi:noNamespaceSchemaLocation='{{ elt_config_dir }}/{{ elt_config_schema_file }}'>
+
+	<domain_name> {{elt_domain_name}} </domain_name>
+	<host_name> {{elt_tango_hostname}} </host_name>
+
+	<device_servers>
+
+		<!-- LMC DEVICES -->
+		<server name="LMCManager" instance="1">
+			<class name="LMCManager">
+				<device domain="tango" family="admin" name="{{elt_tango_hostname}}" alias="{{elt_manager_alias}}">
+					&LMCManagerConfig;
+				</device>
+			</class>
+		</server>
+
+		<server name="DishManager" instance="1" startup_level="{{dshmgr_startup_level}}" astor_controlled="{{dshmgr_astor_controlled}}">
+			<class name="DishManager">
+				<device family="elt" name="master" alias="{{elt_master_alias}}">
+					&DishManagerConfig;
+				</device>
+			</class>
+		</server>
+
+		<server name="ElementLogger" instance="1" startup_level="{{eltlogger_startup_level}}" astor_controlled="{{eltlogger_astor_controlled}}">
+			<class name="ElementLogger">
+				<device family="elt" name="logger" alias="{{elt_logger_alias}}">
+					&ElementLoggerConfig;
+				</device>
+			</class>
+		</server>
+
+
+		<server name="DSManager" instance="1" startup_level="{{dsmgr_startup_level}}" astor_controlled="{{dsmgr_astor_controlled}}">
+			<class name="DSManager">
+				<device family="elt" name="ds_manager" alias="{{ds_manager_alias}}">
+					&DSManagerConfig;
+				</device>
+			</class>
+		</server>
+
+		<!-- MONITORING -->
+		<server name="DishMonitor" instance="1" startup_level="{{dshmon_startup_level}}" astor_controlled="{{dshmon_astor_controlled}}">
+			<class name="DishMonitor">
+				<device family="elt" name="dish_monitor" alias="{{dish_monitor_alias}}">
+					&DishMonitorConfig;
+				</device>
+			</class>
+		</server>
+
+		<server name="LMCMonitor" instance="1" startup_level="{{eltmon_startup_level}}" astor_controlled="{{eltmon_astor_controlled}}">
+			<class name="LMCMonitor">
+				<device family="elt" name="elt_monitor" alias="{{elt_monitor_alias}}">
+					&LMCMonitorConfig;
+				</device>
+			</class>
+		</server>
+
+		<!-- ALARM HANDLER -->
+		<server name="AlarmHandler" instance="1" startup_level="{{alarmhandler_startup_level}}" astor_controlled="{{alarmhandler_astor_controlled}}">
+			<class name="AlarmHandler">
+				<device family="elt" name="alarm" alias="{{elt_alarm_alias}}">
+					&AlarmHandlerConfig;
+				</device>
+			</class>
+		</server>
+
+		<!-- EMULATORS -->
+		<server name="RxEmulator" instance="1" startup_level="{{rx_startup_level}}" astor_controlled="{{rx_astor_controlled}}">
+			<class name="RxEmulator">
+				<device family="rx" name="emulator" alias="{{rx_emulator_alias}}">
+					&RxEmulatorConfig;
+				</device>
+			</class>
+		</server>
+
+		<server name="SPFEmulator" instance="1" startup_level="{{spf_startup_level}}" astor_controlled="{{spf_astor_controlled}}">
+			<class name="SPFEmulator">
+				<device family="spf" name="emulator" alias="{{spf_emulator_alias}}">
+					&SPFEmulatorConfig;
+				</device>
+			</class>
+		</server>
+
+	</device_servers>
+
+</ControlSystem>

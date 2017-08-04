@@ -1,0 +1,22 @@
+---
+
+###########################################
+##     PRINT STUFF
+###########################################
+
+- name: Print software_root directory
+  debug: msg="rootdir = {{software_root}}"
+
+###########################################
+##     Clone repos
+###########################################
+
+- name: Clone tango-simlib
+  command: git clone https://github.com/ska-sa/tango-simlib {{software_root}}/tango-simlib
+
+- name: Clone levpro
+  command: git clone https://github.com/ska-sa/levpro {{software_root}}/levpro
+
+
+
+...

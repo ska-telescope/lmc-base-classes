@@ -1,0 +1,2214 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- ************************************************** -->
+<!-- **                                                 -->
+<!-- **            RX INTERFACE CONFIGURATION           -->
+<!-- **                                                 -->
+<!-- ************************************************** -->
+
+<DeviceConfiguration>
+	
+	<!-- ************************************************** -->
+	<!-- **              PROPERTIES                         -->
+	<!-- ************************************************** -->
+	<DeviceProperties>
+
+		<!-- SKA options -->
+		<DeviceProperty name="SkaLevel">
+			<Value> {{alarmhandler_ska_level}} </Value>
+		</DeviceProperty>
+
+		<!-- General options -->
+		<DeviceProperty name="EnableConfigFromFile">
+			<Value> {{alarmhandler_enable_config_from_file}} </Value>
+		</DeviceProperty>
+
+		<DeviceProperty name="ConfigFile">
+			<Value> {{alarmhandler_config_file}} </Value>
+		</DeviceProperty>
+
+		<!-- Dyn attr creation and update options -->
+		<DeviceProperty name="EnableDynAttrCleanup">
+			<Value> {{alarmhandler_enable_dyn_attr_cleanup}} </Value>
+		</DeviceProperty>
+
+		<DeviceProperty name="EnableDynAttrRandomize">
+			<Value> {{alarmhandler_enable_dyn_attr_randomize}} </Value>
+		</DeviceProperty>
+
+		<DeviceProperty name="DynAttrRandomizePeriod">
+			<Value> {{alarmhandler_dyn_attr_randomize_period}} </Value>
+		</DeviceProperty>
+
+		<DeviceProperty name="EnableFwdAttrInitPolling">
+			<Value> {{alarmhandler_enable_fwd_attr_init_polling}} </Value>
+		</DeviceProperty>
+		
+		<DeviceProperty name="EnableStatusAttrUpdatePolling">
+			<Value> {{alarmhandler_enable_status_attr_update_polling}} </Value>
+		</DeviceProperty>
+
+		<!-- Logging options -->
+		<DeviceProperty name="EnableCentralLogTarget">
+			<Value> {{alarmhandler_enable_central_log_target}} </Value>
+		</DeviceProperty>
+
+		<DeviceProperty name="LoggingTargetCentral">
+			<Value> {{alarmhandler_central_log_target}} </Value>
+		</DeviceProperty>
+
+		<DeviceProperty name="LoggingLevelCentralDefault">
+			<Value> {{alarmhandler_central_log_level}}  </Value>
+		</DeviceProperty>
+
+		<DeviceProperty name="EnableElementLogTarget">
+			<Value> {{alarmhandler_enable_element_log_target}} </Value>
+		</DeviceProperty>
+		
+		<DeviceProperty name="LoggingTargetElement">
+			<Value> {{alarmhandler_element_log_target}} </Value>
+		</DeviceProperty>
+
+		<DeviceProperty name="LoggingLevelElementDefault">
+			<Value> {{alarmhandler_element_log_level}} </Value>
+		</DeviceProperty>
+		
+		<DeviceProperty name="EnableStorageLogTarget">
+			<Value> {{alarmhandler_enable_storage_log_target}} </Value>
+		</DeviceProperty>
+
+		<DeviceProperty name="LoggingTargetStorage">
+			<Value> {{alarmhandler_storage_log_target}} </Value>
+		</DeviceProperty>
+
+		<DeviceProperty name="LoggingLevelStorageDefault">
+			<Value> {{alarmhandler_storage_log_level}} </Value>
+		</DeviceProperty>
+
+		<DeviceProperty name="SyslogFacility">
+			<Value> {{alarmhandler_syslog_facility}} </Value>
+		</DeviceProperty>
+
+		<DeviceProperty name="SyslogHost">
+			<Value> {{alarmhandler_syslog_host}} </Value>
+		</DeviceProperty>
+
+
+		<DeviceProperty name="EnableLoggerInitPolling">
+			<Value> {{alarmhandler_enable_logger_init_polling}} </Value>
+		</DeviceProperty>
+
+		<DeviceProperty name="LoggerInitPollPeriod">
+			<Value> {{alarmhandler_logger_init_poll_period}} </Value>
+		</DeviceProperty>
+
+
+		<!-- Proxy options -->
+		<DeviceProperty name="EnableProxyMonitoring">
+			<Value> {{alarmhandler_enable_proxy_monitoring}} </Value>
+		</DeviceProperty>
+
+		<DeviceProperty name="EnableProxyStatusAttrCreation">
+			<Value> {{alarmhandler_enable_proxy_status_attr_creation}} </Value>
+		</DeviceProperty>
+
+		<DeviceProperty name="EnableAutoAdminProxyRegistration">
+			<Value> {{alarmhandler_enable_auto_admin_proxy_registration}} </Value>
+		</DeviceProperty>
+
+		<DeviceProperty name="EnableDevProxyInitPolling">
+			<Value> {{alarmhandler_enable_dev_proxy_init_polling}} </Value>
+		</DeviceProperty>
+
+		<!-- Formula options -->
+		<DeviceProperty name="EnableFormulaAttrUpdatePolling">
+			<Value> {{alarmhandler_enable_formula_attr_update_polling}} </Value>
+		</DeviceProperty>
+
+
+		<!-- Task management options -->
+		<DeviceProperty name="EnableClearTaskPolling">
+			<Value> {{alarmhandler_enable_clear_task_polling}} </Value>
+		</DeviceProperty>
+
+		<DeviceProperty name="ProcessEventsInQueueThread">
+			<Value> {{process_events_in_queue_thread}} </Value>
+		</DeviceProperty>
+
+		<!-- ================================= -->
+		<!-- ==     SPECIFIC PROPERTIES        -->
+		<!-- ================================= -->		
+		<DeviceProperty name="GroupNames">
+			<Value> none </Value>
+			<Value> spfrx </Value>
+			<Value> spf </Value>
+			<Value> ds </Value>
+			<Value> lmc </Value>
+		</DeviceProperty>
+
+		<DeviceProperty name="SubscribeRetryPeriod">
+			<Value> {{alarmhandler_subscribe_retry_period}} </Value>
+		</DeviceProperty>
+
+		<DeviceProperty name="StatisticsTimeWindow">
+			<Value> {{alarmhandler_stats_time_window}} </Value>
+		</DeviceProperty>
+		
+		</DeviceProperties>
+
+	<!-- ************************************************** -->
+	<!-- **              ATTRIBUTES                         -->
+	<!-- ************************************************** -->
+	<!--
+	<Attributes>
+
+	</Attributes>
+	-->
+
+	<!-- ************************************************** -->
+	<!-- **              ALARMS                             -->
+	<!-- ************************************************** -->
+	<Alarms>
+
+		<!-- ************************ -->
+		<!-- ***   SPF Alarms     *** -->
+		<!-- ************************ -->
+
+		<!-- Health state alarm -->
+		{% if lmc_config_mode == 'full' or lmc_config_mode == 'spf' %}		
+		<Alarm>
+			<Name> alarmSpfHealthStateFailed </Name>
+			<Formula> 
+        ($health == 'FAILED')
+			</Formula>
+
+			<FormulaVars>
+				<FormulaVar>
+					<Label> health </Label>	
+					<Value> {{spf_controller}}/healthState </Value>
+				</FormulaVar>
+			</FormulaVars>
+			<Groups>
+				<Group> spf </Group>
+			</Groups>	
+			<Level> fault </Level>	
+			<Message> SPF health state failed! </Message>
+		</Alarm>
+		{% endif %}
+
+
+		{% if lmc_config_mode == 'full' or lmc_config_mode == 'spf' %}
+		<!-- SPF Controller Alarms -->
+		<Alarm>
+			<Name> alarmSpfCtrlOutOfRange </Name>
+			<Formula> 
+        ( 
+          $expectedOnline &amp;&amp; 
+          (
+             ($volt &lt; {{spf_ctrl_volt_min_alarm}} || $volt &gt; {{spf_ctrl_volt_max_alarm}} || $volt.quality==ATTR_ALARM) ||
+ 				     ($temp &lt; {{spf_ctrl_temp_min_alarm}} || $temp &gt; {{spf_ctrl_temp_max_alarm}} || $temp.quality==ATTR_ALARM) ||
+				     ($curr &lt; {{spf_ctrl_curr_min_alarm}} || $curr &gt; {{spf_ctrl_curr_max_alarm}} || $curr.quality==ATTR_ALARM) 
+          )
+     		)
+			</Formula>
+
+			<FormulaVars>
+				<FormulaVar>
+					<Label> expectedOnline </Label>	
+					<Value> {{spf_controller}}/spfcExpectedOnline </Value>
+				</FormulaVar>
+				<FormulaVar>
+					<Label> volt </Label>	
+					<Value> {{spf_controller}}/spfcSupplyVoltage </Value>
+				</FormulaVar>
+				<FormulaVar>
+					<Label> temp </Label>	
+					<Value> {{spf_controller}}/spfcTemperature </Value>
+				</FormulaVar>
+				<FormulaVar>
+					<Label> curr </Label>	
+					<Value> {{spf_controller}}/spfcSupplyCurrent </Value>
+				</FormulaVar>
+			</FormulaVars>
+			<Groups>
+				<Group> spf </Group>
+			</Groups>	
+			<Level> fault </Level>	
+			<Message> SPF Controller out of range (temp/voltage/current)! </Message>
+		</Alarm>
+		{% endif %}
+
+
+		{% if lmc_config_mode == 'full' or lmc_config_mode == 'spf' %}
+		<!-- spfHePressureOutOfRange -->
+		<Alarm>
+			<Name> alarmSpfHePressureOutOfRange </Name>
+			<Formula>
+			  ( 
+          $expectedOnline &amp;&amp; 
+          (
+            ($p_sup &lt; {{spf_he_suppl_press_min_alarm}} || $p_sup &gt; {{spf_he_suppl_press_max_alarm}} || $p_sup.quality==ATTR_ALARM) || 
+            ($p_ret &lt; {{spf_he_ret_press_min_alarm}} || $p_ret &gt; {{spf_he_ret_press_max_alarm}} || $p_ret.quality==ATTR_ALARM)
+          ) 
+        )
+			</Formula>
+
+			<FormulaVars>
+				<FormulaVar>
+					<Label> expectedOnline </Label>	
+					<Value> {{spf_controller}}/heExpectedOnline </Value>
+				</FormulaVar>
+				<FormulaVar>
+					<Label> p_sup </Label>	
+					<Value> {{spf_controller}}/heCompSupplyPressure </Value>
+				</FormulaVar>
+				<FormulaVar>
+					<Label> p_ret </Label>	
+					<Value> {{spf_controller}}/heCompReturnPressure </Value>
+				</FormulaVar>
+			</FormulaVars>
+			<Groups>
+				<Group> spf </Group>
+			</Groups>	
+			<Level> fault </Level>	
+			<Message> SPF Helium pressure out of range (supply/return)! </Message>
+		</Alarm>
+		{% endif %}
+
+		<!-- LNA Out of range -->
+		{% if lmc_config_mode == 'full' or (lmc_config_mode == 'spf' and spf_enable_b1_in_config | bool) %}
+		<!-- B1 -->
+		<Alarm>
+			<Name> alarmSpfB1LnaOutOfRange </Name>
+			<Formula> 
+				( 
+          $expectedOnline &amp;&amp; 
+          (
+            ($V_drain_h &lt; {{spf_lna_drain_volt_min_alarm}} || $V_drain_h &gt; {{spf_lna_drain_volt_max_alarm}} || $V_drain_h.quality==ATTR_ALARM) || 
+            ($V_drain_v &lt; {{spf_lna_drain_volt_min_alarm}} || $V_drain_v &gt; {{spf_lna_drain_volt_max_alarm}} || $V_drain_v.quality==ATTR_ALARM) ||
+						($V_gate_h &lt; {{spf_lna_gate_volt_min_alarm}} || $V_gate_h &gt; {{spf_lna_gate_volt_max_alarm}} || $V_gate_h.quality==ATTR_ALARM) || 
+            ($V_gate_v &lt; {{spf_lna_gate_volt_min_alarm}} || $V_gate_v &gt; {{spf_lna_gate_volt_max_alarm}} || $V_gate_v.quality==ATTR_ALARM) ||
+						($I_drain_h &lt; {{spf_lna_drain_curr_min_alarm}} || $I_drain_h &gt; {{spf_lna_drain_curr_max_alarm}} || $I_drain_h.quality==ATTR_ALARM) || 
+            ($I_drain_v &lt; {{spf_lna_drain_curr_min_alarm}} || $I_drain_v &gt; {{spf_lna_drain_curr_max_alarm}} || $I_drain_v.quality==ATTR_ALARM) ||
+						($G_h &lt; {{spf_lna_mean_gain_min_alarm}} || $G_h &gt; {{spf_lna_mean_gain_max_alarm}} || $G_h.quality==ATTR_ALARM) || 
+            ($G_v &lt; {{spf_lna_mean_gain_min_alarm}} || $G_v &gt; {{spf_lna_mean_gain_max_alarm}} || $G_v.quality==ATTR_ALARM)
+          ) 
+        )
+			</Formula>
+			<FormulaVars>
+				<FormulaVar>
+					<Label> expectedOnline </Label>	
+					<Value> {{spf_controller}}/b1ExpectedOnline </Value>
+				</FormulaVar>
+				<FormulaVar>
+					<Label> V_drain_h </Label>	
+					<Value> {{spf_controller}}/b1LnaHDrainVoltage </Value>
+				</FormulaVar>
+				<FormulaVar>
+					<Label> V_drain_v </Label>	
+					<Value> {{spf_controller}}/b1LnaVDrainVoltage </Value>
+				</FormulaVar>
+				<FormulaVar>
+					<Label> V_gate_h </Label>	
+					<Value> {{spf_controller}}/b1LnaHGateVoltage </Value>
+				</FormulaVar>
+				<FormulaVar>
+					<Label> V_gate_v </Label>	
+					<Value> {{spf_controller}}/b1LnaVGateVoltage </Value>
+				</FormulaVar>
+				<FormulaVar>
+					<Label> I_drain_h </Label>	
+					<Value> {{spf_controller}}/b1LnaHDrainCurrent </Value>
+				</FormulaVar>
+				<FormulaVar>
+					<Label> I_drain_v </Label>	
+					<Value> {{spf_controller}}/b1LnaVDrainCurrent </Value>
+				</FormulaVar>
+				<FormulaVar>
+					<Label> G_h </Label>	
+					<Value> {{spf_controller}}/b1LnaHMeanGain </Value>
+				</FormulaVar>
+				<FormulaVar>
+					<Label> G_v </Label>	
+					<Value> {{spf_controller}}/b1LnaVMeanGain </Value>
+				</FormulaVar>
+			</FormulaVars>
+			<Groups>
+				<Group> spf </Group>
+			</Groups>	
+			<Level> fault </Level>	
+			<Message> SPF B1 LNA out of range (voltage/current)! </Message>
+		</Alarm>	
+		{% endif %}
+
+
+		{% if lmc_config_mode == 'full' or (lmc_config_mode == 'spf' and spf_enable_b2_in_config | bool) %}
+		<!-- B2 -->
+		<Alarm>
+			<Name> alarmSpfB2LnaOutOfRange </Name>
+			<Formula> 
+				( 
+          $expectedOnline &amp;&amp; 
+          (
+            ($V_drain_h &lt; {{spf_lna_drain_volt_min_alarm}} || $V_drain_h &gt; {{spf_lna_drain_volt_max_alarm}} || $V_drain_h.quality==ATTR_ALARM) || 
+            ($V_drain_v &lt; {{spf_lna_drain_volt_min_alarm}} || $V_drain_v &gt; {{spf_lna_drain_volt_max_alarm}} || $V_drain_v.quality==ATTR_ALARM) ||
+						($V_gate_h &lt; {{spf_lna_gate_volt_min_alarm}} || $V_gate_h &gt; {{spf_lna_gate_volt_max_alarm}} || $V_gate_h.quality==ATTR_ALARM) || 
+            ($V_gate_v &lt; {{spf_lna_gate_volt_min_alarm}} || $V_gate_v &gt; {{spf_lna_gate_volt_max_alarm}} || $V_gate_v.quality==ATTR_ALARM) ||
+						($I_drain_h &lt; {{spf_lna_drain_curr_min_alarm}} || $I_drain_h &gt; {{spf_lna_drain_curr_max_alarm}} || $I_drain_h.quality==ATTR_ALARM) || 
+            ($I_drain_v &lt; {{spf_lna_drain_curr_min_alarm}} || $I_drain_v &gt; {{spf_lna_drain_curr_max_alarm}} || $I_drain_v.quality==ATTR_ALARM) ||
+						($G_h &lt; {{spf_lna_mean_gain_min_alarm}} || $G_h &gt; {{spf_lna_mean_gain_max_alarm}} || $G_h.quality==ATTR_ALARM) || 
+            ($G_v &lt; {{spf_lna_mean_gain_min_alarm}} || $G_v &gt; {{spf_lna_mean_gain_max_alarm}} || $G_v.quality==ATTR_ALARM)
+          ) 
+        )
+			</Formula>
+			<FormulaVars>
+				<FormulaVar>
+					<Label> expectedOnline </Label>	
+					<Value> {{spf_controller}}/b2ExpectedOnline </Value>
+				</FormulaVar>
+				<FormulaVar>
+					<Label> V_drain_h </Label>	
+					<Value> {{spf_controller}}/b2LnaHDrainVoltage </Value>
+				</FormulaVar>
+				<FormulaVar>
+					<Label> V_drain_v </Label>	
+					<Value> {{spf_controller}}/b2LnaVDrainVoltage </Value>
+				</FormulaVar>
+				<FormulaVar>
+					<Label> V_gate_h </Label>	
+					<Value> {{spf_controller}}/b2LnaHGateVoltage </Value>
+				</FormulaVar>
+				<FormulaVar>
+					<Label> V_gate_v </Label>	
+					<Value> {{spf_controller}}/b2LnaVGateVoltage </Value>
+				</FormulaVar>
+				<FormulaVar>
+					<Label> I_drain_h </Label>	
+					<Value> {{spf_controller}}/b2LnaHDrainCurrent </Value>
+				</FormulaVar>
+				<FormulaVar>
+					<Label> I_drain_v </Label>	
+					<Value> {{spf_controller}}/b2LnaVDrainCurrent </Value>
+				</FormulaVar>
+				<FormulaVar>
+					<Label> G_h </Label>	
+					<Value> {{spf_controller}}/b2LnaHMeanGain </Value>
+				</FormulaVar>
+				<FormulaVar>
+					<Label> G_v </Label>	
+					<Value> {{spf_controller}}/b2LnaVMeanGain </Value>
+				</FormulaVar>
+			</FormulaVars>
+			<Groups>
+				<Group> spf </Group>
+			</Groups>	
+			<Level> fault </Level>	
+			<Message> SPF B2 LNA out of range (voltage/current)! </Message>
+		</Alarm>	
+		{% endif %}	
+
+		{% if lmc_config_mode == 'full' or (lmc_config_mode == 'spf' and spf_enable_b3_in_config | bool) %}
+		<!-- B3 -->
+		<Alarm>
+			<Name> alarmSpfB3LnaOutOfRange </Name>
+			<Formula> 
+				( 
+          $expectedOnline &amp;&amp; 
+          (
+            ($V_drain_h &lt; {{spf_lna_drain_volt_min_alarm}} || $V_drain_h &gt; {{spf_lna_drain_volt_max_alarm}} || $V_drain_h.quality==ATTR_ALARM) || 
+            ($V_drain_v &lt; {{spf_lna_drain_volt_min_alarm}} || $V_drain_v &gt; {{spf_lna_drain_volt_max_alarm}} || $V_drain_v.quality==ATTR_ALARM) ||
+						($V_gate_h &lt; {{spf_lna_gate_volt_min_alarm}} || $V_gate_h &gt; {{spf_lna_gate_volt_max_alarm}} || $V_gate_h.quality==ATTR_ALARM) || 
+            ($V_gate_v &lt; {{spf_lna_gate_volt_min_alarm}} || $V_gate_v &gt; {{spf_lna_gate_volt_max_alarm}} || $V_gate_v.quality==ATTR_ALARM) ||
+						($I_drain_h &lt; {{spf_lna_drain_curr_min_alarm}} || $I_drain_h &gt; {{spf_lna_drain_curr_max_alarm}} || $I_drain_h.quality==ATTR_ALARM) || 
+            ($I_drain_v &lt; {{spf_lna_drain_curr_min_alarm}} || $I_drain_v &gt; {{spf_lna_drain_curr_max_alarm}} || $I_drain_v.quality==ATTR_ALARM) ||
+						($G_h &lt; {{spf_lna_mean_gain_min_alarm}} || $G_h &gt; {{spf_lna_mean_gain_max_alarm}} || $G_h.quality==ATTR_ALARM) || 
+            ($G_v &lt; {{spf_lna_mean_gain_min_alarm}} || $G_v &gt; {{spf_lna_mean_gain_max_alarm}} || $G_v.quality==ATTR_ALARM)
+          ) 
+        )
+			</Formula>
+			<FormulaVars>
+				<FormulaVar>
+					<Label> expectedOnline </Label>	
+					<Value> {{spf_controller}}/b3ExpectedOnline </Value>
+				</FormulaVar>
+				<FormulaVar>
+					<Label> V_drain_h </Label>	
+					<Value> {{spf_controller}}/b3LnaHDrainVoltage </Value>
+				</FormulaVar>
+				<FormulaVar>
+					<Label> V_drain_v </Label>	
+					<Value> {{spf_controller}}/b3LnaVDrainVoltage </Value>
+				</FormulaVar>
+				<FormulaVar>
+					<Label> V_gate_h </Label>	
+					<Value> {{spf_controller}}/b3LnaHGateVoltage </Value>
+				</FormulaVar>
+				<FormulaVar>
+					<Label> V_gate_v </Label>	
+					<Value> {{spf_controller}}/b3LnaVGateVoltage </Value>
+				</FormulaVar>
+				<FormulaVar>
+					<Label> I_drain_h </Label>	
+					<Value> {{spf_controller}}/b3LnaHDrainCurrent </Value>
+				</FormulaVar>
+				<FormulaVar>
+					<Label> I_drain_v </Label>	
+					<Value> {{spf_controller}}/b3LnaVDrainCurrent </Value>
+				</FormulaVar>
+				<FormulaVar>
+					<Label> G_h </Label>	
+					<Value> {{spf_controller}}/b3LnaHMeanGain </Value>
+				</FormulaVar>
+				<FormulaVar>
+					<Label> G_v </Label>	
+					<Value> {{spf_controller}}/b3LnaVMeanGain </Value>
+				</FormulaVar>
+			</FormulaVars>
+			<Groups>
+				<Group> spf </Group>
+			</Groups>	
+			<Level> fault </Level>	
+			<Message> SPF B3 LNA out of range (voltage/current)! </Message>
+		</Alarm>	
+		{% endif %}
+
+
+		{% if lmc_config_mode == 'full' or (lmc_config_mode == 'spf' and spf_enable_b4_in_config | bool) %}
+		<!-- B4 -->
+		<Alarm>
+			<Name> alarmSpfB4LnaOutOfRange </Name>
+			<Formula> 
+				( 
+          $expectedOnline &amp;&amp; 
+          (
+            ($V_drain_h &lt; {{spf_lna_drain_volt_min_alarm}} || $V_drain_h &gt; {{spf_lna_drain_volt_max_alarm}} || $V_drain_h.quality==ATTR_ALARM) || 
+            ($V_drain_v &lt; {{spf_lna_drain_volt_min_alarm}} || $V_drain_v &gt; {{spf_lna_drain_volt_max_alarm}} || $V_drain_v.quality==ATTR_ALARM) ||
+						($V_gate_h &lt; {{spf_lna_gate_volt_min_alarm}} || $V_gate_h &gt; {{spf_lna_gate_volt_max_alarm}} || $V_gate_h.quality==ATTR_ALARM) || 
+            ($V_gate_v &lt; {{spf_lna_gate_volt_min_alarm}} || $V_gate_v &gt; {{spf_lna_gate_volt_max_alarm}} || $V_gate_v.quality==ATTR_ALARM) ||
+						($I_drain_h &lt; {{spf_lna_drain_curr_min_alarm}} || $I_drain_h &gt; {{spf_lna_drain_curr_max_alarm}} || $I_drain_h.quality==ATTR_ALARM) || 
+            ($I_drain_v &lt; {{spf_lna_drain_curr_min_alarm}} || $I_drain_v &gt; {{spf_lna_drain_curr_max_alarm}} || $I_drain_v.quality==ATTR_ALARM) ||
+						($G_h &lt; {{spf_lna_mean_gain_min_alarm}} || $G_h &gt; {{spf_lna_mean_gain_max_alarm}} || $G_h.quality==ATTR_ALARM) || 
+            ($G_v &lt; {{spf_lna_mean_gain_min_alarm}} || $G_v &gt; {{spf_lna_mean_gain_max_alarm}} || $G_v.quality==ATTR_ALARM)
+          ) 
+        )
+			</Formula>
+			<FormulaVars>
+				<FormulaVar>
+					<Label> expectedOnline </Label>	
+					<Value> {{spf_controller}}/b4ExpectedOnline </Value>
+				</FormulaVar>
+				<FormulaVar>
+					<Label> V_drain_h </Label>	
+					<Value> {{spf_controller}}/b4LnaHDrainVoltage </Value>
+				</FormulaVar>
+				<FormulaVar>
+					<Label> V_drain_v </Label>	
+					<Value> {{spf_controller}}/b4LnaVDrainVoltage </Value>
+				</FormulaVar>
+				<FormulaVar>
+					<Label> V_gate_h </Label>	
+					<Value> {{spf_controller}}/b4LnaHGateVoltage </Value>
+				</FormulaVar>
+				<FormulaVar>
+					<Label> V_gate_v </Label>	
+					<Value> {{spf_controller}}/b4LnaVGateVoltage </Value>
+				</FormulaVar>
+				<FormulaVar>
+					<Label> I_drain_h </Label>	
+					<Value> {{spf_controller}}/b4LnaHDrainCurrent </Value>
+				</FormulaVar>
+				<FormulaVar>
+					<Label> I_drain_v </Label>	
+					<Value> {{spf_controller}}/b4LnaVDrainCurrent </Value>
+				</FormulaVar>
+				<FormulaVar>
+					<Label> G_h </Label>	
+					<Value> {{spf_controller}}/b4LnaHMeanGain </Value>
+				</FormulaVar>
+				<FormulaVar>
+					<Label> G_v </Label>	
+					<Value> {{spf_controller}}/b4LnaVMeanGain </Value>
+				</FormulaVar>
+			</FormulaVars>
+			<Groups>
+				<Group> spf </Group>
+			</Groups>	
+			<Level> fault </Level>	
+			<Message> SPF B4 LNA out of range (voltage/current)! </Message>
+		</Alarm>
+		{% endif %}	
+
+		{% if lmc_config_mode == 'full' or (lmc_config_mode == 'spf' and spf_enable_b5_in_config | bool) %}
+		<!-- B5 -->
+		<Alarm>
+			<Name> alarmSpfB5LnaOutOfRange </Name>
+			<Formula> 
+				( 
+          $expectedOnline &amp;&amp; 
+          (
+            ($V_drain_h &lt; {{spf_lna_drain_volt_min_alarm}} || $V_drain_h &gt; {{spf_lna_drain_volt_max_alarm}} || $V_drain_h.quality==ATTR_ALARM) || 
+            ($V_drain_v &lt; {{spf_lna_drain_volt_min_alarm}} || $V_drain_v &gt; {{spf_lna_drain_volt_max_alarm}} || $V_drain_v.quality==ATTR_ALARM) ||
+						($V_gate_h &lt; {{spf_lna_gate_volt_min_alarm}} || $V_gate_h &gt; {{spf_lna_gate_volt_max_alarm}} || $V_gate_h.quality==ATTR_ALARM) || 
+            ($V_gate_v &lt; {{spf_lna_gate_volt_min_alarm}} || $V_gate_v &gt; {{spf_lna_gate_volt_max_alarm}} || $V_gate_v.quality==ATTR_ALARM) ||
+						($I_drain_h &lt; {{spf_lna_drain_curr_min_alarm}} || $I_drain_h &gt; {{spf_lna_drain_curr_max_alarm}} || $I_drain_h.quality==ATTR_ALARM) || 
+            ($I_drain_v &lt; {{spf_lna_drain_curr_min_alarm}} || $I_drain_v &gt; {{spf_lna_drain_curr_max_alarm}} || $I_drain_v.quality==ATTR_ALARM) ||
+						($G_h &lt; {{spf_lna_mean_gain_min_alarm}} || $G_h &gt; {{spf_lna_mean_gain_max_alarm}} || $G_h.quality==ATTR_ALARM) || 
+            ($G_v &lt; {{spf_lna_mean_gain_min_alarm}} || $G_v &gt; {{spf_lna_mean_gain_max_alarm}} || $G_v.quality==ATTR_ALARM)
+          ) 
+        )
+			</Formula>
+			<FormulaVars>
+				<FormulaVar>
+					<Label> expectedOnline </Label>	
+					<Value> {{spf_controller}}/b5ExpectedOnline </Value>
+				</FormulaVar>
+				<FormulaVar>
+					<Label> V_drain_h </Label>	
+					<Value> {{spf_controller}}/b5LnaHDrainVoltage </Value>
+				</FormulaVar>
+				<FormulaVar>
+					<Label> V_drain_v </Label>	
+					<Value> {{spf_controller}}/b5LnaVDrainVoltage </Value>
+				</FormulaVar>
+				<FormulaVar>
+					<Label> V_gate_h </Label>	
+					<Value> {{spf_controller}}/b5LnaHGateVoltage </Value>
+				</FormulaVar>
+				<FormulaVar>
+					<Label> V_gate_v </Label>	
+					<Value> {{spf_controller}}/b5LnaVGateVoltage </Value>
+				</FormulaVar>
+				<FormulaVar>
+					<Label> I_drain_h </Label>	
+					<Value> {{spf_controller}}/b5LnaHDrainCurrent </Value>
+				</FormulaVar>
+				<FormulaVar>
+					<Label> I_drain_v </Label>	
+					<Value> {{spf_controller}}/b5LnaVDrainCurrent </Value>
+				</FormulaVar>
+				<FormulaVar>
+					<Label> G_h </Label>	
+					<Value> {{spf_controller}}/b5LnaHMeanGain </Value>
+				</FormulaVar>
+				<FormulaVar>
+					<Label> G_v </Label>	
+					<Value> {{spf_controller}}/b5LnaVMeanGain </Value>
+				</FormulaVar>
+			</FormulaVars>
+			<Groups>
+				<Group> spf </Group>
+			</Groups>	
+			<Level> fault </Level>	
+			<Message> SPF B5 LNA out of range (voltage/current)! </Message>
+		</Alarm>	
+		{% endif %}
+
+		
+		{% if lmc_config_mode == 'full' or (lmc_config_mode == 'spf' and spf_enable_b1_in_config | bool and spf_enable_b2_in_config | bool and spf_enable_b3_in_config | bool and spf_enable_b4_in_config | bool and spf_enable_b5_in_config | bool) %}	
+		<!-- LNA All Bands -->
+		<Alarm>
+			<Name> alarmSpfLnaOutOfRange </Name>
+			<Formula> 
+				($lna_b1.alarm || $lna_b2.alarm || $lna_b3.alarm || $lna_b4.alarm || $lna_b5.alarm)
+			</Formula>
+			<FormulaVars>
+				<FormulaVar>
+					<Label> lna_b1 </Label>	
+					<Value> {{alarm_handler}}/alarmSpfB1LnaOutOfRange </Value>
+				</FormulaVar>
+				<FormulaVar>
+					<Label> lna_b2 </Label>	
+					<Value> {{alarm_handler}}/alarmSpfB2LnaOutOfRange </Value>
+				</FormulaVar>
+				<FormulaVar>
+					<Label> lna_b3 </Label>	
+					<Value> {{alarm_handler}}/alarmSpfB3LnaOutOfRange </Value>
+				</FormulaVar>
+				<FormulaVar>
+					<Label> lna_b4 </Label>	
+					<Value> {{alarm_handler}}/alarmSpfB4LnaOutOfRange </Value>
+				</FormulaVar>
+				<FormulaVar>
+					<Label> lna_b5 </Label>	
+					<Value> {{alarm_handler}}/alarmSpfB5LnaOutOfRange </Value>
+				</FormulaVar>
+			</FormulaVars>
+			<Groups>
+				<Group> spf </Group>
+			</Groups>	
+			<Level> fault </Level>	
+			<Message> SPF LNA (one band at least) out of range! </Message>
+		</Alarm>	
+		{% endif %}
+
+
+		<!-- Amp2 Out of range -->
+		{% if lmc_config_mode == 'full' or (lmc_config_mode == 'spf' and spf_enable_b1_in_config | bool) %}
+		<!-- B1 -->
+		<Alarm>
+			<Name> alarmSpfB1Amp2OutOfRange </Name>
+			<Formula> 
+				( 
+          $expectedOnline &amp;&amp; 
+          (
+            ($I_amp2_h &lt; {{spf_amp2_curr_min_alarm}} || $I_amp2_h &gt; {{spf_amp2_curr_max_alarm}} || $I_amp2_h.quality==ATTR_ALARM) || 
+            ($I_amp2_v &lt; {{spf_amp2_curr_min_alarm}} || $I_amp2_v &gt; {{spf_amp2_curr_max_alarm}} || $I_amp2_v.quality==ATTR_ALARM) ||
+						($V_amp2_h &lt; {{spf_amp2_volt_min_alarm}} || $V_amp2_h &gt; {{spf_amp2_volt_max_alarm}} || $V_amp2_h.quality==ATTR_ALARM) || 
+            ($V_amp2_v &lt; {{spf_amp2_volt_min_alarm}} || $V_amp2_v &gt; {{spf_amp2_volt_max_alarm}} || $V_amp2_v.quality==ATTR_ALARM)
+          ) 
+        )
+			</Formula>
+			<FormulaVars>
+				<FormulaVar>
+					<Label> expectedOnline </Label>	
+					<Value> {{spf_controller}}/b1ExpectedOnline </Value>
+				</FormulaVar>
+				<FormulaVar>
+					<Label> I_amp2_h </Label>	
+					<Value> {{spf_controller}}/b1Amp2HCurrent </Value>
+				</FormulaVar>
+				<FormulaVar>
+					<Label> I_amp2_v </Label>	
+					<Value> {{spf_controller}}/b1Amp2VCurrent </Value>
+				</FormulaVar>
+				<FormulaVar>
+					<Label> V_amp2_h </Label>	
+					<Value> {{spf_controller}}/b1Amp2HVoltage </Value>
+				</FormulaVar>
+				<FormulaVar>
+					<Label> V_amp2_v </Label>	
+					<Value> {{spf_controller}}/b1Amp2VVoltage </Value>
+				</FormulaVar>
+			</FormulaVars>
+			<Groups>
+				<Group> spf </Group>
+			</Groups>	
+			<Level> fault </Level>	
+			<Message> SPF B1 Amp2 out of range (voltage/current)! </Message>
+		</Alarm>
+		{% endif %}
+
+		{% if lmc_config_mode == 'full' or (lmc_config_mode == 'spf' and spf_enable_b2_in_config | bool) %}
+		<!-- B2 -->
+		<Alarm>
+			<Name> alarmSpfB2Amp2OutOfRange </Name>
+			<Formula> 
+				( 
+          $expectedOnline &amp;&amp; 
+          (
+            ($I_amp2_h &lt; {{spf_amp2_curr_min_alarm}} || $I_amp2_h &gt; {{spf_amp2_curr_max_alarm}} || $I_amp2_h.quality==ATTR_ALARM) || 
+            ($I_amp2_v &lt; {{spf_amp2_curr_min_alarm}} || $I_amp2_v &gt; {{spf_amp2_curr_max_alarm}} || $I_amp2_v.quality==ATTR_ALARM) ||
+						($V_amp2_h &lt; {{spf_amp2_volt_min_alarm}} || $V_amp2_h &gt; {{spf_amp2_volt_max_alarm}} || $V_amp2_h.quality==ATTR_ALARM) || 
+            ($V_amp2_v &lt; {{spf_amp2_volt_min_alarm}} || $V_amp2_v &gt; {{spf_amp2_volt_max_alarm}} || $V_amp2_v.quality==ATTR_ALARM)
+          ) 
+        )
+			</Formula>
+			<FormulaVars>
+				<FormulaVar>
+					<Label> expectedOnline </Label>	
+					<Value> {{spf_controller}}/b2ExpectedOnline </Value>
+				</FormulaVar>
+				<FormulaVar>
+					<Label> I_amp2_h </Label>	
+					<Value> {{spf_controller}}/b2Amp2HCurrent </Value>
+				</FormulaVar>
+				<FormulaVar>
+					<Label> I_amp2_v </Label>	
+					<Value> {{spf_controller}}/b2Amp2VCurrent </Value>
+				</FormulaVar>
+				<FormulaVar>
+					<Label> V_amp2_h </Label>	
+					<Value> {{spf_controller}}/b2Amp2HVoltage </Value>
+				</FormulaVar>
+				<FormulaVar>
+					<Label> V_amp2_v </Label>	
+					<Value> {{spf_controller}}/b2Amp2VVoltage </Value>
+				</FormulaVar>
+			</FormulaVars>
+			<Groups>
+				<Group> spf </Group>
+			</Groups>	
+			<Level> fault </Level>	
+			<Message> SPF B2 Amp2 out of range (voltage/current)! </Message>
+		</Alarm>
+		{% endif %}
+
+		{% if lmc_config_mode == 'full' or (lmc_config_mode == 'spf' and spf_enable_b3_in_config | bool) %}
+		<!-- B3 -->
+		<Alarm>
+			<Name> alarmSpfB3Amp2OutOfRange </Name>
+			<Formula> 
+				( 
+          $expectedOnline &amp;&amp; 
+          (
+            ($I_amp2_h &lt; {{spf_amp2_curr_min_alarm}} || $I_amp2_h &gt; {{spf_amp2_curr_max_alarm}} || $I_amp2_h.quality==ATTR_ALARM) || 
+            ($I_amp2_v &lt; {{spf_amp2_curr_min_alarm}} || $I_amp2_v &gt; {{spf_amp2_curr_max_alarm}} || $I_amp2_v.quality==ATTR_ALARM) ||
+						($V_amp2_h &lt; {{spf_amp2_volt_min_alarm}} || $V_amp2_h &gt; {{spf_amp2_volt_max_alarm}} || $V_amp2_h.quality==ATTR_ALARM) || 
+            ($V_amp2_v &lt; {{spf_amp2_volt_min_alarm}} || $V_amp2_v &gt; {{spf_amp2_volt_max_alarm}} || $V_amp2_v.quality==ATTR_ALARM)
+          ) 
+        )
+			</Formula>
+			<FormulaVars>
+				<FormulaVar>
+					<Label> expectedOnline </Label>	
+					<Value> {{spf_controller}}/b3ExpectedOnline </Value>
+				</FormulaVar>
+				<FormulaVar>
+					<Label> I_amp2_h </Label>	
+					<Value> {{spf_controller}}/b3Amp2HCurrent </Value>
+				</FormulaVar>
+				<FormulaVar>
+					<Label> I_amp2_v </Label>	
+					<Value> {{spf_controller}}/b3Amp2VCurrent </Value>
+				</FormulaVar>
+				<FormulaVar>
+					<Label> V_amp2_h </Label>	
+					<Value> {{spf_controller}}/b3Amp2HVoltage </Value>
+				</FormulaVar>
+				<FormulaVar>
+					<Label> V_amp2_v </Label>	
+					<Value> {{spf_controller}}/b3Amp2VVoltage </Value>
+				</FormulaVar>
+			</FormulaVars>
+			<Groups>
+				<Group> spf </Group>
+			</Groups>	
+			<Level> fault </Level>	
+			<Message> SPF B3 Amp2 out of range (voltage/current)! </Message>
+		</Alarm>
+		{% endif %}
+
+		{% if lmc_config_mode == 'full' or (lmc_config_mode == 'spf' and spf_enable_b4_in_config | bool) %}
+		<!-- B4 -->
+		<Alarm>
+			<Name> alarmSpfB4Amp2OutOfRange </Name>
+			<Formula> 
+				( 
+          $expectedOnline &amp;&amp; 
+          (
+            ($I_amp2_h &lt; {{spf_amp2_curr_min_alarm}} || $I_amp2_h &gt; {{spf_amp2_curr_max_alarm}} || $I_amp2_h.quality==ATTR_ALARM) || 
+            ($I_amp2_v &lt; {{spf_amp2_curr_min_alarm}} || $I_amp2_v &gt; {{spf_amp2_curr_max_alarm}} || $I_amp2_v.quality==ATTR_ALARM) ||
+						($V_amp2_h &lt; {{spf_amp2_volt_min_alarm}} || $V_amp2_h &gt; {{spf_amp2_volt_max_alarm}} || $V_amp2_h.quality==ATTR_ALARM) || 
+            ($V_amp2_v &lt; {{spf_amp2_volt_min_alarm}} || $V_amp2_v &gt; {{spf_amp2_volt_max_alarm}} || $V_amp2_v.quality==ATTR_ALARM)
+          ) 
+        )
+			</Formula>
+			<FormulaVars>
+				<FormulaVar>
+					<Label> expectedOnline </Label>	
+					<Value> {{spf_controller}}/b4ExpectedOnline </Value>
+				</FormulaVar>
+				<FormulaVar>
+					<Label> I_amp2_h </Label>	
+					<Value> {{spf_controller}}/b4Amp2HCurrent </Value>
+				</FormulaVar>
+				<FormulaVar>
+					<Label> I_amp2_v </Label>	
+					<Value> {{spf_controller}}/b4Amp2VCurrent </Value>
+				</FormulaVar>
+				<FormulaVar>
+					<Label> V_amp2_h </Label>	
+					<Value> {{spf_controller}}/b4Amp2HVoltage </Value>
+				</FormulaVar>
+				<FormulaVar>
+					<Label> V_amp2_v </Label>	
+					<Value> {{spf_controller}}/b4Amp2VVoltage </Value>
+				</FormulaVar>
+			</FormulaVars>
+			<Groups>
+				<Group> spf </Group>
+			</Groups>	
+			<Level> fault </Level>	
+			<Message> SPF B4 Amp2 out of range (voltage/current)! </Message>
+		</Alarm>
+		{% endif %}
+
+		{% if lmc_config_mode == 'full' or (lmc_config_mode == 'spf' and spf_enable_b5_in_config | bool) %}
+		<!-- B5 -->
+		<Alarm>
+			<Name> alarmSpfB5Amp2OutOfRange </Name>
+			<Formula> 
+				( 
+          $expectedOnline &amp;&amp; 
+          (
+            ($I_amp2_h &lt; {{spf_amp2_curr_min_alarm}} || $I_amp2_h &gt; {{spf_amp2_curr_max_alarm}} || $I_amp2_h.quality==ATTR_ALARM) || 
+            ($I_amp2_v &lt; {{spf_amp2_curr_min_alarm}} || $I_amp2_v &gt; {{spf_amp2_curr_max_alarm}} || $I_amp2_v.quality==ATTR_ALARM) ||
+						($V_amp2_h &lt; {{spf_amp2_volt_min_alarm}} || $V_amp2_h &gt; {{spf_amp2_volt_max_alarm}} || $V_amp2_h.quality==ATTR_ALARM) || 
+            ($V_amp2_v &lt; {{spf_amp2_volt_min_alarm}} || $V_amp2_v &gt; {{spf_amp2_volt_max_alarm}} || $V_amp2_v.quality==ATTR_ALARM)
+          ) 
+        )
+			</Formula>
+			<FormulaVars>
+				<FormulaVar>
+					<Label> expectedOnline </Label>	
+					<Value> {{spf_controller}}/b5ExpectedOnline </Value>
+				</FormulaVar>
+				<FormulaVar>
+					<Label> I_amp2_h </Label>	
+					<Value> {{spf_controller}}/b5Amp2HCurrent </Value>
+				</FormulaVar>
+				<FormulaVar>
+					<Label> I_amp2_v </Label>	
+					<Value> {{spf_controller}}/b5Amp2VCurrent </Value>
+				</FormulaVar>
+				<FormulaVar>
+					<Label> V_amp2_h </Label>	
+					<Value> {{spf_controller}}/b5Amp2HVoltage </Value>
+				</FormulaVar>
+				<FormulaVar>
+					<Label> V_amp2_v </Label>	
+					<Value> {{spf_controller}}/b5Amp2VVoltage </Value>
+				</FormulaVar>
+			</FormulaVars>
+			<Groups>
+				<Group> spf </Group>
+			</Groups>	
+			<Level> fault </Level>	
+			<Message> SPF B5 Amp2 out of range (voltage/current)! </Message>
+		</Alarm>
+		{% endif %}
+
+		{% if lmc_config_mode == 'full' or (lmc_config_mode == 'spf' and spf_enable_b1_in_config | bool and spf_enable_b2_in_config | bool and spf_enable_b3_in_config | bool and spf_enable_b4_in_config | bool and spf_enable_b5_in_config | bool) %}
+		<Alarm>
+			<Name> alarmSpfAmp2OutOfRange </Name>
+			<Formula> 
+				($amp2_b1.alarm || $amp2_b2.alarm || $amp2_b3.alarm || $amp2_b4.alarm || $amp2_b5.alarm)
+			</Formula>
+			<FormulaVars>
+				<FormulaVar>
+					<Label> amp2_b1 </Label>	
+					<Value> {{alarm_handler}}/alarmSpfB1Amp2OutOfRange </Value>
+				</FormulaVar>
+				<FormulaVar>
+					<Label> amp2_b2 </Label>	
+					<Value> {{alarm_handler}}/alarmSpfB2Amp2OutOfRange </Value>
+				</FormulaVar>
+				<FormulaVar>
+					<Label> amp2_b3 </Label>	
+					<Value> {{alarm_handler}}/alarmSpfB3Amp2OutOfRange </Value>
+				</FormulaVar>
+				<FormulaVar>
+					<Label> amp2_b4 </Label>	
+					<Value> {{alarm_handler}}/alarmSpfB4Amp2OutOfRange </Value>
+				</FormulaVar>
+				<FormulaVar>
+					<Label> amp2_b5 </Label>	
+					<Value> {{alarm_handler}}/alarmSpfB5Amp2OutOfRange </Value>
+				</FormulaVar>
+			</FormulaVars>
+			<Groups>
+				<Group> spf </Group>
+			</Groups>	
+			<Level> fault </Level>	
+			<Message> SPF Amp2 (one band at least) out of range! </Message>
+		</Alarm>	
+		{% endif %}
+
+
+		<!-- SPF Cal source Alarm -->
+		{% if lmc_config_mode == 'full' or (lmc_config_mode == 'spf' and spf_enable_b1_in_config | bool) %}
+		<!-- B1 -->
+		<Alarm>
+			<Name> alarmSpfB1CalSourceOutOfRange </Name>
+			<Formula> 
+				( 
+          $expectedOnline &amp;&amp; 
+          (
+            ($curr &lt; {{spf_cal_source_curr_min_alarm}} || $curr &gt; {{spf_cal_source_curr_max_alarm}} || $curr.quality==ATTR_ALARM) || 
+            ($volt &lt; {{spf_cal_source_volt_min_alarm}} || $volt &gt; {{spf_cal_source_volt_max_alarm}} || $volt.quality==ATTR_ALARM) ||
+						($temp &lt; {{spf_cal_source_temp_min_alarm}} || $temp &gt; {{spf_cal_source_temp_max_alarm}} || $temp.quality==ATTR_ALARM) 
+          ) 
+        )
+			</Formula>
+			<FormulaVars>
+				<FormulaVar>
+					<Label> expectedOnline </Label>	
+					<Value> {{spf_controller}}/b1ExpectedOnline </Value>
+				</FormulaVar>
+				<FormulaVar>
+					<Label> curr </Label>	
+					<Value> {{spf_controller}}/b1CalSourceCurrent </Value>
+				</FormulaVar>
+				<FormulaVar>
+					<Label> volt </Label>	
+					<Value> {{spf_controller}}/b1CalSourceVoltage </Value>
+				</FormulaVar>
+				<FormulaVar>
+					<Label> temp </Label>	
+					<Value> {{spf_controller}}/b1CalSourceTemp </Value>
+				</FormulaVar>
+			</FormulaVars>
+			<Groups>
+				<Group> spf </Group>
+			</Groups>	
+			<Level> fault </Level>	
+			<Message> SPF B1 cal source out of range (voltage/current/temp)! </Message>
+		</Alarm>
+		{% endif %}
+
+		{% if lmc_config_mode == 'full' or (lmc_config_mode == 'spf' and spf_enable_b2_in_config | bool) %}
+		<!-- B2 -->
+		<Alarm>
+			<Name> alarmSpfB2CalSourceOutOfRange </Name>
+			<Formula> 
+				( 
+          $expectedOnline &amp;&amp; 
+          (
+            ($curr &lt; {{spf_cal_source_curr_min_alarm}} || $curr &gt; {{spf_cal_source_curr_max_alarm}} || $curr.quality==ATTR_ALARM) || 
+            ($volt &lt; {{spf_cal_source_volt_min_alarm}} || $volt &gt; {{spf_cal_source_volt_max_alarm}} || $volt.quality==ATTR_ALARM) ||
+						($temp &lt; {{spf_cal_source_temp_min_alarm}} || $temp &gt; {{spf_cal_source_temp_max_alarm}} || $temp.quality==ATTR_ALARM) 
+          ) 
+        )
+			</Formula>
+			<FormulaVars>
+				<FormulaVar>
+					<Label> expectedOnline </Label>	
+					<Value> {{spf_controller}}/b2ExpectedOnline </Value>
+				</FormulaVar>
+				<FormulaVar>
+					<Label> curr </Label>	
+					<Value> {{spf_controller}}/b2CalSourceCurrent </Value>
+				</FormulaVar>
+				<FormulaVar>
+					<Label> volt </Label>	
+					<Value> {{spf_controller}}/b2CalSourceVoltage </Value>
+				</FormulaVar>
+				<FormulaVar>
+					<Label> temp </Label>	
+					<Value> {{spf_controller}}/b2CalSourceTemp </Value>
+				</FormulaVar>
+			</FormulaVars>
+			<Groups>
+				<Group> spf </Group>
+			</Groups>	
+			<Level> fault </Level>	
+			<Message> SPF B2 cal source out of range (voltage/current/temp)! </Message>
+		</Alarm>
+		{% endif %}
+
+		{% if lmc_config_mode == 'full' or (lmc_config_mode == 'spf' and spf_enable_b3_in_config | bool) %}
+		<!-- B3 -->
+		<Alarm>
+			<Name> alarmSpfB3CalSourceOutOfRange </Name>
+			<Formula> 
+				( 
+          $expectedOnline &amp;&amp; 
+          (
+            ($curr &lt; {{spf_cal_source_curr_min_alarm}} || $curr &gt; {{spf_cal_source_curr_max_alarm}} || $curr.quality==ATTR_ALARM) || 
+            ($volt &lt; {{spf_cal_source_volt_min_alarm}} || $volt &gt; {{spf_cal_source_volt_max_alarm}} || $volt.quality==ATTR_ALARM) ||
+						($temp &lt; {{spf_cal_source_temp_min_alarm}} || $temp &gt; {{spf_cal_source_temp_max_alarm}} || $temp.quality==ATTR_ALARM) 
+          ) 
+        )
+			</Formula>
+			<FormulaVars>
+				<FormulaVar>
+					<Label> expectedOnline </Label>	
+					<Value> {{spf_controller}}/b3ExpectedOnline </Value>
+				</FormulaVar>
+				<FormulaVar>
+					<Label> curr </Label>	
+					<Value> {{spf_controller}}/b3CalSourceCurrent </Value>
+				</FormulaVar>
+				<FormulaVar>
+					<Label> volt </Label>	
+					<Value> {{spf_controller}}/b3CalSourceVoltage </Value>
+				</FormulaVar>
+				<FormulaVar>
+					<Label> temp </Label>	
+					<Value> {{spf_controller}}/b3CalSourceTemp </Value>
+				</FormulaVar>
+			</FormulaVars>
+			<Groups>
+				<Group> spf </Group>
+			</Groups>	
+			<Level> fault </Level>	
+			<Message> SPF B3 cal source out of range (voltage/current/temp)! </Message>
+		</Alarm>
+		{% endif %}
+
+		{% if lmc_config_mode == 'full' or (lmc_config_mode == 'spf' and spf_enable_b4_in_config | bool) %}
+		<!-- B4 -->
+		<Alarm>
+			<Name> alarmSpfB4CalSourceOutOfRange </Name>
+			<Formula> 
+				( 
+          $expectedOnline &amp;&amp; 
+          (
+            ($curr &lt; {{spf_cal_source_curr_min_alarm}} || $curr &gt; {{spf_cal_source_curr_max_alarm}} || $curr.quality==ATTR_ALARM) || 
+            ($volt &lt; {{spf_cal_source_volt_min_alarm}} || $volt &gt; {{spf_cal_source_volt_max_alarm}} || $volt.quality==ATTR_ALARM) ||
+						($temp &lt; {{spf_cal_source_temp_min_alarm}} || $temp &gt; {{spf_cal_source_temp_max_alarm}} || $temp.quality==ATTR_ALARM) 
+          ) 
+        )
+			</Formula>
+			<FormulaVars>
+				<FormulaVar>
+					<Label> expectedOnline </Label>	
+					<Value> {{spf_controller}}/b4ExpectedOnline </Value>
+				</FormulaVar>
+				<FormulaVar>
+					<Label> curr </Label>	
+					<Value> {{spf_controller}}/b4CalSourceCurrent </Value>
+				</FormulaVar>
+				<FormulaVar>
+					<Label> volt </Label>	
+					<Value> {{spf_controller}}/b4CalSourceVoltage </Value>
+				</FormulaVar>
+				<FormulaVar>
+					<Label> temp </Label>	
+					<Value> {{spf_controller}}/b4CalSourceTemp </Value>
+				</FormulaVar>
+			</FormulaVars>
+			<Groups>
+				<Group> spf </Group>
+			</Groups>	
+			<Level> fault </Level>	
+			<Message> SPF B4 cal source out of range (voltage/current/temp)! </Message>
+		</Alarm>
+		{% endif %}
+
+
+		{% if lmc_config_mode == 'full' or (lmc_config_mode == 'spf' and spf_enable_b5_in_config | bool) %}
+		<!-- B5 -->
+		<Alarm>
+			<Name> alarmSpfB5CalSourceOutOfRange </Name>
+			<Formula> 
+				( 
+          $expectedOnline &amp;&amp; 
+          (
+            ($curr &lt; {{spf_cal_source_curr_min_alarm}} || $curr &gt; {{spf_cal_source_curr_max_alarm}} || $curr.quality==ATTR_ALARM) || 
+            ($volt &lt; {{spf_cal_source_volt_min_alarm}} || $volt &gt; {{spf_cal_source_volt_max_alarm}} || $volt.quality==ATTR_ALARM) ||
+						($temp &lt; {{spf_cal_source_temp_min_alarm}} || $temp &gt; {{spf_cal_source_temp_max_alarm}} || $temp.quality==ATTR_ALARM) 
+          ) 
+        )
+			</Formula>
+			<FormulaVars>
+				<FormulaVar>
+					<Label> expectedOnline </Label>	
+					<Value> {{spf_controller}}/b5ExpectedOnline </Value>
+				</FormulaVar>
+				<FormulaVar>
+					<Label> curr </Label>	
+					<Value> {{spf_controller}}/b5CalSourceCurrent </Value>
+				</FormulaVar>
+				<FormulaVar>
+					<Label> volt </Label>	
+					<Value> {{spf_controller}}/b5CalSourceVoltage </Value>
+				</FormulaVar>
+				<FormulaVar>
+					<Label> temp </Label>	
+					<Value> {{spf_controller}}/b5CalSourceTemp </Value>
+				</FormulaVar>
+			</FormulaVars>
+			<Groups>
+				<Group> spf </Group>
+			</Groups>	
+			<Level> fault </Level>	
+			<Message> SPF B5 cal source out of range (voltage/current/temp)! </Message>
+		</Alarm>
+		{% endif %}
+
+		{% if lmc_config_mode == 'full' or (lmc_config_mode == 'spf' and spf_enable_b1_in_config | bool and spf_enable_b2_in_config | bool and spf_enable_b3_in_config | bool and spf_enable_b4_in_config | bool and spf_enable_b5_in_config | bool) %}
+		<Alarm>
+			<Name> alarmSpfCalSourceOutOfRange </Name>
+			<Formula> 
+				($calsource_b1.alarm || $calsource_b2.alarm || $calsource_b3.alarm || $calsource_b4.alarm || $calsource_b5.alarm)
+			</Formula>
+			<FormulaVars>
+				<FormulaVar>
+					<Label> calsource_b1 </Label>	
+					<Value> {{alarm_handler}}/alarmSpfB1CalSourceOutOfRange </Value>
+				</FormulaVar>
+				<FormulaVar>
+					<Label> calsource_b2 </Label>	
+					<Value> {{alarm_handler}}/alarmSpfB2CalSourceOutOfRange </Value>
+				</FormulaVar>
+				<FormulaVar>
+					<Label> calsource_b3 </Label>	
+					<Value> {{alarm_handler}}/alarmSpfB3CalSourceOutOfRange </Value>
+				</FormulaVar>
+				<FormulaVar>
+					<Label> calsource_b4 </Label>	
+					<Value> {{alarm_handler}}/alarmSpfB4CalSourceOutOfRange </Value>
+				</FormulaVar>
+				<FormulaVar>
+					<Label> calsource_b5 </Label>	
+					<Value> {{alarm_handler}}/alarmSpfB5CalSourceOutOfRange </Value>
+				</FormulaVar>
+			</FormulaVars>
+			<Groups>
+				<Group> spf </Group>
+			</Groups>	
+			<Level> fault </Level>	
+			<Message> SPF cal source (one band at least) out of range! </Message>
+		</Alarm>	
+		{% endif %}
+
+
+		<!-- Rfe PID Alarm --> 
+		{% if lmc_config_mode == 'full' or (lmc_config_mode == 'spf' and spf_enable_b1_in_config | bool) %}
+		<!-- B1 -->
+		<Alarm>
+			<Name> alarmSpfB1RfePidOutOfRange </Name>
+			<Formula> 
+				( 
+          $expectedOnline &amp;&amp; 
+          (
+            ($I_rfe_1 &lt; {{spf_rfe1_pid_curr_min_alarm}} || $I_rfe_1 &gt; {{spf_rfe1_pid_curr_max_alarm}} || $I_rfe_1.quality==ATTR_ALARM) || 
+            ($I_rfe_2 &lt; {{spf_rfe2_pid_curr_min_alarm}} || $I_rfe_2 &gt; {{spf_rfe2_pid_curr_max_alarm}} || $I_rfe_2.quality==ATTR_ALARM)
+          ) 
+        )
+			</Formula>
+			<FormulaVars>
+				<FormulaVar>
+					<Label> expectedOnline </Label>	
+					<Value> {{spf_controller}}/b1ExpectedOnline </Value>
+				</FormulaVar>
+				<FormulaVar>
+					<Label> I_rfe_1 </Label>	
+					<Value> {{spf_controller}}/b1Rfe1PidCurrent </Value>
+				</FormulaVar>
+				<FormulaVar>
+					<Label> I_rfe_2 </Label>	
+					<Value> {{spf_controller}}/b1Rfe2PidCurrent </Value>
+				</FormulaVar>
+			</FormulaVars>
+			<Groups>
+				<Group> spf </Group>
+			</Groups>	
+			<Level> fault </Level>	
+			<Message> SPF B1 Rfe Pid out of range (1st/2nd stage current)! </Message>
+		</Alarm>
+		{% endif %}
+		
+		{% if lmc_config_mode == 'full' or (lmc_config_mode == 'spf' and spf_enable_b2_in_config | bool) %}
+		<!-- B2 -->
+		<Alarm>
+			<Name> alarmSpfB2RfePidOutOfRange </Name>
+			<Formula> 
+				( 
+          $expectedOnline &amp;&amp; 
+          (
+            ($I_rfe_1 &lt; {{spf_rfe1_pid_curr_min_alarm}} || $I_rfe_1 &gt; {{spf_rfe1_pid_curr_max_alarm}} || $I_rfe_1.quality==ATTR_ALARM)
+          ) 
+        )
+			</Formula>
+			<FormulaVars>
+				<FormulaVar>
+					<Label> expectedOnline </Label>	
+					<Value> {{spf_controller}}/b2ExpectedOnline </Value>
+				</FormulaVar>
+				<FormulaVar>
+					<Label> I_rfe_1 </Label>	
+					<Value> {{spf_controller}}/b2Rfe1PidCurrent </Value>
+				</FormulaVar>
+			</FormulaVars>
+			<Groups>
+				<Group> spf </Group>
+			</Groups>	
+			<Level> fault </Level>	
+			<Message> SPF B2 Rfe Pid out of range (1st stage current)! </Message>
+		</Alarm>
+		{% endif %}
+		
+		{% if lmc_config_mode == 'full' or (lmc_config_mode == 'spf' and spf_enable_b3_in_config | bool) %}
+		<!-- B3 -->
+		<Alarm>
+			<Name> alarmSpfB3RfePidOutOfRange </Name>
+			<Formula> 
+				( 
+          $expectedOnline &amp;&amp; 
+          (
+            ($I_rfe_1 &lt; {{spf_rfe1_pid_curr_min_alarm}} || $I_rfe_1 &gt; {{spf_rfe1_pid_curr_max_alarm}} || $I_rfe_1.quality==ATTR_ALARM) || 
+            ($I_rfe_2 &lt; {{spf_rfe2_pid_curr_min_alarm}} || $I_rfe_2 &gt; {{spf_rfe2_pid_curr_max_alarm}} || $I_rfe_2.quality==ATTR_ALARM)
+          ) 
+        )
+			</Formula>
+			<FormulaVars>
+				<FormulaVar>
+					<Label> expectedOnline </Label>	
+					<Value> {{spf_controller}}/b3ExpectedOnline </Value>
+				</FormulaVar>
+				<FormulaVar>
+					<Label> I_rfe_1 </Label>	
+					<Value> {{spf_controller}}/b3Rfe1PidCurrent </Value>
+				</FormulaVar>
+				<FormulaVar>
+					<Label> I_rfe_2 </Label>	
+					<Value> {{spf_controller}}/b3Rfe2PidCurrent </Value>
+				</FormulaVar>
+			</FormulaVars>
+			<Groups>
+				<Group> spf </Group>
+			</Groups>	
+			<Level> fault </Level>	
+			<Message> SPF B3 Rfe Pid out of range (1st/2nd stage current)! </Message>
+		</Alarm>
+		{% endif %}
+
+		{% if lmc_config_mode == 'full' or (lmc_config_mode == 'spf' and spf_enable_b4_in_config | bool) %}
+		<!-- B4 -->
+		<Alarm>
+			<Name> alarmSpfB4RfePidOutOfRange </Name>
+			<Formula> 
+				( 
+          $expectedOnline &amp;&amp; 
+          (
+            ($I_rfe_1 &lt; {{spf_rfe1_pid_curr_min_alarm}} || $I_rfe_1 &gt; {{spf_rfe1_pid_curr_max_alarm}} || $I_rfe_1.quality==ATTR_ALARM) || 
+            ($I_rfe_2 &lt; {{spf_rfe2_pid_curr_min_alarm}} || $I_rfe_2 &gt; {{spf_rfe2_pid_curr_max_alarm}} || $I_rfe_2.quality==ATTR_ALARM)
+          ) 
+        )
+			</Formula>
+			<FormulaVars>
+				<FormulaVar>
+					<Label> expectedOnline </Label>	
+					<Value> {{spf_controller}}/b4ExpectedOnline </Value>
+				</FormulaVar>
+				<FormulaVar>
+					<Label> I_rfe_1 </Label>	
+					<Value> {{spf_controller}}/b4Rfe1PidCurrent </Value>
+				</FormulaVar>
+				<FormulaVar>
+					<Label> I_rfe_2 </Label>	
+					<Value> {{spf_controller}}/b4Rfe2PidCurrent </Value>
+				</FormulaVar>
+			</FormulaVars>
+			<Groups>
+				<Group> spf </Group>
+			</Groups>	
+			<Level> fault </Level>	
+			<Message> SPF B4 Rfe Pid out of range (1st/2nd stage current)! </Message>
+		</Alarm>
+		{% endif %}
+
+		{% if lmc_config_mode == 'full' or (lmc_config_mode == 'spf' and spf_enable_b5_in_config | bool) %}
+		<!-- B5 -->
+		<Alarm>
+			<Name> alarmSpfB5RfePidOutOfRange </Name>
+			<Formula> 
+				( 
+          $expectedOnline &amp;&amp; 
+          (
+            ($I_rfe_1 &lt; {{spf_rfe1_pid_curr_min_alarm}} || $I_rfe_1 &gt; {{spf_rfe1_pid_curr_max_alarm}} || $I_rfe_1.quality==ATTR_ALARM) || 
+            ($I_rfe_2 &lt; {{spf_rfe2_pid_curr_min_alarm}} || $I_rfe_2 &gt; {{spf_rfe2_pid_curr_max_alarm}} || $I_rfe_2.quality==ATTR_ALARM)
+          ) 
+        )
+			</Formula>
+			<FormulaVars>
+				<FormulaVar>
+					<Label> expectedOnline </Label>	
+					<Value> {{spf_controller}}/b5ExpectedOnline </Value>
+				</FormulaVar>
+				<FormulaVar>
+					<Label> I_rfe_1 </Label>	
+					<Value> {{spf_controller}}/b5Rfe1PidCurrent </Value>
+				</FormulaVar>
+				<FormulaVar>
+					<Label> I_rfe_2 </Label>	
+					<Value> {{spf_controller}}/b5Rfe2PidCurrent </Value>
+				</FormulaVar>
+			</FormulaVars>
+			<Groups>
+				<Group> spf </Group>
+			</Groups>	
+			<Level> fault </Level>	
+			<Message> SPF B5 Rfe Pid out of range (1st/2nd stage current)! </Message>
+		</Alarm>
+		{% endif %}
+
+
+		{% if lmc_config_mode == 'full' or (lmc_config_mode == 'spf' and spf_enable_b1_in_config | bool and spf_enable_b2_in_config | bool and spf_enable_b3_in_config | bool and spf_enable_b4_in_config | bool and spf_enable_b5_in_config | bool) %}
+		<Alarm>
+			<Name> alarmSpfRfePidOutOfRange </Name>
+			<Formula> 
+				($rfepid_b1.alarm || $rfepid_b2.alarm || $rfepid_b3.alarm || $rfepid_b4.alarm || $rfepid_b5.alarm)
+			</Formula>
+			<FormulaVars>
+				<FormulaVar>
+					<Label> rfepid_b1 </Label>	
+					<Value> {{alarm_handler}}/alarmSpfB1RfePidOutOfRange </Value>
+				</FormulaVar>
+				<FormulaVar>
+					<Label> rfepid_b2 </Label>	
+					<Value> {{alarm_handler}}/alarmSpfB2RfePidOutOfRange </Value>
+				</FormulaVar>
+				<FormulaVar>
+					<Label> rfepid_b3 </Label>	
+					<Value> {{alarm_handler}}/alarmSpfB3RfePidOutOfRange </Value>
+				</FormulaVar>
+				<FormulaVar>
+					<Label> rfepid_b4 </Label>	
+					<Value> {{alarm_handler}}/alarmSpfB4RfePidOutOfRange </Value>
+				</FormulaVar>
+				<FormulaVar>
+					<Label> rfepid_b5 </Label>	
+					<Value> {{alarm_handler}}/alarmSpfB5RfePidOutOfRange </Value>
+				</FormulaVar>
+			</FormulaVars>
+			<Groups>
+				<Group> spf </Group>
+			</Groups>	
+			<Level> fault </Level>	
+			<Message> SPF Rfe Pid (one band at least) out of range! </Message>
+		</Alarm>	
+		{% endif %}
+
+
+		<!-- Cryostat Alarm --> 
+		{% if lmc_config_mode == 'full' or (lmc_config_mode == 'spf' and spf_enable_b1_in_config | bool) %}
+		<!-- B1 -->
+		<Alarm>
+			<Name> alarmSpfB1CryostatOutOfRange </Name>
+			<Formula> 
+				( 
+          $expectedOnline &amp;&amp; 
+          (
+            ($press &lt; {{spf_cryo_press_min_alarm}} || $press &gt; {{spf_cryo_press_max_alarm}} || $press.quality==ATTR_ALARM) || 
+            ($temp &lt; {{spf_cryo_body_temp_min_alarm}} || $temp &gt; {{spf_cryo_body_temp_max_alarm}} || $temp.quality==ATTR_ALARM)
+          ) 
+        )
+			</Formula>
+			<FormulaVars>
+				<FormulaVar>
+					<Label> expectedOnline </Label>	
+					<Value> {{spf_controller}}/b1ExpectedOnline </Value>
+				</FormulaVar>
+				<FormulaVar>
+					<Label> press </Label>	
+					<Value> {{spf_controller}}/b1CryoPressure </Value>
+				</FormulaVar>
+				<FormulaVar>
+					<Label> temp </Label>	
+					<Value> {{spf_controller}}/b1CryostatBodyTemp </Value>
+				</FormulaVar>
+			</FormulaVars>
+			<Groups>
+				<Group> spf </Group>
+			</Groups>	
+			<Level> fault </Level>	
+			<Message> SPF B1 cryostat out of range (pressure/temp)! </Message>
+		</Alarm>
+		{% endif %}
+
+		{% if lmc_config_mode == 'full' or (lmc_config_mode == 'spf' and spf_enable_b2_in_config | bool) %}
+		<!-- B2 -->
+		<Alarm>
+			<Name> alarmSpfB2CryostatOutOfRange </Name>
+			<Formula> 
+				( 
+          $expectedOnline &amp;&amp; 
+          (
+            ($press &lt; {{spf_cryo_press_min_alarm}} || $press &gt; {{spf_cryo_press_max_alarm}} || $press.quality==ATTR_ALARM) || 
+            ($temp &lt; {{spf_cryo_body_temp_min_alarm}} || $temp &gt; {{spf_cryo_body_temp_max_alarm}} || $temp.quality==ATTR_ALARM)
+          ) 
+        )
+			</Formula>
+			<FormulaVars>
+				<FormulaVar>
+					<Label> expectedOnline </Label>	
+					<Value> {{spf_controller}}/b2ExpectedOnline </Value>
+				</FormulaVar>
+				<FormulaVar>
+					<Label> press </Label>	
+					<Value> {{spf_controller}}/b2CryoPressure </Value>
+				</FormulaVar>
+				<FormulaVar>
+					<Label> temp </Label>	
+					<Value> {{spf_controller}}/b2CryostatBodyTemp </Value>
+				</FormulaVar>
+			</FormulaVars>
+			<Groups>
+				<Group> spf </Group>
+			</Groups>	
+			<Level> fault </Level>	
+			<Message> SPF B2 cryostat out of range (pressure/temp)! </Message>
+		</Alarm>
+		{% endif %}
+
+		{% if lmc_config_mode == 'full' or (lmc_config_mode == 'spf' and (spf_enable_b3_in_config | bool or spf_enable_b4_in_config | bool or spf_enable_b5_in_config | bool) ) %}
+		<!-- B345 -->
+		<Alarm>
+			<Name> alarmSpfB345CryostatOutOfRange </Name>
+			<Formula> 
+				( 
+          ($expectedOnline3 || expectedOnline4 || expectedOnline5) &amp;&amp; 
+          (
+            ($press &lt; {{spf_cryo_press_min_alarm}} || $press &gt; {{spf_cryo_press_max_alarm}} || $press.quality==ATTR_ALARM) || 
+            ($temp &lt; {{spf_cryo_body_temp_min_alarm}} || $temp &gt; {{spf_cryo_body_temp_max_alarm}} || $temp.quality==ATTR_ALARM)
+          ) 
+        )
+			</Formula>
+			<FormulaVars>
+				<FormulaVar>
+					<Label> expectedOnline3 </Label>	
+					<Value> {{spf_controller}}/b3ExpectedOnline </Value>
+				</FormulaVar>
+				<FormulaVar>
+					<Label> expectedOnline4 </Label>	
+					<Value> {{spf_controller}}/b4ExpectedOnline </Value>
+				</FormulaVar>
+				<FormulaVar>
+					<Label> expectedOnline5 </Label>	
+					<Value> {{spf_controller}}/b5ExpectedOnline </Value>
+				</FormulaVar>
+				<FormulaVar>
+					<Label> press </Label>	
+					<Value> {{spf_controller}}/b345CryoPressure </Value>
+				</FormulaVar>
+				<FormulaVar>
+					<Label> temp </Label>	
+					<Value> {{spf_controller}}/b345CryostatBodyTemp </Value>
+				</FormulaVar>
+			</FormulaVars>
+			<Groups>
+				<Group> spf </Group>
+			</Groups>	
+			<Level> fault </Level>	
+			<Message> SPF B345 cryostat out of range (pressure/temp)! </Message>
+		</Alarm>
+		{% endif %}
+
+		{% if lmc_config_mode == 'full' or (lmc_config_mode == 'spf' and spf_enable_b1_in_config | bool and spf_enable_b2_in_config | bool and spf_enable_b3_in_config | bool and spf_enable_b4_in_config | bool and spf_enable_b5_in_config | bool) %}
+		<Alarm>
+			<Name> alarmSpfCryostatOutOfRange </Name>
+			<Formula> 
+				($cryo_b1.alarm || $cryo_b2.alarm || $cryo_b345.alarm)
+			</Formula>
+			<FormulaVars>
+				<FormulaVar>
+					<Label> cryo_b1 </Label>	
+					<Value> {{alarm_handler}}/alarmSpfB1CryostatOutOfRange </Value>
+				</FormulaVar>
+				<FormulaVar>
+					<Label> cryo_b2 </Label>	
+					<Value> {{alarm_handler}}/alarmSpfB2CryostatOutOfRange </Value>
+				</FormulaVar>
+				<FormulaVar>
+					<Label> cryo_b345 </Label>	
+					<Value> {{alarm_handler}}/alarmSpfB345CryostatOutOfRange </Value>
+				</FormulaVar>
+			</FormulaVars>
+			<Groups>
+				<Group> spf </Group>
+			</Groups>	
+			<Level> fault </Level>	
+			<Message> SPF Cryostat (one band at least) out of range! </Message>
+		</Alarm>	
+		{% endif %}
+	
+		<!-- SPF Manifold Alarm --> 
+		{% if lmc_config_mode == 'full' or (lmc_config_mode == 'spf' and spf_enable_b1_in_config | bool) %}
+		<!-- B1 -->
+		<Alarm>
+			<Name> alarmSpfB1ManifoldOutOfRange </Name>
+			<Formula> 
+				( 
+          $expectedOnline &amp;&amp; 
+          (
+            ($press &lt; {{spf_manifold_press_min_alarm}} || $press &gt; {{spf_manifold_press_max_alarm}} || $press.quality==ATTR_ALARM)
+          ) 
+        )
+			</Formula>
+			<FormulaVars>
+				<FormulaVar>
+					<Label> expectedOnline </Label>	
+					<Value> {{spf_controller}}/b1ExpectedOnline </Value>
+				</FormulaVar>
+				<FormulaVar>
+					<Label> press </Label>	
+					<Value> {{spf_controller}}/b1ManifoldPressure </Value>
+				</FormulaVar>
+			</FormulaVars>
+			<Groups>
+				<Group> spf </Group>
+			</Groups>	
+			<Level> fault </Level>	
+			<Message> SPF B1 manifold pressure out of range! </Message>
+		</Alarm>
+		{% endif %}
+
+		{% if lmc_config_mode == 'full' or (lmc_config_mode == 'spf' and spf_enable_b2_in_config | bool) %}
+		<!-- B2 -->
+		<Alarm>
+			<Name> alarmSpfB2ManifoldOutOfRange </Name>
+			<Formula> 
+				( 
+          $expectedOnline &amp;&amp; 
+          (
+            ($press &lt; {{spf_manifold_press_min_alarm}} || $press &gt; {{spf_manifold_press_max_alarm}} || $press.quality==ATTR_ALARM)
+          ) 
+        )
+			</Formula>
+			<FormulaVars>
+				<FormulaVar>
+					<Label> expectedOnline </Label>	
+					<Value> {{spf_controller}}/b2ExpectedOnline </Value>
+				</FormulaVar>
+				<FormulaVar>
+					<Label> press </Label>	
+					<Value> {{spf_controller}}/b2ManifoldPressure </Value>
+				</FormulaVar>
+			</FormulaVars>
+			<Groups>
+				<Group> spf </Group>
+			</Groups>	
+			<Level> fault </Level>	
+			<Message> SPF B2 manifold pressure out of range! </Message>
+		</Alarm>
+		{% endif %}
+
+		{% if lmc_config_mode == 'full' or (lmc_config_mode == 'spf' and (spf_enable_b3_in_config | bool or spf_enable_b4_in_config | bool or spf_enable_b5_in_config | bool) ) %}
+		<!-- B345 -->
+		<Alarm>
+			<Name> alarmSpfB345ManifoldOutOfRange </Name>
+			<Formula> 
+				( 
+          ($expectedOnline3 || expectedOnline4 || expectedOnline5) &amp;&amp; 
+          (
+            ($press &lt; {{spf_manifold_press_min_alarm}} || $press &gt; {{spf_manifold_press_max_alarm}} || $press.quality==ATTR_ALARM)
+          ) 
+        )
+			</Formula>
+			<FormulaVars>
+				<FormulaVar>
+					<Label> expectedOnline3 </Label>	
+					<Value> {{spf_controller}}/b3ExpectedOnline </Value>
+				</FormulaVar>
+				<FormulaVar>
+					<Label> expectedOnline4 </Label>	
+					<Value> {{spf_controller}}/b4ExpectedOnline </Value>
+				</FormulaVar>
+				<FormulaVar>
+					<Label> expectedOnline5 </Label>	
+					<Value> {{spf_controller}}/b5ExpectedOnline </Value>
+				</FormulaVar>
+				<FormulaVar>
+					<Label> press </Label>	
+					<Value> {{spf_controller}}/b345ManifoldPressure </Value>
+				</FormulaVar>
+			</FormulaVars>
+			<Groups>
+				<Group> spf </Group>
+			</Groups>	
+			<Level> fault </Level>	
+			<Message> SPF B345 manifold pressure out of range! </Message>
+		</Alarm>
+		{% endif %}
+	
+		{% if lmc_config_mode == 'full' or (lmc_config_mode == 'spf' and spf_enable_b1_in_config | bool and spf_enable_b2_in_config | bool and spf_enable_b3_in_config | bool and spf_enable_b4_in_config | bool and spf_enable_b5_in_config | bool) %}
+		<Alarm>
+			<Name> alarmSpfManifoldOutOfRange </Name>
+			<Formula> 
+				($manipress_b1.alarm || $manipress_b2.alarm || $manipress_b345.alarm)
+			</Formula>
+			<FormulaVars>
+				<FormulaVar>
+					<Label> manipress_b1 </Label>	
+					<Value> {{alarm_handler}}/alarmSpfB1ManifoldOutOfRange </Value>
+				</FormulaVar>
+				<FormulaVar>
+					<Label> manipress_b2 </Label>	
+					<Value> {{alarm_handler}}/alarmSpfB2ManifoldOutOfRange </Value>
+				</FormulaVar>
+				<FormulaVar>
+					<Label> manipress_b345 </Label>	
+					<Value> {{alarm_handler}}/alarmSpfB345ManifoldOutOfRange </Value>
+				</FormulaVar>
+			</FormulaVars>
+			<Groups>
+				<Group> spf </Group>
+			</Groups>	
+			<Level> fault </Level>	
+			<Message> SPF manifold pressure (one band at least) out of range! </Message>
+		</Alarm>	
+		{% endif %}
+
+
+
+		<!-- SPF RFE Temperature Alarm --> 
+		{% if lmc_config_mode == 'full' or (lmc_config_mode == 'spf' and spf_enable_b1_in_config | bool) %}
+		<!-- B1 -->
+		<Alarm>
+			<Name> alarmSpfB1RfeTempOutOfRange </Name>
+			<Formula> 
+				( 
+          $expectedOnline &amp;&amp; 
+          (
+            ($temp1 &lt; {{spf_rfe1_temp_min_alarm}} || $temp1 &gt; {{spf_rfe1_temp_max_alarm}} || $temp1.quality==ATTR_ALARM) ||
+						($temp2 &lt; {{spf_rfe2_temp_min_alarm}} || $temp2 &gt; {{spf_rfe2_temp_max_alarm}} || $temp2.quality==ATTR_ALARM)
+          ) 
+        )
+			</Formula>
+			<FormulaVars>
+				<FormulaVar>
+					<Label> expectedOnline </Label>	
+					<Value> {{spf_controller}}/b1ExpectedOnline </Value>
+				</FormulaVar>
+				<FormulaVar>
+					<Label> temp1 </Label>	
+					<Value> {{spf_controller}}/b1Rfe1Temperature </Value>
+				</FormulaVar>
+				<FormulaVar>
+					<Label> temp2 </Label>	
+					<Value> {{spf_controller}}/b1Rfe2Temperature </Value>
+				</FormulaVar>
+			</FormulaVars>
+			<Groups>
+				<Group> spf </Group>
+			</Groups>	
+			<Level> fault </Level>	
+			<Message> SPF B1 Rfe 1st/2nd stage temperature out of range! </Message>
+		</Alarm>
+		{% endif %}
+
+		{% if lmc_config_mode == 'full' or (lmc_config_mode == 'spf' and spf_enable_b2_in_config | bool) %}
+		<!-- B2 -->
+		<Alarm>
+			<Name> alarmSpfB2RfeTempOutOfRange </Name>
+			<Formula> 
+				( 
+          $expectedOnline &amp;&amp; 
+          (
+            ($temp1 &lt; {{spf_rfe1_temp_min_alarm}} || $temp1 &gt; {{spf_rfe1_temp_max_alarm}} || $temp1.quality==ATTR_ALARM)
+          ) 
+        )
+			</Formula>
+			<FormulaVars>
+				<FormulaVar>
+					<Label> expectedOnline </Label>	
+					<Value> {{spf_controller}}/b2ExpectedOnline </Value>
+				</FormulaVar>
+				<FormulaVar>
+					<Label> temp1 </Label>	
+					<Value> {{spf_controller}}/b2Rfe1Temperature </Value>
+				</FormulaVar>
+			</FormulaVars>
+			<Groups>
+				<Group> spf </Group>
+			</Groups>	
+			<Level> fault </Level>	
+			<Message> SPF B2 Rfe 1st stage temperature out of range! </Message>
+		</Alarm>
+		{% endif %}
+
+		{% if lmc_config_mode == 'full' or (lmc_config_mode == 'spf' and spf_enable_b3_in_config | bool) %}
+		<!-- B3 -->
+		<Alarm>
+			<Name> alarmSpfB3RfeTempOutOfRange </Name>
+			<Formula> 
+				( 
+          $expectedOnline &amp;&amp; 
+          (
+            ($temp1 &lt; {{spf_rfe1_temp_min_alarm}} || $temp1 &gt; {{spf_rfe1_temp_max_alarm}} || $temp1.quality==ATTR_ALARM) ||
+						($temp2 &lt; {{spf_rfe2_temp_min_alarm}} || $temp2 &gt; {{spf_rfe2_temp_max_alarm}} || $temp2.quality==ATTR_ALARM)
+          ) 
+        )
+			</Formula>
+			<FormulaVars>
+				<FormulaVar>
+					<Label> expectedOnline </Label>	
+					<Value> {{spf_controller}}/b3ExpectedOnline </Value>
+				</FormulaVar>
+				<FormulaVar>
+					<Label> temp1 </Label>	
+					<Value> {{spf_controller}}/b3Rfe1Temperature </Value>
+				</FormulaVar>
+				<FormulaVar>
+					<Label> temp2 </Label>	
+					<Value> {{spf_controller}}/b3Rfe2Temperature </Value>
+				</FormulaVar>
+			</FormulaVars>
+			<Groups>
+				<Group> spf </Group>
+			</Groups>	
+			<Level> fault </Level>	
+			<Message> SPF B3 Rfe 1st/2nd stage temperature out of range! </Message>
+		</Alarm>
+		{% endif %}
+
+		{% if lmc_config_mode == 'full' or (lmc_config_mode == 'spf' and spf_enable_b4_in_config | bool) %}
+		<!-- B4 -->
+		<Alarm>
+			<Name> alarmSpfB4RfeTempOutOfRange </Name>
+			<Formula> 
+				( 
+          $expectedOnline &amp;&amp; 
+          (
+            ($temp1 &lt; {{spf_rfe1_temp_min_alarm}} || $temp1 &gt; {{spf_rfe1_temp_max_alarm}} || $temp1.quality==ATTR_ALARM) ||
+						($temp2 &lt; {{spf_rfe2_temp_min_alarm}} || $temp2 &gt; {{spf_rfe2_temp_max_alarm}} || $temp2.quality==ATTR_ALARM)
+          ) 
+        )
+			</Formula>
+			<FormulaVars>
+				<FormulaVar>
+					<Label> expectedOnline </Label>	
+					<Value> {{spf_controller}}/b4ExpectedOnline </Value>
+				</FormulaVar>
+				<FormulaVar>
+					<Label> temp1 </Label>	
+					<Value> {{spf_controller}}/b4Rfe1Temperature </Value>
+				</FormulaVar>
+				<FormulaVar>
+					<Label> temp2 </Label>	
+					<Value> {{spf_controller}}/b4Rfe2Temperature </Value>
+				</FormulaVar>
+			</FormulaVars>
+			<Groups>
+				<Group> spf </Group>
+			</Groups>	
+			<Level> fault </Level>	
+			<Message> SPF B4 Rfe 1st/2nd stage temperature out of range! </Message>
+		</Alarm>
+		{% endif %}
+
+		{% if lmc_config_mode == 'full' or (lmc_config_mode == 'spf' and spf_enable_b5_in_config | bool) %}
+		<!-- B5 -->
+		<Alarm>
+			<Name> alarmSpfB5RfeTempOutOfRange </Name>
+			<Formula> 
+				( 
+          $expectedOnline &amp;&amp; 
+          (
+            ($temp1 &lt; {{spf_rfe1_temp_min_alarm}} || $temp1 &gt; {{spf_rfe1_temp_max_alarm}} || $temp1.quality==ATTR_ALARM) ||
+						($temp2 &lt; {{spf_rfe2_temp_min_alarm}} || $temp2 &gt; {{spf_rfe2_temp_max_alarm}} || $temp2.quality==ATTR_ALARM)
+          ) 
+        )
+			</Formula>
+			<FormulaVars>
+				<FormulaVar>
+					<Label> expectedOnline </Label>	
+					<Value> {{spf_controller}}/b5ExpectedOnline </Value>
+				</FormulaVar>
+				<FormulaVar>
+					<Label> temp1 </Label>	
+					<Value> {{spf_controller}}/b5Rfe1Temperature </Value>
+				</FormulaVar>
+				<FormulaVar>
+					<Label> temp2 </Label>	
+					<Value> {{spf_controller}}/b5Rfe2Temperature </Value>
+				</FormulaVar>
+			</FormulaVars>
+			<Groups>
+				<Group> spf </Group>
+			</Groups>	
+			<Level> fault </Level>	
+			<Message> SPF B5 Rfe 1st/2nd stage temperature out of range! </Message>
+		</Alarm>
+		{% endif %}
+	
+		{% if lmc_config_mode == 'full' or (lmc_config_mode == 'spf' and spf_enable_b1_in_config | bool and spf_enable_b2_in_config | bool and spf_enable_b3_in_config | bool and spf_enable_b4_in_config | bool and spf_enable_b5_in_config | bool) %}
+		<Alarm>
+			<Name> alarmSpfRfeTempOutOfRange </Name>
+			<Formula> 
+				($temp_b1.alarm || $temp_b2.alarm || $temp_b3.alarm || $temp_b4.alarm || $temp_b5.alarm)
+			</Formula>
+			<FormulaVars>
+				<FormulaVar>
+					<Label> temp_b1 </Label>	
+					<Value> {{alarm_handler}}/alarmSpfB1RfeTempOutOfRange </Value>
+				</FormulaVar>
+				<FormulaVar>
+					<Label> temp_b2 </Label>	
+					<Value> {{alarm_handler}}/alarmSpfB2RfeTempOutOfRange </Value>
+				</FormulaVar>
+				<FormulaVar>
+					<Label> temp_b3 </Label>	
+					<Value> {{alarm_handler}}/alarmSpfB3RfeTempOutOfRange </Value>
+				</FormulaVar>
+				<FormulaVar>
+					<Label> temp_b4 </Label>	
+					<Value> {{alarm_handler}}/alarmSpfB4RfeTempOutOfRange </Value>
+				</FormulaVar>
+				<FormulaVar>
+					<Label> temp_b5 </Label>	
+					<Value> {{alarm_handler}}/alarmSpfB5RfeTempOutOfRange </Value>
+				</FormulaVar>
+			</FormulaVars>
+			<Groups>
+				<Group> spf </Group>
+			</Groups>	
+			<Level> fault </Level>	
+			<Message> SPF Rfe temperature (one band at least) out of range! </Message>
+		</Alarm>	
+		{% endif %}
+
+		<!-- SPF Omt Temperature Alarm --> 
+		{% if lmc_config_mode == 'full' or (lmc_config_mode == 'spf' and spf_enable_b1_in_config | bool) %}
+		<!-- B1 -->
+		<Alarm>
+			<Name> alarmSpfB1OmtTempOutOfRange </Name>
+			<Formula> 
+				( 
+          $expectedOnline &amp;&amp; 
+          (
+            ($temp &lt; {{spf_omt_temp_min_alarm}} || $temp &gt; {{spf_omt_temp_max_alarm}} || $temp.quality==ATTR_ALARM)
+          ) 
+        )
+			</Formula>
+			<FormulaVars>
+				<FormulaVar>
+					<Label> expectedOnline </Label>	
+					<Value> {{spf_controller}}/b1ExpectedOnline </Value>
+				</FormulaVar>
+				<FormulaVar>
+					<Label> temp </Label>	
+					<Value> {{spf_controller}}/b1OmtTemperature </Value>
+				</FormulaVar>
+			</FormulaVars>
+			<Groups>
+				<Group> spf </Group>
+			</Groups>	
+			<Level> fault </Level>	
+			<Message> SPF B1 Omt temperature out of range! </Message>
+		</Alarm>
+		{% endif %}
+
+		{% if lmc_config_mode == 'full' or (lmc_config_mode == 'spf' and spf_enable_b2_in_config | bool) %}
+		<!-- B2 -->
+		<Alarm>
+			<Name> alarmSpfB2OmtTempOutOfRange </Name>
+			<Formula> 
+				( 
+          $expectedOnline &amp;&amp; 
+          (
+            ($temp &lt; {{spf_omt_temp_min_alarm}} || $temp &gt; {{spf_omt_temp_max_alarm}} || $temp.quality==ATTR_ALARM)
+          ) 
+        )
+			</Formula>
+			<FormulaVars>
+				<FormulaVar>
+					<Label> expectedOnline </Label>	
+					<Value> {{spf_controller}}/b2ExpectedOnline </Value>
+				</FormulaVar>
+				<FormulaVar>
+					<Label> temp </Label>	
+					<Value> {{spf_controller}}/b2OmtTemperature </Value>
+				</FormulaVar>
+			</FormulaVars>
+			<Groups>
+				<Group> spf </Group>
+			</Groups>	
+			<Level> fault </Level>	
+			<Message> SPF B2 Omt temperature out of range! </Message>
+		</Alarm>
+		{% endif %}
+
+		{% if lmc_config_mode == 'full' or (lmc_config_mode == 'spf' and spf_enable_b3_in_config | bool) %}
+		<!-- B3 -->
+		<Alarm>
+			<Name> alarmSpfB3OmtTempOutOfRange </Name>
+			<Formula> 
+				( 
+          $expectedOnline &amp;&amp; 
+          (
+            ($temp &lt; {{spf_omt_temp_min_alarm}} || $temp &gt; {{spf_omt_temp_max_alarm}} || $temp.quality==ATTR_ALARM)
+          ) 
+        )
+			</Formula>
+			<FormulaVars>
+				<FormulaVar>
+					<Label> expectedOnline </Label>	
+					<Value> {{spf_controller}}/b3ExpectedOnline </Value>
+				</FormulaVar>
+				<FormulaVar>
+					<Label> temp </Label>	
+					<Value> {{spf_controller}}/b3OmtTemperature </Value>
+				</FormulaVar>
+			</FormulaVars>
+			<Groups>
+				<Group> spf </Group>
+			</Groups>	
+			<Level> fault </Level>	
+			<Message> SPF B3 Omt temperature out of range! </Message>
+		</Alarm>
+		{% endif %}
+
+		{% if lmc_config_mode == 'full' or (lmc_config_mode == 'spf' and spf_enable_b4_in_config | bool) %}
+		<!-- B4 -->
+		<Alarm>
+			<Name> alarmSpfB4OmtTempOutOfRange </Name>
+			<Formula> 
+				( 
+          $expectedOnline &amp;&amp; 
+          (
+            ($temp &lt; {{spf_omt_temp_min_alarm}} || $temp &gt; {{spf_omt_temp_max_alarm}} || $temp.quality==ATTR_ALARM)
+          ) 
+        )
+			</Formula>
+			<FormulaVars>
+				<FormulaVar>
+					<Label> expectedOnline </Label>	
+					<Value> {{spf_controller}}/b4ExpectedOnline </Value>
+				</FormulaVar>
+				<FormulaVar>
+					<Label> temp </Label>	
+					<Value> {{spf_controller}}/b4OmtTemperature </Value>
+				</FormulaVar>
+			</FormulaVars>
+			<Groups>
+				<Group> spf </Group>
+			</Groups>	
+			<Level> fault </Level>	
+			<Message> SPF B4 Omt temperature out of range! </Message>
+		</Alarm>
+		{% endif %}
+
+		{% if lmc_config_mode == 'full' or (lmc_config_mode == 'spf' and spf_enable_b5_in_config | bool) %}
+		<!-- B5 -->
+		<Alarm>
+			<Name> alarmSpfB5OmtTempOutOfRange </Name>
+			<Formula> 
+				( 
+          $expectedOnline &amp;&amp; 
+          (
+            ($temp &lt; {{spf_omt_temp_min_alarm}} || $temp &gt; {{spf_omt_temp_max_alarm}} || $temp.quality==ATTR_ALARM)
+          ) 
+        )
+			</Formula>
+			<FormulaVars>
+				<FormulaVar>
+					<Label> expectedOnline </Label>	
+					<Value> {{spf_controller}}/b5ExpectedOnline </Value>
+				</FormulaVar>
+				<FormulaVar>
+					<Label> temp </Label>	
+					<Value> {{spf_controller}}/b5OmtTemperature </Value>
+				</FormulaVar>
+			</FormulaVars>
+			<Groups>
+				<Group> spf </Group>
+			</Groups>	
+			<Level> fault </Level>	
+			<Message> SPF B5 Omt temperature out of range! </Message>
+		</Alarm>
+		{% endif %}
+
+
+		{% if lmc_config_mode == 'full' or (lmc_config_mode == 'spf' and spf_enable_b1_in_config | bool and spf_enable_b2_in_config | bool and spf_enable_b3_in_config | bool and spf_enable_b4_in_config | bool and spf_enable_b5_in_config | bool) %}
+		<Alarm>
+			<Name> alarmSpfOmtTempOutOfRange </Name>
+			<Formula> 
+				($temp_b1.alarm || $temp_b2.alarm || $temp_b3.alarm || $temp_b4.alarm || $temp_b5.alarm)
+			</Formula>
+			<FormulaVars>
+				<FormulaVar>
+					<Label> temp_b1 </Label>	
+					<Value> {{alarm_handler}}/alarmSpfB1OmtTempOutOfRange </Value>
+				</FormulaVar>
+				<FormulaVar>
+					<Label> temp_b2 </Label>	
+					<Value> {{alarm_handler}}/alarmSpfB2OmtTempOutOfRange </Value>
+				</FormulaVar>
+				<FormulaVar>
+					<Label> temp_b3 </Label>	
+					<Value> {{alarm_handler}}/alarmSpfB3OmtTempOutOfRange </Value>
+				</FormulaVar>
+				<FormulaVar>
+					<Label> temp_b4 </Label>	
+					<Value> {{alarm_handler}}/alarmSpfB4OmtTempOutOfRange </Value>
+				</FormulaVar>
+				<FormulaVar>
+					<Label> temp_b5 </Label>	
+					<Value> {{alarm_handler}}/alarmSpfB5OmtTempOutOfRange </Value>
+				</FormulaVar>
+			</FormulaVars>
+			<Groups>
+				<Group> spf </Group>
+			</Groups>	
+			<Level> fault </Level>	
+			<Message> SPF Omt temperature out of range! </Message>
+		</Alarm>	
+		{% endif %}
+
+
+		<!-- SPF Cryocooler Temperature Alarm --> 
+		{% if lmc_config_mode == 'full' or (lmc_config_mode == 'spf' and spf_enable_b1_in_config | bool) %}
+		<!-- B1 -->
+		<Alarm>
+			<Name> alarmSpfB1CryocoolStage1TempOutOfRange </Name>
+			<Formula> 
+				( 
+          $expectedOnline &amp;&amp; 
+          (
+            ($temp &lt; {{spf_cryocooler_stage1_temp_min_alarm}} || $temp &gt; {{spf_cryocooler_stage1_temp_max_alarm}} || $temp.quality==ATTR_ALARM)
+          ) 
+        )
+			</Formula>
+			<FormulaVars>
+				<FormulaVar>
+					<Label> expectedOnline </Label>	
+					<Value> {{spf_controller}}/b1ExpectedOnline </Value>
+				</FormulaVar>
+				<FormulaVar>
+					<Label> temp </Label>	
+					<Value> {{spf_controller}}/b1CryocoolStage1Temp </Value>
+				</FormulaVar>
+			</FormulaVars>
+			<Groups>
+				<Group> spf </Group>
+			</Groups>	
+			<Level> fault </Level>	
+			<Message> SPF B1 cryocooler temperature out of range! </Message>
+		</Alarm>
+		{% endif %}
+
+		{% if lmc_config_mode == 'full' or (lmc_config_mode == 'spf' and spf_enable_b2_in_config | bool) %}
+		<!-- B2 -->
+		<Alarm>
+			<Name> alarmSpfB2CryocoolStage1TempOutOfRange </Name>
+			<Formula> 
+				( 
+          $expectedOnline &amp;&amp; 
+          (
+            ($temp &lt; {{spf_cryocooler_stage1_temp_min_alarm}} || $temp &gt; {{spf_cryocooler_stage1_temp_max_alarm}} || $temp.quality==ATTR_ALARM)
+          ) 
+        )
+			</Formula>
+			<FormulaVars>
+				<FormulaVar>
+					<Label> expectedOnline </Label>	
+					<Value> {{spf_controller}}/b2ExpectedOnline </Value>
+				</FormulaVar>
+				<FormulaVar>
+					<Label> temp </Label>	
+					<Value> {{spf_controller}}/b2CryocoolStage1Temp </Value>
+				</FormulaVar>
+			</FormulaVars>
+			<Groups>
+				<Group> spf </Group>
+			</Groups>	
+			<Level> fault </Level>	
+			<Message> SPF B2 cryocooler temperature out of range! </Message>
+		</Alarm>
+		{% endif %}
+
+		{% if lmc_config_mode == 'full' or (lmc_config_mode == 'spf' and spf_enable_b3_in_config | bool) %}
+		<!-- B3 -->
+		<Alarm>
+			<Name> alarmSpfB3CryocoolStage1TempOutOfRange </Name>
+			<Formula> 
+				( 
+          $expectedOnline &amp;&amp; 
+          (
+            ($temp &lt; {{spf_cryocooler_stage1_temp_min_alarm}} || $temp &gt; {{spf_cryocooler_stage1_temp_max_alarm}} || $temp.quality==ATTR_ALARM)
+          ) 
+        )
+			</Formula>
+			<FormulaVars>
+				<FormulaVar>
+					<Label> expectedOnline </Label>	
+					<Value> {{spf_controller}}/b3ExpectedOnline </Value>
+				</FormulaVar>
+				<FormulaVar>
+					<Label> temp </Label>	
+					<Value> {{spf_controller}}/b3CryocoolStage1Temp </Value>
+				</FormulaVar>
+			</FormulaVars>
+			<Groups>
+				<Group> spf </Group>
+			</Groups>	
+			<Level> fault </Level>	
+			<Message> SPF B3 cryocooler temperature out of range! </Message>
+		</Alarm>
+		{% endif %}
+
+		{% if lmc_config_mode == 'full' or (lmc_config_mode == 'spf' and spf_enable_b4_in_config | bool) %}
+		<!-- B4 -->
+		<Alarm>
+			<Name> alarmSpfB4CryocoolStage1TempOutOfRange </Name>
+			<Formula> 
+				( 
+          $expectedOnline &amp;&amp; 
+          (
+            ($temp &lt; {{spf_cryocooler_stage1_temp_min_alarm}} || $temp &gt; {{spf_cryocooler_stage1_temp_max_alarm}} || $temp.quality==ATTR_ALARM)
+          ) 
+        )
+			</Formula>
+			<FormulaVars>
+				<FormulaVar>
+					<Label> expectedOnline </Label>	
+					<Value> {{spf_controller}}/b4ExpectedOnline </Value>
+				</FormulaVar>
+				<FormulaVar>
+					<Label> temp </Label>	
+					<Value> {{spf_controller}}/b4CryocoolStage1Temp </Value>
+				</FormulaVar>
+			</FormulaVars>
+			<Groups>
+				<Group> spf </Group>
+			</Groups>	
+			<Level> fault </Level>	
+			<Message> SPF B4 cryocooler temperature out of range! </Message>
+		</Alarm>
+		{% endif %}
+
+		{% if lmc_config_mode == 'full' or (lmc_config_mode == 'spf' and spf_enable_b5_in_config | bool) %}
+		<!-- B5 -->
+		<Alarm>
+			<Name> alarmSpfB5CryocoolStage1TempOutOfRange </Name>
+			<Formula> 
+				( 
+          $expectedOnline &amp;&amp; 
+          (
+            ($temp &lt; {{spf_cryocooler_stage1_temp_min_alarm}} || $temp &gt; {{spf_cryocooler_stage1_temp_max_alarm}} || $temp.quality==ATTR_ALARM)
+          ) 
+        )
+			</Formula>
+			<FormulaVars>
+				<FormulaVar>
+					<Label> expectedOnline </Label>	
+					<Value> {{spf_controller}}/b5ExpectedOnline </Value>
+				</FormulaVar>
+				<FormulaVar>
+					<Label> temp </Label>	
+					<Value> {{spf_controller}}/b5CryocoolStage1Temp </Value>
+				</FormulaVar>
+			</FormulaVars>
+			<Groups>
+				<Group> spf </Group>
+			</Groups>	
+			<Level> fault </Level>	
+			<Message> SPF B5 cryocooler temperature out of range! </Message>
+		</Alarm>
+		{% endif %}
+
+		{% if lmc_config_mode == 'full' or (lmc_config_mode == 'spf' and spf_enable_b1_in_config | bool and spf_enable_b2_in_config | bool and spf_enable_b3_in_config | bool and spf_enable_b4_in_config | bool and spf_enable_b5_in_config | bool) %}
+		<Alarm>
+			<Name> alarmSpfCryocoolStage1TempOutOfRange </Name>
+			<Formula> 
+				($temp_b1.alarm || $temp_b2.alarm || $temp_b3.alarm || $temp_b4.alarm || $temp_b5.alarm)
+			</Formula>
+			<FormulaVars>
+				<FormulaVar>
+					<Label> temp_b1 </Label>	
+					<Value> {{alarm_handler}}/alarmSpfB1CryocoolStage1TempOutOfRange </Value>
+				</FormulaVar>
+				<FormulaVar>
+					<Label> temp_b2 </Label>	
+					<Value> {{alarm_handler}}/alarmSpfB2CryocoolStage1TempOutOfRange </Value>
+				</FormulaVar>
+				<FormulaVar>
+					<Label> temp_b3 </Label>	
+					<Value> {{alarm_handler}}/alarmSpfB3CryocoolStage1TempOutOfRange </Value>
+				</FormulaVar>
+				<FormulaVar>
+					<Label> temp_b4 </Label>	
+					<Value> {{alarm_handler}}/alarmSpfB4CryocoolStage1TempOutOfRange </Value>
+				</FormulaVar>
+				<FormulaVar>
+					<Label> temp_b5 </Label>	
+					<Value> {{alarm_handler}}/alarmSpfB5CryocoolStage1TempOutOfRange </Value>
+				</FormulaVar>
+			</FormulaVars>
+			<Groups>
+				<Group> spf </Group>
+			</Groups>	
+			<Level> fault </Level>	
+			<Message> SPF cryocooler temperature (at least one band) out of range! </Message>
+		</Alarm>	
+		{% endif %}
+	
+
+	</Alarms>
+
+
+</DeviceConfiguration>
+

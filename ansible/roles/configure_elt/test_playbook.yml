@@ -1,0 +1,22 @@
+---
+
+- hosts: localhost
+  connection: local
+  gather_facts: true
+
+  tasks:
+    - name: Include vars for playbook
+      include_vars: defaults/main.yml
+
+    - name: Create config file directory
+      file: path={{ elt_config_dir }} state=directory mode=0755
+      become: true
+
+    - name: Copy main ELT config file
+      template:
+        src: elt_cfg.j2
+        dest: "{{ elt_config_dir }}/{{ elt_config_file }}"
+#      with_dict: "{{ java_versions }}"
+      become: true
+
+...

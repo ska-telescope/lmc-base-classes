@@ -1,0 +1,330 @@
+#! /bin/bash
+### BEGIN INIT INFO
+# Provides:          tango-starter
+# Required-Start:    $remote_fs $syslog
+# Required-Stop:     $remote_fs $syslog
+# Should-Start:      tango-db
+# Should-Stop:       tango-db
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
+# Short-Description: Start the tango control system starter daemon
+# Description:       Provide a tango control system to start and stop other
+#                    tango control system devices.
+### END INIT INFO
+
+# Author: Picca Frédéric-Emmanuel <picca@synchrotron-soleil.fr>
+
+
+DESC="ELEMENT Control System - starter"
+NAME=elt-starter
+NAME_REAL=ELTManager
+TANGO_SERVICE_NAME=tango-db
+CONFFILE=/etc/tangorc
+CANON_HOST=`grep TANGO_HOST $CONFFILE | awk -F ":" '{print $1}' | awk -F "=" '{print $2}' | awk -F "." '{print $1}'`
+export TANGO_HOST=`grep TANGO_HOST $CONFFILE | awk -F "=" '{print $2}'`
+export STARTER_NAME="tango/admin/$CANON_HOST"
+echo "CANON_HOST: $CANON_HOST, TANGO_HOST=$TANGO_HOST, STARTER_NAME=$STARTER_NAME"
+
+# Read TangoDB configuration variable file if it is present
+[ -r /etc/default/$TANGO_SERVICE_NAME ] && . /etc/default/$TANGO_SERVICE_NAME
+
+# Read configuration variable file if it is present
+[ -r /etc/default/$NAME ] && . /etc/default/$NAME
+
+# Check needed variable:
+# - Tango vars: TANGO_ROOT, OMNI_ROOT, ZMQ_ROOT
+# - ELT vars: ELT_DIR
+if [ -z "$TANGO_ROOT" ] ;  then
+  echo "TANGO_ROOT variable is not set, please set it in /etc/default/$NAME" >&2
+  exit 1
+fi
+if [ -z "$OMNI_ROOT" ] ;  then
+  echo "OMNI_ROOT variable is not set, please set it in /etc/default/$NAME" >&2
+  exit 1
+fi
+if [ -z "$ZMQ_ROOT" ] ;  then
+  echo "ZMQ_ROOT variable is not set, please set it in /etc/default/$NAME" >&2
+  exit 1
+fi
+if [ -z "$PYTANGO_ROOT" ] ;  then
+  echo "PYTANGO_ROOT variable is not set, please set it in /etc/default/$NAME" >&2
+  exit 1
+fi
+if [ -z "$YAT_ROOT" ] ;  then
+  echo "YAT_ROOT variable is not set, please set it in /etc/default/$NAME" >&2
+  exit 1
+fi
+if [ -z "$YAT4TANGO_ROOT" ] ;  then
+  echo "YAT4TANGO_ROOT variable is not set, please set it in /etc/default/$NAME" >&2
+  exit 1
+fi
+if [ -z "$BOOST_ROOT" ] ;  then
+  echo "BOOST_ROOT variable is not set, please set it in /etc/default/$NAME" >&2
+  exit 1
+fi
+if [ -z "$JSONCPP_ROOT" ] ;  then
+  echo "JSONCPP_ROOT variable is not set, please set it in /etc/default/$NAME" >&2
+  exit 1
+fi
+if [ -z "$PUGIXML_LIB_ROOT" ] ;  then
+  echo "PUGIXML_LIB_ROOT variable is not set, please set it in /etc/default/$NAME" >&2
+  exit 1
+fi
+
+if [ -z "$ELT_DIR" ] ;  then
+  echo "ELT_DIR variable is not set, please set it in /etc/default/$NAME" >&2
+  exit 1
+fi
+if [ -z "$ELT_CONFIG" ] ;  then
+  echo "ELT_CONFIG variable is not set, please set it in /etc/default/$NAME" >&2
+  exit 1
+fi
+
+if [ -z "$ELT_STARTER_INSTANCE" ] ;  then
+  echo "ELT_STARTER_INSTANCE variable is not set, please set it in /etc/default/$NAME" >&2
+  exit 1
+fi
+if [ -z "$ELT_STARTER_VERBOSITY" ] ;  then
+  echo "ELT_STARTER_VERBOSITY variable is not set, setting it to default (v1)"
+	ELT_STARTER_VERBOSITY= "1"
+fi
+
+export ELT_DIR=$ELT_DIR
+export ELT_CONFIG=$ELT_CONFIG
+
+
+DAEMON=$ELT_DIR/bin/$NAME_REAL
+DAEMON_ARGS="$ELT_STARTER_INSTANCE -v$ELT_STARTER_VERBOSITY"
+SERVER_STOP_CMD="python $ELT_DIR/scripts/stop_servers.py $STARTER_NAME"
+
+PIDFILE=/var/run/$NAME.pid
+TAC_DEVICE=sys/access_control/1
+
+
+export PATH=$PATH:$TANGO_ROOT/bin:$TANGO_ROOT/lib:/sbin:/usr/sbin:/bin:/usr/bin
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$TANGO_ROOT/lib:$OMNI_ROOT/lib:$ZMQ_ROOT/lib:$YAT_ROOT/lib:$YAT4TANGO_ROOT/lib:$BOOST_ROOT/lib:$JSONCPP_ROOT/lib:$PUGIXML_LIB_ROOT:$LOG4CXX_ROOT/lib:$ELT_DIR/lib
+export PYTHONPATH=$PYTHONPATH:$PYTANGO_ROOT
+echo "PATH: $PATH, LD_LIBRARY_PATH: $LD_LIBRARY_PATH"
+echo "CANON_HOST: $CANON_HOST, ELT_DIR: $ELT_DIR, DAEMON: $DAEMON, DAEMON_ARGS: $DAEMON_ARGS"
+
+# Exit if the package is not installed
+[ -x "$DAEMON" ] || exit 0
+
+
+# Load the VERBOSE setting and other rcS variables
+. /lib/init/vars.sh
+echo "CANON_HOST: $CANON_HOST"
+
+
+# Define LSB log_* functions.
+# Depend on lsb-base (>= 3.0-6) to ensure that this file is present.
+. /lib/lsb/init-functions
+
+
+#
+# Function that starts the daemon/service
+#
+do_start()
+{
+	# Return
+	#   0 if daemon has been started
+	#   1 if daemon was already running
+	#   2 if daemon could not be started
+
+	echo "Starting daemon $DAEMON (TANGO_HOST=$TANGO_HOST)..."
+
+	# first check for a running tango-database and
+	if [ $CANON_HOST != "localhost" ]
+	then
+		echo "Pinging Tango network..."
+		tango_admin --ping-network 40 || return 2
+		echo "done..."
+	fi
+	echo "Pinging TangoDB..."
+	tango_admin --ping-database 6 || return 2
+	echo "done!"
+	# check if tac is enabled
+	echo "Check if Tango Access Control is enabled..."
+	tango_admin --tac-enabled || tango_admin --ping-device $TAC_DEVICE 3 || return 2
+	echo "done"
+	# register the tango-starter if necessary
+	#tango_admin --check-device tango/admin/`hostname` || tango_admin --add-server Starter/`hostname` Starter tango/admin/`hostname` || return 2
+
+	start-stop-daemon --start --quiet --chuid root:root --background \
+	    --make-pidfile --pidfile $PIDFILE --exec $DAEMON --test > /dev/null \
+	    || return 1
+	start-stop-daemon --start --quiet --chuid root:root --background \
+	    --make-pidfile --pidfile $PIDFILE --exec $DAEMON -- $DAEMON_ARGS \
+	    || return 2
+	# Add code here, if necessary, that waits for the process to be ready
+	# to handle requests from services started subsequently which depend
+	# on this one.  As a last resort, sleep for some time.
+}
+
+#
+# Python embedded function that stops the controlled server
+#
+function stop_ctrl_servers() {
+python - <<END
+
+# Import modules
+try:
+	import sys
+	import os
+	import PyTango
+except ImportError, e:
+	print("Failed to import python modules!")
+	sys.exit(1)
+
+# Get Starter proxy
+starter_name = os.environ['STARTER_NAME']
+print("Retrieving Starter proxy device " + starter_name + "...")
+try:
+	device = PyTango.DeviceProxy(starter_name)
+except PyTango.DevFailed as df:
+	sys.exit('Failed to connect to starter device (hint: check if starter daemon is running)')
+
+# Check if there are controlled servers
+try:
+	da= device.read_attribute('servers')
+	if da.is_empty:
+		print("List of controlled servers is empty, nothing to be stopped")
+		sys.exit(0)
+except PyTango.DevFailed as df:
+	sys.exit('Failed to connect to starter device and read list of controlled servers (hint: check if starter daemon is running)')
+
+
+# Stop servers with ordered levels (from 5 to 1)
+stop_levels= [5,4,3,2,1]
+for stop_level in stop_levels:
+	print("Stopping device servers @ level " + str(stop_level) + "...")
+	try :
+		device.command_inout("DevStopAll", stop_level)
+	except PyTango.DevFailed as df:
+		print('Tango exception while stopping servers @ level ' + str(stop_level) + ' (err=' + str(df) + ')')
+		continue
+		#sys.exit('Tango exception while stopping servers @ level ' + str(stop_level) + ' (err=' + str(df) + ')')
+
+print("All controlled servers stopped with success")
+
+END
+}
+
+
+
+
+#
+# Function that stops the daemon/service
+#
+do_stop()
+{
+	# Return
+	#   0 if daemon has been stopped
+	#   1 if daemon was already stopped
+	#   2 if daemon could not be stopped
+	#   3 if cannot stop controlled servers
+	#   other if a failure occurred
+
+	# First stop all servers
+	#echo "Stopping controlled servers (cmd= $SERVER_STOP_CMD)"
+	#$SERVER_STOP_CMD || return 3
+
+	echo "Stopping controlled servers..."
+	stop_ctrl_servers
+	STOP_SERVERS_RETURN_CODE=$?
+	if [ "$STOP_SERVERS_RETURN_CODE" != 0 ]; then
+    return 3
+	fi
+
+	# Stop daemon
+	start-stop-daemon --stop --quiet --retry=TERM/30/KILL/5 --pidfile $PIDFILE --name $NAME_REAL
+	RETVAL="$?"
+	[ "$RETVAL" = 2 ] && return 2
+	# Wait for children to finish too if this is a daemon that forks
+	# and if the daemon is only ever run from this initscript.
+	# If the above conditions are not satisfied then add some other code
+	# that waits for the process to drop all resources that could be
+	# needed by services started subsequently.  A last resort is to
+	# sleep for some time.
+	start-stop-daemon --stop --quiet --oknodo --retry=0/30/KILL/5 --exec $DAEMON
+	[ "$?" = 2 ] && return 2
+	# Many daemons don't delete their pidfiles when they exit.
+	rm -f $PIDFILE
+	return "$RETVAL"
+}
+
+#
+# Function that sends a SIGHUP to the daemon/service
+#
+do_reload() {
+	#
+	# If the daemon can reload its configuration without
+	# restarting (for example, when it is sent a SIGHUP),
+	# then implement that here.
+	#
+	start-stop-daemon --stop --signal 1 --quiet --pidfile $PIDFILE --name $NAME
+	return 0
+}
+
+
+
+
+case "$1" in
+  start)
+	[ "$VERBOSE" != no ] && log_daemon_msg "Starting $DESC" "$NAME"
+	do_start
+	case "$?" in
+		0|1) [ "$VERBOSE" != no ] && log_end_msg 0 ;;
+		2) [ "$VERBOSE" != no ] && log_end_msg 1 ;;
+	esac
+	;;
+  stop)
+	[ "$VERBOSE" != no ] && log_daemon_msg "Stopping $DESC" "$NAME"
+	do_stop
+	case "$?" in
+		0|1) [ "$VERBOSE" != no ] && log_end_msg 0 ;;
+		2) [ "$VERBOSE" != no ] && log_end_msg 1 ;;
+	esac
+	;;
+  status)
+       status_of_proc "$DAEMON" "$NAME" && exit 0 || exit $?
+       ;;
+  #reload|force-reload)
+	#
+	# If do_reload() is not implemented then leave this commented out
+	# and leave 'force-reload' as an alias for 'restart'.
+	#
+	#log_daemon_msg "Reloading $DESC" "$NAME"
+	#do_reload
+	#log_end_msg $?
+	#;;
+  restart|force-reload)
+	#
+	# If the "reload" option is implemented then remove the
+	# 'force-reload' alias
+	#
+	log_daemon_msg "Restarting $DESC" "$NAME"
+	do_stop
+	case "$?" in
+	  0|1)
+		do_start
+		case "$?" in
+			0) log_end_msg 0 ;;
+			1) log_end_msg 1 ;; # Old process is still running
+			*) log_end_msg 1 ;; # Failed to start
+		esac
+		;;
+	  *)
+	  	# Failed to stop
+		log_end_msg 1
+		;;
+	esac
+	;;
+  *)
+	#echo "Usage: $SCRIPTNAME {start|stop|restart|reload|force-reload}" >&2
+	echo "Usage: $SCRIPTNAME {start|stop|status|restart|force-reload}" >&2
+	exit 3
+	;;
+esac
+
+:

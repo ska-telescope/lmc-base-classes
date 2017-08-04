@@ -1,0 +1,20 @@
+---
+
+###########################################
+##     PRINT STUFF
+###########################################
+- name: Print software_root directory
+  debug: msg="software_root = {{software_root}}"
+
+
+###########################################
+##     CLONE REPOS
+###########################################
+- name: Clone tangosimlib
+  command: git clone https://gitlab.com/ska-sa/tangosimlib {{software_root}}/tangosimlib pull
+
+- name: Clone levpro
+  command: git clone https://gitlab.com/ska-sa/levpro {{software_root}}/levpro pull
+
+
+...

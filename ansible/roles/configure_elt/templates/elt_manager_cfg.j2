@@ -1,0 +1,3928 @@
+<!--<?xml version="1.0" encoding="UTF-8"?>-->
+<!-- ************************************************** -->
+<!-- **                                                 -->
+<!-- **        DISH-TM INTERFACE CONFIGURATION          -->
+<!-- **                                                 -->
+<!-- ************************************************** -->
+
+<DeviceConfiguration>
+		
+	<!-- ************************************************** -->
+	<!-- **              PROPERTIES                         -->
+	<!-- ************************************************** -->
+	<DeviceProperties>
+
+		<!-- SKA options -->
+		<DeviceProperty name="SkaLevel">
+			<Value> {{dshmgr_ska_level}} </Value>
+		</DeviceProperty>
+
+		<DeviceProperty name="ElementLoggerAddress">
+			<Value> tango://{{lmc_tango_hostname}}:{{lmc_tango_port}}/{{lmc_domain_name}}/elt/logger </Value>
+		</DeviceProperty>
+
+		<DeviceProperty name="ElementAlarmsAddress">
+			<Value> tango://{{lmc_tango_hostname}}:{{lmc_tango_port}}/{{lmc_domain_name}}/elt/alarm </Value>
+		</DeviceProperty>
+	
+		<DeviceProperty name="ElementTelModelAddress">
+			<Value> {{dshmgr_telmodel_address}} </Value>
+		</DeviceProperty>
+
+		<DeviceProperty name="ElementDatabaseDSAddress">
+			<Value> tango://{{lmc_tango_hostname}}:{{lmc_tango_port}} </Value>
+		</DeviceProperty>
+
+		<DeviceProperty name="AdminModeDefault">
+			<Value> {{dshmgr_admin_mode_default}} </Value>
+		</DeviceProperty>
+
+		<!-- General options -->
+		<DeviceProperty name="EnableConfigFromFile">
+			<Value> {{dshmgr_enable_config_from_file}} </Value>
+		</DeviceProperty>
+
+		<DeviceProperty name="ConfigFile">
+			<Value> {{dshmgr_config_file}} </Value>
+		</DeviceProperty>
+
+		<!-- Dyn attr creation and update options -->
+		<DeviceProperty name="EnableDynAttrCleanup">
+			<Value> {{dshmgr_enable_dyn_attr_cleanup}} </Value>
+		</DeviceProperty>
+
+		<DeviceProperty name="EnableDynAttrRandomize">
+			<Value> {{dshmgr_enable_dyn_attr_randomize}} </Value>
+		</DeviceProperty>
+
+		<DeviceProperty name="DynAttrRandomizePeriod">
+			<Value> {{dshmgr_dyn_attr_randomize_period}} </Value>
+		</DeviceProperty>
+
+		<DeviceProperty name="EnableFwdAttrInitPolling">
+			<Value> {{dshmgr_enable_fwd_attr_init_polling}} </Value>
+		</DeviceProperty>
+
+		<DeviceProperty name="FwdAttrInitPollPeriod">
+			<Value> {{dshmgr_fwd_attr_init_poll_period}} </Value>
+		</DeviceProperty>
+
+		<DeviceProperty name="EnableStatusAttrUpdatePolling">
+			<Value> {{dshmgr_enable_status_attr_update_polling}} </Value>
+		</DeviceProperty>
+
+		<DeviceProperty name="StatusAttrUpdatePollPeriod">
+			<Value> {{dshmgr_status_attr_update_poll_period}} </Value>
+		</DeviceProperty>
+		
+
+		<!-- Logging options -->
+		<DeviceProperty name="EnableCentralLogTarget">
+			<Value> {{dshmgr_enable_central_log_target}} </Value>
+		</DeviceProperty>
+
+		<DeviceProperty name="LoggingTargetCentral">
+			<Value> {{dshmgr_central_log_target}} </Value>
+		</DeviceProperty>
+
+		<DeviceProperty name="LoggingLevelCentralDefault">
+			<Value> {{dshmgr_central_log_level}}  </Value>
+		</DeviceProperty>
+
+		<DeviceProperty name="EnableElementLogTarget">
+			<Value> {{dshmgr_enable_element_log_target}} </Value>
+		</DeviceProperty>
+		
+		<DeviceProperty name="LoggingTargetElement">
+			<Value> {{dshmgr_element_log_target}} </Value>
+		</DeviceProperty>
+
+		<DeviceProperty name="LoggingLevelElementDefault">
+			<Value> {{dshmgr_element_log_level}} </Value>
+		</DeviceProperty>
+		
+		<DeviceProperty name="EnableStorageLogTarget">
+			<Value> {{dshmgr_enable_storage_log_target}} </Value>
+		</DeviceProperty>
+
+		<DeviceProperty name="LoggingTargetStorage">
+			<Value> {{dshmgr_storage_log_target}} </Value>
+		</DeviceProperty>
+
+		<DeviceProperty name="LoggingLevelStorageDefault">
+			<Value> {{dshmgr_storage_log_level}} </Value>
+		</DeviceProperty>
+
+		<DeviceProperty name="SyslogFacility">
+			<Value> {{dshmgr_syslog_facility}} </Value>
+		</DeviceProperty>
+
+		<DeviceProperty name="SyslogHost">
+			<Value> {{dshmgr_syslog_host}} </Value>
+		</DeviceProperty>
+
+		<DeviceProperty name="EnableLoggerInitPolling">
+			<Value> {{dshmgr_enable_logger_init_polling}} </Value>
+		</DeviceProperty>
+
+		<DeviceProperty name="LoggerInitPollPeriod">
+			<Value> {{dshmgr_logger_init_poll_period}} </Value>
+		</DeviceProperty>
+
+
+		<!-- Proxy options -->
+		<DeviceProperty name="EnableProxyMonitoring">
+			<Value> {{dshmgr_enable_proxy_monitoring}} </Value>
+		</DeviceProperty>
+
+		<DeviceProperty name="EnableProxyStatusAttrCreation">
+			<Value> {{dshmgr_enable_proxy_status_attr_creation}} </Value>
+		</DeviceProperty>
+
+		<DeviceProperty name="EnableAutoAdminProxyRegistration">
+			<Value> {{dshmgr_enable_auto_admin_proxy_registration}} </Value>
+		</DeviceProperty>
+
+		<DeviceProperty name="ProxyMonitoringPeriod">
+			<Value> {{dshmgr_proxy_monitoring_period}} </Value>
+		</DeviceProperty>
+
+		<DeviceProperty name="ProxyStatusAttrPollingPeriod">
+			<Value> {{dshmgr_proxy_status_attr_polling_period}} </Value>
+		</DeviceProperty>
+
+		<DeviceProperty name="ProxyStatusAttrPeriodicEventPeriod">
+			<Value> {{dshmgr_proxy_status_attr_periodic_event_period}} </Value>
+		</DeviceProperty>
+
+		<DeviceProperty name="ProxyStatusAttrArchiveEventPeriod">
+			<Value> {{dshmgr_proxy_status_attr_archive_event_period}} </Value>
+		</DeviceProperty>
+
+		<DeviceProperty name="ProxyTimeout">
+			<Value> {{dshmgr_proxy_timeout}} </Value>
+		</DeviceProperty>
+
+		<DeviceProperty name="EnableDevProxyInitPolling">
+			<Value> {{dshmgr_enable_dev_proxy_init_polling}} </Value>
+		</DeviceProperty>
+
+		<DeviceProperty name="DevProxyInitPollPeriod">
+			<Value> {{dshmgr_dev_proxy_init_poll_period}} </Value>
+		</DeviceProperty>
+
+		<DeviceProperty name="ProxyDevices">
+			<Value> {{rx_controller}} </Value>
+			<Value> {{spf_controller}} </Value>
+			<Value> {{ds_manager}} </Value>
+		</DeviceProperty>
+		
+
+		<!-- Formula options -->
+		<DeviceProperty name="EnableFormulaAttrUpdatePolling">
+			<Value> {{dshmgr_enable_formula_attr_update_polling}} </Value>
+		</DeviceProperty>
+
+		<DeviceProperty name="FormulaAttrUpdatePollPeriod">
+			<Value> {{dshmgr_formula_attr_update_poll_period}} </Value>
+		</DeviceProperty>
+
+		<DeviceProperty name="FormulaVarMaxTimeInterval">
+			<Value> {{dshmgr_formula_var_max_time_interval}} </Value>
+		</DeviceProperty>
+
+		<!-- Events and handlers options -->
+		{% if lmc_config_mode == 'full' or lmc_config_mode == 'ds' %}
+		<DeviceProperty name="EventSubscriptions">	
+			<Value> {{ds_manager}}/powerCut </Value>
+			<Value> user_event </Value>
+
+			<Value> {{ds_manager}}/powerRestored </Value>
+			<Value> user_event </Value>			
+		</DeviceProperty>
+		{% endif %}
+		
+
+		{% if lmc_config_mode == 'full' or lmc_config_mode == 'ds' %}	
+		<DeviceProperty name="EventHandlers">				
+			<Value> {{ds_manager}}/powerCut </Value>
+			<Value> user_event </Value>
+			<Value> HandlePowerCutEvent </Value>
+			<Value> 0 </Value>
+			<Value> 2 </Value>
+
+			<Value> {{ds_manager}}/powerRestored </Value>
+			<Value> user_event </Value>
+			<Value> HandlePowerRestoreEvent </Value>
+			<Value> 0 </Value>
+			<Value> 2 </Value>
+		</DeviceProperty>
+		{% endif %}
+	
+		<!-- Task management options -->
+		<DeviceProperty name="MaxQueueableTask">
+			<Value> {{dshmgr_max_queuable_tasks}} </Value>
+		</DeviceProperty>
+	
+		<DeviceProperty name="MaxTrackableTasks">
+			<Value> {{dshmgr_max_trackable_tasks}} </Value>
+		</DeviceProperty>
+
+		<DeviceProperty name="TaskHistoryTimeDepth">
+			<Value> {{dshmgr_task_history_time_depth}} </Value>
+		</DeviceProperty>
+
+		<DeviceProperty name="DefaultTaskTimeout">
+			<Value> {{dshmgr_default_task_timeout}} </Value>
+		</DeviceProperty>
+
+		{% if lmc_config_mode == 'full' %}
+		<DeviceProperty name="TaskStatusAttrList">
+			<Value> dsStowProgress </Value>
+			<Value> dsIndexingProgress </Value>
+			<Value> spfSetOperateModeProgress </Value>
+			<Value> spfSetStandbyLPModeProgress </Value>
+			<Value> spfSetMaintenanceModeProgress </Value>
+			<Value> rxConfigureBandProgress </Value>	
+		</DeviceProperty>
+		{% elif lmc_config_mode == 'ds' %}
+		<DeviceProperty name="TaskStatusAttrList">
+			<Value> dsStowProgress </Value>
+			<Value> dsIndexingProgress </Value>	
+		</DeviceProperty>
+		{% elif lmc_config_mode == 'spf' %}
+		<DeviceProperty name="TaskStatusAttrList">
+			<Value> spfSetOperateModeProgress </Value>
+			<Value> spfSetStandbyLPModeProgress </Value>
+			<Value> spfSetMaintenanceModeProgress </Value>
+		</DeviceProperty>
+		{% elif lmc_config_mode == 'rx' %}
+		<DeviceProperty name="TaskStatusAttrList">
+			<Value> rxConfigureBandProgress </Value>	
+		</DeviceProperty>
+		{% endif %}
+
+		{% if lmc_config_mode == 'full' %}
+		<DeviceProperty name="TaskSequenceStatusAttrList">
+			<Value> setStowModeProgress </Value>
+			<Value> setStandbyLPModeProgress </Value>
+			<Value> setStandbyFPModeProgress </Value>
+			<Value> setOperateModeProgress </Value>
+			<Value> setMaintenanceModeProgress </Value>			
+			<Value> configureBandProgress </Value>
+			<Value> shutdownOnPowerCutStatus </Value>
+			<Value> startupOnPowerRestoreStatus </Value>
+			<Value> standbyFPOnESTOPStatus </Value>
+			<Value> standbyFPOnBandErrorStatus </Value>
+			<Value> spfGoOperationalProgress </Value>
+		</DeviceProperty>
+		{% elif lmc_config_mode == 'spf' %}
+		<DeviceProperty name="TaskSequenceStatusAttrList">
+			<Value> spfGoOperationalProgress </Value>
+		</DeviceProperty>
+		{% elif lmc_config_mode == 'ds' %}
+		<DeviceProperty name="TaskSequenceStatusAttrList">
+			<Value> setStowModeProgress </Value>
+		</DeviceProperty>
+		{% endif %}
+
+		
+  
+		<DeviceProperty name="EnableClearTaskPolling">
+			<Value> {{dshmgr_enable_clear_task_polling}} </Value>
+		</DeviceProperty>
+
+		<DeviceProperty name="ClearTaskPollPeriod">
+			<Value> {{dshmgr_clear_task_poll_period}} </Value>
+		</DeviceProperty>
+	
+		<DeviceProperty name="ProcessEventsInQueueThread">
+			<Value> {{process_events_in_queue_thread}} </Value>
+		</DeviceProperty>
+
+		<!-- ================================= -->
+		<!-- ==     SPECIFIC PROPERTIES        -->
+		<!-- ================================= -->
+		
+		<DeviceProperty name="RxControllerAddress">
+			<Value> {{rx_controller}} </Value>
+		</DeviceProperty>
+
+		<DeviceProperty name="SpfControllerAddress">
+			<Value> {{spf_controller}}  </Value>
+		</DeviceProperty>
+
+		<DeviceProperty name="DsManagerAddress">
+			<Value> {{ds_manager}} </Value>
+		</DeviceProperty>
+
+		
+		<DeviceProperty name="AsynchCmdReplyTimeout">
+			<Value> {{dshmgr_asynch_cmd_reply_timeout}} </Value>
+		</DeviceProperty>
+
+		<DeviceProperty name="AsynchCmdReplyNRetries">
+			<Value> {{dshmgr_asynch_cmd_reply_nretries}} </Value>
+		</DeviceProperty>
+
+		<!--
+		<DeviceProperty name="ConfigureMonitoringPollPeriod">
+			<Value> 5000 </Value>
+		</DeviceProperty>
+		
+		<DeviceProperty name="ConfigureMonitoringTimeout">
+			<Value> 30000 </Value>
+		</DeviceProperty>
+		-->
+
+		<DeviceProperty name="SynchCmdReplyTimeout">
+			<Value> {{dshmgr_synch_cmd_reply_timeout}} </Value>
+		</DeviceProperty>
+
+		<DeviceProperty name="StowTaskTimeout">
+			<Value> {{dshmgr_stow_task_timeout}} </Value>
+		</DeviceProperty>
+
+		<DeviceProperty name="ConfigureTaskTimeout">
+			<Value> {{dshmgr_configure_task_timeout}} </Value>
+		</DeviceProperty>
+
+		<DeviceProperty name="OperateTaskTimeout">
+			<Value> {{dshmgr_operate_task_timeout}} </Value>
+		</DeviceProperty>
+
+		<DeviceProperty name="ShutdownTaskTimeout">
+			<Value> {{dshmgr_shutdown_task_timeout}} </Value>
+		</DeviceProperty>
+
+		<DeviceProperty name="RxShutdownTimeDelay">
+			<Value> {{dshmgr_rx_shutdown_time_delay}} </Value>
+		</DeviceProperty>
+
+	</DeviceProperties>
+
+
+	<!-- ************************************************** -->
+	<!-- **              ATTRIBUTES                         -->
+	<!-- ************************************************** -->
+	<Attributes>
+
+		<!-- ************************************************** -->
+		<!-- **      Modes and States Attributes                -->
+		<!-- ************************************************** -->
+
+
+		{% if lmc_config_mode == 'full' %}
+		<Attribute name = "dishMode" alias="dishMode">
+			<Description> Dish rolled-up operating mode in Dish Control Model (SCM) notation </Description>
+			<DataType> ENUM </DataType>
+			<DataFormat> SCALAR </DataFormat> 
+			<RWType> READ </RWType>	
+			<PossibleValues>
+				<Value> UNKNOWN </Value> <!-- Not present in ICD -->
+				<Value> OFF </Value>
+				<Value> STARTUP </Value>
+				<Value> SHUTDOWN </Value>
+				<Value> STANDBY-LP </Value>
+				<Value> STANDBY-FP </Value>
+				<Value> STOW </Value>
+				<Value> CONFIG </Value>
+				<Value> OPERATE </Value>
+				<Value> MAINTENANCE </Value>
+				<Value> FORBIDDEN </Value> <!-- Not present in ICD -->
+				<Value> ERROR </Value>   <!-- Not present in ICD -->			
+			</PossibleValues>
+			<Polling> 
+				<Period> {{dshmgr_fast_poll_period}} </Period>
+			</Polling>
+			<Events>
+				<PushEvent> </PushEvent>
+				<PeriodicEvent>
+					<Period> {{dshmgr_fast_periodic_event_period}} </Period>
+				</PeriodicEvent>
+				<ArchiveEvent>
+					<Period> {{dshmgr_fast_archive_event_period}} </Period>
+				</ArchiveEvent>
+			</Events>
+			<Value>
+				<InitValue> UNKNOWN </InitValue>
+				<SafeValue> UNKNOWN </SafeValue>
+			</Value>
+
+			
+			<Formula>
+				<Expression> 
+					/* == Handle SHUTDOWN case (PUT ME FIRST AND CHECK!!!) == */
+					/* if( ds_power=='UPS' and ds=='STANDBY' ) */
+					if( ds_power=='UPS' and ds=='STANDBY-LP' )
+					{
+						res:= 'SHUTDOWN';
+						return [0];
+					};
+
+					/* == Handle ERROR cases (CHECK!!!) == */
+					/* if(rx=='ERROR' and (spf=='STARTUP' or spf=='STANDBY-LP' or spf=='ERROR' or spf=='OPERATE') and (ds=='STARTUP' or ds=='STANDBY' or ds=='STOW' or ds=='ESTOP' or ds=='ERROR' or ds=='POINT') ) */
+					if(rx=='ERROR' and (spf=='STARTUP' or spf=='STANDBY-LP' or spf=='ERROR' or spf=='OPERATE') and (ds=='STARTUP' or ds=='STANDBY-LP' or ds=='STANDBY-FP' or ds=='STOW' or ds=='ESTOP' or ds=='ERROR' or ds=='POINT') )
+					{
+						res:= 'ERROR';
+						return [0];
+					}
+					/* if(spf=='ERROR' and (rx=='STARTUP' or rx=='STANDBY-LP' or rx=='STANDBY-FP' or rx=='CONFIGURE' or rx=='DATA-CAPTURE' or rx=='ERROR') and (ds=='STARTUP' or ds=='STANDBY' or ds=='STOW' or ds=='ESTOP' or ds=='ERROR' or ds=='POINT') ) */
+					if(spf=='ERROR' and (rx=='STARTUP' or rx=='STANDBY-LP' or rx=='STANDBY-FP' or rx=='CONFIGURE' or rx=='DATA-CAPTURE' or rx=='ERROR') and (ds=='STARTUP' or ds=='STANDBY-LP' or ds=='STANDBY-FP' or ds=='STOW' or ds=='ESTOP' or ds=='ERROR' or ds=='POINT') )
+					{
+						res:= 'ERROR';
+						return [0];
+					}
+					if(ds=='ERROR' and (rx=='STARTUP' or rx=='STANDBY-LP' or rx=='STANDBY-FP' or rx=='CONFIGURE' or rx=='DATA-CAPTURE' or rx=='ERROR') and (spf=='STARTUP' or spf=='STANDBY-LP' or spf=='ERROR' or spf=='OPERATE') )
+					{
+						res:= 'ERROR';
+						return [0];
+					}
+
+					/* == Handle UNKNOWN case == */
+					if(rx=='UNKNOWN' or spf=='UNKNOWN' or ds=='UNKNOWN')
+					{
+						if(ds=='ESTOP') res:= 'MAINTENANCE';
+						/* else if(ds=='STOW') res:= 'STOW'; */
+						/* else if(spf=='ERROR') res:= 'ERROR'; */
+						else res:= 'UNKNOWN';
+						return [0];
+					};
+
+					/* == Handle STARTUP case == */
+					if(rx=='STARTUP' and spf=='STARTUP' and ds=='STARTUP')	
+					{
+						res:= 'STARTUP';
+						return [0];
+					};
+
+					/* == Handle STANDBY-LP case == */
+					/* if(rx=='STANDBY-LP' and spf=='STANDBY-LP' and (ds=='STANDBY' and ds_power=='LOW-POWER') )	*/
+					if(rx=='STANDBY-LP' and spf=='STANDBY-LP' and (ds=='STANDBY-LP' and ds_power=='LOW-POWER') )	
+					{
+						res:= 'STANDBY-LP';
+						return [0];
+					};
+
+					/* == Handle STANDBY-FP case == */
+					/* if( (rx=='STANDBY-FP' or rx=='DATA-CAPTURE') and spf=='OPERATE' and (ds=='STANDBY' and ds_power=='FULL-POWER') )	*/
+					if( (rx=='DATA-CAPTURE' or rx=='STANDBY-FP') and spf=='OPERATE' and (ds=='STANDBY-FP' and ds_power=='FULL-POWER') )	
+					{
+						res:= 'STANDBY-FP';
+						return [0];
+					};
+
+					/* == Handle STOW case == */
+					if(ds=='STOW' and (rx=='STANDBY-LP' or rx=='STANDBY-FP' or rx=='CONFIGURE' or rx=='DATA-CAPTURE') and (spf=='STANDBY-LP' or spf=='OPERATE') )	
+					{
+						res:= 'STOW';
+						return [0];
+					};
+
+					/* == Handle MAINTENANCE case == */
+					if(rx=='MAINTENANCE' and spf=='MAINTENANCE' and (ds=='MAINTENANCE' or ds=='ESTOP') )	
+					{
+						res:= 'MAINTENANCE';
+						return [0];
+					};
+
+					/* == Handle CONFIG case == */
+					/* if(rx=='CONFIGURE' and spf=='OPERATE' and (ds=='STANDBY' or ds=='STOW' or ds=='POINT') ) */
+					if(rx=='CONFIGURE' and spf=='OPERATE' and (ds=='STANDBY-LP' or ds=='STANDBY-FP' or ds=='STOW' or ds=='POINT') )	
+					{
+						res:= 'CONFIG';
+						return [0];
+					};
+
+					/* == Handle OPERATE case == */
+					if(rx=='DATA-CAPTURE' and spf=='OPERATE' and (ds=='POINT' or ds=='STOW') )	
+					{
+						res:= 'OPERATE';
+						return [0];
+					};
+
+					/* == Handle ESTOP in STARTUP case == */
+					if( (rx=='STARTUP' or spf=='STARTUP') and ds=='ESTOP')	
+					{
+						/* res:= 'MAINTENANCE'; */
+						res:= 'ERROR';
+						return [0];
+					};
+					/* == Handle SPF ERROR in STARTUP case (CHECK!!!!) == */
+					if( rx=='STARTUP' and spf=='ERROR' and ds=='STARTUP')	
+					{
+						/* res:= 'MAINTENANCE'; */
+						res:= 'ERROR';
+						return [0];
+					};
+
+					/* == Handle transient STARTUP case == */
+					/* if( rx=='STARTUP' and (spf=='STARTUP' or spf=='STANDBY-LP') and (ds=='STARTUP' or (ds=='STANDBY' and ds_power='LOW-POWER') ) )	*/
+					if( rx=='STARTUP' and (spf=='STARTUP' or spf=='STANDBY-LP') and (ds=='STARTUP' or (ds=='STANDBY-LP' and ds_power='LOW-POWER') ) )	
+					{
+						res:= 'STARTUP';
+						return [0];
+					};
+					/* if( spf=='STARTUP' and (rx=='STARTUP' or rx=='STANDBY-LP') and (ds=='STARTUP' or (ds=='STANDBY' and ds_power='LOW-POWER') ) )	*/
+					if( spf=='STARTUP' and (rx=='STARTUP' or rx=='STANDBY-LP') and (ds=='STARTUP' or (ds=='STANDBY-LP' and ds_power='LOW-POWER') ) )	
+					{
+						res:= 'STARTUP';
+						return [0];
+					};
+					if( ds=='STARTUP' and (rx=='STARTUP' or rx=='STANDBY-LP') and (spf=='STARTUP' or spf=='STANDBY-LP') )	
+					{
+						res:= 'STARTUP';
+						return [0];
+					};
+
+					/* == Handle transient STANDBY-LP-STANDBY-FP case == */
+					/* if( rx=='STANDBY-LP' and (spf=='STANDBY-LP' or spf=='STANDBY-FP') and ds=='STANDBY' )	*/
+					if( rx=='STANDBY-LP' and (spf=='STANDBY-LP' or spf=='STANDBY-FP') and (ds=='STANDBY-LP' or ds=='STANDBY-FP') )	
+					{
+						res:= 'STANDBY-LP';
+						return [0];
+					};
+					/* if( spf=='STANDBY-LP' and (rx=='STANDBY-LP' or rx=='STANDBY-FP' or rx=='DATA-CAPTURE') and ds=='STANDBY' )	*/
+					if( spf=='STANDBY-LP' and (rx=='STANDBY-LP' or rx=='STANDBY-FP' or rx=='DATA-CAPTURE') and (ds=='STANDBY-LP' or ds=='STANDBY-FP') )	
+					{
+						res:= 'STANDBY-LP';
+						return [0];
+					};	
+					
+
+					/* == If no case if found return FORBIDDEN! == */
+					res:= 'FORBIDDEN';
+					return [-1];
+				</Expression>
+				
+				<FormulaVars>
+					<FormulaVar>
+						<Label> rx </Label>	
+						<Value> {{rx_controller}}/operatingMode </Value>
+						<InitDataValue> UNKNOWN </InitDataValue> <!-- {OFF,STARTUP,STANDBY-LP,STANDBY-FP,DATA-CAPTURE,CONFIGURE,MAINTENANCE} + {UNKNOWN,ERROR}-->
+						<ExpDataType> ENUM </ExpDataType>
+						<ExpDataFormat> SCALAR </ExpDataFormat>
+					</FormulaVar>
+					<FormulaVar>
+						<Label> spf </Label>	
+						<Value> {{spf_controller}}/operatingMode </Value>
+						<InitDataValue> UNKNOWN </InitDataValue> <!-- {OFF,STARTUP,STANDBY-LP,OPERATE,MAINTENANCE,ERROR} + {UNKNOWN}-->
+						<ExpDataType> ENUM </ExpDataType>
+						<ExpDataFormat> SCALAR </ExpDataFormat>
+					</FormulaVar>
+					<FormulaVar>
+						<Label> ds </Label>	
+						<Value> {{ds_manager}}/operatingMode </Value>
+						<InitDataValue> UNKNOWN </InitDataValue> <!-- {OFF,STARTUP,STANDBY,STOW,ESTOP,MAINTENANCE,POINT} + {UNKNOWN} -->
+						<ExpDataType> ENUM </ExpDataType>
+						<ExpDataFormat> SCALAR </ExpDataFormat>
+					</FormulaVar>	
+					<FormulaVar>
+						<Label> ds_power </Label>	
+						<Value> {{ds_manager}}/powerState </Value>
+						<InitDataValue> UNKNOWN </InitDataValue>  <!-- {UPS,FULL-POWER,LOW-POWER} + {UNKNOWN} -->
+						<ExpDataType> ENUM </ExpDataType>
+						<ExpDataFormat> SCALAR </ExpDataFormat>
+					</FormulaVar>	
+				</FormulaVars>
+
+				<EvaluationMode>
+					<Value> CHANGE </Value>
+					<Value> PERIODIC </Value>
+					<Value> USER </Value>
+				</EvaluationMode>
+			</Formula>
+		</Attribute>
+		{% endif %}
+  
+			
+		<!--
+		{% if lmc_config_mode == 'full' %}
+		<Attribute name = "operationalState" alias="operationalState">
+			<Description> Operational state </Description>
+			<DataType> ENUM </DataType>
+			<DataFormat> SCALAR </DataFormat>
+			<RWType> READ </RWType>
+			<PossibleValues>
+				<Value> UNKNOWN </Value>
+				<Value> OFF </Value>
+				<Value> DISABLE </Value>
+				<Value> INIT </Value>
+				<Value> STANDBY </Value>
+				<Value> LOW-POWER </Value>
+				<Value> ON </Value>
+				<Value> ALARM </Value>
+				<Value> FAULT </Value>
+			</PossibleValues>
+			<Polling> 
+				<Period> 10000 </Period>
+			</Polling>
+			<Events>
+				<PushEvent> </PushEvent>
+				<PeriodicEvent>
+					<Period> 1000 </Period>
+				</PeriodicEvent>
+				<ArchiveEvent>
+					<Period> 1000 </Period>
+				</ArchiveEvent>
+			</Events>		
+			<Value>
+				<InitValue> UNKNOWN </InitValue>
+			</Value>
+		</Attribute>
+		{% endif %}
+		-->
+
+		{% if lmc_config_mode == 'full' %}
+		<Attribute name = "dishState" alias="dishState">
+			<Description> Current dish state in SKA Control Mode (SCM) notation </Description>
+			<DataType> STATE </DataType>
+			<DataFormat> SCALAR </DataFormat> 
+			<RWType> READ </RWType>	
+			<Polling> 
+				<Period> {{dshmgr_fast_poll_period}} </Period>
+			</Polling>
+			<Events>
+				<PushEvent> </PushEvent>
+				<PeriodicEvent>
+					<Period> {{dshmgr_fast_periodic_event_period}} </Period>
+				</PeriodicEvent>
+				<ArchiveEvent>
+					<Period> {{dshmgr_fast_archive_event_period}} </Period>
+				</ArchiveEvent>
+			</Events>
+			<Value>
+				<InitValue> UNKNOWN </InitValue> <!-- {OFF/FAULT/INIT/STANDBY/ON/ALARM/UNKNOWN} -->
+				<SafeValue> UNKNOWN </SafeValue>
+			</Value>
+
+			<!-- dishMode= {OFF/STARTUP/SHUTDOWN/STANDBY-LP/STANDBY-FP/STOW/CONFIG/OPERATE/MAINTENANCE} + {FORBIDDEN+ERROR+UNKNOWN} -->
+			<Formula>
+				<Expression> 
+					if( x=='UNKNOWN' )
+					{
+						res:= UNKNOWN;
+						return [0];
+					};
+					if( x=='STARTUP' or x=='CONFIGURE' )
+					{
+						res:= INIT;
+						return [0];
+					};
+					if( x=='STANDBY-LP')
+					{
+						res:= STANDBY;
+						return [0];
+					};
+					if( x=='STOW' or x=='MAINTENANCE' )
+					{
+						res:= DISABLE;
+						return [0];
+					};
+					if( x=='STANDBY-FP' or x=='OPERATE' )
+					{
+						res:= ON;
+						return [0];
+					};
+					/* == SHUTDOWN ==> DISABLE or FAULT? == */		
+					if( x=='SHUTDOWN')
+					{
+						res:= FAULT;
+						return [0];
+					};
+					if( x=='FORBIDDEN' )
+					{
+						res:= ALARM;
+						return [0];
+					};
+
+					return [-1];
+				</Expression>
+				
+				<FormulaVars>
+					<FormulaVar>
+						<Label> x </Label>	
+						<Value> dishMode </Value>
+						<InitDataValue> UNKNOWN </InitDataValue> 
+						<ExpDataType> ENUM </ExpDataType>
+						<ExpDataFormat> SCALAR </ExpDataFormat>
+					</FormulaVar>
+				</FormulaVars>
+
+				<EvaluationMode>
+					<Value> CHANGE </Value>
+					<Value> PERIODIC </Value>
+					<Value> USER </Value>
+				</EvaluationMode>
+			</Formula>
+
+		</Attribute>
+		{% endif %}  
+  
+ 
+		{% if lmc_config_mode == 'full' %}
+		<Attribute name = "powerState" alias="powerState">
+			<Description> Current dish power state </Description>
+			<DataType> ENUM </DataType>
+			<DataFormat> SCALAR </DataFormat>
+			<RWType> READ </RWType>	
+			<PossibleValues>
+				<Value> UNKNOWN </Value>
+				<Value> OFF </Value>
+				<Value> UPS </Value>
+				<Value> LOW </Value>
+				<Value> FULL </Value>
+			</PossibleValues>
+			<Polling> 
+				<Period> {{dshmgr_fast_poll_period}} </Period>
+			</Polling>
+			<Events>
+				<PushEvent> </PushEvent>
+				<PeriodicEvent>
+					<Period> {{dshmgr_fast_periodic_event_period}} </Period>
+				</PeriodicEvent>
+				<ArchiveEvent>
+					<Period> {{dshmgr_fast_archive_event_period}} </Period>
+				</ArchiveEvent>
+			</Events>	
+			<Value>
+				<InitValue> OFF </InitValue>
+			</Value>
+		</Attribute>
+		{% endif %}
+		
+
+		{% if lmc_config_mode == 'full' %}
+		<Attribute name = "pointingState" alias="pointingState">
+			<Description> Current dish pointing state </Description>
+			<DataType> ENUM </DataType>
+			<DataFormat> SCALAR </DataFormat>
+			<RWType> READ </RWType>	
+			<PossibleValues>
+				<Value> READY </Value>
+				<Value> SLEW </Value>
+				<Value> TRACK </Value>
+				<Value> SCAN </Value>
+			</PossibleValues>
+			<Polling> 
+				<Period> {{dshmgr_fast_poll_period}} </Period>
+			</Polling>
+			<Events>
+				<PushEvent> </PushEvent>
+				<PeriodicEvent>
+					<Period> {{dshmgr_fast_periodic_event_period}} </Period>
+				</PeriodicEvent>
+				<ArchiveEvent>
+					<Period> {{dshmgr_fast_archive_event_period}} </Period>
+				</ArchiveEvent>
+			</Events>	
+			<Value>
+				<InitValue> READY </InitValue>
+			</Value>
+		</Attribute>
+	  {% endif %}
+
+
+    {% if lmc_config_mode == 'full' %}
+		<Attribute name = "controlMode" alias="controlMode">
+			<Description> Current dish control mode </Description>
+			<DataType> ENUM </DataType>
+			<DataFormat> SCALAR </DataFormat>
+			<RWType> READ_WRITE </RWType>
+			<Memorized> </Memorized>		
+			<PossibleValues>
+				<Value> UNRESTRICTED </Value>
+				<Value> REMOTE </Value>
+				<Value> LOCAL </Value>
+			</PossibleValues>
+			<Polling> 
+				<Period> {{dshmgr_medium_poll_period}} </Period>
+			</Polling>
+			<Events>
+				<PushEvent> </PushEvent>
+				<PeriodicEvent>
+					<Period> {{dshmgr_medium_periodic_event_period}} </Period>
+				</PeriodicEvent>
+				<ArchiveEvent>
+					<Period> {{dshmgr_medium_archive_event_period}} </Period>
+				</ArchiveEvent>
+			</Events>
+			<Value>
+				<InitValue> UNRESTRICTED </InitValue>
+			</Value>
+		</Attribute>
+		{% endif %}
+
+
+		{% if lmc_config_mode == 'full' %}
+		<Attribute name = "elementType" alias="elementType">
+			<Description> Element type </Description>
+			<DataType> ENUM </DataType>
+			<DataFormat> SCALAR </DataFormat>
+			<RWType> READ </RWType>
+			<PossibleValues>
+				<Value> SIMULATED </Value>
+				<Value> REAL </Value>
+				<Value> STANDBY </Value>
+				<Value> NOT-FITTED </Value>
+			</PossibleValues>
+			<Polling> 
+				<Period> {{dshmgr_medium_poll_period}} </Period>
+			</Polling>
+			<Events>
+				<PushEvent> </PushEvent>
+				<PeriodicEvent>
+					<Period> {{dshmgr_medium_periodic_event_period}} </Period>
+				</PeriodicEvent>
+				<ArchiveEvent>
+					<Period> {{dshmgr_medium_archive_event_period}} </Period>
+				</ArchiveEvent>
+			</Events>		
+			<Value>
+				<InitValue> SIMULATED </InitValue>
+			</Value>
+		</Attribute>
+		{% endif %}
+	
+
+	
+		{% if lmc_config_mode == 'full' %}
+		<Attribute name = "adminMode" alias="adminMode">
+			<Description> Admin mode </Description>
+			<DataType> ENUM </DataType>
+			<DataFormat> SCALAR </DataFormat>
+			<RWType> READ_WRITE </RWType>
+			<Memorized> </Memorized>		
+			<PossibleValues>
+				<Value> ONLINE </Value>
+				<Value> OFFLINE </Value>
+				<Value> MAINTENANCE </Value>
+				<Value> NOT-FITTED </Value>
+				<Value> RESERVED </Value>
+			</PossibleValues>
+			<Polling> 
+				<Period> {{dshmgr_medium_poll_period}} </Period>
+			</Polling>
+			<Events>
+				<PushEvent> </PushEvent>
+				<PeriodicEvent>
+					<Period> {{dshmgr_medium_periodic_event_period}} </Period>
+				</PeriodicEvent>
+				<ArchiveEvent>
+					<Period> {{dshmgr_medium_archive_event_period}} </Period>
+				</ArchiveEvent>
+			</Events>		
+			<Value>
+				<InitValue> MAINTENANCE </InitValue>
+			</Value>
+		</Attribute>
+		{% endif %}
+
+
+		{% if lmc_config_mode == 'full' %}
+		<Attribute name = "healthStatus" alias="healthStatus">
+			<Description> Health status </Description>
+			<DataType> ENUM </DataType>
+			<DataFormat> SCALAR </DataFormat>
+			<RWType> READ </RWType>
+			<PossibleValues>
+				<Value> UNKNOWN </Value>
+				<Value> OK </Value>
+				<Value> DEGRADED </Value>
+				<Value> FAILED </Value>
+			</PossibleValues>
+			<Polling> 
+				<Period> {{dshmgr_fast_poll_period}} </Period>
+			</Polling>
+			<Events>
+				<PushEvent> </PushEvent>
+				<PeriodicEvent>
+					<Period> {{dshmgr_fast_periodic_event_period}} </Period>
+				</PeriodicEvent>
+				<ArchiveEvent>
+					<Period> {{dshmgr_fast_archive_event_period}} </Period>
+				</ArchiveEvent>
+			</Events>		
+			<Value>
+				<InitValue> UNKNOWN </InitValue>
+			</Value>
+		</Attribute>
+		{% endif %}
+
+
+		{% if lmc_config_mode == 'full' %}
+		<Attribute name = "usageFlag" alias="usageFlag">
+			<Description> Usage flag </Description>
+			<DataType> ENUM </DataType>
+			<DataFormat> SCALAR </DataFormat>
+			<RWType> READ </RWType>
+			<PossibleValues>
+				<Value> IDLE </Value>
+				<Value> CONFIG </Value>
+				<Value> ACTIVE </Value>
+				<Value> STANDBY </Value>
+			</PossibleValues>
+			<Polling> 
+				<Period> {{dshmgr_medium_poll_period}} </Period>
+			</Polling>
+			<Events>
+				<PushEvent> </PushEvent>
+				<PeriodicEvent>
+					<Period> {{dshmgr_medium_periodic_event_period}} </Period>
+				</PeriodicEvent>
+				<ArchiveEvent>
+					<Period> {{dshmgr_medium_archive_event_period}} </Period>
+				</ArchiveEvent>
+			</Events>		
+			<Value>
+				<InitValue> IDLE </InitValue>
+			</Value>
+		</Attribute>
+		{% endif %}
+
+
+		{% if lmc_config_mode == 'full' %}
+		<Attribute name = "simulatedFlag" alias="simulatedFlag">
+			<Description> Simulated flag </Description>
+			<DataType> BOOL </DataType>
+			<DataFormat> SCALAR </DataFormat>
+			<RWType> READ </RWType>	 	
+			<Polling> 
+				<Period> {{dshmgr_medium_poll_period}} </Period>
+			</Polling>
+			<Events>
+				<PushEvent> </PushEvent>
+				<PeriodicEvent>
+					<Period> {{dshmgr_medium_periodic_event_period}} </Period>
+				</PeriodicEvent>
+				<ArchiveEvent>
+					<Period> {{dshmgr_medium_archive_event_period}} </Period>
+				</ArchiveEvent>
+			</Events>	
+			<Value>
+				<InitValue> 1 </InitValue>
+			</Value>
+		</Attribute>
+		{% endif %}
+
+
+		{% if lmc_config_mode == 'full' %}
+		<Attribute name = "targetLock" alias="targetLock">
+			<Description> Target lock achieved or not </Description>
+			<DataType> BOOL </DataType>
+			<DataFormat> SCALAR </DataFormat>
+			<RWType> READ </RWType>	 	
+			<Polling> 
+				<Period> {{dshmgr_fast_poll_period}} </Period>
+			</Polling>
+			<Events>
+				<PushEvent> </PushEvent>
+				<PeriodicEvent>
+					<Period> {{dshmgr_fast_periodic_event_period}} </Period>
+				</PeriodicEvent>
+				<ArchiveEvent>
+					<Period> {{dshmgr_fast_archive_event_period}} </Period>
+				</ArchiveEvent>
+			</Events>		
+			<Value>
+				<InitValue> 0 </InitValue>
+			</Value>
+		</Attribute>
+		{% endif %}
+
+		
+
+		<!-- ************************************************** -->
+		<!-- **      Capabilities Attributes                    -->
+		<!-- ************************************************** -->
+
+
+		{% if lmc_config_mode == 'full' %}
+		<!--
+			== DISH CAPABILITY CODES ==
+			UNAVAILABLE: The band is not available, due to a functional error or components not fitted.
+			STANDBY: The band is fully functional, and ready to operate.
+			CONFIGURING: The band is configuring to become ready.
+			OPERATE_DEGRADED: The band is fully functional, but system noise performance is degraded.
+			OPERATE_FULL: The band is fully functional and is meeting all performance requirements.
+		-->
+		<!-- B1 Capability State (in Dish notation) -->
+		<Attribute name = "b1CapabilityState" alias="b1CapabilityState">
+			<Description> Band 1 capability state in Dish notation </Description>
+			<DataType> ENUM </DataType>
+			<DataFormat> SCALAR </DataFormat>
+			<RWType> READ </RWType>
+			<PossibleValues>
+				<Value> UNAVAILABLE </Value>
+				<Value> STANDBY </Value>
+				<Value> CONFIGURING </Value>
+				<Value> OPERATE-DEGRADED </Value>
+				<Value> OPERATE-FULL </Value>
+				<Value> UNKNOWN </Value> <!-- Added wrt to ICD -->
+			</PossibleValues>
+			<Polling> 
+				<Period> {{dshmgr_fast_poll_period}} </Period>
+			</Polling>
+			<Events>
+				<PushEvent> </PushEvent>
+				<PeriodicEvent>
+					<Period> {{dshmgr_fast_periodic_event_period}} </Period>
+				</PeriodicEvent>
+				<ArchiveEvent>
+					<Period> {{dshmgr_fast_archive_event_period}} </Period>
+				</ArchiveEvent>
+			</Events>	
+			<Value>
+				<InitValue> UNKNOWN </InitValue>
+				<SafeValue> UNKNOWN </SafeValue>
+			</Value>
+			
+
+			<Formula>
+				<Expression>
+					/* Handle UNAVAILABLE case */		
+					if( (ds=='STARTUP' or ds=='ESTOP') or (spf_cap=='UNAVAILABLE') or (rx_cap=='UNAVAILABLE') )
+					{
+						res:= 'UNAVAILABLE';
+						return [0];
+					};
+
+					/* Handle STANDBY case */		
+					if( (dish=='STANDBY-LP' or dish=='STANDBY-FP') and (spf_cap=='STANDBY' or spf_cap=='OPERATE-DEGRADED' or spf_cap=='OPERATE-FULL') and (rx_cap=='STANDBY' or rx_cap=='OPERATE') )
+					{
+						res:= 'STANDBY';
+						return [0];
+					};
+
+					/* Handle CONFIGURING case */		
+					if( dish=='CONFIG' and (spf_cap=='OPERATE-DEGRADED' or spf_cap=='OPERATE-FULL') and (rx_cap=='CONFIGURE' or rx_cap=='OPERATE') )
+					{
+						res:= 'CONFIGURING';
+						return [0];
+					};
+
+					/* Handle OPERATE-DEGRADED case */		
+					if( (ds_indexer!='MOVING' and (ds=='POINT' or ds=='STOW') ) and (spf_cap=='OPERATE-DEGRADED') and (rx_cap=='OPERATE') )
+					{
+						res:= 'OPERATE-DEGRADED';
+						return [0];
+					};
+
+					/* Handle OPERATE-FULL case */		
+					if( (ds_indexer!='MOVING' and (ds=='POINT' or ds=='STOW') ) and (spf_cap=='OPERATE-FULL') and (rx_cap=='OPERATE') )
+					{
+						res:= 'OPERATE-FULL';
+						return [0];
+					};
+
+					res:= 'UNKNOWN';
+					return [-1];
+				</Expression>
+		
+
+				<FormulaVars>
+					<FormulaVar>
+						<Label> rx </Label>	
+						<Value> {{rx_controller}}/operatingMode </Value>
+						<InitDataValue> UNKNOWN </InitDataValue> <!-- {OFF,STARTUP,STANDBY-LP,STANDBY-FP,DATA-CAPTURE,CONFIGURE,MAINTENANCE} + {UNKNOWN,ERROR}-->
+						<ExpDataType> ENUM </ExpDataType>
+						<ExpDataFormat> SCALAR </ExpDataFormat>
+					</FormulaVar>
+					<FormulaVar>
+						<Label> spf </Label>	
+						<Value> {{spf_controller}}/operatingMode </Value>
+						<InitDataValue> UNKNOWN </InitDataValue> <!-- {OFF,STARTUP,STANDBY-LP,OPERATE,MAINTENANCE,ERROR} + {UNKNOWN}-->
+						<ExpDataType> ENUM </ExpDataType>
+						<ExpDataFormat> SCALAR </ExpDataFormat>
+					</FormulaVar>
+					<FormulaVar>
+						<Label> ds </Label>	
+						<Value> {{ds_manager}}/operatingMode </Value>
+						<InitDataValue> UNKNOWN </InitDataValue> <!-- {OFF,STARTUP,STANDBY,STOW,ESTOP,MAINTENANCE,POINT} + {UNKNOWN} -->
+						<ExpDataType> ENUM </ExpDataType>
+						<ExpDataFormat> SCALAR </ExpDataFormat>
+					</FormulaVar>	
+		
+					<FormulaVar>
+						<Label> rx_cap </Label>	
+						<Value> {{rx_controller}}/b1CapabilityState </Value>
+						<InitDataValue> UNKNOWN </InitDataValue> <!-- {UNAVAILABLE,STANDBY,CONFIGURE,OPERATE} + {UNKNOWN}-->
+						<ExpDataType> ENUM </ExpDataType>
+						<ExpDataFormat> SCALAR </ExpDataFormat>
+					</FormulaVar>
+					<FormulaVar>
+						<Label> spf_cap </Label>	
+						<Value> {{spf_controller}}/b1CapabilityState </Value>
+						<InitDataValue> UNKNOWN </InitDataValue> <!-- {UNAVAILABLE,STANDBY,OPERATE-DEGRADED,OPERATE-FULL} + {UNKNOWN}-->
+						<ExpDataType> ENUM </ExpDataType>
+						<ExpDataFormat> SCALAR </ExpDataFormat>
+					</FormulaVar>
+				
+					<FormulaVar>
+						<Label> dish </Label>	
+						<Value> dishMode </Value>
+						<InitDataValue> UNKNOWN </InitDataValue>
+						<ExpDataType> ENUM </ExpDataType>
+						<ExpDataFormat> SCALAR </ExpDataFormat>
+					</FormulaVar>
+
+					<FormulaVar>
+						<Label> ds_indexer </Label>	
+						<Value> {{ds_manager}}/indexerPosition </Value>
+						<InitDataValue> UNKNOWN </InitDataValue> <!-- {B1,...,B5} + {UNKNOWN,MOVING} -->
+						<ExpDataType> ENUM </ExpDataType>
+						<ExpDataFormat> SCALAR </ExpDataFormat>
+					</FormulaVar>	
+
+				</FormulaVars>
+
+				<EvaluationMode>
+					<Value> CHANGE </Value>
+					<Value> PERIODIC </Value>
+					<Value> USER </Value>
+				</EvaluationMode>
+			</Formula>
+
+		</Attribute>		
+		{% endif %}
+
+	
+		{% if lmc_config_mode == 'full' %}
+		<!-- B2 Capability State (in Dish notation) -->
+		<Attribute name = "b2CapabilityState" alias="b2CapabilityState">
+			<Description> Band 2 capability state in Dish notation </Description>
+			<DataType> ENUM </DataType>
+			<DataFormat> SCALAR </DataFormat>
+			<RWType> READ </RWType>
+			<PossibleValues>
+				<Value> UNAVAILABLE </Value>
+				<Value> STANDBY </Value>
+				<Value> CONFIGURING </Value>
+				<Value> OPERATE-DEGRADED </Value>
+				<Value> OPERATE-FULL </Value>
+				<Value> UNKNOWN </Value> <!-- Added wrt to ICD -->
+			</PossibleValues>
+			<Polling> 
+				<Period> {{dshmgr_fast_poll_period}} </Period>
+			</Polling>
+			<Events>
+				<PushEvent> </PushEvent>
+				<PeriodicEvent>
+					<Period> {{dshmgr_fast_periodic_event_period}} </Period>
+				</PeriodicEvent>
+				<ArchiveEvent>
+					<Period> {{dshmgr_fast_archive_event_period}} </Period>
+				</ArchiveEvent>
+			</Events>		
+			<Value>
+				<InitValue> UNKNOWN </InitValue>
+				<SafeValue> UNKNOWN </SafeValue>
+			</Value>
+
+			<Formula>
+				<Expression>
+					/* Handle UNAVAILABLE case */		
+					if( (ds=='STARTUP' or ds=='ESTOP') or (spf_cap=='UNAVAILABLE') or (rx_cap=='UNAVAILABLE') )
+					{
+						res:= 'UNAVAILABLE';
+						return [0];
+					};
+
+					/* Handle STANDBY case */		
+					if( (dish=='STANDBY-LP' or dish=='STANDBY-FP') and (spf_cap=='STANDBY' or spf_cap=='OPERATE-DEGRADED' or spf_cap=='OPERATE-FULL') and (rx_cap=='STANDBY' or rx_cap=='OPERATE') )
+					{
+						res:= 'STANDBY';
+						return [0];
+					};
+
+					/* Handle CONFIGURING case */		
+					if( dish=='CONFIG' and (spf_cap=='OPERATE-DEGRADED' or spf_cap=='OPERATE-FULL') and (rx_cap=='CONFIGURE' or rx_cap=='OPERATE') )
+					{
+						res:= 'CONFIGURING';
+						return [0];
+					};
+
+					/* Handle OPERATE-DEGRADED case */		
+					if( (ds_indexer!='MOVING' and (ds=='POINT' or ds=='STOW') ) and (spf_cap=='OPERATE-DEGRADED') and (rx_cap=='OPERATE') )
+					{
+						res:= 'OPERATE-DEGRADED';
+						return [0];
+					};
+
+					/* Handle OPERATE-FULL case */		
+					if( (ds_indexer!='MOVING' and (ds=='POINT' or ds=='STOW') ) and (spf_cap=='OPERATE-FULL') and (rx_cap=='OPERATE') )
+					{
+						res:= 'OPERATE-FULL';
+						return [0];
+					};
+
+					res:= 'UNKNOWN';
+					return [-1];
+				</Expression>
+		
+
+				<FormulaVars>
+					<FormulaVar>
+						<Label> rx </Label>	
+						<Value> {{rx_controller}}/operatingMode </Value>
+						<InitDataValue> UNKNOWN </InitDataValue> <!-- {OFF,STARTUP,STANDBY-LP,STANDBY-FP,DATA-CAPTURE,CONFIGURE,MAINTENANCE} + {UNKNOWN,ERROR}-->
+						<ExpDataType> ENUM </ExpDataType>
+						<ExpDataFormat> SCALAR </ExpDataFormat>
+					</FormulaVar>
+					<FormulaVar>
+						<Label> spf </Label>	
+						<Value> {{spf_controller}}/operatingMode </Value>
+						<InitDataValue> UNKNOWN </InitDataValue> <!-- {OFF,STARTUP,STANDBY-LP,OPERATE,MAINTENANCE,ERROR} + {UNKNOWN}-->
+						<ExpDataType> ENUM </ExpDataType>
+						<ExpDataFormat> SCALAR </ExpDataFormat>
+					</FormulaVar>
+					<FormulaVar>
+						<Label> ds </Label>	
+						<Value> {{ds_manager}}/operatingMode </Value>
+						<InitDataValue> UNKNOWN </InitDataValue> <!-- {OFF,STARTUP,STANDBY,STOW,ESTOP,MAINTENANCE,POINT} + {UNKNOWN} -->
+						<ExpDataType> ENUM </ExpDataType>
+						<ExpDataFormat> SCALAR </ExpDataFormat>
+					</FormulaVar>	
+		
+					<FormulaVar>
+						<Label> rx_cap </Label>	
+						<Value> {{rx_controller}}/b2CapabilityState </Value>
+						<InitDataValue> UNKNOWN </InitDataValue> <!-- {UNAVAILABLE,STANDBY,CONFIGURE,OPERATE} + {UNKNOWN}-->
+						<ExpDataType> ENUM </ExpDataType>
+						<ExpDataFormat> SCALAR </ExpDataFormat>
+					</FormulaVar>
+					<FormulaVar>
+						<Label> spf_cap </Label>	
+						<Value> {{spf_controller}}/b2CapabilityState </Value>
+						<InitDataValue> UNKNOWN </InitDataValue> <!-- {UNAVAILABLE,STANDBY,OPERATE-DEGRADED,OPERATE-FULL} + {UNKNOWN}-->
+						<ExpDataType> ENUM </ExpDataType>
+						<ExpDataFormat> SCALAR </ExpDataFormat>
+					</FormulaVar>
+				
+					<FormulaVar>
+						<Label> dish </Label>	
+						<Value> dishMode </Value>
+						<InitDataValue> UNKNOWN </InitDataValue>
+						<ExpDataType> ENUM </ExpDataType>
+						<ExpDataFormat> SCALAR </ExpDataFormat>
+					</FormulaVar>
+
+					<FormulaVar>
+						<Label> ds_indexer </Label>	
+						<Value> {{ds_manager}}/indexerPosition </Value>
+						<InitDataValue> UNKNOWN </InitDataValue> <!-- {B1,...,B5} + {UNKNOWN,MOVING} -->
+						<ExpDataType> ENUM </ExpDataType>
+						<ExpDataFormat> SCALAR </ExpDataFormat>
+					</FormulaVar>	
+
+				</FormulaVars>
+
+				<EvaluationMode>
+					<Value> CHANGE </Value>
+					<Value> PERIODIC </Value>
+					<Value> USER </Value>
+				</EvaluationMode>
+			</Formula>
+
+		</Attribute>		
+		{% endif %}
+
+
+		{% if lmc_config_mode == 'full' %}
+		<!-- B3 Capability State (in Dish notation) -->
+		<Attribute name = "b3CapabilityState" alias="b3CapabilityState">
+			<Description> Band 3 capability state in Dish notation </Description>
+			<DataType> ENUM </DataType>
+			<DataFormat> SCALAR </DataFormat>
+			<RWType> READ </RWType>
+			<PossibleValues>
+				<Value> UNAVAILABLE </Value>
+				<Value> STANDBY </Value>
+				<Value> CONFIGURING </Value>
+				<Value> OPERATE-DEGRADED </Value>
+				<Value> OPERATE-FULL </Value>
+				<Value> UNKNOWN </Value> <!-- Added wrt to ICD -->
+			</PossibleValues>
+			<Polling> 
+				<Period> {{dshmgr_fast_poll_period}} </Period>
+			</Polling>
+			<Events>
+				<PushEvent> </PushEvent>
+				<PeriodicEvent>
+					<Period> {{dshmgr_fast_periodic_event_period}} </Period>
+				</PeriodicEvent>
+				<ArchiveEvent>
+					<Period> {{dshmgr_fast_archive_event_period}} </Period>
+				</ArchiveEvent>
+			</Events>		
+			<Value>
+				<InitValue> UNKNOWN </InitValue>
+				<SafeValue> UNKNOWN </SafeValue>
+			</Value>
+
+			<Formula>
+				<Expression>
+					/* Handle UNAVAILABLE case */		
+					if( (ds=='STARTUP' or ds=='ESTOP') or (spf_cap=='UNAVAILABLE') or (rx_cap=='UNAVAILABLE') )
+					{
+						res:= 'UNAVAILABLE';
+						return [0];
+					};
+
+					/* Handle STANDBY case */		
+					if( (dish=='STANDBY-LP' or dish=='STANDBY-FP') and (spf_cap=='STANDBY' or spf_cap=='OPERATE-DEGRADED' or spf_cap=='OPERATE-FULL') and (rx_cap=='STANDBY' or rx_cap=='OPERATE') )
+					{
+						res:= 'STANDBY';
+						return [0];
+					};
+
+					/* Handle CONFIGURING case */		
+					if( dish=='CONFIG' and (spf_cap=='OPERATE-DEGRADED' or spf_cap=='OPERATE-FULL') and (rx_cap=='CONFIGURE' or rx_cap=='OPERATE') )
+					{
+						res:= 'CONFIGURING';
+						return [0];
+					};
+
+					/* Handle OPERATE-DEGRADED case */		
+					if( (ds_indexer!='MOVING' and (ds=='POINT' or ds=='STOW') ) and (spf_cap=='OPERATE-DEGRADED') and (rx_cap=='OPERATE') )
+					{
+						res:= 'OPERATE-DEGRADED';
+						return [0];
+					};
+
+					/* Handle OPERATE-FULL case */		
+					if( (ds_indexer!='MOVING' and (ds=='POINT' or ds=='STOW') ) and (spf_cap=='OPERATE-FULL') and (rx_cap=='OPERATE') )
+					{
+						res:= 'OPERATE-FULL';
+						return [0];
+					};
+
+					res:= 'UNKNOWN';
+					return [-1];
+				</Expression>
+		
+
+				<FormulaVars>
+					<FormulaVar>
+						<Label> rx </Label>	
+						<Value> {{rx_controller}}/operatingMode </Value>
+						<InitDataValue> UNKNOWN </InitDataValue> <!-- {OFF,STARTUP,STANDBY-LP,STANDBY-FP,DATA-CAPTURE,CONFIGURE,MAINTENANCE} + {UNKNOWN,ERROR}-->
+						<ExpDataType> ENUM </ExpDataType>
+						<ExpDataFormat> SCALAR </ExpDataFormat>
+					</FormulaVar>
+					<FormulaVar>
+						<Label> spf </Label>	
+						<Value> {{spf_controller}}/operatingMode </Value>
+						<InitDataValue> UNKNOWN </InitDataValue> <!-- {OFF,STARTUP,STANDBY-LP,OPERATE,MAINTENANCE,ERROR} + {UNKNOWN}-->
+						<ExpDataType> ENUM </ExpDataType>
+						<ExpDataFormat> SCALAR </ExpDataFormat>
+					</FormulaVar>
+					<FormulaVar>
+						<Label> ds </Label>	
+						<Value> {{ds_manager}}/operatingMode </Value>
+						<InitDataValue> UNKNOWN </InitDataValue> <!-- {OFF,STARTUP,STANDBY,STOW,ESTOP,MAINTENANCE,POINT} + {UNKNOWN} -->
+						<ExpDataType> ENUM </ExpDataType>
+						<ExpDataFormat> SCALAR </ExpDataFormat>
+					</FormulaVar>	
+		
+					<FormulaVar>
+						<Label> rx_cap </Label>	
+						<Value> {{rx_controller}}/b3CapabilityState </Value>
+						<InitDataValue> UNKNOWN </InitDataValue> <!-- {UNAVAILABLE,STANDBY,CONFIGURE,OPERATE} + {UNKNOWN}-->
+						<ExpDataType> ENUM </ExpDataType>
+						<ExpDataFormat> SCALAR </ExpDataFormat>
+					</FormulaVar>
+					<FormulaVar>
+						<Label> spf_cap </Label>	
+						<Value> {{spf_controller}}/b3CapabilityState </Value>
+						<InitDataValue> UNKNOWN </InitDataValue> <!-- {UNAVAILABLE,STANDBY,OPERATE-DEGRADED,OPERATE-FULL} + {UNKNOWN}-->
+						<ExpDataType> ENUM </ExpDataType>
+						<ExpDataFormat> SCALAR </ExpDataFormat>
+					</FormulaVar>
+				
+					<FormulaVar>
+						<Label> dish </Label>	
+						<Value> dishMode </Value>
+						<InitDataValue> UNKNOWN </InitDataValue>
+						<ExpDataType> ENUM </ExpDataType>
+						<ExpDataFormat> SCALAR </ExpDataFormat>
+					</FormulaVar>
+
+					<FormulaVar>
+						<Label> ds_indexer </Label>	
+						<Value> {{ds_manager}}/indexerPosition </Value>
+						<InitDataValue> UNKNOWN </InitDataValue> <!-- {B1,...,B5} + {UNKNOWN,MOVING} -->
+						<ExpDataType> ENUM </ExpDataType>
+						<ExpDataFormat> SCALAR </ExpDataFormat>
+					</FormulaVar>	
+
+				</FormulaVars>
+
+				<EvaluationMode>
+					<Value> CHANGE </Value>
+					<Value> PERIODIC </Value>
+					<Value> USER </Value>
+				</EvaluationMode>
+			</Formula>
+		</Attribute>		
+		{% endif %}
+
+
+		{% if lmc_config_mode == 'full' %}
+		<!-- B4 Capability State (in Dish notation) -->
+		<Attribute name = "b4CapabilityState" alias="b4CapabilityState">
+			<Description> Band 4 capability state in Dish notation </Description>
+			<DataType> ENUM </DataType>
+			<DataFormat> SCALAR </DataFormat>
+			<RWType> READ </RWType>
+			<PossibleValues>
+				<Value> UNAVAILABLE </Value>
+				<Value> STANDBY </Value>
+				<Value> CONFIGURING </Value>
+				<Value> OPERATE-DEGRADED </Value>
+				<Value> OPERATE-FULL </Value>
+				<Value> UNKNOWN </Value> <!-- Added wrt to ICD -->
+			</PossibleValues>
+			<Polling> 
+				<Period> {{dshmgr_fast_poll_period}} </Period>
+			</Polling>
+			<Events>
+				<PushEvent> </PushEvent>
+				<PeriodicEvent>
+					<Period> {{dshmgr_fast_periodic_event_period}} </Period>
+				</PeriodicEvent>
+				<ArchiveEvent>
+					<Period> {{dshmgr_fast_archive_event_period}} </Period>
+				</ArchiveEvent>
+			</Events>	
+			<Value>
+				<InitValue> UNKNOWN </InitValue>
+				<SafeValue> UNKNOWN </SafeValue>
+			</Value>
+
+			<Formula>
+				<Expression>
+					/* Handle UNAVAILABLE case */		
+					if( (ds=='STARTUP' or ds=='ESTOP') or (spf_cap=='UNAVAILABLE') or (rx_cap=='UNAVAILABLE') )
+					{
+						res:= 'UNAVAILABLE';
+						return [0];
+					};
+
+					/* Handle STANDBY case */		
+					if( (dish=='STANDBY-LP' or dish=='STANDBY-FP') and (spf_cap=='STANDBY' or spf_cap=='OPERATE-DEGRADED' or spf_cap=='OPERATE-FULL') and (rx_cap=='STANDBY' or rx_cap=='OPERATE') )
+					{
+						res:= 'STANDBY';
+						return [0];
+					};
+
+					/* Handle CONFIGURING case */		
+					if( dish=='CONFIG' and (spf_cap=='OPERATE-DEGRADED' or spf_cap=='OPERATE-FULL') and (rx_cap=='CONFIGURE' or rx_cap=='OPERATE') )
+					{
+						res:= 'CONFIGURING';
+						return [0];
+					};
+
+					/* Handle OPERATE-DEGRADED case */		
+					if( (ds_indexer!='MOVING' and (ds=='POINT' or ds=='STOW') ) and (spf_cap=='OPERATE-DEGRADED') and (rx_cap=='OPERATE') )
+					{
+						res:= 'OPERATE-DEGRADED';
+						return [0];
+					};
+
+					/* Handle OPERATE-FULL case */		
+					if( (ds_indexer!='MOVING' and (ds=='POINT' or ds=='STOW') ) and (spf_cap=='OPERATE-FULL') and (rx_cap=='OPERATE') )
+					{
+						res:= 'OPERATE-FULL';
+						return [0];
+					};
+
+					res:= 'UNKNOWN';
+					return [-1];
+				</Expression>
+		
+
+				<FormulaVars>
+					<FormulaVar>
+						<Label> rx </Label>	
+						<Value> {{rx_controller}}/operatingMode </Value>
+						<InitDataValue> UNKNOWN </InitDataValue> <!-- {OFF,STARTUP,STANDBY-LP,STANDBY-FP,DATA-CAPTURE,CONFIGURE,MAINTENANCE} + {UNKNOWN,ERROR}-->
+						<ExpDataType> ENUM </ExpDataType>
+						<ExpDataFormat> SCALAR </ExpDataFormat>
+					</FormulaVar>
+					<FormulaVar>
+						<Label> spf </Label>	
+						<Value> {{spf_controller}}/operatingMode </Value>
+						<InitDataValue> UNKNOWN </InitDataValue> <!-- {OFF,STARTUP,STANDBY-LP,OPERATE,MAINTENANCE,ERROR} + {UNKNOWN}-->
+						<ExpDataType> ENUM </ExpDataType>
+						<ExpDataFormat> SCALAR </ExpDataFormat>
+					</FormulaVar>
+					<FormulaVar>
+						<Label> ds </Label>	
+						<Value> {{ds_manager}}/operatingMode </Value>
+						<InitDataValue> UNKNOWN </InitDataValue> <!-- {OFF,STARTUP,STANDBY,STOW,ESTOP,MAINTENANCE,POINT} + {UNKNOWN} -->
+						<ExpDataType> ENUM </ExpDataType>
+						<ExpDataFormat> SCALAR </ExpDataFormat>
+					</FormulaVar>	
+		
+					<FormulaVar>
+						<Label> rx_cap </Label>	
+						<Value> {{rx_controller}}/b4CapabilityState </Value>
+						<InitDataValue> UNKNOWN </InitDataValue> <!-- {UNAVAILABLE,STANDBY,CONFIGURE,OPERATE} + {UNKNOWN}-->
+						<ExpDataType> ENUM </ExpDataType>
+						<ExpDataFormat> SCALAR </ExpDataFormat>
+					</FormulaVar>
+					<FormulaVar>
+						<Label> spf_cap </Label>	
+						<Value> {{spf_controller}}/b4CapabilityState </Value>
+						<InitDataValue> UNKNOWN </InitDataValue> <!-- {UNAVAILABLE,STANDBY,OPERATE-DEGRADED,OPERATE-FULL} + {UNKNOWN}-->
+						<ExpDataType> ENUM </ExpDataType>
+						<ExpDataFormat> SCALAR </ExpDataFormat>
+					</FormulaVar>
+				
+					<FormulaVar>
+						<Label> dish </Label>	
+						<Value> dishMode </Value>
+						<InitDataValue> UNKNOWN </InitDataValue>
+						<ExpDataType> ENUM </ExpDataType>
+						<ExpDataFormat> SCALAR </ExpDataFormat>
+					</FormulaVar>
+
+					<FormulaVar>
+						<Label> ds_indexer </Label>	
+						<Value> {{ds_manager}}/indexerPosition </Value>
+						<InitDataValue> UNKNOWN </InitDataValue> <!-- {B1,...,B5} + {UNKNOWN,MOVING} -->
+						<ExpDataType> ENUM </ExpDataType>
+						<ExpDataFormat> SCALAR </ExpDataFormat>
+					</FormulaVar>	
+
+				</FormulaVars>
+
+				<EvaluationMode>
+					<Value> CHANGE </Value>
+					<Value> PERIODIC </Value>
+					<Value> USER </Value>
+				</EvaluationMode>
+			</Formula>
+		</Attribute>	
+		{% endif %}
+
+
+		{% if lmc_config_mode == 'full' %}
+		<!-- B5 Capability State (in Dish notation) -->
+		<Attribute name = "b5CapabilityState" alias="b5CapabilityState">
+			<Description> Band 5 capability state in Dish notation </Description>
+			<DataType> ENUM </DataType>
+			<DataFormat> SCALAR </DataFormat>
+			<RWType> READ </RWType>
+			<PossibleValues>
+				<Value> UNAVAILABLE </Value>
+				<Value> STANDBY </Value>
+				<Value> CONFIGURING </Value>
+				<Value> OPERATE-DEGRADED </Value>
+				<Value> OPERATE-FULL </Value>
+				<Value> UNKNOWN </Value> <!-- Added wrt to ICD -->
+			</PossibleValues>
+			<Polling> 
+				<Period> {{dshmgr_fast_poll_period}} </Period>
+			</Polling>
+			<Events>
+				<PushEvent> </PushEvent>
+				<PeriodicEvent>
+					<Period> {{dshmgr_fast_periodic_event_period}} </Period>
+				</PeriodicEvent>
+				<ArchiveEvent>
+					<Period> {{dshmgr_fast_archive_event_period}} </Period>
+				</ArchiveEvent>
+			</Events>		
+			<Value>
+				<InitValue> UNKNOWN </InitValue>
+				<SafeValue> UNKNOWN </SafeValue>
+			</Value>
+
+			<Formula>
+				<Expression>
+					/* Handle UNAVAILABLE case */		
+					if( (ds=='STARTUP' or ds=='ESTOP') or (spf_cap=='UNAVAILABLE') or (rx_cap=='UNAVAILABLE') )
+					{
+						res:= 'UNAVAILABLE';
+						return [0];
+					};
+
+					/* Handle STANDBY case */		
+					if( (dish=='STANDBY-LP' or dish=='STANDBY-FP') and (spf_cap=='STANDBY' or spf_cap=='OPERATE-DEGRADED' or spf_cap=='OPERATE-FULL') and (rx_cap=='STANDBY' or rx_cap=='OPERATE') )
+					{
+						res:= 'STANDBY';
+						return [0];
+					};
+
+					/* Handle CONFIGURING case */		
+					if( dish=='CONFIG' and (spf_cap=='OPERATE-DEGRADED' or spf_cap=='OPERATE-FULL') and (rx_cap=='CONFIGURE' or rx_cap=='OPERATE') )
+					{
+						res:= 'CONFIGURING';
+						return [0];
+					};
+
+					/* Handle OPERATE-DEGRADED case */		
+					if( (ds_indexer!='MOVING' and (ds=='POINT' or ds=='STOW') ) and (spf_cap=='OPERATE-DEGRADED') and (rx_cap=='OPERATE') )
+					{
+						res:= 'OPERATE-DEGRADED';
+						return [0];
+					};
+
+					/* Handle OPERATE-FULL case */		
+					if( (ds_indexer!='MOVING' and (ds=='POINT' or ds=='STOW') ) and (spf_cap=='OPERATE-FULL') and (rx_cap=='OPERATE') )
+					{
+						res:= 'OPERATE-FULL';
+						return [0];
+					};
+
+					res:= 'UNKNOWN';
+					return [-1];
+				</Expression>
+		
+
+				<FormulaVars>
+					<FormulaVar>
+						<Label> rx </Label>	
+						<Value> {{rx_controller}}/operatingMode </Value>
+						<InitDataValue> UNKNOWN </InitDataValue> <!-- {OFF,STARTUP,STANDBY-LP,STANDBY-FP,DATA-CAPTURE,CONFIGURE,MAINTENANCE} + {UNKNOWN,ERROR}-->
+						<ExpDataType> ENUM </ExpDataType>
+						<ExpDataFormat> SCALAR </ExpDataFormat>
+					</FormulaVar>
+					<FormulaVar>
+						<Label> spf </Label>	
+						<Value> {{spf_controller}}/operatingMode </Value>
+						<InitDataValue> UNKNOWN </InitDataValue> <!-- {OFF,STARTUP,STANDBY-LP,OPERATE,MAINTENANCE,ERROR} + {UNKNOWN}-->
+						<ExpDataType> ENUM </ExpDataType>
+						<ExpDataFormat> SCALAR </ExpDataFormat>
+					</FormulaVar>
+					<FormulaVar>
+						<Label> ds </Label>	
+						<Value> {{ds_manager}}/operatingMode </Value>
+						<InitDataValue> UNKNOWN </InitDataValue> <!-- {OFF,STARTUP,STANDBY,STOW,ESTOP,MAINTENANCE,POINT} + {UNKNOWN} -->
+						<ExpDataType> ENUM </ExpDataType>
+						<ExpDataFormat> SCALAR </ExpDataFormat>
+					</FormulaVar>	
+		
+					<FormulaVar>
+						<Label> rx_cap </Label>	
+						<Value> {{rx_controller}}/b5CapabilityState </Value>
+						<InitDataValue> UNKNOWN </InitDataValue> <!-- {UNAVAILABLE,STANDBY,CONFIGURE,OPERATE} + {UNKNOWN}-->
+						<ExpDataType> ENUM </ExpDataType>
+						<ExpDataFormat> SCALAR </ExpDataFormat>
+					</FormulaVar>
+					<FormulaVar>
+						<Label> spf_cap </Label>	
+						<Value> {{spf_controller}}/b5CapabilityState </Value>
+						<InitDataValue> UNKNOWN </InitDataValue> <!-- {UNAVAILABLE,STANDBY,OPERATE-DEGRADED,OPERATE-FULL} + {UNKNOWN}-->
+						<ExpDataType> ENUM </ExpDataType>
+						<ExpDataFormat> SCALAR </ExpDataFormat>
+					</FormulaVar>
+				
+					<FormulaVar>
+						<Label> dish </Label>	
+						<Value> dishMode </Value>
+						<InitDataValue> UNKNOWN </InitDataValue>
+						<ExpDataType> ENUM </ExpDataType>
+						<ExpDataFormat> SCALAR </ExpDataFormat>
+					</FormulaVar>
+
+					<FormulaVar>
+						<Label> ds_indexer </Label>	
+						<Value> {{ds_manager}}/indexerPosition </Value>
+						<InitDataValue> UNKNOWN </InitDataValue> <!-- {B1,...,B5} + {UNKNOWN,MOVING} -->
+						<ExpDataType> ENUM </ExpDataType>
+						<ExpDataFormat> SCALAR </ExpDataFormat>
+					</FormulaVar>	
+
+				</FormulaVars>
+
+				<EvaluationMode>
+					<Value> CHANGE </Value>
+					<Value> PERIODIC </Value>
+					<Value> USER </Value>
+				</EvaluationMode>
+			</Formula>
+		</Attribute>
+		{% endif %}
+
+		
+
+		<!-- ************************************************** -->
+		<!-- **      BAND CONFIGURATION ATTRIBUTES              -->
+		<!-- ************************************************** -->
+		<!--<Attribute name = "configuredBand" alias="configuredBand">-->
+		<Attribute name = "requestedBand" alias="requestedBand">
+			<Description> Band id requested to be configured (needed to know which band was requested in case of a device crash) </Description>
+			<DataType> ENUM </DataType>
+			<DataFormat> SCALAR </DataFormat> 
+			<RWType> READ_WRITE </RWType>	
+			<Memorized>  </Memorized>	
+			<PossibleValues>
+				<Value> NONE </Value>
+				<Value> B1 </Value>
+				<Value> B2 </Value>
+				<Value> B3 </Value>
+				<Value> B4 </Value>
+				<Value> B5 </Value>						
+			</PossibleValues>	
+			<Polling> 
+				<Period> {{dshmgr_default_poll_period}} </Period>
+			</Polling>
+			<Events>
+				<PushEvent> </PushEvent>
+				<PeriodicEvent>
+					<Period> {{dshmgr_default_periodic_event_period}} </Period>
+				</PeriodicEvent>
+				<ArchiveEvent>
+					<Period> {{dshmgr_default_archive_event_period}} </Period>
+				</ArchiveEvent>
+			</Events>	
+			<Value>
+				<InitValue> NONE </InitValue>
+				<SafeValue> NONE </SafeValue>
+			</Value>
+		</Attribute>
+
+
+		
+		<!--<Attribute name = "activeBand" alias="activeBand">-->
+		<Attribute name = "configuredBand" alias="configuredBand">
+			<Description> Band id currently configured (determined from sub-elements) </Description>
+			<DataType> ENUM </DataType>
+			<DataFormat> SCALAR </DataFormat> 
+			<RWType> READ </RWType>	
+			<PossibleValues>
+				<Value> UNKNOWN </Value>
+				<Value> B1 </Value>
+				<Value> B2 </Value>
+				<Value> B3 </Value>
+				<Value> B4 </Value>
+				<Value> B5 </Value>				
+				<Value> NONE </Value>
+				<Value> ERROR </Value>
+				<Value> UNDEFINED </Value>
+			</PossibleValues>	
+			<Polling> 
+				<Period> {{dshmgr_default_poll_period}} </Period>
+			</Polling>
+			<Events>
+				<PushEvent> </PushEvent>
+				<PeriodicEvent>
+					<Period> {{dshmgr_default_periodic_event_period}} </Period>
+				</PeriodicEvent>
+				<ArchiveEvent>
+					<Period> {{dshmgr_default_archive_event_period}} </Period>
+				</ArchiveEvent>
+			</Events>
+			<Value>
+				<InitValue> UNKNOWN </InitValue>
+				<SafeValue> UNKNOWN </SafeValue>
+			</Value>
+	
+			{% if lmc_config_mode == 'full' %}
+			<Formula>
+				<Expression> 
+					if( ds_indexer=='UNKNOWN' or rx_activeBand=='UNKNOWN' )
+					{
+						res:= 'UNKNOWN';
+						return [0];
+					};
+					if( ds_indexer=='MOVING' or rx_activeBand=='NONE' )
+					{
+						res:= 'NONE';
+						return [0];
+					};
+
+          if( ds_indexer=='B1' and rx_activeBand=='B1' )
+					{
+						res:= 'B1';
+						return [0];
+					};
+					if( ds_indexer=='B2' and rx_activeBand=='B2' )
+					{
+						res:= 'B2';
+						return [0];
+					};
+					if( ds_indexer=='B3' and rx_activeBand=='B3' )
+					{
+						res:= 'B3';
+						return [0];
+					};
+					if( ds_indexer=='B4' and rx_activeBand=='B4' )
+					{
+						res:= 'B4';
+						return [0];
+					};
+					if( ds_indexer=='B5' and rx_activeBand=='B5' )
+					{
+						res:= 'B5';
+						return [0];
+					};
+					
+					res:= 'UNDEFINED';
+					return [-1];
+				</Expression>
+		
+
+				<FormulaVars>
+					<FormulaVar>
+						<Label> ds_indexer </Label>	
+						<Value> {{ds_manager}}/indexerPosition </Value>
+						<InitDataValue> UNKNOWN </InitDataValue> <!-- {B1,...,B5} + {UNKNOWN,MOVING} -->
+						<ExpDataType> ENUM </ExpDataType>
+						<ExpDataFormat> SCALAR </ExpDataFormat>
+					</FormulaVar>
+					<FormulaVar>
+						<Label> rx_activeBand </Label>	
+						<Value> {{rx_controller}}/configuredBand </Value>
+						<InitDataValue> UNKNOWN </InitDataValue> <!-- {B1,...,B5} + {UNKNOWN,NONE} -->
+						<ExpDataType> ENUM </ExpDataType>
+						<ExpDataFormat> SCALAR </ExpDataFormat>
+					</FormulaVar>	
+				</FormulaVars>
+
+				<EvaluationMode>
+					<Value> CHANGE </Value>
+					<Value> PERIODIC </Value>
+					<Value> USER </Value>
+				</EvaluationMode>
+			</Formula>
+			{% endif %}
+		</Attribute>
+		
+
+		
+		<!-- ************************************************** -->
+		<!-- **      TASK STATUS ATTRIBUTES                     -->
+		<!-- ************************************************** -->
+
+		<!-- DISH TASK STATUS -->
+		{% if lmc_config_mode == 'full' or lmc_config_mode == 'ds' %}
+		<Attribute name = "setStowModeProgress" alias="setStowModeProgress">
+			<Description> Set dish stow mode task progress status </Description>
+			<DataType> STRING </DataType>
+			<DataFormat> SPECTRUM </DataFormat> 
+			<RWType> READ </RWType>	
+			<DimX> 2 </DimX>	
+			<Polling> 
+				<Period> {{dshmgr_default_poll_period}} </Period>
+			</Polling>
+			<Events>
+				<PushEvent> </PushEvent>
+				<PeriodicEvent>
+					<Period> {{dshmgr_default_periodic_event_period}} </Period>
+				</PeriodicEvent>
+				<ArchiveEvent>
+					<Period> {{dshmgr_default_archive_event_period}} </Period>
+				</ArchiveEvent>
+			</Events>	
+			<Value>
+				<InitValue> UNKNOWN </InitValue>
+				<SafeValue> UNKNOWN </SafeValue>
+			</Value>
+		</Attribute>
+		{% endif %}
+
+
+		{% if lmc_config_mode == 'full' or lmc_config_mode == 'ds' %}
+		<Attribute name = "setStandbyLPModeProgress" alias="setStandbyLPModeProgress">
+			<Description> Set dish STANDBY-LP mode task progress status </Description>
+			<DataType> STRING </DataType>
+			<DataFormat> SPECTRUM </DataFormat> 
+			<RWType> READ </RWType>	
+			<DimX> 2 </DimX>	
+			<Polling> 
+				<Period> {{dshmgr_default_poll_period}} </Period>
+			</Polling>
+			<Events>
+				<PushEvent> </PushEvent>
+				<PeriodicEvent>
+					<Period> {{dshmgr_default_periodic_event_period}} </Period>
+				</PeriodicEvent>
+				<ArchiveEvent>
+					<Period> {{dshmgr_default_archive_event_period}} </Period>
+				</ArchiveEvent>
+			</Events>	
+			<Value>
+				<InitValue> UNKNOWN </InitValue>
+				<SafeValue> UNKNOWN </SafeValue>
+			</Value>
+		</Attribute>
+		{% endif %}
+
+		{% if lmc_config_mode == 'full' %}
+		<Attribute name = "setStandbyFPModeProgress" alias="setStandbyFPModeProgress">
+			<Description> Dish set standbyFP task status </Description>
+			<DataType> STRING </DataType>
+			<DataFormat> SPECTRUM </DataFormat> 
+			<RWType> READ </RWType>	
+			<DimX> 2 </DimX>	
+			<Polling> 
+				<Period> {{dshmgr_default_poll_period}} </Period>
+			</Polling>
+			<Events>
+				<PushEvent> </PushEvent>
+				<PeriodicEvent>
+					<Period> {{dshmgr_default_periodic_event_period}} </Period>
+				</PeriodicEvent>
+				<ArchiveEvent>
+					<Period> {{dshmgr_default_archive_event_period}} </Period>
+				</ArchiveEvent>
+			</Events>	
+			<Value>
+				<InitValue> UNKNOWN </InitValue>
+				<SafeValue> UNKNOWN </SafeValue>
+			</Value>
+		</Attribute>
+		{% endif %}
+
+
+		{% if lmc_config_mode == 'full' %}
+		<Attribute name = "setMaintenanceModeProgress" alias="setMaintenanceModeProgress">
+			<Description> Dish set MAINTENANCE mode task progress status </Description>
+			<DataType> STRING </DataType>
+			<DataFormat> SPECTRUM </DataFormat> 
+			<RWType> READ </RWType>	
+			<DimX> 2 </DimX>	
+			<Polling> 
+				<Period> {{dshmgr_default_poll_period}} </Period>
+			</Polling>
+			<Events>
+				<PushEvent> </PushEvent>
+				<PeriodicEvent>
+					<Period> {{dshmgr_default_periodic_event_period}} </Period>
+				</PeriodicEvent>
+				<ArchiveEvent>
+					<Period> {{dshmgr_default_archive_event_period}} </Period>
+				</ArchiveEvent>
+			</Events>	
+			<Value>
+				<InitValue> UNKNOWN </InitValue>
+				<SafeValue> UNKNOWN </SafeValue>
+			</Value>
+		</Attribute>
+		{% endif %}
+
+		{% if lmc_config_mode == 'full' or lmc_config_mode == 'ds' %}
+		<Attribute name = "setOperateModeProgress" alias="setOperateModeProgress">
+			<Description> Set dish OPERATE mode task progress status </Description>
+			<DataType> STRING </DataType>
+			<DataFormat> SPECTRUM </DataFormat> 
+			<RWType> READ </RWType>	
+			<DimX> 2 </DimX>	
+			<Polling> 
+				<Period> {{dshmgr_default_poll_period}} </Period>
+			</Polling>
+			<Events>
+				<PushEvent> </PushEvent>
+				<PeriodicEvent>
+					<Period> {{dshmgr_default_periodic_event_period}} </Period>
+				</PeriodicEvent>
+				<ArchiveEvent>
+					<Period> {{dshmgr_default_archive_event_period}} </Period>
+				</ArchiveEvent>
+			</Events>	
+			<Value>
+				<InitValue> UNKNOWN </InitValue>
+				<SafeValue> UNKNOWN </SafeValue>
+			</Value>
+		</Attribute>
+		{% endif %}
+
+		{% if lmc_config_mode == 'full' %}
+		<Attribute name = "configureBandProgress" alias="configureBandProgress">
+			<Description> Configure band task progress status </Description>
+			<DataType> STRING </DataType>
+			<DataFormat> SPECTRUM </DataFormat> 
+			<RWType> READ </RWType>	
+			<DimX> 2 </DimX>	
+			<Polling> 
+				<Period> {{dshmgr_default_poll_period}} </Period>
+			</Polling>
+			<Events>
+				<PushEvent> </PushEvent>
+				<PeriodicEvent>
+					<Period> {{dshmgr_default_periodic_event_period}} </Period>
+				</PeriodicEvent>
+				<ArchiveEvent>
+					<Period> {{dshmgr_default_archive_event_period}} </Period>
+				</ArchiveEvent>
+			</Events>	
+			<Value>
+				<InitValue> UNKNOWN </InitValue>
+				<SafeValue> UNKNOWN </SafeValue>
+			</Value>
+		</Attribute>
+		{% endif %}
+
+
+
+		<!-- SUB-ELEMENT TASK STATUS -->
+		<!-- DS -->
+		{% if lmc_config_mode == 'full' or lmc_config_mode == 'ds' %}
+		<!--<Attribute name = "stowTaskStatus" alias="stowTaskStatus">	-->
+		<Attribute name = "dsStowProgress" alias="dsStowProgress">
+			<Description> DS stow task progress status </Description>
+			<DataType> STRING </DataType>
+			<DataFormat> SPECTRUM </DataFormat> 
+			<RWType> READ </RWType>	
+			<DimX> 2 </DimX>	
+			<Polling> 
+				<Period> {{dshmgr_default_poll_period}} </Period>
+			</Polling>
+			<Events>
+				<PushEvent> </PushEvent>
+				<PeriodicEvent>
+					<Period> {{dshmgr_default_periodic_event_period}} </Period>
+				</PeriodicEvent>
+				<ArchiveEvent>
+					<Period> {{dshmgr_default_archive_event_period}} </Period>
+				</ArchiveEvent>
+			</Events>	
+			<Value>
+				<InitValue> UNKNOWN </InitValue>
+				<SafeValue> UNKNOWN </SafeValue>
+			</Value>
+
+			<Formula>
+				<Expression> 
+					res_0:= x_0;
+					res_1:= x_1;
+					return [0];
+				</Expression>
+		
+				<FormulaVars>
+					<FormulaVar>
+						<Label> x </Label>	
+						<Value> {{ds_manager}}/stowProgress </Value>
+						<InitDataValue> UNKNOWN </InitDataValue>
+						<ExpDataType> STRING </ExpDataType>
+						<ExpDataFormat> SPECTRUM </ExpDataFormat>
+						<ExpDataSize> 2 </ExpDataSize>
+					</FormulaVar>
+				</FormulaVars>
+
+				<EvaluationMode>
+					<Value> CHANGE </Value>
+					<Value> PERIODIC </Value>
+					<Value> USER </Value>
+				</EvaluationMode>
+			</Formula>
+		
+		</Attribute>
+		{% endif %}
+
+		
+		{% if lmc_config_mode == 'full' or lmc_config_mode == 'ds' %}
+		<Attribute name = "dsIndexingProgress" alias="dsIndexingProgress">
+			<Description> DS indexing task progress status </Description>
+			<DataType> STRING </DataType>
+			<DataFormat> SPECTRUM </DataFormat> 
+			<RWType> READ </RWType>	
+			<DimX> 2 </DimX>	
+			<Polling> 
+				<Period> {{dshmgr_default_poll_period}} </Period>
+			</Polling>
+			<Events>
+				<PushEvent> </PushEvent>
+				<PeriodicEvent>
+					<Period> {{dshmgr_default_periodic_event_period}} </Period>
+				</PeriodicEvent>
+				<ArchiveEvent>
+					<Period> {{dshmgr_default_archive_event_period}} </Period>
+				</ArchiveEvent>
+			</Events>	
+			<Value>
+				<InitValue> UNKNOWN </InitValue>
+				<SafeValue> UNKNOWN </SafeValue>
+			</Value>
+
+			<Formula>
+				<Expression> 
+					res_0:= x_0;
+					res_1:= x_1;
+					return [0];
+				</Expression>
+		
+				<FormulaVars>
+					<FormulaVar>
+						<Label> x </Label>	
+						<Value> {{ds_manager}}/indexingProgress </Value>
+						<InitDataValue> UNKNOWN </InitDataValue>
+						<ExpDataType> STRING </ExpDataType>
+						<ExpDataFormat> SPECTRUM </ExpDataFormat>
+						<ExpDataSize> 2 </ExpDataSize>
+					</FormulaVar>
+				</FormulaVars>
+
+				<EvaluationMode>
+					<Value> CHANGE </Value>
+					<Value> PERIODIC </Value>
+					<Value> USER </Value>
+				</EvaluationMode>
+			</Formula>		
+		</Attribute>
+		{% endif %}
+
+
+		<!-- SPF -->
+		{% if lmc_config_mode == 'full' or lmc_config_mode == 'spf' %}
+		<Attribute name = "spfGoOperationalProgress" alias="spfGoOperationalProgress">
+			<Description> SPF go operational task progress. Set SPF to OPERATE mode and then turn on LNAs. </Description>
+			<DataType> STRING </DataType>
+			<DataFormat> SPECTRUM </DataFormat> 
+			<RWType> READ </RWType>	
+			<DimX> 3 </DimX>	
+			<Polling> 
+				<Period> {{dshmgr_default_poll_period}} </Period>
+			</Polling>
+			<Events>
+				<PushEvent> </PushEvent>
+				<PeriodicEvent>
+					<Period> {{dshmgr_default_periodic_event_period}} </Period>
+				</PeriodicEvent>
+				<ArchiveEvent>
+					<Period> {{dshmgr_default_archive_event_period}} </Period>
+				</ArchiveEvent>
+			</Events>	
+			<Value>
+				<InitValue> UNKNOWN </InitValue>
+				<SafeValue> UNKNOWN </SafeValue>
+			</Value>
+		</Attribute>
+		{% endif %}
+
+
+		{% if lmc_config_mode == 'full' or lmc_config_mode == 'spf' %}
+		<Attribute name = "spfSetOperateModeProgress" alias="spfSetOperateModeProgress">
+			<Description> SPF set operate mode status progress </Description>
+			<DataType> STRING </DataType>
+			<DataFormat> SPECTRUM </DataFormat> 
+			<RWType> READ </RWType>	
+			<DimX> 3 </DimX>	
+			<Polling> 
+				<Period> {{dshmgr_default_poll_period}} </Period>
+			</Polling>
+			<Events>
+				<PushEvent> </PushEvent>
+				<PeriodicEvent>
+					<Period> {{dshmgr_default_periodic_event_period}} </Period>
+				</PeriodicEvent>
+				<ArchiveEvent>
+					<Period> {{dshmgr_default_archive_event_period}} </Period>
+				</ArchiveEvent>
+			</Events>	
+			<Value>
+				<InitValue> UNKNOWN </InitValue>
+				<SafeValue> UNKNOWN </SafeValue>
+			</Value>
+
+			<Formula>
+				<Expression> 
+					res_0:= x_0;
+					res_1:= x_1;
+					res_2:= x_2;
+					return [0];
+				</Expression>
+		
+				<FormulaVars>
+					<FormulaVar>
+						<Label> x </Label>	
+						<Value> {{spf_controller}}/setOperateModeProgress </Value>
+						<InitDataValue> UNKNOWN </InitDataValue>
+						<ExpDataType> STRING </ExpDataType>
+						<ExpDataFormat> SPECTRUM </ExpDataFormat>
+						<ExpDataSize> 3 </ExpDataSize>
+					</FormulaVar>
+				</FormulaVars>
+
+				<EvaluationMode>
+					<Value> CHANGE </Value>
+					<Value> PERIODIC </Value>
+					<Value> USER </Value>
+				</EvaluationMode>
+			</Formula>
+		
+		</Attribute>
+		{% endif %}
+
+
+		
+		{% if lmc_config_mode == 'full' or lmc_config_mode == 'spf' %}
+		<Attribute name = "spfSetStandbyLPModeProgress" alias="spfSetStandbyLPModeProgress">
+			<Description> SPF set standby LP mode status progress </Description>
+			<DataType> STRING </DataType>
+			<DataFormat> SPECTRUM </DataFormat> 
+			<RWType> READ </RWType>	
+			<DimX> 3 </DimX>	
+			<Polling> 
+				<Period> {{dshmgr_default_poll_period}} </Period>
+			</Polling>
+			<Events>
+				<PushEvent> </PushEvent>
+				<PeriodicEvent>
+					<Period> {{dshmgr_default_periodic_event_period}} </Period>
+				</PeriodicEvent>
+				<ArchiveEvent>
+					<Period> {{dshmgr_default_archive_event_period}} </Period>
+				</ArchiveEvent>
+			</Events>	
+			<Value>
+				<InitValue> UNKNOWN </InitValue>
+				<SafeValue> UNKNOWN </SafeValue>
+			</Value>
+
+			<Formula>
+				<Expression> 
+					res_0:= x_0;
+					res_1:= x_1;
+					res_2:= x_2;
+					return [0];
+				</Expression>
+		
+				<FormulaVars>
+					<FormulaVar>
+						<Label> x </Label>	
+						<Value> {{spf_controller}}/setStandbyLPModeProgress </Value>
+						<InitDataValue> UNKNOWN </InitDataValue>
+						<ExpDataType> STRING </ExpDataType>
+						<ExpDataFormat> SPECTRUM </ExpDataFormat>
+						<ExpDataSize> 3 </ExpDataSize>
+					</FormulaVar>
+				</FormulaVars>
+
+				<EvaluationMode>
+					<Value> CHANGE </Value>
+					<Value> PERIODIC </Value>
+					<Value> USER </Value>
+				</EvaluationMode>
+			</Formula>
+		</Attribute>
+		{% endif %}
+
+
+		{% if lmc_config_mode == 'full' or lmc_config_mode == 'spf' %}
+		<Attribute name = "spfSetMaintenanceModeProgress" alias="spfSetMaintenanceModeProgress">
+			<Description> SPF set maintenance mode status progress </Description>
+			<DataType> STRING </DataType>
+			<DataFormat> SPECTRUM </DataFormat> 
+			<RWType> READ </RWType>	
+			<DimX> 3 </DimX>	
+			<Polling> 
+				<Period> {{dshmgr_default_poll_period}} </Period>
+			</Polling>
+			<Events>
+				<PushEvent> </PushEvent>
+				<PeriodicEvent>
+					<Period> {{dshmgr_default_periodic_event_period}} </Period>
+				</PeriodicEvent>
+				<ArchiveEvent>
+					<Period> {{dshmgr_default_archive_event_period}} </Period>
+				</ArchiveEvent>
+			</Events>	
+			<Value>
+				<InitValue> UNKNOWN </InitValue>
+				<SafeValue> UNKNOWN </SafeValue>
+			</Value>
+
+			<Formula>
+				<Expression> 
+					res_0:= x_0;
+					res_1:= x_1;
+					res_2:= x_2;
+					return [0];
+				</Expression>
+		
+				<FormulaVars>
+					<FormulaVar>
+						<Label> x </Label>	
+						<Value> {{spf_controller}}/setMaintenanceModeProgress </Value>
+						<InitDataValue> UNKNOWN </InitDataValue>
+						<ExpDataType> STRING </ExpDataType>
+						<ExpDataFormat> SPECTRUM </ExpDataFormat>
+						<ExpDataSize> 3 </ExpDataSize>
+					</FormulaVar>
+				</FormulaVars>
+
+				<EvaluationMode>
+					<Value> CHANGE </Value>
+					<Value> PERIODIC </Value>
+					<Value> USER </Value>
+				</EvaluationMode>
+			</Formula>
+		
+		</Attribute>
+		{% endif %}
+
+		{% if lmc_config_mode == 'full' or (lmc_config_mode == 'spf' and spf_enable_b1_in_config | bool) %}
+		<Attribute name = "spfSetB1FeedOperateModeProgress" alias="spfSetB1FeedOperateModeProgress">
+			<Description> SPF Set feed to OPERATE mode task progress status </Description>
+			<DataType> STRING </DataType>
+			<DataFormat> SPECTRUM </DataFormat> 
+			<RWType> READ </RWType>	
+			<DimX> 3 </DimX>	
+			<Polling> 
+				<Period> {{dshmgr_default_poll_period}} </Period>
+			</Polling>
+			<Events>
+				<PushEvent> </PushEvent>
+				<PeriodicEvent>
+					<Period> {{dshmgr_default_periodic_event_period}} </Period>
+				</PeriodicEvent>
+				<ArchiveEvent>
+					<Period> {{dshmgr_default_archive_event_period}} </Period>
+				</ArchiveEvent>
+			</Events>	
+			<Value>
+				<InitValue> UNKNOWN </InitValue>
+				<SafeValue> UNKNOWN </SafeValue>
+			</Value>
+
+			<Formula>
+				<Expression> 
+					res_0:= x_0;
+					res_1:= x_1;
+					res_2:= x_2;
+					return [0];
+				</Expression>
+		
+				<FormulaVars>
+					<FormulaVar>
+						<Label> x </Label>	
+						<Value> {{spf_controller}}/setB1FeedOperateModeProgress </Value>
+						<InitDataValue> UNKNOWN </InitDataValue>
+						<ExpDataType> STRING </ExpDataType>
+						<ExpDataFormat> SPECTRUM </ExpDataFormat>
+						<ExpDataSize> 3 </ExpDataSize>
+					</FormulaVar>
+				</FormulaVars>
+
+				<EvaluationMode>
+					<Value> CHANGE </Value>
+					<Value> PERIODIC </Value>
+					<Value> USER </Value>
+				</EvaluationMode>
+			</Formula>
+		
+		</Attribute>
+		{% endif %}
+
+
+		{% if lmc_config_mode == 'full' or (lmc_config_mode == 'spf' and spf_enable_b2_in_config | bool) %}
+		<Attribute name = "spfSetB2FeedOperateModeProgress" alias="spfSetB2FeedOperateModeProgress">
+			<Description> SPF Set feed to OPERATE mode task progress status </Description>
+			<DataType> STRING </DataType>
+			<DataFormat> SPECTRUM </DataFormat> 
+			<RWType> READ </RWType>	
+			<DimX> 3 </DimX>	
+			<Polling> 
+				<Period> {{dshmgr_default_poll_period}} </Period>
+			</Polling>
+			<Events>
+				<PushEvent> </PushEvent>
+				<PeriodicEvent>
+					<Period> {{dshmgr_default_periodic_event_period}} </Period>
+				</PeriodicEvent>
+				<ArchiveEvent>
+					<Period> {{dshmgr_default_archive_event_period}} </Period>
+				</ArchiveEvent>
+			</Events>	
+			<Value>
+				<InitValue> UNKNOWN </InitValue>
+				<SafeValue> UNKNOWN </SafeValue>
+			</Value>
+
+			<Formula>
+				<Expression> 
+					res_0:= x_0;
+					res_1:= x_1;
+					res_2:= x_2;
+					return [0];
+				</Expression>
+		
+				<FormulaVars>
+					<FormulaVar>
+						<Label> x </Label>	
+						<Value> {{spf_controller}}/setB2FeedOperateModeProgress </Value>
+						<InitDataValue> UNKNOWN </InitDataValue>
+						<ExpDataType> STRING </ExpDataType>
+						<ExpDataFormat> SPECTRUM </ExpDataFormat>
+						<ExpDataSize> 3 </ExpDataSize>
+					</FormulaVar>
+				</FormulaVars>
+
+				<EvaluationMode>
+					<Value> CHANGE </Value>
+					<Value> PERIODIC </Value>
+					<Value> USER </Value>
+				</EvaluationMode>
+			</Formula>
+		
+		</Attribute>
+		{% endif %}
+
+
+		{% if lmc_config_mode == 'full' or (lmc_config_mode == 'spf' and spf_enable_b3_in_config | bool) %}
+		<Attribute name = "spfSetB3FeedOperateModeProgress" alias="spfSetB3FeedOperateModeProgress">
+			<Description> SPF Set feed to OPERATE mode task progress status </Description>
+			<DataType> STRING </DataType>
+			<DataFormat> SPECTRUM </DataFormat> 
+			<RWType> READ </RWType>	
+			<DimX> 3 </DimX>	
+			<Polling> 
+				<Period> {{dshmgr_default_poll_period}} </Period>
+			</Polling>
+			<Events>
+				<PushEvent> </PushEvent>
+				<PeriodicEvent>
+					<Period> {{dshmgr_default_periodic_event_period}} </Period>
+				</PeriodicEvent>
+				<ArchiveEvent>
+					<Period> {{dshmgr_default_archive_event_period}} </Period>
+				</ArchiveEvent>
+			</Events>	
+			<Value>
+				<InitValue> UNKNOWN </InitValue>
+				<SafeValue> UNKNOWN </SafeValue>
+			</Value>
+
+			<Formula>
+				<Expression> 
+					res_0:= x_0;
+					res_1:= x_1;
+					res_2:= x_2;
+					return [0];
+				</Expression>
+		
+				<FormulaVars>
+					<FormulaVar>
+						<Label> x </Label>	
+						<Value> {{spf_controller}}/setB3FeedOperateModeProgress </Value>
+						<InitDataValue> UNKNOWN </InitDataValue>
+						<ExpDataType> STRING </ExpDataType>
+						<ExpDataFormat> SPECTRUM </ExpDataFormat>
+						<ExpDataSize> 3 </ExpDataSize>
+					</FormulaVar>
+				</FormulaVars>
+
+				<EvaluationMode>
+					<Value> CHANGE </Value>
+					<Value> PERIODIC </Value>
+					<Value> USER </Value>
+				</EvaluationMode>
+			</Formula>
+		
+		</Attribute>
+		{% endif %}
+
+		{% if lmc_config_mode == 'full' or (lmc_config_mode == 'spf' and spf_enable_b4_in_config | bool) %}
+		<Attribute name = "spfSetB4FeedOperateModeProgress" alias="spfSetB4FeedOperateModeProgress">
+			<Description> SPF Set feed to OPERATE mode task progress status </Description>
+			<DataType> STRING </DataType>
+			<DataFormat> SPECTRUM </DataFormat> 
+			<RWType> READ </RWType>	
+			<DimX> 3 </DimX>	
+			<Polling> 
+				<Period> {{dshmgr_default_poll_period}} </Period>
+			</Polling>
+			<Events>
+				<PushEvent> </PushEvent>
+				<PeriodicEvent>
+					<Period> {{dshmgr_default_periodic_event_period}} </Period>
+				</PeriodicEvent>
+				<ArchiveEvent>
+					<Period> {{dshmgr_default_archive_event_period}} </Period>
+				</ArchiveEvent>
+			</Events>	
+			<Value>
+				<InitValue> UNKNOWN </InitValue>
+				<SafeValue> UNKNOWN </SafeValue>
+			</Value>
+
+			<Formula>
+				<Expression> 
+					res_0:= x_0;
+					res_1:= x_1;
+					res_2:= x_2;
+					return [0];
+				</Expression>
+		
+				<FormulaVars>
+					<FormulaVar>
+						<Label> x </Label>	
+						<Value> {{spf_controller}}/setB4FeedOperateModeProgress </Value>
+						<InitDataValue> UNKNOWN </InitDataValue>
+						<ExpDataType> STRING </ExpDataType>
+						<ExpDataFormat> SPECTRUM </ExpDataFormat>
+						<ExpDataSize> 3 </ExpDataSize>
+					</FormulaVar>
+				</FormulaVars>
+
+				<EvaluationMode>
+					<Value> CHANGE </Value>
+					<Value> PERIODIC </Value>
+					<Value> USER </Value>
+				</EvaluationMode>
+			</Formula>
+		
+		</Attribute>
+		{% endif %}
+
+		{% if lmc_config_mode == 'full' or (lmc_config_mode == 'spf' and spf_enable_b5_in_config | bool) %}
+		<Attribute name = "spfSetB5FeedOperateModeProgress" alias="spfSetB5FeedOperateModeProgress">
+			<Description> SPF Set feed to OPERATE mode task progress status </Description>
+			<DataType> STRING </DataType>
+			<DataFormat> SPECTRUM </DataFormat> 
+			<RWType> READ </RWType>	
+			<DimX> 3 </DimX>	
+			<Polling> 
+				<Period> {{dshmgr_default_poll_period}} </Period>
+			</Polling>
+			<Events>
+				<PushEvent> </PushEvent>
+				<PeriodicEvent>
+					<Period> {{dshmgr_default_periodic_event_period}} </Period>
+				</PeriodicEvent>
+				<ArchiveEvent>
+					<Period> {{dshmgr_default_archive_event_period}} </Period>
+				</ArchiveEvent>
+			</Events>	
+			<Value>
+				<InitValue> UNKNOWN </InitValue>
+				<SafeValue> UNKNOWN </SafeValue>
+			</Value>
+
+			<Formula>
+				<Expression> 
+					res_0:= x_0;
+					res_1:= x_1;
+					res_2:= x_2;
+					return [0];
+				</Expression>
+		
+				<FormulaVars>
+					<FormulaVar>
+						<Label> x </Label>	
+						<Value> {{spf_controller}}/setB5FeedOperateModeProgress </Value>
+						<InitDataValue> UNKNOWN </InitDataValue>
+						<ExpDataType> STRING </ExpDataType>
+						<ExpDataFormat> SPECTRUM </ExpDataFormat>
+						<ExpDataSize> 3 </ExpDataSize>
+					</FormulaVar>
+				</FormulaVars>
+
+				<EvaluationMode>
+					<Value> CHANGE </Value>
+					<Value> PERIODIC </Value>
+					<Value> USER </Value>
+				</EvaluationMode>
+			</Formula>
+		
+		</Attribute>
+		{% endif %}
+		
+
+		{% if lmc_config_mode == 'full' or (lmc_config_mode == 'spf' and spf_enable_b1_in_config | bool) %}
+		<Attribute name = "spfSetB1FeedRegenerationModeProgress" alias="spfSetB1FeedRegenerationModeProgress">
+			<Description> SPF Set feed to REGENERATION mode task progress status </Description>
+			<DataType> STRING </DataType>
+			<DataFormat> SPECTRUM </DataFormat> 
+			<RWType> READ </RWType>	
+			<DimX> 3 </DimX>	
+			<Polling> 
+				<Period> {{dshmgr_default_poll_period}} </Period>
+			</Polling>
+			<Events>
+				<PushEvent> </PushEvent>
+				<PeriodicEvent>
+					<Period> {{dshmgr_default_periodic_event_period}} </Period>
+				</PeriodicEvent>
+				<ArchiveEvent>
+					<Period> {{dshmgr_default_archive_event_period}} </Period>
+				</ArchiveEvent>
+			</Events>	
+			<Value>
+				<InitValue> UNKNOWN </InitValue>
+				<SafeValue> UNKNOWN </SafeValue>
+			</Value>
+
+			<Formula>
+				<Expression> 
+					res_0:= x_0;
+					res_1:= x_1;
+					res_2:= x_2;
+					return [0];
+				</Expression>
+		
+				<FormulaVars>
+					<FormulaVar>
+						<Label> x </Label>	
+						<Value> {{spf_controller}}/setB1FeedRegenerationModeProgress </Value>
+						<InitDataValue> UNKNOWN </InitDataValue>
+						<ExpDataType> STRING </ExpDataType>
+						<ExpDataFormat> SPECTRUM </ExpDataFormat>
+						<ExpDataSize> 3 </ExpDataSize>
+					</FormulaVar>
+				</FormulaVars>
+
+				<EvaluationMode>
+					<Value> CHANGE </Value>
+					<Value> PERIODIC </Value>
+					<Value> USER </Value>
+				</EvaluationMode>
+			</Formula>
+		
+		</Attribute>
+		{% endif %}
+
+
+		{% if lmc_config_mode == 'full' or (lmc_config_mode == 'spf' and spf_enable_b2_in_config | bool) %}
+		<Attribute name = "spfSetB2FeedRegenerationModeProgress" alias="spfSetB2FeedRegenerationModeProgress">
+			<Description> SPF Set feed to REGENERATION mode task progress status </Description>
+			<DataType> STRING </DataType>
+			<DataFormat> SPECTRUM </DataFormat> 
+			<RWType> READ </RWType>	
+			<DimX> 3 </DimX>	
+			<Polling> 
+				<Period> {{dshmgr_default_poll_period}} </Period>
+			</Polling>
+			<Events>
+				<PushEvent> </PushEvent>
+				<PeriodicEvent>
+					<Period> {{dshmgr_default_periodic_event_period}} </Period>
+				</PeriodicEvent>
+				<ArchiveEvent>
+					<Period> {{dshmgr_default_archive_event_period}} </Period>
+				</ArchiveEvent>
+			</Events>	
+			<Value>
+				<InitValue> UNKNOWN </InitValue>
+				<SafeValue> UNKNOWN </SafeValue>
+			</Value>
+
+			<Formula>
+				<Expression> 
+					res_0:= x_0;
+					res_1:= x_1;
+					res_2:= x_2;
+					return [0];
+				</Expression>
+		
+				<FormulaVars>
+					<FormulaVar>
+						<Label> x </Label>	
+						<Value> {{spf_controller}}/setB2FeedRegenerationModeProgress </Value>
+						<InitDataValue> UNKNOWN </InitDataValue>
+						<ExpDataType> STRING </ExpDataType>
+						<ExpDataFormat> SPECTRUM </ExpDataFormat>
+						<ExpDataSize> 3 </ExpDataSize>
+					</FormulaVar>
+				</FormulaVars>
+
+				<EvaluationMode>
+					<Value> CHANGE </Value>
+					<Value> PERIODIC </Value>
+					<Value> USER </Value>
+				</EvaluationMode>
+			</Formula>
+		
+		</Attribute>
+		{% endif %}
+
+
+		{% if lmc_config_mode == 'full' or (lmc_config_mode == 'spf' and spf_enable_b3_in_config | bool) %}
+		<Attribute name = "spfSetB3FeedRegenerationModeProgress" alias="spfSetB3FeedRegenerationModeProgress">
+			<Description> SPF Set feed to REGENERATION mode task progress status </Description>
+			<DataType> STRING </DataType>
+			<DataFormat> SPECTRUM </DataFormat> 
+			<RWType> READ </RWType>	
+			<DimX> 3 </DimX>
+			<Polling> 
+				<Period> {{dshmgr_default_poll_period}} </Period>
+			</Polling>
+			<Events>
+				<PushEvent> </PushEvent>
+				<PeriodicEvent>
+					<Period> {{dshmgr_default_periodic_event_period}} </Period>
+				</PeriodicEvent>
+				<ArchiveEvent>
+					<Period> {{dshmgr_default_archive_event_period}} </Period>
+				</ArchiveEvent>
+			</Events>	
+			<Value>
+				<InitValue> UNKNOWN </InitValue>
+				<SafeValue> UNKNOWN </SafeValue>
+			</Value>
+
+			<Formula>
+				<Expression> 
+					res_0:= x_0;
+					res_1:= x_1;
+					res_2:= x_2;
+					return [0];
+				</Expression>
+		
+				<FormulaVars>
+					<FormulaVar>
+						<Label> x </Label>	
+						<Value> {{spf_controller}}/setB3FeedRegenerationModeProgress </Value>
+						<InitDataValue> UNKNOWN </InitDataValue>
+						<ExpDataType> STRING </ExpDataType>
+						<ExpDataFormat> SPECTRUM </ExpDataFormat>
+						<ExpDataSize> 3 </ExpDataSize>
+					</FormulaVar>
+				</FormulaVars>
+
+				<EvaluationMode>
+					<Value> CHANGE </Value>
+					<Value> PERIODIC </Value>
+					<Value> USER </Value>
+				</EvaluationMode>
+			</Formula>
+		
+		</Attribute>
+		{% endif %}
+
+		{% if lmc_config_mode == 'full' or (lmc_config_mode == 'spf' and spf_enable_b4_in_config | bool) %}
+		<Attribute name = "spfSetB4FeedRegenerationModeProgress" alias="spfSetB4FeedRegenerationModeProgress">
+			<Description> SPF Set feed to REGENERATION mode task progress status </Description>
+			<DataType> STRING </DataType>
+			<DataFormat> SPECTRUM </DataFormat> 
+			<RWType> READ </RWType>	
+			<DimX> 3 </DimX>	
+			<Polling> 
+				<Period> {{dshmgr_default_poll_period}} </Period>
+			</Polling>
+			<Events>
+				<PushEvent> </PushEvent>
+				<PeriodicEvent>
+					<Period> {{dshmgr_default_periodic_event_period}} </Period>
+				</PeriodicEvent>
+				<ArchiveEvent>
+					<Period> {{dshmgr_default_archive_event_period}} </Period>
+				</ArchiveEvent>
+			</Events>	
+			<Value>
+				<InitValue> UNKNOWN </InitValue>
+				<SafeValue> UNKNOWN </SafeValue>
+			</Value>
+
+			<Formula>
+				<Expression> 
+					res_0:= x_0;
+					res_1:= x_1;
+					res_2:= x_2;
+					return [0];
+				</Expression>
+		
+				<FormulaVars>
+					<FormulaVar>
+						<Label> x </Label>	
+						<Value> {{spf_controller}}/setB4FeedRegenerationModeProgress </Value>
+						<InitDataValue> UNKNOWN </InitDataValue>
+						<ExpDataType> STRING </ExpDataType>
+						<ExpDataFormat> SPECTRUM </ExpDataFormat>
+						<ExpDataSize> 3 </ExpDataSize>
+					</FormulaVar>
+				</FormulaVars>
+
+				<EvaluationMode>
+					<Value> CHANGE </Value>
+					<Value> PERIODIC </Value>
+					<Value> USER </Value>
+				</EvaluationMode>
+			</Formula>
+		
+		</Attribute>
+		{% endif %}
+
+		{% if lmc_config_mode == 'full' or (lmc_config_mode == 'spf' and spf_enable_b5_in_config | bool) %}
+		<Attribute name = "spfSetB5FeedRegenerationModeProgress" alias="spfSetB5FeedRegenerationModeProgress">
+			<Description> SPF Set feed to REGENERATION mode task progress status </Description>
+			<DataType> STRING </DataType>
+			<DataFormat> SPECTRUM </DataFormat> 
+			<RWType> READ </RWType>	
+			<DimX> 3 </DimX>	
+			<Polling> 
+				<Period> {{dshmgr_default_poll_period}} </Period>
+			</Polling>
+			<Events>
+				<PushEvent> </PushEvent>
+				<PeriodicEvent>
+					<Period> {{dshmgr_default_periodic_event_period}} </Period>
+				</PeriodicEvent>
+				<ArchiveEvent>
+					<Period> {{dshmgr_default_archive_event_period}} </Period>
+				</ArchiveEvent>
+			</Events>	
+			<Value>
+				<InitValue> UNKNOWN </InitValue>
+				<SafeValue> UNKNOWN </SafeValue>
+			</Value>
+
+			<Formula>
+				<Expression> 
+					res_0:= x_0;
+					res_1:= x_1;
+					res_2:= x_2;
+					return [0];
+				</Expression>
+		
+				<FormulaVars>
+					<FormulaVar>
+						<Label> x </Label>	
+						<Value> {{spf_controller}}/setB5FeedRegenerationModeProgress </Value>
+						<InitDataValue> UNKNOWN </InitDataValue>
+						<ExpDataType> STRING </ExpDataType>
+						<ExpDataFormat> SPECTRUM </ExpDataFormat>
+						<ExpDataSize> 3 </ExpDataSize>
+					</FormulaVar>
+				</FormulaVars>
+
+				<EvaluationMode>
+					<Value> CHANGE </Value>
+					<Value> PERIODIC </Value>
+					<Value> USER </Value>
+				</EvaluationMode>
+			</Formula>
+		
+		</Attribute>
+		{% endif %}
+
+		{% if lmc_config_mode == 'full' or (lmc_config_mode == 'spf' and spf_enable_b1_in_config | bool) %}
+		<Attribute name = "spfSetB1FeedStandbyLPModeProgress" alias="spfSetB1FeedStandbyLPModeProgress">
+			<Description> SPF set feed STANDBY-LP mode </Description>
+			<DataType> STRING </DataType>
+			<DataFormat> SPECTRUM </DataFormat> 
+			<RWType> READ </RWType>	
+			<DimX> 3 </DimX>	
+			<Polling> 
+				<Period> {{dshmgr_default_poll_period}} </Period>
+			</Polling>
+			<Events>
+				<PushEvent> </PushEvent>
+				<PeriodicEvent>
+					<Period> {{dshmgr_default_periodic_event_period}} </Period>
+				</PeriodicEvent>
+				<ArchiveEvent>
+					<Period> {{dshmgr_default_archive_event_period}} </Period>
+				</ArchiveEvent>
+			</Events>	
+			<Value>
+				<InitValue> UNKNOWN </InitValue>
+				<SafeValue> UNKNOWN </SafeValue>
+			</Value>
+
+			<Formula>
+				<Expression> 
+					res_0:= x_0;
+					res_1:= x_1;
+					res_2:= x_2;
+					return [0];
+				</Expression>
+		
+				<FormulaVars>
+					<FormulaVar>
+						<Label> x </Label>	
+						<Value> {{spf_controller}}/setB1FeedStandbyLPModeProgress </Value>
+						<InitDataValue> UNKNOWN </InitDataValue>
+						<ExpDataType> STRING </ExpDataType>
+						<ExpDataFormat> SPECTRUM </ExpDataFormat>
+						<ExpDataSize> 3 </ExpDataSize>
+					</FormulaVar>
+				</FormulaVars>
+
+				<EvaluationMode>
+					<Value> CHANGE </Value>
+					<Value> PERIODIC </Value>
+					<Value> USER </Value>
+				</EvaluationMode>
+			</Formula>		
+		</Attribute>
+		{% endif %}
+
+		{% if lmc_config_mode == 'full' or (lmc_config_mode == 'spf' and spf_enable_b2_in_config | bool) %}
+		<Attribute name = "spfSetB2FeedStandbyLPModeProgress" alias="spfSetB2FeedStandbyLPModeProgress">
+			<Description> SPF set feed STANDBY-LP mode </Description>
+			<DataType> STRING </DataType>
+			<DataFormat> SPECTRUM </DataFormat> 
+			<RWType> READ </RWType>	
+			<DimX> 3 </DimX>	
+			<Polling> 
+				<Period> {{dshmgr_default_poll_period}} </Period>
+			</Polling>
+			<Events>
+				<PushEvent> </PushEvent>
+				<PeriodicEvent>
+					<Period> {{dshmgr_default_periodic_event_period}} </Period>
+				</PeriodicEvent>
+				<ArchiveEvent>
+					<Period> {{dshmgr_default_archive_event_period}} </Period>
+				</ArchiveEvent>
+			</Events>	
+			<Value>
+				<InitValue> UNKNOWN </InitValue>
+				<SafeValue> UNKNOWN </SafeValue>
+			</Value>
+
+			<Formula>
+				<Expression> 
+					res_0:= x_0;
+					res_1:= x_1;
+					res_2:= x_2;
+					return [0];
+				</Expression>
+		
+				<FormulaVars>
+					<FormulaVar>
+						<Label> x </Label>	
+						<Value> {{spf_controller}}/setB2FeedStandbyLPModeProgress </Value>
+						<InitDataValue> UNKNOWN </InitDataValue>
+						<ExpDataType> STRING </ExpDataType>
+						<ExpDataFormat> SPECTRUM </ExpDataFormat>
+						<ExpDataSize> 3 </ExpDataSize>
+					</FormulaVar>
+				</FormulaVars>
+
+				<EvaluationMode>
+					<Value> CHANGE </Value>
+					<Value> PERIODIC </Value>
+					<Value> USER </Value>
+				</EvaluationMode>
+			</Formula>
+		
+		</Attribute>
+		{% endif %}
+
+		{% if lmc_config_mode == 'full' or (lmc_config_mode == 'spf' and spf_enable_b3_in_config | bool) %}
+		<Attribute name = "spfSetB3FeedStandbyLPModeProgress" alias="spfSetB3FeedStandbyLPModeProgress">
+			<Description> SPF set feed STANDBY-LP mode </Description>
+			<DataType> STRING </DataType>
+			<DataFormat> SPECTRUM </DataFormat> 
+			<RWType> READ </RWType>	
+			<DimX> 3 </DimX>	
+			<Polling> 
+				<Period> {{dshmgr_default_poll_period}} </Period>
+			</Polling>
+			<Events>
+				<PushEvent> </PushEvent>
+				<PeriodicEvent>
+					<Period> {{dshmgr_default_periodic_event_period}} </Period>
+				</PeriodicEvent>
+				<ArchiveEvent>
+					<Period> {{dshmgr_default_archive_event_period}} </Period>
+				</ArchiveEvent>
+			</Events>	
+			<Value>
+				<InitValue> UNKNOWN </InitValue>
+				<SafeValue> UNKNOWN </SafeValue>
+			</Value>
+
+			<Formula>
+				<Expression> 
+					res_0:= x_0;
+					res_1:= x_1;
+					res_2:= x_2;
+					return [0];
+				</Expression>
+		
+				<FormulaVars>
+					<FormulaVar>
+						<Label> x </Label>	
+						<Value> {{spf_controller}}/setB3FeedStandbyLPModeProgress </Value>
+						<InitDataValue> UNKNOWN </InitDataValue>
+						<ExpDataType> STRING </ExpDataType>
+						<ExpDataFormat> SPECTRUM </ExpDataFormat>
+						<ExpDataSize> 3 </ExpDataSize>
+					</FormulaVar>
+				</FormulaVars>
+
+				<EvaluationMode>
+					<Value> CHANGE </Value>
+					<Value> PERIODIC </Value>
+					<Value> USER </Value>
+				</EvaluationMode>
+			</Formula>
+		
+		</Attribute>
+		{% endif %}
+
+		{% if lmc_config_mode == 'full' or (lmc_config_mode == 'spf' and spf_enable_b4_in_config | bool) %}
+		<Attribute name = "spfSetB4FeedStandbyLPModeProgress" alias="spfSetB4FeedStandbyLPModeProgress">
+			<Description> SPF set feed STANDBY-LP mode </Description>
+			<DataType> STRING </DataType>
+			<DataFormat> SPECTRUM </DataFormat> 
+			<RWType> READ </RWType>	
+			<DimX> 3 </DimX>	
+			<Polling> 
+				<Period> {{dshmgr_default_poll_period}} </Period>
+			</Polling>
+			<Events>
+				<PushEvent> </PushEvent>
+				<PeriodicEvent>
+					<Period> {{dshmgr_default_periodic_event_period}} </Period>
+				</PeriodicEvent>
+				<ArchiveEvent>
+					<Period> {{dshmgr_default_archive_event_period}} </Period>
+				</ArchiveEvent>
+			</Events>	
+			<Value>
+				<InitValue> UNKNOWN </InitValue>
+				<SafeValue> UNKNOWN </SafeValue>
+			</Value>
+
+			<Formula>
+				<Expression> 
+					res_0:= x_0;
+					res_1:= x_1;	
+					res_2:= x_2;
+					return [0];
+				</Expression>
+		
+				<FormulaVars>
+					<FormulaVar>
+						<Label> x </Label>	
+						<Value> {{spf_controller}}/setB4FeedStandbyLPModeProgress </Value>
+						<InitDataValue> UNKNOWN </InitDataValue>
+						<ExpDataType> STRING </ExpDataType>
+						<ExpDataFormat> SPECTRUM </ExpDataFormat>
+						<ExpDataSize> 3 </ExpDataSize>
+					</FormulaVar>
+				</FormulaVars>
+
+				<EvaluationMode>
+					<Value> CHANGE </Value>
+					<Value> PERIODIC </Value>
+					<Value> USER </Value>
+				</EvaluationMode>
+			</Formula>
+		
+		</Attribute>
+		{% endif %}
+
+		{% if lmc_config_mode == 'full' or (lmc_config_mode == 'spf' and spf_enable_b5_in_config | bool) %}
+		<Attribute name = "spfSetB5FeedStandbyLPModeProgress" alias="spfSetB5FeedStandbyLPModeProgress">
+			<Description> SPF set feed STANDBY-LP mode </Description>
+			<DataType> STRING </DataType>
+			<DataFormat> SPECTRUM </DataFormat> 
+			<RWType> READ </RWType>	
+			<DimX> 3 </DimX>	
+			<Polling> 
+				<Period> {{dshmgr_default_poll_period}} </Period>
+			</Polling>
+			<Events>
+				<PushEvent> </PushEvent>
+				<PeriodicEvent>
+					<Period> {{dshmgr_default_periodic_event_period}} </Period>
+				</PeriodicEvent>
+				<ArchiveEvent>
+					<Period> {{dshmgr_default_archive_event_period}} </Period>
+				</ArchiveEvent>
+			</Events>	
+			<Value>
+				<InitValue> UNKNOWN </InitValue>
+				<SafeValue> UNKNOWN </SafeValue>
+			</Value>
+
+			<Formula>
+				<Expression> 
+					res_0:= x_0;
+					res_1:= x_1;
+					res_2:= x_2;
+					return [0];
+				</Expression>
+		
+				<FormulaVars>
+					<FormulaVar>
+						<Label> x </Label>	
+						<Value> {{spf_controller}}/setB5FeedStandbyLPModeProgress </Value>
+						<InitDataValue> UNKNOWN </InitDataValue>
+						<ExpDataType> STRING </ExpDataType>
+						<ExpDataFormat> SPECTRUM </ExpDataFormat>
+						<ExpDataSize> 3 </ExpDataSize>
+					</FormulaVar>
+				</FormulaVars>
+
+				<EvaluationMode>
+					<Value> CHANGE </Value>
+					<Value> PERIODIC </Value>
+					<Value> USER </Value>
+				</EvaluationMode>
+			</Formula>
+		
+		</Attribute>
+		{% endif %}
+
+		<!-- Rx -->
+		{% if lmc_config_mode == 'full' or lmc_config_mode == 'rx' %}
+		<Attribute name = "rxConfigureBandProgress" alias="rxConfigureBandProgress">
+			<Description> Rx configure band task progress status </Description>
+			<DataType> STRING </DataType>
+			<DataFormat> SPECTRUM </DataFormat> 
+			<RWType> READ </RWType>	
+			<DimX> 3 </DimX>	
+			<Polling> 
+				<Period> {{dshmgr_default_poll_period}} </Period>
+			</Polling>
+			<Events>
+				<PushEvent> </PushEvent>
+				<PeriodicEvent>
+					<Period> {{dshmgr_default_periodic_event_period}} </Period>
+				</PeriodicEvent>
+				<ArchiveEvent>
+					<Period> {{dshmgr_default_archive_event_period}} </Period>
+				</ArchiveEvent>
+			</Events>	
+			<Value>
+				<InitValue> UNKNOWN </InitValue>
+				<SafeValue> UNKNOWN </SafeValue>
+			</Value>
+
+			<Formula>
+				<Expression> 
+					res_0:= x_0;
+					res_1:= x_1;
+					res_2:= x_2;
+					return [0];
+				</Expression>
+		
+				<FormulaVars>
+					<FormulaVar>
+						<Label> x </Label>	
+						<Value> {{rx_controller}}/configureBandProgress </Value>
+						<InitDataValue> UNKNOWN </InitDataValue>
+						<ExpDataType> STRING </ExpDataType>
+						<ExpDataFormat> SPECTRUM </ExpDataFormat>
+						<ExpDataSize> 3 </ExpDataSize>
+					</FormulaVar>
+				</FormulaVars>
+
+				<EvaluationMode>
+					<Value> CHANGE </Value>
+					<Value> PERIODIC </Value>
+					<Value> USER </Value>
+				</EvaluationMode>
+			</Formula>
+		
+		</Attribute>
+		{% endif %}
+
+
+		
+
+
+		<!-- Event handler tasks -->
+		{% if lmc_config_mode == 'full' %}
+		<Attribute name = "shutdownOnPowerCutStatus" alias="shutdownOnPowerCutStatus">
+			<Description> Dish shutdown (on power cut event) task status </Description>
+			<DataType> STRING </DataType>
+			<DataFormat> SPECTRUM </DataFormat> 
+			<RWType> READ </RWType>	
+			<DimX> 2 </DimX>	
+			<Polling> 
+				<Period> {{dshmgr_default_poll_period}} </Period>
+			</Polling>
+			<Events>
+				<PushEvent> </PushEvent>
+				<PeriodicEvent>
+					<Period> {{dshmgr_default_periodic_event_period}} </Period>
+				</PeriodicEvent>
+				<ArchiveEvent>
+					<Period> {{dshmgr_default_archive_event_period}} </Period>
+				</ArchiveEvent>
+			</Events>	
+			<Value>
+				<InitValue> UNKNOWN </InitValue>
+				<SafeValue> UNKNOWN </SafeValue>
+			</Value>
+		</Attribute>
+		{% endif %}
+
+
+		{% if lmc_config_mode == 'full' or lmc_config_mode == 'rx' %}
+		<Attribute name = "standbyFPOnESTOPStatus" alias="standbyFPOnESTOPStatus">
+			<Description> Dish set standbyFP task status (on ESTOP event) </Description>
+			<DataType> STRING </DataType>
+			<DataFormat> SPECTRUM </DataFormat> 
+			<RWType> READ </RWType>	
+			<DimX> 2 </DimX>	
+			<Polling> 
+				<Period> {{dshmgr_default_poll_period}} </Period>
+			</Polling>
+			<Events>
+				<PushEvent> </PushEvent>
+				<PeriodicEvent>
+					<Period> {{dshmgr_default_periodic_event_period}} </Period>
+				</PeriodicEvent>
+				<ArchiveEvent>
+					<Period> {{dshmgr_default_archive_event_period}} </Period>
+				</ArchiveEvent>
+			</Events>	
+			<Value>
+				<InitValue> UNKNOWN </InitValue>
+				<SafeValue> UNKNOWN </SafeValue>
+			</Value>
+		</Attribute>
+		{% endif %}
+
+		<!-- ************************************************** -->
+		<!--               FWD ATTRS                            -->
+		<!-- ************************************************** -->
+		
+
+		<!-- == DS fwd attributes == -->
+		{% if lmc_config_mode == 'full' or lmc_config_mode == 'ds' %}
+		<FwdAttribute name = "desiredPointing" alias="desiredPointing">
+			<Label> Desired pointing </Label>
+			<Url> {{ds_manager}}/desiredPointing </Url>	
+		</FwdAttribute>
+
+		<FwdAttribute name = "achievedPointing" alias="achievedPointing">
+			<Label> Desired pointing </Label>
+			<Url> {{ds_manager}}/achievedPointing </Url>
+		</FwdAttribute>
+
+		<FwdAttribute name = "pointingModelParams" alias="pointingModelParams">
+			<Label> Pointing model pars </Label>
+			<Url> {{ds_manager}}/pointingModelParams </Url>
+		</FwdAttribute>
+
+		<FwdAttribute name = "targetLock" alias="targetLock">
+			<Label> Target lock </Label>
+			<Url> {{ds_manager}}/targetLock </Url>
+		</FwdAttribute>
+		{% endif %}
+
+		<!-- == Rx fwd attributes == -->
+		{% if lmc_config_mode == 'full' or lmc_config_mode == 'rx' %}
+		<FwdAttribute name = "attenuation" alias="attenuation">
+			<Label> Global receiver attenuation </Label>
+			<Url> {{rx_controller}}/attenuation </Url>	
+		</FwdAttribute>
+
+		<FwdAttribute name = "noiseDiodeConfig" alias="noiseDiodeConfig">
+			<Label> Noise diode config params </Label>
+			<Url> {{rx_controller}}/noiseDiodeConfig </Url>	
+		</FwdAttribute>
+		{% endif %}
+	
+		<!-- == SPF fwd attributes == -->
+		<!-- State & Mode attrs -->
+		{% if lmc_config_mode == 'full' or lmc_config_mode == 'spf' %}
+		<FwdAttribute name = "spfOperatingMode" alias="spfOperatingMode">
+			<Label> SPF Operating Mode </Label>
+			<Url> {{spf_controller}}/operatingMode </Url>
+		</FwdAttribute>
+		{% endif %}
+	
+		{% if lmc_config_mode == 'full' or lmc_config_mode == 'spf' %}
+		<FwdAttribute name = "spfPowerState" alias="spfPowerState">
+			<Label> SPF Power State </Label>
+			<Url> {{spf_controller}}/powerState </Url>
+		</FwdAttribute>
+		{% endif %}
+
+		{% if lmc_config_mode == 'full' or lmc_config_mode == 'spf' %}
+		<FwdAttribute name = "spfHealthState" alias="spfHealthState">
+			<Label> SPF Health State </Label>
+			<Url> {{spf_controller}}/healthState </Url>
+		</FwdAttribute>
+		{% endif %}
+
+		{% if lmc_config_mode == 'full' or (lmc_config_mode == 'spf' and spf_enable_b1_in_config | bool) %}
+		<FwdAttribute name = "spfB1CapabilityState" alias="spfB1CapabilityState">
+			<Label> SPF Band 1 Capability State </Label>
+			<Url> {{spf_controller}}/b1CapabilityState </Url>
+		</FwdAttribute>
+		{% endif %}
+
+		{% if lmc_config_mode == 'full' or (lmc_config_mode == 'spf' and spf_enable_b2_in_config | bool) %}
+		<FwdAttribute name = "spfB2CapabilityState" alias="spfB2CapabilityState">
+			<Label> SPF Band 2 Capability State </Label>
+			<Url> {{spf_controller}}/b2CapabilityState </Url>
+		</FwdAttribute>
+		{% endif %}
+
+		{% if lmc_config_mode == 'full' or (lmc_config_mode == 'spf' and spf_enable_b3_in_config | bool) %}
+		<FwdAttribute name = "spfB3CapabilityState" alias="spfB3CapabilityState">
+			<Label> SPF Band 3 Capability State </Label>
+			<Url> {{spf_controller}}/b3CapabilityState </Url>
+		</FwdAttribute>
+		{% endif %}
+
+		{% if lmc_config_mode == 'full' or (lmc_config_mode == 'spf' and spf_enable_b4_in_config | bool) %}
+		<FwdAttribute name = "spfB4CapabilityState" alias="spfB4CapabilityState">
+			<Label> SPF Band 4 Capability State </Label>
+			<Url> {{spf_controller}}/b4CapabilityState </Url>
+		</FwdAttribute>
+		{% endif %}
+
+		{% if lmc_config_mode == 'full' or (lmc_config_mode == 'spf' and spf_enable_b5_in_config | bool) %}
+		<FwdAttribute name = "spfB5CapabilityState" alias="spfB5CapabilityState">
+			<Label> SPF Band 5 Capability State </Label>
+			<Url> {{spf_controller}}/b5CapabilityState </Url>
+		</FwdAttribute>
+		{% endif %}
+		
+		{% if lmc_config_mode == 'full' or (lmc_config_mode == 'spf' and spf_enable_b1_in_config | bool) %}
+		<FwdAttribute name = "spfB1HealthState" alias="spfB1HealthState">
+			<Label> SPF Band 1 Health State </Label>
+			<Url> {{spf_controller}}/b1HealthState </Url>
+		</FwdAttribute>
+		{% endif %}
+		
+		{% if lmc_config_mode == 'full' or (lmc_config_mode == 'spf' and spf_enable_b2_in_config | bool) %}
+		<FwdAttribute name = "spfB2HealthState" alias="spfB2HealthState">
+			<Label> SPF Band 2 Health State </Label>
+			<Url> {{spf_controller}}/b2HealthState </Url>
+		</FwdAttribute>
+		{% endif %}
+
+		{% if lmc_config_mode == 'full' or (lmc_config_mode == 'spf' and spf_enable_b3_in_config | bool) %}
+		<FwdAttribute name = "spfB3HealthState" alias="spfB3HealthState">
+			<Label> SPF Band 3 Health State </Label>
+			<Url> {{spf_controller}}/b3HealthState </Url>
+		</FwdAttribute>
+		{% endif %}
+
+		{% if lmc_config_mode == 'full' or (lmc_config_mode == 'spf' and spf_enable_b4_in_config | bool) %}
+		<FwdAttribute name = "spfB4HealthState" alias="spfB4HealthState">
+			<Label> SPF Band 4 Health State </Label>
+			<Url> {{spf_controller}}/b4HealthState </Url>
+		</FwdAttribute>
+		{% endif %}
+
+		{% if lmc_config_mode == 'full' or (lmc_config_mode == 'spf' and spf_enable_b5_in_config | bool) %}
+		<FwdAttribute name = "spfB5HealthState" alias="spfB5HealthState">
+			<Label> SPF Band 5 Health State </Label>
+			<Url> {{spf_controller}}/b5HealthState </Url>
+		</FwdAttribute>
+		{% endif %}
+
+		{% if lmc_config_mode == 'full' or (lmc_config_mode == 'spf' and spf_enable_b1_in_config | bool) %}
+		<FwdAttribute name = "spfB1OperatingState" alias="spfB1OperatingState">
+			<Label> SPF Band 1 Operating State </Label>
+			<Url> {{spf_controller}}/b1OperatingState </Url>
+		</FwdAttribute>
+		{% endif %}
+
+		{% if lmc_config_mode == 'full' or (lmc_config_mode == 'spf' and spf_enable_b2_in_config | bool) %}
+		<FwdAttribute name = "spfB2OperatingState" alias="spfB2OperatingState">
+			<Label> SPF Band 2 Operating State </Label>
+			<Url> {{spf_controller}}/b2OperatingState </Url>
+		</FwdAttribute>
+		{% endif %}
+
+		{% if lmc_config_mode == 'full' or (lmc_config_mode == 'spf' and spf_enable_b3_in_config | bool) %}
+		<FwdAttribute name = "spfB3OperatingState" alias="spfB3OperatingState">
+			<Label> SPF Band 3 Operating State </Label>
+			<Url> {{spf_controller}}/b3OperatingState </Url>
+		</FwdAttribute>
+		{% endif %}
+
+		{% if lmc_config_mode == 'full' or (lmc_config_mode == 'spf' and spf_enable_b4_in_config | bool) %}
+		<FwdAttribute name = "spfB4OperatingState" alias="spfB4OperatingState">
+			<Label> SPF Band 4 Operating State </Label>
+			<Url> {{spf_controller}}/b4OperatingState </Url>
+		</FwdAttribute>
+		{% endif %}
+		
+		{% if lmc_config_mode == 'full' or (lmc_config_mode == 'spf' and spf_enable_b5_in_config | bool) %}
+		<FwdAttribute name = "spfB5OperatingState" alias="spfB5OperatingState">
+			<Label> SPF Band 5 Operating State </Label>
+			<Url> {{spf_controller}}/b5OperatingState </Url>
+		</FwdAttribute>
+		{% endif %}
+
+		{% if lmc_config_mode == 'full' or lmc_config_mode == 'spf' %}
+		<FwdAttribute name = "spfHeHealthState" alias="spfHeHealthState">
+			<Label> SPF Helium Health State </Label>
+			<Url> {{spf_controller}}/heHealthState </Url>
+		</FwdAttribute>
+		{% endif %}
+
+		{% if lmc_config_mode == 'full' or lmc_config_mode == 'spf' %}
+		<FwdAttribute name = "spfHeOperatingState" alias="spfHeOperatingState">
+			<Label> SPF Helium Operating State </Label>
+			<Url> {{spf_controller}}/heOperatingState </Url>
+		</FwdAttribute>
+		{% endif %}
+
+		{% if lmc_config_mode == 'full' or lmc_config_mode == 'spf' %}
+		<FwdAttribute name = "spfVaHealthState" alias="spfVaHealthState">
+			<Label> SPF Vacuum Health State </Label>
+			<Url> {{spf_controller}}/vaHealthState </Url>
+		</FwdAttribute>
+		{% endif %}
+
+		{% if lmc_config_mode == 'full' or lmc_config_mode == 'spf' %}
+		<FwdAttribute name = "spfVaOperatingState" alias="spfVaOperatingState">
+			<Label> SPF Vacuum Operating State </Label>
+			<Url> {{spf_controller}}/vaOperatingState </Url>
+		</FwdAttribute>
+		{% endif %}
+
+		{% if lmc_config_mode == 'full' or lmc_config_mode == 'spf' %}
+		<FwdAttribute name = "spfCtrlHealthState" alias="spfCtrlHealthState">
+			<Label> SPF SPFC Health State </Label>
+			<Url> {{spf_controller}}/spfcHealthState </Url>
+		</FwdAttribute>
+		{% endif %}
+
+		{% if lmc_config_mode == 'full' or lmc_config_mode == 'spf' %}
+		<FwdAttribute name = "spfInterfaceType" alias="spfInterfaceType">
+			<Label> SPF Interface Type </Label>
+			<Url> {{spf_controller}}/interfaceType </Url>
+		</FwdAttribute>
+		{% endif %}
+
+		<!-- Task progress status attr -->	
+		<!--
+		<FwdAttribute name = "spfOperateTaskStatus" alias="spfOperateTaskStatus">
+			<Label> SPF Operate Task Status </Label>
+			<Url> {{spf_controller}}/operateTaskStatus </Url>
+		</FwdAttribute>
+
+		<FwdAttribute name = "spfB1FeedFullPerfTaskStatus" alias="spfB1FeedFullPerfTaskStatus">
+			<Label> SPF Set B1 feed to FULL-PERFORMANCES mode task status </Label>
+			<Url> {{spf_controller}}/b1FeedFullPerfTaskStatus </Url>
+		</FwdAttribute>
+		<FwdAttribute name = "spfB2FeedFullPerfTaskStatus" alias="spfB2FeedFullPerfTaskStatus">
+			<Label> SPF Set B2 feed to FULL-PERFORMANCES mode task status </Label>
+			<Url> {{spf_controller}}/b2FeedFullPerfTaskStatus </Url>
+		</FwdAttribute>
+		<FwdAttribute name = "spfB3FeedFullPerfTaskStatus" alias="spfB3FeedFullPerfTaskStatus">
+			<Label> SPF Set B3 feed to FULL-PERFORMANCES mode task status </Label>
+			<Url> {{spf_controller}}/b3FeedFullPerfTaskStatus </Url>
+		</FwdAttribute>
+		<FwdAttribute name = "spfB4FeedFullPerfTaskStatus" alias="spfB4FeedFullPerfTaskStatus">
+			<Label> SPF Set B4 feed to FULL-PERFORMANCES mode task status </Label>
+			<Url> {{spf_controller}}/b4FeedFullPerfTaskStatus </Url>
+		</FwdAttribute>
+		<FwdAttribute name = "spfB5FeedFullPerfTaskStatus" alias="spfB5FeedFullPerfTaskStatus">
+			<Label> SPF Set B5 feed to FULL-PERFORMANCES mode task status </Label>
+			<Url> {{spf_controller}}/b5FeedFullPerfTaskStatus </Url>
+		</FwdAttribute>
+		
+		<FwdAttribute name = "spfB1FeedRegenerationTaskStatus" alias="spfB1FeedRegenerationTaskStatus">
+			<Label> SPF Set B1 feed to DO-REGENERATION mode task status </Label>
+			<Url> {{spf_controller}}/b1FeedRegenerationTaskStatus </Url>
+		</FwdAttribute>
+		<FwdAttribute name = "spfB2FeedRegenerationTaskStatus" alias="spfB2FeedRegenerationTaskStatus">
+			<Label> SPF Set B2 feed to DO-REGENERATION mode task status </Label>
+			<Url> {{spf_controller}}/b2FeedRegenerationTaskStatus </Url>
+		</FwdAttribute>
+		<FwdAttribute name = "spfB3FeedRegenerationTaskStatus" alias="spfB3FeedRegenerationTaskStatus">
+			<Label> SPF Set B3 feed to DO-REGENERATION mode task status </Label>
+			<Url> {{spf_controller}}/b3FeedRegenerationTaskStatus </Url>
+		</FwdAttribute>
+		<FwdAttribute name = "spfB4FeedRegenerationTaskStatus" alias="spfB4FeedRegenerationTaskStatus">
+			<Label> SPF Set B4 feed to DO-REGENERATION mode task status </Label>
+			<Url> {{spf_controller}}/b4FeedRegenerationTaskStatus </Url>
+		</FwdAttribute>
+		<FwdAttribute name = "spfB5FeedRegenerationTaskStatus" alias="spfB5FeedRegenerationTaskStatus">
+			<Label> SPF Set B5 feed to DO-REGENERATION mode task status </Label>
+			<Url> {{spf_controller}}/b5FeedRegenerationTaskStatus </Url>
+		</FwdAttribute>
+		-->
+
+		<!-- Control and setup attr -->
+		{% if lmc_config_mode == 'full' or lmc_config_mode == 'spf' %}
+		<FwdAttribute name = "spfBandInFocus" alias="spfBandInFocus">
+			<Label> SPF band id in focus </Label>
+			<Url> {{spf_controller}}/bandInFocus </Url>
+		</FwdAttribute>
+		{% endif %}
+
+		
+		{% if lmc_config_mode == 'full' or (lmc_config_mode == 'spf' and spf_enable_b2_in_config | bool) %}
+		<FwdAttribute name = "spfB2LnaIlluminationEnabled" alias="spfB2LnaIlluminationEnabled">
+			<Label> SPF B2 LNA Illumination Enabled </Label>
+			<Url> {{spf_controller}}/b2LnaIlluminationEnabled </Url>
+		</FwdAttribute>
+		{% endif %}
+
+		{% if lmc_config_mode == 'full' or (lmc_config_mode == 'spf' and spf_enable_b3_in_config | bool) %}
+		<FwdAttribute name = "spfB3LnaIlluminationEnabled" alias="spfB3LnaIlluminationEnabled">
+			<Label> SPF B3 LNA Illumination Enabled </Label>
+			<Url> {{spf_controller}}/b3LnaIlluminationEnabled </Url>
+		</FwdAttribute>
+		{% endif %}
+
+		{% if lmc_config_mode == 'full' or (lmc_config_mode == 'spf' and spf_enable_b4_in_config | bool) %}
+		<FwdAttribute name = "spfB4LnaIlluminationEnabled" alias="spfB4LnaIlluminationEnabled">
+			<Label> SPF B4 LNA Illumination Enabled </Label>
+			<Url> {{spf_controller}}/b4LnaIlluminationEnabled </Url>
+		</FwdAttribute>
+		{% endif %}
+
+		{% if lmc_config_mode == 'full' or (lmc_config_mode == 'spf' and spf_enable_b5_in_config | bool) %}
+		<FwdAttribute name = "spfB5LnaIlluminationEnabled" alias="spfB5LnaIlluminationEnabled">
+			<Label> SPF B5 LNA Illumination Enabled </Label>
+			<Url> {{spf_controller}}/b5LnaIlluminationEnabled </Url>
+		</FwdAttribute>
+		{% endif %}
+
+		{% if lmc_config_mode == 'full' or (lmc_config_mode == 'spf' and spf_enable_b1_in_config | bool) %}
+		<FwdAttribute name = "spfB1LnaHPowerState" alias="spfB1LnaHPowerState">
+			<Label> SPF B1 LNA H Power State </Label>
+			<Url> {{spf_controller}}/b1LnaHPowerState </Url>
+		</FwdAttribute>
+		{% endif %}
+
+		{% if lmc_config_mode == 'full' or (lmc_config_mode == 'spf' and spf_enable_b2_in_config | bool) %}
+		<FwdAttribute name = "spfB2LnaHPowerState" alias="spfB2LnaHPowerState">
+			<Label> SPF B2 LNA H Power State </Label>
+			<Url> {{spf_controller}}/b2LnaHPowerState </Url>
+		</FwdAttribute>
+		{% endif %}
+
+		{% if lmc_config_mode == 'full' or (lmc_config_mode == 'spf' and spf_enable_b3_in_config | bool) %}
+		<FwdAttribute name = "spfB3LnaHPowerState" alias="spfB3LnaHPowerState">
+			<Label> SPF B3 LNA H Power State </Label>
+			<Url> {{spf_controller}}/b3LnaHPowerState </Url>
+		</FwdAttribute>
+		{% endif %}
+
+		{% if lmc_config_mode == 'full' or (lmc_config_mode == 'spf' and spf_enable_b4_in_config | bool) %}
+		<FwdAttribute name = "spfB4LnaHPowerState" alias="spfB4LnaHPowerState">
+			<Label> SPF B4 LNA H Power State </Label>
+			<Url> {{spf_controller}}/b4LnaHPowerState </Url>
+		</FwdAttribute>
+		{% endif %}
+
+		{% if lmc_config_mode == 'full' or (lmc_config_mode == 'spf' and spf_enable_b5_in_config | bool) %}
+		<FwdAttribute name = "spfB5LnaHPowerState" alias="spfB5LnaHPowerState">
+			<Label> SPF B5 LNA H Power State </Label>
+			<Url> {{spf_controller}}/b5LnaHPowerState </Url>
+		</FwdAttribute>
+		{% endif %}
+
+		{% if lmc_config_mode == 'full' or (lmc_config_mode == 'spf' and spf_enable_b1_in_config | bool) %}
+		<FwdAttribute name = "spfB1LnaVPowerState" alias="spfB1LnaVPowerState">
+			<Label> SPF B1 LNA V Power State </Label>
+			<Url> {{spf_controller}}/b1LnaVPowerState </Url>
+		</FwdAttribute>
+		{% endif %}
+
+		{% if lmc_config_mode == 'full' or (lmc_config_mode == 'spf' and spf_enable_b2_in_config | bool) %}
+		<FwdAttribute name = "spfB2LnaVPowerState" alias="spfB2LnaVPowerState">
+			<Label> SPF B2 LNA V Power State </Label>
+			<Url> {{spf_controller}}/b2LnaVPowerState </Url>
+		</FwdAttribute>
+		{% endif %}
+
+		{% if lmc_config_mode == 'full' or (lmc_config_mode == 'spf' and spf_enable_b3_in_config | bool) %}
+		<FwdAttribute name = "spfB3LnaVPowerState" alias="spfB3LnaVPowerState">
+			<Label> SPF B3 LNA V Power State </Label>
+			<Url> {{spf_controller}}/b3LnaVPowerState </Url>
+		</FwdAttribute>
+		{% endif %}
+
+		{% if lmc_config_mode == 'full' or (lmc_config_mode == 'spf' and spf_enable_b4_in_config | bool) %}
+		<FwdAttribute name = "spfB4LnaVPowerState" alias="spfB4LnaVPowerState">
+			<Label> SPF B4 LNA V Power State </Label>
+			<Url> {{spf_controller}}/b4LnaVPowerState </Url>
+		</FwdAttribute>
+		{% endif %}
+
+		{% if lmc_config_mode == 'full' or (lmc_config_mode == 'spf' and spf_enable_b5_in_config | bool) %}
+		<FwdAttribute name = "spfB5LnaVPowerState" alias="spfB5LnaVPowerState">
+			<Label> SPF B5 LNA V Power State </Label>
+			<Url> {{spf_controller}}/b5LnaVPowerState </Url>
+		</FwdAttribute>
+		{% endif %}
+
+		{% if lmc_config_mode == 'full' or (lmc_config_mode == 'spf' and spf_enable_b1_in_config | bool) %}
+		<FwdAttribute name = "spfB1Amp2HPowerState" alias="spfB1Amp2HPowerState">
+			<Label> SPF B1 Amp2 H Power State </Label>
+			<Url> {{spf_controller}}/b1Amp2HPowerState </Url>
+		</FwdAttribute>
+		{% endif %}
+
+		{% if lmc_config_mode == 'full' or (lmc_config_mode == 'spf' and spf_enable_b2_in_config | bool) %}
+		<FwdAttribute name = "spfB2Amp2HPowerState" alias="spfB2Amp2HPowerState">
+			<Label> SPF B2 Amp2 H Power State </Label>
+			<Url> {{spf_controller}}/b2Amp2HPowerState </Url>
+		</FwdAttribute>
+		{% endif %}
+
+		{% if lmc_config_mode == 'full' or (lmc_config_mode == 'spf' and spf_enable_b3_in_config | bool) %}
+		<FwdAttribute name = "spfB3Amp2HPowerState" alias="spfB3Amp2HPowerState">
+			<Label> SPF B3 Amp2 H Power State </Label>
+			<Url> {{spf_controller}}/b3Amp2HPowerState </Url>
+		</FwdAttribute>
+		{% endif %}
+
+		{% if lmc_config_mode == 'full' or (lmc_config_mode == 'spf' and spf_enable_b4_in_config | bool) %}
+		<FwdAttribute name = "spfB4Amp2HPowerState" alias="spfB4Amp2HPowerState">
+			<Label> SPF B4 Amp2 H Power State </Label>
+			<Url> {{spf_controller}}/b4Amp2HPowerState </Url>
+		</FwdAttribute>
+		{% endif %}
+
+		{% if lmc_config_mode == 'full' or (lmc_config_mode == 'spf' and spf_enable_b5_in_config | bool) %}
+		<FwdAttribute name = "spfB5Amp2HPowerState" alias="spfB5Amp2HPowerState">
+			<Label> SPF B5 Amp2 H Power State </Label>
+			<Url> {{spf_controller}}/b5Amp2HPowerState </Url>
+		</FwdAttribute>
+		{% endif %}
+		
+		{% if lmc_config_mode == 'full' or (lmc_config_mode == 'spf' and spf_enable_b1_in_config | bool) %}
+		<FwdAttribute name = "spfB1Amp2VPowerState" alias="spfB1Amp2VPowerState">
+			<Label> SPF B1 Amp2 V Power State </Label>
+			<Url> {{spf_controller}}/b1Amp2VPowerState </Url>
+		</FwdAttribute>
+		{% endif %}
+
+		{% if lmc_config_mode == 'full' or (lmc_config_mode == 'spf' and spf_enable_b2_in_config | bool) %}
+		<FwdAttribute name = "spfB2Amp2VPowerState" alias="spfB2Amp2VPowerState">
+			<Label> SPF B2 Amp2 V Power State </Label>
+			<Url> {{spf_controller}}/b2Amp2VPowerState </Url>
+		</FwdAttribute>
+		{% endif %}
+
+		{% if lmc_config_mode == 'full' or (lmc_config_mode == 'spf' and spf_enable_b3_in_config | bool) %}
+		<FwdAttribute name = "spfB3Amp2VPowerState" alias="spfB3Amp2VPowerState">
+			<Label> SPF B3 Amp2 V Power State </Label>
+			<Url> {{spf_controller}}/b3Amp2VPowerState </Url>
+		</FwdAttribute>
+		{% endif %}
+
+		{% if lmc_config_mode == 'full' or (lmc_config_mode == 'spf' and spf_enable_b4_in_config | bool) %}
+		<FwdAttribute name = "spfB4Amp2VPowerState" alias="spfB4Amp2VPowerState">
+			<Label> SPF B4 Amp2 V Power State </Label>
+			<Url> {{spf_controller}}/b4Amp2VPowerState </Url>
+		</FwdAttribute>
+		{% endif %}
+	
+		{% if lmc_config_mode == 'full' or (lmc_config_mode == 'spf' and spf_enable_b5_in_config | bool) %}
+		<FwdAttribute name = "spfB5Amp2VPowerState" alias="spfB5Amp2VPowerState">
+			<Label> SPF B5 Amp2 V Power State </Label>
+			<Url> {{spf_controller}}/b5Amp2VPowerState </Url>
+		</FwdAttribute>
+		{% endif %}
+
+		{% if lmc_config_mode == 'full' or (lmc_config_mode == 'spf' and spf_enable_b1_in_config | bool) %}
+		<FwdAttribute name = "spfB1CalSourcePowerState" alias="spfB1CalSourcePowerState">
+			<Label> SPF B1 Calibration Source Power State </Label>
+			<Url> {{spf_controller}}/b1CalSourcePowerState </Url>
+		</FwdAttribute>
+		{% endif %}
+
+		{% if lmc_config_mode == 'full' or (lmc_config_mode == 'spf' and spf_enable_b2_in_config | bool) %}
+		<FwdAttribute name = "spfB2CalSourcePowerState" alias="spfB2CalSourcePowerState">
+			<Label> SPF B2 Calibration Source Power State </Label>
+			<Url> {{spf_controller}}/b2CalSourcePowerState </Url>
+		</FwdAttribute>
+		{% endif %}
+
+		{% if lmc_config_mode == 'full' or (lmc_config_mode == 'spf' and spf_enable_b3_in_config | bool) %}
+		<FwdAttribute name = "spfB3CalSourcePowerState" alias="spfB3CalSourcePowerState">
+			<Label> SPF B3 Calibration Source Power State </Label>
+			<Url> {{spf_controller}}/b3CalSourcePowerState </Url>
+		</FwdAttribute>
+		{% endif %}
+
+		{% if lmc_config_mode == 'full' or (lmc_config_mode == 'spf' and spf_enable_b4_in_config | bool) %}
+		<FwdAttribute name = "spfB4CalSourcePowerState" alias="spfB4CalSourcePowerState">
+			<Label> SPF B4 Calibration Source Power State </Label>
+			<Url> {{spf_controller}}/b4CalSourcePowerState </Url>
+		</FwdAttribute>
+		{% endif %}
+
+		{% if lmc_config_mode == 'full' or (lmc_config_mode == 'spf' and spf_enable_b5_in_config | bool) %}
+		<FwdAttribute name = "spfB5CalSourcePowerState" alias="spfB5CalSourcePowerState">
+			<Label> SPF B5 Calibration Source Power State </Label>
+			<Url> {{spf_controller}}/b5CalSourcePowerState </Url>
+		</FwdAttribute>
+		{% endif %}
+
+		{% if lmc_config_mode == 'full' or (lmc_config_mode == 'spf' and spf_enable_b1_in_config | bool) %}
+		<FwdAttribute name = "spfB1Rfe1TempSetPoint" alias="spfB1Rfe1TempSetPoint">
+			<Label> SPF B1 RFE1 Temperature Set Point </Label>
+			<Url> {{spf_controller}}/b1Rfe1TempSetPoint </Url>
+		</FwdAttribute>
+		{% endif %}
+
+		{% if lmc_config_mode == 'full' or (lmc_config_mode == 'spf' and spf_enable_b2_in_config | bool) %}
+		<FwdAttribute name = "spfB2Rfe1TempSetPoint" alias="spfB2Rfe1TempSetPoint">
+			<Label> SPF B2 RFE1 Temperature Set Point </Label>
+			<Url> {{spf_controller}}/b2Rfe1TempSetPoint </Url>
+		</FwdAttribute>
+		{% endif %}
+
+		{% if lmc_config_mode == 'full' or (lmc_config_mode == 'spf' and spf_enable_b3_in_config | bool) %}
+		<FwdAttribute name = "spfB3Rfe1TempSetPoint" alias="spfB3Rfe1TempSetPoint">
+			<Label> SPF B3 RFE1 Temperature Set Point </Label>
+			<Url> {{spf_controller}}/b3Rfe1TempSetPoint </Url>
+		</FwdAttribute>
+		{% endif %}
+
+		{% if lmc_config_mode == 'full' or (lmc_config_mode == 'spf' and spf_enable_b4_in_config | bool) %}
+		<FwdAttribute name = "spfB4Rfe1TempSetPoint" alias="spfB4Rfe1TempSetPoint">
+			<Label> SPF B4 RFE1 Temperature Set Point </Label>
+			<Url> {{spf_controller}}/b4Rfe1TempSetPoint </Url>
+		</FwdAttribute>
+		{% endif %}
+
+		{% if lmc_config_mode == 'full' or (lmc_config_mode == 'spf' and spf_enable_b5_in_config | bool) %}
+		<FwdAttribute name = "spfB5Rfe1TempSetPoint" alias="spfB5Rfe1TempSetPoint">
+			<Label> SPF B5 RFE1 Temperature Set Point </Label>
+			<Url> {{spf_controller}}/b5Rfe1TempSetPoint </Url>
+		</FwdAttribute>
+		{% endif %}
+
+		{% if lmc_config_mode == 'full' or (lmc_config_mode == 'spf' and spf_enable_b1_in_config | bool) %}
+		<FwdAttribute name = "spfB1Rfe1TempCtrlState" alias="spfB1Rfe1TempCtrlState">
+			<Label> SPF B1 RFE1 Temperature Controller state </Label>
+			<Url> {{spf_controller}}/b1Rfe1TempCtrlState </Url>
+		</FwdAttribute>
+		{% endif %}
+
+		{% if lmc_config_mode == 'full' or (lmc_config_mode == 'spf' and spf_enable_b2_in_config | bool) %}
+		<FwdAttribute name = "spfB2Rfe1TempCtrlState" alias="spfB2Rfe1TempCtrlState">
+			<Label> SPF B2 RFE1 Temperature Controller state </Label>
+			<Url> {{spf_controller}}/b2Rfe1TempCtrlState </Url>
+		</FwdAttribute>
+		{% endif %}
+
+		{% if lmc_config_mode == 'full' or (lmc_config_mode == 'spf' and spf_enable_b3_in_config | bool) %}
+		<FwdAttribute name = "spfB3Rfe1TempCtrlState" alias="spfB3Rfe1TempCtrlState">
+			<Label> SPF B3 RFE1 Temperature Controller state </Label>
+			<Url> {{spf_controller}}/b3Rfe1TempCtrlState </Url>
+		</FwdAttribute>
+		{% endif %}
+
+		{% if lmc_config_mode == 'full' or (lmc_config_mode == 'spf' and spf_enable_b4_in_config | bool) %}
+		<FwdAttribute name = "spfB4Rfe1TempCtrlState" alias="spfB4Rfe1TempCtrlState">
+			<Label> SPF B4 RFE1 Temperature Controller state </Label>
+			<Url> {{spf_controller}}/b4Rfe1TempCtrlState </Url>
+		</FwdAttribute>
+		{% endif %}
+
+		{% if lmc_config_mode == 'full' or (lmc_config_mode == 'spf' and spf_enable_b5_in_config | bool) %}
+		<FwdAttribute name = "spfB5Rfe1TempCtrlState" alias="spfB5Rfe1TempCtrlState">
+			<Label> SPF B5 RFE1 Temperature Controller state </Label>
+			<Url> {{spf_controller}}/b5Rfe1TempCtrlState </Url>
+		</FwdAttribute>
+		{% endif %}
+
+		{% if lmc_config_mode == 'full' or (lmc_config_mode == 'spf' and spf_enable_b1_in_config | bool) %}
+		<FwdAttribute name = "spfB1Rfe2TempCtrlState" alias="spfB1Rfe2TempCtrlState">
+			<Label> SPF B1 RFE2 Temperature Controller state </Label>
+			<Url> {{spf_controller}}/b1Rfe2TempCtrlState </Url>
+		</FwdAttribute>	
+		{% endif %}
+
+
+		{% if lmc_config_mode == 'full' or (lmc_config_mode == 'spf' and spf_enable_b3_in_config | bool) %}
+		<FwdAttribute name = "spfB3Rfe2TempCtrlState" alias="spfB3Rfe2TempCtrlState">
+			<Label> SPF B3 RFE2 Temperature Controller state </Label>
+			<Url> {{spf_controller}}/b3Rfe2TempCtrlState </Url>
+		</FwdAttribute>	
+		{% endif %}
+
+		{% if lmc_config_mode == 'full' or (lmc_config_mode == 'spf' and spf_enable_b4_in_config | bool) %}
+		<FwdAttribute name = "spfB4Rfe2TempCtrlState" alias="spfB4Rfe2TempCtrlState">
+			<Label> SPF B4 RFE2 Temperature Controller state </Label>
+			<Url> {{spf_controller}}/b4Rfe2TempCtrlState </Url>
+		</FwdAttribute>	
+		{% endif %}
+
+		{% if lmc_config_mode == 'full' or (lmc_config_mode == 'spf' and spf_enable_b5_in_config | bool) %}
+		<FwdAttribute name = "spfB5Rfe2TempCtrlState" alias="spfB5Rfe2TempCtrlState">
+			<Label> SPF B5 RFE2 Temperature Controller state </Label>
+			<Url> {{spf_controller}}/b5Rfe2TempCtrlState </Url>
+		</FwdAttribute>	
+		{% endif %}
+
+		{% if lmc_config_mode == 'full' or (lmc_config_mode == 'spf' and spf_enable_b1_in_config | bool) %}
+		<FwdAttribute name = "spfB1CryoMotorState" alias="spfB1CryoMotorState">
+			<Label> SPF B1 Cryocooler motor state </Label>
+			<Url> {{spf_controller}}/b1CryoMotorState </Url>
+		</FwdAttribute>	
+		{% endif %}
+
+		{% if lmc_config_mode == 'full' or (lmc_config_mode == 'spf' and spf_enable_b2_in_config | bool) %}
+		<FwdAttribute name = "spfB2CryoMotorState" alias="spfB2CryoMotorState">
+			<Label> SPF B2 Cryocooler motor state </Label>
+			<Url> {{spf_controller}}/b2CryoMotorState </Url>
+		</FwdAttribute>	
+		{% endif %}
+
+		{% if lmc_config_mode == 'full' or (lmc_config_mode == 'spf' and (spf_enable_b3_in_config | bool or spf_enable_b4_in_config | bool or spf_enable_b5_in_config | bool) ) %}
+		<FwdAttribute name = "spfB345CryoMotorState" alias="spfB345CryoMotorState">
+			<Label> SPF B345 Cryocooler motor state </Label>
+			<Url> {{spf_controller}}/b345CryoMotorState </Url>
+		</FwdAttribute>	
+		{% endif %}
+
+		{% if lmc_config_mode == 'full' or (lmc_config_mode == 'spf' and spf_enable_b1_in_config | bool) %}
+		<FwdAttribute name = "spfB1CryoMotorSpeed" alias="spfB1CryoMotorSpeed">
+			<Label> SPF B1 Cryocooler motor speed </Label>
+			<Url> {{spf_controller}}/b1CryoMotorSpeed </Url>
+		</FwdAttribute>		
+		{% endif %}
+
+		{% if lmc_config_mode == 'full' or (lmc_config_mode == 'spf' and spf_enable_b2_in_config | bool) %}
+		<FwdAttribute name = "spfB2CryoMotorSpeed" alias="spfB2CryoMotorSpeed">
+			<Label> SPF B2 Cryocooler motor speed </Label>
+			<Url> {{spf_controller}}/b2CryoMotorSpeed </Url>
+		</FwdAttribute>
+		{% endif %}
+
+		{% if lmc_config_mode == 'full' or (lmc_config_mode == 'spf' and (spf_enable_b3_in_config | bool or spf_enable_b4_in_config | bool or spf_enable_b5_in_config | bool) ) %}
+		<FwdAttribute name = "spfB345CryoMotorSpeed" alias="spfB345CryoMotorSpeed">
+			<Label> SPF B345 Cryocooler motor speed </Label>
+			<Url> {{spf_controller}}/b345CryoMotorSpeed </Url>
+		</FwdAttribute>	
+		{% endif %}
+
+		{% if lmc_config_mode == 'full' or (lmc_config_mode == 'spf' and spf_enable_b1_in_config | bool) %}
+		<FwdAttribute name = "spfB1VaValveState" alias="spfB1VaValveState">
+			<Label> SPF B1 vacuum valve state </Label>
+			<Url> {{spf_controller}}/b1VaValveState </Url>
+		</FwdAttribute>	
+		{% endif %}
+
+		{% if lmc_config_mode == 'full' or (lmc_config_mode == 'spf' and spf_enable_b2_in_config | bool) %}
+		<FwdAttribute name = "spfB2VaValveState" alias="spfB2VaValveState">
+			<Label> SPF B2 vacuum valve state </Label>
+			<Url> {{spf_controller}}/b2VaValveState </Url>
+		</FwdAttribute>	
+		{% endif %}
+
+		{% if lmc_config_mode == 'full' or (lmc_config_mode == 'spf' and (spf_enable_b3_in_config | bool or spf_enable_b4_in_config | bool or spf_enable_b5_in_config | bool) ) %}
+		<FwdAttribute name = "spfB345VaValveState" alias="spfB345VaValveState">
+			<Label> SPF B345 vacuum valve state </Label>
+			<Url> {{spf_controller}}/b345VaValveState </Url>
+		</FwdAttribute>	
+		{% endif %}
+		
+		{% if lmc_config_mode == 'full' or (lmc_config_mode == 'spf' and spf_enable_b1_in_config|bool) %}
+		<FwdAttribute name = "spfB1ExpectedOnline" alias="spfB1ExpectedOnline">
+			<Label> SPF B1 Expected online </Label>
+			<Url> {{spf_controller}}/b1ExpectedOnline </Url>
+		</FwdAttribute>
+		{% endif %}
+
+		{% if lmc_config_mode == 'full' or (lmc_config_mode == 'spf' and spf_enable_b2_in_config|bool) %}
+		<FwdAttribute name = "spfB2ExpectedOnline" alias="spfB2ExpectedOnline">
+			<Label> SPF B2 Expected online </Label>
+			<Url> {{spf_controller}}/b2ExpectedOnline </Url>
+		</FwdAttribute>
+		{% endif %}
+
+		{% if lmc_config_mode == 'full' or (lmc_config_mode == 'spf' and spf_enable_b3_in_config|bool) %}
+		<FwdAttribute name = "spfB3ExpectedOnline" alias="spfB3ExpectedOnline">
+			<Label> SPF B3 Expected online </Label>
+			<Url> {{spf_controller}}/b3ExpectedOnline </Url>
+		</FwdAttribute>
+		{% endif %}
+
+		{% if lmc_config_mode == 'full' or (lmc_config_mode == 'spf' and spf_enable_b4_in_config|bool) %}
+		<FwdAttribute name = "spfB4ExpectedOnline" alias="spfB4ExpectedOnline">
+			<Label> SPF B4 Expected online </Label>
+			<Url> {{spf_controller}}/b4ExpectedOnline </Url>
+		</FwdAttribute>
+		{% endif %}
+
+		{% if lmc_config_mode == 'full' or (lmc_config_mode == 'spf' and spf_enable_b5_in_config|bool) %}
+		<FwdAttribute name = "spfB5ExpectedOnline" alias="spfB5ExpectedOnline">
+			<Label> SPF B5 Expected online </Label>
+			<Url> {{spf_controller}}/b5ExpectedOnline </Url>
+		</FwdAttribute>
+		{% endif %}
+
+		{% if lmc_config_mode == 'full' or lmc_config_mode == 'spf' %}
+		<FwdAttribute name = "spfHeExpectedOnline" alias="spfHeExpectedOnline">
+			<Label> SPF Helium System Expected online </Label>
+			<Url> {{spf_controller}}/heExpectedOnline </Url>
+		</FwdAttribute>
+		{% endif %}
+
+		{% if lmc_config_mode == 'full' or lmc_config_mode == 'spf' %}
+		<FwdAttribute name = "spfVaExpectedOnline" alias="spfVaExpectedOnline">
+			<Label> SPF Vacuum System Expected online </Label>
+			<Url> {{spf_controller}}/vaExpectedOnline </Url>
+		</FwdAttribute>
+		{% endif %}
+
+		{% if lmc_config_mode == 'full' or lmc_config_mode == 'spf' %}
+		<FwdAttribute name = "spfCtrlExpectedOnline" alias="spfCtrlExpectedOnline">
+			<Label> SPF controller Expected online </Label>
+			<Url> {{spf_controller}}/spfcExpectedOnline </Url>
+		</FwdAttribute>
+		{% endif %}
+
+
+	</Attributes>
+
+</DeviceConfiguration>
+
+
+
+

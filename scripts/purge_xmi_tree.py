@@ -2,30 +2,15 @@
 
 import subprocess
 import xml.etree.ElementTree as ET
+
 from tango_simlib.sim_xmi_parser import XmiParser
 
 
 def some_recursive_fun(quality, quality_type, the_parent_class_psr_list, some_arg=None):
     """
-        take the quality
-        check if the quality is inherited
-            if not inherited
-                do nothing
-            else
-                check quantity in parent
-                    if in parent
-                        do nothing
-                    else
-                        remove it
     """
-    #print the_parent_class_psr.data_description_file_name
     print quality['name']
     print "inherited: ", quality['inherited']
-    #print type(quality)
-    #if len(the_parent_class_psr.get_reformatted_class_description_metadata()) == 1:
-    #    return True
-    #if quality['name'] in ['Status', 'State']:
-    #    return
     print the_parent_class_psr_list
     if the_parent_class_psr_list == []:
         return False
@@ -51,6 +36,19 @@ def some_recursive_fun(quality, quality_type, the_parent_class_psr_list, some_ar
         return False
 
 
+def gather_items_to_delete(quality_list, feature_type, supr_class_psrs, some_arg=None):
+    some_list = []
+
+    for quality in quality_list:
+        ans = some_recursive_fun(quality_list[quality],
+                                 feature_type,
+                                 supr_class_psrs, some_arg)
+
+        # Add the quality to be deleted in the appropriate list
+        if ans:
+            some_list.append(quality)
+    return some_list
+
 
 # Find the xmi files in the repo and store their paths
 output = subprocess.check_output(["kat-search.py -f *.xmi"], shell=True)
@@ -61,16 +59,12 @@ strings = output.split("\n")
 # Remove the string "DEFAULT", which is always the first output of 'kat-search.py'.
 strings.remove("")
 strings.remove("DEFAULTS")
-#print strings
 
 
 for string in strings:
+    # Create a parser instance for the XMI file to be pruned.
     psr = XmiParser()
     psr.parse(string)
-
-    # Check if parsed xmi file does inherit from some super class.
-    #print psr.class_description
-    #break
 
     # Create lists of features that need to be removed.
     attr_list = []
@@ -86,15 +80,11 @@ for string in strings:
 
     # Get the closest parent class.
     cls_descr = psr.get_reformatted_class_description_metadata()
-    #print cls_descr
     clss_descr = cls_descr.values()[0]
-    #print clss_descr
     # Remove the 'Device_Impl' class information
     clss_descr.pop(0)
     clss_descr.reverse()
-    #print clss_descr
     super_class_info = clss_descr
-    #print super_class_info
 
     # Create the parsers for the classes' super_classes and store in a list.
     super_class_psrs = []
@@ -107,47 +97,14 @@ for string in strings:
     # Make use of the recursive function.
 
     # Gather items to delete in the attributes.
-    print attr_quality_list.keys()
-    for attr_quality in attr_quality_list:
-        attr_ans = some_recursive_fun(attr_quality_list[attr_quality],
-                                      'device_attr',
+    attr_list = gather_items_to_delete(attr_quality_list, 'device_attr',
+                                       super_class_psrs)
+    cmd_list = gather_items_to_delete(cmd_quality_list, 'cmd',
                                       super_class_psrs)
-
-        # Add the quality to be deleted in the appropriate list
-        if attr_ans:
-            attr_list.append(attr_quality)
-
-    # Gather items to delete in the class properties.
-    print clsprop_quality_list.keys()
-    for clsprop_quality in clsprop_quality_list:
-        clsprop_ans = some_recursive_fun(clsprop_quality_list[clsprop_quality],
-                                         'properties', super_class_psrs,
-                                         some_arg='classProperties')
-
-        # Add the quality to be deleted in the appropriate list
-        if clsprop_ans:
-            clsprop_list.append(clsprop_quality)
-
-    # Gather items to delete in the commands.
-    print cmd_quality_list.keys()
-    for cmd_quality in cmd_quality_list:
-        cmd_ans = some_recursive_fun(cmd_quality_list[cmd_quality], 'cmd',
-                                     super_class_psrs)
-
-        # Add the quality to be deleted in the appropriate list
-        if cmd_ans:
-            cmd_list.append(cmd_quality)
-
-    # Gather items to delete in the device properties.
-    print devprop_quality_list.keys()
-    for devprop_quality in devprop_quality_list:
-        devprop_ans = some_recursive_fun(devprop_quality_list[devprop_quality],
-                                         'properties', super_class_psrs,
-                                         some_arg='deviceProperties')
-
-        # Add the quality to be deleted in the appropriate list
-        if devprop_ans:
-            devprop_list.append(devprop_quality)
+    devprop_list = gather_items_to_delete(devprop_quality_list, 'properties',
+                                          super_class_psrs, some_arg='deviceProperties')
+    clsprop_list = gather_items_to_delete(clsprop_quality_list, 'properties',
+                                          super_class_psrs, some_arg='classProperties')
 
 
     print "Qualities to delete in the XMI tree..."
@@ -163,12 +120,3 @@ for string in strings:
 ## ET.register_namespace('xmi', "http://www.omg.org/XMI")
 # To write a file with the xml declaration at the top.
 ## tree.write('WeatherF.xmi', xml_declaration=True, encoding='ASCII', method='xml')
-
-#data_description_file_name = strings[0]
-#tree = ET.parse(strings[0])
-#root = tree.getroot()
-#device_class = root.find('classes')a
-#device_class_name = device_class.attrib['name']
-
-#print device_class_name
-#print device_class

@@ -135,12 +135,6 @@ class SKABaseDeviceDeviceTestCase(DeviceTestCase):
         self.device.testMode
         # PROTECTED REGION END #    //  SKABaseDevice.test_testMode
 
-    def test_testadd(self):
-        """Test for testadd"""
-        # PROTECTED REGION ID(SKABaseDevice.test_testadd) ENABLED START #
-        self.device.testadd
-        # PROTECTED REGION END #    //  SKABaseDevice.test_testadd
-
 
 # Main execution
 if __name__ == "__main__":

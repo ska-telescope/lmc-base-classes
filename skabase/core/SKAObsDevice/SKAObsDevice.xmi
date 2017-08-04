@@ -172,11 +172,6 @@
       <status abstract="false" inherited="true" concrete="true"/>
       <properties description="The test mode of the device. &#xA;Either no test mode (empty string) or an indication of the test mode." label="" unit="" standardUnit="" displayUnit="" format="" maxValue="" minValue="" maxAlarm="" minAlarm="" maxWarning="" minWarning="" deltaTime="" deltaValue=""/>
     </attributes>
-    <attributes name="testadd" attType="Scalar" rwType="READ" displayLevel="OPERATOR" polledPeriod="0" maxX="" maxY="" allocReadMember="true">
-      <dataType xsi:type="pogoDsl:DoubleType"/>
-      <status abstract="false" inherited="true" concrete="true"/>
-      <properties description="" label="" unit="" standardUnit="" displayUnit="" format="" maxValue="" minValue="" maxAlarm="" minAlarm="" maxWarning="" minWarning="" deltaTime="" deltaValue=""/>
-    </attributes>
     <states name="ON" description="">
       <status abstract="false" inherited="true" concrete="true"/>
     </states>

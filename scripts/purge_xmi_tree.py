@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
-import subprocess
+import os
+import fnmatch
 import xml.etree.ElementTree as ET
 
 from tango_simlib.sim_xmi_parser import XmiParser
@@ -51,20 +52,16 @@ def gather_items_to_delete(quality_list, feature_type, supr_class_psrs, some_arg
 
 
 # Find the xmi files in the repo and store their paths
-output = subprocess.check_output(["kat-search.py -f *.xmi"], shell=True)
+filepaths = []
+for root, dirnames, filenames in os.walk('../'):
+    for filename in fnmatch.filter(filenames, '*.xmi'):
+        filepaths.append(os.path.join(root, filename))
 
 
-# Create a list of of all the file paths.
-strings = output.split("\n")
-# Remove the string "DEFAULT", which is always the first output of 'kat-search.py'.
-strings.remove("")
-strings.remove("DEFAULTS")
-
-
-for string in strings:
+for filepath in filepaths:
     # Create a parser instance for the XMI file to be pruned.
     psr = XmiParser()
-    psr.parse(string)
+    psr.parse(filepath)
 
     # Create lists of features that need to be removed.
     attr_list = []

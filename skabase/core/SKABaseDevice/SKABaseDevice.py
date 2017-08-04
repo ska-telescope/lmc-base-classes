@@ -142,6 +142,10 @@ class SKABaseDevice(Device):
         doc="The test mode of the device. \nEither no test mode (empty string) or an indication of the test mode.",
     )
 
+    testadd = attribute(
+        dtype='double',
+    )
+
     # ---------------
     # General methods
     # ---------------
@@ -239,6 +243,11 @@ class SKABaseDevice(Device):
         # PROTECTED REGION ID(SKABaseDevice.testMode_write) ENABLED START #
         pass
         # PROTECTED REGION END #    //  SKABaseDevice.testMode_write
+
+    def read_testadd(self):
+        # PROTECTED REGION ID(SKABaseDevice.testadd_read) ENABLED START #
+        return 0.0
+        # PROTECTED REGION END #    //  SKABaseDevice.testadd_read
 
 
     # --------

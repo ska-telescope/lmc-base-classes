@@ -1,3 +1,6 @@
+When everything is already deployed and installed:
+. play-local-refresh.sh
+
 To deploy SW repos:
 ansible-playbook -i hosts deploy_sw.yml --limit local 
 

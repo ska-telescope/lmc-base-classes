@@ -5,28 +5,4 @@ python_path: /usr/lib/python2.7/site-packages
 ## SOFTWARE BASE DIR
 software_root: /home/kat/svn
 
-## LIB DIR
-boost_root: "{{software_root}}/LIB/boost/v1.63.0"
-jsoncpp_root: "{{software_root}}/LIB/jsoncpp/trunk"
-pugixml_root: "{{software_root}}/LIB/pugixml/v1.8"
-pugixml_lib_root: "{{software_root}}/LIB/pugixml/v1.8/lib/pugixml-1.8"
-log4cxx_root: "{{software_root}}/LIB/log4cxx/v0.10.0"
-
-## MYSQL
-mysql_user: root
-mysql_pass: admin
-mysql_host: localhost
-
-## TANGO VARS
-tango_root: "{{software_root}}/TANGO/v9.2.2"
-omniorb_root: "{{software_root}}/omniORB/v4.2.1"
-zmq_root: "{{software_root}}/zeromq/v4.1.5"
-pytango_root: "{{software_root}}/TANGO/Addon/PyTango/v9.2.1"
-pytango_path: "{{pytango_root}}/lib/python2.7/site-packages/pytango-9.2.1-py2.7-linux-x86_64.egg"
-tango_host: localhost:10000
-
-## TANGO ADDONS
-yat_root: "{{software_root}}/TANGO/Addon/yat/v1.12.0"
-yat4tango_root: "{{software_root}}/TANGO/Addon/yat4tango/trunk"
-
 ...

@@ -1,0 +1,8 @@
+---
+# file: site.yml
+#- include: bootstrap_node.yml
+#- include: setup_node.yml
+- include: deploy_sw.yml
+- include: refresh_sw.yml
+#- include: deploy_elt.yml
+#- include: configure_elt.yml

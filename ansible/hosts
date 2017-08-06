@@ -1,0 +1,11 @@
+
+[devlt]
+monctl.devlt
+
+[devl5]
+monctl.devl5.camlab.kat.ac.za
+
+[local]
+127.0.0.1 ansible_connection=local
+#localhost ansible_connection=ssh
+

@@ -11,6 +11,7 @@
 ##     Update working directories
 ###########################################
 
+# Do we want to pull on refresh_sw ???
 - name: Refresh tango-simlib
   command: git -C {{software_root}}/tango-simlib pull
 

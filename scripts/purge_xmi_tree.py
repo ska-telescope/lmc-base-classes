@@ -2,118 +2,121 @@
 
 import os
 import fnmatch
-import xml.etree.ElementTree as ET
 
-from tango_simlib.sim_xmi_parser import XmiParser
+from tango_simlib import sim_xmi_parser
 
+ET = sim_xmi_parser.ET
 
-def some_recursive_fun(quality, quality_type, the_parent_class_psr_list, some_arg=None):
-    """
-    """
-    print quality['name']
-    print "inherited: ", quality['inherited']
-    print the_parent_class_psr_list
-    if the_parent_class_psr_list == []:
+def is_quality_untraceable(quality, quality_type, parent_class_psrs, property_type=None):
+
+    if parent_class_psrs == []:
         return False
     if quality['inherited'] == 'true':
-        if some_arg != None:
+        if property_type != None:
             parent_qualities = getattr(
-                the_parent_class_psr_list[0],
-                'get_reformatted_{}_metadata'.format(quality_type))(some_arg)
+                parent_class_psrs[0],
+                'get_reformatted_{}_metadata'.format(quality_type))(property_type)
         else:
             parent_qualities = getattr(
-                the_parent_class_psr_list[0],
+                parent_class_psrs[0],
                 'get_reformatted_{}_metadata'.format(quality_type))()
         keys = parent_qualities.keys()
         if quality['name'] in keys:
             p_quality = parent_qualities[quality['name']]
-            print p_quality['name']
-            print "inherited: ", p_quality['inherited']
-            return some_recursive_fun(p_quality, quality_type,
-                                      the_parent_class_psr_list[1:], some_arg)
+            return is_quality_untraceable(p_quality, quality_type,
+                                          parent_class_psrs[1:], property_type)
         else:
             return True
     else:
         return False
 
 
-def gather_items_to_delete(quality_list, feature_type, supr_class_psrs, some_arg=None):
-    some_list = []
+def gather_items_to_delete(quality_list, quality_type, parent_class_psrs,
+                           property_type=None):
 
+    items = []
     for quality in quality_list:
-        ans = some_recursive_fun(quality_list[quality],
-                                 feature_type,
-                                 supr_class_psrs, some_arg)
-
+        untraceable = is_quality_untraceable(quality_list[quality],
+                                             quality_type,
+                                             parent_class_psrs, property_type)
         # Add the quality to be deleted in the appropriate list
-        if ans:
-            some_list.append(quality)
-    return some_list
+        if untraceable:
+            items.append(quality)
+    return items
 
+
+def prune_xmi_tree(xmi_tree, qualities):
+
+    cls = xmi_tree.find('classes')
+    for quality_type in qualities:
+        xmi_elements = cls.findall(quality_type)
+        for xmi_element in xmi_elements:
+            if xmi_element.attrib['name'] in qualities[quality_type]:
+                cls.remove(xmi_element)
 
 # Find the xmi files in the repo and store their paths
 filepaths = []
-for root, dirnames, filenames in os.walk('../'):
+for root, dirnames, filenames in os.walk('.'):
     for filename in fnmatch.filter(filenames, '*.xmi'):
         filepaths.append(os.path.join(root, filename))
 
 
 for filepath in filepaths:
     # Create a parser instance for the XMI file to be pruned.
-    psr = XmiParser()
+    print "File to prune: ", filepath
+    psr = sim_xmi_parser.XmiParser()
     psr.parse(filepath)
 
-    # Create lists of features that need to be removed.
-    attr_list = []
-    cmd_list = []
-    devprop_list = []
-    clsprop_list = []
-
     # Get all the features of the TANGO class
-    attr_quality_list = psr.get_reformatted_device_attr_metadata()
-    cmd_quality_list = psr.get_reformatted_cmd_metadata()
-    devprop_quality_list = psr.get_reformatted_properties_metadata('deviceProperties')
-    clsprop_quality_list = psr.get_reformatted_properties_metadata('classProperties')
+    attr_qualities = psr.get_reformatted_device_attr_metadata()
+    cmd_qualities = psr.get_reformatted_cmd_metadata()
+    devprop_qualities = psr.get_reformatted_properties_metadata('deviceProperties')
+    clsprop_qualities = psr.get_reformatted_properties_metadata('classProperties')
 
     # Get the closest parent class.
-    cls_descr = psr.get_reformatted_class_description_metadata()
-    clss_descr = cls_descr.values()[0]
+    cls_descr = psr.class_description
+    super_class_info = cls_descr.values()[0]
     # Remove the 'Device_Impl' class information
-    clss_descr.pop(0)
-    clss_descr.reverse()
-    super_class_info = clss_descr
+    super_class_info.pop(0)
+    super_class_info.reverse()
 
     # Create the parsers for the classes' super_classes and store in a list.
     super_class_psrs = []
     for class_info in super_class_info:
-        sup_psr = XmiParser()
+        sup_psr = sim_xmi_parser.XmiParser()
         sup_psr.parse(class_info['sourcePath']+'/'+class_info['classname']+'.xmi')
         super_class_psrs.append(sup_psr)
 
 
     # Make use of the recursive function.
-
+    # Create lists of features that need to be removed.
     # Gather items to delete in the attributes.
-    attr_list = gather_items_to_delete(attr_quality_list, 'device_attr',
-                                       super_class_psrs)
-    cmd_list = gather_items_to_delete(cmd_quality_list, 'cmd',
-                                      super_class_psrs)
-    devprop_list = gather_items_to_delete(devprop_quality_list, 'properties',
-                                          super_class_psrs, some_arg='deviceProperties')
-    clsprop_list = gather_items_to_delete(clsprop_quality_list, 'properties',
-                                          super_class_psrs, some_arg='classProperties')
-
+    print "Gathering items to be removed from file..."
+    qualities = {}
+    qualities['dynamicAttributes'] = (
+        gather_items_to_delete(attr_qualities, 'device_attr', super_class_psrs))
+    qualities['commands'] = (
+        gather_items_to_delete(cmd_qualities, 'cmd', super_class_psrs))
+    qualities['deviceProperties'] = (
+        gather_items_to_delete(devprop_qualities, 'properties', super_class_psrs,
+                               property_type='deviceProperties'))
+    qualities['classProperties'] = (
+        gather_items_to_delete(clsprop_qualities, 'properties', super_class_psrs,
+                               property_type='classProperties'))
 
     print "Qualities to delete in the XMI tree..."
-    print "Class Properties: ", clsprop_list
-    print "Attributes: ", attr_list
-    print "Commands: ", cmd_list
-    print "Device Properties: ", devprop_list
-    break
+    print "Class Properties: ", qualities['classProperties']
+    print "Attributes: ", qualities['dynamicAttributes']
+    print "Commands: ", qualities['commands']
+    print "Device Properties: ", qualities['deviceProperties']
 
-# This you need to write the 'new' xmi file
-## Define the default namespace(s) before parsing the file to avoid "<ns0:PogoSystem "
-## ET.register_namespace('pogoDsl', "http://www.esrf.fr/tango/pogo/PogoDsl")
-## ET.register_namespace('xmi', "http://www.omg.org/XMI")
-# To write a file with the xml declaration at the top.
-## tree.write('WeatherF.xmi', xml_declaration=True, encoding='ASCII', method='xml')
+    tree = psr.get_xmi_tree()
+    prune_xmi_tree(tree, qualities)
+
+    # This you need to write the 'new' xmi file
+    # Define the default namespace(s) before parsing the file to avoid "<ns0:PogoSystem "
+    ET.register_namespace('pogoDsl', "http://www.esrf.fr/tango/pogo/PogoDsl")
+    ET.register_namespace('xmi', "http://www.omg.org/XMI")
+    # To write a file with the xml declaration at the top.
+    print "Overwriting file ", filepath
+    tree.write(filepath, xml_declaration=True, encoding='ASCII', method='xml')

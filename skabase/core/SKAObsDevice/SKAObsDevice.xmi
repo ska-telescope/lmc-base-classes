@@ -106,7 +106,6 @@
       <enumLabels>PULSAR_SEARCH</enumLabels>
       <enumLabels>TRANSIENT_SEARCH_FAST</enumLabels>
       <enumLabels>TRANSIENT_SEARCH_SLOW</enumLabels>
-      <enumLabels>TRANSIENT_SEARCH_SLOW</enumLabels>
       <enumLabels>PULSAR_TIMING</enumLabels>
       <enumLabels>VLBI</enumLabels>
     </attributes>

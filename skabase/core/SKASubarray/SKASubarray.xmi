@@ -1,14 +1,14 @@
 <?xml version="1.0" encoding="ASCII"?>
 <pogoDsl:PogoSystem xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:pogoDsl="http://www.esrf.fr/tango/pogo/PogoDsl">
-  <classes name="SKAObsDevice" pogoRevision="9.4">
-    <description description="A generic base device for Observations for SKA." title="SKAObsDevice" sourcePath="/Users/lvdheever/svn/levpro/skabase/core" language="PythonHL" filestogenerate="XMI   file,Code files,Python Package,Protected Regions,Sphinx" license="GPL" copyright="" hasMandatoryProperty="true" hasConcreteProperty="true" hasAbstractCommand="true" hasAbstractAttribute="false">
+  <classes name="SKASubarray" pogoRevision="9.4">
+    <description description="SubArray handling device" title="" sourcePath="/Users/lvdheever/svn/levpro/skabase/core/SKASubarray" language="PythonHL" filestogenerate="XMI   file,Code files,Python Package,Protected Regions" license="GPL" copyright="" hasMandatoryProperty="true" hasConcreteProperty="false" hasAbstractCommand="true" hasAbstractAttribute="false">
       <inheritances classname="Device_Impl" sourcePath=""/>
-      <inheritances classname="SKABaseDevice" sourcePath="../../../../_tango-java-apps/."/>
-      <identification contact="at ska.ac.za - cam" author="cam" emailDomain="ska.ac.za" classFamily="OtherInstruments" siteSpecific="" platform="All Platforms" bus="Not Applicable" manufacturer="SKASA" reference="SKA-SKAObsDevice"/>
+      <inheritances classname="SKAObsDevice" sourcePath="../SKAObsDevice"/>
+      <identification contact="at ska.ac.za - cam" author="cam" emailDomain="ska.ac.za" classFamily="SkaCore" siteSpecific="" platform="All Platforms" bus="Not Applicable" manufacturer="none" reference=""/>
     </description>
     <deviceProperties name="WillInheritFrom" description="Inheritance to be added later">
       <type xsi:type="pogoDsl:StringType"/>
-      <status abstract="false" inherited="false" concrete="true"/>
+      <status abstract="false" inherited="true" concrete="true"/>
       <DefaultPropValue>SKABaseDevice</DefaultPropValue>
     </deviceProperties>
     <deviceProperties name="SkaLevel" description="Indication of importance of the device in the SKA hierarchy &#xA;to support drill-down navigation: 1..6, with 1 highest.&#xA;Default is 4, making provision for &#xA;EltMaster, EltAlarms, EltTelState = 1&#xA;SubEltMaster = 2&#xA;Subarray, Capability = 2/3&#xA;Others = 4 (or 5 or 6)">
@@ -45,14 +45,50 @@
       <type xsi:type="pogoDsl:IntType"/>
       <status abstract="false" inherited="true" concrete="true"/>
     </deviceProperties>
-    <commands name="ObsState" description="Set the observation state" execMethod="obs_state" displayLevel="OPERATOR" polledPeriod="0" isDynamic="false">
+    <commands name="AssignResources" description="Override any previous assignment of resources." execMethod="assign_resources" displayLevel="OPERATOR" polledPeriod="0" isDynamic="false">
+      <argin description="List of resources to initialise subarray with">
+        <type xsi:type="pogoDsl:StringType"/>
+      </argin>
+      <argout description="List of resources assigned to subarray">
+        <type xsi:type="pogoDsl:StringArrayType"/>
+      </argout>
+      <status abstract="false" inherited="false" concrete="true" concreteHere="true"/>
+    </commands>
+    <commands name="AddResources" description="" execMethod="add_resources" displayLevel="OPERATOR" polledPeriod="0" isDynamic="false">
+      <argin description="List of resources to add to subarray">
+        <type xsi:type="pogoDsl:StringType"/>
+      </argin>
+      <argout description="">
+        <type xsi:type="pogoDsl:StringArrayType"/>
+      </argout>
+      <status abstract="false" inherited="false" concrete="true" concreteHere="true"/>
+    </commands>
+    <commands name="RemoveResources" description="Delta removeal of assigned resources." execMethod="remove_resources" displayLevel="OPERATOR" polledPeriod="0" isDynamic="false">
+      <argin description="List of resources to remove from subarray">
+        <type xsi:type="pogoDsl:StringType"/>
+      </argin>
+      <argout description="List of resources removed">
+        <type xsi:type="pogoDsl:StringArrayType"/>
+      </argout>
+      <status abstract="false" inherited="false" concrete="true" concreteHere="true"/>
+    </commands>
+    <commands name="RemoveAllResources" description="Remove all resources to tear down to an empty subarray" execMethod="remove_all_resources" displayLevel="OPERATOR" polledPeriod="0" isDynamic="false">
+      <argin description="">
+        <type xsi:type="pogoDsl:VoidType"/>
+      </argin>
+      <argout description="List of resources removed">
+        <type xsi:type="pogoDsl:StringArrayType"/>
+      </argout>
+      <status abstract="false" inherited="false" concrete="true" concreteHere="true"/>
+    </commands>
+    <commands name="ObsState" description="Set the observation state" execMethod="obs_state" displayLevel="OPERATOR" polledPeriod="0">
       <argin description="">
         <type xsi:type="pogoDsl:VoidType"/>
       </argin>
       <argout description="Observation state">
         <type xsi:type="pogoDsl:ConstStringType"/>
       </argout>
-      <status abstract="true" inherited="false" concrete="false" concreteHere="false"/>
+      <status abstract="true" inherited="true" concrete="false"/>
     </commands>
     <commands name="Reset" description="Reset device to its default state" execMethod="reset" displayLevel="OPERATOR" polledPeriod="0">
       <argin description="">
@@ -81,45 +117,40 @@
       </argout>
       <status abstract="true" inherited="true" concrete="true"/>
     </commands>
-    <attributes name="obsState" attType="Scalar" rwType="READ" displayLevel="OPERATOR" polledPeriod="0" maxX="" maxY="" allocReadMember="true" isDynamic="false">
-      <dataType xsi:type="pogoDsl:EnumType"/>
+    <attributes name="subID" attType="Scalar" rwType="READ" displayLevel="OPERATOR" polledPeriod="0" maxX="" maxY="" allocReadMember="false" isDynamic="false">
+      <dataType xsi:type="pogoDsl:UShortType"/>
+      <changeEvent fire="false" libCheckCriteria="false"/>
+      <archiveEvent fire="false" libCheckCriteria="false"/>
       <dataReadyEvent fire="false" libCheckCriteria="true"/>
       <status abstract="false" inherited="false" concrete="true" concreteHere="true"/>
+      <properties description="The actual subarray ID of this instance." label="" unit="" standardUnit="" displayUnit="" format="%02d" maxValue="16" minValue="1" maxAlarm="" minAlarm="" maxWarning="" minWarning="" deltaTime="" deltaValue=""/>
+    </attributes>
+    <attributes name="resources" attType="Scalar" rwType="READ" displayLevel="OPERATOR" polledPeriod="0" maxX="" maxY="" allocReadMember="true" isDynamic="false">
+      <dataType xsi:type="pogoDsl:StringType"/>
+      <changeEvent fire="false" libCheckCriteria="false"/>
+      <archiveEvent fire="false" libCheckCriteria="false"/>
+      <dataReadyEvent fire="false" libCheckCriteria="true"/>
+      <status abstract="false" inherited="false" concrete="true" concreteHere="true"/>
+      <properties description="The list of resources assigned to the subarray" label="" unit="" standardUnit="" displayUnit="" format="" maxValue="" minValue="" maxAlarm="" minAlarm="" maxWarning="" minWarning="" deltaTime="" deltaValue=""/>
+    </attributes>
+    <attributes name="obsState" attType="Scalar" rwType="READ" displayLevel="OPERATOR" polledPeriod="0" maxX="" maxY="" allocReadMember="true">
+      <dataType xsi:type="pogoDsl:EnumType"/>
+      <status abstract="false" inherited="true" concrete="true"/>
       <properties description="Observing State" label="" unit="" standardUnit="" displayUnit="" format="" maxValue="" minValue="" maxAlarm="" minAlarm="" maxWarning="" minWarning="" deltaTime="" deltaValue=""/>
-      <enumLabels>IDLE</enumLabels>
-      <enumLabels>CONFIGURING</enumLabels>
-      <enumLabels>READY</enumLabels>
-      <enumLabels>SCANNING</enumLabels>
-      <enumLabels>PAUSED</enumLabels>
-      <enumLabels>ABORTED</enumLabels>
-      <enumLabels>FAULT</enumLabels>
     </attributes>
-    <attributes name="obsMode" attType="Scalar" rwType="READ" displayLevel="OPERATOR" polledPeriod="0" maxX="" maxY="" allocReadMember="true" isDynamic="false">
+    <attributes name="obsMode" attType="Scalar" rwType="READ" displayLevel="OPERATOR" polledPeriod="0" maxX="" maxY="" allocReadMember="true">
       <dataType xsi:type="pogoDsl:EnumType"/>
-      <dataReadyEvent fire="false" libCheckCriteria="true"/>
-      <status abstract="false" inherited="false" concrete="true" concreteHere="true"/>
+      <status abstract="false" inherited="true" concrete="true"/>
       <properties description="Observing Mode" label="" unit="" standardUnit="" displayUnit="" format="" maxValue="" minValue="" maxAlarm="" minAlarm="" maxWarning="" minWarning="" deltaTime="" deltaValue=""/>
-      <enumLabels>IDLE</enumLabels>
-      <enumLabels>IMG_CONTINUUM</enumLabels>
-      <enumLabels>IMG_SPECTRAL_LINE</enumLabels>
-      <enumLabels>IMG_ZOOM</enumLabels>
-      <enumLabels>PULSAR_SEARCH</enumLabels>
-      <enumLabels>TRANSIENT_SEARCH_FAST</enumLabels>
-      <enumLabels>TRANSIENT_SEARCH_SLOW</enumLabels>
-      <enumLabels>TRANSIENT_SEARCH_SLOW</enumLabels>
-      <enumLabels>PULSAR_TIMING</enumLabels>
-      <enumLabels>VLBI</enumLabels>
     </attributes>
-    <attributes name="configurationProgress" attType="Scalar" rwType="READ" displayLevel="OPERATOR" polledPeriod="0" maxX="" maxY="" allocReadMember="true" isDynamic="false">
+    <attributes name="configurationProgress" attType="Scalar" rwType="READ" displayLevel="OPERATOR" polledPeriod="0" maxX="" maxY="" allocReadMember="true">
       <dataType xsi:type="pogoDsl:IntType"/>
-      <dataReadyEvent fire="false" libCheckCriteria="true"/>
-      <status abstract="false" inherited="false" concrete="true" concreteHere="true"/>
+      <status abstract="false" inherited="true" concrete="true"/>
       <properties description="Percentage configuration progress" label="" unit="%" standardUnit="" displayUnit="" format="" maxValue="100" minValue="0" maxAlarm="" minAlarm="" maxWarning="" minWarning="" deltaTime="" deltaValue=""/>
     </attributes>
-    <attributes name="configurationDelayExpected" attType="Scalar" rwType="READ" displayLevel="OPERATOR" polledPeriod="0" maxX="" maxY="" allocReadMember="true" isDynamic="false">
+    <attributes name="configurationDelayExpected" attType="Scalar" rwType="READ" displayLevel="OPERATOR" polledPeriod="0" maxX="" maxY="" allocReadMember="true">
       <dataType xsi:type="pogoDsl:IntType"/>
-      <dataReadyEvent fire="false" libCheckCriteria="true"/>
-      <status abstract="false" inherited="false" concrete="true" concreteHere="true"/>
+      <status abstract="false" inherited="true" concrete="true"/>
       <properties description="Configuration delay expected in seconds" label="" unit="seconds" standardUnit="" displayUnit="" format="" maxValue="" minValue="" maxAlarm="" minAlarm="" maxWarning="" minWarning="" deltaTime="" deltaValue=""/>
     </attributes>
     <attributes name="buildState" attType="Scalar" rwType="READ" displayLevel="OPERATOR" polledPeriod="60000" maxX="" maxY="" allocReadMember="false">
@@ -172,10 +203,29 @@
       <status abstract="false" inherited="true" concrete="true"/>
       <properties description="The test mode of the device. &#xA;Either no test mode (empty string) or an indication of the test mode." label="" unit="" standardUnit="" displayUnit="" format="" maxValue="" minValue="" maxAlarm="" minAlarm="" maxWarning="" minWarning="" deltaTime="" deltaValue=""/>
     </attributes>
-    <attributes name="testadd" attType="Scalar" rwType="READ" displayLevel="OPERATOR" polledPeriod="0" maxX="" maxY="" allocReadMember="true">
-      <dataType xsi:type="pogoDsl:DoubleType"/>
-      <status abstract="false" inherited="true" concrete="true"/>
-      <properties description="" label="" unit="" standardUnit="" displayUnit="" format="" maxValue="" minValue="" maxAlarm="" minAlarm="" maxWarning="" minWarning="" deltaTime="" deltaValue=""/>
+    <attributes name="activationTime" attType="Spectrum" rwType="READ" displayLevel="OPERATOR" polledPeriod="0" maxX="256" maxY="" allocReadMember="false" isDynamic="false">
+      <dataType xsi:type="pogoDsl:UIntType"/>
+      <changeEvent fire="false" libCheckCriteria="false"/>
+      <archiveEvent fire="false" libCheckCriteria="false"/>
+      <dataReadyEvent fire="false" libCheckCriteria="true"/>
+      <status abstract="false" inherited="false" concrete="true" concreteHere="true"/>
+      <properties description="Unix time of subarray activation." label="" unit="" standardUnit="" displayUnit="" format="" maxValue="" minValue="" maxAlarm="" minAlarm="" maxWarning="" minWarning="" deltaTime="" deltaValue=""/>
+    </attributes>
+    <attributes name="maxCapabilities" attType="Spectrum" rwType="READ" displayLevel="OPERATOR" polledPeriod="0" maxX="10" maxY="" allocReadMember="false" isDynamic="false">
+      <dataType xsi:type="pogoDsl:UShortType"/>
+      <changeEvent fire="false" libCheckCriteria="false"/>
+      <archiveEvent fire="false" libCheckCriteria="false"/>
+      <dataReadyEvent fire="false" libCheckCriteria="true"/>
+      <status abstract="false" inherited="false" concrete="true" concreteHere="true"/>
+      <properties description="Maximum instances of each capability type, in the same order as the CapabilityTypes" label="" unit="" standardUnit="" displayUnit="" format="" maxValue="" minValue="" maxAlarm="" minAlarm="" maxWarning="" minWarning="" deltaTime="" deltaValue=""/>
+    </attributes>
+    <attributes name="availableCapabilities" attType="Spectrum" rwType="READ" displayLevel="OPERATOR" polledPeriod="0" maxX="10" maxY="" allocReadMember="true" isDynamic="false">
+      <dataType xsi:type="pogoDsl:UShortType"/>
+      <changeEvent fire="false" libCheckCriteria="false"/>
+      <archiveEvent fire="false" libCheckCriteria="false"/>
+      <dataReadyEvent fire="false" libCheckCriteria="true"/>
+      <status abstract="false" inherited="false" concrete="true" concreteHere="true"/>
+      <properties description="Available instances of each capability type, in the same order as the CapabilityTypes" label="" unit="" standardUnit="" displayUnit="" format="" maxValue="" minValue="" maxAlarm="" minAlarm="" maxWarning="" minWarning="" deltaTime="" deltaValue=""/>
     </attributes>
     <states name="ON" description="">
       <status abstract="false" inherited="true" concrete="true"/>

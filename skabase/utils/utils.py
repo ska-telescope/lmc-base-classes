@@ -1,11 +1,18 @@
 import ast
 import pydoc
+import inspect
+import sys
+import traceback
+
 from datetime import datetime
 from time import sleep
 
 import PyTango
 from PyTango import DeviceProxy, DbDatum, DevState, DbDevInfo, AttrQuality, AttrWriteType
+from PyTango import Database, DbDevInfo, DeviceProxy
 from PyTango._PyTango import DevState as _DevState
+from contextlib import contextmanager
+
 
 int_types = {PyTango._PyTango.CmdArgType.DevUShort, PyTango._PyTango.CmdArgType.DevLong,
              PyTango._PyTango.CmdArgType.DevInt,
@@ -30,6 +37,63 @@ tango_type_conversion = {PyTango.CmdArgType.DevUShort.real: 'int',
                             PyTango.CmdArgType.DevState.real: '',
                             PyTango.CmdArgType.DevVoid.real: 'void'}
 
+
+@contextmanager
+def exception_manager(cls, arguments="", callback=None):
+    try:
+        yield
+
+    except PyTango.DevFailed as df:
+        # Find caller from the relative point of this executing handler
+        curframe = inspect.currentframe()
+        calframe = inspect.getouterframes(curframe, 2)
+
+        # Form exception message
+        message = "{}: {}".format(type(df).__name__, df.message)
+
+        # Retrieve class
+        class_name = str(cls.__class__.__name__)
+
+        # Add info to message
+        additional_info = traceback.format_exc()
+        message = message + " [--" + additional_info + "--] "
+
+        ###cls.exception(command_name=class_name + "::" + calframe[2][3],
+        ###                          command_inputs=str(arguments),
+        ###                          message=message)
+
+        if callback:
+            callback()
+
+        PyTango.Except.re_throw_exception(df,
+                                          "SKA_CommandFailed",
+                                          message,
+                                          class_name + "::" + calframe[2][3])
+    except Exception as df:
+        # Find caller from the relative point of this executing handler
+        curframe = inspect.currentframe()
+        calframe = inspect.getouterframes(curframe, 2)
+
+        # Form exception message
+        message = "{}: {}".format(type(df).__name__, df.message)
+
+        # Retrieve class
+        class_name = str(cls.__class__.__name__)
+
+        # Add info to message
+        additional_info = traceback.format_exc()
+        message = message + " [--" + additional_info + "--] "
+
+        ###cls.exception(command_name=class_name+"::"+calframe[2][3],
+        ###                          command_inputs=str(arguments),
+        ###                          message=message)
+
+        if callback:
+            callback()
+
+        PyTango.Except.throw_exception("SKA_CommandFailed",
+                                       message,
+                                       class_name + "::" + calframe[2][3])
 
 def get_dev_info(domain_name, device_server_name, device_ref):
     dev_info = DbDevInfo()

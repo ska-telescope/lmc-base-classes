@@ -21,10 +21,14 @@ from PyTango.server import attribute, command
 from PyTango.server import device_property
 from PyTango import AttrQuality, DispLevel, DevState
 from PyTango import AttrWriteType, PipeWriteType
+
+
 # Additional import
 # PROTECTED REGION ID(SKABaseDevice.additionnal_import) ENABLED START #
-
-from skabase.utils.utils import get_dp_command
+import json
+from PyTango import DeviceProxy
+from PyTango._PyTango import DevState as _DevState
+from skabase.utils.utils import get_dp_command, exception_manager, tango_type_conversion
 
 # PROTECTED REGION END #    //  SKABaseDevice.additionnal_import
 
@@ -37,6 +41,136 @@ class SKABaseDevice(Device):
     """
     __metaclass__ = DeviceMeta
     # PROTECTED REGION ID(SKABaseDevice.class_variable) ENABLED START #
+    def _get_device_json(self, args_dict):
+        try:
+
+            device_dict = {
+                'component': self.get_name(),
+            }
+            if args_dict.get('with_metrics') or args_dict.get('with_attributes'):
+                device_dict['attributes'] = self.get_device_attributes(
+                    with_value=args_dict.get('with_value'),
+                    with_metrics=args_dict.get('with_metrics'),
+                    with_attributes=args_dict.get('with_attributes'),
+                    with_context=False
+                ),
+            if args_dict.get('with_commands') == "true":
+                device_dict['commands'] = self.get_device_commands(with_context=False)
+            return device_dict
+
+        except Exception, ex:
+            ###self.error_stream(str(ex))
+            raise
+
+    def _parse_argin(self, argin, defaults=None, required=None):
+        args_dict = defaults.copy() if defaults else {}
+        try:
+            if argin:
+                args_dict.update(json.loads(argin))
+        except ValueError, ex:
+            ###self.error_stream(ex)
+            raise
+
+        missing_args = []
+        if required:
+            missing_args = set(required) - set(args_dict.keys())
+        if missing_args:
+            msg = "Missing arguments: %s" % ', '.join([str(m_arg) for m_arg in missing_args])
+            raise Exception(msg)
+        return args_dict
+
+    def get_device_commands(self, with_context=True):
+        """ Get device proxy commands"""
+        ### TBD - Why use DeviceProxy?
+        ### Can this not be known through self which is a Device
+        commands = []
+        device_proxy = DeviceProxy(self.get_name())
+        cmd_config_list = device_proxy.command_list_query()
+        for device_cmd_config in cmd_config_list:
+            commands.append(get_dp_command(
+                device_proxy.dev_name(), device_cmd_config, with_context))
+        return commands
+
+    def get_device_attributes(self, with_value='false',
+            with_context='true',
+            with_metrics='true', with_attributes='true', attribute_name=None):
+        """ Get device proxy attributes"""
+        ### TBD - Why use DeviceProxy?
+        ### Can this not ve known through self which is a Device
+
+        # Get attribute configuration
+        device_proxy = DeviceProxy(self.get_name())
+        if attribute_name is not None:
+            attr_config = device_proxy.get_attribute_config_ex(attribute_name)
+        else:
+            attr_config = device_proxy.get_attribute_config_ex(device_proxy.get_attribute_list())
+
+        # Get attribute values if required
+        if with_value == 'true' and attribute_name is not None:
+            attr_values = device_proxy.read_attributes([attribute_name])
+        elif with_value == 'true':
+            attr_values = device_proxy.read_attributes(device_proxy.get_attribute_list())
+
+        #### Get device context
+        ###device_type, device_id = get_tango_device_type_id(device_proxy.dev_name())
+
+        def coerce_value(value):
+            if type(value) in [DevState, _DevState]:
+                return str(value)
+            return value
+
+        # Process all attributes
+        attributes = {}
+        for i, attribute in enumerate(attr_config):
+
+            # Populate dictionary with attribute configuration conversion
+            attr_dict = {
+                'name': attribute.name,
+                'polling_frequency': attribute.events.per_event.period,
+                'min_value': attribute.min_value if attribute.min_value != 'Not specified' else None,
+                'max_value': attribute.max_value if attribute.min_value != 'Not specified' else None,
+                'readonly': attribute.writable not in [PyTango.AttrWriteType.READ_WRITE,
+                                                       PyTango.AttrWriteType.WRITE,
+                                                       PyTango.AttrWriteType.READ_WITH_WRITE]
+            }
+
+            # Convert data type
+            if attribute.data_format == PyTango.AttrDataFormat.SCALAR:
+                print "---",attribute.name, attribute.data_format, attribute.data_type
+                attr_dict["data_type"] = tango_type_conversion.get(
+                    attribute.data_type, attribute.data_type)
+            else:
+                # Data types we aren't really going to represent
+                attr_dict["data_type"] = "other"
+
+            # Add context if required
+            if with_context == 'true':
+                attr_dict['component'] = self.get_name()
+
+            # Add value if required
+            if with_value == 'true':
+                attr_dict['value'] = coerce_value(attr_values[i].value)
+                attr_dict['is_alarm'] = attr_values[i].quality == AttrQuality.ATTR_ALARM
+               # ts = datetime.fromtimestamp(attr_values[i].time.tv_sec)
+               # ts.replace(microsecond=attr_values[i].time.tv_usec)
+               # attr_dict['timestamp'] = ts.isoformat()
+
+            # Define attribute type
+            if attribute.name in self.MetricList:
+                attr_dict['attribute_type'] = 'metric'
+            else:
+                attr_dict['attribute_type'] = 'attribute'
+
+            # Add to return attribute list
+            if with_metrics == 'true' and attr_dict['attribute_type'] == 'metric':
+                attributes[attribute.name] = attr_dict
+            elif with_attributes == 'true' and attr_dict['attribute_type'] == 'attribute':
+                attributes[attribute.name] = attr_dict
+
+        return attributes
+
+
+
     # PROTECTED REGION END #    //  SKABaseDevice.class_variable
 
     # -----------------
@@ -250,16 +384,16 @@ class SKABaseDevice(Device):
     # --------
 
     @command(
-    dtype_out=('str',),
+    dtype_out=('str'),
     )
     @DebugIt()
     def Get_Metrics(self):
         # PROTECTED REGION ID(SKABaseDevice.Get_Metrics) ENABLED START #
         ### TBD - read the value of each of the attributes in the MetricList
         with exception_manager(self):
-            args_dict = {'with_value': True, 'with_commands': False,
-                        'with_metrics': True, 'with_attributes': False}
-            device_dict = self._get_device_json(args_dict, defaults)
+            args_dict = {'with_value': 'false', 'with_commands': 'false',
+                         'with_metrics': 'true', 'with_attributes': 'false'}
+            device_dict = self._get_device_json(args_dict)
             argout = json.dumps(device_dict)
 
         return argout
@@ -268,7 +402,7 @@ class SKABaseDevice(Device):
 
     @command(
     dtype_in='str',
-    doc_in="[{`with_value` : False, `with_commands` : True, `with_metrics` : True, `with_attributes` : False}]",
+    doc_in="[{`with_value` : `false`, `with_commands` : `true`, `with_metrics` : `true`, `with_attributes` : `false`}]",
     dtype_out='str',
     doc_out="The JSON string representing this device, can be filtered by with_commands, with_metrics, with_attributes and with_value.",
     )
@@ -276,10 +410,10 @@ class SKABaseDevice(Device):
     def To_Json(self, argin):
         # PROTECTED REGION ID(SKABaseDevice.To_Json) ENABLED START #
         with exception_manager(self):
-            defaults = {'with_value': False, 'with_commands': True,
-                        'with_metrics': True, 'with_attributes': False}
+            defaults = {'with_value': 'false', 'with_commands': 'true',
+                        'with_metrics': 'true', 'with_attributes': 'false'}
             args_dict = self._parse_argin(argin, defaults=defaults)
-            device_dict = self._get_device_json(args_dict, defaults)
+            device_dict = self._get_device_json(args_dict)
             argout = json.dumps(device_dict)
 
         return argout

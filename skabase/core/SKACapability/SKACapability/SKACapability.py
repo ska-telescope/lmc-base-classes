@@ -7,7 +7,7 @@
 # Distributed under the terms of the GPL license.
 # See LICENSE.txt for more info.
 
-""" 
+""" SKACapability
 
 SubArray handling device
 """
@@ -40,7 +40,6 @@ class SKACapability(SKAObsDevice):
     # -----------------
     # Device Properties
     # -----------------
-
 
 
 

@@ -7,7 +7,7 @@
 #
 # Distributed under the terms of the GPL license.
 # See LICENSE.txt for more info.
-"""Contain the tests for the ."""
+"""Contain the tests for the SKAGroup."""
 
 # Path
 import sys
@@ -39,7 +39,7 @@ class SKAGroupDeviceTestCase(DeviceTestCase):
     # PROTECTED REGION ID(SKAGroup.test_additionnal_import) ENABLED START #
     # PROTECTED REGION END #    //  SKAGroup.test_additionnal_import
     device = SKAGroup
-    properties = {'member_list': '', 'SkaLevel': '4', 'ManagedDevices': '', 'CentralLoggingTarget': '', 'ElementLoggingTarget': '', 'StorageLoggingTarget': 'localhost', 'CentralLoggingLevelDefault': '', 'ElementLoggingLevelDefault': '', 'StorageLoggingLevelStorage': '', 'WillInheritFrom': 'SKABaseDevice', 
+    properties = {'member_list': '', 'SkaLevel': '4', 'ManagedDevices': '', 'CentralLoggingTarget': '', 'ElementLoggingTarget': '', 'StorageLoggingTarget': 'localhost', 'CentralLoggingLevelDefault': '', 'ElementLoggingLevelDefault': '', 'StorageLoggingLevelStorage': '', 
                   }
     empty = None  # Should be []
 
@@ -87,6 +87,18 @@ class SKAGroupDeviceTestCase(DeviceTestCase):
         self.device.get_attribute_list("")
         # PROTECTED REGION END #    //  SKAGroup.test_get_attribute_list
 
+    def test_ObsState(self):
+        """Test for ObsState"""
+        # PROTECTED REGION ID(SKAGroup.test_ObsState) ENABLED START #
+        self.device.ObsState()
+        # PROTECTED REGION END #    //  SKAGroup.test_ObsState
+
+    def test_Reset(self):
+        """Test for Reset"""
+        # PROTECTED REGION ID(SKAGroup.test_Reset) ENABLED START #
+        self.device.Reset()
+        # PROTECTED REGION END #    //  SKAGroup.test_Reset
+
     def test_State(self):
         """Test for State"""
         # PROTECTED REGION ID(SKAGroup.test_State) ENABLED START #
@@ -99,23 +111,47 @@ class SKAGroupDeviceTestCase(DeviceTestCase):
         self.device.Status()
         # PROTECTED REGION END #    //  SKAGroup.test_Status
 
-    def test_Reset(self):
-        """Test for Reset"""
-        # PROTECTED REGION ID(SKAGroup.test_Reset) ENABLED START #
-        self.device.Reset()
-        # PROTECTED REGION END #    //  SKAGroup.test_Reset
-
-    def test_ObsState(self):
-        """Test for ObsState"""
-        # PROTECTED REGION ID(SKAGroup.test_ObsState) ENABLED START #
-        self.device.ObsState()
-        # PROTECTED REGION END #    //  SKAGroup.test_ObsState
-
     def test_members_state(self):
         """Test for members_state"""
         # PROTECTED REGION ID(SKAGroup.test_members_state) ENABLED START #
         self.device.members_state
         # PROTECTED REGION END #    //  SKAGroup.test_members_state
+
+    def test_obsState(self):
+        """Test for obsState"""
+        # PROTECTED REGION ID(SKAGroup.test_obsState) ENABLED START #
+        self.device.obsState
+        # PROTECTED REGION END #    //  SKAGroup.test_obsState
+
+    def test_obsMode(self):
+        """Test for obsMode"""
+        # PROTECTED REGION ID(SKAGroup.test_obsMode) ENABLED START #
+        self.device.obsMode
+        # PROTECTED REGION END #    //  SKAGroup.test_obsMode
+
+    def test_configurationProgress(self):
+        """Test for configurationProgress"""
+        # PROTECTED REGION ID(SKAGroup.test_configurationProgress) ENABLED START #
+        self.device.configurationProgress
+        # PROTECTED REGION END #    //  SKAGroup.test_configurationProgress
+
+    def test_configurationDelayExpected(self):
+        """Test for configurationDelayExpected"""
+        # PROTECTED REGION ID(SKAGroup.test_configurationDelayExpected) ENABLED START #
+        self.device.configurationDelayExpected
+        # PROTECTED REGION END #    //  SKAGroup.test_configurationDelayExpected
+
+    def test_buildState(self):
+        """Test for buildState"""
+        # PROTECTED REGION ID(SKAGroup.test_buildState) ENABLED START #
+        self.device.buildState
+        # PROTECTED REGION END #    //  SKAGroup.test_buildState
+
+    def test_versionId(self):
+        """Test for versionId"""
+        # PROTECTED REGION ID(SKAGroup.test_versionId) ENABLED START #
+        self.device.versionId
+        # PROTECTED REGION END #    //  SKAGroup.test_versionId
 
     def test_centralLoggingLevel(self):
         """Test for centralLoggingLevel"""
@@ -134,18 +170,6 @@ class SKAGroupDeviceTestCase(DeviceTestCase):
         # PROTECTED REGION ID(SKAGroup.test_storageLoggingLevel) ENABLED START #
         self.device.storageLoggingLevel
         # PROTECTED REGION END #    //  SKAGroup.test_storageLoggingLevel
-
-    def test_buildState(self):
-        """Test for buildState"""
-        # PROTECTED REGION ID(SKAGroup.test_buildState) ENABLED START #
-        self.device.buildState
-        # PROTECTED REGION END #    //  SKAGroup.test_buildState
-
-    def test_versionId(self):
-        """Test for versionId"""
-        # PROTECTED REGION ID(SKAGroup.test_versionId) ENABLED START #
-        self.device.versionId
-        # PROTECTED REGION END #    //  SKAGroup.test_versionId
 
     def test_healthState(self):
         """Test for healthState"""
@@ -176,30 +200,6 @@ class SKAGroupDeviceTestCase(DeviceTestCase):
         # PROTECTED REGION ID(SKAGroup.test_testMode) ENABLED START #
         self.device.testMode
         # PROTECTED REGION END #    //  SKAGroup.test_testMode
-
-    def test_obsState(self):
-        """Test for obsState"""
-        # PROTECTED REGION ID(SKAGroup.test_obsState) ENABLED START #
-        self.device.obsState
-        # PROTECTED REGION END #    //  SKAGroup.test_obsState
-
-    def test_obsMode(self):
-        """Test for obsMode"""
-        # PROTECTED REGION ID(SKAGroup.test_obsMode) ENABLED START #
-        self.device.obsMode
-        # PROTECTED REGION END #    //  SKAGroup.test_obsMode
-
-    def test_configurationProgress(self):
-        """Test for configurationProgress"""
-        # PROTECTED REGION ID(SKAGroup.test_configurationProgress) ENABLED START #
-        self.device.configurationProgress
-        # PROTECTED REGION END #    //  SKAGroup.test_configurationProgress
-
-    def test_configurationDelayExpected(self):
-        """Test for configurationDelayExpected"""
-        # PROTECTED REGION ID(SKAGroup.test_configurationDelayExpected) ENABLED START #
-        self.device.configurationDelayExpected
-        # PROTECTED REGION END #    //  SKAGroup.test_configurationDelayExpected
 
 
 # Main execution

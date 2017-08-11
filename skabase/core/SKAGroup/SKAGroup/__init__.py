@@ -7,7 +7,7 @@
 # Distributed under the terms of the GPL license.
 # See LICENSE.txt for more info.
 
-"""
+"""SKAGroup
 
 A class which holds a number of proxies to members
 """

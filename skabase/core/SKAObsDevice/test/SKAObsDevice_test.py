@@ -39,7 +39,7 @@ class SKAObsDeviceDeviceTestCase(DeviceTestCase):
     # PROTECTED REGION ID(SKAObsDevice.test_additionnal_import) ENABLED START #
     # PROTECTED REGION END #    //  SKAObsDevice.test_additionnal_import
     device = SKAObsDevice
-    properties = {'WillInheritFrom': 'SKABaseDevice', 'SkaLevel': '4', 'ManagedDevices': '', 'CentralLoggingTarget': '', 'ElementLoggingTarget': '', 'StorageLoggingTarget': 'localhost', 'CentralLoggingLevelDefault': '', 'ElementLoggingLevelDefault': '', 'StorageLoggingLevelStorage': '', 
+    properties = {'SkaLevel': '4', 'ManagedDevices': '', 'CentralLoggingTarget': '', 'ElementLoggingTarget': '', 'StorageLoggingTarget': 'localhost', 'CentralLoggingLevelDefault': '', 'ElementLoggingLevelDefault': '', 'StorageLoggingLevelStorage': '', 
                   }
     empty = None  # Should be []
 
@@ -164,12 +164,6 @@ class SKAObsDeviceDeviceTestCase(DeviceTestCase):
         # PROTECTED REGION ID(SKAObsDevice.test_testMode) ENABLED START #
         self.device.testMode
         # PROTECTED REGION END #    //  SKAObsDevice.test_testMode
-
-    def test_testadd(self):
-        """Test for testadd"""
-        # PROTECTED REGION ID(SKAObsDevice.test_testadd) ENABLED START #
-        self.device.testadd
-        # PROTECTED REGION END #    //  SKAObsDevice.test_testadd
 
 
 # Main execution

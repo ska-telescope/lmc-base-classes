@@ -7,7 +7,7 @@
 # Distributed under the terms of the GPL license.
 # See LICENSE.txt for more info.
 
-""" 
+""" SKASubarray
 
 SubArray handling device
 """
@@ -49,7 +49,6 @@ class SKASubarray(SKAObsDevice):
 
 
 
-
     # ----------
     # Attributes
     # ----------
@@ -82,7 +81,7 @@ class SKASubarray(SKAObsDevice):
 
 
     activationTime = attribute(
-        dtype=('uint',),
+        dtype=('uint64',),
         max_dim_x=256,
         doc="Unix time of subarray activation.",
     )

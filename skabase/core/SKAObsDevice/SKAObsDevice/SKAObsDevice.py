@@ -49,7 +49,6 @@ class SKAObsDevice(SKABaseDevice):
 
 
 
-
     # ----------
     # Attributes
     # ----------
@@ -63,11 +62,11 @@ class SKAObsDevice(SKABaseDevice):
     obsMode = attribute(
         dtype='DevEnum',
         doc="Observing Mode",
-        enum_labels=["IDLE", "IMG_CONTINUUM", "IMG_SPECTRAL_LINE", "IMG_ZOOM", "PULSAR_SEARCH", "TRANSIENT_SEARCH_FAST", "TRANSIENT_SEARCH_SLOW", "TRANSIENT_SEARCH_SLOW", "PULSAR_TIMING", "VLBI", ],
+        enum_labels=["IDLE", "IMG_CONTINUUM", "IMG_SPECTRAL_LINE", "IMG_ZOOM", "PULSAR_SEARCH", "TRANSIENT_SEARCH_FAST", "TRANSIENT_SEARCH_SLOW", "PULSAR_TIMING", "VLBI", ],
     )
 
     configurationProgress = attribute(
-        dtype='int',
+        dtype='uint16',
         unit="%",
         max_value=100,
         min_value=0,
@@ -75,11 +74,10 @@ class SKAObsDevice(SKABaseDevice):
     )
 
     configurationDelayExpected = attribute(
-        dtype='int',
+        dtype='uint16',
         unit="seconds",
         doc="Configuration delay expected in seconds",
     )
-
 
 
 

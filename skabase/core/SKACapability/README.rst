@@ -1,4 +1,4 @@
-## 
+## SKACapability
 
 SubArray handling device
 

@@ -7,7 +7,7 @@
 # Distributed under the terms of the GPL license.
 # See LICENSE.txt for more info.
 
-""" 
+""" SKAGroup
 
 A class which holds a number of proxies to members
 """
@@ -21,7 +21,7 @@ from PyTango.server import attribute, command
 from PyTango.server import device_property
 from PyTango import AttrQuality, DispLevel, DevState
 from PyTango import AttrWriteType, PipeWriteType
-from SKABaseDevice import SKABaseDevice
+from SKAObsDevice import SKAObsDevice
 # Additional import
 # PROTECTED REGION ID(SKAGroup.additionnal_import) ENABLED START #
 # PROTECTED REGION END #    //  SKAGroup.additionnal_import
@@ -29,7 +29,7 @@ from SKABaseDevice import SKABaseDevice
 __all__ = ["SKAGroup", "main"]
 
 
-class SKAGroup(SKABaseDevice):
+class SKAGroup(SKAObsDevice):
     """
     A class which holds a number of proxies to members
     """
@@ -45,7 +45,6 @@ class SKAGroup(SKABaseDevice):
         dtype=('str',),
         mandatory=True
     )
-
 
 
 
@@ -83,7 +82,7 @@ class SKAGroup(SKABaseDevice):
     # ---------------
 
     def init_device(self):
-        SKABaseDevice.init_device(self)
+        SKAObsDevice.init_device(self)
         # PROTECTED REGION ID(SKAGroup.init_device) ENABLED START #
         # PROTECTED REGION END #    //  SKAGroup.init_device
 

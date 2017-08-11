@@ -1,6 +1,6 @@
-## SKAGroup
+## SKAMaster
 
-A class which holds a number of proxies to members
+A master test
 
 ## Requirement
 
@@ -23,4 +23,4 @@ run python setup.py test
 Now you can start your device server in any
 Terminal or console by calling it :
 
-SKAGroup instance_name
+SKAMaster instance_name

@@ -7,7 +7,7 @@
 #
 # Distributed under the terms of the GPL license.
 # See LICENSE.txt for more info.
-"""Contain the tests for the ."""
+"""Contain the tests for the SKACapability."""
 
 # Path
 import sys
@@ -39,7 +39,7 @@ class SKACapabilityDeviceTestCase(DeviceTestCase):
     # PROTECTED REGION ID(SKACapability.test_additionnal_import) ENABLED START #
     # PROTECTED REGION END #    //  SKACapability.test_additionnal_import
     device = SKACapability
-    properties = {'WillInheritFrom': 'SKABaseDevice', 'SkaLevel': '4', 'ManagedDevices': '', 'CentralLoggingTarget': '', 'ElementLoggingTarget': '', 'StorageLoggingTarget': 'localhost', 'CentralLoggingLevelDefault': '', 'ElementLoggingLevelDefault': '', 'StorageLoggingLevelStorage': '', 
+    properties = {'SkaLevel': '4', 'ManagedDevices': '', 'CentralLoggingTarget': '', 'ElementLoggingTarget': '', 'StorageLoggingTarget': 'localhost', 'CentralLoggingLevelDefault': '', 'ElementLoggingLevelDefault': '', 'StorageLoggingLevelStorage': '', 
                   }
     empty = None  # Should be []
 
@@ -57,18 +57,6 @@ class SKACapabilityDeviceTestCase(DeviceTestCase):
         # PROTECTED REGION END #    //  SKACapability.test_properties
         pass
 
-    def test_State(self):
-        """Test for State"""
-        # PROTECTED REGION ID(SKACapability.test_State) ENABLED START #
-        self.device.State()
-        # PROTECTED REGION END #    //  SKACapability.test_State
-
-    def test_Status(self):
-        """Test for Status"""
-        # PROTECTED REGION ID(SKACapability.test_Status) ENABLED START #
-        self.device.Status()
-        # PROTECTED REGION END #    //  SKACapability.test_Status
-
     def test_ObsState(self):
         """Test for ObsState"""
         # PROTECTED REGION ID(SKACapability.test_ObsState) ENABLED START #
@@ -80,6 +68,18 @@ class SKACapabilityDeviceTestCase(DeviceTestCase):
         # PROTECTED REGION ID(SKACapability.test_Reset) ENABLED START #
         self.device.Reset()
         # PROTECTED REGION END #    //  SKACapability.test_Reset
+
+    def test_State(self):
+        """Test for State"""
+        # PROTECTED REGION ID(SKACapability.test_State) ENABLED START #
+        self.device.State()
+        # PROTECTED REGION END #    //  SKACapability.test_State
+
+    def test_Status(self):
+        """Test for Status"""
+        # PROTECTED REGION ID(SKACapability.test_Status) ENABLED START #
+        self.device.Status()
+        # PROTECTED REGION END #    //  SKACapability.test_Status
 
     def test_subID(self):
         """Test for subID"""

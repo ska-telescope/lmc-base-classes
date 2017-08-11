@@ -1,0 +1,9 @@
+recursive-include SKAMaster *.py
+recursive-include test *.py
+include *.rst
+include SKAMaster.xmi
+include *.txt
+graft docs
+
+global-exclude *.pyc
+global-exclude *.pyo

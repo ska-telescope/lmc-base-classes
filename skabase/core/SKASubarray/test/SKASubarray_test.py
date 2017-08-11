@@ -7,7 +7,7 @@
 #
 # Distributed under the terms of the GPL license.
 # See LICENSE.txt for more info.
-"""Contain the tests for the ."""
+"""Contain the tests for the SKASubarray."""
 
 # Path
 import sys
@@ -39,7 +39,7 @@ class SKASubarrayDeviceTestCase(DeviceTestCase):
     # PROTECTED REGION ID(SKASubarray.test_additionnal_import) ENABLED START #
     # PROTECTED REGION END #    //  SKASubarray.test_additionnal_import
     device = SKASubarray
-    properties = {'WillInheritFrom': 'SKABaseDevice', 'SkaLevel': '4', 'ManagedDevices': '', 'CentralLoggingTarget': '', 'ElementLoggingTarget': '', 'StorageLoggingTarget': 'localhost', 'CentralLoggingLevelDefault': '', 'ElementLoggingLevelDefault': '', 'StorageLoggingLevelStorage': '', 
+    properties = {'SkaLevel': '4', 'ManagedDevices': '', 'CentralLoggingTarget': '', 'ElementLoggingTarget': '', 'StorageLoggingTarget': 'localhost', 'CentralLoggingLevelDefault': '', 'ElementLoggingLevelDefault': '', 'StorageLoggingLevelStorage': '', 
                   }
     empty = None  # Should be []
 

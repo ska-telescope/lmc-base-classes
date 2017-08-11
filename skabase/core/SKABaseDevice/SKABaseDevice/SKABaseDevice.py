@@ -61,17 +61,17 @@ class SKABaseDevice(Device):
     )
 
     CentralLoggingLevelDefault = device_property(
-        dtype='int',
+        dtype='uint16',
         mandatory=True
     )
 
     ElementLoggingLevelDefault = device_property(
-        dtype='int',
+        dtype='uint16',
         mandatory=True
     )
 
     StorageLoggingLevelStorage = device_property(
-        dtype='int',
+        dtype='uint16',
         mandatory=True
     )
 
@@ -90,17 +90,17 @@ class SKABaseDevice(Device):
     )
 
     centralLoggingLevel = attribute(
-        dtype='int',
+        dtype='uint16',
         doc="Current logging level to Central logging target for this device - \ninitialises to CentralLoggingLevelDefault on startup",
     )
 
     elementLoggingLevel = attribute(
-        dtype='int',
+        dtype='uint16',
         doc="Current logging level to Element logging target for this device - \ninitialises to ElementLoggingLevelDefault on startup",
     )
 
     storageLoggingLevel = attribute(
-        dtype='int',
+        dtype='uint16',
         access=AttrWriteType.READ_WRITE,
         memorized=True,
         doc="Current logging level to Syslog for this device - \ninitialises from  StorageLoggingLevelDefault on first execution of device.\nNeeds to be READ_WRITE To make it memorized - but writing this attribute should \ndo the same as command SetStorageLoggingLevel to ensure the targets and adjustments\nare made correctly",

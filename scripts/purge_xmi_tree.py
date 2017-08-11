@@ -2,6 +2,7 @@
 
 import os
 import fnmatch
+import argparse
 
 from tango_simlib import sim_xmi_parser
 
@@ -54,69 +55,97 @@ def prune_xmi_tree(xmi_tree, qualities):
             if xmi_element.attrib['name'] in qualities[quality_type]:
                 cls.remove(xmi_element)
 
-# Find the xmi files in the repo and store their paths
-filepaths = []
-for root, dirnames, filenames in os.walk('.'):
-    for filename in fnmatch.filter(filenames, '*.xmi'):
-        filepaths.append(os.path.join(root, filename))
+# Script entry point
+if __name__ == '__main__':
+
+    parser = argparse.ArgumentParser(description='Purge inherited items from files in tree')
+    parser.add_argument('--path', dest="path",
+                        action="store",
+                        help="Root path of tree (mandatory)")
+    parser.add_argument('--files', dest="files",
+                        action="store", default="*.xmi",
+                        help="File name pattern to include. Default=*.xmi")
+
+    args = parser.parse_args()
+    if not args.path:
+        print "--path has to be specified"
+        exit()
+
+    # Find the xmi files in the repo and store their paths
+    filepaths = []
+    for root, dirnames, filenames in os.walk(args.path):
+        # Only process xmi files
+        for filename in fnmatch.filter(filenames, "*.xmi"):
+            # Append for processing if it matches the files pattern
+            if fnmatch.filter([filename], args.files):
+                print "Found", os.path.join(root, filename)
+                filepaths.append(os.path.join(root, filename))
+
+    for filepath in sorted(filepaths):
+        # Create a parser instance for the XMI file to be pruned.
+        print "File to prune: ", filepath
+        psr = sim_xmi_parser.XmiParser()
+        psr.parse(filepath)
+
+        # Get all the features of the TANGO class
+        attr_qualities = psr.get_reformatted_device_attr_metadata()
+        cmd_qualities = psr.get_reformatted_cmd_metadata()
+        devprop_qualities = psr.get_reformatted_properties_metadata('deviceProperties')
+        clsprop_qualities = psr.get_reformatted_properties_metadata('classProperties')
+
+        # Get the closest parent class.
+        cls_descr = psr.class_description
+        super_classes = cls_descr.values()[0]
+        # Remove the 'Device_Impl' class information
+        super_class_info = [item for item in super_classes
+                            if not item["classname"].startswith("Device_Impl")]
+        super_class_info.reverse()
+
+        # Create the parsers for the classes' super_classes and store in a list.
+        super_class_psrs = []
+        for class_info in super_class_info:
+            sup_psr = sim_xmi_parser.XmiParser()
+            if class_info['sourcePath'].startswith("."):
+                # Handle relative path
+                sup_file = os.path.join(os.path.dirname(filepath),
+                                        class_info['sourcePath'],
+                                        class_info['classname']+'.xmi')
+            else:
+                sup_file = os.path.join(class_info['sourcePath'],
+                                        class_info['classname']+'.xmi')
+            sup_psr.parse(sup_file)
+            super_class_psrs.append(sup_psr)
 
 
-for filepath in filepaths:
-    # Create a parser instance for the XMI file to be pruned.
-    print "File to prune: ", filepath
-    psr = sim_xmi_parser.XmiParser()
-    psr.parse(filepath)
+        # Make use of the recursive function.
+        # Create lists of features that need to be removed.
+        # Gather items to delete in the attributes.
+        print "Gathering items to be removed from file..."
+        qualities = {}
+        qualities['dynamicAttributes'] = (
+            gather_items_to_delete(attr_qualities, 'device_attr', super_class_psrs))
+        qualities['commands'] = (
+            gather_items_to_delete(cmd_qualities, 'cmd', super_class_psrs))
+        qualities['deviceProperties'] = (
+            gather_items_to_delete(devprop_qualities, 'properties', super_class_psrs,
+                                   property_type='deviceProperties'))
+        qualities['classProperties'] = (
+            gather_items_to_delete(clsprop_qualities, 'properties', super_class_psrs,
+                                   property_type='classProperties'))
 
-    # Get all the features of the TANGO class
-    attr_qualities = psr.get_reformatted_device_attr_metadata()
-    cmd_qualities = psr.get_reformatted_cmd_metadata()
-    devprop_qualities = psr.get_reformatted_properties_metadata('deviceProperties')
-    clsprop_qualities = psr.get_reformatted_properties_metadata('classProperties')
+        print "Qualities to delete in the XMI tree..."
+        print "Class Properties: ", qualities['classProperties']
+        print "Attributes: ", qualities['dynamicAttributes']
+        print "Commands: ", qualities['commands']
+        print "Device Properties: ", qualities['deviceProperties']
 
-    # Get the closest parent class.
-    cls_descr = psr.class_description
-    super_class_info = cls_descr.values()[0]
-    # Remove the 'Device_Impl' class information
-    super_class_info.pop(0)
-    super_class_info.reverse()
+        tree = psr.get_xmi_tree()
+        prune_xmi_tree(tree, qualities)
 
-    # Create the parsers for the classes' super_classes and store in a list.
-    super_class_psrs = []
-    for class_info in super_class_info:
-        sup_psr = sim_xmi_parser.XmiParser()
-        sup_psr.parse(class_info['sourcePath']+'/'+class_info['classname']+'.xmi')
-        super_class_psrs.append(sup_psr)
-
-
-    # Make use of the recursive function.
-    # Create lists of features that need to be removed.
-    # Gather items to delete in the attributes.
-    print "Gathering items to be removed from file..."
-    qualities = {}
-    qualities['dynamicAttributes'] = (
-        gather_items_to_delete(attr_qualities, 'device_attr', super_class_psrs))
-    qualities['commands'] = (
-        gather_items_to_delete(cmd_qualities, 'cmd', super_class_psrs))
-    qualities['deviceProperties'] = (
-        gather_items_to_delete(devprop_qualities, 'properties', super_class_psrs,
-                               property_type='deviceProperties'))
-    qualities['classProperties'] = (
-        gather_items_to_delete(clsprop_qualities, 'properties', super_class_psrs,
-                               property_type='classProperties'))
-
-    print "Qualities to delete in the XMI tree..."
-    print "Class Properties: ", qualities['classProperties']
-    print "Attributes: ", qualities['dynamicAttributes']
-    print "Commands: ", qualities['commands']
-    print "Device Properties: ", qualities['deviceProperties']
-
-    tree = psr.get_xmi_tree()
-    prune_xmi_tree(tree, qualities)
-
-    # This you need to write the 'new' xmi file
-    # Define the default namespace(s) before parsing the file to avoid "<ns0:PogoSystem "
-    ET.register_namespace('pogoDsl', "http://www.esrf.fr/tango/pogo/PogoDsl")
-    ET.register_namespace('xmi', "http://www.omg.org/XMI")
-    # To write a file with the xml declaration at the top.
-    print "Overwriting file ", filepath
-    tree.write(filepath, xml_declaration=True, encoding='ASCII', method='xml')
+        # This you need to write the 'new' xmi file
+        # Define the default namespace(s) before parsing the file to avoid "<ns0:PogoSystem "
+        ET.register_namespace('pogoDsl', "http://www.esrf.fr/tango/pogo/PogoDsl")
+        ET.register_namespace('xmi', "http://www.omg.org/XMI")
+        # To write a file with the xml declaration at the top.
+        print "Overwriting file ", filepath
+        tree.write(filepath, xml_declaration=True, encoding='ASCII', method='xml')

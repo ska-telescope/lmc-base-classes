@@ -4,6 +4,7 @@
     <description description="A generic base device for SKA with EXTRA functionalities." title="SKAEXTRA" sourcePath="" language="Python" filestogenerate="XMI   file,Code files,Protected Regions" license="GPL" hasMandatoryProperty="true" hasConcreteProperty="true" hasAbstractCommand="false" hasAbstractAttribute="false">
       <inheritances classname="Device_Impl" sourcePath=""/>
       <inheritances classname="SKABaseDevice" sourcePath="../SKABaseDevice"/>
+      <inheritances classname="SKAObsDevice" sourcePath="../SKAObsDevice"/>
       <identification contact="at ska.ac.za - cam" author="cam" emailDomain="ska.ac.za" classFamily="OtherInstruments" siteSpecific="" platform="All Platforms" bus="Not Applicable" manufacturer="ISSA" reference="ISSA-SKABASE-SKABASE"/>
     </description>
     <deviceProperties name="ConfigFile" description="String with full path to a XML file with device configuration&#xA;(attributes &amp; their properties)">

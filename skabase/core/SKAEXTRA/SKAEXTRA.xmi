@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="ASCII"?>
 <pogoDsl:PogoSystem xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:pogoDsl="http://www.esrf.fr/tango/pogo/PogoDsl">
   <classes name="SKAEXTRA" pogoRevision="9.1">
-    <description description="A generic base device for SKA with EXTRA functionalities." title="SKAEXTRA" sourcePath="/Users/lvdheever/link-devl5/lmc-lab/eltbase/eltbase/servers/abstract" language="Python" filestogenerate="XMI   file,Code files,Protected Regions" license="GPL" hasMandatoryProperty="true" hasConcreteProperty="true" hasAbstractCommand="false" hasAbstractAttribute="false">
+    <description description="A generic base device for SKA with EXTRA functionalities." title="SKAEXTRA" sourcePath="" language="Python" filestogenerate="XMI   file,Code files,Protected Regions" license="GPL" hasMandatoryProperty="true" hasConcreteProperty="true" hasAbstractCommand="false" hasAbstractAttribute="false">
       <inheritances classname="Device_Impl" sourcePath=""/>
-      <inheritances classname="SKABaseDevice" sourcePath="./"/>
+      <inheritances classname="SKABaseDevice" sourcePath="../SKABaseDevice"/>
       <identification contact="at ska.ac.za - cam" author="cam" emailDomain="ska.ac.za" classFamily="OtherInstruments" siteSpecific="" platform="All Platforms" bus="Not Applicable" manufacturer="ISSA" reference="ISSA-SKABASE-SKABASE"/>
     </description>
     <deviceProperties name="ConfigFile" description="String with full path to a XML file with device configuration&#xA;(attributes &amp; their properties)">

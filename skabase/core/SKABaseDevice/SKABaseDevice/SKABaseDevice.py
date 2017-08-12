@@ -21,8 +21,6 @@ from PyTango.server import attribute, command
 from PyTango.server import device_property
 from PyTango import AttrQuality, DispLevel, DevState
 from PyTango import AttrWriteType, PipeWriteType
-
-
 # Additional import
 # PROTECTED REGION ID(SKABaseDevice.additionnal_import) ENABLED START #
 import json
@@ -384,11 +382,19 @@ class SKABaseDevice(Device):
     # --------
 
     @command(
-    dtype_out=('str'),
     )
     @DebugIt()
-    def Get_Metrics(self):
-        # PROTECTED REGION ID(SKABaseDevice.Get_Metrics) ENABLED START #
+    def Reset(self):
+        # PROTECTED REGION ID(SKABaseDevice.Reset) ENABLED START #
+        pass
+        # PROTECTED REGION END #    //  SKABaseDevice.Reset
+
+    @command(
+    dtype_out='str', 
+    )
+    @DebugIt()
+    def GetMetrics(self):
+        # PROTECTED REGION ID(SKABaseDevice.GetMetrics) ENABLED START #
         ### TBD - read the value of each of the attributes in the MetricList
         with exception_manager(self):
             args_dict = {'with_value': 'false', 'with_commands': 'false',
@@ -397,27 +403,25 @@ class SKABaseDevice(Device):
             argout = json.dumps(device_dict)
 
         return argout
-
-        # PROTECTED REGION END #    //  SKABaseDevice.Get_Metrics
+        # PROTECTED REGION END #    //  SKABaseDevice.GetMetrics
 
     @command(
-    dtype_in='str',
-    doc_in="[{`with_value` : `false`, `with_commands` : `true`, `with_metrics` : `true`, `with_attributes` : `false`}]",
-    dtype_out='str',
-    doc_out="The JSON string representing this device, can be filtered by with_commands, with_metrics, with_attributes and with_value.",
+    dtype_in='str', 
+    doc_in="Requests the JSON string representing this device, can be filtered \nby with_commands, with_metrics, with_attributes and \nwith_value. Defaults for empty string  argin are:\n{`with_value`:`false`, `with_commands`:`true`,\n  `with_metrics`:`true, `with_attributes`:`false}", 
+    dtype_out='str', 
+    doc_out="The JSON string representing this device, \nfiltered as per the input argument flags", 
     )
     @DebugIt()
-    def To_Json(self, argin):
-        # PROTECTED REGION ID(SKABaseDevice.To_Json) ENABLED START #
+    def ToJson(self, argin):
+        # PROTECTED REGION ID(SKABaseDevice.ToJson) ENABLED START #
         with exception_manager(self):
             defaults = {'with_value': 'false', 'with_commands': 'true',
                         'with_metrics': 'true', 'with_attributes': 'false'}
             args_dict = self._parse_argin(argin, defaults=defaults)
             device_dict = self._get_device_json(args_dict)
             argout = json.dumps(device_dict)
-
         return argout
-        # PROTECTED REGION END #    //  SKABaseDevice.To_Json
+        # PROTECTED REGION END #    //  SKABaseDevice.ToJson
 
 # ----------
 # Run server

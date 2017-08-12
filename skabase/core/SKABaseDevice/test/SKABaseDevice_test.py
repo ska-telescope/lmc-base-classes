@@ -75,17 +75,17 @@ class SKABaseDeviceDeviceTestCase(DeviceTestCase):
         self.device.Reset()
         # PROTECTED REGION END #    //  SKABaseDevice.test_Reset
 
-    def test_Get_Metrics(self):
-        """Test for Get_Metrics"""
-        # PROTECTED REGION ID(SKABaseDevice.test_Get_Metrics) ENABLED START #
-        self.device.Get_Metrics()
-        # PROTECTED REGION END #    //  SKABaseDevice.test_Get_Metrics
+    def test_GetMetrics(self):
+        """Test for GetMetrics"""
+        # PROTECTED REGION ID(SKABaseDevice.test_GetMetrics) ENABLED START #
+        self.device.GetMetrics()
+        # PROTECTED REGION END #    //  SKABaseDevice.test_GetMetrics
 
-    def test_To_Json(self):
-        """Test for To_Json"""
-        # PROTECTED REGION ID(SKABaseDevice.test_To_Json) ENABLED START #
-        self.device.To_Json("")
-        # PROTECTED REGION END #    //  SKABaseDevice.test_To_Json
+    def test_ToJson(self):
+        """Test for ToJson"""
+        # PROTECTED REGION ID(SKABaseDevice.test_ToJson) ENABLED START #
+        self.device.ToJson("")
+        # PROTECTED REGION END #    //  SKABaseDevice.test_ToJson
 
     def test_buildState(self):
         """Test for buildState"""

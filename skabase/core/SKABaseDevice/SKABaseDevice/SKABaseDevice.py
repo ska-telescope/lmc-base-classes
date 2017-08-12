@@ -382,14 +382,6 @@ class SKABaseDevice(Device):
     # --------
 
     @command(
-    )
-    @DebugIt()
-    def Reset(self):
-        # PROTECTED REGION ID(SKABaseDevice.Reset) ENABLED START #
-        pass
-        # PROTECTED REGION END #    //  SKABaseDevice.Reset
-
-    @command(
     dtype_out='str', 
     )
     @DebugIt()
@@ -422,6 +414,16 @@ class SKABaseDevice(Device):
             argout = json.dumps(device_dict)
         return argout
         # PROTECTED REGION END #    //  SKABaseDevice.ToJson
+
+    @command(
+    dtype_out=('str',), 
+    doc_out="[ name: EltTelState", 
+    )
+    @DebugIt()
+    def GetVersionInfo(self):
+        # PROTECTED REGION ID(SKABaseDevice.GetVersionInfo) ENABLED START #
+        return [""]
+        # PROTECTED REGION END #    //  SKABaseDevice.GetVersionInfo
 
 # ----------
 # Run server

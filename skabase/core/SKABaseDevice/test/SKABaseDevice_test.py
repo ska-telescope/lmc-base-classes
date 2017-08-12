@@ -87,6 +87,12 @@ class SKABaseDeviceDeviceTestCase(DeviceTestCase):
         self.device.ToJson("")
         # PROTECTED REGION END #    //  SKABaseDevice.test_ToJson
 
+    def test_GetVersionInfo(self):
+        """Test for GetVersionInfo"""
+        # PROTECTED REGION ID(SKABaseDevice.test_GetVersionInfo) ENABLED START #
+        self.device.GetVersionInfo()
+        # PROTECTED REGION END #    //  SKABaseDevice.test_GetVersionInfo
+
     def test_buildState(self):
         """Test for buildState"""
         # PROTECTED REGION ID(SKABaseDevice.test_buildState) ENABLED START #

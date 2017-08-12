@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="ASCII"?>
 <pogoDsl:PogoSystem xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:pogoDsl="http://www.esrf.fr/tango/pogo/PogoDsl">
   <classes name="SKABaseDevice" pogoRevision="9.4">
-    <description description="A generic base device for SKA." title="SKABASE" sourcePath="/Users/lvdheever/link-devl5/git/levpro/skabase/core/SKABaseDevice" language="PythonHL" filestogenerate="XMI   file,Code files,Python Package,Protected Regions" license="GPL" copyright="" hasMandatoryProperty="false" hasConcreteProperty="true" hasAbstractCommand="false" hasAbstractAttribute="false">
+    <description description="A generic base device for SKA." title="SKABASE" sourcePath="/Users/lvdheever/link-devl5/git/levpro/skabase/core/SKABaseDevice" language="PythonHL" filestogenerate="XMI   file,Code files,Python Package,Protected Regions" license="GPL" copyright="" hasMandatoryProperty="false" hasConcreteProperty="true" hasAbstractCommand="true" hasAbstractAttribute="false">
       <inheritances classname="Device_Impl" sourcePath=""/>
       <identification contact="at ska.ac.za - cam" author="cam" emailDomain="ska.ac.za" classFamily="OtherInstruments" siteSpecific="" platform="All Platforms" bus="Not Applicable" manufacturer="SKASA" reference="SKA-SKABaseDevice"/>
     </description>
@@ -69,7 +69,7 @@
       <argout description="">
         <type xsi:type="pogoDsl:VoidType"/>
       </argout>
-      <status abstract="false" inherited="false" concrete="true" concreteHere="true"/>
+      <status abstract="true" inherited="false" concrete="false" concreteHere="false"/>
     </commands>
     <commands name="GetMetrics" description="Gets list of attributes marked as metrics, with their values, &#xA;for device" execMethod="get_metrics" displayLevel="OPERATOR" polledPeriod="0" isDynamic="false">
       <argin description="">
@@ -86,6 +86,15 @@
       </argin>
       <argout description="The JSON string representing this device, &#xA;filtered as per the input argument flags">
         <type xsi:type="pogoDsl:StringType"/>
+      </argout>
+      <status abstract="false" inherited="false" concrete="true" concreteHere="true"/>
+    </commands>
+    <commands name="GetVersionInfo" description="Array of version strings of all entities modelled by this device. &#xA;(One level down only)&#xA;Each string in the array lists the version info for one entity&#xA;managed by this device. &#xA;The first entry is version info for this TANGO Device itself.&#xA;The entities may be TANGO devices, or hardware LRUs or &#xA;anything else this devices manages/models.&#xA;The intention with this command is that it can provide more &#xA;detailed information than can be captured in the versionId &#xA;and buildState attributes, if necessary.&#xA;In the minimal case the GetVersionInfo will contain only the &#xA;versionId and buildState attributes of the next lower level&#xA;entities." execMethod="get_version_info" displayLevel="OPERATOR" polledPeriod="0" isDynamic="false">
+      <argin description="">
+        <type xsi:type="pogoDsl:VoidType"/>
+      </argin>
+      <argout description="[ name: EltTelState">
+        <type xsi:type="pogoDsl:StringArrayType"/>
       </argout>
       <status abstract="false" inherited="false" concrete="true" concreteHere="true"/>
     </commands>

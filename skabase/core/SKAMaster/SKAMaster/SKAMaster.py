@@ -21,7 +21,7 @@ from PyTango.server import attribute, command
 from PyTango.server import device_property
 from PyTango import AttrQuality, DispLevel, DevState
 from PyTango import AttrWriteType, PipeWriteType
-from SKAGroup import SKAGroup
+from SKAObsDevice import SKAObsDevice
 # Additional import
 # PROTECTED REGION ID(SKAMaster.additionnal_import) ENABLED START #
 # PROTECTED REGION END #    //  SKAMaster.additionnal_import
@@ -29,7 +29,7 @@ from SKAGroup import SKAGroup
 __all__ = ["SKAMaster", "main"]
 
 
-class SKAMaster(SKAGroup):
+class SKAMaster(SKAObsDevice):
     """
     A master test
     """
@@ -42,9 +42,30 @@ class SKAMaster(SKAGroup):
     # -----------------
 
 
+
+
+
+
+
+
+
+
     # ----------
     # Attributes
     # ----------
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
     # ---------------
@@ -52,7 +73,7 @@ class SKAMaster(SKAGroup):
     # ---------------
 
     def init_device(self):
-        SKAGroup.init_device(self)
+        SKAObsDevice.init_device(self)
         # PROTECTED REGION ID(SKAMaster.init_device) ENABLED START #
         # PROTECTED REGION END #    //  SKAMaster.init_device
 

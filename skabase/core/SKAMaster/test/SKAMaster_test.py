@@ -39,7 +39,7 @@ class SKAMasterDeviceTestCase(DeviceTestCase):
     # PROTECTED REGION ID(SKAMaster.test_additionnal_import) ENABLED START #
     # PROTECTED REGION END #    //  SKAMaster.test_additionnal_import
     device = SKAMaster
-    properties = {'member_list': '', 
+    properties = {'SkaLevel': '4', 'CentralLoggingTarget': '', 'ElementLoggingTarget': '', 'StorageLoggingTarget': 'localhost', 'CentralLoggingLevelDefault': '', 'ElementLoggingLevelDefault': '', 'StorageLoggingLevelStorage': '', 'MetricList': 'healthState,adminMode,controlMode', 'GroupDefinitions': '', 
                   }
     empty = None  # Should be []
 
@@ -57,41 +57,131 @@ class SKAMasterDeviceTestCase(DeviceTestCase):
         # PROTECTED REGION END #    //  SKAMaster.test_properties
         pass
 
-    def test_add_member(self):
-        """Test for add_member"""
-        # PROTECTED REGION ID(SKAMaster.test_add_member) ENABLED START #
-        self.device.add_member("")
-        # PROTECTED REGION END #    //  SKAMaster.test_add_member
+    def test_ObsState(self):
+        """Test for ObsState"""
+        # PROTECTED REGION ID(SKAMaster.test_ObsState) ENABLED START #
+        self.device.ObsState()
+        # PROTECTED REGION END #    //  SKAMaster.test_ObsState
 
-    def test_remove_member(self):
-        """Test for remove_member"""
-        # PROTECTED REGION ID(SKAMaster.test_remove_member) ENABLED START #
-        self.device.remove_member("")
-        # PROTECTED REGION END #    //  SKAMaster.test_remove_member
+    def test_Reset(self):
+        """Test for Reset"""
+        # PROTECTED REGION ID(SKAMaster.test_Reset) ENABLED START #
+        self.device.Reset()
+        # PROTECTED REGION END #    //  SKAMaster.test_Reset
 
-    def test_run_command(self):
-        """Test for run_command"""
-        # PROTECTED REGION ID(SKAMaster.test_run_command) ENABLED START #
-        self.device.run_command("")
-        # PROTECTED REGION END #    //  SKAMaster.test_run_command
+    def test_State(self):
+        """Test for State"""
+        # PROTECTED REGION ID(SKAMaster.test_State) ENABLED START #
+        self.device.State()
+        # PROTECTED REGION END #    //  SKAMaster.test_State
 
-    def test_get_member_names(self):
-        """Test for get_member_names"""
-        # PROTECTED REGION ID(SKAMaster.test_get_member_names) ENABLED START #
-        self.device.get_member_names("")
-        # PROTECTED REGION END #    //  SKAMaster.test_get_member_names
+    def test_Status(self):
+        """Test for Status"""
+        # PROTECTED REGION ID(SKAMaster.test_Status) ENABLED START #
+        self.device.Status()
+        # PROTECTED REGION END #    //  SKAMaster.test_Status
 
-    def test_get_attribute_list(self):
-        """Test for get_attribute_list"""
-        # PROTECTED REGION ID(SKAMaster.test_get_attribute_list) ENABLED START #
-        self.device.get_attribute_list("")
-        # PROTECTED REGION END #    //  SKAMaster.test_get_attribute_list
+    def test_GetMetrics(self):
+        """Test for GetMetrics"""
+        # PROTECTED REGION ID(SKAMaster.test_GetMetrics) ENABLED START #
+        self.device.GetMetrics()
+        # PROTECTED REGION END #    //  SKAMaster.test_GetMetrics
 
-    def test_members_state(self):
-        """Test for members_state"""
-        # PROTECTED REGION ID(SKAMaster.test_members_state) ENABLED START #
-        self.device.members_state
-        # PROTECTED REGION END #    //  SKAMaster.test_members_state
+    def test_ToJson(self):
+        """Test for ToJson"""
+        # PROTECTED REGION ID(SKAMaster.test_ToJson) ENABLED START #
+        self.device.ToJson("")
+        # PROTECTED REGION END #    //  SKAMaster.test_ToJson
+
+    def test_GetVersionInfo(self):
+        """Test for GetVersionInfo"""
+        # PROTECTED REGION ID(SKAMaster.test_GetVersionInfo) ENABLED START #
+        self.device.GetVersionInfo()
+        # PROTECTED REGION END #    //  SKAMaster.test_GetVersionInfo
+
+    def test_obsState(self):
+        """Test for obsState"""
+        # PROTECTED REGION ID(SKAMaster.test_obsState) ENABLED START #
+        self.device.obsState
+        # PROTECTED REGION END #    //  SKAMaster.test_obsState
+
+    def test_obsMode(self):
+        """Test for obsMode"""
+        # PROTECTED REGION ID(SKAMaster.test_obsMode) ENABLED START #
+        self.device.obsMode
+        # PROTECTED REGION END #    //  SKAMaster.test_obsMode
+
+    def test_configurationProgress(self):
+        """Test for configurationProgress"""
+        # PROTECTED REGION ID(SKAMaster.test_configurationProgress) ENABLED START #
+        self.device.configurationProgress
+        # PROTECTED REGION END #    //  SKAMaster.test_configurationProgress
+
+    def test_configurationDelayExpected(self):
+        """Test for configurationDelayExpected"""
+        # PROTECTED REGION ID(SKAMaster.test_configurationDelayExpected) ENABLED START #
+        self.device.configurationDelayExpected
+        # PROTECTED REGION END #    //  SKAMaster.test_configurationDelayExpected
+
+    def test_buildState(self):
+        """Test for buildState"""
+        # PROTECTED REGION ID(SKAMaster.test_buildState) ENABLED START #
+        self.device.buildState
+        # PROTECTED REGION END #    //  SKAMaster.test_buildState
+
+    def test_versionId(self):
+        """Test for versionId"""
+        # PROTECTED REGION ID(SKAMaster.test_versionId) ENABLED START #
+        self.device.versionId
+        # PROTECTED REGION END #    //  SKAMaster.test_versionId
+
+    def test_centralLoggingLevel(self):
+        """Test for centralLoggingLevel"""
+        # PROTECTED REGION ID(SKAMaster.test_centralLoggingLevel) ENABLED START #
+        self.device.centralLoggingLevel
+        # PROTECTED REGION END #    //  SKAMaster.test_centralLoggingLevel
+
+    def test_elementLoggingLevel(self):
+        """Test for elementLoggingLevel"""
+        # PROTECTED REGION ID(SKAMaster.test_elementLoggingLevel) ENABLED START #
+        self.device.elementLoggingLevel
+        # PROTECTED REGION END #    //  SKAMaster.test_elementLoggingLevel
+
+    def test_storageLoggingLevel(self):
+        """Test for storageLoggingLevel"""
+        # PROTECTED REGION ID(SKAMaster.test_storageLoggingLevel) ENABLED START #
+        self.device.storageLoggingLevel
+        # PROTECTED REGION END #    //  SKAMaster.test_storageLoggingLevel
+
+    def test_healthState(self):
+        """Test for healthState"""
+        # PROTECTED REGION ID(SKAMaster.test_healthState) ENABLED START #
+        self.device.healthState
+        # PROTECTED REGION END #    //  SKAMaster.test_healthState
+
+    def test_adminMode(self):
+        """Test for adminMode"""
+        # PROTECTED REGION ID(SKAMaster.test_adminMode) ENABLED START #
+        self.device.adminMode
+        # PROTECTED REGION END #    //  SKAMaster.test_adminMode
+
+    def test_controlMode(self):
+        """Test for controlMode"""
+        # PROTECTED REGION ID(SKAMaster.test_controlMode) ENABLED START #
+        self.device.controlMode
+        # PROTECTED REGION END #    //  SKAMaster.test_controlMode
+
+    def test_simulationMode(self):
+        """Test for simulationMode"""
+        # PROTECTED REGION ID(SKAMaster.test_simulationMode) ENABLED START #
+        self.device.simulationMode
+        # PROTECTED REGION END #    //  SKAMaster.test_simulationMode
+
+    def test_testMode(self):
+        """Test for testMode"""
+        # PROTECTED REGION ID(SKAMaster.test_testMode) ENABLED START #
+        self.device.testMode
+        # PROTECTED REGION END #    //  SKAMaster.test_testMode
 
 
 # Main execution

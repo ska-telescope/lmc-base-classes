@@ -49,6 +49,7 @@ class SKACapability(SKAObsDevice):
 
 
 
+
     # ----------
     # Attributes
     # ----------

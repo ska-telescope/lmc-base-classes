@@ -15,6 +15,9 @@ SKA Generic Element
 from . import release
 from . import GeneA
 from . import GeneB
+from . import GeneMAster
+from . import GeneSubarray
+
 
 __version__ = release.version
 __version_info__ = release.version_info

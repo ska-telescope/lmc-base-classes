@@ -39,7 +39,7 @@ class SKAObsDeviceDeviceTestCase(DeviceTestCase):
     # PROTECTED REGION ID(SKAObsDevice.test_additionnal_import) ENABLED START #
     # PROTECTED REGION END #    //  SKAObsDevice.test_additionnal_import
     device = SKAObsDevice
-    properties = {'SkaLevel': '4', 'ManagedDevices': '', 'CentralLoggingTarget': '', 'ElementLoggingTarget': '', 'StorageLoggingTarget': 'localhost', 'CentralLoggingLevelDefault': '', 'ElementLoggingLevelDefault': '', 'StorageLoggingLevelStorage': '', 
+    properties = {'SkaLevel': '4', 'CentralLoggingTarget': '', 'ElementLoggingTarget': '', 'StorageLoggingTarget': 'localhost', 'CentralLoggingLevelDefault': '', 'ElementLoggingLevelDefault': '', 'StorageLoggingLevelStorage': '', 'MetricList': 'healthState,adminMode,controlMode', 'GroupDefinitions': '', 
                   }
     empty = None  # Should be []
 
@@ -80,6 +80,24 @@ class SKAObsDeviceDeviceTestCase(DeviceTestCase):
         # PROTECTED REGION ID(SKAObsDevice.test_Status) ENABLED START #
         self.device.Status()
         # PROTECTED REGION END #    //  SKAObsDevice.test_Status
+
+    def test_GetMetrics(self):
+        """Test for GetMetrics"""
+        # PROTECTED REGION ID(SKAObsDevice.test_GetMetrics) ENABLED START #
+        self.device.GetMetrics()
+        # PROTECTED REGION END #    //  SKAObsDevice.test_GetMetrics
+
+    def test_ToJson(self):
+        """Test for ToJson"""
+        # PROTECTED REGION ID(SKAObsDevice.test_ToJson) ENABLED START #
+        self.device.ToJson("")
+        # PROTECTED REGION END #    //  SKAObsDevice.test_ToJson
+
+    def test_GetVersionInfo(self):
+        """Test for GetVersionInfo"""
+        # PROTECTED REGION ID(SKAObsDevice.test_GetVersionInfo) ENABLED START #
+        self.device.GetVersionInfo()
+        # PROTECTED REGION END #    //  SKAObsDevice.test_GetVersionInfo
 
     def test_obsState(self):
         """Test for obsState"""

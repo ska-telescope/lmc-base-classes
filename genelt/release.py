@@ -9,7 +9,7 @@
 
 """Release information for Python Package"""
 
-name = """tangods-gene"""
+name = """skabase-genelt"""
 version = "1.0.0"
 version_info = version.split(".")
 description = """An SKA Generic Element"""

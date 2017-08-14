@@ -15,8 +15,13 @@ SKA Generic Element
 from . import release
 from . import GeneA
 from . import GeneB
-from . import GeneMAster
+from . import GeneMaster
 from . import GeneSubarray
+
+from . import Rack
+from . import Server
+from . import Switch
+from . import PDU
 
 
 __version__ = release.version

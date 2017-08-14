@@ -16,7 +16,6 @@ from . import release
 from . import GeneA
 from . import GeneB
 from . import GeneMaster
-from . import GeneSubarray
 
 from . import Rack
 from . import Server

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="ASCII"?>
 <pogoDsl:PogoSystem xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:pogoDsl="http://www.esrf.fr/tango/pogo/PogoDsl">
-  <classes name="SKAMaster" pogoRevision="9.4">
+  <classes name="SKAMaster" pogoRevision="9.5">
     <description description="A master test" title="SKAMaster" sourcePath="/Users/lvdheever/link-devl5/git/levpro/skabase/core/SKAMaster" language="PythonHL" filestogenerate="XMI   file,Code files,Python Package,Protected Regions" license="GPL" hasMandatoryProperty="false" hasConcreteProperty="false" hasAbstractCommand="true" hasAbstractAttribute="false">
       <inheritances classname="Device_Impl" sourcePath=""/>
       <inheritances classname="SKAObsDevice" sourcePath="../SKAObsDevice"/>

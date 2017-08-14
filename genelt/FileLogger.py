@@ -44,19 +44,29 @@ class FileLogger(Device):
         logger.info("{}]\t{}".format(timestamp,message))
         # print details
 
-def main():
-    run((FileLogger,))
 
-if __name__ == "__main__":
+def main(args=None, **kwargs):
+    # PROTECTED REGION ID(GeneA.main) ENABLED START #
+    return run((FileLogger,), args=args, **kwargs)
+    # PROTECTED REGION END #    //  GeneA.main
 
-    db = PyTango.Database()
-
-    server_name = 'logger/test'
-    dev_info = PyTango.DbDevInfo()
-    dev_info._class = "FileLogger"
-    dev_info.server = server_name
-    dev_info.name =  "test/logger/1"
-    db.add_device(dev_info)
-
-    db.put_device_property("test/logger/1", {"log_path": "/opt/ska/log/tango"})
+if __name__ == '__main__':
     main()
+
+
+#def main():
+#    run((FileLogger,))
+
+#if __name__ == "__main__":
+
+#    db = PyTango.Database()
+
+#    server_name = 'logger/test'
+#    dev_info = PyTango.DbDevInfo()
+#    dev_info._class = "FileLogger"
+#    dev_info.server = server_name
+#    dev_info.name =  "test/logger/1"
+#    db.add_device(dev_info)
+
+#    db.put_device_property("test/logger/1", {"log_path": "/opt/ska/log/tango"})
+#    main()

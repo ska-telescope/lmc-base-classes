@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="ASCII"?>
 <pogoDsl:PogoSystem xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:pogoDsl="http://www.esrf.fr/tango/pogo/PogoDsl">
   <classes name="SKASubarray" pogoRevision="9.5">
-    <description description="SubArray handling device" title="SKASubarray" sourcePath="/Users/lvdheever/link-devl5/git/levpro/skabase/core/SKASubarray" language="PythonHL" filestogenerate="XMI   file,Code files,Python Package,Protected Regions" license="GPL" copyright="" hasMandatoryProperty="false" hasConcreteProperty="false" hasAbstractCommand="true" hasAbstractAttribute="false">
+    <description description="SubArray handling device" title="SKASubarray" sourcePath="/Users/lvdheever/link-devl5/git/levpro/skabase/core/SKASubarray" language="PythonHL" filestogenerate="XMI   file,Code files,Python Package,Protected Regions" license="GPL" copyright="" hasMandatoryProperty="false" hasConcreteProperty="false" hasAbstractCommand="false" hasAbstractAttribute="false">
       <inheritances classname="Device_Impl" sourcePath=""/>
       <inheritances classname="SKAObsDevice" sourcePath="../SKAObsDevice"/>
       <identification contact="at ska.ac.za - cam" author="cam" emailDomain="ska.ac.za" classFamily="SkaCore" siteSpecific="" platform="All Platforms" bus="Not Applicable" manufacturer="none" reference=""/>
@@ -81,23 +81,23 @@
       </argout>
       <status abstract="false" inherited="false" concrete="true" concreteHere="true"/>
     </commands>
-    <commands name="ObsState" description="Set the observation state" execMethod="obs_state" displayLevel="OPERATOR" polledPeriod="0">
+    <commands name="ObsState" description="Set the observation state" execMethod="obs_state" displayLevel="OPERATOR" polledPeriod="0" isDynamic="false">
       <argin description="">
         <type xsi:type="pogoDsl:VoidType"/>
       </argin>
       <argout description="Observation state">
         <type xsi:type="pogoDsl:ConstStringType"/>
       </argout>
-      <status abstract="true" inherited="true" concrete="false"/>
+      <status abstract="true" inherited="true" concrete="true" concreteHere="false"/>
     </commands>
-    <commands name="Reset" description="Reset device to its default state" execMethod="reset" displayLevel="OPERATOR" polledPeriod="0">
+    <commands name="Reset" description="Reset device to its default state" execMethod="reset" displayLevel="OPERATOR" polledPeriod="0" isDynamic="false">
       <argin description="">
         <type xsi:type="pogoDsl:VoidType"/>
       </argin>
       <argout description="">
         <type xsi:type="pogoDsl:VoidType"/>
       </argout>
-      <status abstract="true" inherited="true" concrete="false"/>
+      <status abstract="true" inherited="true" concrete="true" concreteHere="false"/>
     </commands>
     <commands name="State" description="This command gets the device state (stored in its device_state data member) and returns it to the caller." execMethod="dev_state" displayLevel="OPERATOR" polledPeriod="0">
       <argin description="none">

@@ -42,18 +42,15 @@ class Rack(SKABaseDevice):
     # -----------------
 
     pdus = device_property(
-        dtype=('str',),
-        mandatory=True
+        dtype=('str',)
     )
 
     switches = device_property(
-        dtype=('str',),
-        mandatory=True
+        dtype=('str',)
     )
 
     servers = device_property(
-        dtype=('str',),
-        mandatory=True
+        dtype=('str',)
     )
 
 

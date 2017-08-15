@@ -17,28 +17,40 @@
   stat: path={{software_root}}/tango-simlib
   register: p_tsl
   #when: p_tsl.stat.isdir is defined and p_tsl.stat.isdir
+  tags:
+    - tango-simlib
 
 - name: Clone tango-simlib if dir not existing
   command: git clone https://github.com/ska-sa/tango-simlib {{software_root}}/tango-simlib
   when: not p_tsl.stat.exists
   #ignore_errors: True
+  tags:
+    - tango-simlib
 
 - name: Git pull tango-simlib if dir exists
   command: git -C {{software_root}}/tango-simlib pull
   when: p_tsl.stat.isdir is defined and p_tsl.stat.isdir
+  tags:
+    - tango-simlib
 
 ## levpro
 
 - name: Check for levpro in software_root
   stat: path={{software_root}}/levpro
   register: p_levpro
+  tags:
+    - levpro
 
 - name: Clone levpro if dir not existing
   command: git clone https://github.com/ska-sa/levpro {{software_root}}/levpro
   when: not p_levpro.stat.exists
+  tags:
+    - levpro
 
 - name: Git pull levpro if dir exists
   command: git -C {{software_root}}/levpro pull
   when: p_levpro.stat.isdir is defined and p_levpro.stat.isdir
+  tags:
+    - levpro
 
 ...

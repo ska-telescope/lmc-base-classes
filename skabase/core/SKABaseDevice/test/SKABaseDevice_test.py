@@ -39,7 +39,7 @@ class SKABaseDeviceDeviceTestCase(DeviceTestCase):
     # PROTECTED REGION ID(SKABaseDevice.test_additionnal_import) ENABLED START #
     # PROTECTED REGION END #    //  SKABaseDevice.test_additionnal_import
     device = SKABaseDevice
-    properties = {'SkaLevel': '4', 'ManagedDevices': '', 'CentralLoggingTarget': '', 'ElementLoggingTarget': '', 'StorageLoggingTarget': 'localhost', 'CentralLoggingLevelDefault': '', 'ElementLoggingLevelDefault': '', 'StorageLoggingLevelStorage': '', 
+    properties = {'SkaLevel': '4', 'MetricList': 'healthState,adminMode,controlMode', 'GroupDefinitions': '', 'CentralLoggingTarget': '', 'ElementLoggingTarget': '', 'StorageLoggingTarget': 'localhost', 'CentralLoggingLevelDefault': '', 'ElementLoggingLevelDefault': '', 'StorageLoggingLevelStorage': '', 
                   }
     empty = None  # Should be []
 
@@ -57,12 +57,6 @@ class SKABaseDeviceDeviceTestCase(DeviceTestCase):
         # PROTECTED REGION END #    //  SKABaseDevice.test_properties
         pass
 
-    def test_Reset(self):
-        """Test for Reset"""
-        # PROTECTED REGION ID(SKABaseDevice.test_Reset) ENABLED START #
-        self.device.Reset()
-        # PROTECTED REGION END #    //  SKABaseDevice.test_Reset
-
     def test_State(self):
         """Test for State"""
         # PROTECTED REGION ID(SKABaseDevice.test_State) ENABLED START #
@@ -74,6 +68,30 @@ class SKABaseDeviceDeviceTestCase(DeviceTestCase):
         # PROTECTED REGION ID(SKABaseDevice.test_Status) ENABLED START #
         self.device.Status()
         # PROTECTED REGION END #    //  SKABaseDevice.test_Status
+
+    def test_Reset(self):
+        """Test for Reset"""
+        # PROTECTED REGION ID(SKABaseDevice.test_Reset) ENABLED START #
+        self.device.Reset()
+        # PROTECTED REGION END #    //  SKABaseDevice.test_Reset
+
+    def test_GetMetrics(self):
+        """Test for GetMetrics"""
+        # PROTECTED REGION ID(SKABaseDevice.test_GetMetrics) ENABLED START #
+        self.device.GetMetrics()
+        # PROTECTED REGION END #    //  SKABaseDevice.test_GetMetrics
+
+    def test_ToJson(self):
+        """Test for ToJson"""
+        # PROTECTED REGION ID(SKABaseDevice.test_ToJson) ENABLED START #
+        self.device.ToJson("")
+        # PROTECTED REGION END #    //  SKABaseDevice.test_ToJson
+
+    def test_GetVersionInfo(self):
+        """Test for GetVersionInfo"""
+        # PROTECTED REGION ID(SKABaseDevice.test_GetVersionInfo) ENABLED START #
+        self.device.GetVersionInfo()
+        # PROTECTED REGION END #    //  SKABaseDevice.test_GetVersionInfo
 
     def test_buildState(self):
         """Test for buildState"""

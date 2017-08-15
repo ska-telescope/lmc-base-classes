@@ -1,0 +1,9 @@
+recursive-include SKATestDevice *.py
+recursive-include test *.py
+include *.rst
+include SKATestDevice.xmi
+include *.txt
+graft docs
+
+global-exclude *.pyc
+global-exclude *.pyo

@@ -9,7 +9,7 @@
 
 """ Switch
 
-Gene (Gen Elt) Swtich device
+Ref (Reference Elt) Swtich device
 """
 
 # PyTango imports
@@ -31,7 +31,7 @@ __all__ = ["Switch", "main"]
 
 class Switch(SKABaseDevice):
     """
-    Gene (Gen Elt) Swtich device
+    Ref (Reference Elt) Swtich device
     """
     __metaclass__ = DeviceMeta
     # PROTECTED REGION ID(Switch.class_variable) ENABLED START #
@@ -65,7 +65,7 @@ class Switch(SKABaseDevice):
 
 
     # ---------------
-    # General methods
+    # Refral methods
     # ---------------
 
     def init_device(self):

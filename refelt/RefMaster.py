@@ -1,15 +1,15 @@
 # -*- coding: utf-8 -*-
 #
-# This file is part of the GeneMaster project
+# This file is part of the RefMaster project
 #
 #
 #
 # Distributed under the terms of the GPL license.
 # See LICENSE.txt for more info.
 
-""" GeneMaster
+""" RefMaster
 
-Gene (Gen Element) device of Type Master
+Ref (Reference Element) device of Type Master
 """
 
 # PyTango imports
@@ -23,19 +23,19 @@ from PyTango import AttrQuality, DispLevel, DevState
 from PyTango import AttrWriteType, PipeWriteType
 from SKAMaster import SKAMaster
 # Additional import
-# PROTECTED REGION ID(GeneMaster.additionnal_import) ENABLED START #
-# PROTECTED REGION END #    //  GeneMaster.additionnal_import
+# PROTECTED REGION ID(RefMaster.additionnal_import) ENABLED START #
+# PROTECTED REGION END #    //  RefMaster.additionnal_import
 
-__all__ = ["GeneMaster", "main"]
+__all__ = ["RefMaster", "main"]
 
 
-class GeneMaster(SKAMaster):
+class RefMaster(SKAMaster):
     """
-    Gene (Gen Element) device of Type Master
+    Ref (Reference Element) device of Type Master
     """
     __metaclass__ = DeviceMeta
-    # PROTECTED REGION ID(GeneMaster.class_variable) ENABLED START #
-    # PROTECTED REGION END #    //  GeneMaster.class_variable
+    # PROTECTED REGION ID(RefMaster.class_variable) ENABLED START #
+    # PROTECTED REGION END #    //  RefMaster.class_variable
 
     # -----------------
     # Device Properties
@@ -69,23 +69,23 @@ class GeneMaster(SKAMaster):
 
 
     # ---------------
-    # General methods
+    # Refral methods
     # ---------------
 
     def init_device(self):
         SKAMaster.init_device(self)
-        # PROTECTED REGION ID(GeneMaster.init_device) ENABLED START #
-        # PROTECTED REGION END #    //  GeneMaster.init_device
+        # PROTECTED REGION ID(RefMaster.init_device) ENABLED START #
+        # PROTECTED REGION END #    //  RefMaster.init_device
 
     def always_executed_hook(self):
-        # PROTECTED REGION ID(GeneMaster.always_executed_hook) ENABLED START #
+        # PROTECTED REGION ID(RefMaster.always_executed_hook) ENABLED START #
         pass
-        # PROTECTED REGION END #    //  GeneMaster.always_executed_hook
+        # PROTECTED REGION END #    //  RefMaster.always_executed_hook
 
     def delete_device(self):
-        # PROTECTED REGION ID(GeneMaster.delete_device) ENABLED START #
+        # PROTECTED REGION ID(RefMaster.delete_device) ENABLED START #
         pass
-        # PROTECTED REGION END #    //  GeneMaster.delete_device
+        # PROTECTED REGION END #    //  RefMaster.delete_device
 
     # ------------------
     # Attributes methods
@@ -100,19 +100,19 @@ class GeneMaster(SKAMaster):
     )
     @DebugIt()
     def Reset(self):
-        # PROTECTED REGION ID(GeneMaster.Reset) ENABLED START #
+        # PROTECTED REGION ID(RefMaster.Reset) ENABLED START #
         pass
-        # PROTECTED REGION END #    //  GeneMaster.Reset
+        # PROTECTED REGION END #    //  RefMaster.Reset
 
     @command(
-    dtype_out='str', 
-    doc_out="Observation state", 
+    dtype_out='str',
+    doc_out="Observation state",
     )
     @DebugIt()
     def ObsState(self):
-        # PROTECTED REGION ID(GeneMaster.ObsState) ENABLED START #
+        # PROTECTED REGION ID(RefMaster.ObsState) ENABLED START #
         return ""
-        # PROTECTED REGION END #    //  GeneMaster.ObsState
+        # PROTECTED REGION END #    //  RefMaster.ObsState
 
 # ----------
 # Run server
@@ -120,9 +120,9 @@ class GeneMaster(SKAMaster):
 
 
 def main(args=None, **kwargs):
-    # PROTECTED REGION ID(GeneMaster.main) ENABLED START #
-    return run((GeneMaster,), args=args, **kwargs)
-    # PROTECTED REGION END #    //  GeneMaster.main
+    # PROTECTED REGION ID(RefMaster.main) ENABLED START #
+    return run((RefMaster,), args=args, **kwargs)
+    # PROTECTED REGION END #    //  RefMaster.main
 
 if __name__ == '__main__':
     main()

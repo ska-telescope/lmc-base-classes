@@ -1,15 +1,15 @@
 # -*- coding: utf-8 -*-
 #
-# This file is part of the GeneA project
+# This file is part of the RefA project
 #
 #
 #
 # Distributed under the terms of the GPL license.
 # See LICENSE.txt for more info.
 
-""" GeneA
+""" RefA
 
-An Gene (Gen Elt) device of type A
+An Ref (Reference Elt) device of type A
 """
 
 # PyTango imports
@@ -23,19 +23,19 @@ from PyTango import AttrQuality, DispLevel, DevState
 from PyTango import AttrWriteType, PipeWriteType
 from SKABaseDevice import SKABaseDevice
 # Additional import
-# PROTECTED REGION ID(GeneA.additionnal_import) ENABLED START #
-# PROTECTED REGION END #    //  GeneA.additionnal_import
+# PROTECTED REGION ID(RefA.additionnal_import) ENABLED START #
+# PROTECTED REGION END #    //  RefA.additionnal_import
 
-__all__ = ["GeneA", "main"]
+__all__ = ["RefA", "main"]
 
 
-class GeneA(SKABaseDevice):
+class RefA(SKABaseDevice):
     """
-    An Gene (Gen Elt) device of type A
+    An Ref (Reference Elt) device of type A
     """
     __metaclass__ = DeviceMeta
-    # PROTECTED REGION ID(GeneA.class_variable) ENABLED START #
-    # PROTECTED REGION END #    //  GeneA.class_variable
+    # PROTECTED REGION ID(RefA.class_variable) ENABLED START #
+    # PROTECTED REGION END #    //  RefA.class_variable
 
     # -----------------
     # Device Properties
@@ -88,52 +88,52 @@ class GeneA(SKABaseDevice):
     )
 
     # ---------------
-    # General methods
+    # Refral methods
     # ---------------
 
     def init_device(self):
         SKABaseDevice.init_device(self)
-        # PROTECTED REGION ID(GeneA.init_device) ENABLED START #
-        # PROTECTED REGION END #    //  GeneA.init_device
+        # PROTECTED REGION ID(RefA.init_device) ENABLED START #
+        # PROTECTED REGION END #    //  RefA.init_device
 
     def always_executed_hook(self):
-        # PROTECTED REGION ID(GeneA.always_executed_hook) ENABLED START #
+        # PROTECTED REGION ID(RefA.always_executed_hook) ENABLED START #
         pass
-        # PROTECTED REGION END #    //  GeneA.always_executed_hook
+        # PROTECTED REGION END #    //  RefA.always_executed_hook
 
     def delete_device(self):
-        # PROTECTED REGION ID(GeneA.delete_device) ENABLED START #
+        # PROTECTED REGION ID(RefA.delete_device) ENABLED START #
         pass
-        # PROTECTED REGION END #    //  GeneA.delete_device
+        # PROTECTED REGION END #    //  RefA.delete_device
 
     # ------------------
     # Attributes methods
     # ------------------
 
     def read_attrR1(self):
-        # PROTECTED REGION ID(GeneA.attrR1_read) ENABLED START #
+        # PROTECTED REGION ID(RefA.attrR1_read) ENABLED START #
         return ''
-        # PROTECTED REGION END #    //  GeneA.attrR1_read
+        # PROTECTED REGION END #    //  RefA.attrR1_read
 
     def read_attrRW2(self):
-        # PROTECTED REGION ID(GeneA.attrRW2_read) ENABLED START #
+        # PROTECTED REGION ID(RefA.attrRW2_read) ENABLED START #
         return ''
-        # PROTECTED REGION END #    //  GeneA.attrRW2_read
+        # PROTECTED REGION END #    //  RefA.attrRW2_read
 
     def write_attrRW2(self, value):
-        # PROTECTED REGION ID(GeneA.attrRW2_write) ENABLED START #
+        # PROTECTED REGION ID(RefA.attrRW2_write) ENABLED START #
         pass
-        # PROTECTED REGION END #    //  GeneA.attrRW2_write
+        # PROTECTED REGION END #    //  RefA.attrRW2_write
 
     def read_attrImportant1(self):
-        # PROTECTED REGION ID(GeneA.attrImportant1_read) ENABLED START #
+        # PROTECTED REGION ID(RefA.attrImportant1_read) ENABLED START #
         return 0.0
-        # PROTECTED REGION END #    //  GeneA.attrImportant1_read
+        # PROTECTED REGION END #    //  RefA.attrImportant1_read
 
     def write_attrImportant1(self, value):
-        # PROTECTED REGION ID(GeneA.attrImportant1_write) ENABLED START #
+        # PROTECTED REGION ID(RefA.attrImportant1_write) ENABLED START #
         pass
-        # PROTECTED REGION END #    //  GeneA.attrImportant1_write
+        # PROTECTED REGION END #    //  RefA.attrImportant1_write
 
 
     # --------
@@ -144,9 +144,9 @@ class GeneA(SKABaseDevice):
     )
     @DebugIt()
     def Reset(self):
-        # PROTECTED REGION ID(GeneA.Reset) ENABLED START #
+        # PROTECTED REGION ID(RefA.Reset) ENABLED START #
         pass
-        # PROTECTED REGION END #    //  GeneA.Reset
+        # PROTECTED REGION END #    //  RefA.Reset
 
 # ----------
 # Run server
@@ -154,9 +154,9 @@ class GeneA(SKABaseDevice):
 
 
 def main(args=None, **kwargs):
-    # PROTECTED REGION ID(GeneA.main) ENABLED START #
-    return run((GeneA,), args=args, **kwargs)
-    # PROTECTED REGION END #    //  GeneA.main
+    # PROTECTED REGION ID(RefA.main) ENABLED START #
+    return run((RefA,), args=args, **kwargs)
+    # PROTECTED REGION END #    //  RefA.main
 
 if __name__ == '__main__':
     main()

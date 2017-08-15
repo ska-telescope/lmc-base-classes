@@ -1,15 +1,15 @@
 # -*- coding: utf-8 -*-
 #
-# This file is part of the GeneAchild project
+# This file is part of the RefAchild project
 #
 #
 #
 # Distributed under the terms of the GPL license.
 # See LICENSE.txt for more info.
 
-""" GeneAchild
+""" RefAchild
 
-Gene (Gen Element) device of type Achild
+Ref (Reference Element) device of type Achild
 """
 
 # PyTango imports
@@ -23,19 +23,19 @@ from PyTango import AttrQuality, DispLevel, DevState
 from PyTango import AttrWriteType, PipeWriteType
 from SKABaseDevice import SKABaseDevice
 # Additional import
-# PROTECTED REGION ID(GeneAchild.additionnal_import) ENABLED START #
-# PROTECTED REGION END #    //  GeneAchild.additionnal_import
+# PROTECTED REGION ID(RefAchild.additionnal_import) ENABLED START #
+# PROTECTED REGION END #    //  RefAchild.additionnal_import
 
-__all__ = ["GeneAchild", "main"]
+__all__ = ["RefAchild", "main"]
 
 
-class GeneAchild(SKABaseDevice):
+class RefAchild(SKABaseDevice):
     """
-    Gene (Gen Element) device of type Achild
+    Ref (Reference Element) device of type Achild
     """
     __metaclass__ = DeviceMeta
-    # PROTECTED REGION ID(GeneAchild.class_variable) ENABLED START #
-    # PROTECTED REGION END #    //  GeneAchild.class_variable
+    # PROTECTED REGION ID(RefAchild.class_variable) ENABLED START #
+    # PROTECTED REGION END #    //  RefAchild.class_variable
 
     # -----------------
     # Device Properties
@@ -67,23 +67,23 @@ class GeneAchild(SKABaseDevice):
 
 
     # ---------------
-    # General methods
+    # Refral methods
     # ---------------
 
     def init_device(self):
         SKABaseDevice.init_device(self)
-        # PROTECTED REGION ID(GeneAchild.init_device) ENABLED START #
-        # PROTECTED REGION END #    //  GeneAchild.init_device
+        # PROTECTED REGION ID(RefAchild.init_device) ENABLED START #
+        # PROTECTED REGION END #    //  RefAchild.init_device
 
     def always_executed_hook(self):
-        # PROTECTED REGION ID(GeneAchild.always_executed_hook) ENABLED START #
+        # PROTECTED REGION ID(RefAchild.always_executed_hook) ENABLED START #
         pass
-        # PROTECTED REGION END #    //  GeneAchild.always_executed_hook
+        # PROTECTED REGION END #    //  RefAchild.always_executed_hook
 
     def delete_device(self):
-        # PROTECTED REGION ID(GeneAchild.delete_device) ENABLED START #
+        # PROTECTED REGION ID(RefAchild.delete_device) ENABLED START #
         pass
-        # PROTECTED REGION END #    //  GeneAchild.delete_device
+        # PROTECTED REGION END #    //  RefAchild.delete_device
 
     # ------------------
     # Attributes methods
@@ -98,9 +98,9 @@ class GeneAchild(SKABaseDevice):
     )
     @DebugIt()
     def Reset(self):
-        # PROTECTED REGION ID(GeneAchild.Reset) ENABLED START #
+        # PROTECTED REGION ID(RefAchild.Reset) ENABLED START #
         pass
-        # PROTECTED REGION END #    //  GeneAchild.Reset
+        # PROTECTED REGION END #    //  RefAchild.Reset
 
 # ----------
 # Run server
@@ -108,9 +108,9 @@ class GeneAchild(SKABaseDevice):
 
 
 def main(args=None, **kwargs):
-    # PROTECTED REGION ID(GeneAchild.main) ENABLED START #
-    return run((GeneAchild,), args=args, **kwargs)
-    # PROTECTED REGION END #    //  GeneAchild.main
+    # PROTECTED REGION ID(RefAchild.main) ENABLED START #
+    return run((RefAchild,), args=args, **kwargs)
+    # PROTECTED REGION END #    //  RefAchild.main
 
 if __name__ == '__main__':
     main()

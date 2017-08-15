@@ -9,7 +9,7 @@
 
 """ PDU
 
-Gene (Gen Elt) PDU device
+Ref (Reference Elt) PDU device
 """
 
 # PyTango imports
@@ -31,7 +31,7 @@ __all__ = ["PDU", "main"]
 
 class PDU(SKABaseDevice):
     """
-    Gene (Gen Elt) PDU device
+    Ref (Reference Elt) PDU device
     """
     __metaclass__ = DeviceMeta
     # PROTECTED REGION ID(PDU.class_variable) ENABLED START #
@@ -229,7 +229,7 @@ class PDU(SKABaseDevice):
 
 
     # ---------------
-    # General methods
+    # Refral methods
     # ---------------
 
     def init_device(self):

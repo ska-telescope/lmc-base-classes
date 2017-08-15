@@ -1,15 +1,15 @@
 # -*- coding: utf-8 -*-
 #
-# This file is part of the GeneEltAlarms project
+# This file is part of the RefEltAlarms project
 #
 #
 #
 # Distributed under the terms of the GPL license.
 # See LICENSE.txt for more info.
 
-""" GeneEltAlarms
+""" RefEltAlarms
 
-Gene (Gen Element) EltAlarms device.
+Ref (Reference Element) EltAlarms device.
 """
 
 # PyTango imports
@@ -23,19 +23,19 @@ from PyTango import AttrQuality, DispLevel, DevState
 from PyTango import AttrWriteType, PipeWriteType
 from SKABaseDevice import SKABaseDevice
 # Additional import
-# PROTECTED REGION ID(GeneEltAlarms.additionnal_import) ENABLED START #
-# PROTECTED REGION END #    //  GeneEltAlarms.additionnal_import
+# PROTECTED REGION ID(RefEltAlarms.additionnal_import) ENABLED START #
+# PROTECTED REGION END #    //  RefEltAlarms.additionnal_import
 
-__all__ = ["GeneEltAlarms", "main"]
+__all__ = ["RefEltAlarms", "main"]
 
 
-class GeneEltAlarms(SKABaseDevice):
+class RefEltAlarms(SKABaseDevice):
     """
-    Gene (Gen Element) EltAlarms device.
+    Ref (Reference Element) EltAlarms device.
     """
     __metaclass__ = DeviceMeta
-    # PROTECTED REGION ID(GeneEltAlarms.class_variable) ENABLED START #
-    # PROTECTED REGION END #    //  GeneEltAlarms.class_variable
+    # PROTECTED REGION ID(RefEltAlarms.class_variable) ENABLED START #
+    # PROTECTED REGION END #    //  RefEltAlarms.class_variable
 
     # -----------------
     # Device Properties
@@ -81,47 +81,47 @@ class GeneEltAlarms(SKABaseDevice):
     )
 
     # ---------------
-    # General methods
+    # Refral methods
     # ---------------
 
     def init_device(self):
         SKABaseDevice.init_device(self)
-        # PROTECTED REGION ID(GeneEltAlarms.init_device) ENABLED START #
-        # PROTECTED REGION END #    //  GeneEltAlarms.init_device
+        # PROTECTED REGION ID(RefEltAlarms.init_device) ENABLED START #
+        # PROTECTED REGION END #    //  RefEltAlarms.init_device
 
     def always_executed_hook(self):
-        # PROTECTED REGION ID(GeneEltAlarms.always_executed_hook) ENABLED START #
+        # PROTECTED REGION ID(RefEltAlarms.always_executed_hook) ENABLED START #
         pass
-        # PROTECTED REGION END #    //  GeneEltAlarms.always_executed_hook
+        # PROTECTED REGION END #    //  RefEltAlarms.always_executed_hook
 
     def delete_device(self):
-        # PROTECTED REGION ID(GeneEltAlarms.delete_device) ENABLED START #
+        # PROTECTED REGION ID(RefEltAlarms.delete_device) ENABLED START #
         pass
-        # PROTECTED REGION END #    //  GeneEltAlarms.delete_device
+        # PROTECTED REGION END #    //  RefEltAlarms.delete_device
 
     # ------------------
     # Attributes methods
     # ------------------
 
     def read_attr1(self):
-        # PROTECTED REGION ID(GeneEltAlarms.attr1_read) ENABLED START #
+        # PROTECTED REGION ID(RefEltAlarms.attr1_read) ENABLED START #
         return ''
-        # PROTECTED REGION END #    //  GeneEltAlarms.attr1_read
+        # PROTECTED REGION END #    //  RefEltAlarms.attr1_read
 
     def read_attr2(self):
-        # PROTECTED REGION ID(GeneEltAlarms.attr2_read) ENABLED START #
+        # PROTECTED REGION ID(RefEltAlarms.attr2_read) ENABLED START #
         return ''
-        # PROTECTED REGION END #    //  GeneEltAlarms.attr2_read
+        # PROTECTED REGION END #    //  RefEltAlarms.attr2_read
 
     def read_importantState(self):
-        # PROTECTED REGION ID(GeneEltAlarms.importantState_read) ENABLED START #
+        # PROTECTED REGION ID(RefEltAlarms.importantState_read) ENABLED START #
         return 0
-        # PROTECTED REGION END #    //  GeneEltAlarms.importantState_read
+        # PROTECTED REGION END #    //  RefEltAlarms.importantState_read
 
     def write_importantState(self, value):
-        # PROTECTED REGION ID(GeneEltAlarms.importantState_write) ENABLED START #
+        # PROTECTED REGION ID(RefEltAlarms.importantState_write) ENABLED START #
         pass
-        # PROTECTED REGION END #    //  GeneEltAlarms.importantState_write
+        # PROTECTED REGION END #    //  RefEltAlarms.importantState_write
 
 
     # --------
@@ -132,9 +132,9 @@ class GeneEltAlarms(SKABaseDevice):
     )
     @DebugIt()
     def Reset(self):
-        # PROTECTED REGION ID(GeneEltAlarms.Reset) ENABLED START #
+        # PROTECTED REGION ID(RefEltAlarms.Reset) ENABLED START #
         pass
-        # PROTECTED REGION END #    //  GeneEltAlarms.Reset
+        # PROTECTED REGION END #    //  RefEltAlarms.Reset
 
 # ----------
 # Run server
@@ -142,9 +142,9 @@ class GeneEltAlarms(SKABaseDevice):
 
 
 def main(args=None, **kwargs):
-    # PROTECTED REGION ID(GeneEltAlarms.main) ENABLED START #
-    return run((GeneEltAlarms,), args=args, **kwargs)
-    # PROTECTED REGION END #    //  GeneEltAlarms.main
+    # PROTECTED REGION ID(RefEltAlarms.main) ENABLED START #
+    return run((RefEltAlarms,), args=args, **kwargs)
+    # PROTECTED REGION END #    //  RefEltAlarms.main
 
 if __name__ == '__main__':
     main()

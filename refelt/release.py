@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# This file is part of the GeneA project
+# This file is part of the levpro/refelt project
 #
 #
 #

@@ -46,9 +46,9 @@ class FileLogger(Device):
 
 
 def main(args=None, **kwargs):
-    # PROTECTED REGION ID(GeneA.main) ENABLED START #
+    # PROTECTED REGION ID(FileLogger.main) ENABLED START #
     return run((FileLogger,), args=args, **kwargs)
-    # PROTECTED REGION END #    //  GeneA.main
+    # PROTECTED REGION END #    //  RefA.main
 
 if __name__ == '__main__':
     main()

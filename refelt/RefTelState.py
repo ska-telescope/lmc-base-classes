@@ -1,15 +1,15 @@
 # -*- coding: utf-8 -*-
 #
-# This file is part of the GeneTelState project
+# This file is part of the RefTelState project
 #
 #
 #
 # Distributed under the terms of the GPL license.
 # See LICENSE.txt for more info.
 
-""" GeneTelState
+""" RefTelState
 
-Gene (Gen Element) Telstate device.
+Ref (Reference Element) Telstate device.
 """
 
 # PyTango imports
@@ -23,19 +23,19 @@ from PyTango import AttrQuality, DispLevel, DevState
 from PyTango import AttrWriteType, PipeWriteType
 from SKABaseDevice import SKABaseDevice
 # Additional import
-# PROTECTED REGION ID(GeneTelState.additionnal_import) ENABLED START #
-# PROTECTED REGION END #    //  GeneTelState.additionnal_import
+# PROTECTED REGION ID(RefTelState.additionnal_import) ENABLED START #
+# PROTECTED REGION END #    //  RefTelState.additionnal_import
 
-__all__ = ["GeneTelState", "main"]
+__all__ = ["RefTelState", "main"]
 
 
-class GeneTelState(SKABaseDevice):
+class RefTelState(SKABaseDevice):
     """
-    Gene (Gen Element) Telstate device.
+    Ref (Reference Element) Telstate device.
     """
     __metaclass__ = DeviceMeta
-    # PROTECTED REGION ID(GeneTelState.class_variable) ENABLED START #
-    # PROTECTED REGION END #    //  GeneTelState.class_variable
+    # PROTECTED REGION ID(RefTelState.class_variable) ENABLED START #
+    # PROTECTED REGION END #    //  RefTelState.class_variable
 
     # -----------------
     # Device Properties
@@ -81,47 +81,47 @@ class GeneTelState(SKABaseDevice):
     )
 
     # ---------------
-    # General methods
+    # Refral methods
     # ---------------
 
     def init_device(self):
         SKABaseDevice.init_device(self)
-        # PROTECTED REGION ID(GeneTelState.init_device) ENABLED START #
-        # PROTECTED REGION END #    //  GeneTelState.init_device
+        # PROTECTED REGION ID(RefTelState.init_device) ENABLED START #
+        # PROTECTED REGION END #    //  RefTelState.init_device
 
     def always_executed_hook(self):
-        # PROTECTED REGION ID(GeneTelState.always_executed_hook) ENABLED START #
+        # PROTECTED REGION ID(RefTelState.always_executed_hook) ENABLED START #
         pass
-        # PROTECTED REGION END #    //  GeneTelState.always_executed_hook
+        # PROTECTED REGION END #    //  RefTelState.always_executed_hook
 
     def delete_device(self):
-        # PROTECTED REGION ID(GeneTelState.delete_device) ENABLED START #
+        # PROTECTED REGION ID(RefTelState.delete_device) ENABLED START #
         pass
-        # PROTECTED REGION END #    //  GeneTelState.delete_device
+        # PROTECTED REGION END #    //  RefTelState.delete_device
 
     # ------------------
     # Attributes methods
     # ------------------
 
     def read_attr1(self):
-        # PROTECTED REGION ID(GeneTelState.attr1_read) ENABLED START #
+        # PROTECTED REGION ID(RefTelState.attr1_read) ENABLED START #
         return ''
-        # PROTECTED REGION END #    //  GeneTelState.attr1_read
+        # PROTECTED REGION END #    //  RefTelState.attr1_read
 
     def read_attr2(self):
-        # PROTECTED REGION ID(GeneTelState.attr2_read) ENABLED START #
+        # PROTECTED REGION ID(RefTelState.attr2_read) ENABLED START #
         return ''
-        # PROTECTED REGION END #    //  GeneTelState.attr2_read
+        # PROTECTED REGION END #    //  RefTelState.attr2_read
 
     def read_importantState(self):
-        # PROTECTED REGION ID(GeneTelState.importantState_read) ENABLED START #
+        # PROTECTED REGION ID(RefTelState.importantState_read) ENABLED START #
         return 0
-        # PROTECTED REGION END #    //  GeneTelState.importantState_read
+        # PROTECTED REGION END #    //  RefTelState.importantState_read
 
     def write_importantState(self, value):
-        # PROTECTED REGION ID(GeneTelState.importantState_write) ENABLED START #
+        # PROTECTED REGION ID(RefTelState.importantState_write) ENABLED START #
         pass
-        # PROTECTED REGION END #    //  GeneTelState.importantState_write
+        # PROTECTED REGION END #    //  RefTelState.importantState_write
 
 
     # --------
@@ -132,9 +132,9 @@ class GeneTelState(SKABaseDevice):
     )
     @DebugIt()
     def Reset(self):
-        # PROTECTED REGION ID(GeneTelState.Reset) ENABLED START #
+        # PROTECTED REGION ID(RefTelState.Reset) ENABLED START #
         pass
-        # PROTECTED REGION END #    //  GeneTelState.Reset
+        # PROTECTED REGION END #    //  RefTelState.Reset
 
 # ----------
 # Run server
@@ -142,9 +142,9 @@ class GeneTelState(SKABaseDevice):
 
 
 def main(args=None, **kwargs):
-    # PROTECTED REGION ID(GeneTelState.main) ENABLED START #
-    return run((GeneTelState,), args=args, **kwargs)
-    # PROTECTED REGION END #    //  GeneTelState.main
+    # PROTECTED REGION ID(RefTelState.main) ENABLED START #
+    return run((RefTelState,), args=args, **kwargs)
+    # PROTECTED REGION END #    //  RefTelState.main
 
 if __name__ == '__main__':
     main()

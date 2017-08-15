@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="ASCII"?>
 <pogoDsl:PogoSystem xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:pogoDsl="http://www.esrf.fr/tango/pogo/PogoDsl">
-  <classes name="GeneCapPstBeams" pogoRevision="9.4">
-    <description description="Gene (Gen Element) device of Type GeneCapPstBeams" title="GeneCapPstBeams" sourcePath="/Users/lvdheever/link-devl5/git/levpro/skabase/core/SKAObsDevice" language="PythonHL" filestogenerate="XMI   file,Code files,Python Package,Protected Regions" license="GPL" copyright="" hasMandatoryProperty="true" hasConcreteProperty="false" hasAbstractCommand="true" hasAbstractAttribute="false">
+  <classes name="RefCapPstBeams" pogoRevision="9.4">
+    <description description="Ref (Reference Element) device of Type RefCapPstBeams" title="RefCapPstBeams" sourcePath="/Users/lvdheever/link-devl5/git/levpro/skabase/SKAObsDevice" language="PythonHL" filestogenerate="XMI   file,Code files,Python Package,Protected Regions" license="GPL" copyright="" hasMandatoryProperty="true" hasConcreteProperty="false" hasAbstractCommand="true" hasAbstractAttribute="false">
       <inheritances classname="Device_Impl" sourcePath=""/>
-      <inheritances classname="SKACapability" sourcePath="../skabase/core/SKACapability"/>
+      <inheritances classname="SKACapability" sourcePath="../skabase/SKACapability"/>
       <identification contact="at ska.ac.za - cam" author="cam" emailDomain="ska.ac.za" classFamily="OtherInstruments" siteSpecific="" platform="All Platforms" bus="Not Applicable" manufacturer="SKASA" reference="SKA-SKAObsDevice"/>
     </description>
     <deviceProperties name="SkaLevel" description="Indication of importance of the device in the SKA hierarchy &#xA;to support drill-down navigation: 1..6, with 1 highest.&#xA;Default is 4, making provision for &#xA;EltMaster, EltAlarms, EltTelState = 1&#xA;SubEltMaster = 2&#xA;Subarray, Capability = 2/3&#xA;Others = 4 (or 5 or 6)">

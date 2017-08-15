@@ -1,6 +1,6 @@
-## Gene
+## Ref
 
-An SKA Generic Element (called Gene)
+An SKA Reference Element (called Ref)
 
 ## Requirement
 
@@ -23,6 +23,6 @@ run python setup.py test
 Now you can start your device servers in any
 Terminal or console by calling it :
 
-GeneA instance_name
-GeneB instance_name
-GeneMaster instance_name
+RefA instance_name
+RefB instance_name
+RefMaster instance_name

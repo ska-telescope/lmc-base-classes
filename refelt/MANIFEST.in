@@ -1,7 +1,24 @@
-recursive-include GeneA *.py
+recursive-include RefA *.py
 recursive-include test *.py
 include *.rst
-include GeneA.xmi
+include RefA.xmi
+include RefAchild.xmi
+include RefB.xmi
+include RefBchild.xmi
+include RefMaster.xmi
+include RefTelState.xmi
+include RefLogger.xmi
+include RefAlarms.xmi
+include RefSubarray.xmi
+include RefCapCorrelator.xmi
+include RefCapPssBeams.xmi
+include RefCapPstBeams.xmi
+include RefCapVlbiBeams.xmi
+
+include Rack.xmi
+include Server.xmi
+include Switch.xmi
+include PDU.xmi
 include *.txt
 graft docs
 

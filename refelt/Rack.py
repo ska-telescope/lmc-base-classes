@@ -9,7 +9,7 @@
 
 """ Rack
 
-Gene (Gen Elt) Rack device
+Ref (Reference Elt) Rack device
 """
 
 # PyTango imports
@@ -31,7 +31,7 @@ __all__ = ["Rack", "main"]
 
 class Rack(SKABaseDevice):
     """
-    Gene (Gen Elt) Rack device
+    Ref (Reference Elt) Rack device
     """
     __metaclass__ = DeviceMeta
     # PROTECTED REGION ID(Rack.class_variable) ENABLED START #
@@ -78,7 +78,7 @@ class Rack(SKABaseDevice):
 
 
     # ---------------
-    # General methods
+    # Refral methods
     # ---------------
 
     def init_device(self):

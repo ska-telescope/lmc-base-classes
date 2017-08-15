@@ -9,7 +9,7 @@
 
 """ Server
 
-Gene (Gen Elt) Server device
+Ref (Reference Elt) Server device
 """
 
 # PyTango imports
@@ -31,7 +31,7 @@ __all__ = ["Server", "main"]
 
 class Server(SKABaseDevice):
     """
-    Gene (Gen Elt) Server device
+    Ref (Reference Elt) Server device
     """
     __metaclass__ = DeviceMeta
     # PROTECTED REGION ID(Server.class_variable) ENABLED START #
@@ -65,7 +65,7 @@ class Server(SKABaseDevice):
 
 
     # ---------------
-    # General methods
+    # Refral methods
     # ---------------
 
     def init_device(self):

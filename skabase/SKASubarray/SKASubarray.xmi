@@ -4,7 +4,7 @@
     <description description="SubArray handling device" title="SKASubarray" sourcePath="/Users/lvdheever/link-devl5/git/levpro/skabase/SKASubarray" language="PythonHL" filestogenerate="XMI   file,Code files,Python Package,Protected Regions" license="GPL" copyright="" hasMandatoryProperty="false" hasConcreteProperty="false" hasAbstractCommand="false" hasAbstractAttribute="false">
       <inheritances classname="Device_Impl" sourcePath=""/>
       <inheritances classname="SKAObsDevice" sourcePath="../SKAObsDevice"/>
-      <identification contact="at ska.ac.za - cam" author="cam" emailDomain="ska.ac.za" classFamily="SkaCore" siteSpecific="" platform="All Platforms" bus="Not Applicable" manufacturer="none" reference=""/>
+      <identification contact="at ska.ac.za - cam" author="cam" emailDomain="ska.ac.za" classFamily="SkaBase" siteSpecific="" platform="All Platforms" bus="Not Applicable" manufacturer="none" reference=""/>
     </description>
     <deviceProperties name="SkaLevel" description="Indication of importance of the device in the SKA hierarchy &#xA;to support drill-down navigation: 1..6, with 1 highest.&#xA;Default is 4, making provision for &#xA;EltMaster, EltAlarms, EltTelState = 1&#xA;SubEltMaster = 2&#xA;Subarray, Capability = 2/3&#xA;Others = 4 (or 5 or 6)">
       <type xsi:type="pogoDsl:ShortType"/>

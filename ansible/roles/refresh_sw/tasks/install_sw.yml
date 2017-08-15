@@ -36,10 +36,10 @@
     - install
     - skabase
 
-- name: Install genelt
-  command: sudo pip install {{software_root}}/levpro/genelt -U --no-deps
+- name: Install refelt
+  command: sudo pip install {{software_root}}/levpro/refelt -U --no-deps
   tags:
     - install
-    - genelt
+    - refelt
 
 ...

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="ASCII"?>
 <pogoDsl:PogoSystem xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:pogoDsl="http://www.esrf.fr/tango/pogo/PogoDsl">
-  <classes name="GeneB" pogoRevision="9.5">
-    <description description="Gene (Gen Element) device of type B." title="GeneB" sourcePath="/Users/lvdheever/link-devl5/git/levpro/genelt" language="PythonHL" filestogenerate="XMI   file,Code files,Protected Regions" license="GPL" copyright="" hasMandatoryProperty="false" hasConcreteProperty="false" hasAbstractCommand="false" hasAbstractAttribute="false">
+  <classes name="GeneBchild" pogoRevision="9.5">
+    <description description=" Gene (Gen Element) device of type Bchild." title="GeneBchild" sourcePath="/Users/lvdheever/link-devl5/git/levpro/refelt" language="PythonHL" filestogenerate="XMI   file,Code files,Protected Regions" license="GPL" copyright="" hasMandatoryProperty="false" hasConcreteProperty="false" hasAbstractCommand="false" hasAbstractAttribute="false">
       <inheritances classname="Device_Impl" sourcePath=""/>
       <inheritances classname="SKABaseDevice" sourcePath="../skabase/core/SKABaseDevice"/>
       <identification contact="at ska.ac.za - cam" author="cam" emailDomain="ska.ac.za" classFamily="OtherInstruments" siteSpecific="" platform="All Platforms" bus="Not Applicable" manufacturer="SKASA" reference="SKA-SKAObsDevice"/>
@@ -45,7 +45,7 @@
       <type xsi:type="pogoDsl:UShortType"/>
       <status abstract="false" inherited="true" concrete="true"/>
     </deviceProperties>
-    <commands name="Reset" description="Reset device to its default state" execMethod="reset" displayLevel="OPERATOR" polledPeriod="0">
+    <commands name="Reset" description="Reset device to its default state" execMethod="reset" displayLevel="OPERATOR" polledPeriod="0" isDynamic="false">
       <argin description="">
         <type xsi:type="pogoDsl:VoidType"/>
       </argin>
@@ -109,21 +109,15 @@
       <status abstract="false" inherited="true" concrete="true"/>
       <properties description="Build state of this device" label="" unit="" standardUnit="" displayUnit="" format="" maxValue="" minValue="" maxAlarm="" minAlarm="" maxWarning="" minWarning="" deltaTime="" deltaValue=""/>
     </attributes>
-    <attributes name="attr1" attType="Scalar" rwType="READ" displayLevel="OPERATOR" polledPeriod="60000" maxX="" maxY="" allocReadMember="true" isDynamic="false">
+    <attributes name="attrChild1" attType="Scalar" rwType="READ" displayLevel="OPERATOR" polledPeriod="60000" maxX="" maxY="" allocReadMember="true">
       <dataType xsi:type="pogoDsl:StringType"/>
-      <changeEvent fire="false" libCheckCriteria="false"/>
-      <archiveEvent fire="false" libCheckCriteria="false"/>
-      <dataReadyEvent fire="false" libCheckCriteria="true"/>
-      <status abstract="false" inherited="false" concrete="true" concreteHere="true"/>
-      <properties description="Attribute 1 for DevB" label="" unit="" standardUnit="" displayUnit="" format="" maxValue="" minValue="" maxAlarm="" minAlarm="" maxWarning="" minWarning="" deltaTime="" deltaValue=""/>
+      <status abstract="false" inherited="false" concrete="true"/>
+      <properties description="Attribute 1 for DevAA" label="" unit="" standardUnit="" displayUnit="" format="" maxValue="" minValue="" maxAlarm="" minAlarm="" maxWarning="" minWarning="" deltaTime="" deltaValue=""/>
     </attributes>
-    <attributes name="attr2" attType="Scalar" rwType="READ" displayLevel="OPERATOR" polledPeriod="60000" maxX="" maxY="" allocReadMember="false" isDynamic="false">
+    <attributes name="attrChild2" attType="Scalar" rwType="READ" displayLevel="OPERATOR" polledPeriod="60000" maxX="" maxY="" allocReadMember="true">
       <dataType xsi:type="pogoDsl:StringType"/>
-      <changeEvent fire="false" libCheckCriteria="false"/>
-      <archiveEvent fire="false" libCheckCriteria="false"/>
-      <dataReadyEvent fire="false" libCheckCriteria="true"/>
-      <status abstract="false" inherited="false" concrete="true" concreteHere="true"/>
-      <properties description="Attribute 2 for DevB" label="" unit="" standardUnit="" displayUnit="" format="" maxValue="" minValue="" maxAlarm="" minAlarm="" maxWarning="" minWarning="" deltaTime="" deltaValue=""/>
+      <status abstract="false" inherited="false" concrete="true"/>
+      <properties description="Attribute 2 for DevAA" label="" unit="" standardUnit="" displayUnit="" format="" maxValue="" minValue="" maxAlarm="" minAlarm="" maxWarning="" minWarning="" deltaTime="" deltaValue=""/>
     </attributes>
     <attributes name="centralLoggingLevel" attType="Scalar" rwType="READ" displayLevel="OPERATOR" polledPeriod="0" maxX="" maxY="" allocReadMember="true">
       <dataType xsi:type="pogoDsl:UShortType"/>
@@ -180,18 +174,6 @@
       <archiveEvent fire="false" libCheckCriteria="false"/>
       <status abstract="false" inherited="true" concrete="true"/>
       <properties description="The test mode of the device. &#xA;Either no test mode (empty string) or an indication of the test mode." label="" unit="" standardUnit="" displayUnit="" format="" maxValue="" minValue="" maxAlarm="" minAlarm="" maxWarning="" minWarning="" deltaTime="" deltaValue=""/>
-    </attributes>
-    <attributes name="importantState" attType="Scalar" rwType="READ_WRITE" displayLevel="OPERATOR" polledPeriod="0" maxX="" maxY="" allocReadMember="false" isDynamic="false">
-      <dataType xsi:type="pogoDsl:EnumType"/>
-      <changeEvent fire="false" libCheckCriteria="false"/>
-      <archiveEvent fire="false" libCheckCriteria="false"/>
-      <dataReadyEvent fire="false" libCheckCriteria="true"/>
-      <status abstract="false" inherited="false" concrete="true" concreteHere="true"/>
-      <properties description="" label="" unit="" standardUnit="" displayUnit="" format="" maxValue="" minValue="" maxAlarm="" minAlarm="" maxWarning="" minWarning="" deltaTime="" deltaValue=""/>
-      <enumLabels>OK</enumLabels>
-      <enumLabels>GOOD</enumLabels>
-      <enumLabels>BAD</enumLabels>
-      <enumLabels>VERY-BAD</enumLabels>
     </attributes>
     <states name="ON" description="">
       <status abstract="false" inherited="true" concrete="true"/>

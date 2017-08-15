@@ -1,30 +1,30 @@
 # -*- coding: utf-8 -*-
 #
-# This file is part of the GeneA project
+# This file is part of the RefA project
 #
 #
 #
 # Distributed under the terms of the GPL license.
 # See LICENSE.txt for more info.
 
-"""Generic Element
+"""Reference Element
 
-SKA Generic Element
+SKA Reference Element
 """
 
 from . import release
-from . import GeneA
-from . import GeneAchild
-from . import GeneB
-from . import GeneBchild
-from . import GeneMaster
-from . import GeneTelState
-from . import GeneAlarms
-from . import GeneSubarray
-from . import GeneCapCorrelator
-from . import GeneCapPssBeams
-from . import GeneCapPstBeams
-from . import GeneCapVlbiBeams
+from . import RefA
+from . import RefAchild
+from . import RefB
+from . import RefBchild
+from . import RefMaster
+from . import RefTelState
+from . import RefAlarms
+from . import RefSubarray
+from . import RefCapCorrelator
+from . import RefCapPssBeams
+from . import RefCapPstBeams
+from . import RefCapVlbiBeams
 from . import FileLogger
 
 from . import Rack

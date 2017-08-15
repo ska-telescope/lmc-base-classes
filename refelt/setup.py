@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 #
-# This file is part of the GeneA project
+# This file is part of the RefA project
 #
 #
 #
@@ -26,24 +26,24 @@ exec(open(release_filename).read())
 
 setup(name=name,
       version=version,
-      description='An SKA Generic Element (Gene)',
+      description='An SKA Refence Element (Ref)',
       author="MeerKAT CAM Team",
       author_email="cam atska.ac.za",
       packages=find_packages(),  #pack
       include_package_data=True,
       entry_points={'console_scripts':[
-          'GeneMaster = genelt.GeneMaster:main',
-          'GeneA = genelt.GeneA:main',
-          'GeneAchild = genelt.GeneAchild:main',
-          'GeneB = genelt.GeneB:main',
-          'GeneBchild = genelt.GeneBchild:main',
-          'Rack = genelt.Rack:main',
-          'Server = genelt.Server:main',
-          'Switch = genelt.Switch:main',
-          'PDU = genelt.PDU:main',
-          'FileLogger = genelt.FileLogger:main',
-          'GeneTelState = genelt.GeneTelState:main',
-          'GeneEltAlarms = genelt.GeneAlarms:main',
+          'RefMaster = refelt.RefMaster:main',
+          'RefA = refelt.RefA:main',
+          'RefAchild = refelt.RefAchild:main',
+          'RefB = refelt.RefB:main',
+          'RefBchild = refelt.RefBchild:main',
+          'Rack = refelt.Rack:main',
+          'Server = refelt.Server:main',
+          'Switch = refelt.Switch:main',
+          'PDU = refelt.PDU:main',
+          'FileLogger = refelt.FileLogger:main',
+          'RefTelState = refelt.RefTelState:main',
+          'RefEltAlarms = refelt.RefAlarms:main',
           ]},
       url='http://ska.ac.za/',
       classifiers=[
@@ -63,6 +63,6 @@ setup(name=name,
           "nosexcover",
           "unittest2"
       ],
-      keywords="generic element gene elt lmc ska",
+      keywords="generic element ref elt lmc ska",
       test_suite="nose.collector",
       zip_safe=False)

@@ -10,7 +10,7 @@
 
 from setuptools import setup, find_packages
 
-setup(name="skabase",
+setup(name="levpro",
       description="Element Base Classes - Evolutionary Prototype",
       author="MeerKAT CAM Team",
       author_email="cam@ska.ac.za",
@@ -19,8 +19,6 @@ setup(name="skabase",
       scripts=["scripts/gen_csv_info.py",
                "scripts/purge_xmi_tree.py",
                "scripts/elt_ctl.py",
-               "run/eltlogger_DS",
-               "run/eltmaster_DS",
                ],
       url='http://ska.ac.za/',
       classifiers=[

@@ -58,7 +58,7 @@ class SKABaseDevice(Device):
                 device_dict['commands'] = self.get_device_commands(with_context=False)
             return device_dict
 
-        except Exception, ex:
+        except Exception as ex:
             ### TBD - add logging
             raise
 
@@ -67,7 +67,7 @@ class SKABaseDevice(Device):
         try:
             if argin:
                 args_dict.update(json.loads(argin))
-        except ValueError, ex:
+        except ValueError as ex:
             ### TBD - add logging
             raise
 

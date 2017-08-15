@@ -19,7 +19,7 @@ from PyTango.server import run
 from PyTango.server import Device, DeviceMeta
 from PyTango.server import attribute, command
 from PyTango.server import device_property
-from PyTango import AttrQuality, DispLevel
+from PyTango import AttrQuality, DispLevel, DevState
 from PyTango import AttrWriteType, PipeWriteType
 # Additional import
 # PROTECTED REGION ID(SKABaseDevice.additionnal_import) ENABLED START #
@@ -198,7 +198,7 @@ class SKABaseDevice(Device):
         dtype='uint16',
     )
 
-    StorageLoggingLevelStorage = device_property(
+    StorageLoggingLevelDefault = device_property(
         dtype='uint16',
     )
 
@@ -218,11 +218,13 @@ class SKABaseDevice(Device):
 
     centralLoggingLevel = attribute(
         dtype='uint16',
+        access=AttrWriteType.READ_WRITE,
         doc="Current logging level to Central logging target for this device - \ninitialises to CentralLoggingLevelDefault on startup",
     )
 
     elementLoggingLevel = attribute(
         dtype='uint16',
+        access=AttrWriteType.READ_WRITE,
         doc="Current logging level to Element logging target for this device - \ninitialises to ElementLoggingLevelDefault on startup",
     )
 
@@ -307,10 +309,20 @@ class SKABaseDevice(Device):
         return 0
         # PROTECTED REGION END #    //  SKABaseDevice.centralLoggingLevel_read
 
+    def write_centralLoggingLevel(self, value):
+        # PROTECTED REGION ID(SKABaseDevice.centralLoggingLevel_write) ENABLED START #
+        pass
+        # PROTECTED REGION END #    //  SKABaseDevice.centralLoggingLevel_write
+
     def read_elementLoggingLevel(self):
         # PROTECTED REGION ID(SKABaseDevice.elementLoggingLevel_read) ENABLED START #
         return 0
         # PROTECTED REGION END #    //  SKABaseDevice.elementLoggingLevel_read
+
+    def write_elementLoggingLevel(self, value):
+        # PROTECTED REGION ID(SKABaseDevice.elementLoggingLevel_write) ENABLED START #
+        pass
+        # PROTECTED REGION END #    //  SKABaseDevice.elementLoggingLevel_write
 
     def read_storageLoggingLevel(self):
         # PROTECTED REGION ID(SKABaseDevice.storageLoggingLevel_read) ENABLED START #
@@ -373,7 +385,7 @@ class SKABaseDevice(Device):
     # --------
 
     @command(
-    dtype_out='str',
+    dtype_out='str', 
     )
     @DebugIt()
     def GetMetrics(self):
@@ -389,10 +401,10 @@ class SKABaseDevice(Device):
         # PROTECTED REGION END #    //  SKABaseDevice.GetMetrics
 
     @command(
-    dtype_in='str',
-    doc_in="Requests the JSON string representing this device, can be filtered \nby with_commands, with_metrics, with_attributes and \nwith_value. Defaults for empty string  argin are:\n{`with_value`:false, `with_commands`:true,\n  `with_metrics`:true, `with_attributes`:false}",
-    dtype_out='str',
-    doc_out="The JSON string representing this device, \nfiltered as per the input argument flags",
+    dtype_in='str', 
+    doc_in="Requests the JSON string representing this device, can be filtered \nby with_commands, with_metrics, with_attributes and \nwith_value. Defaults for empty string  argin are:\n{`with_value`:false, `with_commands`:true,\n  `with_metrics`:true, `with_attributes`:false}", 
+    dtype_out='str', 
+    doc_out="The JSON string representing this device, \nfiltered as per the input argument flags", 
     )
     @DebugIt()
     def ToJson(self, argin):
@@ -409,8 +421,8 @@ class SKABaseDevice(Device):
         # PROTECTED REGION END #    //  SKABaseDevice.ToJson
 
     @command(
-    dtype_out=('str',),
-    doc_out="[ name: EltTelState",
+    dtype_out=('str',), 
+    doc_out="[ name: EltTelState", 
     )
     @DebugIt()
     def GetVersionInfo(self):

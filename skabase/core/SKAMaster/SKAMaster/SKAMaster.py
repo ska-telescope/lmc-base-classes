@@ -21,7 +21,7 @@ from PyTango.server import attribute, command
 from PyTango.server import device_property
 from PyTango import AttrQuality, DispLevel, DevState
 from PyTango import AttrWriteType, PipeWriteType
-from SKAObsDevice import SKAObsDevice
+from SKABaseDevice import SKABaseDevice
 # Additional import
 # PROTECTED REGION ID(SKAMaster.additionnal_import) ENABLED START #
 # PROTECTED REGION END #    //  SKAMaster.additionnal_import
@@ -29,7 +29,7 @@ from SKAObsDevice import SKAObsDevice
 __all__ = ["SKAMaster", "main"]
 
 
-class SKAMaster(SKAObsDevice):
+class SKAMaster(SKABaseDevice):
     """
     A master test
     """
@@ -50,13 +50,31 @@ class SKAMaster(SKAObsDevice):
 
 
 
+
+
     # ----------
     # Attributes
     # ----------
 
+    elementLoggerAddress = attribute(
+        dtype='str',
+        doc="FQDN of Element Logger",
+    )
 
+    elementAlarmAddress = attribute(
+        dtype='str',
+        doc="FQDN of Element Alarm Handlers",
+    )
 
+    elementTelStateAddress = attribute(
+        dtype='str',
+        doc="FQDN of Element TelState device",
+    )
 
+    elementDatabaseAddress = attribute(
+        dtype='str',
+        doc="FQDN of Element Database device",
+    )
 
 
 
@@ -73,7 +91,7 @@ class SKAMaster(SKAObsDevice):
     # ---------------
 
     def init_device(self):
-        SKAObsDevice.init_device(self)
+        SKABaseDevice.init_device(self)
         # PROTECTED REGION ID(SKAMaster.init_device) ENABLED START #
         # PROTECTED REGION END #    //  SKAMaster.init_device
 
@@ -90,6 +108,26 @@ class SKAMaster(SKAObsDevice):
     # ------------------
     # Attributes methods
     # ------------------
+
+    def read_elementLoggerAddress(self):
+        # PROTECTED REGION ID(SKAMaster.elementLoggerAddress_read) ENABLED START #
+        return ''
+        # PROTECTED REGION END #    //  SKAMaster.elementLoggerAddress_read
+
+    def read_elementAlarmAddress(self):
+        # PROTECTED REGION ID(SKAMaster.elementAlarmAddress_read) ENABLED START #
+        return ''
+        # PROTECTED REGION END #    //  SKAMaster.elementAlarmAddress_read
+
+    def read_elementTelStateAddress(self):
+        # PROTECTED REGION ID(SKAMaster.elementTelStateAddress_read) ENABLED START #
+        return ''
+        # PROTECTED REGION END #    //  SKAMaster.elementTelStateAddress_read
+
+    def read_elementDatabaseAddress(self):
+        # PROTECTED REGION ID(SKAMaster.elementDatabaseAddress_read) ENABLED START #
+        return ''
+        # PROTECTED REGION END #    //  SKAMaster.elementDatabaseAddress_read
 
 
     # --------

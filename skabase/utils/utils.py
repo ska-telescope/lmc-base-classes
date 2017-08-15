@@ -22,21 +22,35 @@ int_types = {PyTango._PyTango.CmdArgType.DevUShort, PyTango._PyTango.CmdArgType.
 
 float_types = {PyTango._PyTango.CmdArgType.DevDouble, PyTango._PyTango.CmdArgType.DevFloat}
 
+# TBD - investigate just using (command argin data_type)
 tango_type_conversion = {PyTango.CmdArgType.DevUShort.real: 'int',
-                            PyTango.CmdArgType.DevLong.real: 'int',
-                            PyTango.CmdArgType.DevInt.real: 'int',
-                            PyTango.CmdArgType.DevULong.real: 'int',
-                            PyTango.CmdArgType.DevULong64.real: 'int',
-                            PyTango.CmdArgType.DevLong64.real: 'int',
-                            PyTango.CmdArgType.DevShort.real: 'int',
-                            PyTango.CmdArgType.DevDouble.real: 'float',
-                            PyTango.CmdArgType.DevFloat.real: 'float',
-                            PyTango.CmdArgType.DevString.real: 'str',
-                            PyTango.CmdArgType.DevBoolean.real: 'bool',
-                            PyTango.CmdArgType.DevEncoded.real: 'encoded',
-                            PyTango.CmdArgType.DevState.real: '',
-                            PyTango.CmdArgType.DevVoid.real: 'void'}
-
+                         PyTango.CmdArgType.DevLong.real: 'int',
+                         PyTango.CmdArgType.DevInt.real: 'int',
+                         PyTango.CmdArgType.DevULong.real: 'int',
+                         PyTango.CmdArgType.DevULong64.real: 'int',
+                         PyTango.CmdArgType.DevLong64.real: 'int',
+                         PyTango.CmdArgType.DevShort.real: 'int',
+                         PyTango.CmdArgType.DevDouble.real: 'float',
+                         PyTango.CmdArgType.DevFloat.real: 'float',
+                         PyTango.CmdArgType.DevString.real: 'str',
+                         PyTango.CmdArgType.DevBoolean.real: 'bool',
+                         PyTango.CmdArgType.DevEncoded.real: 'encoded',
+                         PyTango.CmdArgType.DevState.real: 'state',
+                         PyTango.CmdArgType.DevVoid.real: 'void',
+                         PyTango.CmdArgType.DevEnum.real: 'enum',
+                         }
+# TBD - not all PyTango types are used
+#PyTango.CmdArgType.ConstDevString           PyTango.CmdArgType.DevState                 PyTango.CmdArgType.DevVarLong64Array        PyTango.CmdArgType.conjugate
+#PyTango.CmdArgType.DevBoolean               PyTango.CmdArgType.DevString                PyTango.CmdArgType.DevVarLongArray          PyTango.CmdArgType.denominator
+#PyTango.CmdArgType.DevDouble                PyTango.CmdArgType.DevUChar                 PyTango.CmdArgType.DevVarLongStringArray    PyTango.CmdArgType.imag
+#PyTango.CmdArgType.DevEncoded               PyTango.CmdArgType.DevULong                 PyTango.CmdArgType.DevVarShortArray         PyTango.CmdArgType.mro
+#PyTango.CmdArgType.DevEnum                  PyTango.CmdArgType.DevULong64               PyTango.CmdArgType.DevVarStateArray         PyTango.CmdArgType.name
+#PyTango.CmdArgType.DevFloat                 PyTango.CmdArgType.DevUShort                PyTango.CmdArgType.DevVarStringArray        PyTango.CmdArgType.names
+#PyTango.CmdArgType.DevInt                   PyTango.CmdArgType.DevVarBooleanArray       PyTango.CmdArgType.DevVarULong64Array       PyTango.CmdArgType.numerator
+#PyTango.CmdArgType.DevLong                  PyTango.CmdArgType.DevVarCharArray          PyTango.CmdArgType.DevVarULongArray         PyTango.CmdArgType.real
+#PyTango.CmdArgType.DevLong64                PyTango.CmdArgType.DevVarDoubleArray        PyTango.CmdArgType.DevVarUShortArray        PyTango.CmdArgType.values
+#PyTango.CmdArgType.DevPipeBlob              PyTango.CmdArgType.DevVarDoubleStringArray  PyTango.CmdArgType.DevVoid
+#PyTango.CmdArgType.DevShort                 PyTango.CmdArgType.DevVarFloatArray
 
 @contextmanager
 def exception_manager(cls, arguments="", callback=None):
@@ -95,6 +109,7 @@ def exception_manager(cls, arguments="", callback=None):
                                        message,
                                        class_name + "::" + calframe[2][3])
 
+
 def get_dev_info(domain_name, device_server_name, device_ref):
     dev_info = DbDevInfo()
     dev_info._class = device_server_name
@@ -121,14 +136,6 @@ def get_device_group_and_id(device_name):
     return device_name.split('/')[1:]
 
 
-def wait_seconds(dp, max=3):
-    i = 0
-    while (dp.state() != DevState.ALARM) and i < max:
-        sleep(1)
-        i += 1
-
-
-VALID_TYPES = ['int', 'bool', 'str', 'float']
 
 
 def convert_api_value(param_dict):
@@ -137,6 +144,7 @@ def convert_api_value(param_dict):
     :param param_dict:
     :return:
     """
+    VALID_TYPES = ['int', 'bool', 'str', 'float']
     type_str = param_dict.get('type', 'str').lower()
     if type_str not in VALID_TYPES:
         raise Exception('Valid types must be from %s' % ', '.join(VALID_TYPES))
@@ -170,6 +178,7 @@ def get_dp_attribute(device_proxy, attribute, with_value=False, with_context=Fal
                                                AttrWriteType.READ_WITH_WRITE]
     }
 
+    # TBD - use tango_type_conversion dict, or just str(attribute.data_format)
     if attribute.data_format == PyTango._PyTango.AttrDataFormat.SCALAR:
         if attribute.data_type in int_types:
             attr_dict["data_type"] = "int"
@@ -201,6 +210,7 @@ def get_dp_attribute(device_proxy, attribute, with_value=False, with_context=Fal
             ts.replace(microsecond=attr_value.time.tv_usec)
             attr_dict['timestamp'] = ts.isoformat()
         except:
+            # TBD - decide what to do - add log?
             pass
 
     return attr_dict
@@ -219,7 +229,8 @@ def get_dp_command(device_name, command, with_context=False):
                 return []
             # ugghhh POGO replaces quotes with backticks :(
             return ast.literal_eval(command_desc.replace('`', "'"))
-        except Exception, ex:
+        except Exception as ex:
+            # TBD - decide what to do - add log?
             pass
         return []
 

@@ -19,14 +19,16 @@ from PyTango.server import run
 from PyTango.server import Device, DeviceMeta
 from PyTango.server import attribute, command
 from PyTango.server import device_property
-from PyTango import AttrQuality, DispLevel, DevState
+from PyTango import AttrQuality, DispLevel
 from PyTango import AttrWriteType, PipeWriteType
 # Additional import
 # PROTECTED REGION ID(SKABaseDevice.additionnal_import) ENABLED START #
 import json
+
 from PyTango import DeviceProxy
-from PyTango._PyTango import DevState as _DevState
-from skabase.utils.utils import get_dp_command, exception_manager, tango_type_conversion
+
+from skabase.utils.utils import (get_dp_command, exception_manager,
+                                 tango_type_conversion, coerce_value)
 
 # PROTECTED REGION END #    //  SKABaseDevice.additionnal_import
 
@@ -52,12 +54,12 @@ class SKABaseDevice(Device):
                     with_attributes=args_dict.get('with_attributes'),
                     with_context=False
                 ),
-            if args_dict.get('with_commands') == "true":
+            if args_dict.get('with_commands') == True:
                 device_dict['commands'] = self.get_device_commands(with_context=False)
             return device_dict
 
         except Exception, ex:
-            ###self.error_stream(str(ex))
+            ### TBD - add logging
             raise
 
     def _parse_argin(self, argin, defaults=None, required=None):
@@ -66,7 +68,7 @@ class SKABaseDevice(Device):
             if argin:
                 args_dict.update(json.loads(argin))
         except ValueError, ex:
-            ###self.error_stream(ex)
+            ### TBD - add logging
             raise
 
         missing_args = []
@@ -89,12 +91,12 @@ class SKABaseDevice(Device):
                 device_proxy.dev_name(), device_cmd_config, with_context))
         return commands
 
-    def get_device_attributes(self, with_value='false',
-            with_context='true',
-            with_metrics='true', with_attributes='true', attribute_name=None):
+    def get_device_attributes(self, with_value=False,
+                              with_context=True, with_metrics=True,
+                              with_attributes=True, attribute_name=None):
         """ Get device proxy attributes"""
         ### TBD - Why use DeviceProxy?
-        ### Can this not ve known through self which is a Device
+        ### Can this not be known through self which is a Device
 
         # Get attribute configuration
         device_proxy = DeviceProxy(self.get_name())
@@ -104,18 +106,10 @@ class SKABaseDevice(Device):
             attr_config = device_proxy.get_attribute_config_ex(device_proxy.get_attribute_list())
 
         # Get attribute values if required
-        if with_value == 'true' and attribute_name is not None:
+        if with_value and attribute_name is not None:
             attr_values = device_proxy.read_attributes([attribute_name])
-        elif with_value == 'true':
+        elif with_value:
             attr_values = device_proxy.read_attributes(device_proxy.get_attribute_list())
-
-        #### Get device context
-        ###device_type, device_id = get_tango_device_type_id(device_proxy.dev_name())
-
-        def coerce_value(value):
-            if type(value) in [DevState, _DevState]:
-                return str(value)
-            return value
 
         # Process all attributes
         attributes = {}
@@ -134,19 +128,18 @@ class SKABaseDevice(Device):
 
             # Convert data type
             if attribute.data_format == PyTango.AttrDataFormat.SCALAR:
-                print "---",attribute.name, attribute.data_format, attribute.data_type
                 attr_dict["data_type"] = tango_type_conversion.get(
-                    attribute.data_type, attribute.data_type)
+                    attribute.data_type, str(attribute.data_type))
             else:
                 # Data types we aren't really going to represent
                 attr_dict["data_type"] = "other"
 
             # Add context if required
-            if with_context == 'true':
+            if with_context:
                 attr_dict['component'] = self.get_name()
 
             # Add value if required
-            if with_value == 'true':
+            if with_value:
                 attr_dict['value'] = coerce_value(attr_values[i].value)
                 attr_dict['is_alarm'] = attr_values[i].quality == AttrQuality.ATTR_ALARM
                # ts = datetime.fromtimestamp(attr_values[i].time.tv_sec)
@@ -160,14 +153,12 @@ class SKABaseDevice(Device):
                 attr_dict['attribute_type'] = 'attribute'
 
             # Add to return attribute list
-            if with_metrics == 'true' and attr_dict['attribute_type'] == 'metric':
+            if with_metrics and attr_dict['attribute_type'] == 'metric':
                 attributes[attribute.name] = attr_dict
-            elif with_attributes == 'true' and attr_dict['attribute_type'] == 'attribute':
+            elif with_attributes and attr_dict['attribute_type'] == 'attribute':
                 attributes[attribute.name] = attr_dict
 
         return attributes
-
-
 
     # PROTECTED REGION END #    //  SKABaseDevice.class_variable
 
@@ -382,15 +373,15 @@ class SKABaseDevice(Device):
     # --------
 
     @command(
-    dtype_out='str', 
+    dtype_out='str',
     )
     @DebugIt()
     def GetMetrics(self):
         # PROTECTED REGION ID(SKABaseDevice.GetMetrics) ENABLED START #
         ### TBD - read the value of each of the attributes in the MetricList
         with exception_manager(self):
-            args_dict = {'with_value': 'false', 'with_commands': 'false',
-                         'with_metrics': 'true', 'with_attributes': 'false'}
+            args_dict = {'with_value': False, 'with_commands': False,
+                         'with_metrics': True, 'with_attributes': False}
             device_dict = self._get_device_json(args_dict)
             argout = json.dumps(device_dict)
 
@@ -398,17 +389,19 @@ class SKABaseDevice(Device):
         # PROTECTED REGION END #    //  SKABaseDevice.GetMetrics
 
     @command(
-    dtype_in='str', 
-    doc_in="Requests the JSON string representing this device, can be filtered \nby with_commands, with_metrics, with_attributes and \nwith_value. Defaults for empty string  argin are:\n{`with_value`:`false`, `with_commands`:`true`,\n  `with_metrics`:`true, `with_attributes`:`false}", 
-    dtype_out='str', 
-    doc_out="The JSON string representing this device, \nfiltered as per the input argument flags", 
+    dtype_in='str',
+    doc_in="Requests the JSON string representing this device, can be filtered \nby with_commands, with_metrics, with_attributes and \nwith_value. Defaults for empty string  argin are:\n{`with_value`:false, `with_commands`:true,\n  `with_metrics`:true, `with_attributes`:false}",
+    dtype_out='str',
+    doc_out="The JSON string representing this device, \nfiltered as per the input argument flags",
     )
     @DebugIt()
     def ToJson(self, argin):
         # PROTECTED REGION ID(SKABaseDevice.ToJson) ENABLED START #
+
+        # TBD - see how to use fandango's export_device_to_dict
         with exception_manager(self):
-            defaults = {'with_value': 'false', 'with_commands': 'true',
-                        'with_metrics': 'true', 'with_attributes': 'false'}
+            defaults = {'with_value': False, 'with_commands': True,
+                        'with_metrics': True, 'with_attributes': False}
             args_dict = self._parse_argin(argin, defaults=defaults)
             device_dict = self._get_device_json(args_dict)
             argout = json.dumps(device_dict)
@@ -416,8 +409,8 @@ class SKABaseDevice(Device):
         # PROTECTED REGION END #    //  SKABaseDevice.ToJson
 
     @command(
-    dtype_out=('str',), 
-    doc_out="[ name: EltTelState", 
+    dtype_out=('str',),
+    doc_out="[ name: EltTelState",
     )
     @DebugIt()
     def GetVersionInfo(self):

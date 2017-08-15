@@ -5,13 +5,13 @@ config = {
         {
             "logger": 1,
             "{{elt_name}}Master": 1 ,
-            "{{GeneLogger": 4,
+            "{{RefLogger": 4,
             "CentralLogger": 5,
-            "GeneSubarray1": 3,
-            "GeneSubarray1": 3,
-            "GeneSubarray1": 3,
-            "GeneSubarray1": 3,
-            "GeneSubarray1": 3,
+            "RefSubarray1": 3,
+            "RefSubarray1": 3,
+            "RefSubarray1": 3,
+            "RefSubarray1": 3,
+            "RefSubarray1": 3,
          },
    "element_defaults": {
        "global_properties": {

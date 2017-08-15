@@ -14,8 +14,18 @@ SKA Generic Element
 
 from . import release
 from . import GeneA
+from . import GeneAchild
 from . import GeneB
+from . import GeneBchild
 from . import GeneMaster
+from . import GeneTelState
+from . import GeneAlarms
+from . import GeneSubarray
+from . import GeneCapCorrelator
+from . import GeneCapPssBeams
+from . import GeneCapPstBeams
+from . import GeneCapVlbiBeams
+from . import FileLogger
 
 from . import Rack
 from . import Server

@@ -25,7 +25,7 @@
     - levpro
 
 - name: Install skabase
-  command: sudo pip install {{software_root}}/levpro/skabase/core/{{item}} -U --no-deps
+  command: sudo pip install {{software_root}}/levpro/skabase/{{item}} -U --no-deps
   with_items:
     - SKABaseDevice
     - SKAObsDevice

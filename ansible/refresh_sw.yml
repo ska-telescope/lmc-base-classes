@@ -15,4 +15,4 @@
       when: "'TANGO_HOST' in ansible_env"
 
   roles:
-  - { role: refresh_sw, tags: refresh_sw }
+  - { role: refresh_sw, tags: refresh }

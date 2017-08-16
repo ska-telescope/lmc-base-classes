@@ -9,7 +9,7 @@
 
 """Release information for Python Package"""
 
-name = """refelt"""
+name = """skabase_refelt"""
 version = "1.0.0"
 version_info = version.split(".")
 description = """An SKA Reference Element"""

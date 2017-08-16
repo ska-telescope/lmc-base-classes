@@ -43,7 +43,7 @@ setup(name=name,
           'PDU = refelt.PDU:main',
           'FileLogger = refelt.FileLogger:main',
           'RefTelState = refelt.RefTelState:main',
-          'RefEltAlarms = refelt.RefAlarms:main',
+          'RefAlarms = refelt.RefAlarms:main',
           ]},
       url='http://ska.ac.za/',
       classifiers=[

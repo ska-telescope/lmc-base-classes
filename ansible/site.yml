@@ -4,5 +4,6 @@
 #- include: setup_node.yml
 - include: deploy_sw.yml
 - include: refresh_sw.yml
+- include: install_sw.yml
 #- include: deploy_elt.yml
 #- include: configure_elt.yml

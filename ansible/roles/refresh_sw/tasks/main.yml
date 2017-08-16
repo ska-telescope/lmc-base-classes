@@ -11,7 +11,17 @@
 ##     Update working directories
 ###########################################
 
-- include: pull_sw.yml
-- include: install_sw.yml
+# Do we want to pull on refresh_sw ???
+- name: Refresh tango-simlib
+  command: git -C {{software_root}}/tango-simlib pull
+  tags:
+    - refresh
+    - tango-simlib
+
+- name: Refresh levpro
+  command: git -C {{software_root}}/levpro pull
+  tags:
+    - refresh
+    - levpro
 
 ...

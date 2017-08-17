@@ -49,6 +49,18 @@ tasks:
     - debug:
         msg: task10
 
+- name: Run tasks/other.yml instead of 'main'
+  include_role:
+    name: myrole
+    tasks_from: other
+
+- name: Pass variables to role
+  include_role:
+    name: myrole
+  vars:
+    rolevar1: 'value from task'
+
+
 # dyanmic include task list in play
 - hosts: all
   tasks:

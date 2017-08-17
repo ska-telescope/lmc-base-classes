@@ -1,0 +1,17 @@
+---
+
+mysql_packages:
+  - python-mysqldb
+  - mysql-server
+  - mysql-client
+  - libmysqlclient-dev
+
+mysql_daemon: mysql
+mysql_daemon_path: /etc/init.d
+
+mysql_root_user: root
+mysql_root_password: mysql
+
+mysql_enabled_on_startup: yes
+
+...

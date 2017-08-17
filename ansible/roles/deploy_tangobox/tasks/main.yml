@@ -1,0 +1,106 @@
+---
+
+###########################################
+## PRINT STUFF
+###########################################
+
+- name: Print software_root directory
+  debug: msg="rootdir = {{software_root}}"
+
+
+###########################################
+## Apt-get update and upgrade
+###########################################
+
+- name: update apt packages
+  apt: >
+    update_cache=yes
+    cache_valid_time=3600
+
+- name: upgrade apt packages
+  apt: upgrade=yes
+
+###########################################
+## Deploy tango deb requirements packages
+###########################################
+
+- name: Install deb requirements packages
+  apt: name={{item}} force=yes state=latest
+  with_items:
+    - snmpd
+    - libmodbus5
+    - aptitude
+    - libffi-dev
+    - build-essential
+    - git-core
+    - ipython
+    - language-pack-en-base
+    - libatk1.0-dev
+    - libcairo2-dev
+    - libevent-dev
+    - libfontconfig1-dev
+    - libfreetype6-dev
+    - libhdf5-serial-dev
+    - libpng12-dev
+    - libpq-dev
+    - python-cairo-dev
+    - python-dev
+    - gfortran
+    - screen
+    - subversion
+    - zlib1g-dev
+    - tzdata
+    - ntpdate
+    - liblapack-dev
+    - libf2c2-dev
+    - libatlas-base-dev
+    - libssl0.9.8
+    - man-db
+    - manpages
+    - ftp
+    - gawk
+    - telnet
+    - tcpdump
+
+    #- redis-server
+  tags:
+    - deploy
+    - debs
+
+- name: Install tango deb requirements packages
+  apt: name={{item}} force=yes state=latest
+  with_items:
+    - ansible
+    - subversion
+    - xauth
+    - libboost-python-dev
+    - build-essential
+    - software-properties-common
+    - mysql-client-core-5.6
+    - mysql-server-5.6
+    - mysql-client-5.6
+    - numpy
+  tags:
+    - deploy
+    - tango-debs
+
+- name: Install tango core packages
+  apt: name={{item}} force=yes state=latest
+  with_items:
+    - tango-db
+    - tango-common
+    - tango-starter
+    - tango-test
+    - tango-accesscontrol
+    - libtango-doc
+    - libtango-dev
+    - liblog4tango-dev
+    - liblog4tango-doc
+    - liblog4tango5v5
+    - libtango9
+    - libtango-java
+  tags:
+    - deploy
+    - tango-core
+
+...

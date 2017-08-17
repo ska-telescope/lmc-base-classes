@@ -1,6 +1,5 @@
-### When everything is already deployed and installed:
-. play-refresh-sw.sh local levpro
-. play-install-sw.sh local skabase,refelt
+### To run a specific task (based on ROLE tags and TASK IDs desribed in NOTES below)
+. play-task.sh install-sw skabase
 
 
 
@@ -14,7 +13,7 @@ ansible-playbook -i hosts site.yml --limit local --tags "refresh-sw-tango-simlib
 
 ### To install SW on local: # sudo pip install
 ansible-playbook -i hosts site.yml --limit local --tags "install_sw" # all
-ansible-playbook -i hosts site.yml --limit local --tags "install-sw-levpr"
+ansible-playbook -i hosts site.yml --limit local --tags "install-sw-levpro"
 ansible-playbook -i hosts site.yml --limit local --tags "install-sw-skabase"
 ansible-playbook -i hosts site.yml --limit local --tags "install-sw-refelt"
 
@@ -30,7 +29,11 @@ git clone https://github.com/ska-sa/levpro ~/git/levpro
 
 ### Deploy tangobox on a fresh node:
 cd ~/git/levpro/ansible
-ansible-playbook -i hosts site.yml --limit local --tags "deploy_tango_box"
+ansible-playbook -i hosts site.yml --limit local --tags "deploy_tangobox"
+
+ansible-playbook -i hosts site.yml --limit local --tags "deploy_sw"
+ansible-playbook -i hosts site.yml --limit local --tags "refresh_sw"
+ansible-playbook -i hosts site.yml --limit local --tags "install_sw"
 
 
 ### NOTES: 
@@ -40,6 +43,12 @@ ansible-playbook -i hosts site.yml --limit local --tags "deploy_tango_box"
 #    e.g. {roles: "deploy_sw", tags: "deploy_sw"}
 # To execute the _full_ role use the --tags with the underscores
 #    e.g. --tags deploy_sw
+#
+# Current ROLE tags:
+#     deploy_tangobox, deploy_sw, refresh_sw, install_sw
+#     Translating to TASK tags:
+#     deploy-box-xxx, deploy-sw-xxx, refresh-sw-xxx, install-sw-xxx
+
 
 
 # Note 2: Task tags:
@@ -52,11 +61,8 @@ ansible-playbook -i hosts site.yml --limit local --tags "deploy_tango_box"
 # Format is "<role-tag>-<task-addition>" e.g. install-sw-refelt
 #    {}-{}".format(role_tag,task_id).replace("_","-").lower()
 
-# Current ROLE tags:
-#     deploy_tangobox, deploy_sw, refresh_sw, install_sw
-
 # Current TASK ids:
-#     For deploy_tangobox: debs, tango-debs, tango-core
+#     For deployment:      debs, tango-debs, core, pip
 #     For software:        tango-simlib, levpro, skabase, refelt
 # Current TASK tags:
 #     [deploy-sw|refresh-sw|install-sw]-[tango-simlib|levpro|skabase|refelt]

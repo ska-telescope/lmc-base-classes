@@ -104,13 +104,13 @@
     - tango-starter
     - tango-test
     - tango-accesscontrol
-    - liblog4tango5v5
-    - libtango9
-    - libtango-java
-    - libtango-doc
-    - libtango-dev
-    - liblog4tango-dev
-    - liblog4tango-doc
+    #- liblog4tango5v5
+    #- libtango9
+    #- libtango-java
+    #- libtango-doc
+    #- libtango-dev
+    #- liblog4tango-dev
+    #- liblog4tango-doc
   tags:
     - core
     - deploy-box-core

@@ -21,19 +21,16 @@
   apt: upgrade=yes
 
 ###########################################
-## Deploy tango deb requirements packages
-###########################################
 
 - name: Install deb requirements packages
   # apt: name={{item}} force=yes state=latest
   raw: sudo apt-get install {{item}} -y
   with_items:
-    - snmpd
+    #- snmpd
     - aptitude
     - libffi-dev
     - build-essential
     - git-core
-    - ipython
     - language-pack-en-base
     - libatk1.0-dev
     - libcairo2-dev
@@ -47,7 +44,7 @@
     - python-dev
     - gfortran
     - screen
-    - subversion
+    #- subversion
     - zlib1g-dev
     - tzdata
     - ntpdate
@@ -64,7 +61,9 @@
     #- redis-server
   tags:
     - debs
-    - deploy-sw-debs
+    - deploy-box-debs
+
+
 
 - name: Install tango deb requirements packages
   #apt: name={{item}} force=yes state=latest
@@ -72,20 +71,33 @@
   raw: sudo apt-get install {{item}} -y
   with_items:
     - ansible
-    - subversion
+    #- subversion
     - xauth
     - libboost-python-dev
     - build-essential
+    - software-properties-common
+  tags:
+    - tango-debs
+    - deploy-box-tango-debs
+
+
+- name: Install mysql packages
+  #apt: name={{item}} force=yes state=latest
+  #sudo: yes
+  raw: sudo apt-get install {{item}} -y
+  with_items:
     - software-properties-common
     - mysql-client-core-5.6
     - mysql-server-5.6
     - mysql-client-5.6
   tags:
-    - tango-debs
-    - deploy-sw-tango-debs
+    - mysql
+    - deploy-box-mysql
+
 
 - name: Install tango core packages
-  apt: name={{item}} force=yes state=latest
+  #apt: name={{item}} force=yes state=latest
+  raw: sudo apt-get install {{item}} -y
   with_items:
     - tango-db
     - tango-common
@@ -100,20 +112,20 @@
     - liblog4tango-dev
     - liblog4tango-doc
   tags:
-    - tango-core
-    - deploy-sw-tango-core
+    - core
+    - deploy-box-core
 
 - name: Install tango pip packages
-  raw: sudo pip install {{item}} -U
+  raw: sudo pip install "{{item}}" -U
   with_items:
     - numpy
     - scipy
     - matplotlib
-    - ipython
+    - ipython<6.0
     - itango
     - fandango
   tags:
-    - tango-pip
-    - deploy-sw-tango-pip
+    - pip
+    - deploy-box-pip
 
 ...

@@ -25,10 +25,10 @@
 ###########################################
 
 - name: Install deb requirements packages
-  apt: name={{item}} force=yes state=latest
+  # apt: name={{item}} force=yes state=latest
+  raw: sudo apt-get install {{item}} -y
   with_items:
     - snmpd
-    - libmodbus5
     - aptitude
     - libffi-dev
     - build-essential
@@ -61,14 +61,15 @@
     - gawk
     - telnet
     - tcpdump
-
     #- redis-server
   tags:
-    - deploy
     - debs
+    - deploy-sw-debs
 
 - name: Install tango deb requirements packages
-  apt: name={{item}} force=yes state=latest
+  #apt: name={{item}} force=yes state=latest
+  #sudo: yes
+  raw: sudo apt-get install {{item}} -y
   with_items:
     - ansible
     - subversion
@@ -79,10 +80,9 @@
     - mysql-client-core-5.6
     - mysql-server-5.6
     - mysql-client-5.6
-    - numpy
   tags:
-    - deploy
     - tango-debs
+    - deploy-sw-tango-debs
 
 - name: Install tango core packages
   apt: name={{item}} force=yes state=latest
@@ -92,15 +92,28 @@
     - tango-starter
     - tango-test
     - tango-accesscontrol
+    - liblog4tango5v5
+    - libtango9
+    - libtango-java
     - libtango-doc
     - libtango-dev
     - liblog4tango-dev
     - liblog4tango-doc
-    - liblog4tango5v5
-    - libtango9
-    - libtango-java
   tags:
-    - deploy
     - tango-core
+    - deploy-sw-tango-core
+
+- name: Install tango pip packages
+  raw: sudo pip install {{item}} -U
+  with_items:
+    - numpy
+    - scipy
+    - matplotlib
+    - ipython
+    - itango
+    - fandango
+  tags:
+    - tango-pip
+    - deploy-sw-tango-pip
 
 ...

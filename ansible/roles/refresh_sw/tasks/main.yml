@@ -15,13 +15,11 @@
 - name: Refresh tango-simlib
   command: git -C {{software_root}}/tango-simlib pull
   tags:
-    - refresh
-    - tango-simlib
+    - refresh-sw-tango-simlib
 
 - name: Refresh levpro
   command: git -C {{software_root}}/levpro pull
   tags:
-    - refresh
-    - levpro
+    - refresh-sw-levpro
 
 ...

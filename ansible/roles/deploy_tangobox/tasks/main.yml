@@ -25,10 +25,10 @@
 ###########################################
 
 - name: Install deb requirements packages
-  apt: name={{item}} force=yes state=latest
+  # apt: name={{item}} force=yes state=latest
+  raw: sudo apt-get install {{item}} -y
   with_items:
     - snmpd
-    - libmodbus5
     - aptitude
     - libffi-dev
     - build-essential
@@ -43,8 +43,8 @@
     - libhdf5-serial-dev
     - libpng12-dev
     - libpq-dev
-    - python-cairo-dev
-    - python-dev
+    #- python-cairo-dev
+    #- python-dev
     - gfortran
     - screen
     - subversion
@@ -61,11 +61,11 @@
     - gawk
     - telnet
     - tcpdump
-
     #- redis-server
   tags:
     - deploy
     - debs
+    - deploy_debs
 
 - name: Install tango deb requirements packages
   apt: name={{item}} force=yes state=latest
@@ -82,7 +82,8 @@
     - numpy
   tags:
     - deploy
-    - tango-debs
+    - tango_debs
+    - deploy_tango_debs
 
 - name: Install tango core packages
   apt: name={{item}} force=yes state=latest
@@ -101,6 +102,7 @@
     - libtango-java
   tags:
     - deploy
-    - tango-core
+    - tango_core
+    - deploy_tango_core
 
 ...

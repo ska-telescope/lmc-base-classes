@@ -15,14 +15,12 @@
 - name: Install tango-simlib
   command: sudo pip install {{software_root}}/tango-simlib -U --no-deps
   tags:
-    - install
-    - tango-simlib
+    - install-sw-tango-simlib
 
 - name: Install levpro
   command: sudo pip install {{software_root}}/levpro -U --no-deps
   tags:
-    - install
-    - levpro
+    - install-sw-levpro
 
 - name: Install skabase
   command: sudo pip install {{software_root}}/levpro/skabase/{{item}} -U --no-deps
@@ -33,13 +31,11 @@
     - SKASubarray
     - SKACapability
   tags:
-    - install
-    - skabase
+    - install-sw-skabase
 
 - name: Install refelt
   command: sudo pip install {{software_root}}/levpro/refelt -U --no-deps
   tags:
-    - install
-    - refelt
+    - install-sw-refelt
 
 ...

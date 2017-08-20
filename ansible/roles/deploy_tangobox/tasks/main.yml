@@ -105,6 +105,7 @@
     - tango-starter
     - tango-test
     - tango-accesscontrol
+    - python-pytango
     #- liblog4tango5v5
     #- libtango9
     #- libtango-java

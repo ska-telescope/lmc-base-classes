@@ -3,18 +3,35 @@ Notes for LEvPRo deployment can be found in:
 [LEvPro Deployment Notes](https://docs.google.com/document/d/12f495FEMOi0g3bJjoZL3icZaCCr7iSjTY3jToFqA2Ns/edit#)
 
 ## play-task - A utility to run a single specific task
-To run a specific task (based on ROLE tags and TASK IDs desribed in NOTES below)
+(based on ROLE tags and TASK IDs desribed in NOTES below)
+
+To run a full role (use the ROLE name with underscores)
 ```
-. play-task.sh install-sw-skabase
+. play-task.sh install_sw
+or
+. play-task.sh refresh_sw
+```
+
+To run a specific task (use ROLE tags plus TASK IDs with dashes)
+```
+. play-task.sh install-sw skabase
+or
+. play-task.sh deploy-box start-tango
 ```
 
 ### To deploy SW on local: # Git clone if not available, else git pull
 ```
+. play-task.sh deploy_sw
+or
 ansible-playbook -i hosts site.yml --limit local --tags "deploy_sw"
 ```
 
 ### To refresh SW on local: # Git pull
 ```
+. play-task.sh refresh_sw
+. play-task.sh refresh-sw levpro
+. play-task.sh refresh-sw tango-simlib
+or
 ansible-playbook -i hosts site.yml --limit local --tags "refresh_sw"
 ansible-playbook -i hosts site.yml --limit local --tags "refresh-sw-levpro"
 ansible-playbook -i hosts site.yml --limit local --tags "refresh-sw-tango-simlib"
@@ -22,6 +39,11 @@ ansible-playbook -i hosts site.yml --limit local --tags "refresh-sw-tango-simlib
 
 ### To install SW on local: # sudo pip install
 ```
+. play-task.sh install_sw
+. play-task.sh install-sw levpro
+. play-task.sh install-sw skabase
+. play-task.sh install-sw refelt
+or
 ansible-playbook -i hosts site.yml --limit local --tags "install_sw" # all
 ansible-playbook -i hosts site.yml --limit local --tags "install-sw-levpro"
 ansible-playbook -i hosts site.yml --limit local --tags "install-sw-skabase"

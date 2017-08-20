@@ -17,8 +17,9 @@
     update_cache=yes
     cache_valid_time=3600
 
-- name: upgrade apt packages
-  apt: upgrade=yes
+#- name: upgrade apt packages
+#  apt:
+#    upgrade=yes
 
 ###########################################
 
@@ -112,8 +113,27 @@
     #- liblog4tango-dev
     #- liblog4tango-doc
   tags:
-    - core
     - deploy-box-core
+
+
+#- name: Install tango core extra
+#  #apt: name={{item}} force=yes state=latest
+#  raw: sudo add-apt-repository 'deb http://ppa.launchpad.net/lmc-cam-ska/tango/ubuntu trusty main'
+#  raw: sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 5AD0CC81421C3A8B   
+#  raw: sudo add-apt-repository 'deb http://ppa.launchpad.net/tango-controls/core/ubuntu precise main'
+#  raw: sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys A8780D2D6B2E9D50
+#  raw: sudo apt-get install {{item}} -y
+#  with_items:
+#    - liblog4tango5v5
+#    - libtango9
+#    - libtango-java
+#    - libtango-doc
+#    - libtango-dev
+#    - liblog4tango-dev
+#    - liblog4tango-doc
+#  tags:
+#    - core-extra
+#    - deploy-box-core-extra
 
 - name: Install tango pip packages
   raw: sudo pip install "{{item}}" -U
@@ -122,10 +142,33 @@
     - scipy
     - matplotlib
     - ipython<6.0
-    - itango
     - fandango
+    - tango-admin
   tags:
-    - pip
     - deploy-box-pip
+
+- name: Install itango pip packages - no-deps
+  raw: sudo pip install "{{item}}" -U --no-deps
+  # USe no-deps as it was trying to install IPython > 6.0
+  # which is not compatible with Python 2.6/2.7
+  with_items:
+    - itango
+  tags:
+    - deploy-box-itango
+
+
+
+# Additionnaly the tango password is only accessible with sudo
+#- name: ensure that db user is configured in mysql
+#  mysql_user: name={{ tango_mysql_user }} password={{ tango_mysql_password }} priv="tango.*:ALL" state=present
+#  mysql_user: name={{ tango_mysql_user }} host=% password={{ tango_mysql_password }} priv="tango.*:ALL" state=present
+#
+#- name: ensure the Tango Database to start with the good mysql credential
+#  template: src=tango-db dest=/etc/sysconfig/tango-db owner=root group=root mode=0600
+
+- name: ensure that tangodb is running
+  service: name=tango-db state=started
+  tags:
+    - deploy-box-start-tango
 
 ...

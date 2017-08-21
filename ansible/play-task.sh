@@ -1,6 +1,6 @@
 #!/bin/sh
 
-# e.g. . play-task.sh roletag taskid
+# e.g. ./play-task.sh roletag taskid
 if [ -z $1 ]; then
   echo "You have to specify a roletag, and optional task-id"
   cmd="echo The available task tags are:; ansible-playbook -i hosts site.yml --list-tags"

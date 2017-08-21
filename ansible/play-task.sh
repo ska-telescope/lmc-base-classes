@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 # e.g. ./play-task.sh roletag taskid
 if [ -z $1 ]; then

@@ -7,30 +7,30 @@ Notes for LEvPRo deployment can be found in:
 
 To run a full role (use the ROLE name with underscores)
 ```
-. play-task.sh install_sw
+./play-task.sh install_sw
 or
-. play-task.sh refresh_sw
+./play-task.sh refresh_sw
 ```
 
 To run a specific task (use ROLE tags plus TASK IDs with dashes)
 ```
-. play-task.sh install-sw skabase
+./play-task.sh install-sw skabase
 or
-. play-task.sh deploy-box start-tango
+./play-task.sh deploy-box start-tango
 ```
 
 ### To deploy SW on local: # Git clone if not available, else git pull
 ```
-. play-task.sh deploy_sw
+./play-task.sh deploy_sw
 or
 ansible-playbook -i hosts site.yml --limit local --tags "deploy_sw"
 ```
 
 ### To refresh SW on local: # Git pull
 ```
-. play-task.sh refresh_sw
-. play-task.sh refresh-sw levpro
-. play-task.sh refresh-sw tango-simlib
+./play-task.sh refresh_sw
+./play-task.sh refresh-sw levpro
+./play-task.sh refresh-sw tango-simlib
 or
 ansible-playbook -i hosts site.yml --limit local --tags "refresh_sw"
 ansible-playbook -i hosts site.yml --limit local --tags "refresh-sw-levpro"
@@ -39,10 +39,10 @@ ansible-playbook -i hosts site.yml --limit local --tags "refresh-sw-tango-simlib
 
 ### To install SW on local: # sudo pip install
 ```
-. play-task.sh install_sw
-. play-task.sh install-sw levpro
-. play-task.sh install-sw skabase
-. play-task.sh install-sw refelt
+./play-task.sh install_sw
+./play-task.sh install-sw levpro
+./play-task.sh install-sw skabase
+./play-task.sh install-sw refelt
 or
 ansible-playbook -i hosts site.yml --limit local --tags "install_sw" # all
 ansible-playbook -i hosts site.yml --limit local --tags "install-sw-levpro"
@@ -100,7 +100,7 @@ To execute a specific task the --tags with the dashes e.g.
 ```
 Format is "<role-tag>-<task-addition>" e.g. install-sw-refelt
 ```
-    {}-{}".format(role_tag,task_id).replace("_","-").lower()
+    "{}-{}".format(role_tag,task_id).replace("_","-").lower()
 ```
 
 ### Current TASK ids:

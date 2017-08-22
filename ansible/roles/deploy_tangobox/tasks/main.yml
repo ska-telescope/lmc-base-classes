@@ -106,7 +106,7 @@
     - deploy-box-mysql-installed
 
 - name: Install mysql packages
-  apt: "name={{ item }} state=installed"
+  apt: name={{item}} state=installed
   #ignore_errors: yes
   when: mysql_installed.stat.exists == false
   with_items:
@@ -119,8 +119,7 @@
     - deploy-box-mysql
 
 - name: Install tango core packages
-  #apt: name={{item}} force=yes state=latest
-  raw: sudo apt-get install {{item}} -y
+  apt: name={{item}} force=yes state=latest
   with_items:
     - tango-db
     - tango-common
@@ -189,32 +188,33 @@
 
 
 #################################
-# Pip install tango pip packages
+# Pip install tango packages
 #################################
 
-- name: Install tango pip packages
-  raw: sudo pip install "{{item}}" -U
+- name: Pip install tango packages
+  pip: name={{item}}
+  #become_user: sudo
   with_items:
     - numpy
     - scipy
     - matplotlib
     - ipython<6.0
     - fandango
-    - tango-admin
-    - python-pytango
+    - PyTango
   tags:
     - deploy-box-pip
-
 
 #################################
 # Pip install itango separately
 #################################
 
-- name: Install itango pip packages - no-deps
-  raw: sudo pip install "{{item}}" -U --no-deps
-  # USe no-deps as it was trying to install IPython > 6.0
+- name: Install itango and tango-admin pip packages - no-deps
+  # Use no-deps as it was trying to install IPython > 6.0
   # which is not compatible with Python 2.6/2.7
+  pip: name={{ item }} extra_args="-U --no-deps"
+  #become_user: sudo
   with_items:
+    - tango-admin
     - itango
   tags:
     - deploy-box-pip

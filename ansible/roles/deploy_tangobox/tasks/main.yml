@@ -21,11 +21,13 @@
 #  apt:
 #    upgrade=yes
 
-###########################################
+
+#################################
+# Install deb packages
+#################################
 
 - name: Install deb requirements packages
-  # apt: name={{item}} force=yes state=latest
-  raw: sudo apt-get install {{item}} -y
+  apt: name={{item}} force=yes state=latest
   with_items:
     #- snmpd
     - aptitude
@@ -65,11 +67,12 @@
     - deploy-box-debs
 
 
+#################################
+# Install tango deb packages
+#################################
 
 - name: Install tango deb requirements packages
-  #apt: name={{item}} force=yes state=latest
-  #sudo: yes
-  raw: sudo apt-get install {{item}} -y
+  apt: name={{item}} force=yes state=latest
   with_items:
     - ansible
     #- subversion
@@ -82,10 +85,30 @@
     - deploy-box-tango-debs
 
 
+#################################
+# Install mysql
+#################################
+
+- name: Check if MySQL is already installed.
+  stat: path="/etc/init.d/mysql"
+  register: mysql_installed
+  tags:
+    - mysql
+    - deploy-box-mysql
+    - deploy-box-mysql-installed
+
+- name: Update apt cache if MySQL is not yet installed.
+  apt: update_cache=yes cache_valid_time=3600
+  when: mysql_installed.stat.exists == false
+  tags:
+    - mysql
+    - deploy-box-mysql
+    - deploy-box-mysql-installed
+
 - name: Install mysql packages
-  #apt: name={{item}} force=yes state=latest
-  #sudo: yes
-  raw: sudo apt-get install {{item}} -y
+  apt: "name={{ item }} state=installed"
+  #ignore_errors: yes
+  when: mysql_installed.stat.exists == false
   with_items:
     - software-properties-common
     - mysql-client-core-5.6
@@ -94,7 +117,6 @@
   tags:
     - mysql
     - deploy-box-mysql
-
 
 - name: Install tango core packages
   #apt: name={{item}} force=yes state=latest
@@ -105,7 +127,6 @@
     - tango-starter
     - tango-test
     - tango-accesscontrol
-    - python-pytango
     #- liblog4tango5v5
     #- libtango9
     #- libtango-java
@@ -117,24 +138,59 @@
     - deploy-box-core
 
 
-#- name: Install tango core extra
-#  #apt: name={{item}} force=yes state=latest
-#  raw: sudo add-apt-repository 'deb http://ppa.launchpad.net/lmc-cam-ska/tango/ubuntu trusty main'
-#  raw: sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 5AD0CC81421C3A8B   
-#  raw: sudo add-apt-repository 'deb http://ppa.launchpad.net/tango-controls/core/ubuntu precise main'
-#  raw: sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys A8780D2D6B2E9D50
-#  raw: sudo apt-get install {{item}} -y
-#  with_items:
-#    - liblog4tango5v5
-#    - libtango9
-#    - libtango-java
-#    - libtango-doc
-#    - libtango-dev
-#    - liblog4tango-dev
-#    - liblog4tango-doc
+#################################
+# Install core lib debs
+#################################
+
+- apt_key:
+    id: 5AD0CC81421C3A8B
+    keyserver: keyserver.ubuntu.com
+  tags:
+    - core-libs
+    - deploy-box-core-libs
+
+- apt_repository:
+    repo: deb http://ppa.launchpad.net/lmc-cam-ska/tango/ubuntu trusty main
+    state: present
+  tags:
+    - core-libs
+    - deploy-box-core-libs
+    - deploy-box-core
+
+#- apt_key:
+#    id: A8780D2D6B2E9D50
+#    keyserver: keyserver.ubuntu.com
 #  tags:
-#    - core-extra
-#    - deploy-box-core-extra
+#    - core-libs
+#    - deploy-box-core-libs
+
+#- apt_repository:
+#    repo: deb http://ppa.launchpad.net/lmc-cam-ska/tango/ubuntu precise main
+#    state: present
+#  tags:
+#    - core-libs
+#    - deploy-box-core-libs
+
+- name: Install libtango core extra
+  apt:
+    name={{item}} force=yes state=latest
+  with_items:
+    - liblog4tango5v5
+    - libtango9
+    - libtango-java
+    - libtango-doc
+    - libtango-dev
+    - liblog4tango-dev
+    - liblog4tango-doc
+  tags:
+    - core-libs
+    - deploy-box-core-libs
+    - deploy-box-core
+
+
+#################################
+# Pip install tango pip packages
+#################################
 
 - name: Install tango pip packages
   raw: sudo pip install "{{item}}" -U
@@ -145,8 +201,14 @@
     - ipython<6.0
     - fandango
     - tango-admin
+    - python-pytango
   tags:
     - deploy-box-pip
+
+
+#################################
+# Pip install itango separately
+#################################
 
 - name: Install itango pip packages - no-deps
   raw: sudo pip install "{{item}}" -U --no-deps
@@ -155,17 +217,13 @@
   with_items:
     - itango
   tags:
+    - deploy-box-pip
     - deploy-box-itango
 
 
-
-# Additionnaly the tango password is only accessible with sudo
-#- name: ensure that db user is configured in mysql
-#  mysql_user: name={{ tango_mysql_user }} password={{ tango_mysql_password }} priv="tango.*:ALL" state=present
-#  mysql_user: name={{ tango_mysql_user }} host=% password={{ tango_mysql_password }} priv="tango.*:ALL" state=present
-#
-#- name: ensure the Tango Database to start with the good mysql credential
-#  template: src=tango-db dest=/etc/sysconfig/tango-db owner=root group=root mode=0600
+#################################
+# Start Tango DB
+#################################
 
 - name: ensure that tangodb is running
   service: name=tango-db state=started

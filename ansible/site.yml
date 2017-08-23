@@ -33,7 +33,7 @@
 - name: all
   hosts: all
   roles:
-    - {role: 'deploy_tangobox', tags: 'deploy_tangobox'}
+    - {role: 'deploy_tangobox', tags: 'deploy_tangobox', become: yes}
     - {role: 'deploy_sw', tags: 'deploy_sw'}
     - {role: 'refresh_sw', tags: 'refresh_sw'}
     - {role: 'install_sw', tags: 'install_sw'}

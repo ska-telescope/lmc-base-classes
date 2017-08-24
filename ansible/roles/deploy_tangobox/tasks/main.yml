@@ -7,7 +7,6 @@
 - name: Print software_root directory
   debug: msg="rootdir = {{software_root}}"
 
-
 ###########################################
 ## Apt-get update and upgrade
 ###########################################
@@ -17,11 +16,6 @@
     update_cache=yes
     cache_valid_time=3600
 
-#- name: upgrade apt packages
-#  apt:
-#    upgrade=yes
-
-
 #################################
 # Install deb packages
 #################################
@@ -29,7 +23,6 @@
 - name: Install deb requirements packages
   apt: name={{item}} force=yes state=latest
   with_items:
-    #- snmpd
     - aptitude
     - libffi-dev
     - build-essential
@@ -40,14 +33,13 @@
     - libevent-dev
     - libfontconfig1-dev
     - libfreetype6-dev
-    - libhdf5-serial-dev
     - libpng12-dev
     - libpq-dev
     - python-cairo-dev
     - python-dev
+    - libboost-python-dev
     - gfortran
     - screen
-    #- subversion
     - zlib1g-dev
     - tzdata
     - ntpdate
@@ -61,29 +53,9 @@
     - gawk
     - telnet
     - tcpdump
-    #- redis-server
   tags:
     - debs
     - deploy-box-debs
-
-
-#################################
-# Install tango deb packages
-#################################
-
-- name: Install tango deb requirements packages
-  apt: name={{item}} force=yes state=latest
-  with_items:
-    - ansible
-    #- subversion
-    - xauth
-    - libboost-python-dev
-    - build-essential
-    - software-properties-common
-  tags:
-    - tango-debs
-    - deploy-box-tango-debs
-
 
 #################################
 # Install mysql
@@ -118,74 +90,64 @@
     - mysql
     - deploy-box-mysql
 
-- name: Install tango core packages
-  apt: name={{item}} force=yes state=latest
-  with_items:
-    - tango-db
-    - tango-common
-    - tango-starter
-    - tango-test
-    - tango-accesscontrol
-    #- liblog4tango5v5
-    #- libtango9
-    #- libtango-java
-    #- libtango-doc
-    #- libtango-dev
-    #- liblog4tango-dev
-    #- liblog4tango-doc
-  tags:
-    - deploy-box-core
-
-
 #################################
-# Install core lib debs
+# Install core tango debs
 #################################
 
 - apt_key:
     id: 5AD0CC81421C3A8B
     keyserver: keyserver.ubuntu.com
   tags:
-    - core-libs
-    - deploy-box-core-libs
+    - tango-core
+    - deploy-box-tango-core
 
 - apt_repository:
     repo: deb http://ppa.launchpad.net/lmc-cam-ska/tango/ubuntu trusty main
     state: present
+    update_cache: yes
   tags:
-    - core-libs
-    - deploy-box-core-libs
-    - deploy-box-core
+    - tango-core
+    - deploy-box-tango-core
 
-#- apt_key:
-#    id: A8780D2D6B2E9D50
-#    keyserver: keyserver.ubuntu.com
-#  tags:
-#    - core-libs
-#    - deploy-box-core-libs
-
-#- apt_repository:
-#    repo: deb http://ppa.launchpad.net/lmc-cam-ska/tango/ubuntu precise main
-#    state: present
-#  tags:
-#    - core-libs
-#    - deploy-box-core-libs
-
-- name: Install libtango core extra
+- name: Install tango core packages
   apt:
     name={{item}} force=yes state=latest
   with_items:
+    - tango-db
+    - tango-common
+    - tango-starter
+    - tango-test
+    - tango-accesscontrol
     - liblog4tango5v5
     - libtango9
-    - libtango-java
     - libtango-doc
     - libtango-dev
     - liblog4tango-dev
     - liblog4tango-doc
   tags:
-    - core-libs
-    - deploy-box-core-libs
-    - deploy-box-core
+    - tango-core
+    - deploy-box-tango-core
 
+###############################################
+# Install tango java tools like pogo and jive
+###############################################
+
+- name: Check if libtango-java is already installed
+  command: dpkg-query -W libtango-java
+  register: libtango_java_installed
+  failed_when: libtango_java_installed.rc > 1
+  changed_when: libtango_java_installed.rc == 1
+  tags:
+    - tango-java
+    - deploy-box-tango-java
+
+- name: Install libtango-java if not already installed
+  apt:
+    deb: https://people.debian.org/~picca/libtango-java_9.2.5a-1_all.deb
+  when: libtango_java_installed.rc == 1
+  tags:
+    - tango-java
+    - deploy-box-tango-java
 
 #################################
 # Pip install tango packages
@@ -193,15 +155,13 @@
 
 - name: Pip install tango packages
   pip: name={{item}}
-  #become_user: sudo
   with_items:
     - numpy
-    - scipy
-    - matplotlib
     - ipython<6.0
     - fandango
     - PyTango
   tags:
+    - pip
     - deploy-box-pip
 
 #################################
@@ -212,12 +172,12 @@
   # Use no-deps as it was trying to install IPython > 6.0
   # which is not compatible with Python 2.6/2.7
   pip: name={{ item }} extra_args="-U --no-deps"
-  #become_user: sudo
   with_items:
     - tango-admin
+    - six>=1.9.0  # itango requirement
     - itango
   tags:
-    - deploy-box-pip
+    - itango
     - deploy-box-itango
 
 

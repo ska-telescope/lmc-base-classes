@@ -39,7 +39,7 @@ class SKACapabilityDeviceTestCase(DeviceTestCase):
     # PROTECTED REGION ID(SKACapability.test_additionnal_import) ENABLED START #
     # PROTECTED REGION END #    //  SKACapability.test_additionnal_import
     device = SKACapability
-    properties = {'SkaLevel': '4', 'CentralLoggingTarget': '', 'ElementLoggingTarget': '', 'StorageLoggingTarget': 'localhost', 'CentralLoggingLevelDefault': '', 'ElementLoggingLevelDefault': '', 'StorageLoggingLevelStorage': '', 'MetricList': 'healthState,adminMode,controlMode', 'GroupDefinitions': '', 
+    properties = {'SkaLevel': '4', 'CentralLoggingTarget': '', 'ElementLoggingTarget': '', 'StorageLoggingTarget': 'localhost', 'CentralLoggingLevelDefault': '', 'ElementLoggingLevelDefault': '', 'StorageLoggingLevelStorage': '', 'MetricList': 'healthState,adminMode,controlMode', 'GroupDefinitions': '', 'CapType': '', 'CapID': '', 'subID': '', 
                   }
     empty = None  # Should be []
 
@@ -99,29 +99,17 @@ class SKACapabilityDeviceTestCase(DeviceTestCase):
         self.device.GetVersionInfo()
         # PROTECTED REGION END #    //  SKACapability.test_GetVersionInfo
 
-    def test_subID(self):
-        """Test for subID"""
-        # PROTECTED REGION ID(SKACapability.test_subID) ENABLED START #
-        self.device.subID
-        # PROTECTED REGION END #    //  SKACapability.test_subID
+    def test_AddComponents(self):
+        """Test for AddComponents"""
+        # PROTECTED REGION ID(SKACapability.test_AddComponents) ENABLED START #
+        self.device.AddComponents([""])
+        # PROTECTED REGION END #    //  SKACapability.test_AddComponents
 
-    def test_capID(self):
-        """Test for capID"""
-        # PROTECTED REGION ID(SKACapability.test_capID) ENABLED START #
-        self.device.capID
-        # PROTECTED REGION END #    //  SKACapability.test_capID
-
-    def test_maxInstances(self):
-        """Test for maxInstances"""
-        # PROTECTED REGION ID(SKACapability.test_maxInstances) ENABLED START #
-        self.device.maxInstances
-        # PROTECTED REGION END #    //  SKACapability.test_maxInstances
-
-    def test_availableInstances(self):
-        """Test for availableInstances"""
-        # PROTECTED REGION ID(SKACapability.test_availableInstances) ENABLED START #
-        self.device.availableInstances
-        # PROTECTED REGION END #    //  SKACapability.test_availableInstances
+    def test_RemoveComponents(self):
+        """Test for RemoveComponents"""
+        # PROTECTED REGION ID(SKACapability.test_RemoveComponents) ENABLED START #
+        self.device.RemoveComponents([""])
+        # PROTECTED REGION END #    //  SKACapability.test_RemoveComponents
 
     def test_activationTime(self):
         """Test for activationTime"""
@@ -212,6 +200,18 @@ class SKACapabilityDeviceTestCase(DeviceTestCase):
         # PROTECTED REGION ID(SKACapability.test_testMode) ENABLED START #
         self.device.testMode
         # PROTECTED REGION END #    //  SKACapability.test_testMode
+
+    def test_usedCapabilities(self):
+        """Test for usedCapabilities"""
+        # PROTECTED REGION ID(SKACapability.test_usedCapabilities) ENABLED START #
+        self.device.usedCapabilities
+        # PROTECTED REGION END #    //  SKACapability.test_usedCapabilities
+
+    def test_assignedComponents(self):
+        """Test for assignedComponents"""
+        # PROTECTED REGION ID(SKACapability.test_assignedComponents) ENABLED START #
+        self.device.assignedComponents
+        # PROTECTED REGION END #    //  SKACapability.test_assignedComponents
 
 
 # Main execution

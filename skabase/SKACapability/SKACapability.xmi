@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="ASCII"?>
 <pogoDsl:PogoSystem xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:pogoDsl="http://www.esrf.fr/tango/pogo/PogoDsl">
   <classes name="SKACapability" pogoRevision="9.5">
-    <description description="SubArray handling device" title="SKACapability" sourcePath="/Users/lvdheever/link-devl5/git/levpro/skabase/SKACapability" language="PythonHL" filestogenerate="XMI   file,Code files,Python Package,Protected Regions" license="GPL" copyright="" hasMandatoryProperty="false" hasConcreteProperty="false" hasAbstractCommand="true" hasAbstractAttribute="true">
+    <description description="SubArray handling device" title="SKACapability" sourcePath="/home/kat/svn/levpro/skabase/SKACapability" language="PythonHL" filestogenerate="XMI   file,Code files,Python Package,Protected Regions" license="GPL" copyright="" hasMandatoryProperty="true" hasConcreteProperty="true" hasAbstractCommand="true" hasAbstractAttribute="false">
       <inheritances classname="Device_Impl" sourcePath=""/>
       <inheritances classname="SKAObsDevice" sourcePath="../SKAObsDevice"/>
       <identification contact="at ska.ac.za - cam" author="cam" emailDomain="ska.ac.za" classFamily="SkaBase" siteSpecific="" platform="All Platforms" bus="Not Applicable" manufacturer="none" reference=""/>
@@ -44,6 +44,18 @@
     <deviceProperties name="GroupDefinitions" description="List of grouped devices managed by a master.  Each string in the array is a JSON &#xA;document defining the ``groupname``, ``devices`` and ``groups`` in the group.&#xA;A proxy client will be opened for each of the managed devices.&#xA;A group will be instantiated for the managed devices per group.&#xA;Each entry in the array contains a JSON defining the group, like:&#xA;[ {``groupname``: ``group1``, &#xA;    ``devices``: ``csv list of devices in group1``},&#xA;  {``groupname``: ``group2``, # a group with devices and a subgroup&#xA;    ``devices``: ``csv list of devices in group2``,&#xA;     ``groups`` : ``csv list of sub groups``},&#xA;  {``groupname``: ``group3``, &#xA;     ``devices`` : ``csv list of devices in group3``}},&#xA;  {``groupname``: ``group4``, # a group with only subgroups&#xA;    ``groups`` : ``csv list of sub groups``}}]&#xA;&#xA;e.g. for a hierarchy of racks, servers and switches&#xA;[{ ``groupname``: ``servers``, &#xA;   ``devices``: ``elt/server/1,elt/server/2,elt/server/3,elt/server/4``},&#xA;  {``groupname``: ``switches``, &#xA;    ``devices``: ``elt/switch/A,elt/switch/B``},&#xA;  {``groupname``: ``pdus``, &#xA;    ``devices``: ``elt/pdu/rackA,elt/pdu/rackB``},&#xA;  {``groupname``:``rackA``, &#xA;    ``devices``: ``elt/server/1,elt/server/2,elt/switch/A,elt/pdu/rackA``},&#xA;  {``groupname``:``rackB``,&#xA;    ``devices``: ``elt/server/3,elt/server/4,elt/switch/B,elt/pdu/rackB``},&#xA;  {``groupname``:``racks``,&#xA;     ``groups``: ``rackA,rackB``}]">
       <type xsi:type="pogoDsl:StringVectorType"/>
       <status abstract="false" inherited="true" concrete="true"/>
+    </deviceProperties>
+    <deviceProperties name="CapType" mandatory="true" description="The capability type represented by this device: E.g. for&#xA;CSP-MID it will be one of CORRELATORS; PSS-BEAMS;&#xA;PST-BEAMS; VLBI-BEAMS">
+      <type xsi:type="pogoDsl:StringType"/>
+      <status abstract="false" inherited="false" concrete="true" concreteHere="true"/>
+    </deviceProperties>
+    <deviceProperties name="CapID" mandatory="true" description="Unique identification of this capability device &lt;SubId>&lt;CapType>&#xA;e.g. Sub13PssBeams.">
+      <type xsi:type="pogoDsl:StringType"/>
+      <status abstract="false" inherited="false" concrete="true" concreteHere="true"/>
+    </deviceProperties>
+    <deviceProperties name="subID" mandatory="true" description="Subarray this Capability belongs to.">
+      <type xsi:type="pogoDsl:StringType"/>
+      <status abstract="false" inherited="false" concrete="true" concreteHere="true"/>
     </deviceProperties>
     <commands name="ObsState" description="Set the observation state" execMethod="obs_state" displayLevel="OPERATOR" polledPeriod="0">
       <argin description="">
@@ -108,45 +120,31 @@
       </argout>
       <status abstract="false" inherited="true" concrete="true"/>
     </commands>
-    <attributes name="subID" attType="Scalar" rwType="READ" displayLevel="OPERATOR" polledPeriod="0" maxX="" maxY="" allocReadMember="true" isDynamic="false">
-      <dataType xsi:type="pogoDsl:UShortType"/>
-      <changeEvent fire="false" libCheckCriteria="false"/>
-      <archiveEvent fire="false" libCheckCriteria="false"/>
-      <dataReadyEvent fire="false" libCheckCriteria="true"/>
-      <status abstract="true" inherited="false" concrete="false" concreteHere="false"/>
-      <properties description="The subarray this capability belongs to (e.g. sub01-sub16)." label="" unit="" standardUnit="" displayUnit="" format="%1d" maxValue="255" minValue="0" maxAlarm="" minAlarm="" maxWarning="" minWarning="" deltaTime="" deltaValue=""/>
-    </attributes>
-    <attributes name="capID" attType="Scalar" rwType="READ" displayLevel="OPERATOR" polledPeriod="0" maxX="" maxY="" allocReadMember="true" isDynamic="false">
-      <dataType xsi:type="pogoDsl:StringType"/>
-      <changeEvent fire="false" libCheckCriteria="false"/>
-      <archiveEvent fire="false" libCheckCriteria="false"/>
-      <dataReadyEvent fire="false" libCheckCriteria="true"/>
-      <status abstract="true" inherited="false" concrete="false" concreteHere="false"/>
-      <properties description="The actual capability ID of this instance. The format is subIDCapType&#xA;e.g sub01PssBeams, or sub02VlbiBeams" label="" unit="" standardUnit="" displayUnit="" format="%1d" maxValue="255" minValue="0" maxAlarm="" minAlarm="" maxWarning="" minWarning="" deltaTime="" deltaValue=""/>
-    </attributes>
-    <attributes name="maxInstances" attType="Scalar" rwType="READ" displayLevel="OPERATOR" polledPeriod="0" maxX="" maxY="" allocReadMember="true" isDynamic="false">
-      <dataType xsi:type="pogoDsl:UShortType"/>
-      <changeEvent fire="false" libCheckCriteria="false"/>
-      <archiveEvent fire="false" libCheckCriteria="false"/>
-      <dataReadyEvent fire="false" libCheckCriteria="true"/>
-      <status abstract="true" inherited="false" concrete="false" concreteHere="false"/>
-      <properties description="Maximum nr of instances for this capability.&#xA;e.g. 4 for CSP-MID VlbiBeams" label="" unit="" standardUnit="" displayUnit="" format="" maxValue="" minValue="" maxAlarm="" minAlarm="" maxWarning="" minWarning="" deltaTime="" deltaValue=""/>
-    </attributes>
-    <attributes name="availableInstances" attType="Scalar" rwType="READ" displayLevel="OPERATOR" polledPeriod="0" maxX="" maxY="" allocReadMember="true" isDynamic="false">
-      <dataType xsi:type="pogoDsl:UShortType"/>
-      <changeEvent fire="false" libCheckCriteria="false"/>
-      <archiveEvent fire="false" libCheckCriteria="false"/>
-      <dataReadyEvent fire="false" libCheckCriteria="true"/>
-      <status abstract="true" inherited="false" concrete="false" concreteHere="false"/>
-      <properties description="Nr of available instances for this capability." label="" unit="" standardUnit="" displayUnit="" format="" maxValue="" minValue="" maxAlarm="" minAlarm="" maxWarning="" minWarning="" deltaTime="" deltaValue=""/>
-    </attributes>
-    <attributes name="activationTime" attType="Scalar" rwType="READ" displayLevel="OPERATOR" polledPeriod="0" maxX="256" maxY="" allocReadMember="false" isDynamic="false">
+    <commands name="AddComponents" description="Add component(s) that will aid in providing the capability." execMethod="add_components" displayLevel="OPERATOR" polledPeriod="0" isDynamic="false">
+      <argin description="A list of components to add to the Capability.">
+        <type xsi:type="pogoDsl:StringArrayType"/>
+      </argin>
+      <argout description="A list of components to added to the Capability.">
+        <type xsi:type="pogoDsl:StringArrayType"/>
+      </argout>
+      <status abstract="false" inherited="false" concrete="true" concreteHere="true"/>
+    </commands>
+    <commands name="RemoveComponents" description="Removes component(s) that aid in providing the Capability." execMethod="remove_components" displayLevel="OPERATOR" polledPeriod="0" isDynamic="false">
+      <argin description="A list of component(s) to remove from the Capability.">
+        <type xsi:type="pogoDsl:StringArrayType"/>
+      </argin>
+      <argout description="A list of components removed.">
+        <type xsi:type="pogoDsl:StringArrayType"/>
+      </argout>
+      <status abstract="false" inherited="false" concrete="true" concreteHere="true"/>
+    </commands>
+    <attributes name="activationTime" attType="Scalar" rwType="READ" displayLevel="OPERATOR" polledPeriod="1000" maxX="256" maxY="" allocReadMember="true" isDynamic="false">
       <dataType xsi:type="pogoDsl:ULongType"/>
       <changeEvent fire="false" libCheckCriteria="false"/>
       <archiveEvent fire="false" libCheckCriteria="false"/>
       <dataReadyEvent fire="false" libCheckCriteria="true"/>
-      <status abstract="true" inherited="false" concrete="false" concreteHere="false"/>
-      <properties description="Unix time of activation." label="" unit="" standardUnit="" displayUnit="" format="" maxValue="" minValue="" maxAlarm="" minAlarm="" maxWarning="" minWarning="" deltaTime="" deltaValue=""/>
+      <status abstract="false" inherited="false" concrete="true" concreteHere="true"/>
+      <properties description="Unix time of activation." label="activation_time" unit="ms" standardUnit="ms" displayUnit="ms" format="" maxValue="" minValue="0" maxAlarm="" minAlarm="" maxWarning="" minWarning="" deltaTime="" deltaValue=""/>
     </attributes>
     <attributes name="obsState" attType="Scalar" rwType="READ" displayLevel="OPERATOR" polledPeriod="0" maxX="" maxY="" allocReadMember="true">
       <dataType xsi:type="pogoDsl:EnumType"/>
@@ -218,6 +216,22 @@
       <status abstract="false" inherited="true" concrete="true"/>
       <properties description="The test mode of the device. &#xA;Either no test mode (empty string) or an indication of the test mode." label="" unit="" standardUnit="" displayUnit="" format="" maxValue="" minValue="" maxAlarm="" minAlarm="" maxWarning="" minWarning="" deltaTime="" deltaValue=""/>
     </attributes>
+    <attributes name="usedCapabilities" attType="Scalar" rwType="READ" displayLevel="OPERATOR" polledPeriod="1000" maxX="" maxY="" allocReadMember="true" isDynamic="false">
+      <dataType xsi:type="pogoDsl:IntType"/>
+      <changeEvent fire="false" libCheckCriteria="false"/>
+      <archiveEvent fire="false" libCheckCriteria="false"/>
+      <dataReadyEvent fire="false" libCheckCriteria="true"/>
+      <status abstract="false" inherited="false" concrete="true" concreteHere="true"/>
+      <properties description="Number of instances of this Capability Type currently in use on this subarray." label="used_capabilities" unit="" standardUnit="" displayUnit="" format="" maxValue="" minValue="0" maxAlarm="" minAlarm="" maxWarning="" minWarning="" deltaTime="" deltaValue=""/>
+    </attributes>
+    <attributes name="assignedComponents" attType="Scalar" rwType="READ" displayLevel="OPERATOR" polledPeriod="1000" maxX="" maxY="" allocReadMember="true" isDynamic="false">
+      <dataType xsi:type="pogoDsl:StringType"/>
+      <changeEvent fire="false" libCheckCriteria="false"/>
+      <archiveEvent fire="false" libCheckCriteria="false"/>
+      <dataReadyEvent fire="false" libCheckCriteria="true"/>
+      <status abstract="false" inherited="false" concrete="true" concreteHere="true"/>
+      <properties description="A list of components used by the Capability." label="assigned_components" unit="" standardUnit="" displayUnit="" format="" maxValue="" minValue="0" maxAlarm="" minAlarm="" maxWarning="" minWarning="" deltaTime="" deltaValue=""/>
+    </attributes>
     <states name="ON" description="">
       <status abstract="false" inherited="true" concrete="true"/>
     </states>
@@ -239,6 +253,6 @@
     <states name="STANDBY" description="Equates to LOW-POWER mode.&#xA;This is the initial transition from INIT &#xA;if the device supports a low-power mode.">
       <status abstract="false" inherited="true" concrete="true"/>
     </states>
-    <preferences docHome="./doc_html" makefileHome="$(TANGO_HOME)"/>
+    <preferences docHome="./doc_html" makefileHome="/usr/share/pogo/preferences"/>
   </classes>
 </pogoDsl:PogoSystem>

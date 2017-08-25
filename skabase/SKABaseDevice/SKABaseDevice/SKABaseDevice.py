@@ -191,15 +191,15 @@ class SKABaseDevice(Device):
     )
 
     CentralLoggingLevelDefault = device_property(
-        dtype='uint16',
+        dtype='uint16', default_value=2
     )
 
     ElementLoggingLevelDefault = device_property(
-        dtype='uint16',
+        dtype='uint16', default_value=3
     )
 
     StorageLoggingLevelDefault = device_property(
-        dtype='uint16',
+        dtype='uint16', default_value=4
     )
 
     # ----------
@@ -219,25 +219,25 @@ class SKABaseDevice(Device):
     centralLoggingLevel = attribute(
         dtype='uint16',
         access=AttrWriteType.READ_WRITE,
-        doc="Current logging level to Central logging target for this device - \ninitialises to CentralLoggingLevelDefault on startup",
+        doc="Current logging level to Central logging target for this device - initialises to CentralLoggingLevelDefault on startup",
     )
 
     elementLoggingLevel = attribute(
         dtype='uint16',
         access=AttrWriteType.READ_WRITE,
-        doc="Current logging level to Element logging target for this device - \ninitialises to ElementLoggingLevelDefault on startup",
+        doc="Current logging level to Element logging target for this device - initialises to ElementLoggingLevelDefault on startup",
     )
 
     storageLoggingLevel = attribute(
         dtype='uint16',
         access=AttrWriteType.READ_WRITE,
         memorized=True,
-        doc="Current logging level to Syslog for this device - \ninitialises from  StorageLoggingLevelDefault on first execution of device.\nNeeds to be READ_WRITE To make it memorized - but writing this attribute should \ndo the same as command SetStorageLoggingLevel to ensure the targets and adjustments\nare made correctly",
+        doc="Current logging level to Syslog for this device - initialises from  StorageLoggingLevelDefault on first execution of device. Needs to be READ_WRITE To make it memorized - but writing this attribute should  do the same as command SetStorageLoggingLevel to ensure the targets and adjustments are made correctly",
     )
 
     healthState = attribute(
         dtype='DevEnum',
-        doc="The health state reported for this device. It interprets the current device condition \nand condition of all managed devices to set this. Most possibly an aggregate attribute.",
+        doc="The health state reported for this device. It interprets the current device condition  and condition of all managed devices to set this. Most possibly an aggregate attribute.",
         enum_labels=["OK", "DEGRADED", "FAILED", "UNKNOWN", ],
     )
 
@@ -245,7 +245,7 @@ class SKABaseDevice(Device):
         dtype='DevEnum',
         access=AttrWriteType.READ_WRITE,
         memorized=True,
-        doc="The admin mode reported for this device. It may interpret the current device condition \nand condition of all managed devices to set this. Most possibly an aggregate attribute.",
+        doc="The admin mode reported for this device. It may interpret the current device condition  and condition of all managed devices to set this. Most possibly an aggregate attribute.",
         enum_labels=["ON-LINE", "OFF-LINE", "MAINTENANCE", "NOT-FITTED", "RESERVED", ],
     )
 
@@ -253,7 +253,7 @@ class SKABaseDevice(Device):
         dtype='DevEnum',
         access=AttrWriteType.READ_WRITE,
         memorized=True,
-        doc="The control mode of the device. REMOTE, LOCAL\nTANGO Device accepts only from a ‘local’ client and ignores commands and queries received from TM\nor any other ‘remote’ clients. The Local clients has to release LOCAL control before REMOTE clients\ncan take control again.",
+        doc="The control mode of the device. REMOTE, LOCAL. TANGO Device accepts only from a ?local? client and ignores commands and queries received from TM or any other ?remote? clients. The Local clients has to release LOCAL control before REMOTE clients can take control again.",
         enum_labels=["REMOTE", "LOCAL", ],
     )
 
@@ -261,14 +261,14 @@ class SKABaseDevice(Device):
         dtype='bool',
         access=AttrWriteType.READ_WRITE,
         memorized=True,
-        doc="Reports the simulation mode of the device. Some devices may implement both modes,\nwhile others will have simulators that set simulationMode to True while the real\ndevices always set simulationMode to False.",
+        doc="Reports the simulation mode of the device. Some devices may implement both modes, while others will have simulators that set simulationMode to True while the real devices always set simulationMode to False.",
     )
 
     testMode = attribute(
         dtype='str',
         access=AttrWriteType.READ_WRITE,
         memorized=True,
-        doc="The test mode of the device. \nEither no test mode (empty string) or an indication of the test mode.",
+        doc="The test mode of the device.  Either no test mode (empty string) or an indication of the test mode.",
     )
 
     # ---------------
@@ -422,7 +422,7 @@ class SKABaseDevice(Device):
 
     @command(
     dtype_out=('str',), 
-    doc_out="[ name: EltTelState", 
+    doc_out="[ name: EltTelState ]", 
     )
     @DebugIt()
     def GetVersionInfo(self):

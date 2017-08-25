@@ -195,11 +195,11 @@ class SKABaseDevice(Device):
     )
 
     ElementLoggingLevelDefault = device_property(
-        dtype='uint16', default_value=2
+        dtype='uint16', default_value=3
     )
 
     StorageLoggingLevelDefault = device_property(
-        dtype='uint16', default_value=2
+        dtype='uint16', default_value=4
     )
 
     # ----------
@@ -253,7 +253,7 @@ class SKABaseDevice(Device):
         dtype='DevEnum',
         access=AttrWriteType.READ_WRITE,
         memorized=True,
-        doc="The control mode of the device. REMOTE, LOCAL\nTANGO Device accepts only from a ‘local’ client and ignores commands and queries received from TM\nor any other ‘remote’ clients. The Local clients has to release LOCAL control before REMOTE clients\ncan take control again.",
+        doc="The control mode of the device. REMOTE, LOCAL\nTANGO Device accepts only from a ?local? client and ignores commands and queries received from TM\nor any other ?remote? clients. The Local clients has to release LOCAL control before REMOTE clients\ncan take control again.",
         enum_labels=["REMOTE", "LOCAL", ],
     )
 
@@ -268,7 +268,7 @@ class SKABaseDevice(Device):
         dtype='str',
         access=AttrWriteType.READ_WRITE,
         memorized=True,
-        doc="The test mode of the device. \nEither no test mode (empty string) or an indication of the test mode.",
+        doc="The test mode of the device.  Either no test mode (empty string) or an indication of the test mode.",
     )
 
     # ---------------
@@ -422,7 +422,7 @@ class SKABaseDevice(Device):
 
     @command(
     dtype_out=('str',), 
-    doc_out="[ name: EltTelState ]",
+    doc_out="[ name: EltTelState ]", 
     )
     @DebugIt()
     def GetVersionInfo(self):

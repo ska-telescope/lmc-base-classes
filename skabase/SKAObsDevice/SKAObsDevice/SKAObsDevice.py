@@ -50,6 +50,7 @@ class SKAObsDevice(SKABaseDevice):
 
 
 
+
     # ----------
     # Attributes
     # ----------
@@ -62,7 +63,7 @@ class SKAObsDevice(SKABaseDevice):
 
     obsMode = attribute(
         dtype='DevEnum',
-        doc="Observing Mode",
+        doc="Observing Mode. More than one observing mode can be active in the same subarray at the same time.",
         enum_labels=["IDLE", "IMG_CONTINUUM", "IMG_SPECTRAL_LINE", "IMG_ZOOM", "PULSAR_SEARCH", "TRANSIENT_SEARCH_FAST", "TRANSIENT_SEARCH_SLOW", "PULSAR_TIMING", "VLBI", ],
     )
 

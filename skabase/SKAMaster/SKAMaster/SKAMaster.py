@@ -52,6 +52,10 @@ class SKAMaster(SKABaseDevice):
 
 
 
+    MaxCapabilities = device_property(
+        dtype=('str',),
+    )
+
     # ----------
     # Attributes
     # ----------
@@ -85,6 +89,12 @@ class SKAMaster(SKABaseDevice):
 
 
 
+
+    operatingState = attribute(
+        dtype='DevEnum',
+        doc="Operating state",
+        enum_labels=["STARTUP", "STANDBY-LP", "STOW", "MAINTENANCE", "STANDBY-FP", "CONFIG", "OPERATE", ],
+    )
 
     # ---------------
     # General methods
@@ -128,6 +138,11 @@ class SKAMaster(SKABaseDevice):
         # PROTECTED REGION ID(SKAMaster.elementDatabaseAddress_read) ENABLED START #
         return ''
         # PROTECTED REGION END #    //  SKAMaster.elementDatabaseAddress_read
+
+    def read_operatingState(self):
+        # PROTECTED REGION ID(SKAMaster.operatingState_read) ENABLED START #
+        return 0
+        # PROTECTED REGION END #    //  SKAMaster.operatingState_read
 
 
     # --------

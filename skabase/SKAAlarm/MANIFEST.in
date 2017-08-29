@@ -1,0 +1,9 @@
+recursive-include SKAAlarmDevice *.py
+recursive-include test *.py
+include *.rst
+include SKAAlarmDevice.xmi
+include *.txt
+graft docs
+
+global-exclude *.pyc
+global-exclude *.pyo

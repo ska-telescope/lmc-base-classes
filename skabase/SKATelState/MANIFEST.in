@@ -1,0 +1,9 @@
+recursive-include SKATelStateDevice *.py
+recursive-include test *.py
+include *.rst
+include SKATelStateDevice.xmi
+include *.txt
+graft docs
+
+global-exclude *.pyc
+global-exclude *.pyo

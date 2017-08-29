@@ -64,11 +64,18 @@ class SKASubarray(SKAObsDevice):
     # Attributes
     # ----------
 
+    activationTime = attribute(
+        dtype='uint64',
+        unit="s",
+        standard_unit="s",
+        display_unit="s",
+        doc="Unix time of activation.",
+    )
+
 
 
     capabilities = attribute(
         dtype='str',
-        label="assigned_capabilities",
         doc="The list of Capabilities assigned to the subarray",
     )
 
@@ -82,31 +89,13 @@ class SKASubarray(SKAObsDevice):
 
 
 
-    subID = attribute(
-        dtype='uint16',
-        format="%02d",
-        max_value=16,
-        min_value=1,
-        doc="The actual subarray ID of this instance.",
-    )
-
 
     usedCapabilities = attribute(
         dtype='str',
-        label="used_capabililties",
         min_value=0,
         doc="A list of capability types with no. of instances in use on this subarray; e.g.\nCorrelators:512, PssBeams:4, PstBeams:4, VlbiBeams:0.",
     )
 
-
-    activationTimec = attribute(
-        dtype='int64',
-        label="activation_time",
-        unit="ms",
-        standard_unit="ms",
-        display_unit="ms",
-        doc="The time at which the sub-array was activated.",
-    )
 
     maxCapabilities = attribute(
         dtype=('uint16',),
@@ -143,25 +132,20 @@ class SKASubarray(SKAObsDevice):
     # Attributes methods
     # ------------------
 
+    def read_activationTime(self):
+        # PROTECTED REGION ID(SKASubarray.activationTime_read) ENABLED START #
+        return 0
+        # PROTECTED REGION END #    //  SKASubarray.activationTime_read
+
     def read_capabilities(self):
         # PROTECTED REGION ID(SKASubarray.capabilities_read) ENABLED START #
         return ''
         # PROTECTED REGION END #    //  SKASubarray.capabilities_read
 
-    def read_subID(self):
-        # PROTECTED REGION ID(SKASubarray.subID_read) ENABLED START #
-        return 0
-        # PROTECTED REGION END #    //  SKASubarray.subID_read
-
     def read_usedCapabilities(self):
         # PROTECTED REGION ID(SKASubarray.usedCapabilities_read) ENABLED START #
         return ''
         # PROTECTED REGION END #    //  SKASubarray.usedCapabilities_read
-
-    def read_activationTimec(self):
-        # PROTECTED REGION ID(SKASubarray.activationTimec_read) ENABLED START #
-        return 0
-        # PROTECTED REGION END #    //  SKASubarray.activationTimec_read
 
     def read_maxCapabilities(self):
         # PROTECTED REGION ID(SKASubarray.maxCapabilities_read) ENABLED START #

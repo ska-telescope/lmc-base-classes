@@ -1,6 +1,6 @@
 ## SKACapability
 
-SubArray handling device
+Subarray handling device
 
 ## Requirement
 

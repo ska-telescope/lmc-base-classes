@@ -9,7 +9,7 @@
 
 """ SKACapability
 
-SubArray handling device
+Subarray handling device
 """
 
 # PyTango imports
@@ -31,7 +31,7 @@ __all__ = ["SKACapability", "main"]
 
 class SKACapability(SKAObsDevice):
     """
-    SubArray handling device
+    Subarray handling device
     """
     __metaclass__ = DeviceMeta
     # PROTECTED REGION ID(SKACapability.class_variable) ENABLED START #
@@ -62,7 +62,6 @@ class SKACapability(SKAObsDevice):
 
     subID = device_property(
         dtype='str',
-        mandatory=True
     )
 
     # ----------
@@ -71,11 +70,9 @@ class SKACapability(SKAObsDevice):
 
     activationTime = attribute(
         dtype='uint64',
-        label="activation_time",
-        unit="ms",
-        standard_unit="ms",
-        display_unit="ms",
-        min_value=0,
+        unit="s",
+        standard_unit="s",
+        display_unit="s",
         doc="Unix time of activation.",
     )
 
@@ -95,15 +92,12 @@ class SKACapability(SKAObsDevice):
 
     usedCapabilities = attribute(
         dtype='int',
-        label="used_capabilities",
         min_value=0,
         doc="Number of instances of this Capability Type currently in use on this subarray.",
     )
 
-    assignedComponents = attribute(
+    usedComponents = attribute(
         dtype='str',
-        label="assigned_components",
-        min_value=0,
         doc="A list of components used by the Capability.",
     )
 
@@ -140,39 +134,15 @@ class SKACapability(SKAObsDevice):
         return 0
         # PROTECTED REGION END #    //  SKACapability.usedCapabilities_read
 
-    def read_assignedComponents(self):
-        # PROTECTED REGION ID(SKACapability.assignedComponents_read) ENABLED START #
+    def read_usedComponents(self):
+        # PROTECTED REGION ID(SKACapability.usedComponents_read) ENABLED START #
         return ''
-        # PROTECTED REGION END #    //  SKACapability.assignedComponents_read
+        # PROTECTED REGION END #    //  SKACapability.usedComponents_read
 
 
     # --------
     # Commands
     # --------
-
-    @command(
-    dtype_in=('str',), 
-    doc_in="A list of components to add to the Capability.", 
-    dtype_out=('str',), 
-    doc_out="A list of components to added to the Capability.", 
-    )
-    @DebugIt()
-    def AddComponents(self, argin):
-        # PROTECTED REGION ID(SKACapability.AddComponents) ENABLED START #
-        pass
-        # PROTECTED REGION END #    //  SKACapability.AddComponents
-
-    @command(
-    dtype_in=('str',), 
-    doc_in="A list of component(s) to remove from the Capability.", 
-    dtype_out=('str',), 
-    doc_out="A list of components removed.", 
-    )
-    @DebugIt()
-    def RemoveComponents(self, argin):
-        # PROTECTED REGION ID(SKACapability.RemoveComponents) ENABLED START #
-        pass
-        # PROTECTED REGION END #    //  SKACapability.RemoveComponents
 
 # ----------
 # Run server

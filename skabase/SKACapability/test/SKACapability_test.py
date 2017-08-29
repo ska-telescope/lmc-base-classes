@@ -99,18 +99,6 @@ class SKACapabilityDeviceTestCase(DeviceTestCase):
         self.device.GetVersionInfo()
         # PROTECTED REGION END #    //  SKACapability.test_GetVersionInfo
 
-    def test_AddComponents(self):
-        """Test for AddComponents"""
-        # PROTECTED REGION ID(SKACapability.test_AddComponents) ENABLED START #
-        self.device.AddComponents([""])
-        # PROTECTED REGION END #    //  SKACapability.test_AddComponents
-
-    def test_RemoveComponents(self):
-        """Test for RemoveComponents"""
-        # PROTECTED REGION ID(SKACapability.test_RemoveComponents) ENABLED START #
-        self.device.RemoveComponents([""])
-        # PROTECTED REGION END #    //  SKACapability.test_RemoveComponents
-
     def test_activationTime(self):
         """Test for activationTime"""
         # PROTECTED REGION ID(SKACapability.test_activationTime) ENABLED START #
@@ -207,11 +195,11 @@ class SKACapabilityDeviceTestCase(DeviceTestCase):
         self.device.usedCapabilities
         # PROTECTED REGION END #    //  SKACapability.test_usedCapabilities
 
-    def test_assignedComponents(self):
-        """Test for assignedComponents"""
-        # PROTECTED REGION ID(SKACapability.test_assignedComponents) ENABLED START #
-        self.device.assignedComponents
-        # PROTECTED REGION END #    //  SKACapability.test_assignedComponents
+    def test_usedComponents(self):
+        """Test for usedComponents"""
+        # PROTECTED REGION ID(SKACapability.test_usedComponents) ENABLED START #
+        self.device.usedComponents
+        # PROTECTED REGION END #    //  SKACapability.test_usedComponents
 
 
 # Main execution

@@ -9,7 +9,7 @@
 
 """SKACapability
 
-SubArray handling device
+Subarray handling device
 """
 
 from . import release

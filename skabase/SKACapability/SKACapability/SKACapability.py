@@ -91,13 +91,14 @@ class SKACapability(SKAObsDevice):
 
 
     usedCapabilities = attribute(
-        dtype='int',
-        min_value=0,
+        dtype=('str',),
+        max_dim_x=100,
         doc="Number of instances of this Capability Type currently in use on this subarray.",
     )
 
     usedComponents = attribute(
-        dtype='str',
+        dtype=('str',),
+        max_dim_x=100,
         doc="A list of components used by the Capability.",
     )
 

@@ -74,10 +74,6 @@ class SKASubarray(SKAObsDevice):
 
 
 
-    capabilities = attribute(
-        dtype='str',
-        doc="The list of Capabilities assigned to the subarray",
-    )
 
 
 
@@ -88,13 +84,6 @@ class SKASubarray(SKAObsDevice):
 
 
 
-
-
-    usedCapabilities = attribute(
-        dtype='str',
-        min_value=0,
-        doc="A list of capability types with no. of instances in use on this subarray; e.g.\nCorrelators:512, PssBeams:4, PstBeams:4, VlbiBeams:0.",
-    )
 
 
     maxCapabilities = attribute(
@@ -107,6 +96,18 @@ class SKASubarray(SKAObsDevice):
         dtype=('uint16',),
         max_dim_x=10,
         doc="Available instances of each capability type, in the same order as the CapabilityTypes",
+    )
+
+    resources = attribute(
+        dtype=('str',),
+        max_dim_x=100,
+        doc="The list of resources assigned to the subarray.",
+    )
+
+    usedCapabilities = attribute(
+        dtype=('uint16',),
+        max_dim_x=10,
+        doc="A list of capability types with no. of instances in use on this subarray; e.g.\nCorrelators:512, PssBeams:4, PstBeams:4, VlbiBeams:0.",
     )
 
     # ---------------
@@ -137,16 +138,6 @@ class SKASubarray(SKAObsDevice):
         return 0
         # PROTECTED REGION END #    //  SKASubarray.activationTime_read
 
-    def read_capabilities(self):
-        # PROTECTED REGION ID(SKASubarray.capabilities_read) ENABLED START #
-        return ''
-        # PROTECTED REGION END #    //  SKASubarray.capabilities_read
-
-    def read_usedCapabilities(self):
-        # PROTECTED REGION ID(SKASubarray.usedCapabilities_read) ENABLED START #
-        return ''
-        # PROTECTED REGION END #    //  SKASubarray.usedCapabilities_read
-
     def read_maxCapabilities(self):
         # PROTECTED REGION ID(SKASubarray.maxCapabilities_read) ENABLED START #
         return [0]
@@ -157,55 +148,93 @@ class SKASubarray(SKAObsDevice):
         return [0]
         # PROTECTED REGION END #    //  SKASubarray.availableCapabilities_read
 
+    def read_resources(self):
+        # PROTECTED REGION ID(SKASubarray.resources_read) ENABLED START #
+        return ['']
+        # PROTECTED REGION END #    //  SKASubarray.resources_read
+
+    def read_usedCapabilities(self):
+        # PROTECTED REGION ID(SKASubarray.usedCapabilities_read) ENABLED START #
+        return ''
+        # PROTECTED REGION END #    //  SKASubarray.usedCapabilities_read
+
 
     # --------
     # Commands
     # --------
 
     @command(
-    dtype_in='str', 
-    doc_in="List of resources to initialise subarray with", 
+    dtype_in=('str',), 
+    doc_in="List of Resources to add to subarray.", 
     dtype_out=('str',), 
-    doc_out="List of resources assigned to subarray", 
+    doc_out="A list of Resources added to the subarray.", 
     )
     @DebugIt()
-    def AssignResources(self, argin):
-        # PROTECTED REGION ID(SKASubarray.AssignResources) ENABLED START #
+    def AddResources(self, argin):
+        # PROTECTED REGION ID(SKASubarray.AddResources) ENABLED START #
         return [""]
-        # PROTECTED REGION END #    //  SKASubarray.AssignResources
+        # PROTECTED REGION END #    //  SKASubarray.AddResources
 
     @command(
-    dtype_in='str', 
-    doc_in="List of Capabilities to add to subarray", 
+    dtype_in=('str',), 
+    doc_in="List of resources to remove from the subarray.", 
     dtype_out=('str',), 
+    doc_out="List of resources removed from the subarray.", 
     )
     @DebugIt()
-    def AddCapabilities(self, argin):
-        # PROTECTED REGION ID(SKASubarray.AddCapabilities) ENABLED START #
+    def RemoveResources(self, argin):
+        # PROTECTED REGION ID(SKASubarray.RemoveResources) ENABLED START #
         return [""]
-        # PROTECTED REGION END #    //  SKASubarray.AddCapabilities
-
-    @command(
-    dtype_in='str', 
-    doc_in="List of capabilities to remove from subarray", 
-    dtype_out=('str',), 
-    doc_out="List of resources removed", 
-    )
-    @DebugIt()
-    def RemoveCapabilities(self, argin):
-        # PROTECTED REGION ID(SKASubarray.RemoveCapabilities) ENABLED START #
-        return [""]
-        # PROTECTED REGION END #    //  SKASubarray.RemoveCapabilities
+        # PROTECTED REGION END #    //  SKASubarray.RemoveResources
 
     @command(
     dtype_out=('str',), 
-    doc_out="List of Capabilities removed", 
+    doc_out="List of resources removed from the subarray.", 
     )
     @DebugIt()
-    def RemoveAllCapabilities(self):
-        # PROTECTED REGION ID(SKASubarray.RemoveAllCapabilities) ENABLED START #
+    def RemoveAllResources(self):
+        # PROTECTED REGION ID(SKASubarray.RemoveAllResources) ENABLED START #
         return [""]
-        # PROTECTED REGION END #    //  SKASubarray.RemoveAllCapabilities
+        # PROTECTED REGION END #    //  SKASubarray.RemoveAllResources
+
+    @command(
+    dtype_in=('str',), 
+    doc_in="Capability type, nrInstances.", 
+    )
+    @DebugIt()
+    def InvokeCapability(self, argin):
+        # PROTECTED REGION ID(SKASubarray.InvokeCapability) ENABLED START #
+        pass
+        # PROTECTED REGION END #    //  SKASubarray.InvokeCapability
+
+    @command(
+    dtype_in=('str',), 
+    doc_in="Capability type, nrInstances", 
+    )
+    @DebugIt()
+    def RevokeCapability(self, argin):
+        # PROTECTED REGION ID(SKASubarray.RevokeCapability) ENABLED START #
+        pass
+        # PROTECTED REGION END #    //  SKASubarray.RevokeCapability
+
+    @command(
+    dtype_in=('str',), 
+    doc_in="Capability type, nrInstances", 
+    dtype_out='bool', 
+    )
+    @DebugIt()
+    def isCapabilityAchievable(self, argin):
+        # PROTECTED REGION ID(SKASubarray.isCapabilityAchievable) ENABLED START #
+        return False
+        # PROTECTED REGION END #    //  SKASubarray.isCapabilityAchievable
+
+    @command(
+    )
+    @DebugIt()
+    def RevokeAllCapabilities(self):
+        # PROTECTED REGION ID(SKASubarray.RevokeAllCapabilities) ENABLED START #
+        pass
+        # PROTECTED REGION END #    //  SKASubarray.RevokeAllCapabilities
 
 # ----------
 # Run server

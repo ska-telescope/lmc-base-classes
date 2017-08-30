@@ -121,7 +121,7 @@
       <status abstract="false" inherited="true" concrete="true"/>
     </commands>
     <attributes name="activationTime" attType="Scalar" rwType="READ" displayLevel="OPERATOR" polledPeriod="1000" maxX="" maxY="" allocReadMember="true" isDynamic="false">
-      <dataType xsi:type="pogoDsl:ULongType"/>
+      <dataType xsi:type="pogoDsl:DoubleType"/>
       <changeEvent fire="false" libCheckCriteria="false"/>
       <archiveEvent fire="false" libCheckCriteria="false"/>
       <dataReadyEvent fire="false" libCheckCriteria="true"/>

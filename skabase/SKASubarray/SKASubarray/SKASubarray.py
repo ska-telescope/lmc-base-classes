@@ -65,7 +65,7 @@ class SKASubarray(SKAObsDevice):
     # ----------
 
     activationTime = attribute(
-        dtype='uint64',
+        dtype='double',
         unit="s",
         standard_unit="s",
         display_unit="s",

@@ -16,7 +16,7 @@ To run a specific task (use ROLE tags plus TASK IDs with dashes)
 ```
 ./play-task.sh install-sw skabase
 or
-./play-task.sh deploy-box start-tango
+./play-task.sh deploy-tangobox start-tango
 ```
 
 ### To deploy SW on local: # Git clone if not available, else git pull
@@ -83,7 +83,7 @@ To execute the _full_ role use the --tags with the underscores
 Current ROLE tags:
     deploy_tangobox, deploy_sw, refresh_sw, install_sw
     Translating to TASK tags:
-    deploy-box-xxx, deploy-sw-xxx, refresh-sw-xxx, install-sw-xxx
+    deploy-tangobox-xxx, deploy-sw-xxx, refresh-sw-xxx, install-sw-xxx
 
 
 

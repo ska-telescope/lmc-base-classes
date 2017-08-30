@@ -55,7 +55,7 @@
     - tcpdump
   tags:
     - debs
-    - deploy-box-debs
+    - deploy-tangobox-debs
 
 #################################
 # Install mysql
@@ -66,16 +66,16 @@
   register: mysql_installed
   tags:
     - mysql
-    - deploy-box-mysql
-    - deploy-box-mysql-installed
+    - deploy-tangobox-mysql
+    - deploy-tangobox-mysql-installed
 
 - name: Update apt cache if MySQL is not yet installed.
   apt: update_cache=yes cache_valid_time=3600
   when: mysql_installed.stat.exists == false
   tags:
     - mysql
-    - deploy-box-mysql
-    - deploy-box-mysql-installed
+    - deploy-tangobox-mysql
+    - deploy-tangobox-mysql-installed
 
 - name: Install mysql packages
   apt: name={{item}} state=installed
@@ -88,7 +88,7 @@
     - mysql-client-5.6
   tags:
     - mysql
-    - deploy-box-mysql
+    - deploy-tangobox-mysql
 
 #################################
 # Install core tango debs
@@ -99,7 +99,7 @@
     keyserver: keyserver.ubuntu.com
   tags:
     - tango-core
-    - deploy-box-tango-core
+    - deploy-tangobox-tango-core
 
 - apt_repository:
     repo: deb http://ppa.launchpad.net/lmc-cam-ska/tango/ubuntu trusty main
@@ -107,7 +107,7 @@
     update_cache: yes
   tags:
     - tango-core
-    - deploy-box-tango-core
+    - deploy-tangobox-tango-core
 
 - name: Install tango core packages
   apt:
@@ -126,7 +126,7 @@
     - liblog4tango-doc
   tags:
     - tango-core
-    - deploy-box-tango-core
+    - deploy-tangobox-tango-core
 
 ###############################################
 # Install tango java tools like pogo and jive
@@ -147,7 +147,7 @@
   when: libtango_java_installed.rc == 1
   tags:
     - tango-java
-    - deploy-box-tango-java
+    - deploy-tangobox-tango-java
 
 #################################
 # Pip install tango packages
@@ -162,7 +162,7 @@
     - PyTango
   tags:
     - pip
-    - deploy-box-pip
+    - deploy-tangobox-pip
 
 #################################
 # Pip install itango separately
@@ -178,7 +178,7 @@
     - itango
   tags:
     - itango
-    - deploy-box-itango
+    - deploy-tangobox-itango
 
 
 #################################
@@ -188,6 +188,6 @@
 - name: ensure that tangodb is running
   service: name=tango-db state=started
   tags:
-    - deploy-box-start-tango
+    - deploy-tangobox-start-tango
 
 ...

@@ -59,6 +59,36 @@ class SKALoggerDevice(Device):
     # Commands
     # --------
 
+    @command(
+    dtype_in='int', 
+    doc_in="Central logging level", 
+    )
+    @DebugIt()
+    def SetCentralLoggingLevel(self, argin):
+        # PROTECTED REGION ID(SKALoggerDevice.SetCentralLoggingLevel) ENABLED START #
+        pass
+        # PROTECTED REGION END #    //  SKALoggerDevice.SetCentralLoggingLevel
+
+    @command(
+    dtype_in='int', 
+    doc_in="Element logging level", 
+    )
+    @DebugIt()
+    def SetElementLoggingLevel(self, argin):
+        # PROTECTED REGION ID(SKALoggerDevice.SetElementLoggingLevel) ENABLED START #
+        pass
+        # PROTECTED REGION END #    //  SKALoggerDevice.SetElementLoggingLevel
+
+    @command(
+    dtype_in='int', 
+    doc_in="Storage logging level", 
+    )
+    @DebugIt()
+    def SetStorageLoggingLevel(self, argin):
+        # PROTECTED REGION ID(SKALoggerDevice.SetStorageLoggingLevel) ENABLED START #
+        pass
+        # PROTECTED REGION END #    //  SKALoggerDevice.SetStorageLoggingLevel
+
 # ----------
 # Run server
 # ----------

@@ -23,6 +23,33 @@
       </argout>
       <status abstract="true" inherited="true" concrete="true"/>
     </commands>
+    <commands name="SetCentralLoggingLevel" description="Central logging level to Syslog logging target:&#xA;(0=OFF, 1=FATAL, 2=ERROR, 3=WARNING, 4=INFO, 5=DEBUG)" execMethod="set_central_logging_level" displayLevel="OPERATOR" polledPeriod="0" isDynamic="false">
+      <argin description="Central logging level">
+        <type xsi:type="pogoDsl:IntType"/>
+      </argin>
+      <argout description="No output arguments">
+        <type xsi:type="pogoDsl:VoidType"/>
+      </argout>
+      <status abstract="false" inherited="false" concrete="true" concreteHere="true"/>
+    </commands>
+    <commands name="SetElementLoggingLevel" description="Element logging level to Syslog logging target:&#xA;(0=OFF, 1=FATAL, 2=ERROR, 3=WARNING, 4=INFO, 5=DEBUG)" execMethod="set_element_logging_level" displayLevel="OPERATOR" polledPeriod="0" isDynamic="false">
+      <argin description="Element logging level">
+        <type xsi:type="pogoDsl:IntType"/>
+      </argin>
+      <argout description="No output arguments">
+        <type xsi:type="pogoDsl:VoidType"/>
+      </argout>
+      <status abstract="false" inherited="false" concrete="true" concreteHere="true"/>
+    </commands>
+    <commands name="SetStorageLoggingLevel" description="Element logging level to Syslog logging target:&#xA;(0=OFF, 1=FATAL, 2=ERROR, 3=WARNING, 4=INFO, 5=DEBUG)" execMethod="set_storage_logging_level" displayLevel="OPERATOR" polledPeriod="0" isDynamic="false">
+      <argin description="Storage logging level">
+        <type xsi:type="pogoDsl:IntType"/>
+      </argin>
+      <argout description="No output arguments">
+        <type xsi:type="pogoDsl:VoidType"/>
+      </argout>
+      <status abstract="false" inherited="false" concrete="true" concreteHere="true"/>
+    </commands>
     <preferences docHome="./doc_html" makefileHome="/usr/share/pogo/preferences"/>
   </classes>
 </pogoDsl:PogoSystem>

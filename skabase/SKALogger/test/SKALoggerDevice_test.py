@@ -69,6 +69,24 @@ class SKALoggerDeviceDeviceTestCase(DeviceTestCase):
         self.device.Status()
         # PROTECTED REGION END #    //  SKALoggerDevice.test_Status
 
+    def test_SetCentralLoggingLevel(self):
+        """Test for SetCentralLoggingLevel"""
+        # PROTECTED REGION ID(SKALoggerDevice.test_SetCentralLoggingLevel) ENABLED START #
+        self.device.SetCentralLoggingLevel(0)
+        # PROTECTED REGION END #    //  SKALoggerDevice.test_SetCentralLoggingLevel
+
+    def test_SetElementLoggingLevel(self):
+        """Test for SetElementLoggingLevel"""
+        # PROTECTED REGION ID(SKALoggerDevice.test_SetElementLoggingLevel) ENABLED START #
+        self.device.SetElementLoggingLevel(0)
+        # PROTECTED REGION END #    //  SKALoggerDevice.test_SetElementLoggingLevel
+
+    def test_SetStorageLoggingLevel(self):
+        """Test for SetStorageLoggingLevel"""
+        # PROTECTED REGION ID(SKALoggerDevice.test_SetStorageLoggingLevel) ENABLED START #
+        self.device.SetStorageLoggingLevel(0)
+        # PROTECTED REGION END #    //  SKALoggerDevice.test_SetStorageLoggingLevel
+
 
 # Main execution
 if __name__ == "__main__":

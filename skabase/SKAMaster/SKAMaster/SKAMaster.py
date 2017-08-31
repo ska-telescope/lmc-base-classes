@@ -52,6 +52,10 @@ class SKAMaster(SKABaseDevice):
 
 
 
+    MaxCapabilities = device_property(
+        dtype=('str',),
+    )
+
     # ----------
     # Attributes
     # ----------

@@ -39,7 +39,7 @@ class SKAMasterDeviceTestCase(DeviceTestCase):
     # PROTECTED REGION ID(SKAMaster.test_additionnal_import) ENABLED START #
     # PROTECTED REGION END #    //  SKAMaster.test_additionnal_import
     device = SKAMaster
-    properties = {'SkaLevel': '4', 'CentralLoggingTarget': '', 'ElementLoggingTarget': '', 'StorageLoggingTarget': 'localhost', 'CentralLoggingLevelDefault': '', 'ElementLoggingLevelDefault': '', 'MetricList': 'healthState,adminMode,controlMode', 'GroupDefinitions': '', 'NrSubarrays': '16', 'CapabilityTypes': '', 'StorageLoggingLevelDefault': '', 
+    properties = {'SkaLevel': '4', 'CentralLoggingTarget': '', 'ElementLoggingTarget': '', 'StorageLoggingTarget': 'localhost', 'CentralLoggingLevelDefault': '2', 'ElementLoggingLevelDefault': '3', 'MetricList': 'healthState,adminMode,controlMode', 'GroupDefinitions': '', 'NrSubarrays': '16', 'CapabilityTypes': '', 'StorageLoggingLevelDefault': '4', 'MaxCapabilities': '', 
                   }
     empty = None  # Should be []
 

@@ -3,11 +3,54 @@
   <classes name="SKATelStateDevice" pogoRevision="9.5">
     <description description="A generic base device for Telescope State for SKA." title="SKATelStateDevice" sourcePath="/home/kat/svn/levpro/skabase/SKATelState" language="PythonHL" filestogenerate="XMI   file,Code files,Python Package,Protected Regions" license="GPL" copyright="" hasMandatoryProperty="false" hasConcreteProperty="true" hasAbstractCommand="false" hasAbstractAttribute="false">
       <inheritances classname="Device_Impl" sourcePath=""/>
+      <inheritances classname="SKABaseDevice" sourcePath="../SKABaseDevice"/>
       <identification contact="at ska.ac.za - cam" author="cam" emailDomain="ska.ac.za" classFamily="OtherInstruments" siteSpecific="" platform="All Platforms" bus="Not Applicable" manufacturer="SKASA" reference="SKA-SKATelStateDevice"/>
     </description>
     <deviceProperties name="TelStateConfigFile" description="JSON file with forwarded attributes to expose.">
       <type xsi:type="pogoDsl:StringType"/>
       <status abstract="false" inherited="false" concrete="true" concreteHere="true"/>
+    </deviceProperties>
+    <deviceProperties name="SkaLevel" description="Indication of importance of the device in the SKA hierarchy &#xA;to support drill-down navigation: 1..6, with 1 highest.&#xA;Default is 4, making provision for &#xA;EltMaster, EltAlarms, EltTelState = 1&#xA;SubEltMaster = 2&#xA;Subarray, Capability = 2/3&#xA;Others = 4 (or 5 or 6)">
+      <type xsi:type="pogoDsl:ShortType"/>
+      <status abstract="false" inherited="true" concrete="true"/>
+      <DefaultPropValue>4</DefaultPropValue>
+    </deviceProperties>
+    <deviceProperties name="MetricList" description="A subset of attributes we want to expose as metrics for this device.">
+      <type xsi:type="pogoDsl:StringType"/>
+      <status abstract="false" inherited="true" concrete="true"/>
+      <DefaultPropValue>healthState,adminMode,controlMode</DefaultPropValue>
+    </deviceProperties>
+    <deviceProperties name="GroupDefinitions" description="List of grouped devices managed by a master.  Each string in the array is a JSON &#xA;document defining the ``groupname``, ``devices`` and ``groups`` in the group.&#xA;A proxy client will be opened for each of the managed devices.&#xA;A group will be instantiated for the managed devices per group.&#xA;Each entry in the array contains a JSON defining the group, like:&#xA;[ {``groupname``: ``group1``, &#xA;    ``devices``: ``csv list of devices in group1``},&#xA;  {``groupname``: ``group2``, # a group with devices and a subgroup&#xA;    ``devices``: ``csv list of devices in group2``,&#xA;     ``groups`` : ``csv list of sub groups``},&#xA;  {``groupname``: ``group3``, &#xA;     ``devices`` : ``csv list of devices in group3``}},&#xA;  {``groupname``: ``group4``, # a group with only subgroups&#xA;    ``groups`` : ``csv list of sub groups``}}]&#xA;&#xA;e.g. for a hierarchy of racks, servers and switches&#xA;[{ ``groupname``: ``servers``, &#xA;   ``devices``: ``elt/server/1,elt/server/2,elt/server/3,elt/server/4``},&#xA;  {``groupname``: ``switches``, &#xA;    ``devices``: ``elt/switch/A,elt/switch/B``},&#xA;  {``groupname``: ``pdus``, &#xA;    ``devices``: ``elt/pdu/rackA,elt/pdu/rackB``},&#xA;  {``groupname``:``rackA``, &#xA;    ``devices``: ``elt/server/1,elt/server/2,elt/switch/A,elt/pdu/rackA``},&#xA;  {``groupname``:``rackB``,&#xA;    ``devices``: ``elt/server/3,elt/server/4,elt/switch/B,elt/pdu/rackB``},&#xA;  {``groupname``:``racks``,&#xA;     ``groups``: ``rackA,rackB``}]">
+      <type xsi:type="pogoDsl:StringVectorType"/>
+      <status abstract="false" inherited="true" concrete="true"/>
+    </deviceProperties>
+    <deviceProperties name="CentralLoggingTarget" description="Pre-configured logging target CentralLogger DS">
+      <type xsi:type="pogoDsl:StringType"/>
+      <status abstract="false" inherited="true" concrete="true"/>
+    </deviceProperties>
+    <deviceProperties name="ElementLoggingTarget" description="Pre-configured logging target ElementLogger DS">
+      <type xsi:type="pogoDsl:StringType"/>
+      <status abstract="false" inherited="true" concrete="true"/>
+    </deviceProperties>
+    <deviceProperties name="StorageLoggingTarget" description="Pre-configured logging target for syslog">
+      <type xsi:type="pogoDsl:StringType"/>
+      <status abstract="false" inherited="true" concrete="true"/>
+      <DefaultPropValue>localhost</DefaultPropValue>
+    </deviceProperties>
+    <deviceProperties name="CentralLoggingLevelDefault" description="Default logging level to Central logging target&#xA;(0=OFF, 1=FATAL, 2=ERROR, 3=WARNING, 4=INFO, 5=DEBUG)&#xA;&#xA;Default: 2">
+      <type xsi:type="pogoDsl:UShortType"/>
+      <status abstract="false" inherited="true" concrete="true"/>
+      <DefaultPropValue>2</DefaultPropValue>
+    </deviceProperties>
+    <deviceProperties name="ElementLoggingLevelDefault" description="Default logging level to Element logging target&#xA;(0=OFF, 1=FATAL, 2=ERROR, 3=WARNING, 4=INFO, 5=DEBUG)&#xA;&#xA;Default: 3">
+      <type xsi:type="pogoDsl:UShortType"/>
+      <status abstract="false" inherited="true" concrete="true"/>
+      <DefaultPropValue>3</DefaultPropValue>
+    </deviceProperties>
+    <deviceProperties name="StorageLoggingLevelDefault" description="Default logging level to Syslog logging target&#xA;(0=OFF, 1=FATAL, 2=ERROR, 3=WARNING, 4=INFO, 5=DEBUG)&#xA;&#xA;Default: 4">
+      <type xsi:type="pogoDsl:UShortType"/>
+      <status abstract="false" inherited="true" concrete="true"/>
+      <DefaultPropValue>4</DefaultPropValue>
     </deviceProperties>
     <commands name="State" description="This command gets the device state (stored in its device_state data member) and returns it to the caller." execMethod="dev_state" displayLevel="OPERATOR" polledPeriod="0">
       <argin description="none">
@@ -27,15 +70,116 @@
       </argout>
       <status abstract="true" inherited="true" concrete="true"/>
     </commands>
-    <commands name="Reset" description="Resets Telescope state" execMethod="reset" displayLevel="OPERATOR" polledPeriod="0" isDynamic="false">
+    <commands name="Reset" description="Refresh the device to startup state - re-loading config file" execMethod="reset" displayLevel="OPERATOR" polledPeriod="0">
       <argin description="">
         <type xsi:type="pogoDsl:VoidType"/>
       </argin>
       <argout description="">
         <type xsi:type="pogoDsl:VoidType"/>
       </argout>
-      <status abstract="false" inherited="false" concrete="true" concreteHere="true"/>
+      <status abstract="true" inherited="true" concrete="true" concreteHere="true"/>
     </commands>
+    <commands name="GetMetrics" description="Gets list of attributes marked as metrics, with their values, &#xA;for device" execMethod="get_metrics" displayLevel="OPERATOR" polledPeriod="0">
+      <argin description="">
+        <type xsi:type="pogoDsl:VoidType"/>
+      </argin>
+      <argout description="">
+        <type xsi:type="pogoDsl:StringType"/>
+      </argout>
+      <status abstract="false" inherited="true" concrete="true"/>
+    </commands>
+    <commands name="ToJson" description="Returns a JSON translation of this device.&#xA;Defaults for empty string argin gives commands and metris:&#xA;with_value:false, &#xA;with_commands:true, &#xA;with_metrics:true, &#xA;with_attributes:false" execMethod="to_json" displayLevel="OPERATOR" polledPeriod="0">
+      <argin description="Requests the JSON string representing this device, can be filtered &#xA;by with_commands, with_metrics, with_attributes and &#xA;with_value. Defaults for empty string  argin are:&#xA;{`with_value`:false, `with_commands`:true,&#xA;  `with_metrics`:true, `with_attributes`:false}">
+        <type xsi:type="pogoDsl:StringType"/>
+      </argin>
+      <argout description="The JSON string representing this device, &#xA;filtered as per the input argument flags">
+        <type xsi:type="pogoDsl:StringType"/>
+      </argout>
+      <status abstract="false" inherited="true" concrete="true"/>
+    </commands>
+    <commands name="GetVersionInfo" description="Array of version strings of all entities modelled by this device. &#xA;(One level down only)&#xA;Each string in the array lists the version info for one entity&#xA;managed by this device. &#xA;The first entry is version info for this TANGO Device itself.&#xA;The entities may be TANGO devices, or hardware LRUs or &#xA;anything else this devices manages/models.&#xA;The intention with this command is that it can provide more &#xA;detailed information than can be captured in the versionId &#xA;and buildState attributes, if necessary.&#xA;In the minimal case the GetVersionInfo will contain only the &#xA;versionId and buildState attributes of the next lower level&#xA;entities." execMethod="get_version_info" displayLevel="OPERATOR" polledPeriod="0">
+      <argin description="">
+        <type xsi:type="pogoDsl:VoidType"/>
+      </argin>
+      <argout description="[ name: EltTelState ]">
+        <type xsi:type="pogoDsl:StringArrayType"/>
+      </argout>
+      <status abstract="false" inherited="true" concrete="true"/>
+    </commands>
+    <attributes name="buildState" attType="Scalar" rwType="READ" displayLevel="OPERATOR" polledPeriod="60000" maxX="" maxY="" allocReadMember="true">
+      <dataType xsi:type="pogoDsl:StringType"/>
+      <status abstract="false" inherited="true" concrete="true"/>
+      <properties description="Build state of this device" label="" unit="" standardUnit="" displayUnit="" format="" maxValue="" minValue="" maxAlarm="" minAlarm="" maxWarning="" minWarning="" deltaTime="" deltaValue=""/>
+    </attributes>
+    <attributes name="versionId" attType="Scalar" rwType="READ" displayLevel="OPERATOR" polledPeriod="60000" maxX="" maxY="" allocReadMember="true">
+      <dataType xsi:type="pogoDsl:StringType"/>
+      <status abstract="false" inherited="true" concrete="true"/>
+      <properties description="Build state of this device" label="" unit="" standardUnit="" displayUnit="" format="" maxValue="" minValue="" maxAlarm="" minAlarm="" maxWarning="" minWarning="" deltaTime="" deltaValue=""/>
+    </attributes>
+    <attributes name="centralLoggingLevel" attType="Scalar" rwType="READ_WRITE" displayLevel="OPERATOR" polledPeriod="1000" maxX="" maxY="" allocReadMember="true">
+      <dataType xsi:type="pogoDsl:UShortType"/>
+      <status abstract="false" inherited="true" concrete="true"/>
+      <properties description="Current logging level to Central logging target for this device - &#xA;initialises to CentralLoggingLevelDefault on startup" label="" unit="" standardUnit="" displayUnit="" format="" maxValue="" minValue="" maxAlarm="" minAlarm="" maxWarning="" minWarning="" deltaTime="" deltaValue=""/>
+    </attributes>
+    <attributes name="elementLoggingLevel" attType="Scalar" rwType="READ_WRITE" displayLevel="OPERATOR" polledPeriod="1000" maxX="" maxY="" allocReadMember="true">
+      <dataType xsi:type="pogoDsl:UShortType"/>
+      <status abstract="false" inherited="true" concrete="true"/>
+      <properties description="Current logging level to Element logging target for this device - &#xA;initialises to ElementLoggingLevelDefault on startup" label="" unit="" standardUnit="" displayUnit="" format="" maxValue="" minValue="" maxAlarm="" minAlarm="" maxWarning="" minWarning="" deltaTime="" deltaValue=""/>
+    </attributes>
+    <attributes name="storageLoggingLevel" attType="Scalar" rwType="READ_WRITE" displayLevel="OPERATOR" polledPeriod="1000" maxX="" maxY="" memorized="true" allocReadMember="true">
+      <dataType xsi:type="pogoDsl:UShortType"/>
+      <status abstract="false" inherited="true" concrete="true"/>
+      <properties description="Current logging level to Syslog for this device - &#xA;initialises from  StorageLoggingLevelDefault on first execution of device.&#xA;Needs to be READ_WRITE To make it memorized - but writing this attribute should &#xA;do the same as command SetStorageLoggingLevel to ensure the targets and adjustments&#xA;are made correctly" label="" unit="" standardUnit="" displayUnit="" format="" maxValue="" minValue="" maxAlarm="" minAlarm="" maxWarning="" minWarning="" deltaTime="" deltaValue=""/>
+    </attributes>
+    <attributes name="healthState" attType="Scalar" rwType="READ" displayLevel="OPERATOR" polledPeriod="1000" maxX="" maxY="" allocReadMember="true">
+      <dataType xsi:type="pogoDsl:EnumType"/>
+      <status abstract="false" inherited="true" concrete="true"/>
+      <properties description="The health state reported for this device. It interprets the current device condition &#xA;and condition of all managed devices to set this. Most possibly an aggregate attribute." label="" unit="" standardUnit="" displayUnit="" format="" maxValue="" minValue="" maxAlarm="" minAlarm="" maxWarning="" minWarning="" deltaTime="" deltaValue=""/>
+    </attributes>
+    <attributes name="adminMode" attType="Scalar" rwType="READ_WRITE" displayLevel="OPERATOR" polledPeriod="1000" maxX="" maxY="" memorized="true" allocReadMember="true">
+      <dataType xsi:type="pogoDsl:EnumType"/>
+      <status abstract="false" inherited="true" concrete="true"/>
+      <properties description="The admin mode reported for this device. It may interpret the current device condition &#xA;and condition of all managed devices to set this. Most possibly an aggregate attribute." label="" unit="" standardUnit="" displayUnit="" format="" maxValue="" minValue="" maxAlarm="" minAlarm="" maxWarning="" minWarning="" deltaTime="" deltaValue=""/>
+    </attributes>
+    <attributes name="controlMode" attType="Scalar" rwType="READ_WRITE" displayLevel="OPERATOR" polledPeriod="1000" maxX="" maxY="" memorized="true" allocReadMember="true">
+      <dataType xsi:type="pogoDsl:EnumType"/>
+      <status abstract="false" inherited="true" concrete="true"/>
+      <properties description="The control mode of the device. REMOTE, LOCAL&#xA;TANGO Device accepts only from a &#x2018;local&#x2019; client and ignores commands and queries received from TM&#xA;or any other &#x2018;remote&#x2019; clients. The Local clients has to release LOCAL control before REMOTE clients&#xA;can take control again." label="" unit="" standardUnit="" displayUnit="" format="" maxValue="" minValue="" maxAlarm="" minAlarm="" maxWarning="" minWarning="" deltaTime="" deltaValue=""/>
+    </attributes>
+    <attributes name="simulationMode" attType="Scalar" rwType="READ_WRITE" displayLevel="OPERATOR" polledPeriod="1000" maxX="" maxY="" memorized="true" allocReadMember="true">
+      <dataType xsi:type="pogoDsl:BooleanType"/>
+      <status abstract="false" inherited="true" concrete="true"/>
+      <properties description="Reports the simulation mode of the device. Some devices may implement both modes,&#xA;while others will have simulators that set simulationMode to True while the real&#xA;devices always set simulationMode to False." label="" unit="" standardUnit="" displayUnit="" format="" maxValue="" minValue="" maxAlarm="" minAlarm="" maxWarning="" minWarning="" deltaTime="" deltaValue=""/>
+    </attributes>
+    <attributes name="testMode" attType="Scalar" rwType="READ_WRITE" displayLevel="OPERATOR" polledPeriod="1000" maxX="" maxY="" memorized="true" allocReadMember="true">
+      <dataType xsi:type="pogoDsl:StringType"/>
+      <status abstract="false" inherited="true" concrete="true"/>
+      <properties description="The test mode of the device. &#xA;Either no test mode (empty string) or an indication of the test mode." label="" unit="" standardUnit="" displayUnit="" format="" maxValue="" minValue="" maxAlarm="" minAlarm="" maxWarning="" minWarning="" deltaTime="" deltaValue=""/>
+    </attributes>
+    <states name="ON" description="This state could have been called OK or OPERATIONAL. It means that the device is in its operational state. (E.g. the power supply is giving its nominal current, th motor is ON and ready to move, the instrument is operating). This state is modified by the Attribute alarm checking of the DeviceImpl:dev_state method. i.e. if the State is ON and one attribute has its quality factor to ATTR_WARNING or ATTR_ALARM, then the State is modified to ALARM.">
+      <status abstract="false" inherited="true" concrete="true"/>
+    </states>
+    <states name="OFF" description="The device is in normal condition but is not active. E.g. the power supply main circuit breaker is open; the RF transmitter has no power etc...">
+      <status abstract="false" inherited="true" concrete="true"/>
+    </states>
+    <states name="FAULT" description="The device has a major failure that prevents it to work. For instance, A power supply has stopped due to over temperature A motor cannot move because it has fault conditions. Usually we cannot get out from this state without an intervention on the hardware or a reset command.">
+      <status abstract="false" inherited="true" concrete="true"/>
+    </states>
+    <states name="INIT" description="This state is reserved to the starting phase of the device server. It means that the software is not fully operational and that the user must wait">
+      <status abstract="false" inherited="true" concrete="true"/>
+    </states>
+    <states name="ALARM" description="ALARM - The device is operating but&#xA;at least one of the attributes is out of range. It can be linked to alarm conditions set by attribute properties or a specific case. (E.g. temperature alarm on a stepper motor, end switch pressed on a stepper motor, up water level in a tank, etc....). In alarm, usually the device does its job, but the operator has to perform an action to avoid a bigger problem that may switch the state to FAULT.">
+      <status abstract="false" inherited="true" concrete="true"/>
+    </states>
+    <states name="UNKNOWN" description="The device cannot retrieve its state. It is the case when there is a communication problem to the hardware (network cut, broken cable etc...) It could also represent an incoherent situation">
+      <status abstract="false" inherited="true" concrete="true"/>
+    </states>
+    <states name="STANDBY" description="Equates to LOW-POWER mode. This is the initial transition from INIT if the device supports a low-power mode. The device is not fully active but is ready to operate.">
+      <status abstract="false" inherited="true" concrete="true"/>
+    </states>
+    <states name="DISABLE" description="The device cannot be switched ON for an external reason. E.g. the power supply has its door open, the safety conditions are not satisfactory to allow the device to operate.">
+      <status abstract="false" inherited="true" concrete="true"/>
+    </states>
     <preferences docHome="./doc_html" makefileHome="/usr/share/pogo/preferences"/>
   </classes>
 </pogoDsl:PogoSystem>

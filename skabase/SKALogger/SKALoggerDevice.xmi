@@ -3,6 +3,7 @@
   <classes name="SKALoggerDevice" pogoRevision="9.5">
     <description description="A generic base device for Logging for SKA." title="SKALoggerDevice" sourcePath="/home/kat/svn/levpro/skabase/SKALogger" language="PythonHL" filestogenerate="XMI   file,Code files,Python Package,Protected Regions" license="GPL" copyright="" hasMandatoryProperty="false" hasConcreteProperty="false" hasAbstractCommand="false" hasAbstractAttribute="false">
       <inheritances classname="Device_Impl" sourcePath=""/>
+      <inheritances classname="SKABaseDevice" sourcePath="../skabase/SKABaseDevice"/>
       <identification contact="at ska.ac.za - cam" author="cam" emailDomain="ska.ac.za" classFamily="OtherInstruments" siteSpecific="" platform="All Platforms" bus="Not Applicable" manufacturer="SKASA" reference="SKA-SKALoggerDevice"/>
     </description>
     <commands name="State" description="This command gets the device state (stored in its device_state data member) and returns it to the caller." execMethod="dev_state" displayLevel="OPERATOR" polledPeriod="0">

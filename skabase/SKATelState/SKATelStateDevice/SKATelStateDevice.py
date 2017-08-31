@@ -17,10 +17,11 @@ import PyTango
 from PyTango import DebugIt
 from PyTango.server import run
 from PyTango.server import Device, DeviceMeta
-from PyTango.server import command
+from PyTango.server import attribute, command
 from PyTango.server import device_property
 from PyTango import AttrQuality, DispLevel, DevState
 from PyTango import AttrWriteType, PipeWriteType
+from SKABaseDevice import SKABaseDevice
 # Additional import
 # PROTECTED REGION ID(SKATelStateDevice.additionnal_import) ENABLED START #
 # PROTECTED REGION END #    //  SKATelStateDevice.additionnal_import
@@ -28,7 +29,7 @@ from PyTango import AttrWriteType, PipeWriteType
 __all__ = ["SKATelStateDevice", "main"]
 
 
-class SKATelStateDevice(Device):
+class SKATelStateDevice(SKABaseDevice):
     """
     A generic base device for Telescope State for SKA.
     """
@@ -44,12 +45,35 @@ class SKATelStateDevice(Device):
         dtype='str',
     )
 
+
+
+
+
+
+
+
+
+
+    # ----------
+    # Attributes
+    # ----------
+
+
+
+
+
+
+
+
+
+
+
     # ---------------
     # General methods
     # ---------------
 
     def init_device(self):
-        Device.init_device(self)
+        SKABaseDevice.init_device(self)
         # PROTECTED REGION ID(SKATelStateDevice.init_device) ENABLED START #
         # PROTECTED REGION END #    //  SKATelStateDevice.init_device
 
@@ -62,6 +86,10 @@ class SKATelStateDevice(Device):
         # PROTECTED REGION ID(SKATelStateDevice.delete_device) ENABLED START #
         pass
         # PROTECTED REGION END #    //  SKATelStateDevice.delete_device
+
+    # ------------------
+    # Attributes methods
+    # ------------------
 
 
     # --------

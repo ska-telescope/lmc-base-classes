@@ -3,6 +3,7 @@
   <classes name="SKAAlarmDevice" pogoRevision="9.5">
     <description description="A generic base device for Alarms for SKA." title="SKAAlarmDevice" sourcePath="/home/kat/svn/levpro/skabase/SKAAlarm" language="PythonHL" filestogenerate="XMI   file,Code files,Python Package,Protected Regions" license="GPL" copyright="" hasMandatoryProperty="false" hasConcreteProperty="true" hasAbstractCommand="false" hasAbstractAttribute="false">
       <inheritances classname="Device_Impl" sourcePath=""/>
+      <inheritances classname="SKABaseDevice" sourcePath="../skabase/SKABaseDevice"/>
       <identification contact="at ska.ac.za - cam" author="cam" emailDomain="ska.ac.za" classFamily="OtherInstruments" siteSpecific="" platform="All Platforms" bus="Not Applicable" manufacturer="SKASA" reference="SKA-SKAAlarmDevice"/>
     </description>
     <deviceProperties name="SubAlarmHandlers" description="List of sub-element AlarmHandlers:&#xA;name1:FQDN1,name2:FQDN2">

@@ -1,34 +1,5 @@
 ---
 # file: site.yml
-#- include: bootstrap_node.yml
-#- include: setup_node.yml
-#- include: deploy_tangobox.yml
-#- include: deploy_sw.yml
-#- include: refresh_sw.yml
-#- include: install_sw.yml
-#- include: configure_elt.yml
-
-
-#- name: deploy_sw
-#  hosts: all
-#  tasks:
-#    - include: roles/deploy_sw/tasks/main.yml
-
-#- name: refresh_sw
-#  hosts: all
-#  tasks:
-#    - include: roles/refresh_sw/tasks/main.yml
-
-#- name: install_sw
-#  hosts: all
-#  tasks:
-#    - include: roles/install_sw/tasks/main.yml
-
-#- name: deploy_tangobox
-#  hosts: all
-#  tasks:
-#    - include: roles/deploy_tangobox/tasks/main.yml
-
 
 - name: all
   hosts: all

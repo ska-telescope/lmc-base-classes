@@ -3,6 +3,6 @@ python_path: /usr/lib/python2.7/site-packages
 
 
 ## SOFTWARE BASE DIR
-software_root: ~/git
+software_root: /home/kat/git
 
 ...

@@ -16,7 +16,7 @@ To run a specific task (use ROLE tags plus TASK IDs with dashes)
 ```
 ./play-task.sh install-sw skabase
 or
-./play-task.sh deploy-box start-tango
+./play-task.sh deploy-tangobox start-tango
 ```
 
 ### To deploy SW on local: # Git clone if not available, else git pull
@@ -54,25 +54,25 @@ ansible-playbook -i hosts site.yml --limit local --tags "install-sw-refelt"
 ```
 fab proxmox.create_nodes_by_group:devl4,
 ssh kat@devl4.monctl.camlab.kat.ac.za
+# Add this apt repo to get recent version of ansible (>=2.3.2)
+# Needed on Ubuntu 14.04, might not be required on later releases
+sudo add-apt-repository ppa:ansible/ansible
+sudo apt-get update
 sudo apt-get install ansible
 mkdir ~/git
-git clone https://github.com/larsks/ansible-toolbox ~/git/ansible-toolbox
-cd ~/git/ansible-toolbox
-sudo pip intall . -U
 git clone https://github.com/ska-sa/levpro ~/git/levpro
 ```
 
 ### Deploy tangobox on a fresh node:
 ```
 cd ~/git/levpro/ansible
-ansible-playbook -i hosts site.yml --limit local --tags "deploy_tangobox"
-
-ansible-playbook -i hosts site.yml --limit local --tags "deploy_sw"
-ansible-playbook -i hosts site.yml --limit local --tags "refresh_sw"
-ansible-playbook -i hosts site.yml --limit local --tags "install_sw"
+./play-task.sh deploy_tangobox
+./play-task.sh deploy_sw
+./play-task.sh refresh_sw
+./play-task.sh install_sw
 ```
 
-# NOTES: 
+# NOTES:
 
 ### Note 1: Role tags
 Each role is included with a tag with underscores in site.yml
@@ -83,13 +83,13 @@ To execute the _full_ role use the --tags with the underscores
 Current ROLE tags:
     deploy_tangobox, deploy_sw, refresh_sw, install_sw
     Translating to TASK tags:
-    deploy-box-xxx, deploy-sw-xxx, refresh-sw-xxx, install-sw-xxx
+    deploy-tangobox-xxx, deploy-sw-xxx, refresh-sw-xxx, install-sw-xxx
 
 
 
 ### Note 2: Task tags:
 Each task within a role is tagged with a tagname with dashes in roles/xxx/tasks/main.yml
-The tag starting with e.g. 
+The tag starting with e.g.
 ```
     tags:
        - deploy-sw-levpro
@@ -108,4 +108,3 @@ Format is "<role-tag>-<task-addition>" e.g. install-sw-refelt
      For software:        tango-simlib, levpro, skabase, refelt
 ### Current TASK tags:
      [deploy-sw|refresh-sw|install-sw]-[tango-simlib|levpro|skabase|refelt]
-

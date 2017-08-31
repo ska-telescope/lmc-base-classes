@@ -191,15 +191,15 @@ class SKABaseDevice(Device):
     )
 
     CentralLoggingLevelDefault = device_property(
-        dtype='uint16',
+        dtype='uint16', default_value=2
     )
 
     ElementLoggingLevelDefault = device_property(
-        dtype='uint16',
+        dtype='uint16', default_value=3
     )
 
     StorageLoggingLevelDefault = device_property(
-        dtype='uint16',
+        dtype='uint16', default_value=4
     )
 
     # ----------
@@ -422,7 +422,7 @@ class SKABaseDevice(Device):
 
     @command(
     dtype_out=('str',), 
-    doc_out="[ name: EltTelState", 
+    doc_out="[ name: EltTelState ]", 
     )
     @DebugIt()
     def GetVersionInfo(self):

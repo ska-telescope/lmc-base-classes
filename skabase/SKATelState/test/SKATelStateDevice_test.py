@@ -39,7 +39,7 @@ class SKATelStateDeviceDeviceTestCase(DeviceTestCase):
     # PROTECTED REGION ID(SKATelStateDevice.test_additionnal_import) ENABLED START #
     # PROTECTED REGION END #    //  SKATelStateDevice.test_additionnal_import
     device = SKATelStateDevice
-    properties = {
+    properties = {'TelStateConfigFile': '', 
                   }
     empty = None  # Should be []
 
@@ -68,6 +68,12 @@ class SKATelStateDeviceDeviceTestCase(DeviceTestCase):
         # PROTECTED REGION ID(SKATelStateDevice.test_Status) ENABLED START #
         self.device.Status()
         # PROTECTED REGION END #    //  SKATelStateDevice.test_Status
+
+    def test_Reset(self):
+        """Test for Reset"""
+        # PROTECTED REGION ID(SKATelStateDevice.test_Reset) ENABLED START #
+        self.device.Reset()
+        # PROTECTED REGION END #    //  SKATelStateDevice.test_Reset
 
 
 # Main execution

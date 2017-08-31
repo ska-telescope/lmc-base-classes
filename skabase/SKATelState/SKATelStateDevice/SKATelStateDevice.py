@@ -18,6 +18,7 @@ from PyTango import DebugIt
 from PyTango.server import run
 from PyTango.server import Device, DeviceMeta
 from PyTango.server import command
+from PyTango.server import device_property
 from PyTango import AttrQuality, DispLevel, DevState
 from PyTango import AttrWriteType, PipeWriteType
 # Additional import
@@ -34,6 +35,14 @@ class SKATelStateDevice(Device):
     __metaclass__ = DeviceMeta
     # PROTECTED REGION ID(SKATelStateDevice.class_variable) ENABLED START #
     # PROTECTED REGION END #    //  SKATelStateDevice.class_variable
+
+    # -----------------
+    # Device Properties
+    # -----------------
+
+    TelStateConfigFile = device_property(
+        dtype='str',
+    )
 
     # ---------------
     # General methods
@@ -58,6 +67,14 @@ class SKATelStateDevice(Device):
     # --------
     # Commands
     # --------
+
+    @command(
+    )
+    @DebugIt()
+    def Reset(self):
+        # PROTECTED REGION ID(SKATelStateDevice.Reset) ENABLED START #
+        pass
+        # PROTECTED REGION END #    //  SKATelStateDevice.Reset
 
 # ----------
 # Run server

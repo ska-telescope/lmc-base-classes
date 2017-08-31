@@ -21,6 +21,7 @@ from PyTango.server import attribute, command
 from PyTango.server import device_property
 from PyTango import AttrQuality, DispLevel, DevState
 from PyTango import AttrWriteType, PipeWriteType
+from SKABaseDevice import SKABaseDevice
 # Additional import
 # PROTECTED REGION ID(SKAAlarmDevice.additionnal_import) ENABLED START #
 # PROTECTED REGION END #    //  SKAAlarmDevice.additionnal_import
@@ -28,7 +29,7 @@ from PyTango import AttrWriteType, PipeWriteType
 __all__ = ["SKAAlarmDevice", "main"]
 
 
-class SKAAlarmDevice(Device):
+class SKAAlarmDevice(SKABaseDevice):
     """
     A generic base device for Alarms for SKA.
     """
@@ -51,6 +52,15 @@ class SKAAlarmDevice(Device):
     FormulaConfDevice = device_property(
         dtype='str',
     )
+
+
+
+
+
+
+
+
+
 
     # ----------
     # Attributes
@@ -81,12 +91,22 @@ class SKAAlarmDevice(Device):
         doc="Number of returned alarms",
     )
 
+
+
+
+
+
+
+
+
+
+
     # ---------------
     # General methods
     # ---------------
 
     def init_device(self):
-        Device.init_device(self)
+        SKABaseDevice.init_device(self)
         # PROTECTED REGION ID(SKAAlarmDevice.init_device) ENABLED START #
         # PROTECTED REGION END #    //  SKAAlarmDevice.init_device
 

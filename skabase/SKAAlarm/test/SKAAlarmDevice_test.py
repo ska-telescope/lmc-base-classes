@@ -39,7 +39,7 @@ class SKAAlarmDeviceDeviceTestCase(DeviceTestCase):
     # PROTECTED REGION ID(SKAAlarmDevice.test_additionnal_import) ENABLED START #
     # PROTECTED REGION END #    //  SKAAlarmDevice.test_additionnal_import
     device = SKAAlarmDevice
-    properties = {'SubAlarmHandlers': '', 'AlarmConfigFile': '', 'FormulaConfDevice': '', 
+    properties = {'SubAlarmHandlers': '', 'AlarmConfigFile': '', 'FormulaConfDevice': '', 'SkaLevel': '4', 'MetricList': 'healthState,adminMode,controlMode', 'GroupDefinitions': '', 'CentralLoggingTarget': '', 'ElementLoggingTarget': '', 'StorageLoggingTarget': 'localhost', 'CentralLoggingLevelDefault': '2', 'ElementLoggingLevelDefault': '3', 'StorageLoggingLevelDefault': '4', 
                   }
     empty = None  # Should be []
 
@@ -99,6 +99,30 @@ class SKAAlarmDeviceDeviceTestCase(DeviceTestCase):
         self.device.GetAlertStats()
         # PROTECTED REGION END #    //  SKAAlarmDevice.test_GetAlertStats
 
+    def test_Reset(self):
+        """Test for Reset"""
+        # PROTECTED REGION ID(SKAAlarmDevice.test_Reset) ENABLED START #
+        self.device.Reset()
+        # PROTECTED REGION END #    //  SKAAlarmDevice.test_Reset
+
+    def test_GetMetrics(self):
+        """Test for GetMetrics"""
+        # PROTECTED REGION ID(SKAAlarmDevice.test_GetMetrics) ENABLED START #
+        self.device.GetMetrics()
+        # PROTECTED REGION END #    //  SKAAlarmDevice.test_GetMetrics
+
+    def test_ToJson(self):
+        """Test for ToJson"""
+        # PROTECTED REGION ID(SKAAlarmDevice.test_ToJson) ENABLED START #
+        self.device.ToJson("")
+        # PROTECTED REGION END #    //  SKAAlarmDevice.test_ToJson
+
+    def test_GetVersionInfo(self):
+        """Test for GetVersionInfo"""
+        # PROTECTED REGION ID(SKAAlarmDevice.test_GetVersionInfo) ENABLED START #
+        self.device.GetVersionInfo()
+        # PROTECTED REGION END #    //  SKAAlarmDevice.test_GetVersionInfo
+
     def test_statsNrAlerts(self):
         """Test for statsNrAlerts"""
         # PROTECTED REGION ID(SKAAlarmDevice.test_statsNrAlerts) ENABLED START #
@@ -128,6 +152,66 @@ class SKAAlarmDeviceDeviceTestCase(DeviceTestCase):
         # PROTECTED REGION ID(SKAAlarmDevice.test_statsNrRtnAlarms) ENABLED START #
         self.device.statsNrRtnAlarms
         # PROTECTED REGION END #    //  SKAAlarmDevice.test_statsNrRtnAlarms
+
+    def test_buildState(self):
+        """Test for buildState"""
+        # PROTECTED REGION ID(SKAAlarmDevice.test_buildState) ENABLED START #
+        self.device.buildState
+        # PROTECTED REGION END #    //  SKAAlarmDevice.test_buildState
+
+    def test_versionId(self):
+        """Test for versionId"""
+        # PROTECTED REGION ID(SKAAlarmDevice.test_versionId) ENABLED START #
+        self.device.versionId
+        # PROTECTED REGION END #    //  SKAAlarmDevice.test_versionId
+
+    def test_centralLoggingLevel(self):
+        """Test for centralLoggingLevel"""
+        # PROTECTED REGION ID(SKAAlarmDevice.test_centralLoggingLevel) ENABLED START #
+        self.device.centralLoggingLevel
+        # PROTECTED REGION END #    //  SKAAlarmDevice.test_centralLoggingLevel
+
+    def test_elementLoggingLevel(self):
+        """Test for elementLoggingLevel"""
+        # PROTECTED REGION ID(SKAAlarmDevice.test_elementLoggingLevel) ENABLED START #
+        self.device.elementLoggingLevel
+        # PROTECTED REGION END #    //  SKAAlarmDevice.test_elementLoggingLevel
+
+    def test_storageLoggingLevel(self):
+        """Test for storageLoggingLevel"""
+        # PROTECTED REGION ID(SKAAlarmDevice.test_storageLoggingLevel) ENABLED START #
+        self.device.storageLoggingLevel
+        # PROTECTED REGION END #    //  SKAAlarmDevice.test_storageLoggingLevel
+
+    def test_healthState(self):
+        """Test for healthState"""
+        # PROTECTED REGION ID(SKAAlarmDevice.test_healthState) ENABLED START #
+        self.device.healthState
+        # PROTECTED REGION END #    //  SKAAlarmDevice.test_healthState
+
+    def test_adminMode(self):
+        """Test for adminMode"""
+        # PROTECTED REGION ID(SKAAlarmDevice.test_adminMode) ENABLED START #
+        self.device.adminMode
+        # PROTECTED REGION END #    //  SKAAlarmDevice.test_adminMode
+
+    def test_controlMode(self):
+        """Test for controlMode"""
+        # PROTECTED REGION ID(SKAAlarmDevice.test_controlMode) ENABLED START #
+        self.device.controlMode
+        # PROTECTED REGION END #    //  SKAAlarmDevice.test_controlMode
+
+    def test_simulationMode(self):
+        """Test for simulationMode"""
+        # PROTECTED REGION ID(SKAAlarmDevice.test_simulationMode) ENABLED START #
+        self.device.simulationMode
+        # PROTECTED REGION END #    //  SKAAlarmDevice.test_simulationMode
+
+    def test_testMode(self):
+        """Test for testMode"""
+        # PROTECTED REGION ID(SKAAlarmDevice.test_testMode) ENABLED START #
+        self.device.testMode
+        # PROTECTED REGION END #    //  SKAAlarmDevice.test_testMode
 
 
 # Main execution

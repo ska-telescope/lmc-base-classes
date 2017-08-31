@@ -17,9 +17,11 @@ import PyTango
 from PyTango import DebugIt
 from PyTango.server import run
 from PyTango.server import Device, DeviceMeta
-from PyTango.server import command
+from PyTango.server import attribute, command
+from PyTango.server import device_property
 from PyTango import AttrQuality, DispLevel, DevState
 from PyTango import AttrWriteType, PipeWriteType
+from SKABaseDevice import SKABaseDevice
 # Additional import
 # PROTECTED REGION ID(SKALoggerDevice.additionnal_import) ENABLED START #
 # PROTECTED REGION END #    //  SKALoggerDevice.additionnal_import
@@ -27,7 +29,7 @@ from PyTango import AttrWriteType, PipeWriteType
 __all__ = ["SKALoggerDevice", "main"]
 
 
-class SKALoggerDevice(Device):
+class SKALoggerDevice(SKABaseDevice):
     """
     A generic base device for Logging for SKA.
     """
@@ -35,12 +37,39 @@ class SKALoggerDevice(Device):
     # PROTECTED REGION ID(SKALoggerDevice.class_variable) ENABLED START #
     # PROTECTED REGION END #    //  SKALoggerDevice.class_variable
 
+    # -----------------
+    # Device Properties
+    # -----------------
+
+
+
+
+
+
+
+
+
+
+    # ----------
+    # Attributes
+    # ----------
+
+
+
+
+
+
+
+
+
+
+
     # ---------------
     # General methods
     # ---------------
 
     def init_device(self):
-        Device.init_device(self)
+        SKABaseDevice.init_device(self)
         # PROTECTED REGION ID(SKALoggerDevice.init_device) ENABLED START #
         # PROTECTED REGION END #    //  SKALoggerDevice.init_device
 
@@ -53,6 +82,10 @@ class SKALoggerDevice(Device):
         # PROTECTED REGION ID(SKALoggerDevice.delete_device) ENABLED START #
         pass
         # PROTECTED REGION END #    //  SKALoggerDevice.delete_device
+
+    # ------------------
+    # Attributes methods
+    # ------------------
 
 
     # --------

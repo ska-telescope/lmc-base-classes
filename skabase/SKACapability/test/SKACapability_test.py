@@ -99,6 +99,12 @@ class SKACapabilityDeviceTestCase(DeviceTestCase):
         self.device.GetVersionInfo()
         # PROTECTED REGION END #    //  SKACapability.test_GetVersionInfo
 
+    def test_ConfigureInstances(self):
+        """Test for ConfigureInstances"""
+        # PROTECTED REGION ID(SKACapability.test_ConfigureInstances) ENABLED START #
+        self.device.ConfigureInstances(0)
+        # PROTECTED REGION END #    //  SKACapability.test_ConfigureInstances
+
     def test_activationTime(self):
         """Test for activationTime"""
         # PROTECTED REGION ID(SKACapability.test_activationTime) ENABLED START #
@@ -189,11 +195,11 @@ class SKACapabilityDeviceTestCase(DeviceTestCase):
         self.device.testMode
         # PROTECTED REGION END #    //  SKACapability.test_testMode
 
-    def test_usedCapabilities(self):
-        """Test for usedCapabilities"""
-        # PROTECTED REGION ID(SKACapability.test_usedCapabilities) ENABLED START #
-        self.device.usedCapabilities
-        # PROTECTED REGION END #    //  SKACapability.test_usedCapabilities
+    def test_configuredCapabilities(self):
+        """Test for configuredCapabilities"""
+        # PROTECTED REGION ID(SKACapability.test_configuredCapabilities) ENABLED START #
+        self.device.configuredCapabilities
+        # PROTECTED REGION END #    //  SKACapability.test_configuredCapabilities
 
     def test_usedComponents(self):
         """Test for usedComponents"""

@@ -53,7 +53,7 @@
       <type xsi:type="pogoDsl:StringVectorType"/>
       <status abstract="false" inherited="false" concrete="true" concreteHere="true"/>
     </deviceProperties>
-    <commands name="AddResources" description="" execMethod="add_resources" displayLevel="OPERATOR" polledPeriod="0" isDynamic="false">
+    <commands name="AssignResources" description="" execMethod="assign_resources" displayLevel="OPERATOR" polledPeriod="0" isDynamic="false">
       <argin description="List of Resources to add to subarray.">
         <type xsi:type="pogoDsl:StringArrayType"/>
       </argin>
@@ -62,7 +62,7 @@
       </argout>
       <status abstract="false" inherited="false" concrete="true" concreteHere="true"/>
     </commands>
-    <commands name="RemoveResources" description="Delta removal of assigned resources." execMethod="remove_resources" displayLevel="OPERATOR" polledPeriod="0" isDynamic="false">
+    <commands name="ReleaseResources" description="Delta removal of assigned resources." execMethod="release_resources" displayLevel="OPERATOR" polledPeriod="0" isDynamic="false">
       <argin description="List of resources to remove from the subarray.">
         <type xsi:type="pogoDsl:StringArrayType"/>
       </argin>
@@ -71,7 +71,7 @@
       </argout>
       <status abstract="false" inherited="false" concrete="true" concreteHere="true"/>
     </commands>
-    <commands name="RemoveAllResources" description="Remove all resources to tear down to an empty subarray." execMethod="remove_all_resources" displayLevel="OPERATOR" polledPeriod="0" isDynamic="false">
+    <commands name="ReleaseAllResources" description="Remove all resources to tear down to an empty subarray." execMethod="release_all_resources" displayLevel="OPERATOR" polledPeriod="0" isDynamic="false">
       <argin description="">
         <type xsi:type="pogoDsl:VoidType"/>
       </argin>
@@ -143,17 +143,8 @@
       </argout>
       <status abstract="false" inherited="true" concrete="true"/>
     </commands>
-    <commands name="InvokeCapability" description="" execMethod="invoke_capability" displayLevel="OPERATOR" polledPeriod="0" isDynamic="false">
+    <commands name="ConfigureCapability" description="" execMethod="configure_capability" displayLevel="OPERATOR" polledPeriod="0" isDynamic="false">
       <argin description="Capability type, nrInstances.">
-        <type xsi:type="pogoDsl:StringArrayType"/>
-      </argin>
-      <argout description="">
-        <type xsi:type="pogoDsl:VoidType"/>
-      </argout>
-      <status abstract="false" inherited="false" concrete="true" concreteHere="true"/>
-    </commands>
-    <commands name="RevokeCapability" description="" execMethod="revoke_capability" displayLevel="OPERATOR" polledPeriod="0" isDynamic="false">
-      <argin description="Capability type, nrInstances">
         <type xsi:type="pogoDsl:StringArrayType"/>
       </argin>
       <argout description="">
@@ -170,22 +161,13 @@
       </argout>
       <status abstract="false" inherited="false" concrete="true" concreteHere="true"/>
     </commands>
-    <commands name="RevokeAllCapabilities" description="" execMethod="revoke_all_capabilities" displayLevel="OPERATOR" polledPeriod="0" isDynamic="false">
-      <argin description="">
-        <type xsi:type="pogoDsl:VoidType"/>
-      </argin>
-      <argout description="">
-        <type xsi:type="pogoDsl:VoidType"/>
-      </argout>
-      <status abstract="false" inherited="false" concrete="true" concreteHere="true"/>
-    </commands>
     <attributes name="activationTime" attType="Scalar" rwType="READ" displayLevel="OPERATOR" polledPeriod="1000" maxX="" maxY="" allocReadMember="true" isDynamic="false">
       <dataType xsi:type="pogoDsl:DoubleType"/>
       <changeEvent fire="false" libCheckCriteria="false"/>
       <archiveEvent fire="false" libCheckCriteria="false"/>
       <dataReadyEvent fire="false" libCheckCriteria="true"/>
       <status abstract="false" inherited="false" concrete="true" concreteHere="true"/>
-      <properties description="Unix time of activation." label="" unit="s" standardUnit="s" displayUnit="s" format="" maxValue="" minValue="" maxAlarm="" minAlarm="" maxWarning="" minWarning="" deltaTime="" deltaValue=""/>
+      <properties description="Time of activation in seconds since Unix epoch." label="" unit="s" standardUnit="s" displayUnit="s" format="" maxValue="" minValue="" maxAlarm="" minAlarm="" maxWarning="" minWarning="" deltaTime="" deltaValue=""/>
     </attributes>
     <attributes name="adminMode" attType="Scalar" rwType="READ_WRITE" displayLevel="OPERATOR" polledPeriod="0" maxX="" maxY="" memorized="true" allocReadMember="true">
       <dataType xsi:type="pogoDsl:EnumType"/>
@@ -273,7 +255,7 @@
       <status abstract="false" inherited="false" concrete="true" concreteHere="true"/>
       <properties description="Available instances of each capability type, in the same order as the CapabilityTypes" label="" unit="" standardUnit="" displayUnit="" format="" maxValue="" minValue="" maxAlarm="" minAlarm="" maxWarning="" minWarning="" deltaTime="" deltaValue=""/>
     </attributes>
-    <attributes name="resources" attType="Spectrum" rwType="READ" displayLevel="OPERATOR" polledPeriod="1000" maxX="100" maxY="" allocReadMember="true" isDynamic="false">
+    <attributes name="assignedResources" attType="Spectrum" rwType="READ" displayLevel="OPERATOR" polledPeriod="1000" maxX="100" maxY="" allocReadMember="true" isDynamic="false">
       <dataType xsi:type="pogoDsl:StringType"/>
       <changeEvent fire="false" libCheckCriteria="false"/>
       <archiveEvent fire="false" libCheckCriteria="false"/>
@@ -281,8 +263,8 @@
       <status abstract="false" inherited="false" concrete="true" concreteHere="true"/>
       <properties description="The list of resources assigned to the subarray." label="" unit="" standardUnit="" displayUnit="" format="" maxValue="" minValue="" maxAlarm="" minAlarm="" maxWarning="" minWarning="" deltaTime="" deltaValue=""/>
     </attributes>
-    <attributes name="usedCapabilities" attType="Spectrum" rwType="READ" displayLevel="OPERATOR" polledPeriod="1000" maxX="10" maxY="" allocReadMember="true" isDynamic="false">
-      <dataType xsi:type="pogoDsl:UShortType"/>
+    <attributes name="configuredCapabilities" attType="Spectrum" rwType="READ" displayLevel="OPERATOR" polledPeriod="1000" maxX="10" maxY="" allocReadMember="true" isDynamic="false">
+      <dataType xsi:type="pogoDsl:StringType"/>
       <changeEvent fire="false" libCheckCriteria="false"/>
       <archiveEvent fire="false" libCheckCriteria="false"/>
       <dataReadyEvent fire="false" libCheckCriteria="true"/>

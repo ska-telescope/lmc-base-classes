@@ -73,7 +73,7 @@ class SKACapability(SKAObsDevice):
         unit="s",
         standard_unit="s",
         display_unit="s",
-        doc="Unix time of activation.",
+        doc="Time of activation in seconds since Unix epoch.",
     )
 
 
@@ -90,16 +90,15 @@ class SKACapability(SKAObsDevice):
 
 
 
-    usedCapabilities = attribute(
-        dtype=('str',),
-        max_dim_x=100,
+    configuredCapabilities = attribute(
+        dtype='uint16',
         doc="Number of instances of this Capability Type currently in use on this subarray.",
     )
 
     usedComponents = attribute(
         dtype=('str',),
         max_dim_x=100,
-        doc="A list of components used by the Capability.",
+        doc="A list of components with no. of instances in use on this Capability.",
     )
 
     # ---------------
@@ -130,10 +129,10 @@ class SKACapability(SKAObsDevice):
         return 0
         # PROTECTED REGION END #    //  SKACapability.activationTime_read
 
-    def read_usedCapabilities(self):
-        # PROTECTED REGION ID(SKACapability.usedCapabilities_read) ENABLED START #
+    def read_configuredCapabilities(self):
+        # PROTECTED REGION ID(SKACapability.configuredCapabilities_read) ENABLED START #
         return 0
-        # PROTECTED REGION END #    //  SKACapability.usedCapabilities_read
+        # PROTECTED REGION END #    //  SKACapability.configuredCapabilities_read
 
     def read_usedComponents(self):
         # PROTECTED REGION ID(SKACapability.usedComponents_read) ENABLED START #
@@ -144,6 +143,16 @@ class SKACapability(SKAObsDevice):
     # --------
     # Commands
     # --------
+
+    @command(
+    dtype_in='uint16', 
+    doc_in="The number of instances to configure for this Capability.", 
+    )
+    @DebugIt()
+    def ConfigureInstances(self, argin):
+        # PROTECTED REGION ID(SKACapability.ConfigureInstances) ENABLED START #
+        pass
+        # PROTECTED REGION END #    //  SKACapability.ConfigureInstances
 
 # ----------
 # Run server

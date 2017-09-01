@@ -120,13 +120,22 @@
       </argout>
       <status abstract="false" inherited="true" concrete="true"/>
     </commands>
+    <commands name="ConfigureInstances" description="Configures a specific number of instances for one Capibility type." execMethod="configure_instances" displayLevel="OPERATOR" polledPeriod="0" isDynamic="false">
+      <argin description="The number of instances to configure for this Capability.">
+        <type xsi:type="pogoDsl:UShortType"/>
+      </argin>
+      <argout description="">
+        <type xsi:type="pogoDsl:VoidType"/>
+      </argout>
+      <status abstract="false" inherited="false" concrete="true" concreteHere="true"/>
+    </commands>
     <attributes name="activationTime" attType="Scalar" rwType="READ" displayLevel="OPERATOR" polledPeriod="1000" maxX="" maxY="" allocReadMember="true" isDynamic="false">
       <dataType xsi:type="pogoDsl:DoubleType"/>
       <changeEvent fire="false" libCheckCriteria="false"/>
       <archiveEvent fire="false" libCheckCriteria="false"/>
       <dataReadyEvent fire="false" libCheckCriteria="true"/>
       <status abstract="false" inherited="false" concrete="true" concreteHere="true"/>
-      <properties description="Unix time of activation." label="" unit="s" standardUnit="s" displayUnit="s" format="" maxValue="" minValue="" maxAlarm="" minAlarm="" maxWarning="" minWarning="" deltaTime="" deltaValue=""/>
+      <properties description="Time of activation in seconds since Unix epoch." label="" unit="s" standardUnit="s" displayUnit="s" format="" maxValue="" minValue="" maxAlarm="" minAlarm="" maxWarning="" minWarning="" deltaTime="" deltaValue=""/>
     </attributes>
     <attributes name="obsState" attType="Scalar" rwType="READ" displayLevel="OPERATOR" polledPeriod="0" maxX="" maxY="" allocReadMember="true">
       <dataType xsi:type="pogoDsl:EnumType"/>
@@ -198,8 +207,8 @@
       <status abstract="false" inherited="true" concrete="true"/>
       <properties description="The test mode of the device. &#xA;Either no test mode (empty string) or an indication of the test mode." label="" unit="" standardUnit="" displayUnit="" format="" maxValue="" minValue="" maxAlarm="" minAlarm="" maxWarning="" minWarning="" deltaTime="" deltaValue=""/>
     </attributes>
-    <attributes name="usedCapabilities" attType="Spectrum" rwType="READ" displayLevel="OPERATOR" polledPeriod="1000" maxX="100" maxY="" allocReadMember="true" isDynamic="false">
-      <dataType xsi:type="pogoDsl:StringType"/>
+    <attributes name="configuredCapabilities" attType="Scalar" rwType="READ" displayLevel="OPERATOR" polledPeriod="1000" maxX="100" maxY="" allocReadMember="true" isDynamic="false">
+      <dataType xsi:type="pogoDsl:UShortType"/>
       <changeEvent fire="false" libCheckCriteria="false"/>
       <archiveEvent fire="false" libCheckCriteria="false"/>
       <dataReadyEvent fire="false" libCheckCriteria="true"/>
@@ -212,7 +221,7 @@
       <archiveEvent fire="false" libCheckCriteria="false"/>
       <dataReadyEvent fire="false" libCheckCriteria="true"/>
       <status abstract="false" inherited="false" concrete="true" concreteHere="true"/>
-      <properties description="A list of components used by the Capability." label="" unit="" standardUnit="" displayUnit="" format="" maxValue="" minValue="" maxAlarm="" minAlarm="" maxWarning="" minWarning="" deltaTime="" deltaValue=""/>
+      <properties description="A list of components with no. of instances in use on this Capability." label="" unit="" standardUnit="" displayUnit="" format="" maxValue="" minValue="" maxAlarm="" minAlarm="" maxWarning="" minWarning="" deltaTime="" deltaValue=""/>
     </attributes>
     <states name="ON" description="">
       <status abstract="false" inherited="true" concrete="true"/>

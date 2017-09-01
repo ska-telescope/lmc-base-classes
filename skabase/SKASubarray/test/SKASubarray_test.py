@@ -57,23 +57,23 @@ class SKASubarrayDeviceTestCase(DeviceTestCase):
         # PROTECTED REGION END #    //  SKASubarray.test_properties
         pass
 
-    def test_AddResources(self):
-        """Test for AddResources"""
-        # PROTECTED REGION ID(SKASubarray.test_AddResources) ENABLED START #
-        self.device.AddResources("")
-        # PROTECTED REGION END #    //  SKASubarray.test_AddResources
+    def test_AssignResources(self):
+        """Test for AssignResources"""
+        # PROTECTED REGION ID(SKASubarray.test_AssignResources) ENABLED START #
+        self.device.AssignResources([""])
+        # PROTECTED REGION END #    //  SKASubarray.test_AssignResources
 
-    def test_RemoveResources(self):
-        """Test for RemoveResources"""
-        # PROTECTED REGION ID(SKASubarray.test_RemoveResources) ENABLED START #
-        self.device.RemoveResources("")
-        # PROTECTED REGION END #    //  SKASubarray.test_RemoveResources
+    def test_ReleaseResources(self):
+        """Test for ReleaseResources"""
+        # PROTECTED REGION ID(SKASubarray.test_ReleaseResources) ENABLED START #
+        self.device.ReleaseResources([""])
+        # PROTECTED REGION END #    //  SKASubarray.test_ReleaseResources
 
-    def test_RemoveAllResources(self):
-        """Test for RemoveAllResources"""
-        # PROTECTED REGION ID(SKASubarray.test_RemoveAllResources) ENABLED START #
-        self.device.RemoveAllResources()
-        # PROTECTED REGION END #    //  SKASubarray.test_RemoveAllResources
+    def test_ReleaseAllResources(self):
+        """Test for ReleaseAllResources"""
+        # PROTECTED REGION ID(SKASubarray.test_ReleaseAllResources) ENABLED START #
+        self.device.ReleaseAllResources()
+        # PROTECTED REGION END #    //  SKASubarray.test_ReleaseAllResources
 
     def test_ObsState(self):
         """Test for ObsState"""
@@ -117,29 +117,17 @@ class SKASubarrayDeviceTestCase(DeviceTestCase):
         self.device.GetVersionInfo()
         # PROTECTED REGION END #    //  SKASubarray.test_GetVersionInfo
 
-    def test_InvokeCapability(self):
-        """Test for InvokeCapability"""
-        # PROTECTED REGION ID(SKASubarray.test_InvokeCapability) ENABLED START #
-        self.device.InvokeCapability([""])
-        # PROTECTED REGION END #    //  SKASubarray.test_InvokeCapability
-
-    def test_RevokeCapability(self):
-        """Test for RevokeCapability"""
-        # PROTECTED REGION ID(SKASubarray.test_RevokeCapability) ENABLED START #
-        self.device.RevokeCapability([""])
-        # PROTECTED REGION END #    //  SKASubarray.test_RevokeCapability
+    def test_ConfigureCapability(self):
+        """Test for ConfigureCapability"""
+        # PROTECTED REGION ID(SKASubarray.test_ConfigureCapability) ENABLED START #
+        self.device.ConfigureCapability([""])
+        # PROTECTED REGION END #    //  SKASubarray.test_ConfigureCapability
 
     def test_isCapabilityAchievable(self):
         """Test for isCapabilityAchievable"""
         # PROTECTED REGION ID(SKASubarray.test_isCapabilityAchievable) ENABLED START #
         self.device.isCapabilityAchievable([""])
         # PROTECTED REGION END #    //  SKASubarray.test_isCapabilityAchievable
-
-    def test_RevokeAllCapabilities(self):
-        """Test for RevokeAllCapabilities"""
-        # PROTECTED REGION ID(SKASubarray.test_RevokeAllCapabilities) ENABLED START #
-        self.device.RevokeAllCapabilities()
-        # PROTECTED REGION END #    //  SKASubarray.test_RevokeAllCapabilities
 
     def test_activationTime(self):
         """Test for activationTime"""
@@ -243,17 +231,17 @@ class SKASubarrayDeviceTestCase(DeviceTestCase):
         self.device.availableCapabilities
         # PROTECTED REGION END #    //  SKASubarray.test_availableCapabilities
 
-    def test_resources(self):
-        """Test for resources"""
-        # PROTECTED REGION ID(SKASubarray.test_resources) ENABLED START #
-        self.device.resources
-        # PROTECTED REGION END #    //  SKASubarray.test_resources
+    def test_assignedResources(self):
+        """Test for assignedResources"""
+        # PROTECTED REGION ID(SKASubarray.test_assignedResources) ENABLED START #
+        self.device.assignedResources
+        # PROTECTED REGION END #    //  SKASubarray.test_assignedResources
 
-    def test_usedCapabilities(self):
-        """Test for usedCapabilities"""
-        # PROTECTED REGION ID(SKASubarray.test_usedCapabilities) ENABLED START #
-        self.device.usedCapabilities
-        # PROTECTED REGION END #    //  SKASubarray.test_usedCapabilities
+    def test_configuredCapabilities(self):
+        """Test for configuredCapabilities"""
+        # PROTECTED REGION ID(SKASubarray.test_configuredCapabilities) ENABLED START #
+        self.device.configuredCapabilities
+        # PROTECTED REGION END #    //  SKASubarray.test_configuredCapabilities
 
 
 # Main execution

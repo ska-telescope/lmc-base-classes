@@ -1,4 +1,5 @@
 {
+    "api_version": "v1",
     "servers": [
         {
             "server_name": "RefA",

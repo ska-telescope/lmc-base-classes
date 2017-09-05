@@ -7,7 +7,7 @@
                 {
                     "class_name": "RefA",
                     "device_name": "refelt/A/1",
-                    "device_props": [
+                    "device_properties": [
                         {
                             "name": "SkaLevel",
                             "value": 4
@@ -55,7 +55,7 @@
                 {
                     "class_name": "RefB",
                     "device_name": "refelt/B/1",
-                    "device_props": [
+                    "device_properties": [
                         {
                             "name": "SkaLevel",
                             "value": 4
@@ -103,7 +103,7 @@
                 {
                     "class_name": "PDU",
                     "device_name": "pdu/1/1",
-                    "device_props": [
+                    "device_properties": [
                         {
                             "name": "SkaLevel",
                             "value": 4

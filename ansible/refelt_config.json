@@ -1,0 +1,164 @@
+{
+    "servers": [
+        {
+            "server_name": "RefA",
+            "server_instance": "refelt1",
+            "devices": [
+                {
+                    "class_name": "RefA",
+                    "device_name": "refelt/A/1",
+                    "device_props": [
+                        {
+                            "name": "SkaLevel",
+                            "value": 4
+                        },
+                        {
+                            "name": "MetricList",
+                            "value": ["healthState", "adminMode", "controlMode"]
+                        },
+                        {
+                            "name": "GroupDefinitions",
+                            "value": ""
+                        },
+                        {
+                            "name": "CentralLoggingTarget",
+                            "value": ""
+                        },
+                        {
+                            "name": "ElementLoggingTarget",
+                            "value": ""
+                        },
+                        {
+                            "name": "StorageLoggingTarget",
+                            "value": "localhost"
+                        },
+                        {
+                            "name": "CentralLoggingLevelDefault",
+                            "value": 2
+                        },
+                        {
+                            "name": "ElementLoggingLevelDefault",
+                            "value": 3
+                        },
+                        {
+                            "name": "StorageLoggingLevelStorage",
+                            "value": 4
+                        }
+                    ]
+                }  
+            ]
+        },
+        {
+            "server_name": "RefB",
+            "server_instance": "refelt1",
+            "devices": [
+                {
+                    "class_name": "RefB",
+                    "device_name": "refelt/B/1",
+                    "device_props": [
+                        {
+                            "name": "SkaLevel",
+                            "value": 4
+                        },
+                        {
+                            "name": "MetricList",
+                            "value": ["healthState", "adminMode", "controlMode"]
+                        },
+                        {
+                            "name": "GroupDefinitions",
+                            "value": ""
+                        },
+                        {
+                            "name": "CentralLoggingTarget",
+                            "value": ""
+                        },
+                        {
+                            "name": "ElementLoggingTarget",
+                            "value": ""
+                        },
+                        {
+                            "name": "StorageLoggingTarget",
+                            "value": "localhost"
+                        },
+                        {
+                            "name": "CentralLoggingLevelDefault",
+                            "value": 2
+                        },
+                        {
+                            "name": "ElementLoggingLevelDefault",
+                            "value": 3
+                        },
+                        {
+                            "name": "StorageLoggingLevelStorage",
+                            "value": 4
+                        }
+                    ]
+                }  
+            ]
+        },
+        {
+            "server_name": "PDU",
+            "server_instance": "pdu1",
+            "devices": [
+                {
+                    "class_name": "PDU",
+                    "device_name": "pdu/1/1",
+                    "device_props": [
+                        {
+                            "name": "SkaLevel",
+                            "value": 4
+                        },
+                        {
+                            "name": "MetricList",
+                            "value": ["healthState", "adminMode", "controlMode"]
+                        },
+                        {
+                            "name": "GroupDefinitions",
+                            "value": ""
+                        },
+                        {
+                            "name": "CentralLoggingTarget",
+                            "value": ""
+                        },
+                        {
+                            "name": "ElementLoggingTarget",
+                            "value": ""
+                        },
+                        {
+                            "name": "StorageLoggingTarget",
+                            "value": "localhost"
+                        },
+                        {
+                            "name": "CentralLoggingLevelDefault",
+                            "value": 2
+                        },
+                        {
+                            "name": "ElementLoggingLevelDefault",
+                            "value": 3
+                        },
+                        {
+                            "name": "StorageLoggingLevelStorage",
+                            "value": 4
+                        },
+                        {
+                            "name": "pdus",
+                            "value": ""
+                        },
+                        {
+                            "name": "rack_id",
+                            "value": ""
+                        },
+                        {
+                            "name": "servers",
+                            "value": ""
+                        }, 
+                        {
+                            "name": "switches",
+                            "value": ""
+                        }
+                    ]
+                }  
+            ]
+        }
+    ]
+}

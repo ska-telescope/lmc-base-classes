@@ -8,42 +8,16 @@
                 {
                     "class_name": "RefA",
                     "device_name": "refelt/A/1",
-                    "device_properties": [
-                        {
-                            "name": "SkaLevel",
-                            "value": 4
-                        },
-                        {
-                            "name": "MetricList",
-                            "value": ["healthState", "adminMode", "controlMode"]
-                        },
-                        {
-                            "name": "GroupDefinitions",
-                            "value": ""
-                        },
-                        {
-                            "name": "CentralLoggingTarget",
-                            "value": ""
-                        },
-                        {
-                            "name": "ElementLoggingTarget",
-                            "value": ""
-                        },
-                        {
-                            "name": "StorageLoggingTarget",
-                            "value": "localhost"
-                        },
-                        {
-                            "name": "CentralLoggingLevelDefault",
-                            "value": 2
-                        },
-                        {
-                            "name": "ElementLoggingLevelDefault",
-                            "value": 3
-                        },
-                        {
-                            "name": "StorageLoggingLevelStorage",
-                            "value": 4
+                    "device_properties": {
+                        "SkaLevel":  4,
+                        "MetricList": ["healthState", "adminMode", "controlMode"],
+                        "GroupDefinitions": [],
+                        "CentralLoggingTarget": "",
+                        "ElementLoggingTarget": "",
+                        "StorageLoggingTarget": "localhost",
+                        "CentralLoggingLevelDefault": 2,
+                        "ElementLoggingLevelDefault": 3,
+                        "StorageLoggingLevelStorage": 4
                         }
                     ]
                 }  
@@ -56,42 +30,16 @@
                 {
                     "class_name": "RefB",
                     "device_name": "refelt/B/1",
-                    "device_properties": [
-                        {
-                            "name": "SkaLevel",
-                            "value": 4
-                        },
-                        {
-                            "name": "MetricList",
-                            "value": ["healthState", "adminMode", "controlMode"]
-                        },
-                        {
-                            "name": "GroupDefinitions",
-                            "value": ""
-                        },
-                        {
-                            "name": "CentralLoggingTarget",
-                            "value": ""
-                        },
-                        {
-                            "name": "ElementLoggingTarget",
-                            "value": ""
-                        },
-                        {
-                            "name": "StorageLoggingTarget",
-                            "value": "localhost"
-                        },
-                        {
-                            "name": "CentralLoggingLevelDefault",
-                            "value": 2
-                        },
-                        {
-                            "name": "ElementLoggingLevelDefault",
-                            "value": 3
-                        },
-                        {
-                            "name": "StorageLoggingLevelStorage",
-                            "value": 4
+                    "device_properties": { 
+                        "SkaLevel":  4,
+                        "MetricList": ["healthState", "adminMode", "controlMode"],
+                        "GroupDefinitions": [],
+                        "CentralLoggingTarget": "",
+                        "ElementLoggingTarget": "",
+                        "StorageLoggingTarget": "localhost",
+                        "CentralLoggingLevelDefault": 2,
+                        "ElementLoggingLevelDefault": 3,
+                        "StorageLoggingLevelStorage": 4
                         }
                     ]
                 }  
@@ -104,58 +52,20 @@
                 {
                     "class_name": "PDU",
                     "device_name": "pdu/1/1",
-                    "device_properties": [
-                        {
-                            "name": "SkaLevel",
-                            "value": 4
-                        },
-                        {
-                            "name": "MetricList",
-                            "value": ["healthState", "adminMode", "controlMode"]
-                        },
-                        {
-                            "name": "GroupDefinitions",
-                            "value": ""
-                        },
-                        {
-                            "name": "CentralLoggingTarget",
-                            "value": ""
-                        },
-                        {
-                            "name": "ElementLoggingTarget",
-                            "value": ""
-                        },
-                        {
-                            "name": "StorageLoggingTarget",
-                            "value": "localhost"
-                        },
-                        {
-                            "name": "CentralLoggingLevelDefault",
-                            "value": 2
-                        },
-                        {
-                            "name": "ElementLoggingLevelDefault",
-                            "value": 3
-                        },
-                        {
-                            "name": "StorageLoggingLevelStorage",
-                            "value": 4
-                        },
-                        {
-                            "name": "pdus",
-                            "value": ""
-                        },
-                        {
-                            "name": "rack_id",
-                            "value": ""
-                        },
-                        {
-                            "name": "servers",
-                            "value": ""
-                        }, 
-                        {
-                            "name": "switches",
-                            "value": ""
+                    "device_properties": { 
+                        "SkaLevel":  4,
+                        "MetricList": ["healthState", "adminMode", "controlMode"],
+                        "GroupDefinitions": [],
+                        "CentralLoggingTarget": "",
+                        "ElementLoggingTarget": "",
+                        "StorageLoggingTarget": "localhost",
+                        "CentralLoggingLevelDefault": 2,
+                        "ElementLoggingLevelDefault": 3,
+                        "StorageLoggingLevelStorage": 4,
+                        "pdus": "",
+                        "rack_id": "",
+                        "servers": "",
+                        "switches": ""
                         }
                     ]
                 }  

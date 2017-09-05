@@ -4,6 +4,7 @@
         {
             "server_name": "RefA",
             "server_instance": "refelt1",
+            "server_level": 1,
             "devices": [
                 {
                     "class_name": "RefA",
@@ -19,18 +20,18 @@
                         "ElementLoggingLevelDefault": 3,
                         "StorageLoggingLevelStorage": 4
                         }
-                    ]
-                }  
+                }
             ]
         },
         {
             "server_name": "RefB",
             "server_instance": "refelt1",
+            "server_level": 1,
             "devices": [
                 {
                     "class_name": "RefB",
                     "device_name": "refelt/B/1",
-                    "device_properties": { 
+                    "device_properties": {
                         "SkaLevel":  4,
                         "MetricList": ["healthState", "adminMode", "controlMode"],
                         "GroupDefinitions": [],
@@ -41,18 +42,18 @@
                         "ElementLoggingLevelDefault": 3,
                         "StorageLoggingLevelStorage": 4
                         }
-                    ]
-                }  
+                }
             ]
         },
         {
             "server_name": "PDU",
             "server_instance": "pdu1",
+            "server_level": 1,
             "devices": [
                 {
                     "class_name": "PDU",
                     "device_name": "pdu/1/1",
-                    "device_properties": { 
+                    "device_properties": {
                         "SkaLevel":  4,
                         "MetricList": ["healthState", "adminMode", "controlMode"],
                         "GroupDefinitions": [],
@@ -67,8 +68,7 @@
                         "servers": "",
                         "switches": ""
                         }
-                    ]
-                }  
+                }
             ]
         }
     ]

@@ -8,3 +8,4 @@
     - {role: 'deploy_sw', tags: 'deploy_sw'}
     - {role: 'refresh_sw', tags: 'refresh_sw'}
     - {role: 'install_sw', tags: 'install_sw'}
+    - {role: 'register_refelt', tags: 'register_refelt'}

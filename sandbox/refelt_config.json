@@ -1,75 +1,157 @@
 {
     "api_version": "v1",
     "servers": [
-        {
-            "server_name": "RefA",
-            "server_instance": "refelt1",
-            "server_level": 1,
-            "devices": [
-                {
-                    "class_name": "RefA",
-                    "device_name": "refelt/A/1",
-                    "device_properties": {
-                        "SkaLevel":  4,
-                        "MetricList": ["healthState", "adminMode", "controlMode"],
-                        "GroupDefinitions": [],
-                        "CentralLoggingTarget": "",
-                        "ElementLoggingTarget": "",
-                        "StorageLoggingTarget": "localhost",
-                        "CentralLoggingLevelDefault": 2,
-                        "ElementLoggingLevelDefault": 3,
-                        "StorageLoggingLevelStorage": 4
-                        }
-                }
+      {
+          "server_name": "RefA",
+          "server_instance": [
+              {
+                  "instance_name": "refa1",
+                  "server_class": {
+                      "class_name": "RefA",
+                      "devices": [
+                          {
+                              "device_name": "ref/elt/a1",
+                              "device_properties": {
+                                  "SkaLevel":  4,
+                                  "MetricList": ["healthState", "adminMode", "controlMode"],
+                                  "GroupDefinitions": [],
+                                  "CentralLoggingTarget": "",
+                                  "ElementLoggingTarget": "",
+                                  "StorageLoggingTarget": "localhost",
+                                  "CentralLoggingLevelDefault": 2,
+                                  "ElementLoggingLevelDefault": 3,
+                                  "StorageLoggingLevelStorage": 4
+                              }
+                          }
+                       ]
+                  }
+              }
             ]
         },
         {
-            "server_name": "RefB",
-            "server_instance": "refelt1",
-            "server_level": 1,
-            "devices": [
+            "server_name": "RefAchild",
+            "server_instance": [
                 {
-                    "class_name": "RefB",
-                    "device_name": "refelt/B/1",
-                    "device_properties": {
-                        "SkaLevel":  4,
-                        "MetricList": ["healthState", "adminMode", "controlMode"],
-                        "GroupDefinitions": [],
-                        "CentralLoggingTarget": "",
-                        "ElementLoggingTarget": "",
-                        "StorageLoggingTarget": "localhost",
-                        "CentralLoggingLevelDefault": 2,
-                        "ElementLoggingLevelDefault": 3,
-                        "StorageLoggingLevelStorage": 4
-                        }
+                    "instance_name": "refachild1",
+                    "server_class": {
+                        "class_name": "RefA",
+                        "devices": [
+                            {
+                                "device_name": "ref/elt/achild1",
+                                "device_properties": {
+                                    "SkaLevel":  4,
+                                    "MetricList": ["healthState", "adminMode", "controlMode"],
+                                    "GroupDefinitions": [],
+                                    "CentralLoggingTarget": "",
+                                    "ElementLoggingTarget": "",
+                                    "StorageLoggingTarget": "localhost",
+                                    "CentralLoggingLevelDefault": 2,
+                                    "ElementLoggingLevelDefault": 3,
+                                    "StorageLoggingLevelStorage": 4
+                                }
+                            }
+                         ]
+                    }
                 }
-            ]
+              ]
         },
         {
-            "server_name": "PDU",
-            "server_instance": "pdu1",
-            "server_level": 1,
-            "devices": [
+            "server_name": "RefMaster",
+            "server_instance": [
                 {
-                    "class_name": "PDU",
-                    "device_name": "pdu/1/1",
-                    "device_properties": {
-                        "SkaLevel":  4,
-                        "MetricList": ["healthState", "adminMode", "controlMode"],
-                        "GroupDefinitions": [],
-                        "CentralLoggingTarget": "",
-                        "ElementLoggingTarget": "",
-                        "StorageLoggingTarget": "localhost",
-                        "CentralLoggingLevelDefault": 2,
-                        "ElementLoggingLevelDefault": 3,
-                        "StorageLoggingLevelStorage": 4,
-                        "pdus": "",
-                        "rack_id": "",
-                        "servers": "",
-                        "switches": ""
-                        }
+                    "instance_name": "refmaster1",
+                    "server_class": {
+                        "class_name": "RefMaster",
+                        "devices": [
+                            {
+                                "device_name": "ref/elt/master1",
+                                "device_properties": {
+                                    "SkaLevel":  4,
+                                    "MetricList": ["healthState", "adminMode", "controlMode"],
+                                    "GroupDefinitions": [],
+                                    "CentralLoggingTarget": "",
+                                    "ElementLoggingTarget": "",
+                                    "StorageLoggingTarget": "localhost",
+                                    "CentralLoggingLevelDefault": 2,
+                                    "ElementLoggingLevelDefault": 3,
+                                    "StorageLoggingLevelStorage": 4
+                                }
+                            }
+                         ]
+                    }
                 }
-            ]
+              ]
+        },
+        {
+            "server_name": "FileLogger",
+            "server_instances": [
+                {
+                    "instance_name": "elt",
+                    "server_class": {
+                    "class_name": "FileLogger",
+                    "devices": [
+                          {
+                               "device_name": "ref/elt/logger",
+                               "device_properties": {
+                                   "SkaLevel":  4,
+                                   "MetricList": ["healthState", "adminMode", "controlMode"],
+                                   "GroupDefinitions": [],
+                                   "CentralLoggingTarget": "",
+                                   "ElementLoggingTarget": "",
+                                   "StorageLoggingTarget": "localhost",
+                                   "CentralLoggingLevelDefault": 2,
+                                   "ElementLoggingLevelDefault": 3,
+                                   "StorageLoggingLevelStorage": 4
+                               }
+                          }
+                      ]
+                  }
+                },
+                {
+                    "instance_name": "central",
+                    "server_class": {
+                    "class_name": "FileLogger",
+                    "devices": [
+                          {
+                               "device_name": "ref/central/logger",
+                               "device_properties": {
+                                   "SkaLevel":  4,
+                                   "MetricList": ["healthState", "adminMode", "controlMode"],
+                                   "GroupDefinitions": [],
+                                   "CentralLoggingTarget": "",
+                                   "ElementLoggingTarget": "",
+                                   "StorageLoggingTarget": "localhost",
+                                   "CentralLoggingLevelDefault": 2,
+                                   "ElementLoggingLevelDefault": 3,
+                                   "StorageLoggingLevelStorage": 4
+                               }
+                          }
+                      ]
+                  }
+                },
+                {
+                    "instance_name": "another",
+                    "server_class": {
+                    "class_name": "FileLogger",
+                    "devices": [
+                          {
+                               "device_name": "ref/another/logger",
+                               "device_properties": {
+                                   "SkaLevel":  4,
+                                   "MetricList": ["healthState", "adminMode", "controlMode"],
+                                   "GroupDefinitions": [],
+                                   "CentralLoggingTarget": "",
+                                   "ElementLoggingTarget": "",
+                                   "StorageLoggingTarget": "localhost",
+                                   "CentralLoggingLevelDefault": 2,
+                                   "ElementLoggingLevelDefault": 3,
+                                   "StorageLoggingLevelStorage": 4
+                               }
+                          }
+                      ]
+                  }
+                }
+              ]
         }
     ]
 }

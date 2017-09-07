@@ -1,0 +1,53 @@
+{
+    "api_version": "v1",
+    "servers": [
+      {
+          "server_host": "monctl",
+          "server_name": "RefA",
+          "server_instances": [
+              {
+                  "instance_name": "refa1",
+                  "startup_level": 0
+              }
+            ]
+        },
+        {
+            "server_host": "monctl",
+            "server_name": "RefAchild",
+            "server_instances": [
+                {
+                    "instance_name": "refachild1",
+                    "startup_level": 0
+                }
+              ]
+        },
+        {
+            "server_host": "monctl",
+            "server_name": "RefMaster",
+            "server_instances": [
+                {
+                    "instance_name": "refmaster1",
+                    "startup_level": 0
+                }
+              ]
+        },
+        {
+            "server_host": "monctl",
+            "server_name": "FileLogger",
+            "server_instances": [
+                {
+                    "instance_name": "elt",
+                    "startup_level": 0
+                },
+                {
+                    "instance_name": "central",
+                    "startup_level": 0
+                },
+                {
+                    "instance_name": "another",
+                    "startup_level": 0
+                }
+              ]
+        }
+    ]
+}

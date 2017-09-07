@@ -33,33 +33,33 @@ DEFAULT_REFELT_ASTOR_CONFIG = dict(
 #node: {level: (server/instance,server/instance,...)}
     { "levpro": {
         0: ("TangoAccessControl/1",),
-    1: ("FileLogger/central",
-        "FileLogger/elt"),
-    2: ("RefAchild/1",
-        "RefAchild/2"),
-    3: ("RefA/1",
-        "RefA/2"),
-    5: ("RefMaster/1",),
+    1: ("SvrFileLogger/Central",
+        "SvrFileLogger/Elt"),
+    2: ("SvrRefAchild/1",
+        "SvrRefAchild/2"),
+    3: ("SvrRefA/1",
+        "SvrRefA/2"),
+    5: ("SvrRefMaster/1",),
     },
     })
 
 DEFAULT_REFELT_TANGO_CONFIG = dict(
 #server_class: {server_instance: ((device_class,domain/family/instance),...)}
-    { "FileLoggerSvr" : {
-          "central": (("FileLogger", "ref/central/logger"),),
-      "elt": (("FileLogger", "ref/elt/logger"),),
+    { "SvrFileLogger" : {
+          "Central": (("FileLogger", "ref/central/logger"),),
+      "Elt": (("FileLogger", "ref/elt/logger"),),
       },
-      "RefASvr" : {
+      "SvrRefA" : {
           "1": (("RefA", "ref/A/1"),),
           "2": (("RefA", "ref/A/2"),),
       },
-      "RefAchildSvr" : {
+      "SvrRefAchild" : {
           "1": (("RefAchild", "ref/achild/11"),
             ("RefAchild", "ref/achild/12"),),
           "2": (("RefAchild", "ref/achild/21"),
             ("RefAchild", "ref/achild/22"),),
       },
-      "RefMasterSvr" : {
+      "SvrRefMaster" : {
           "1": (("RefMaster","ref/elt/master"),),
       },
     })

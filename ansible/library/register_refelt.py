@@ -3,6 +3,8 @@
 ##################################################
 ### DEBUG USING:
 ### ansible-playbook -i hosts site.yml --limit local --tags register-refelt-in-tangodb -vvv
+### USE IT LIKE THIS:
+### ./play-task.sh register-refelt in-tangodb
 ##################################################
 
 

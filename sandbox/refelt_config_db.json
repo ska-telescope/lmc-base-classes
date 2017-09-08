@@ -3,7 +3,7 @@
     "servers": [
       {
           "server_name": "RefA",
-          "server_instance": [
+          "server_instances": [
               {
                   "instance_name": "refa1",
                   "server_class": {
@@ -25,12 +25,34 @@
                           }
                        ]
                   }
+              },
+              {
+                  "instance_name": "refa2",
+                  "server_class": {
+                      "class_name": "RefA",
+                      "devices": [
+                          {
+                              "device_name": "ref/elt/a2",
+                              "device_properties": {
+                                  "SkaLevel":  4,
+                                  "MetricList": ["healthState", "adminMode", "controlMode"],
+                                  "GroupDefinitions": [],
+                                  "CentralLoggingTarget": "",
+                                  "ElementLoggingTarget": "",
+                                  "StorageLoggingTarget": "localhost",
+                                  "CentralLoggingLevelDefault": 2,
+                                  "ElementLoggingLevelDefault": 3,
+                                  "StorageLoggingLevelStorage": 4
+                              }
+                          }
+                       ]
+                  }
               }
             ]
         },
         {
             "server_name": "RefAchild",
-            "server_instance": [
+            "server_instances": [
                 {
                     "instance_name": "refachild1",
                     "server_class": {
@@ -52,12 +74,34 @@
                             }
                          ]
                     }
+                },
+                {
+                    "instance_name": "refachild2",
+                    "server_class": {
+                        "class_name": "RefA",
+                        "devices": [
+                            {
+                                "device_name": "ref/elt/achild2",
+                                "device_properties": {
+                                    "SkaLevel":  4,
+                                    "MetricList": ["healthState", "adminMode", "controlMode"],
+                                    "GroupDefinitions": [],
+                                    "CentralLoggingTarget": "",
+                                    "ElementLoggingTarget": "",
+                                    "StorageLoggingTarget": "localhost",
+                                    "CentralLoggingLevelDefault": 2,
+                                    "ElementLoggingLevelDefault": 3,
+                                    "StorageLoggingLevelStorage": 4
+                                }
+                            }
+                         ]
+                    }
                 }
               ]
         },
         {
             "server_name": "RefMaster",
-            "server_instance": [
+            "server_instances": [
                 {
                     "instance_name": "refmaster1",
                     "server_class": {
@@ -66,7 +110,7 @@
                             {
                                 "device_name": "ref/elt/master1",
                                 "device_properties": {
-                                    "SkaLevel":  4,
+                                    "SkaLevel":  1,
                                     "MetricList": ["healthState", "adminMode", "controlMode"],
                                     "GroupDefinitions": [],
                                     "CentralLoggingTarget": "",

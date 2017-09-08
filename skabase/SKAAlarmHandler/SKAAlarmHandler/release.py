@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# This file is part of the SKAAlarmDevice project
+# This file is part of the SKAAlarmHandler project
 #
 #
 #
@@ -9,7 +9,7 @@
 
 """Release information for Python Package"""
 
-name = """tangods-skaalarmdevice"""
+name = """tangods-skaalarmhandler"""
 version = "1.0.0"
 version_info = version.split(".")
 description = """A generic base device for Alarms for SKA."""

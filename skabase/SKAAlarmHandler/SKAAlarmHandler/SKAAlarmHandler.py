@@ -1,13 +1,13 @@
 # -*- coding: utf-8 -*-
 #
-# This file is part of the SKAAlarmDevice project
+# This file is part of the SKAAlarmHandler project
 #
 #
 #
 # Distributed under the terms of the GPL license.
 # See LICENSE.txt for more info.
 
-""" SKAAlarmDevice
+""" SKAAlarmHandler
 
 A generic base device for Alarms for SKA.
 """
@@ -23,19 +23,19 @@ from PyTango import AttrQuality, DispLevel, DevState
 from PyTango import AttrWriteType, PipeWriteType
 from SKABaseDevice import SKABaseDevice
 # Additional import
-# PROTECTED REGION ID(SKAAlarmDevice.additionnal_import) ENABLED START #
-# PROTECTED REGION END #    //  SKAAlarmDevice.additionnal_import
+# PROTECTED REGION ID(SKAAlarmHandler.additionnal_import) ENABLED START #
+# PROTECTED REGION END #    //  SKAAlarmHandler.additionnal_import
 
-__all__ = ["SKAAlarmDevice", "main"]
+__all__ = ["SKAAlarmHandler", "main"]
 
 
-class SKAAlarmDevice(SKABaseDevice):
+class SKAAlarmHandler(SKABaseDevice):
     """
     A generic base device for Alarms for SKA.
     """
     __metaclass__ = DeviceMeta
-    # PROTECTED REGION ID(SKAAlarmDevice.class_variable) ENABLED START #
-    # PROTECTED REGION END #    //  SKAAlarmDevice.class_variable
+    # PROTECTED REGION ID(SKAAlarmHandler.class_variable) ENABLED START #
+    # PROTECTED REGION END #    //  SKAAlarmHandler.class_variable
 
     # -----------------
     # Device Properties
@@ -46,10 +46,6 @@ class SKAAlarmDevice(SKABaseDevice):
     )
 
     AlarmConfigFile = device_property(
-        dtype='str',
-    )
-
-    FormulaConfDevice = device_property(
         dtype='str',
     )
 
@@ -101,119 +97,126 @@ class SKAAlarmDevice(SKABaseDevice):
 
 
 
+    activeAlerts = attribute(
+        dtype=('str',),
+        max_dim_x=10000,
+        doc="List of active alerts",
+    )
+
+    activeAlarms = attribute(
+        dtype=('str',),
+        max_dim_x=10000,
+        doc="List of active alarms",
+    )
+
     # ---------------
     # General methods
     # ---------------
 
     def init_device(self):
         SKABaseDevice.init_device(self)
-        # PROTECTED REGION ID(SKAAlarmDevice.init_device) ENABLED START #
-        # PROTECTED REGION END #    //  SKAAlarmDevice.init_device
+        # PROTECTED REGION ID(SKAAlarmHandler.init_device) ENABLED START #
+        # PROTECTED REGION END #    //  SKAAlarmHandler.init_device
 
     def always_executed_hook(self):
-        # PROTECTED REGION ID(SKAAlarmDevice.always_executed_hook) ENABLED START #
+        # PROTECTED REGION ID(SKAAlarmHandler.always_executed_hook) ENABLED START #
         pass
-        # PROTECTED REGION END #    //  SKAAlarmDevice.always_executed_hook
+        # PROTECTED REGION END #    //  SKAAlarmHandler.always_executed_hook
 
     def delete_device(self):
-        # PROTECTED REGION ID(SKAAlarmDevice.delete_device) ENABLED START #
+        # PROTECTED REGION ID(SKAAlarmHandler.delete_device) ENABLED START #
         pass
-        # PROTECTED REGION END #    //  SKAAlarmDevice.delete_device
+        # PROTECTED REGION END #    //  SKAAlarmHandler.delete_device
 
     # ------------------
     # Attributes methods
     # ------------------
 
     def read_statsNrAlerts(self):
-        # PROTECTED REGION ID(SKAAlarmDevice.statsNrAlerts_read) ENABLED START #
+        # PROTECTED REGION ID(SKAAlarmHandler.statsNrAlerts_read) ENABLED START #
         return 0
-        # PROTECTED REGION END #    //  SKAAlarmDevice.statsNrAlerts_read
+        # PROTECTED REGION END #    //  SKAAlarmHandler.statsNrAlerts_read
 
     def read_statsNrAlarms(self):
-        # PROTECTED REGION ID(SKAAlarmDevice.statsNrAlarms_read) ENABLED START #
+        # PROTECTED REGION ID(SKAAlarmHandler.statsNrAlarms_read) ENABLED START #
         return 0
-        # PROTECTED REGION END #    //  SKAAlarmDevice.statsNrAlarms_read
+        # PROTECTED REGION END #    //  SKAAlarmHandler.statsNrAlarms_read
 
     def read_statsNrNewAlarms(self):
-        # PROTECTED REGION ID(SKAAlarmDevice.statsNrNewAlarms_read) ENABLED START #
+        # PROTECTED REGION ID(SKAAlarmHandler.statsNrNewAlarms_read) ENABLED START #
         return 0
-        # PROTECTED REGION END #    //  SKAAlarmDevice.statsNrNewAlarms_read
+        # PROTECTED REGION END #    //  SKAAlarmHandler.statsNrNewAlarms_read
 
     def read_statsNrUnackAlarms(self):
-        # PROTECTED REGION ID(SKAAlarmDevice.statsNrUnackAlarms_read) ENABLED START #
+        # PROTECTED REGION ID(SKAAlarmHandler.statsNrUnackAlarms_read) ENABLED START #
         return 0.0
-        # PROTECTED REGION END #    //  SKAAlarmDevice.statsNrUnackAlarms_read
+        # PROTECTED REGION END #    //  SKAAlarmHandler.statsNrUnackAlarms_read
 
     def read_statsNrRtnAlarms(self):
-        # PROTECTED REGION ID(SKAAlarmDevice.statsNrRtnAlarms_read) ENABLED START #
+        # PROTECTED REGION ID(SKAAlarmHandler.statsNrRtnAlarms_read) ENABLED START #
         return 0.0
-        # PROTECTED REGION END #    //  SKAAlarmDevice.statsNrRtnAlarms_read
-
-    def initialize_dynamic_attributes(self):
-        self.debug_stream("In initialize_dynamic_attributes()")
-        # PROTECTED REGION ID(SKAAlarmDevice.initialize_dynamic_attributes) ENABLED START #
-        # PROTECTED REGION END #    //  SKAAlarmDevice.initialize_dynamic_attributes
-
-        """   Example to add dynamic attributes
-           Copy inside the folowing protected area to instanciate at startup."""
-        """    For Attribute activeAlerts
-        myactiveAlerts = PyTango.SpectrumAttr('MyactiveAlerts', PyTango.DevString, PyTango.READ, 10000)
-        self.add_attribute(myactiveAlerts,SKAAlarmDevice.read_activeAlerts, None, None)
-        self.attr_activeAlerts_read = [""]
-        """
-        """    For Attribute alarmsActive
-        myalarmsActive = PyTango.SpectrumAttr('MyalarmsActive', PyTango.DevString, PyTango.READ, 10000)
-        self.add_attribute(myalarmsActive,SKAAlarmDevice.read_alarmsActive, None, None)
-        self.attr_alarmsActive_read = [""]
-        """
+        # PROTECTED REGION END #    //  SKAAlarmHandler.statsNrRtnAlarms_read
 
     def read_activeAlerts(self):
-        # PROTECTED REGION ID(SKAAlarmDevice.activeAlerts_read) ENABLED START #
+        # PROTECTED REGION ID(SKAAlarmHandler.activeAlerts_read) ENABLED START #
         return ['']
-        # PROTECTED REGION END #    //  SKAAlarmDevice.activeAlerts_read
+        # PROTECTED REGION END #    //  SKAAlarmHandler.activeAlerts_read
 
-    def read_alarmsActive(self):
-        # PROTECTED REGION ID(SKAAlarmDevice.alarmsActive_read) ENABLED START #
+    def read_activeAlarms(self):
+        # PROTECTED REGION ID(SKAAlarmHandler.activeAlarms_read) ENABLED START #
         return ['']
-        # PROTECTED REGION END #    //  SKAAlarmDevice.alarmsActive_read
+        # PROTECTED REGION END #    //  SKAAlarmHandler.activeAlarms_read
+
 
     # --------
     # Commands
     # --------
 
     @command(
+    dtype_in='str', 
+    doc_in="Alarm name", 
+    dtype_out='str', 
+    doc_out="JSON string", 
     )
     @DebugIt()
-    def GetAlarmRule(self):
-        # PROTECTED REGION ID(SKAAlarmDevice.GetAlarmRule) ENABLED START #
-        pass
-        # PROTECTED REGION END #    //  SKAAlarmDevice.GetAlarmRule
-
-    @command(
-    )
-    @DebugIt()
-    def GetAlarmData(self):
-        # PROTECTED REGION ID(SKAAlarmDevice.GetAlarmData) ENABLED START #
-        pass
-        # PROTECTED REGION END #    //  SKAAlarmDevice.GetAlarmData
+    def GetAlarmRule(self, argin):
+        # PROTECTED REGION ID(SKAAlarmHandler.GetAlarmRule) ENABLED START #
+        return ""
+        # PROTECTED REGION END #    //  SKAAlarmHandler.GetAlarmRule
 
     @command(
     dtype_in='str', 
     doc_in="Alarm name", 
+    dtype_out='str', 
+    doc_out="JSON string", 
+    )
+    @DebugIt()
+    def GetAlarmData(self, argin):
+        # PROTECTED REGION ID(SKAAlarmHandler.GetAlarmData) ENABLED START #
+        return ""
+        # PROTECTED REGION END #    //  SKAAlarmHandler.GetAlarmData
+
+    @command(
+    dtype_in='str', 
+    doc_in="Alarm name", 
+    dtype_out='str', 
+    doc_out="JSON string", 
     )
     @DebugIt()
     def GetAlarmAdditionalInfo(self, argin):
-        # PROTECTED REGION ID(SKAAlarmDevice.GetAlarmAdditionalInfo) ENABLED START #
-        pass
-        # PROTECTED REGION END #    //  SKAAlarmDevice.GetAlarmAdditionalInfo
+        # PROTECTED REGION ID(SKAAlarmHandler.GetAlarmAdditionalInfo) ENABLED START #
+        return ""
+        # PROTECTED REGION END #    //  SKAAlarmHandler.GetAlarmAdditionalInfo
 
     @command(
+    dtype_out='str', 
+    doc_out="JSON string", 
     )
     @DebugIt()
     def GetAlarmStats(self):
-        # PROTECTED REGION ID(SKAAlarmDevice.GetAlarmStats) ENABLED START #
-        pass
-        # PROTECTED REGION END #    //  SKAAlarmDevice.GetAlarmStats
+        # PROTECTED REGION ID(SKAAlarmHandler.GetAlarmStats) ENABLED START #
+        return ""
+        # PROTECTED REGION END #    //  SKAAlarmHandler.GetAlarmStats
 
     @command(
     dtype_out='str', 
@@ -221,9 +224,9 @@ class SKAAlarmDevice(SKABaseDevice):
     )
     @DebugIt()
     def GetAlertStats(self):
-        # PROTECTED REGION ID(SKAAlarmDevice.GetAlertStats) ENABLED START #
+        # PROTECTED REGION ID(SKAAlarmHandler.GetAlertStats) ENABLED START #
         return ""
-        # PROTECTED REGION END #    //  SKAAlarmDevice.GetAlertStats
+        # PROTECTED REGION END #    //  SKAAlarmHandler.GetAlertStats
 
 # ----------
 # Run server
@@ -231,9 +234,9 @@ class SKAAlarmDevice(SKABaseDevice):
 
 
 def main(args=None, **kwargs):
-    # PROTECTED REGION ID(SKAAlarmDevice.main) ENABLED START #
-    return run((SKAAlarmDevice,), args=args, **kwargs)
-    # PROTECTED REGION END #    //  SKAAlarmDevice.main
+    # PROTECTED REGION ID(SKAAlarmHandler.main) ENABLED START #
+    return run((SKAAlarmHandler,), args=args, **kwargs)
+    # PROTECTED REGION END #    //  SKAAlarmHandler.main
 
 if __name__ == '__main__':
     main()

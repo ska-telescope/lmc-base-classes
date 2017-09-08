@@ -1,7 +1,7 @@
-recursive-include SKAAlarmDevice *.py
+recursive-include SKAAlarmHandler *.py
 recursive-include test *.py
 include *.rst
-include SKAAlarmDevice.xmi
+include SKAAlarmHandler.xmi
 include *.txt
 graft docs
 

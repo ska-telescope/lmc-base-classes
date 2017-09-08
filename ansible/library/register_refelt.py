@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 
 ##################################################
 ### DEBUG USING:
@@ -66,6 +66,7 @@ DEFAULT_REFELT_TANGO_CONFIG = dict(
       },
     })
 
+
 def register_device(db, name, device_class, server_class, server_instance):
     dev_info = PyTango.DbDevInfo()
     dev_info.name = name
@@ -74,6 +75,7 @@ def register_device(db, name, device_class, server_class, server_instance):
     print """Attempting to register TANGO device {!r}  class: {!r}  server: {!r}.""".format(
         dev_info.name, dev_info._class, dev_info.server)
     db.add_device(dev_info)
+
 
 def register_in_tango(name, dbconfig):
     errors = 0
@@ -99,6 +101,7 @@ def register_in_tango(name, dbconfig):
                     continue
     return errors, done, out
 
+
 def register_in_astor(name, astorconfig):
     errors = 0
     done = 0
@@ -107,6 +110,7 @@ def register_in_astor(name, astorconfig):
     print astorconfig
     errors += 1
     return errors, done, out
+
 
 ##################################################
 ###          MODULE MAIN
@@ -122,8 +126,8 @@ def main():
         argument_spec=dict(action=dict(required=True),
             facility_name=dict(required=True),
             facility_config=dict(required=True)),
-            supports_check_mode=True
-            )
+        supports_check_mode=True
+        )
 
     # In check mode, we take no action
     # Since this module never changes system state, we just
@@ -134,15 +138,15 @@ def main():
     ## Check if required parameters are provided
     # action, facility_name, facility_config
     if not module.params.get('action'):
-        msg= "action parameter has to be specified!"
+        msg = "action parameter has to be specified!"
         module.fail_json(msg=msg)
 
     if not module.params.get('facility_name'):
-        msg= "facility_name parameter has to be specified!"
+        msg = "facility_name parameter has to be specified!"
         module.fail_json(msg=msg)
 
     if not module.params.get('facility_config'):
-        msg= "facility_config parameter has to be specified!"
+        msg = "facility_config parameter has to be specified!"
         module.fail_json(msg=msg)
 
     ## Get and check module args

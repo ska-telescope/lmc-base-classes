@@ -129,6 +129,42 @@ class SKASubarrayDeviceTestCase(DeviceTestCase):
         self.device.isCapabilityAchievable([""])
         # PROTECTED REGION END #    //  SKASubarray.test_isCapabilityAchievable
 
+    def test_Abort(self):
+        """Test for Abort"""
+        # PROTECTED REGION ID(SKASubarray.test_Abort) ENABLED START #
+        self.device.Abort()
+        # PROTECTED REGION END #    //  SKASubarray.test_Abort
+
+    def test_EndSB(self):
+        """Test for EndSB"""
+        # PROTECTED REGION ID(SKASubarray.test_EndSB) ENABLED START #
+        self.device.EndSB()
+        # PROTECTED REGION END #    //  SKASubarray.test_EndSB
+
+    def test_Scan(self):
+        """Test for Scan"""
+        # PROTECTED REGION ID(SKASubarray.test_Scan) ENABLED START #
+        self.device.Scan([""])
+        # PROTECTED REGION END #    //  SKASubarray.test_Scan
+
+    def test_EndScan(self):
+        """Test for EndScan"""
+        # PROTECTED REGION ID(SKASubarray.test_EndScan) ENABLED START #
+        self.device.EndScan()
+        # PROTECTED REGION END #    //  SKASubarray.test_EndScan
+
+    def test_Pause(self):
+        """Test for Pause"""
+        # PROTECTED REGION ID(SKASubarray.test_Pause) ENABLED START #
+        self.device.Pause()
+        # PROTECTED REGION END #    //  SKASubarray.test_Pause
+
+    def test_Resume(self):
+        """Test for Resume"""
+        # PROTECTED REGION ID(SKASubarray.test_Resume) ENABLED START #
+        self.device.Resume()
+        # PROTECTED REGION END #    //  SKASubarray.test_Resume
+
     def test_activationTime(self):
         """Test for activationTime"""
         # PROTECTED REGION ID(SKASubarray.test_activationTime) ENABLED START #

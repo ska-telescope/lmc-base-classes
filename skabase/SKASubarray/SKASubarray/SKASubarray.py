@@ -218,6 +218,55 @@ class SKASubarray(SKAObsDevice):
         return False
         # PROTECTED REGION END #    //  SKASubarray.isCapabilityAchievable
 
+    @command(
+    )
+    @DebugIt()
+    def Abort(self):
+        # PROTECTED REGION ID(SKASubarray.Abort) ENABLED START #
+        pass
+        # PROTECTED REGION END #    //  SKASubarray.Abort
+
+    @command(
+    )
+    @DebugIt()
+    def EndSB(self):
+        # PROTECTED REGION ID(SKASubarray.EndSB) ENABLED START #
+        pass
+        # PROTECTED REGION END #    //  SKASubarray.EndSB
+
+    @command(
+    dtype_in=('str',), 
+    )
+    @DebugIt()
+    def Scan(self, argin):
+        # PROTECTED REGION ID(SKASubarray.Scan) ENABLED START #
+        pass
+        # PROTECTED REGION END #    //  SKASubarray.Scan
+
+    @command(
+    )
+    @DebugIt()
+    def EndScan(self):
+        # PROTECTED REGION ID(SKASubarray.EndScan) ENABLED START #
+        pass
+        # PROTECTED REGION END #    //  SKASubarray.EndScan
+
+    @command(
+    )
+    @DebugIt()
+    def Pause(self):
+        # PROTECTED REGION ID(SKASubarray.Pause) ENABLED START #
+        pass
+        # PROTECTED REGION END #    //  SKASubarray.Pause
+
+    @command(
+    )
+    @DebugIt()
+    def Resume(self):
+        # PROTECTED REGION ID(SKASubarray.Resume) ENABLED START #
+        pass
+        # PROTECTED REGION END #    //  SKASubarray.Resume
+
 # ----------
 # Run server
 # ----------

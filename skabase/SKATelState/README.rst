@@ -1,4 +1,4 @@
-## SKATelStateDevice
+## SKATelState
 
 A generic base device for Telescope State for SKA.
 
@@ -23,4 +23,4 @@ run python setup.py test
 Now you can start your device server in any
 Terminal or console by calling it :
 
-SKATelStateDevice instance_name
+SKATelState instance_name

@@ -1,7 +1,7 @@
-recursive-include SKATelStateDevice *.py
+recursive-include SKATelState *.py
 recursive-include test *.py
 include *.rst
-include SKATelStateDevice.xmi
+include SKATelState.xmi
 include *.txt
 graft docs
 

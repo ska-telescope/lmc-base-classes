@@ -1,13 +1,13 @@
 # -*- coding: utf-8 -*-
 #
-# This file is part of the SKATelStateDevice project
+# This file is part of the SKATelState project
 #
 #
 #
 # Distributed under the terms of the GPL license.
 # See LICENSE.txt for more info.
 
-""" SKATelStateDevice
+""" SKATelState
 
 A generic base device for Telescope State for SKA.
 """
@@ -23,19 +23,19 @@ from PyTango import AttrQuality, DispLevel, DevState
 from PyTango import AttrWriteType, PipeWriteType
 from SKABaseDevice import SKABaseDevice
 # Additional import
-# PROTECTED REGION ID(SKATelStateDevice.additionnal_import) ENABLED START #
-# PROTECTED REGION END #    //  SKATelStateDevice.additionnal_import
+# PROTECTED REGION ID(SKATelState.additionnal_import) ENABLED START #
+# PROTECTED REGION END #    //  SKATelState.additionnal_import
 
-__all__ = ["SKATelStateDevice", "main"]
+__all__ = ["SKATelState", "main"]
 
 
-class SKATelStateDevice(SKABaseDevice):
+class SKATelState(SKABaseDevice):
     """
     A generic base device for Telescope State for SKA.
     """
     __metaclass__ = DeviceMeta
-    # PROTECTED REGION ID(SKATelStateDevice.class_variable) ENABLED START #
-    # PROTECTED REGION END #    //  SKATelStateDevice.class_variable
+    # PROTECTED REGION ID(SKATelState.class_variable) ENABLED START #
+    # PROTECTED REGION END #    //  SKATelState.class_variable
 
     # -----------------
     # Device Properties
@@ -44,9 +44,6 @@ class SKATelStateDevice(SKABaseDevice):
     TelStateConfigFile = device_property(
         dtype='str',
     )
-
-
-
 
 
 
@@ -74,18 +71,18 @@ class SKATelStateDevice(SKABaseDevice):
 
     def init_device(self):
         SKABaseDevice.init_device(self)
-        # PROTECTED REGION ID(SKATelStateDevice.init_device) ENABLED START #
-        # PROTECTED REGION END #    //  SKATelStateDevice.init_device
+        # PROTECTED REGION ID(SKATelState.init_device) ENABLED START #
+        # PROTECTED REGION END #    //  SKATelState.init_device
 
     def always_executed_hook(self):
-        # PROTECTED REGION ID(SKATelStateDevice.always_executed_hook) ENABLED START #
+        # PROTECTED REGION ID(SKATelState.always_executed_hook) ENABLED START #
         pass
-        # PROTECTED REGION END #    //  SKATelStateDevice.always_executed_hook
+        # PROTECTED REGION END #    //  SKATelState.always_executed_hook
 
     def delete_device(self):
-        # PROTECTED REGION ID(SKATelStateDevice.delete_device) ENABLED START #
+        # PROTECTED REGION ID(SKATelState.delete_device) ENABLED START #
         pass
-        # PROTECTED REGION END #    //  SKATelStateDevice.delete_device
+        # PROTECTED REGION END #    //  SKATelState.delete_device
 
     # ------------------
     # Attributes methods
@@ -100,9 +97,9 @@ class SKATelStateDevice(SKABaseDevice):
     )
     @DebugIt()
     def Reset(self):
-        # PROTECTED REGION ID(SKATelStateDevice.Reset) ENABLED START #
+        # PROTECTED REGION ID(SKATelState.Reset) ENABLED START #
         pass
-        # PROTECTED REGION END #    //  SKATelStateDevice.Reset
+        # PROTECTED REGION END #    //  SKATelState.Reset
 
 # ----------
 # Run server
@@ -110,9 +107,9 @@ class SKATelStateDevice(SKABaseDevice):
 
 
 def main(args=None, **kwargs):
-    # PROTECTED REGION ID(SKATelStateDevice.main) ENABLED START #
-    return run((SKATelStateDevice,), args=args, **kwargs)
-    # PROTECTED REGION END #    //  SKATelStateDevice.main
+    # PROTECTED REGION ID(SKATelState.main) ENABLED START #
+    return run((SKATelState,), args=args, **kwargs)
+    # PROTECTED REGION END #    //  SKATelState.main
 
 if __name__ == '__main__':
     main()

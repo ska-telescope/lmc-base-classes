@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 #
-# This file is part of the SKATelStateDevice project
+# This file is part of the SKATelState project
 #
 #
 #
@@ -21,10 +21,10 @@ readme_filename = os.path.join(setup_dir, 'README.rst')
 with open(readme_filename) as file:
     long_description = file.read()
 
-release_filename = os.path.join(setup_dir, 'SKATelStateDevice', 'release.py')
+release_filename = os.path.join(setup_dir, 'SKATelState', 'release.py')
 exec(open(release_filename).read())
 
-pack = ['SKATelStateDevice']
+pack = ['SKATelState']
 
 setup(name=name,
       version=version,
@@ -32,7 +32,7 @@ setup(name=name,
       packages=pack,
       include_package_data=True,
       test_suite="test",
-      entry_points={'console_scripts':['SKATelStateDevice = SKATelStateDevice:main']},
+      entry_points={'console_scripts':['SKATelState = SKATelState:main']},
       author='cam',
       author_email='cam at ska.ac.za',
       license='GPL',

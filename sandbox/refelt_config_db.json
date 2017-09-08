@@ -56,7 +56,7 @@
                 {
                     "instance_name": "refachild1",
                     "server_class": {
-                        "class_name": "RefA",
+                        "class_name": "RefAchild",
                         "devices": [
                             {
                                 "device_name": "ref/elt/achild1",
@@ -78,7 +78,7 @@
                 {
                     "instance_name": "refachild2",
                     "server_class": {
-                        "class_name": "RefA",
+                        "class_name": "RefAchild",
                         "devices": [
                             {
                                 "device_name": "ref/elt/achild2",

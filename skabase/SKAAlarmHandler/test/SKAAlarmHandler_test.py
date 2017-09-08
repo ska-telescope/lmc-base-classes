@@ -39,7 +39,7 @@ class SKAAlarmHandlerDeviceTestCase(DeviceTestCase):
     # PROTECTED REGION ID(SKAAlarmHandler.test_additionnal_import) ENABLED START #
     # PROTECTED REGION END #    //  SKAAlarmHandler.test_additionnal_import
     device = SKAAlarmHandler
-    properties = {'SubAlarmHandlers': '', 'AlarmConfigFile': '', 'SkaLevel': '4', 'MetricList': 'healthState,adminMode,controlMode', 'GroupDefinitions': '', 'CentralLoggingTarget': '', 'ElementLoggingTarget': '', 'StorageLoggingTarget': 'localhost', 'CentralLoggingLevelDefault': '2', 'ElementLoggingLevelDefault': '3', 'StorageLoggingLevelDefault': '4', 
+    properties = {'SubAlarmHandlers': '', 'AlarmConfigFile': '', 'SkaLevel': '4', 'MetricList': 'healthState,adminMode,controlMode', 'GroupDefinitions': '', 'CentralLoggingTarget': '', 'ElementLoggingTarget': '', 'StorageLoggingTarget': 'localhost', 
                   }
     empty = None  # Should be []
 

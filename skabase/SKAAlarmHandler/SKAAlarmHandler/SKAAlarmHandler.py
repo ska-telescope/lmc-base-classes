@@ -55,9 +55,6 @@ class SKAAlarmHandler(SKABaseDevice):
 
 
 
-
-
-
     # ----------
     # Attributes
     # ----------

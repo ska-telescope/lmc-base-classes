@@ -10,24 +10,20 @@ def main():
     with open("/home/refelt_config_starter.json") as config_file:
         facility_data = json.load(config_file)
 
-    server_data = facility_data['servers']
-    
-    for server in server_data:
-        server_host = server["server_host"]
-        server_name = server["server_name"]
-        server_instances = server["server_instances"]
+    hosts_data = facility_data["tango_hosts"]
 
-        for server_instance in server_instances:
-            server_instance_name = server_instance["instance_name"]
-            server_instance_starter_level = server_instance["startup_level"]
-    
-            srv_name = server_name + '/' + server_instance_name
-            print "Starting server: ", srv_name 
-            astor.set_server_level(server_name, server_host,
-                server_instance_starter_level)
+    for host_name, host_data in hosts_data.items():
 
-    astor.start_all_servers()           
+        for data in host_data:
+            srv_instance_startup_level = data["startup_level"]
+            server_instances = data["server_instances"]
+
+            for server_instance in server_instances:
+                astor.set_server_level(server_instance, host_name,
+                                       srv_instance_startup_level)
+
+            print "Starting up the servers on host=", host_name
+            astor.start_servers(servers_list=server_instances, host=host_name)
 
 if __name__ == "__main__":
-    print "Starting up the servers in the facility."
     main()

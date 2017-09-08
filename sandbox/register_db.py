@@ -1,30 +1,25 @@
 #!/usr/bin/env python
-
-import logging
 import json
-import pkg_resources
-
-import PyTango
 
 import fandango.tango as tango
-import fandango as fn
 
 
 def register_device(device_name, device_class_name, server_name,
                     server_instance_name):
 
+    svr_name = server_name + '/' + server_instance_name
     print """Attempting to register TANGO device {!r}
-    class: {!r}  server: {!r}.""".format(
-            device_name, device_class_name, server_name+'/'+server_instance_name)
-    tango.add_new_device(server_name+'/'+server_instance_name, device_class_name,
-        device_name)
+          class: {!r}  server: {!r}.""".format(device_name, device_class_name, svr_name)
+    tango.add_new_device(svr_name, device_class_name, device_name)
+
 
 def put_device_property(device_name, device_properties):
-    db = PyTango.Database()
+
     for property_name, property_value in device_properties.items():
         print "Setting device {!r} properties {!r}: {!r}".format(
             device_name, property_name, property_value)
-        db.put_device_property(device_name, {str(property_name):[property_value]})
+        tango.put_device_property(device_name, {str(property_name): [property_value]})
+
 
 def main():
     with open("/home/refelt_config.json") as refelt_config_file:
@@ -47,9 +42,8 @@ def main():
                 device_properties = device['device_properties']
 
                 register_device(device_name, class_name, server_name,
-                    server_instance_name)
+                                server_instance_name)
                 put_device_property(device_name, device_properties)
 
 if __name__ == "__main__":
-    print "Running script from ansible playbook."
     main()

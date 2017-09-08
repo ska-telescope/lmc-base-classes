@@ -1,57 +1,28 @@
 {
     "api_version": "v1",
-    "servers": [
+    "tango_servers": [
       {
-          "astor_branch_name": "Levpro",
-          "server_host": "levpro",
-          "server_name": "RefA",
-          "server_instances": [
-              {
-                  "instance_name": "refa1",
-                  "startup_level": 3
-              }
-            ]
-        },
-        {
-            "astor_branch_name": "Levpro",
-            "server_host": "levpro",
-            "server_name": "RefAchild",
-            "server_instances": [
-                {
-                    "instance_name": "refachild1",
-                    "startup_level": 2
-                }
-              ]
-        },
-        {
-            "astor_branch_name": "Levpro",
-            "server_host": "levpro",
-            "server_name": "RefMaster",
-            "server_instances": [
-                {
-                    "instance_name": "refmaster1",
-                    "startup_level": 5
-                }
-              ]
-        },
-        {
-            "astor_branch_name": "Levpro",
-            "server_host": "levpro",
-            "server_name": "FileLogger",
-            "server_instances": [
-                {
-                    "instance_name": "elt",
-                    "startup_level": 1
-                },
-                {
-                    "instance_name": "central",
-                    "startup_level": 1
-                },
-                {
-                    "instance_name": "another",
-                    "startup_level": 0
-                }
-              ]
-        }
+          "levpro": [{
+              "startup_level": 3,
+              "server_instances": ["RefA/1", "RefA2"]
+          },
+          {
+              "startup_level": 2,
+              "server_instances": ["RefAchild/11", "RefAchildA12", "RefAchild/21", "RefAchild/22"]
+          },
+          {
+              "startup_level": 5,
+              "server_instances": ["RefMaster/1"]
+          },
+          {
+              "startup_level": 1,
+              "server_instances": ["FileLogger/elt", "FileLogger/central"]
+          },
+          {
+              "startup_level": 0,
+              "server_instances": ["FileLogger/another"]
+          }
+        ]
+      }
     ]
 }

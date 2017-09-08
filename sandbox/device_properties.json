@@ -1,0 +1,34 @@
+{
+    "levpro": {
+        "ref/A/1": {
+            "GroupDefinitions": []
+        },
+        "ref/A/2": {
+            "GroupDefinitions": []
+        },
+        "ref/achild/11": {
+            "GroupDefinitions": []
+        },
+        "ref/achild/12": {
+            "GroupDefinitions": []
+        },
+        "ref/achild/21": {
+            "GroupDefinitions": []
+        },
+        "ref/achild/22": {
+            "GroupDefinitions": []
+        },
+        "ref/elt/master": {
+            "GroupDefinitions": []
+        },
+        "ref/elt/logger": {
+            "GroupDefinitions": []
+        },
+        "ref/central/logger": {
+            "GroupDefinitions": []
+        },
+        "ref/another/logger": {
+            "GroupDefinitions": []
+        }
+      }
+}

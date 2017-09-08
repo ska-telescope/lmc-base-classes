@@ -14,10 +14,6 @@
       <type xsi:type="pogoDsl:StringType"/>
       <status abstract="false" inherited="false" concrete="true" concreteHere="true"/>
     </deviceProperties>
-    <deviceProperties name="FormulaConfDevice" description="The TANGO address for the FormulaConf device to bind to &#xA;(if FormulaConf is used for Alarm evaluation)">
-      <type xsi:type="pogoDsl:StringType"/>
-      <status abstract="false" inherited="false" concrete="true" concreteHere="true"/>
-    </deviceProperties>
     <deviceProperties name="SkaLevel" description="Indication of importance of the device in the SKA hierarchy &#xA;to support drill-down navigation: 1..6, with 1 highest.&#xA;Default is 4, making provision for &#xA;EltMaster, EltAlarms, EltTelState = 1&#xA;SubEltMaster = 2&#xA;Subarray, Capability = 2/3&#xA;Others = 4 (or 5 or 6)">
       <type xsi:type="pogoDsl:ShortType"/>
       <status abstract="false" inherited="true" concrete="true"/>
@@ -79,20 +75,20 @@
       <status abstract="true" inherited="true" concrete="true"/>
     </commands>
     <commands name="GetAlarmRule" description="Get all configuration info of the alarm, e.g. rule, defined action, etc" execMethod="get_alarm_rule" displayLevel="OPERATOR" polledPeriod="0" isDynamic="false">
-      <argin description="No input arguments">
-        <type xsi:type="pogoDsl:VoidType"/>
+      <argin description="Alarm name">
+        <type xsi:type="pogoDsl:StringType"/>
       </argin>
       <argout description="JSON string">
-        <type xsi:type="pogoDsl:VoidType"/>
+        <type xsi:type="pogoDsl:StringType"/>
       </argout>
       <status abstract="false" inherited="false" concrete="true" concreteHere="true"/>
     </commands>
     <commands name="GetAlarmData" description="Get list of current value, quality factor and status of all attributes participating in the alarm rule" execMethod="get_alarm_data" displayLevel="OPERATOR" polledPeriod="0" isDynamic="false">
-      <argin description="No input argument">
-        <type xsi:type="pogoDsl:VoidType"/>
-      </argin>
+    <argin description="Alarm name">
+      <type xsi:type="pogoDsl:StringType"/>
+    </argin>
       <argout description="JSON string">
-        <type xsi:type="pogoDsl:VoidType"/>
+        <type xsi:type="pogoDsl:StringType"/>
       </argout>
       <status abstract="false" inherited="false" concrete="true" concreteHere="true"/>
     </commands>
@@ -101,21 +97,21 @@
         <type xsi:type="pogoDsl:StringType"/>
       </argin>
       <argout description="JSON string">
-        <type xsi:type="pogoDsl:VoidType"/>
+        <type xsi:type="pogoDsl:StringType"/>
       </argout>
       <status abstract="false" inherited="false" concrete="true" concreteHere="true"/>
     </commands>
     <commands name="GetAlarmStats" description="Get current alarm stats" execMethod="get_alarm_stats" displayLevel="OPERATOR" polledPeriod="0" isDynamic="false">
-      <argin description="Alarm name">
+      <argin description="">
         <type xsi:type="pogoDsl:VoidType"/>
       </argin>
       <argout description="JSON string">
-        <type xsi:type="pogoDsl:VoidType"/>
+        <type xsi:type="pogoDsl:StringType"/>
       </argout>
       <status abstract="false" inherited="false" concrete="true" concreteHere="true"/>
     </commands>
     <commands name="GetAlertStats" description="Get current alert stats" execMethod="get_alert_stats" displayLevel="OPERATOR" polledPeriod="0" isDynamic="false">
-      <argin description="Alert name">
+      <argin description="">
         <type xsi:type="pogoDsl:VoidType"/>
       </argin>
       <argout description="JSON string">

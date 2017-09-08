@@ -265,22 +265,22 @@
       <status abstract="false" inherited="true" concrete="true"/>
       <properties description="The test mode of the device. &#xA;Either no test mode (empty string) or an indication of the test mode." label="" unit="" standardUnit="" displayUnit="" format="" maxValue="" minValue="" maxAlarm="" minAlarm="" maxWarning="" minWarning="" deltaTime="" deltaValue=""/>
     </attributes>
-    <dynamicAttributes name="activeAlerts" attType="Spectrum" rwType="READ" displayLevel="OPERATOR" polledPeriod="1000" maxX="10000" maxY="" allocReadMember="true" isDynamic="true">
+    <attributes name="activeAlerts" attType="Spectrum" rwType="READ" displayLevel="OPERATOR" polledPeriod="1000" maxX="10000" maxY="" allocReadMember="true" isDynamic="false">
       <dataType xsi:type="pogoDsl:StringType"/>
       <changeEvent fire="false" libCheckCriteria="false"/>
       <archiveEvent fire="false" libCheckCriteria="false"/>
       <dataReadyEvent fire="false" libCheckCriteria="true"/>
       <status abstract="false" inherited="false" concrete="true" concreteHere="true"/>
       <properties description="List of active alerts" label="" unit="" standardUnit="" displayUnit="" format="" maxValue="" minValue="" maxAlarm="" minAlarm="" maxWarning="" minWarning="" deltaTime="" deltaValue=""/>
-    </dynamicAttributes>
-    <dynamicAttributes name="alarmsActive" attType="Spectrum" rwType="READ" displayLevel="OPERATOR" polledPeriod="1000" maxX="10000" maxY="" allocReadMember="true" isDynamic="true">
+      </attributes>
+    <attributes name="activeAlarms" attType="Spectrum" rwType="READ" displayLevel="OPERATOR" polledPeriod="1000" maxX="10000" maxY="" allocReadMember="true" isDynamic="false">
       <dataType xsi:type="pogoDsl:StringType"/>
       <changeEvent fire="false" libCheckCriteria="false"/>
       <archiveEvent fire="false" libCheckCriteria="false"/>
       <dataReadyEvent fire="false" libCheckCriteria="true"/>
       <status abstract="false" inherited="false" concrete="true" concreteHere="true"/>
       <properties description="List of active alarms" label="" unit="" standardUnit="" displayUnit="" format="" maxValue="" minValue="" maxAlarm="" minAlarm="" maxWarning="" minWarning="" deltaTime="" deltaValue=""/>
-    </dynamicAttributes>
+      </attributes>
     <states name="ON" description="This state could have been called OK or OPERATIONAL. It means that the device is in its operational state. (E.g. the power supply is giving its nominal current, th motor is ON and ready to move, the instrument is operating). This state is modified by the Attribute alarm checking of the DeviceImpl:dev_state method. i.e. if the State is ON and one attribute has its quality factor to ATTR_WARNING or ATTR_ALARM, then the State is modified to ALARM.">
       <status abstract="false" inherited="true" concrete="true"/>
     </states>

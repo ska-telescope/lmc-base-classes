@@ -12,7 +12,7 @@
 name = """tangods-skacapability"""
 version = "1.0.0"
 version_info = version.split(".")
-description = """SubArray handling device"""
+description = """Subarray handling device"""
 author = "cam"
 author_email = "cam at ska.ac.za"
 license = """GPL"""

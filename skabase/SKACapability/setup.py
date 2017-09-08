@@ -28,7 +28,7 @@ pack = ['SKACapability']
 
 setup(name=name,
       version=version,
-      description='SubArray handling device',
+      description='Subarray handling device',
       packages=pack,
       include_package_data=True,
       test_suite="test",

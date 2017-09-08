@@ -1,4 +1,4 @@
-## SKALoggerDevice
+## SKALogger
 
 A generic base device for Logging for SKA.
 
@@ -23,4 +23,4 @@ run python setup.py test
 Now you can start your device server in any
 Terminal or console by calling it :
 
-SKALoggerDevice instance_name
+SKALogger instance_name

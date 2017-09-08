@@ -1,7 +1,7 @@
-recursive-include SKALoggerDevice *.py
+recursive-include SKALogger *.py
 recursive-include test *.py
 include *.rst
-include SKALoggerDevice.xmi
+include SKALogger.xmi
 include *.txt
 graft docs
 

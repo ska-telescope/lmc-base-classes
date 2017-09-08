@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 #
-# This file is part of the SKALoggerDevice project
+# This file is part of the SKALogger project
 #
 #
 #
@@ -21,10 +21,10 @@ readme_filename = os.path.join(setup_dir, 'README.rst')
 with open(readme_filename) as file:
     long_description = file.read()
 
-release_filename = os.path.join(setup_dir, 'SKALoggerDevice', 'release.py')
+release_filename = os.path.join(setup_dir, 'SKALogger', 'release.py')
 exec(open(release_filename).read())
 
-pack = ['SKALoggerDevice']
+pack = ['SKALogger']
 
 setup(name=name,
       version=version,
@@ -32,7 +32,7 @@ setup(name=name,
       packages=pack,
       include_package_data=True,
       test_suite="test",
-      entry_points={'console_scripts':['SKALoggerDevice = SKALoggerDevice:main']},
+      entry_points={'console_scripts':['SKALogger = SKALogger:main']},
       author='cam',
       author_email='cam at ska.ac.za',
       license='GPL',

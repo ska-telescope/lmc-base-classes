@@ -1,26 +1,29 @@
+"""General utilities that may be useful to SKA devices and clients.
+"""
+
 import ast
 import pydoc
 import inspect
-import sys
 import traceback
 
 from datetime import datetime
-from time import sleep
 
 import PyTango
 from PyTango import DeviceProxy, DbDatum, DevState, DbDevInfo, AttrQuality, AttrWriteType
-from PyTango import Database, DbDevInfo, DeviceProxy
 from PyTango._PyTango import DevState as _DevState
 from contextlib import contextmanager
 
 
-int_types = {PyTango._PyTango.CmdArgType.DevUShort, PyTango._PyTango.CmdArgType.DevLong,
+int_types = {PyTango._PyTango.CmdArgType.DevUShort,
+             PyTango._PyTango.CmdArgType.DevLong,
              PyTango._PyTango.CmdArgType.DevInt,
              PyTango._PyTango.CmdArgType.DevULong,
-             PyTango._PyTango.CmdArgType.DevULong64, PyTango._PyTango.CmdArgType.DevLong64,
+             PyTango._PyTango.CmdArgType.DevULong64,
+             PyTango._PyTango.CmdArgType.DevLong64,
              PyTango._PyTango.CmdArgType.DevShort}
 
-float_types = {PyTango._PyTango.CmdArgType.DevDouble, PyTango._PyTango.CmdArgType.DevFloat}
+float_types = {PyTango._PyTango.CmdArgType.DevDouble,
+               PyTango._PyTango.CmdArgType.DevFloat}
 
 # TBD - investigate just using (command argin data_type)
 tango_type_conversion = {PyTango.CmdArgType.DevUShort.real: 'int',
@@ -40,17 +43,28 @@ tango_type_conversion = {PyTango.CmdArgType.DevUShort.real: 'int',
                          PyTango.CmdArgType.DevEnum.real: 'enum',
                          }
 # TBD - not all PyTango types are used
-#PyTango.CmdArgType.ConstDevString           PyTango.CmdArgType.DevState                 PyTango.CmdArgType.DevVarLong64Array        PyTango.CmdArgType.conjugate
-#PyTango.CmdArgType.DevBoolean               PyTango.CmdArgType.DevString                PyTango.CmdArgType.DevVarLongArray          PyTango.CmdArgType.denominator
-#PyTango.CmdArgType.DevDouble                PyTango.CmdArgType.DevUChar                 PyTango.CmdArgType.DevVarLongStringArray    PyTango.CmdArgType.imag
-#PyTango.CmdArgType.DevEncoded               PyTango.CmdArgType.DevULong                 PyTango.CmdArgType.DevVarShortArray         PyTango.CmdArgType.mro
-#PyTango.CmdArgType.DevEnum                  PyTango.CmdArgType.DevULong64               PyTango.CmdArgType.DevVarStateArray         PyTango.CmdArgType.name
-#PyTango.CmdArgType.DevFloat                 PyTango.CmdArgType.DevUShort                PyTango.CmdArgType.DevVarStringArray        PyTango.CmdArgType.names
-#PyTango.CmdArgType.DevInt                   PyTango.CmdArgType.DevVarBooleanArray       PyTango.CmdArgType.DevVarULong64Array       PyTango.CmdArgType.numerator
-#PyTango.CmdArgType.DevLong                  PyTango.CmdArgType.DevVarCharArray          PyTango.CmdArgType.DevVarULongArray         PyTango.CmdArgType.real
-#PyTango.CmdArgType.DevLong64                PyTango.CmdArgType.DevVarDoubleArray        PyTango.CmdArgType.DevVarUShortArray        PyTango.CmdArgType.values
-#PyTango.CmdArgType.DevPipeBlob              PyTango.CmdArgType.DevVarDoubleStringArray  PyTango.CmdArgType.DevVoid
-#PyTango.CmdArgType.DevShort                 PyTango.CmdArgType.DevVarFloatArray
+# PyTango.CmdArgType.ConstDevString           PyTango.CmdArgType.DevState
+# PyTango.CmdArgType.DevVarLong64Array        PyTango.CmdArgType.conjugate
+# PyTango.CmdArgType.DevBoolean               PyTango.CmdArgType.DevString
+# PyTango.CmdArgType.DevVarLongArray          PyTango.CmdArgType.denominator
+# PyTango.CmdArgType.DevDouble                PyTango.CmdArgType.DevUChar
+# PyTango.CmdArgType.DevVarLongStringArray    PyTango.CmdArgType.imag
+# PyTango.CmdArgType.DevEncoded               PyTango.CmdArgType.DevULong
+# PyTango.CmdArgType.DevVarShortArray         PyTango.CmdArgType.mro
+# PyTango.CmdArgType.DevEnum                  PyTango.CmdArgType.DevULong64
+# PyTango.CmdArgType.DevVarStateArray         PyTango.CmdArgType.name
+# PyTango.CmdArgType.DevFloat                 PyTango.CmdArgType.DevUShort
+# PyTango.CmdArgType.DevVarStringArray        PyTango.CmdArgType.names
+# PyTango.CmdArgType.DevInt                   PyTango.CmdArgType.DevVarBooleanArray
+# PyTango.CmdArgType.DevVarULong64Array       PyTango.CmdArgType.numerator
+# PyTango.CmdArgType.DevLong                  PyTango.CmdArgType.DevVarCharArray
+# PyTango.CmdArgType.DevVarULongArray         PyTango.CmdArgType.real
+# PyTango.CmdArgType.DevLong64                PyTango.CmdArgType.DevVarDoubleArray
+# PyTango.CmdArgType.DevVarUShortArray        PyTango.CmdArgType.values
+# PyTango.CmdArgType.DevPipeBlob              PyTango.CmdArgType.DevVarDoubleStringArray
+# PyTango.CmdArgType.DevVoid
+# PyTango.CmdArgType.DevShort                 PyTango.CmdArgType.DevVarFloatArray
+
 
 @contextmanager
 def exception_manager(cls, arguments="", callback=None):
@@ -72,9 +86,9 @@ def exception_manager(cls, arguments="", callback=None):
         additional_info = traceback.format_exc()
         message = message + " [--" + additional_info + "--] "
 
-        ###cls.exception(command_name=class_name + "::" + calframe[2][3],
-        ###                          command_inputs=str(arguments),
-        ###                          message=message)
+        # cls.exception(command_name=class_name + "::" + calframe[2][3],
+        #               command_inputs=str(arguments),
+        #               message=message)
 
         if callback:
             callback()
@@ -98,9 +112,9 @@ def exception_manager(cls, arguments="", callback=None):
         additional_info = traceback.format_exc()
         message = message + " [--" + additional_info + "--] "
 
-        ###cls.exception(command_name=class_name+"::"+calframe[2][3],
-        ###                          command_inputs=str(arguments),
-        ###                          message=message)
+        #  cls.exception(command_name=class_name+"::"+calframe[2][3],
+        #                command_inputs=str(arguments),
+        #                message=message)
 
         if callback:
             callback()
@@ -136,8 +150,6 @@ def get_device_group_and_id(device_name):
     return device_name.split('/')[1:]
 
 
-
-
 def convert_api_value(param_dict):
     """
     Used to validate tango command parameters which are passed via json
@@ -152,7 +164,8 @@ def convert_api_value(param_dict):
     value_type = pydoc.locate(type_str)
     if value_type == bool:
         if not param_dict.get('value').lower() in ['true', 'false']:
-            raise Exception('Parameter value %s is not of type %s' % (param_dict.get('value'), value_type))
+            raise Exception('Parameter value %s is not of type %s'
+                            % (param_dict.get('value'), value_type))
         value = param_dict.get('value').lower() == 'true'
     else:
         value = value_type(param_dict.get('value'))
@@ -172,9 +185,12 @@ def get_dp_attribute(device_proxy, attribute, with_value=False, with_context=Fal
     attr_dict = {
         'name': attribute.name,
         'polling_frequency': attribute.events.per_event.period,
-        'min_value': attribute.min_value if attribute.min_value != 'Not specified' else None,
-        'max_value': attribute.max_value if attribute.min_value != 'Not specified' else None,
-        'readonly': attribute.writable not in [AttrWriteType.READ_WRITE, AttrWriteType.WRITE,
+        'min_value': (attribute.min_value if attribute.min_value != 'Not specified'
+                      else None),
+        'max_value': (attribute.max_value if attribute.max_value != 'Not specified'
+                      else None),
+        'readonly': attribute.writable not in [AttrWriteType.READ_WRITE,
+                                               AttrWriteType.WRITE,
                                                AttrWriteType.READ_WITH_WRITE]
     }
 
@@ -229,7 +245,7 @@ def get_dp_command(device_name, command, with_context=False):
                 return []
             # ugghhh POGO replaces quotes with backticks :(
             return ast.literal_eval(command_desc.replace('`', "'"))
-        except Exception as ex:
+        except Exception:
             # TBD - decide what to do - add log?
             pass
         return []

@@ -29,40 +29,89 @@ import json
 import pkg_resources
 import PyTango
 import logging
+from fandango import Astor
 
 
 DEFAULT_REFELT_ASTOR_CONFIG = dict(
 #node: {level: (server/instance,server/instance,...)}
     { "levpro": {
         0: ("TangoAccessControl/1",),
-    1: ("SvrFileLogger/Central",
-        "SvrFileLogger/Elt"),
-    2: ("SvrRefAchild/1",
-        "SvrRefAchild/2"),
-    3: ("SvrRefA/1",
-        "SvrRefA/2"),
-    5: ("SvrRefMaster/1",),
-    },
+        1: ("SvrFileLogger/Central",),
+        2: ("SvrFileLogger/Elt",),
+        3: ("SvrRefAchild/1",
+            "SvrRefAchild/2",
+            "SvrRefCapability/Sub1CapCalcA",
+            "SvrRefCapability/Sub1CapCalcB",
+            "SvrRefCapability/Sub1CapProcC",
+            "SvrRefCapability/Sub1CapProcD",
+            "SvrRefCapability/Sub2CapCalcA",
+            "SvrRefCapability/Sub2CapCalcB",
+            "SvrRefCapability/Sub2CapProcC",
+            "SvrRefCapability/Sub2CapProcD",),
+        4: ("SvrRefA/1",
+            "SvrRefA/2",
+            "SvrRefSubarray/1",
+            "SvrRefSubarray/2",
+            "SvrAlarmHandler/2",
+            "SvrAlarmHandler/3",),
+        5: ("SvrRefMaster/1",
+            "SvrAlarmHandler/1",
+            "SvrTelState/1"),
+        },
     })
 
 DEFAULT_REFELT_TANGO_CONFIG = dict(
-#server_class: {server_instance: ((device_class,domain/family/instance),...)}
+#server_exe: {server_instance: ((device_class,domain/family/instance),...)}
     { "SvrFileLogger" : {
+          # TBD - decide where to configure central devices like logger and archiver
           "Central": (("FileLogger", "ref/central/logger"),),
-      "Elt": (("FileLogger", "ref/elt/logger"),),
+          "Elt": (("FileLogger", "ref/elt/logger"),),
       },
       "SvrRefA" : {
-          "1": (("RefA", "ref/A/1"),),
-          "2": (("RefA", "ref/A/2"),),
+          "1": (("RefA", "ref/a/1"),),
+          "2": (("RefA", "ref/a/2"),),
       },
       "SvrRefAchild" : {
           "1": (("RefAchild", "ref/achild/11"),
-            ("RefAchild", "ref/achild/12"),),
+                ("RefAchild", "ref/achild/12"),),
           "2": (("RefAchild", "ref/achild/21"),
-            ("RefAchild", "ref/achild/22"),),
+                ("RefAchild", "ref/achild/22"),),
       },
       "SvrRefMaster" : {
-          "1": (("RefMaster","ref/elt/master"),),
+          "Elt": (("RefMaster","ref/elt/master"),),
+      },
+      "SvrRefTelState" : {
+          "Elt": (("RefTelState","ref/elt/telstate"),),
+      },
+      "SvrRefAlarmHandler" : {
+          "Elt": (("RefAlarmHandler","ref/elt/alarmhandler"),),
+          "SubElt1": (("RefAlarmHandler","ref/subelt1/alarmhandler"),),
+          "SubElt2": (("RefAlarmHandler","ref/subelt2/alarmhandler"),),
+      },
+      "SvrRefSubarray" : {
+          "Sub1": (("RefSubarray", "ref/subarray/1"),),
+          "Sub2": (("RefSubarray", "ref/subarray/2"),),
+      },
+      "SvrRefCapability" : {
+          "Sub1CapCalcA": (("RefCapability", "ref/capability/sub1_calca"),),
+          "Sub1CapCalcB": (("RefCapability", "ref/capability/sub1_calcb"),),
+          "Sub1CapProcC": (("RefCapability", "ref/capability/sub1_procc"),),
+          "Sub1CapProcD": (("RefCapability", "ref/capability/sub1_procd"),),
+          # or
+          #"Sub1CapA": (("RefCapability", "ref/subarray1/calca"),),
+          #"Sub1CapB": (("RefCapability", "ref/subarray1/calcb"),),
+          #"Sub1CapC": (("RefCapability", "ref/subarray1/procc"),),
+          #"Sub1CapD": (("RefCapability", "ref/subarray1/procd"),),
+          #or
+          #"Sub1CapA": (("RefCapability", "ref/calca/sub1"),),
+          #"Sub1CapB": (("RefCapability", "ref/calca/sub2"),),
+          #"Sub1CapC": (("RefCapability", "ref/calcb/sub1"),),
+          #"Sub1CapD": (("RefCapability", "ref/calcb/sub2"),),
+          #or
+          "Sub2CapCalcA": (("RefCapability", "ref/capability/sub2_calca"),),
+          "Sub2CapCalcB": (("RefCapability", "ref/capability/sub2_calcb"),),
+          "Sub2CapProcC": (("RefCapability", "ref/capability/sub2_procc"),),
+          "Sub2CapProcD": (("RefCapability", "ref/capability/sub2_procd"),),
       },
     })
 
@@ -110,7 +159,51 @@ def register_in_astor(name, astorconfig):
     print astorconfig
     errors += 1
     return errors, done, out
+    x = """
 
+    astor = Astor()
+    astor.load_by_name('snap*')
+    astor.keys()
+        ['snapmanager/1', 'snaparchiver/1', 'snapextractor/1']
+
+    server = astor['snaparchiver/1']
+    server.get_device_list()
+        ['dserver/snaparchiver/1', 'archiving/snaparchiver/1']
+
+    astor.states()
+    server.get_all_states()
+        dserver/snaparchiver/1: ON
+        archiving/snaparchiver/1: ON
+
+    astor.get_device_host('archiving/snaparchiver/1')
+        palantir01
+
+astor.stop_servers('snaparchiver/1')
+astor.stop_all_servers()
+astor.start_servers('snaparchiver/1','palantir01',wait=1000)
+astor.set_server_level('snaparchiver/1','palantir01',4)
+
+#Setting the polling of a device:
+server = astor['PySignalSimulator/bl11']
+for dev_name in server.get_device_list():
+    dev = server.get_device(dev_name)
+    attrs = dev.get_attribute_list()
+    [dev.poll_attribute(attr,3000) for attr in attrs]
+
+
+Start/Stop all device servers in a machine (like Astor -> Stop All)
+Stopping
+import fandango
+fandango.Astor(hosts=['my.host']).stop_all_servers()
+
+and the other way round
+astor = fandango.Astor(hosts=['my.host'])
+astor.start_all_servers()
+
+if you just want to see if things are effectively running or not:
+1
+astor.states()
+"""
 
 ##################################################
 ###          MODULE MAIN

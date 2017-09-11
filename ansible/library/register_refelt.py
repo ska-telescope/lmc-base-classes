@@ -50,13 +50,13 @@ DEFAULT_REFELT_ASTOR_CONFIG = dict(
             "SvrRefCapability/Sub2CapProcD",),
         4: ("SvrRefA/1",
             "SvrRefA/2",
-            "SvrRefSubarray/1",
-            "SvrRefSubarray/2",
-            "SvrAlarmHandler/2",
-            "SvrAlarmHandler/3",),
-        5: ("SvrRefMaster/1",
-            "SvrAlarmHandler/1",
-            "SvrTelState/1"),
+            "SvrRefSubarray/Sub1",
+            "SvrRefSubarray/Sub2",
+            "SvrAlarmHandler/SubElt1",
+            "SvrAlarmHandler/SubElt2",),
+        5: ("SvrRefMaster/Elt",
+            "SvrAlarmHandler/Elt",
+            "SvrTelState/Elt"),
         },
     })
 
@@ -142,7 +142,7 @@ def register_in_tango(name, dbconfig):
                     done += 1
                     out = out + " " + device_name
                 except Exception as exc:
-                    logging.error("FAILED to registered {} {}".format(device_name, exc))
+                    logging.error("FAILED to register {} {}".format(device_name, exc))
                     print """FAILED TO REGISTER in TANGO db"""
                     print """server_class={!r}  server_instance={!r} device_class={!r} device_name={!r}.""".format(
                         server_class, server_instance, device_class, device_name)
@@ -154,56 +154,44 @@ def register_in_tango(name, dbconfig):
 def register_in_astor(name, astorconfig):
     errors = 0
     done = 0
-    out = "FAILED"
-    print """FAILED TO REGISTER in ASTOR -- {}""".format(name)
-    print astorconfig
-    errors += 1
-    return errors, done, out
-    x = """
-
+    out = ""
+    #print """FAILED TO REGISTER in ASTOR -- {}""".format(name)
+    #print astorconfig
+    #errors += 1
+    #return errors, done, out
+    
+    #node: {level: (server/instance,server/instance,...)}
     astor = Astor()
-    astor.load_by_name('snap*')
-    astor.keys()
-        ['snapmanager/1', 'snaparchiver/1', 'snapextractor/1']
-
-    server = astor['snaparchiver/1']
-    server.get_device_list()
-        ['dserver/snaparchiver/1', 'archiving/snaparchiver/1']
-
-    astor.states()
-    server.get_all_states()
-        dserver/snaparchiver/1: ON
-        archiving/snaparchiver/1: ON
-
-    astor.get_device_host('archiving/snaparchiver/1')
-        palantir01
-
-astor.stop_servers('snaparchiver/1')
-astor.stop_all_servers()
-astor.start_servers('snaparchiver/1','palantir01',wait=1000)
-astor.set_server_level('snaparchiver/1','palantir01',4)
-
-#Setting the polling of a device:
-server = astor['PySignalSimulator/bl11']
-for dev_name in server.get_device_list():
-    dev = server.get_device(dev_name)
-    attrs = dev.get_attribute_list()
-    [dev.poll_attribute(attr,3000) for attr in attrs]
-
-
-Start/Stop all device servers in a machine (like Astor -> Stop All)
-Stopping
-import fandango
-fandango.Astor(hosts=['my.host']).stop_all_servers()
-
-and the other way round
-astor = fandango.Astor(hosts=['my.host'])
-astor.start_all_servers()
-
-if you just want to see if things are effectively running or not:
-1
-astor.states()
-"""
+    for node in sorted(astorconfig.keys()):
+        astor.load_by_host(node)
+        for level in sorted(astorconfig[node].keys()):
+            server_instances = astorconfig[node][level]
+            level_list = []
+            for server_instance in server_instances:
+                try:
+                    astor.set_server_level(server_instance, node, level)
+                    logging.info("Registered {}".format(server_instance))
+                    done += 1
+                    out = out + " " + server_instance
+                    level_list.append(server_instance)
+                    # For now - start each server - else they do not show up in the Astor GUI
+                    # Start them independently since they do not all exist in DsPath yet
+                    try:
+                        astor.start_servers(level_list, node)
+                    except Exception as exc:
+                        logging.error("FAILED to start {} {}".format(server_instance, exc))
+                        print """FAILED TO START in ASTOR"""
+                        print """node={!r}  level={!r} server_instance={!r}.""".format(
+                            node, level, server_instance)
+                        # Do not count this as an error for now
+                except Exception as exc:
+                    logging.error("FAILED to register {} {}".format(server_instance, exc))
+                    print """FAILED TO REGISTER in ASTOR"""
+                    print """node={!r}  level={!r} server_instance={!r}.""".format(
+                        node, level, server_instance)
+                    errors += 1
+                    continue
+    return errors, done, out
 
 ##################################################
 ###          MODULE MAIN

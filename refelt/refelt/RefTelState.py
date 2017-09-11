@@ -9,7 +9,7 @@
 
 """ RefTelState
 
-Ref (Reference Element) Telstate device.
+Ref (Reference Element) device of Type TelState
 """
 
 # PyTango imports
@@ -21,7 +21,7 @@ from PyTango.server import attribute, command
 from PyTango.server import device_property
 from PyTango import AttrQuality, DispLevel, DevState
 from PyTango import AttrWriteType, PipeWriteType
-from SKABaseDevice import SKABaseDevice
+from SKATelState import SKATelState
 # Additional import
 # PROTECTED REGION ID(RefTelState.additionnal_import) ENABLED START #
 # PROTECTED REGION END #    //  RefTelState.additionnal_import
@@ -29,9 +29,9 @@ from SKABaseDevice import SKABaseDevice
 __all__ = ["RefTelState", "main"]
 
 
-class RefTelState(SKABaseDevice):
+class RefTelState(SKATelState):
     """
-    Ref (Reference Element) Telstate device.
+    Ref (Reference Element) device of Type TelState
     """
     __metaclass__ = DeviceMeta
     # PROTECTED REGION ID(RefTelState.class_variable) ENABLED START #
@@ -48,23 +48,12 @@ class RefTelState(SKABaseDevice):
 
 
 
-
-
     # ----------
     # Attributes
     # ----------
 
 
 
-    attr1 = attribute(
-        dtype='str',
-        doc="Attribute 1 for DevB",
-    )
-
-    attr2 = attribute(
-        dtype='str',
-        doc="Attribute 2 for DevB",
-    )
 
 
 
@@ -72,20 +61,13 @@ class RefTelState(SKABaseDevice):
 
 
 
-
-
-    importantState = attribute(
-        dtype='DevEnum',
-        access=AttrWriteType.READ_WRITE,
-        enum_labels=["OK", "GOOD", "BAD", "VERY-BAD", ],
-    )
 
     # ---------------
-    # Refral methods
+    # General methods
     # ---------------
 
     def init_device(self):
-        SKABaseDevice.init_device(self)
+        SKATelState.init_device(self)
         # PROTECTED REGION ID(RefTelState.init_device) ENABLED START #
         # PROTECTED REGION END #    //  RefTelState.init_device
 
@@ -103,38 +85,10 @@ class RefTelState(SKABaseDevice):
     # Attributes methods
     # ------------------
 
-    def read_attr1(self):
-        # PROTECTED REGION ID(RefTelState.attr1_read) ENABLED START #
-        return ''
-        # PROTECTED REGION END #    //  RefTelState.attr1_read
-
-    def read_attr2(self):
-        # PROTECTED REGION ID(RefTelState.attr2_read) ENABLED START #
-        return ''
-        # PROTECTED REGION END #    //  RefTelState.attr2_read
-
-    def read_importantState(self):
-        # PROTECTED REGION ID(RefTelState.importantState_read) ENABLED START #
-        return 0
-        # PROTECTED REGION END #    //  RefTelState.importantState_read
-
-    def write_importantState(self, value):
-        # PROTECTED REGION ID(RefTelState.importantState_write) ENABLED START #
-        pass
-        # PROTECTED REGION END #    //  RefTelState.importantState_write
-
 
     # --------
     # Commands
     # --------
-
-    @command(
-    )
-    @DebugIt()
-    def Reset(self):
-        # PROTECTED REGION ID(RefTelState.Reset) ENABLED START #
-        pass
-        # PROTECTED REGION END #    //  RefTelState.Reset
 
 # ----------
 # Run server

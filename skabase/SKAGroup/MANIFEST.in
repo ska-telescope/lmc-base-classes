@@ -1,9 +1,0 @@
-recursive-include SKAGroup *.py
-recursive-include test *.py
-include *.rst
-include SKAGroup.xmi
-include *.txt
-graft docs
-
-global-exclude *.pyc
-global-exclude *.pyo

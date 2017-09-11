@@ -1,6 +1,6 @@
-## SKACapability
+## SKALogger
 
-Subarray handling device
+A generic base device for Logging for SKA.
 
 ## Requirement
 
@@ -23,4 +23,4 @@ run python setup.py test
 Now you can start your device server in any
 Terminal or console by calling it :
 
-SKACapability instance_name
+SKALogger instance_name

@@ -1,0 +1,22 @@
+<?xml version='1.0' encoding='ASCII'?>
+<pogoDsl:PogoSystem xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:pogoDsl="http://www.esrf.fr/tango/pogo/PogoDsl" xmi:version="2.0">
+  <classes name="SKAViewAll" pogoRevision="9.5">
+    <description description="A holder class that 'inherits' form all SKA Base classes to help in reviewing XMIs in POGO." title="SKAViewAll" sourcePath="" language="Python" filestogenerate="XMI   file,Code files,Protected Regions" license="GPL" hasMandatoryProperty="true" hasConcreteProperty="true" hasAbstractCommand="false" hasAbstractAttribute="false">
+      <inheritances classname="Device_Impl" sourcePath=""/>
+      <inheritances classname="SKABaseDevice" sourcePath="../SKABaseDevice"/>
+      <inheritances classname="SKAObsDevice" sourcePath="../SKAObsDevice"/>
+      <inheritances classname="SKAMaster" sourcePath="../SKAMaster"/>
+      <!--inheritances classname="SKASubarray" sourcePath="../SKASubarary" -->
+      <!--inheritances classname="SKACapability" sourcePath="../SKACapability" -->
+      <!--inheritances classname="SKAAlarmHandler" sourcePath="../SKAAlarmHandler"-->
+      <!--inheritances classname="SKATelState" sourcePath="../SKATelState"-->
+      <!--inheritances classname="SKALogger" sourcePath="../SKALogger"-->
+      <identification contact="at ska.ac.za - cam" author="cam" emailDomain="ska.ac.za" classFamily="OtherInstruments" siteSpecific="" platform="All Platforms" bus="Not Applicable" manufacturer="ISSA" reference="ISSA-SKABASE-SKABASE"/>
+    </description>i
+    <deviceProperties name="DoNotUseThisDevice" description="DO NOT USE THIS DEVICE - IT IS A UTILITY TO VIEW XMI IN POGO. Should be deleted when initial work on base class APIs has been done and the APIs stabilised somewhat">
+      <type xsi:type="pogoDsl:StringType"/>
+      <status abstract="false" inherited="false" concrete="true" concreteHere="true"/>
+    </deviceProperties>
+    <preferences docHome="./doc_html" makefileHome="/usr/share/pogo/preferences"/>
+  </classes>
+</pogoDsl:PogoSystem>

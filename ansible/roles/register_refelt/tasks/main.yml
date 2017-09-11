@@ -1,0 +1,55 @@
+---
+# THIS IS SPECIFIC FOR REFELT - JUST TO GET A REFELT REGISTERED
+# GENERALISATION OF CONFIG AND FOR OTHER ELEMENTS IS TBD
+
+###########################################
+##     PRINT STUFF
+###########################################
+
+- name: Print software_root directory
+  debug: msg="rootdir = {{software_root}}"
+
+
+###########################################
+##     Register in TANGO db
+###########################################
+
+#---
+#- hosts: your_host
+#  vars:
+#    jsonVar: "{{ lookup('file', 'var.json') | from_json }}"
+#  tasks:
+#    - name: test loop
+#      with_dict: "{{ jsonVar['queue'] }}"
+#      shell: |
+#        if echo "blue" | grep -q "{{ item.value.color }}" ; then
+#            echo "success"
+#        fi
+
+- block:
+  - name: Register RefElt servers, classes, devices
+    register_refelt:
+      action="in_tangodb"
+      facility_name="refelt"
+      facility_config="TBD"
+      #config="{{ refelt_config_dir }}"
+    register: writable_result
+  tags:
+    - register-refelt-in-tangodb
+
+
+###########################################
+##     Register in ASTOR
+###########################################
+
+- block:
+  - name: Register refelt servers in Astor
+    register_refelt:
+      action="in_astor"
+      facility_name="refelt"
+      facility_config="TBD"
+    register: writable_result
+  tags:
+    - register-refelt-in-astor
+
+...

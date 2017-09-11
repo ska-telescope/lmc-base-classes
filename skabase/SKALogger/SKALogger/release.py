@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# This file is part of the SKACapability project
+# This file is part of the SKALogger project
 #
 #
 #
@@ -9,10 +9,10 @@
 
 """Release information for Python Package"""
 
-name = """tangods-skacapability"""
+name = """tangods-skalogger"""
 version = "1.0.0"
 version_info = version.split(".")
-description = """Subarray handling device"""
+description = """A generic base device for Logging for SKA."""
 author = "cam"
 author_email = "cam at ska.ac.za"
 license = """GPL"""

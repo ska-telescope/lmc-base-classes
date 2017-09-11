@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 #
-# This file is part of the SKACapability project
+# This file is part of the SKATelState project
 #
 #
 #
@@ -21,18 +21,18 @@ readme_filename = os.path.join(setup_dir, 'README.rst')
 with open(readme_filename) as file:
     long_description = file.read()
 
-release_filename = os.path.join(setup_dir, 'SKACapability', 'release.py')
+release_filename = os.path.join(setup_dir, 'SKATelState', 'release.py')
 exec(open(release_filename).read())
 
-pack = ['SKACapability']
+pack = ['SKATelState']
 
 setup(name=name,
       version=version,
-      description='Subarray handling device',
+      description='A generic base device for Telescope State for SKA.',
       packages=pack,
       include_package_data=True,
       test_suite="test",
-      entry_points={'console_scripts':['SKACapability = SKACapability:main']},
+      entry_points={'console_scripts':['SKATelState = SKATelState:main']},
       author='cam',
       author_email='cam at ska.ac.za',
       license='GPL',

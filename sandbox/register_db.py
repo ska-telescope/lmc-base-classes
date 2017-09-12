@@ -42,7 +42,7 @@ def register_devices(device_class_name, server_name, server_instance_name,
                   """.format(device_name)
 
 
-def parse_config_file(opts):
+def register_element(opts):
 
     with open(opts.config_file) as elt_config_file:
         config_data = json.load(elt_config_file)
@@ -66,7 +66,7 @@ def parse_config_file(opts):
 
 def main():
     args = parser.parse_args()
-    parse_config_file(args)
+    register_element(args)
 
 
 if __name__ == "__main__":

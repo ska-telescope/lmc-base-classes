@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 import json
 import argparse
+import logging
 
 import PyTango
 import fandango.tango as tango
@@ -11,24 +12,34 @@ parser = argparse.ArgumentParser(
 parser.add_argument("-conf", "--config_file",
                     help="The config file defining the TANGO devices in the Element.",
                     required=True)
-registered_devices = []
-devices_not_registered = []
 
 
-def register_device(device_name, device_class_name, server_name,
-                    server_instance_name):
+def register_devices(device_class_name, server_name, server_instance_name,
+                     devices_list=None):
+
+    if devices_list is None:
+        print """No device(s) to register for server: {}, server_instance: {}, class: {}
+              """.format(server_name, server_instance_name, device_class_name)
+        return
+    elif not isinstance(devices_list, list):
+        devices_list = [devices_list]
 
     svr_name = server_name + '/' + server_instance_name
-    print """Attempting to register TANGO device {}
-          class: {} server: {}.""".format(device_name, device_class_name, svr_name)
-    try:
-        tango.add_new_device(svr_name, device_class_name, device_name)
-    except PyTango.DevError:
-        print """Failed to register device {} due to an
-              error with the database""".format(device_name)
-        devices_not_registered.append(device_name)
-    else:
-        registered_devices.append(device_name)
+
+    for device_name in devices_list:
+        print """Attempting to register TANGO device {}
+               class: {} server: {}.""".format(device_name, device_class_name, svr_name)
+        try:
+
+            tango.add_new_device(svr_name, device_class_name, device_name)
+        except PyTango.DevError as deverr:
+            logging.error("FAILED to register device {} {}".
+                          format(device_name, deverr))
+            print """Failed to register device {} due to an error with the database.
+                  """.format(device_name)
+        else:
+            print """Successfully registered device {} in the database.
+                  """.format(device_name)
 
 
 def parse_config_file(opts):
@@ -50,22 +61,12 @@ def parse_config_file(opts):
                 class_name = device_class['class_name']
                 devices = device_class['devices']
 
-                for device_name in devices:
-                    register_device(device_name, class_name, server_name,
-                                    server_instance_name)
-
-
-def print_registration_outcome():
-    print "Device(s) successfully registered."
-    print registered_devices
-    print "Device(s) not registered."
-    print devices_not_registered
+                register_devices(class_name, server_name, server_instance_name, devices)
 
 
 def main():
     args = parser.parse_args()
     parse_config_file(args)
-    print_registration_outcome()
 
 
 if __name__ == "__main__":

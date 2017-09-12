@@ -2,7 +2,6 @@
 import json
 import argparse
 
-import PyTango
 import fandango.tango as tango
 
 
@@ -17,7 +16,7 @@ def put_device_property(device_name, device_properties):
     for property_name, property_value in device_properties.items():
         print "Setting device {} properties {}: {}".format(
             device_name, property_name, property_value)
-        tango.put_device_property(device_name, {str(property_name): [property_value]})
+        tango.put_device_property(device_name, {str(property_name): property_value})
 
 def parse_config_file(opts):
 

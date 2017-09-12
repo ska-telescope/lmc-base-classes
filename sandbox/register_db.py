@@ -7,7 +7,7 @@ import fandango.tango as tango
 
 
 parser = argparse.ArgumentParser(
-    description="A Python script used to register TANGO devices and their properties")
+    description="A Python script used to register TANGO devices to the database")
 parser.add_argument("-conf", "--config_file",
                     help="The config file defining the TANGO devices in the Element.",
                     required=True)

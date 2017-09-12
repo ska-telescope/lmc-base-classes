@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 import json
 import argparse
+import logging
 
 import fandango as fn
 
@@ -37,7 +38,12 @@ def main():
                     try:
                         astor.start_servers([server_instance], host=host_name)
                     except Exception as exc:
-           # Do not count this as an error for now
+                        logging.error("FAILED to start {} {}".
+                                      format(server_instance, exc))
+                        print """FAILED TO START in ASTOR"""
+                        print """host={!r}  level={!r} server_instance={!r}.""".format(
+                            host_name, srv_instance_startup_level, server_instance)
+                    # Do not count this as an error for now
                 except Exception as exc:
                     logging.error("FAILED to register {} {}".format(
                         server_instance, exc))

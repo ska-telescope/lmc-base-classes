@@ -155,29 +155,23 @@ def register_in_astor(name, astorconfig):
     errors = 0
     done = 0
     out = ""
-    #print """FAILED TO REGISTER in ASTOR -- {}""".format(name)
-    #print astorconfig
-    #errors += 1
-    #return errors, done, out
-    
+   
     #node: {level: (server/instance,server/instance,...)}
     astor = Astor()
     for node in sorted(astorconfig.keys()):
         astor.load_by_host(node)
         for level in sorted(astorconfig[node].keys()):
             server_instances = astorconfig[node][level]
-            level_list = []
             for server_instance in server_instances:
                 try:
                     astor.set_server_level(server_instance, node, level)
                     logging.info("Registered {}".format(server_instance))
                     done += 1
                     out = out + " " + server_instance
-                    level_list.append(server_instance)
                     # For now - start each server - else they do not show up in the Astor GUI
                     # Start them independently since they do not all exist in DsPath yet
                     try:
-                        astor.start_servers(level_list, node)
+                        astor.start_servers([server_instance], node)
                     except Exception as exc:
                         logging.error("FAILED to start {} {}".format(server_instance, exc))
                         print """FAILED TO START in ASTOR"""

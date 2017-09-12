@@ -7,33 +7,28 @@ import fandango.tango as tango
 
 
 parser = argparse.ArgumentParser(
-    description="A python scritp used to register TANGO devices and their  properties")
+    description="A Python script used to register TANGO devices and their properties")
 parser.add_argument("-conf", "--config_file",
                     help="The config file defining the TANGO devices in the Element.",
                     required=True)
 registered_devices = []
+devices_not_registered = []
+
 
 def register_device(device_name, device_class_name, server_name,
                     server_instance_name):
 
     svr_name = server_name + '/' + server_instance_name
     print """Attempting to register TANGO device {}
-          class: {}  server: {}.""".format(device_name, device_class_name, svr_name)
+          class: {} server: {}.""".format(device_name, device_class_name, svr_name)
     try:
         tango.add_new_device(svr_name, device_class_name, device_name)
     except PyTango.DevError:
         print """Failed to register device {} due to an
               error with the database""".format(device_name)
+        devices_not_registered.append(device_name)
     else:
         registered_devices.append(device_name)
-
-
-def put_device_property(device_name, device_properties):
-
-    for property_name, property_value in device_properties.items():
-        print "Setting device {} properties {}: {}".format(
-            device_name, property_name, property_value)
-        tango.put_device_property(device_name, {str(property_name): [property_value]})
 
 
 def parse_config_file(opts):
@@ -60,15 +55,17 @@ def parse_config_file(opts):
                                     server_instance_name)
 
 
-def print_registered_devices():
+def print_registration_outcome():
     print "Device(s) successfully registered."
     print registered_devices
+    print "Device(s) not registered."
+    print devices_not_registered
 
 
 def main():
     args = parser.parse_args()
     parse_config_file(args)
-    print_registered_devices()
+    print_registration_outcome()
 
 
 if __name__ == "__main__":

@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="ASCII"?>
+<pogoDsl:PogoSystem xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:pogoDsl="http://www.esrf.fr/tango/pogo/PogoDsl">
+  <classes name="RefAlarmHandler" pogoRevision="9.5">
+    <description description="Ref (Reference Element) device of Type AlarmHandler" title="RefAlarmHandler" sourcePath="/Users/lvdheever/link-devl4/git/levpro/refelt/refelt" language="PythonHL" filestogenerate="XMI   file,Code files,Protected Regions" license="GPL" copyright="" hasMandatoryProperty="false" hasConcreteProperty="false" hasAbstractCommand="false" hasAbstractAttribute="false">
+      <inheritances classname="Device_Impl" sourcePath=""/>
+      <inheritances classname="SKAAlarmHandler" sourcePath="../../skabase/SKAAlarmHandler"/>
+      <identification contact="at ska.ac.za - cam" author="cam" emailDomain="ska.ac.za" classFamily="OtherInstruments" siteSpecific="" platform="All Platforms" bus="Not Applicable" manufacturer="SKASA"/>
+    </description>
+  </classes>
+</pogoDsl:PogoSystem>

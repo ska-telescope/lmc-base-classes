@@ -6,10 +6,10 @@
       <inheritances classname="SKABaseDevice" sourcePath="../SKABaseDevice"/>
       <inheritances classname="SKAObsDevice" sourcePath="../SKAObsDevice"/>
       <inheritances classname="SKAMaster" sourcePath="../SKAMaster"/>
-      <!--inheritances classname="SKASubarray" sourcePath="../SKASubarary" -->
-      <!--inheritances classname="SKACapability" sourcePath="../SKACapability" -->
-      <!--inheritances classname="SKAAlarmHandler" sourcePath="../SKAAlarmHandler"-->
-      <!--inheritances classname="SKATelState" sourcePath="../SKATelState"-->
+      <inheritances classname="SKASubarray" sourcePath="../SKASubarary"/>
+      <inheritances classname="SKACapability" sourcePath="../SKACapability"/>
+      <inheritances classname="SKAAlarmHandler" sourcePath="../SKAAlarmHandler"/>
+      <inheritances classname="SKATelState" sourcePath="../SKATelState"/>
       <!--inheritances classname="SKALogger" sourcePath="../SKALogger"-->
       <identification contact="at ska.ac.za - cam" author="cam" emailDomain="ska.ac.za" classFamily="OtherInstruments" siteSpecific="" platform="All Platforms" bus="Not Applicable" manufacturer="ISSA" reference="ISSA-SKABASE-SKABASE"/>
     </description>i

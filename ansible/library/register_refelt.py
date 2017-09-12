@@ -29,40 +29,89 @@ import json
 import pkg_resources
 import PyTango
 import logging
+from fandango import Astor
 
 
 DEFAULT_REFELT_ASTOR_CONFIG = dict(
 #node: {level: (server/instance,server/instance,...)}
     { "levpro": {
         0: ("TangoAccessControl/1",),
-    1: ("SvrFileLogger/Central",
-        "SvrFileLogger/Elt"),
-    2: ("SvrRefAchild/1",
-        "SvrRefAchild/2"),
-    3: ("SvrRefA/1",
-        "SvrRefA/2"),
-    5: ("SvrRefMaster/1",),
-    },
+        1: ("SvrFileLogger/Central",),
+        2: ("SvrFileLogger/Elt",),
+        3: ("SvrRefAchild/1",
+            "SvrRefAchild/2",
+            "SvrRefCapability/Sub1CapCalcA",
+            "SvrRefCapability/Sub1CapCalcB",
+            "SvrRefCapability/Sub1CapProcC",
+            "SvrRefCapability/Sub1CapProcD",
+            "SvrRefCapability/Sub2CapCalcA",
+            "SvrRefCapability/Sub2CapCalcB",
+            "SvrRefCapability/Sub2CapProcC",
+            "SvrRefCapability/Sub2CapProcD",),
+        4: ("SvrRefA/1",
+            "SvrRefA/2",
+            "SvrRefSubarray/Sub1",
+            "SvrRefSubarray/Sub2",
+            "SvrAlarmHandler/SubElt1",
+            "SvrAlarmHandler/SubElt2",),
+        5: ("SvrRefMaster/Elt",
+            "SvrAlarmHandler/Elt",
+            "SvrTelState/Elt"),
+        },
     })
 
 DEFAULT_REFELT_TANGO_CONFIG = dict(
-#server_class: {server_instance: ((device_class,domain/family/instance),...)}
+#server_exe: {server_instance: ((device_class,domain/family/instance),...)}
     { "SvrFileLogger" : {
+          # TBD - decide where to configure central devices like logger and archiver
           "Central": (("FileLogger", "ref/central/logger"),),
-      "Elt": (("FileLogger", "ref/elt/logger"),),
+          "Elt": (("FileLogger", "ref/elt/logger"),),
       },
       "SvrRefA" : {
-          "1": (("RefA", "ref/A/1"),),
-          "2": (("RefA", "ref/A/2"),),
+          "1": (("RefA", "ref/a/1"),),
+          "2": (("RefA", "ref/a/2"),),
       },
       "SvrRefAchild" : {
           "1": (("RefAchild", "ref/achild/11"),
-            ("RefAchild", "ref/achild/12"),),
+                ("RefAchild", "ref/achild/12"),),
           "2": (("RefAchild", "ref/achild/21"),
-            ("RefAchild", "ref/achild/22"),),
+                ("RefAchild", "ref/achild/22"),),
       },
       "SvrRefMaster" : {
-          "1": (("RefMaster","ref/elt/master"),),
+          "Elt": (("RefMaster","ref/elt/master"),),
+      },
+      "SvrRefTelState" : {
+          "Elt": (("RefTelState","ref/elt/telstate"),),
+      },
+      "SvrRefAlarmHandler" : {
+          "Elt": (("RefAlarmHandler","ref/elt/alarmhandler"),),
+          "SubElt1": (("RefAlarmHandler","ref/subelt1/alarmhandler"),),
+          "SubElt2": (("RefAlarmHandler","ref/subelt2/alarmhandler"),),
+      },
+      "SvrRefSubarray" : {
+          "Sub1": (("RefSubarray", "ref/subarray/1"),),
+          "Sub2": (("RefSubarray", "ref/subarray/2"),),
+      },
+      "SvrRefCapability" : {
+          "Sub1CapCalcA": (("RefCapability", "ref/capability/sub1_calca"),),
+          "Sub1CapCalcB": (("RefCapability", "ref/capability/sub1_calcb"),),
+          "Sub1CapProcC": (("RefCapability", "ref/capability/sub1_procc"),),
+          "Sub1CapProcD": (("RefCapability", "ref/capability/sub1_procd"),),
+          # or
+          #"Sub1CapA": (("RefCapability", "ref/subarray1/calca"),),
+          #"Sub1CapB": (("RefCapability", "ref/subarray1/calcb"),),
+          #"Sub1CapC": (("RefCapability", "ref/subarray1/procc"),),
+          #"Sub1CapD": (("RefCapability", "ref/subarray1/procd"),),
+          #or
+          #"Sub1CapA": (("RefCapability", "ref/calca/sub1"),),
+          #"Sub1CapB": (("RefCapability", "ref/calca/sub2"),),
+          #"Sub1CapC": (("RefCapability", "ref/calcb/sub1"),),
+          #"Sub1CapD": (("RefCapability", "ref/calcb/sub2"),),
+          #or
+          "Sub2CapCalcA": (("RefCapability", "ref/capability/sub2_calca"),),
+          "Sub2CapCalcB": (("RefCapability", "ref/capability/sub2_calcb"),),
+          "Sub2CapProcC": (("RefCapability", "ref/capability/sub2_procc"),),
+          "Sub2CapProcD": (("RefCapability", "ref/capability/sub2_procd"),),
       },
     })
 
@@ -93,7 +142,7 @@ def register_in_tango(name, dbconfig):
                     done += 1
                     out = out + " " + device_name
                 except Exception as exc:
-                    logging.error("FAILED to registered {} {}".format(device_name, exc))
+                    logging.error("FAILED to register {} {}".format(device_name, exc))
                     print """FAILED TO REGISTER in TANGO db"""
                     print """server_class={!r}  server_instance={!r} device_class={!r} device_name={!r}.""".format(
                         server_class, server_instance, device_class, device_name)
@@ -105,12 +154,38 @@ def register_in_tango(name, dbconfig):
 def register_in_astor(name, astorconfig):
     errors = 0
     done = 0
-    out = "FAILED"
-    print """FAILED TO REGISTER in ASTOR -- {}""".format(name)
-    print astorconfig
-    errors += 1
+    out = ""
+   
+    #node: {level: (server/instance,server/instance,...)}
+    astor = Astor()
+    for node in sorted(astorconfig.keys()):
+        astor.load_by_host(node)
+        for level in sorted(astorconfig[node].keys()):
+            server_instances = astorconfig[node][level]
+            for server_instance in server_instances:
+                try:
+                    astor.set_server_level(server_instance, node, level)
+                    logging.info("Registered {}".format(server_instance))
+                    done += 1
+                    out = out + " " + server_instance
+                    # For now - start each server - else they do not show up in the Astor GUI
+                    # Start them independently since they do not all exist in DsPath yet
+                    try:
+                        astor.start_servers([server_instance], node)
+                    except Exception as exc:
+                        logging.error("FAILED to start {} {}".format(server_instance, exc))
+                        print """FAILED TO START in ASTOR"""
+                        print """node={!r}  level={!r} server_instance={!r}.""".format(
+                            node, level, server_instance)
+                        # Do not count this as an error for now
+                except Exception as exc:
+                    logging.error("FAILED to register {} {}".format(server_instance, exc))
+                    print """FAILED TO REGISTER in ASTOR"""
+                    print """node={!r}  level={!r} server_instance={!r}.""".format(
+                        node, level, server_instance)
+                    errors += 1
+                    continue
     return errors, done, out
-
 
 ##################################################
 ###          MODULE MAIN

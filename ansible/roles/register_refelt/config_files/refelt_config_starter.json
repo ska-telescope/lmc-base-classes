@@ -1,0 +1,23 @@
+{
+    "api_version": "v1",
+    "tango_hosts": {
+          "levpro": [
+              {
+                  "startup_level": 1,
+                  "server_instances": ["FileLogger/elt", "FileLogger/central"]
+              },
+              {
+                  "startup_level": 2,
+                  "server_instances": ["RefAchild/11", "RefAchildA/12", "RefAchild/21", "RefAchild/22"]
+              },
+              {
+                  "startup_level": 3,
+                  "server_instances": ["RefA/1", "RefA/2"]
+              },
+              {
+                  "startup_level": 5,
+                  "server_instances": ["RefMaster/1"]
+              }
+          ]
+    }
+}

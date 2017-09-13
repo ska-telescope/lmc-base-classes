@@ -28,28 +28,10 @@
 
 - block:
   - name: Register RefElt servers, classes, devices
-    register_refelt:
-      action="in_tangodb"
-      facility_name="refelt"
-      facility_config="TBD"
-      #config="{{ refelt_config_dir }}"
+    register_element:
+      elt_config_file:"{{ refelt_config_dir }}/ {{ refelt_db_json }}"
     register: writable_result
   tags:
     - register-refelt-in-tangodb
-
-
-###########################################
-##     Register in ASTOR
-###########################################
-
-- block:
-  - name: Register refelt servers in Astor
-    register_refelt:
-      action="in_astor"
-      facility_name="refelt"
-      facility_config="TBD"
-    register: writable_result
-  tags:
-    - register-refelt-in-astor
 
 ...

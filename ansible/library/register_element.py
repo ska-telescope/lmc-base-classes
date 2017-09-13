@@ -70,9 +70,9 @@ def register_devices(device_class_name, server_name, server_instance_name,
             registered_devices.append(device_name)
 
 
-def register_element(opts):
+def register_element(config_file):
 
-    with open(opts) as elt_config_file:
+    with open(config_file) as elt_config_file:
         config_data = json.load(elt_config_file)
 
     servers = config_data['tango_servers']
@@ -113,13 +113,10 @@ def run_module():
     # this includes instantiation, a couple of common attr would be the
     # args/params passed to the execution, as well as if the module
     # supports check mode.
-    #module = AnsibleModule(
-    #    argument_spec=module_args,
-    #    supports_check_mode=True
-    #)
     module = AnsibleModule(
-        argument_spec=dict(elt_config_file=dict(type='str', required=True)),
-        supports_check_mode=True)
+        argument_spec=module_args,
+        supports_check_mode=True
+    )
 
     # if the user is working with this module in only check mode we do not
     # want to make any changes to the environment, just return the current
@@ -128,9 +125,8 @@ def run_module():
         return result
 
     ## Check if required parameters are provided element_config
-    if not module.params.get('elt_config_file'):
-        msg = "element_config parameter has to be specified!"
-        module.fail_json(msg=msg)
+    if not module.params.get('elt_config_file'): 
+        module.fail_json(msg="elt_config_file parameter has to be specified!")
 
     # manipulate or modify the state as needed (this is going to be the
     # part where your module will do what it needs to do)
@@ -146,8 +142,8 @@ def run_module():
     # during the execution of the module, if there is an exception or a
     # conditional state that effectively causes a failure, run
     # AnsibleModule.fail_json() to pass in the message and the result
-    if not registered_devices:
-        module.fail_json(msg='The script failed to register devices in'
+    if devices_not_registered:
+        module.fail_json(msg='The script failed to register all the devices in'
                              ' the TANGO db', **result)
 
     # in the event of a successful module execution, you will want to

@@ -13,9 +13,6 @@ def main():
     """Main for the Ansible module"""
 
     ## Create ansible module
-    changed = False
-    message = ''
-
     module = AnsibleModule(
         argument_spec=dict(
             facility_name=dict(required=True),
@@ -44,9 +41,9 @@ def main():
         errors += 1
 
     if errors:
-        module.fail_json(msg=msg)
+        module.fail_json(msg=msg, changed=True) # May be no change, but rather say True if not sure
     else:
-        module.exit_json(msg="Success ({})".format(out),changed=True)
+        module.exit_json(msg="Success ({})".format(out), changed=True)
 
 
 ## Include at the end ansible (NB: it is not a standard Python include according to manual)

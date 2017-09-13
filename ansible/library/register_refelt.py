@@ -3,8 +3,10 @@
 ##################################################
 ### DEBUG USING:
 ### ansible-playbook -i hosts site.yml --limit local --tags register-refelt-in-tangodb -vvv
+### ansible-playbook -i hosts site.yml --limit local --tags register-refelt-in-astor -vvv
 ### USE IT LIKE THIS:
 ### ./play-task.sh register-refelt in-tangodb
+### ./play-task.sh register-refelt in-astor
 ##################################################
 
 
@@ -177,6 +179,7 @@ def register_in_astor(name, astorconfig):
                         print """FAILED TO START in ASTOR"""
                         print """node={!r}  level={!r} server_instance={!r}.""".format(
                             node, level, server_instance)
+                        out += "(not started)"
                         # Do not count this as an error for now
                 except Exception as exc:
                     logging.error("FAILED to register {} {}".format(server_instance, exc))

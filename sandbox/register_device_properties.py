@@ -1,7 +1,9 @@
 #!/usr/bin/env python
 import json
 import argparse
+import logging
 
+import PyTango
 import fandango.tango as tango
 
 
@@ -16,9 +18,18 @@ def put_device_property(device_name, device_properties):
     for property_name, property_value in device_properties.items():
         print "Setting device {} properties {}: {}".format(
             device_name, property_name, property_value)
-        tango.put_device_property(device_name, {str(property_name): property_value})
+        try:
+            tango.put_device_property(device_name, {str(property_name): property_value})
+        except PyTango.DevError as deverr:
+            logging.error("FAILED to register device property {} {}."
+                          .format(property_name, deverr))
+            print """Failed to register device property {} in the database.
+                  """.format(property_name)
+        else:
+            print """Successfully registered device property {} in the database.
+                  """.format(property_name)
 
-def parse_config_file(opts):
+def update_device_properties(opts):
 
     with open(opts.config_file) as elt_config_file:
         config_data = json.load(elt_config_file)
@@ -31,7 +42,7 @@ def parse_config_file(opts):
 
 def main():
     args = parser.parse_args()
-    parse_config_file(args)
+    update_device_properties(args)
 
 
 if __name__ == "__main__":

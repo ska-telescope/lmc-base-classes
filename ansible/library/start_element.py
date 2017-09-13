@@ -113,10 +113,6 @@ def run_module():
     if module.check_mode:
         return result
 
-    ## Check if required parameters are provided element_config
-    if not module.params.get('element_config'):
-        module.fail_json(msg="element_config parameter has to be specified!")
-
     # manipulate or modify the state as needed (this is going to be the
     # part where your module will do what it needs to do)
     start_element(module.params['element_config'])

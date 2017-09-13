@@ -101,10 +101,6 @@ def run_module():
     if module.check_mode:
         return result
 
-    ## Check if required parameters are provided element_config
-    if not module.params.get('elt_config_file'):
-        module.fail_json(msg="element_config parameter has to be specified!")
-
     # manipulate or modify the state as needed (this is going to be the
     # part where your module will do what it needs to do)
     update_device_properties(module.params['elt_config_file'])

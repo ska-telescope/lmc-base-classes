@@ -1,23 +1,50 @@
-#!/usr/bin/env python
+#!/usr/bin/python
 import json
-import argparse
 import logging
 
 import fandango as fn
 
-parser = argparse.ArgumentParser(description="A Python script used to start the TANGO"
-                                             "device server processes and register them"
-                                             "with Starter for automated startup")
-parser.add_argument("-conf", "--config_file",
-                    help="A configuration file defining the server processes to be run"
-                    "by Starter.", required=True)
+DOCUMENTATION = '''
+---
+module: start_element
 
+short_description: Start element device servers.
 
-def main():
-    args = parser.parse_args()
+description:
+    - Start the device servers in the element using Astor.
+
+options:
+    element_config:
+        description:
+            - A json file defining the list of device server instances grouped
+              according to their startup levels.
+        required: true
+
+author:
+    - CAM (cam@ska.ac.za)
+'''
+
+EXAMPLES = '''
+- name: Start the Element's device servers.
+  start_element:
+    element_config: refelt_config_db.json
+'''
+
+RETURN = '''
+Running_servers:
+    : The list of server instances running.
+Servers_not_running:
+    description: The list of server instances not running.
+'''
+
+running_servers = []
+servers_not_running = []
+
+def start_element(elt_config):
+
     astor = fn.Astor()
 
-    with open(args.config_file) as elt_config_file:
+    with open(elt_config) as elt_config_file:
         facility_data = json.load(elt_config_file)
 
     hosts_data = facility_data["tango_hosts"]
@@ -37,20 +64,86 @@ def main():
                     # in DsPath yet
                     try:
                         astor.start_servers([server_instance], host=host_name)
+                        running_servers.append(server_instance)
                     except Exception as exc:
                         logging.error("FAILED to start {} {}".
                                       format(server_instance, exc))
                         print """FAILED TO START in ASTOR"""
                         print """host={!r}  level={!r} server_instance={!r}.""".format(
                             host_name, srv_instance_startup_level, server_instance)
-                    # Do not count this as an error for now
+                        # Do not count this as an error for now
                 except Exception as exc:
                     logging.error("FAILED to register {} {}".format(
                         server_instance, exc))
                     print """FAILED TO REGISTER in ASTOR"""
                     print """host={!r}  level={!r} server_instance={!r}.""".format(
                         host_name, srv_instance_startup_level, server_instance)
+                    servers_not_running.append(server_instance)
 
 
-if __name__ == "__main__":
+def run_module():
+    # define the available arguments/parameters that a user can pass to
+    # the module
+    module_args = dict(
+        element_config=dict(type='str', required=True)
+    )
+
+    # seed the result dict in the object
+    # we primarily care about changed and state
+    # change is if this module effectively modified the target
+    # state will include any data that you want your module to pass back
+    # for consumption, for example, in a subsequent task.
+    result = dict(
+        changed=False,
+        Running_servers='',
+        Servers_not_running=''
+    )
+    # the AnsibleModule object will be our abstraction working with Ansible
+    # this includes instantiation, a couple of common attr would be the
+    # args/params passed to the execution, as well as if the module
+    # supports check mode.
+    module = AnsibleModule(
+        argument_spec=module_args,
+        supports_check_mode=True
+    )
+
+    # if the user is working with this module in only check mode we do not
+    # want to make any changes to the environment, just return the current
+    # state with no modifications
+    if module.check_mode:
+        return result
+
+    ## Check if required parameters are provided element_config
+    if not module.params.get('element_config'):
+        module.fail_json(msg="element_config parameter has to be specified!")
+
+    # manipulate or modify the state as needed (this is going to be the
+    # part where your module will do what it needs to do)
+    start_element(module.params['element_config'])
+    result['Running_servers'] = running_servers
+    result['Servers_not_running'] = servers_not_running
+
+    # use whatever logic you need to determine whether or not this module
+    # made any modifications to your target
+    if running_servers:
+        result['changed'] = True
+
+    # during the execution of the module, if there is an exception or a
+    # conditional state that effectively causes a failure, run
+    # AnsibleModule.fail_json() to pass in the message and the result
+    if servers_not_running:
+        module.fail_json(msg='The script failed to start all the servers.',
+                         **result)
+
+    # in the event of a successful module execution, you will want to
+    # simple AnsibleModule.exit_json(), passing the key/value results
+    module.exit_json(msg="Successful run!!!", **result)
+
+
+from ansible.module_utils.basic import AnsibleModule
+
+def main():
+    run_module()
+
+if __name__ == '__main__':
     main()

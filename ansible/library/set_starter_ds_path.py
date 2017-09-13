@@ -20,7 +20,7 @@ def main():
         argument_spec=dict(
             facility_name=dict(required=True),
             facility_config=dict(required=True),
-            add_path=dict(required=True)),
+            starter_path=dict(required=True)),
         supports_check_mode=True
         )
 
@@ -32,14 +32,13 @@ def main():
 
     errors = 0
     db  = PyTango.Database()
-    add_path = module.params.get('add_path')
+    starter_path = module.params.get('starter_path')
 
     try:
         hostname = platform.uname()[1]
         starter = "tango/admin/" + hostname
-        curr_dspath = db.get_device_property_list(starter, "startDsPath").value_string
-        db.put_device_property(starter, {"startDsPath": curr_dspath.extend([add_path])})
-        out = db.get_device_property_list(starter, "startDsPath").value_string
+        db.put_device_property(starter, {"startDsPath": starter_path})
+        out = db.get_device_property(starter, "startDsPath")
     except Exception as exc:
         msg = "FAILED ({})".format(exc)
         errors += 1
@@ -47,7 +46,7 @@ def main():
     if errors:
         module.fail_json(msg=msg)
     else:
-        module.exit_json(msg="Success (startDsPath={})".format(out),changed=True)
+        module.exit_json(msg="Success ({})".format(out),changed=True)
 
 
 ## Include at the end ansible (NB: it is not a standard Python include according to manual)

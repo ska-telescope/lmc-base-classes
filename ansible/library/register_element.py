@@ -7,12 +7,12 @@ import fandango.tango as tango
 
 DOCUMENTATION = '''
 ---
-module: register_devices
+module: register_element
 
 short_description: Register TANGO devices.
 
 description:
-    - This module is used to register TANGO devices to the database.
+    - This module is used to register TANGO devices of an Element to the database.
 
 options:
     element_config:
@@ -26,7 +26,7 @@ author:
 
 EXAMPLES = '''
 - name: Register the Reference Element devices.
-  register_devices:
+  register_element:
     element_config: refelt_config_db.json
 '''
 

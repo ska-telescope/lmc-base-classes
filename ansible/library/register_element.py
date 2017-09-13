@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 import json
-import argparse
 
 import PyTango
 import fandango.tango as tango
@@ -125,7 +124,7 @@ def run_module():
         return result
 
     ## Check if required parameters are provided element_config
-    if not module.params.get('elt_config_file'): 
+    if not module.params.get('elt_config_file'):
         module.fail_json(msg="elt_config_file parameter has to be specified!")
 
     # manipulate or modify the state as needed (this is going to be the

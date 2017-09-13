@@ -2,7 +2,7 @@
 import json
 
 import PyTango
-import fandango.tango as tango
+import fandango.tango as fantango
 
 DOCUMENTATION = '''
 ---
@@ -56,7 +56,7 @@ def register_devices(device_class_name, server_name, server_instance_name,
                class: {} server: {}.""".format(device_name, device_class_name, svr_name)
         try:
 
-            tango.add_new_device(svr_name, device_class_name, device_name)
+            fantango.add_new_device(svr_name, device_class_name, device_name)
         except PyTango.DevError as deverr:
             logging.error("FAILED to register device {} {}".
                           format(device_name, deverr))

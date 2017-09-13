@@ -27,7 +27,7 @@ author:
 EXAMPLES = '''
 - name: Start the Element's device servers.
   start_element:
-    element_config: refelt_config_db.json
+    element_config: refelt_config_starter.json
 '''
 
 RETURN = '''

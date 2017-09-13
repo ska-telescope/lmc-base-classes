@@ -37,8 +37,8 @@ def main():
     try:
         hostname = platform.uname()[1]
         starter = "tango/admin/" + hostname
-        db.put_device_property(starter, {"startDsPath": starter_path})
-        out = db.get_device_property(starter, "startDsPath")
+        db.put_device_property(starter, {"StartDsPath": starter_path})
+        out = db.get_device_property(starter, "StartDsPath")
     except Exception as exc:
         msg = "FAILED ({})".format(exc)
         errors += 1

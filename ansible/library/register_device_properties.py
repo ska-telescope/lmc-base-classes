@@ -58,6 +58,7 @@ def put_device_property(device_name, device_properties):
                   """.format(property_name)
             registered_properties.append(property_name)
 
+
 def update_device_properties(elt_config):
 
     with open(elt_config) as elt_config_file:

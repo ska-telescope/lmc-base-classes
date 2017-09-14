@@ -59,23 +59,33 @@ def start_element(elt_config):
                 try:
                     astor.set_server_level(server_instance, host_name,
                                            srv_instance_startup_level)
-                    # For now - start each server - else they do not show up in the
-                    # Astor GUI. Start them independently since they do not all exist
-                    # in DsPath yet
-                    try:
-                        astor.start_servers([server_instance], host=host_name)
-                        running_servers.append(server_instance)
-                    except Exception as exc:
-                        logging.error("FAILED to start {} {}".
-                                      format(server_instance, exc))
+                except Exception as exc:
+                    logging.error("EXCEPTION in register {} {}".format(
+                        server_instance, exc))
+                    print """EXCEPTION IN REGISTER in ASTOR"""
+                    print """host={!r}  level={!r} server_instance={!r}.""".format(
+                        host_name, srv_instance_startup_level, server_instance)
+                    servers_not_running.append(server_instance)
+                    continue
+
+                # For now - start each server - else they do not show up in the
+                # Astor GUI. Start them independently since they do not all exist
+                # in StartDsPath yet
+                try:
+                    result = astor.start_servers([server_instance], host=host_name)
+                    if not result:
+                        logging.error("FAILED to start {}".
+                                      format(server_instance))
                         print """FAILED TO START in ASTOR"""
                         print """host={!r}  level={!r} server_instance={!r}.""".format(
                             host_name, srv_instance_startup_level, server_instance)
-                        # Do not count this as an error for now
+                        servers_not_running.append(server_instance)
+                    else:
+                        running_servers.append(server_instance)
                 except Exception as exc:
-                    logging.error("FAILED to register {} {}".format(
-                        server_instance, exc))
-                    print """FAILED TO REGISTER in ASTOR"""
+                    logging.error("EXCEPTION in start {} {}".
+                                  format(server_instance, exc))
+                    print """EXCEPTION IN START in ASTOR"""
                     print """host={!r}  level={!r} server_instance={!r}.""".format(
                         host_name, srv_instance_startup_level, server_instance)
                     servers_not_running.append(server_instance)

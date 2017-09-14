@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 import json
+import logging
 
 import PyTango
 import fandango.tango as fantango

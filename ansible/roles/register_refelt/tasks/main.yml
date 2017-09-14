@@ -43,12 +43,23 @@
 ###########################################
 
 - block:
+  - name: Set StartDsPath
+    set_starter_ds_path:
+      facility_name="refelt"
+      facility_config="TBD"
+      starter_path="/usr/local/bin/"
+    register: the_result
+  tags:
+    - register-refelt-in-astor
+    - register-refelt-in-astor-ds-path
+
+- block:
   - name: Register refelt servers in Astor
     register_refelt:
       action="in_astor"
       facility_name="refelt"
       facility_config="TBD"
-    register: writable_result
+    register: the_result
   tags:
     - register-refelt-in-astor
 

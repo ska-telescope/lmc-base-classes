@@ -43,7 +43,7 @@
 ###########################################
 
 - block:
-  - name: Set startDsPath
+  - name: Set StartDsPath
     set_starter_ds_path:
       facility_name="refelt"
       facility_config="TBD"

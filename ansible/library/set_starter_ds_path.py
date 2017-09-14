@@ -36,8 +36,12 @@ def main():
     try:
         hostname = platform.uname()[1]
         starter = "tango/admin/" + hostname
-        db.put_device_property(starter, {"StartDsPath": starter_path})
+        path_list = starter_path.split(",")
+        db.put_device_property(starter, {"StartDsPath": path_list})
         out = db.get_device_property(starter, "StartDsPath")
+        # Re-initialise Starter for the path to take effect
+        dp = PyTango.DeviceProxy(starter)
+        dp.command_inout("init")
     except Exception as exc:
         msg = "FAILED ({})".format(exc)
         errors += 1

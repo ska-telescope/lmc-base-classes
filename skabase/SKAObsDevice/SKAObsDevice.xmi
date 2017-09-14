@@ -24,21 +24,6 @@
       <status abstract="false" inherited="true" concrete="true"/>
       <DefaultPropValue>localhost</DefaultPropValue>
     </deviceProperties>
-    <deviceProperties name="CentralLoggingLevelDefault" description="Default logging level to Central logging target&#xA;(0=OFF, 1=FATAL, 2=ERROR, 3=WARNING, 4=INFO, 5=DEBUG)&#xA;&#xA;Default: 2">
-      <type xsi:type="pogoDsl:UShortType"/>
-      <status abstract="false" inherited="true" concrete="true"/>
-      <DefaultPropValue>2</DefaultPropValue>
-    </deviceProperties>
-    <deviceProperties name="ElementLoggingLevelDefault" description="Default logging level to Element logging target&#xA;(0=OFF, 1=FATAL, 2=ERROR, 3=WARNING, 4=INFO, 5=DEBUG)&#xA;&#xA;Default: 3">
-      <type xsi:type="pogoDsl:UShortType"/>
-      <status abstract="false" inherited="true" concrete="true"/>
-      <DefaultPropValue>3</DefaultPropValue>
-    </deviceProperties>
-    <deviceProperties name="StorageLoggingLevelStorage" description="Default logging level to Syslog logging target&#xA;(0=OFF, 1=FATAL, 2=ERROR, 3=WARNING, 4=INFO, 5=DEBUG)&#xA;&#xA;Default: 4">
-      <type xsi:type="pogoDsl:UShortType"/>
-      <status abstract="false" inherited="true" concrete="true"/>
-      <DefaultPropValue>4</DefaultPropValue>
-    </deviceProperties>
     <deviceProperties name="MetricList" description="A subset of attributes we want to expose as metrics for this device.">
       <type xsi:type="pogoDsl:StringType"/>
       <status abstract="false" inherited="true" concrete="true"/>
@@ -47,11 +32,6 @@
     <deviceProperties name="GroupDefinitions" description="List of grouped devices managed by a master.  Each string in the array is a JSON &#xA;document defining the ``groupname``, ``devices`` and ``groups`` in the group.&#xA;A proxy client will be opened for each of the managed devices.&#xA;A group will be instantiated for the managed devices per group.&#xA;Each entry in the array contains a JSON defining the group, like:&#xA;[ {``groupname``: ``group1``, &#xA;    ``devices``: ``csv list of devices in group1``},&#xA;  {``groupname``: ``group2``, # a group with devices and a subgroup&#xA;    ``devices``: ``csv list of devices in group2``,&#xA;     ``groups`` : ``csv list of sub groups``},&#xA;  {``groupname``: ``group3``, &#xA;     ``devices`` : ``csv list of devices in group3``}},&#xA;  {``groupname``: ``group4``, # a group with only subgroups&#xA;    ``groups`` : ``csv list of sub groups``}}]&#xA;&#xA;e.g. for a hierarchy of racks, servers and switches&#xA;[{ ``groupname``: ``servers``, &#xA;   ``devices``: ``elt/server/1,elt/server/2,elt/server/3,elt/server/4``},&#xA;  {``groupname``: ``switches``, &#xA;    ``devices``: ``elt/switch/A,elt/switch/B``},&#xA;  {``groupname``: ``pdus``, &#xA;    ``devices``: ``elt/pdu/rackA,elt/pdu/rackB``},&#xA;  {``groupname``:``rackA``, &#xA;    ``devices``: ``elt/server/1,elt/server/2,elt/switch/A,elt/pdu/rackA``},&#xA;  {``groupname``:``rackB``,&#xA;    ``devices``: ``elt/server/3,elt/server/4,elt/switch/B,elt/pdu/rackB``},&#xA;  {``groupname``:``racks``,&#xA;     ``groups``: ``rackA,rackB``}]">
       <type xsi:type="pogoDsl:StringVectorType"/>
       <status abstract="false" inherited="true" concrete="true"/>
-    </deviceProperties>
-    <deviceProperties name="StorageLoggingLevelDefault" description="Default logging level to Syslog logging target&#xA;(0=OFF, 1=FATAL, 2=ERROR, 3=WARNING, 4=INFO, 5=DEBUG)&#xA;&#xA;Default: 4">
-      <type xsi:type="pogoDsl:UShortType"/>
-      <status abstract="false" inherited="true" concrete="true"/>
-      <DefaultPropValue>4</DefaultPropValue>
     </deviceProperties>
     <commands name="ObsState" description="Set the observation state" execMethod="obs_state" displayLevel="OPERATOR" polledPeriod="0" isDynamic="false">
       <argin description="">

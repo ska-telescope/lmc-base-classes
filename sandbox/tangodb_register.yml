@@ -1,0 +1,32 @@
+---
+- hosts:  devk
+  become: yes
+  tasks:
+  - name: Copying the TANGO DB registration script to the server.
+    copy:
+       src: register_db.py
+       dest: /home 
+  - name: Copying the ref element config file to the server.
+    copy:
+       src: refelt_config.json
+       dest: /home
+  - name: Register the Reference Element.
+    command: python /home/register_db.py
+    register: print
+
+  - debug: msg="{{ print.stdout }}"
+
+  - name: Copying the Starter script to the server.
+    copy:
+       src: start_servers.py
+       dest: /home
+  - name: Copying the ref element starter config file to the server.
+    copy:
+       src: refelt_config_starter.json
+       dest: /home
+  - name: Start the Reference Element.
+    command: python /home/start_servers.py
+    register: print
+
+  - debug: msg="{{ print.stdout }}"
+...

@@ -3,8 +3,10 @@
 ##################################################
 ### DEBUG USING:
 ### ansible-playbook -i hosts site.yml --limit local --tags register-refelt-in-tangodb -vvv
+### ansible-playbook -i hosts site.yml --limit local --tags register-refelt-in-astor -vvv
 ### USE IT LIKE THIS:
 ### ./play-task.sh register-refelt in-tangodb
+### ./play-task.sh register-refelt in-astor
 ##################################################
 
 
@@ -155,7 +157,7 @@ def register_in_astor(name, astorconfig):
     errors = 0
     done = 0
     out = ""
-   
+
     #node: {level: (server/instance,server/instance,...)}
     astor = Astor()
     for node in sorted(astorconfig.keys()):
@@ -167,23 +169,31 @@ def register_in_astor(name, astorconfig):
                     astor.set_server_level(server_instance, node, level)
                     logging.info("Registered {}".format(server_instance))
                     done += 1
-                    out = out + " " + server_instance
+                    out += " " + server_instance
                     # For now - start each server - else they do not show up in the Astor GUI
                     # Start them independently since they do not all exist in DsPath yet
                     try:
-                        astor.start_servers([server_instance], node)
+                        result = astor.start_servers([server_instance], node)
+                        if not result:
+                            logging.error("FAILED to start {!r}".format(server_instance))
+                            print """FAILED TO START in ASTOR"""
+                            print """node={!r}  level={!r} server_instance={!r}.""".format(
+                                node, level, server_instance)
+                            out += "(not started)"
                     except Exception as exc:
-                        logging.error("FAILED to start {} {}".format(server_instance, exc))
-                        print """FAILED TO START in ASTOR"""
+                        logging.error("EXCEPTION in start {!r} ({!r})".format(server_instance, exc))
+                        print """EXCEPTION IN START in ASTOR"""
                         print """node={!r}  level={!r} server_instance={!r}.""".format(
                             node, level, server_instance)
+                        out += "(exception in start)"
                         # Do not count this as an error for now
                 except Exception as exc:
-                    logging.error("FAILED to register {} {}".format(server_instance, exc))
-                    print """FAILED TO REGISTER in ASTOR"""
+                    logging.error("EXCEPTION in register {!r} ({!r})".format(server_instance, exc))
+                    print """EXCEPTION IN REGISTER in ASTOR"""
                     print """node={!r}  level={!r} server_instance={!r}.""".format(
                         node, level, server_instance)
                     errors += 1
+                    out += "(exception in register)"
                     continue
     return errors, done, out
 

@@ -16,7 +16,7 @@
               },
               {
                   "startup_level": 5,
-                  "server_instances": ["RefMaster/1"]
+                  "server_instances": ["RefMaster/1", "RefAlarmHandler/1", "RefTelState/1", "RefLogger/1"]
               }
           ]
     }

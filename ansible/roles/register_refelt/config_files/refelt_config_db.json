@@ -92,6 +92,48 @@
                     ]
                 }
               ]
+        },
+        {
+            "server_name": "RefAlarmHandler",
+            "server_instances": [
+                {
+                    "instance_name": "1",
+                    "device_classes": [
+                        {
+                            "class_name": "RefAlarmHandler",
+                            "devices": ["ref/elt/alarmhandler"]
+                        }
+                    ]
+                }
+              ]
+        },
+        {
+            "server_name": "RefTelState",
+            "server_instances": [
+                {
+                    "instance_name": "1",
+                    "device_classes": [
+                        {
+                            "class_name": "RefTelState",
+                            "devices": ["ref/elt/telstate"]
+                        }
+                    ]
+                }
+              ]
+        },
+        {
+            "server_name": "RefLogger",
+            "server_instances": [
+                {
+                    "instance_name": "1",
+                    "device_classes": [
+                        {
+                            "class_name": "RefLogger",
+                            "devices": ["ref/elt/reflogger"]
+                        }
+                    ]
+                }
+             ]
         }
     ]
 }

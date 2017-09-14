@@ -32,13 +32,22 @@
       elt_config_file:"{{ refelt_config_dir }}/ {{ refelt_db_json }}"
     register: writable_result
   tags:
-    - register-refelt-in-tangodb
+    - register-elt-in-tangodb
   - name: Register the Element's device properties.
     register_device_properties:
       elt_config_file:"{{ refelt_config_dir }}/ {{ refelt_device_properties_json }}"
+    register: writable_result
   tags:
-    -register-refelt-in-tangodb
+    -register-elt-in-tangodb
+
+###########################################
+###     Register in ASTOR
+############################################
+- block:
   - name: Register the Element in Astor and start with Starter.
     start_element:
       elt_config_file:"{{ refelt_config_dir }}/ {{ refelt_starter_json }}"
+    register: writable_result
+  tags:
+    - register-elt-in-astor
 ...

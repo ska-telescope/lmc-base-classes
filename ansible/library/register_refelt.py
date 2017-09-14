@@ -157,7 +157,7 @@ def register_in_astor(name, astorconfig):
     errors = 0
     done = 0
     out = ""
-   
+
     #node: {level: (server/instance,server/instance,...)}
     astor = Astor()
     for node in sorted(astorconfig.keys()):
@@ -175,20 +175,20 @@ def register_in_astor(name, astorconfig):
                     try:
                         result = astor.start_servers([server_instance], node)
                         if not result:
-                            logging.error("FAILED to start {} {}".format(server_instance, exc))
+                            logging.error("FAILED to start {!r}".format(server_instance))
                             print """FAILED TO START in ASTOR"""
                             print """node={!r}  level={!r} server_instance={!r}.""".format(
                                 node, level, server_instance)
-			    out += "(not started)"
+                            out += "(not started)"
                     except Exception as exc:
-                        logging.error("EXCEPTION in start {} {}".format(server_instance, exc))
+                        logging.error("EXCEPTION in start {!r} ({!r})".format(server_instance, exc))
                         print """EXCEPTION IN START in ASTOR"""
                         print """node={!r}  level={!r} server_instance={!r}.""".format(
                             node, level, server_instance)
                         out += "(exception in start)"
                         # Do not count this as an error for now
                 except Exception as exc:
-                    logging.error("EXCEPTION in register {} {}".format(server_instance, exc))
+                    logging.error("EXCEPTION in register {!r} ({!r})".format(server_instance, exc))
                     print """EXCEPTION IN REGISTER in ASTOR"""
                     print """node={!r}  level={!r} server_instance={!r}.""".format(
                         node, level, server_instance)

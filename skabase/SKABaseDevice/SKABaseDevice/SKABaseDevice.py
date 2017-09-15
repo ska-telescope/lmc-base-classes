@@ -41,6 +41,7 @@ class SKABaseDevice(Device):
     """
     __metaclass__ = DeviceMeta
     # PROTECTED REGION ID(SKABaseDevice.class_variable) ENABLED START #
+
     def _get_device_json(self, args_dict):
         try:
 
@@ -54,7 +55,7 @@ class SKABaseDevice(Device):
                     with_attributes=args_dict.get('with_attributes'),
                     with_context=False
                 ),
-            if args_dict.get('with_commands') == True:
+            if args_dict.get('with_commands') is True:
                 device_dict['commands'] = self.get_device_commands(with_context=False)
             return device_dict
 
@@ -75,7 +76,8 @@ class SKABaseDevice(Device):
         if required:
             missing_args = set(required) - set(args_dict.keys())
         if missing_args:
-            msg = "Missing arguments: %s" % ', '.join([str(m_arg) for m_arg in missing_args])
+            msg = ("Missing arguments: {}"
+                   .format(', '.join([str(m_arg) for m_arg in missing_args])))
             raise Exception(msg)
         return args_dict
 
@@ -103,7 +105,8 @@ class SKABaseDevice(Device):
         if attribute_name is not None:
             attr_config = device_proxy.get_attribute_config_ex(attribute_name)
         else:
-            attr_config = device_proxy.get_attribute_config_ex(device_proxy.get_attribute_list())
+            attr_config = device_proxy.get_attribute_config_ex(
+                device_proxy.get_attribute_list())
 
         # Get attribute values if required
         if with_value and attribute_name is not None:
@@ -113,23 +116,25 @@ class SKABaseDevice(Device):
 
         # Process all attributes
         attributes = {}
-        for i, attribute in enumerate(attr_config):
+        for i, attr in enumerate(attr_config):
 
             # Populate dictionary with attribute configuration conversion
             attr_dict = {
-                'name': attribute.name,
-                'polling_frequency': attribute.events.per_event.period,
-                'min_value': attribute.min_value if attribute.min_value != 'Not specified' else None,
-                'max_value': attribute.max_value if attribute.min_value != 'Not specified' else None,
-                'readonly': attribute.writable not in [PyTango.AttrWriteType.READ_WRITE,
-                                                       PyTango.AttrWriteType.WRITE,
-                                                       PyTango.AttrWriteType.READ_WITH_WRITE]
+                'name': attr.name,
+                'polling_frequency': attr.events.per_event.period,
+                'min_value': (attr.min_value if attr.min_value != 'Not specified'
+                              else None),
+                'max_value': (attr.max_value if attr.min_value != 'Not specified'
+                              else None),
+                'readonly': attr.writable not in [PyTango.AttrWriteType.READ_WRITE,
+                                                  PyTango.AttrWriteType.WRITE,
+                                                  PyTango.AttrWriteType.READ_WITH_WRITE]
             }
 
             # Convert data type
-            if attribute.data_format == PyTango.AttrDataFormat.SCALAR:
+            if attr.data_format == PyTango.AttrDataFormat.SCALAR:
                 attr_dict["data_type"] = tango_type_conversion.get(
-                    attribute.data_type, str(attribute.data_type))
+                    attr.data_type, str(attr.data_type))
             else:
                 # Data types we aren't really going to represent
                 attr_dict["data_type"] = "other"
@@ -142,21 +147,21 @@ class SKABaseDevice(Device):
             if with_value:
                 attr_dict['value'] = coerce_value(attr_values[i].value)
                 attr_dict['is_alarm'] = attr_values[i].quality == AttrQuality.ATTR_ALARM
-               # ts = datetime.fromtimestamp(attr_values[i].time.tv_sec)
-               # ts.replace(microsecond=attr_values[i].time.tv_usec)
-               # attr_dict['timestamp'] = ts.isoformat()
+                # ts = datetime.fromtimestamp(attr_values[i].time.tv_sec)
+                # ts.replace(microsecond=attr_values[i].time.tv_usec)
+                # attr_dict['timestamp'] = ts.isoformat()
 
             # Define attribute type
-            if attribute.name in self.MetricList:
+            if attr.name in self.MetricList:
                 attr_dict['attribute_type'] = 'metric'
             else:
                 attr_dict['attribute_type'] = 'attribute'
 
             # Add to return attribute list
             if with_metrics and attr_dict['attribute_type'] == 'metric':
-                attributes[attribute.name] = attr_dict
+                attributes[attr.name] = attr_dict
             elif with_attributes and attr_dict['attribute_type'] == 'attribute':
-                attributes[attribute.name] = attr_dict
+                attributes[attr.name] = attr_dict
 
         return attributes
 

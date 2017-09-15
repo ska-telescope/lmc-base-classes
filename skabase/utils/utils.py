@@ -1,26 +1,33 @@
-import ast
-import pydoc
-import inspect
-import sys
-import traceback
+"""General utilities that may be useful to SKA devices and clients."""
 
+import ast
+import inspect
+import json
+import pydoc
+import traceback
+import sys
+
+from collections import OrderedDict, Counter
 from datetime import datetime
-from time import sleep
 
 import PyTango
 from PyTango import DeviceProxy, DbDatum, DevState, DbDevInfo, AttrQuality, AttrWriteType
-from PyTango import Database, DbDevInfo, DeviceProxy
 from PyTango._PyTango import DevState as _DevState
 from contextlib import contextmanager
 
+from .faults import GroupDefinitionsError
 
-int_types = {PyTango._PyTango.CmdArgType.DevUShort, PyTango._PyTango.CmdArgType.DevLong,
+
+int_types = {PyTango._PyTango.CmdArgType.DevUShort,
+             PyTango._PyTango.CmdArgType.DevLong,
              PyTango._PyTango.CmdArgType.DevInt,
              PyTango._PyTango.CmdArgType.DevULong,
-             PyTango._PyTango.CmdArgType.DevULong64, PyTango._PyTango.CmdArgType.DevLong64,
+             PyTango._PyTango.CmdArgType.DevULong64,
+             PyTango._PyTango.CmdArgType.DevLong64,
              PyTango._PyTango.CmdArgType.DevShort}
 
-float_types = {PyTango._PyTango.CmdArgType.DevDouble, PyTango._PyTango.CmdArgType.DevFloat}
+float_types = {PyTango._PyTango.CmdArgType.DevDouble,
+               PyTango._PyTango.CmdArgType.DevFloat}
 
 # TBD - investigate just using (command argin data_type)
 tango_type_conversion = {PyTango.CmdArgType.DevUShort.real: 'int',
@@ -40,17 +47,28 @@ tango_type_conversion = {PyTango.CmdArgType.DevUShort.real: 'int',
                          PyTango.CmdArgType.DevEnum.real: 'enum',
                          }
 # TBD - not all PyTango types are used
-#PyTango.CmdArgType.ConstDevString           PyTango.CmdArgType.DevState                 PyTango.CmdArgType.DevVarLong64Array        PyTango.CmdArgType.conjugate
-#PyTango.CmdArgType.DevBoolean               PyTango.CmdArgType.DevString                PyTango.CmdArgType.DevVarLongArray          PyTango.CmdArgType.denominator
-#PyTango.CmdArgType.DevDouble                PyTango.CmdArgType.DevUChar                 PyTango.CmdArgType.DevVarLongStringArray    PyTango.CmdArgType.imag
-#PyTango.CmdArgType.DevEncoded               PyTango.CmdArgType.DevULong                 PyTango.CmdArgType.DevVarShortArray         PyTango.CmdArgType.mro
-#PyTango.CmdArgType.DevEnum                  PyTango.CmdArgType.DevULong64               PyTango.CmdArgType.DevVarStateArray         PyTango.CmdArgType.name
-#PyTango.CmdArgType.DevFloat                 PyTango.CmdArgType.DevUShort                PyTango.CmdArgType.DevVarStringArray        PyTango.CmdArgType.names
-#PyTango.CmdArgType.DevInt                   PyTango.CmdArgType.DevVarBooleanArray       PyTango.CmdArgType.DevVarULong64Array       PyTango.CmdArgType.numerator
-#PyTango.CmdArgType.DevLong                  PyTango.CmdArgType.DevVarCharArray          PyTango.CmdArgType.DevVarULongArray         PyTango.CmdArgType.real
-#PyTango.CmdArgType.DevLong64                PyTango.CmdArgType.DevVarDoubleArray        PyTango.CmdArgType.DevVarUShortArray        PyTango.CmdArgType.values
-#PyTango.CmdArgType.DevPipeBlob              PyTango.CmdArgType.DevVarDoubleStringArray  PyTango.CmdArgType.DevVoid
-#PyTango.CmdArgType.DevShort                 PyTango.CmdArgType.DevVarFloatArray
+# PyTango.CmdArgType.ConstDevString           PyTango.CmdArgType.DevState
+# PyTango.CmdArgType.DevVarLong64Array        PyTango.CmdArgType.conjugate
+# PyTango.CmdArgType.DevBoolean               PyTango.CmdArgType.DevString
+# PyTango.CmdArgType.DevVarLongArray          PyTango.CmdArgType.denominator
+# PyTango.CmdArgType.DevDouble                PyTango.CmdArgType.DevUChar
+# PyTango.CmdArgType.DevVarLongStringArray    PyTango.CmdArgType.imag
+# PyTango.CmdArgType.DevEncoded               PyTango.CmdArgType.DevULong
+# PyTango.CmdArgType.DevVarShortArray         PyTango.CmdArgType.mro
+# PyTango.CmdArgType.DevEnum                  PyTango.CmdArgType.DevULong64
+# PyTango.CmdArgType.DevVarStateArray         PyTango.CmdArgType.name
+# PyTango.CmdArgType.DevFloat                 PyTango.CmdArgType.DevUShort
+# PyTango.CmdArgType.DevVarStringArray        PyTango.CmdArgType.names
+# PyTango.CmdArgType.DevInt                   PyTango.CmdArgType.DevVarBooleanArray
+# PyTango.CmdArgType.DevVarULong64Array       PyTango.CmdArgType.numerator
+# PyTango.CmdArgType.DevLong                  PyTango.CmdArgType.DevVarCharArray
+# PyTango.CmdArgType.DevVarULongArray         PyTango.CmdArgType.real
+# PyTango.CmdArgType.DevLong64                PyTango.CmdArgType.DevVarDoubleArray
+# PyTango.CmdArgType.DevVarUShortArray        PyTango.CmdArgType.values
+# PyTango.CmdArgType.DevPipeBlob              PyTango.CmdArgType.DevVarDoubleStringArray
+# PyTango.CmdArgType.DevVoid
+# PyTango.CmdArgType.DevShort                 PyTango.CmdArgType.DevVarFloatArray
+
 
 @contextmanager
 def exception_manager(cls, arguments="", callback=None):
@@ -72,9 +90,9 @@ def exception_manager(cls, arguments="", callback=None):
         additional_info = traceback.format_exc()
         message = message + " [--" + additional_info + "--] "
 
-        ###cls.exception(command_name=class_name + "::" + calframe[2][3],
-        ###                          command_inputs=str(arguments),
-        ###                          message=message)
+        # cls.exception(command_name=class_name + "::" + calframe[2][3],
+        #               command_inputs=str(arguments),
+        #               message=message)
 
         if callback:
             callback()
@@ -98,9 +116,9 @@ def exception_manager(cls, arguments="", callback=None):
         additional_info = traceback.format_exc()
         message = message + " [--" + additional_info + "--] "
 
-        ###cls.exception(command_name=class_name+"::"+calframe[2][3],
-        ###                          command_inputs=str(arguments),
-        ###                          message=message)
+        #  cls.exception(command_name=class_name+"::"+calframe[2][3],
+        #                command_inputs=str(arguments),
+        #                message=message)
 
         if callback:
             callback()
@@ -136,8 +154,6 @@ def get_device_group_and_id(device_name):
     return device_name.split('/')[1:]
 
 
-
-
 def convert_api_value(param_dict):
     """
     Used to validate tango command parameters which are passed via json
@@ -152,7 +168,8 @@ def convert_api_value(param_dict):
     value_type = pydoc.locate(type_str)
     if value_type == bool:
         if not param_dict.get('value').lower() in ['true', 'false']:
-            raise Exception('Parameter value %s is not of type %s' % (param_dict.get('value'), value_type))
+            raise Exception('Parameter value %s is not of type %s'
+                            % (param_dict.get('value'), value_type))
         value = param_dict.get('value').lower() == 'true'
     else:
         value = value_type(param_dict.get('value'))
@@ -172,9 +189,12 @@ def get_dp_attribute(device_proxy, attribute, with_value=False, with_context=Fal
     attr_dict = {
         'name': attribute.name,
         'polling_frequency': attribute.events.per_event.period,
-        'min_value': attribute.min_value if attribute.min_value != 'Not specified' else None,
-        'max_value': attribute.max_value if attribute.min_value != 'Not specified' else None,
-        'readonly': attribute.writable not in [AttrWriteType.READ_WRITE, AttrWriteType.WRITE,
+        'min_value': (attribute.min_value if attribute.min_value != 'Not specified'
+                      else None),
+        'max_value': (attribute.max_value if attribute.max_value != 'Not specified'
+                      else None),
+        'readonly': attribute.writable not in [AttrWriteType.READ_WRITE,
+                                               AttrWriteType.WRITE,
                                                AttrWriteType.READ_WITH_WRITE]
     }
 
@@ -229,7 +249,7 @@ def get_dp_command(device_name, command, with_context=False):
                 return []
             # ugghhh POGO replaces quotes with backticks :(
             return ast.literal_eval(command_desc.replace('`', "'"))
-        except Exception as ex:
+        except Exception:
             # TBD - decide what to do - add log?
             pass
         return []
@@ -249,3 +269,182 @@ def get_dp_command(device_name, command, with_context=False):
 
 def get_tango_device_type_id(tango_address):
     return tango_address.split('/')[1:3]
+
+
+# JSON `load` and `loads` equivalents, that force all strings to be returned
+# as byte strings, rather than unicode.  This is critical for fields that will
+# be used by TANGO, as it breaks with unicode strings.
+# Solution from:  https://stackoverflow.com/a/33571117
+
+def json_load_byteified(file_handle):
+    """Similar to json.load(), but forces str instead of unicode strings."""
+    return _byteify(
+        json.load(file_handle, object_hook=_byteify),
+        ignore_dicts=True
+    )
+
+
+def json_loads_byteified(json_text):
+    """Similar to json.loads(), but forces str instead of unicode strings."""
+    return _byteify(
+        json.loads(json_text, object_hook=_byteify),
+        ignore_dicts=True
+    )
+
+
+def _byteify(data, ignore_dicts=False):
+    """If this is a unicode string, return its string representation."""
+    if isinstance(data, unicode):
+        return data.encode('utf-8')
+    # if this is a list of values, return list of byteified values
+    if isinstance(data, list):
+        return [_byteify(item, ignore_dicts=True) for item in data]
+    # if this is a dictionary, return dictionary of byteified keys and values
+    # but only if we haven't already byteified it
+    if isinstance(data, dict) and not ignore_dicts:
+        return {
+            _byteify(key, ignore_dicts=True): _byteify(value, ignore_dicts=True)
+            for key, value in data.iteritems()
+        }
+    # if it's anything else, return it in its original form
+    return data
+
+
+def get_groups_from_json(json_definitions):
+    """Return a dict of tango.Group objects matching the JSON definitions.
+
+    Extracts the definitions of groups of devices and builds up matching
+    tango.Group objects.  Some minimal validation is done - if the definition
+    contains nothing then None is returned, otherwise an exception will
+    be raised on error.
+
+    This function will *NOT* attempt to verify that the devices exist in
+    the Tango database, nor that they are running.
+
+    The definitions would typically be provided by the Tango device property
+    "GroupDefinitions", available in the SKABaseDevice.  The property is
+    an array of strings.  Thus a sequence is expected for this function.
+
+    Each string in the list is a JSON serialised dict defining the "group_name",
+    "devices" and "subgroups" in the group.  The tango.Group() created enables
+    easy access to the managed devices in bulk, or individually.
+
+    The general format of the list is as follows, with optional "devices" and
+    "subgroups" keys:
+        [ {"group_name": "<name>",
+           "devices": ["<dev name>", ...]},
+          {"group_name": "<name>",
+           "devices": ["<dev name>", "<dev name>", ...],
+           "subgroups" : [{<nested group>},
+                          {<nested group>}, ...]},
+          ...
+          ]
+
+    For example, a hierarchy of racks, servers and switches:
+    [ {"group_name": "servers",
+       "devices": ["elt/server/1", "elt/server/2",
+                   "elt/server/3", "elt/server/4"]},
+      {"group_name": "switches",
+       "devices": ["elt/switch/A", "elt/switch/B"]},
+      {"group_name": "pdus",
+       "devices": ["elt/pdu/rackA", "elt/pdu/rackB"]},
+      {"group_name": "racks",
+       "subgroups": [
+            {"group_name": "rackA",
+             "devices": ["elt/server/1", "elt/server/2",
+                         "elt/switch/A", "elt/pdu/rackA"]},
+            {"group_name": "rackB",
+             "devices": ["elt/server/3", "elt/server/4",
+                         "elt/switch/B", "elt/pdu/rackB"],
+             "subgroups": []}
+       ]} ]
+
+
+    Parameters
+    ----------
+    json_definitions: sequence of str
+        Sequence of strings, each one a JSON dict with keys "group_name", and
+        one or both of:  "devices" and "subgroups", recursively defining
+        the hierarchy.
+
+    Returns
+    -------
+    groups: dict or None
+        The keys of the dict are the names of the groups, in the following form:
+            {"<group name 1>": <tango.Group>,
+             "<group name 2>": <tango.Group>, ...}.
+
+    Raises
+    ------
+    GroupDefinitionsError:
+        - If error parsing JSON string.
+        - If missing keys in the JSON definition.
+        - If invalid device name.
+        - If invalid groups included.
+        - If a group has multiple parent groups.
+        - If a device is included multiple time in a hierarchy.
+          E.g. g1:[a,b] g2:[a,c] g3:[g1,g2]
+
+    """
+    try:
+        # Parse and validate user's definitions
+        groups = {}
+        for json_definition in json_definitions:
+            definition = json_loads_byteified(json_definition)
+            _validate_group(definition)
+            group_name = definition['group_name']
+            groups[group_name] = _build_group(definition)
+        return groups
+
+    except Exception as exc:
+        # the exc_info is included for detailed traceback
+        raise GroupDefinitionsError(exc), None, sys.exc_info()[2]
+
+
+def _validate_group(definition):
+    """Validate and clean up groups definition, raise AssertError if invalid.
+
+    Used internally by `get_groups_from_json`.
+
+    """
+    error_message = "Missing 'group_name' key - {}".format(definition)
+    assert 'group_name' in definition, error_message
+    error_message = "Missing 'devices' or 'subgroups' key - {}".format(definition)
+    assert 'devices' in definition or 'subgroups' in definition, error_message
+
+    definition['group_name'] = definition['group_name'].strip()
+
+    old_devices = definition.get('devices', [])
+    new_devices = []
+    for old_device in old_devices:
+        # sanity check on device name, expect 'domain/family/member'
+        # TODO (AJ): Check with regex.  Allow fully qualified names?
+        device = old_device.strip()
+        error_message = "Invalid device name format - {}".format(device)
+        assert device.count('/') == 2, error_message
+        new_devices.append(device)
+    definition['devices'] = new_devices
+
+    subgroups = definition.get('subgroups', [])
+    for subgroup_definition in subgroups:
+        _validate_group(subgroup_definition)  # recurse
+
+
+def _build_group(definition):
+    """Returns tango.Group object according to defined hierarchy.
+
+    Used internally by `get_groups_from_json`.
+
+    """
+    group_name = definition['group_name']
+    devices = definition.get('devices', [])
+    subgroups = definition.get('subgroups', [])
+
+    group = PyTango.Group(group_name)
+    for device_name in devices:
+        group.add(device_name)
+    for subgroup_definition in subgroups:
+        subgroup = _build_group(subgroup_definition)  # recurse
+        group.add(subgroup)
+
+    return group

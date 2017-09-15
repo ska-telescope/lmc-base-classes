@@ -28,3 +28,6 @@ nosetests.xml
 # Developer tools
 *~
 .ropeproject
+
+# Ansible
+*.retry

@@ -2,27 +2,27 @@
     "api_version": "v1",
     "tango_servers": [
       {
-          "server_name": "SvrRefA",
-          "server_instances": [
-              {
-                  "instance_name": "1",
-                  "device_classes": [
-                      {
-                          "class_name": "RefA",
-                          "devices": ["ref/A/1"]
-                      }
-                  ]
-              },
-              {
-                  "instance_name": "2",
-                  "device_classes": [
-                      {
-                          "class_name": "RefA",
-                          "devices": ["ref/A/2"]
-                      }
-                  ]
-              }
-            ]
+	      "server_name": "SvrRefA",
+	      "server_instances": [
+	          {
+	              "instance_name": "1",
+	              "device_classes": [
+	                  {
+	                      "class_name": "RefA",
+	                      "devices": ["ref/a/1"]
+	                  }
+	              ]
+	          },
+	          {
+	              "instance_name": "2",
+	              "device_classes": [
+	                  {
+	                      "class_name": "RefA",
+	                      "devices": ["ref/a/2"]
+	                  }
+	              ]
+	          }
+	        ]
         },
         {
             "server_name": "SvrRefAchild",
@@ -129,6 +129,108 @@
                     ]
                 }
               ]
+        },
+        {
+            "server_name": "SvrRefSubarray",
+            "server_instances": [
+                {
+                    "instance_name": "Sub1",
+                    "device_classes": [
+                        {
+                            "class_name": "RefSubarray",
+                            "devices": ["ref/subarray/1"]
+                        }
+                    ]
+                },
+                {
+                    "instance_name": "Subs",
+                    "device_classes": [
+                        {
+                            "class_name": "RefSubarray",
+                            "devices": ["ref/subarray/2"]
+                        }
+                    ]
+                }
+              ]
+        },
+        {
+            "server_name": "SvrRefCapability",
+            "server_instances": [
+                {
+                    "instance_name": "CapSub1CalcA",
+                    "device_classes": [
+                        {
+                            "class_name": "RefCapability",
+                            "devices": ["ref/capability/sub1calca"]
+                        }
+                    ]
+                },
+                {
+                    "instance_name": "CapSub1CalcB",
+                    "device_classes": [
+                        {
+                            "class_name": "RefCapability",
+                            "devices": ["ref/capability/sub1calcb"]
+                        }
+                    ]
+                },
+                {
+                    "instance_name": "CapSub1ProcC",
+                    "device_classes": [
+                        {
+                            "class_name": "RefCapability",
+                            "devices": ["ref/capability/sub1procc"]
+                        }
+                    ]
+                },
+                {
+                    "instance_name": "CapSub1ProcD",
+                    "device_classes": [
+                        {
+                            "class_name": "RefCapability",
+                            "devices": ["ref/capability/sub1procd"]
+                        }
+                    ]
+                },
+                {
+                    "instance_name": "CapSub2CalcA",
+                    "device_classes": [
+                        {
+                            "class_name": "RefCapability",
+                            "devices": ["ref/capability/sub2calca"]
+                        }
+                    ]
+                },
+                {
+                    "instance_name": "CapSub2CalcB",
+                    "device_classes": [
+                        {
+                            "class_name": "RefCapability",
+                            "devices": ["ref/capability/sub2calcb"]
+                        }
+                    ]
+                },
+                {
+                    "instance_name": "CapSub2ProcC",
+                    "device_classes": [
+                        {
+                            "class_name": "RefCapability",
+                            "devices": ["ref/capability/sub2procc"]
+                        }
+                    ]
+                },
+                {
+                    "instance_name": "CapSub2ProcD",
+                    "device_classes": [
+                        {
+                            "class_name": "RefCapability",
+                            "devices": ["ref/capability/sub2procd"]
+                        }
+                    ]
+                }
+              ]
         }
+
+
     ]
 }

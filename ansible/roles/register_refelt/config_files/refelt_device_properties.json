@@ -27,6 +27,12 @@
         },
         "ref/central/logger": {
             "GroupDefinitions": []
+        },
+        "ref/elt/telstate": {
+            "GroupDefinitions": []
+        },
+        "ref/elt/alarmhandler": {
+            "GroupDefinitions": []
         }
     }
 }

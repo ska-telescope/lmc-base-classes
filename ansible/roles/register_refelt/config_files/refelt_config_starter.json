@@ -4,19 +4,19 @@
           "levpro": [
               {
                   "startup_level": 1,
-                  "server_instances": ["FileLogger/elt", "FileLogger/central"]
+                  "server_instances": ["SrvFileLogger/Elt", "SrvFileLogger/Central"]
               },
               {
                   "startup_level": 2,
-                  "server_instances": ["RefAchild/11", "RefAchildA/12", "RefAchild/21", "RefAchild/22"]
+                  "server_instances": ["SrvRefAchild/11", "SrvRefAchildA/12", "SrvRefAchild/21", "SrvRefAchild/22"]
               },
               {
                   "startup_level": 3,
-                  "server_instances": ["RefA/1", "RefA/2"]
+                  "server_instances": ["SrvRefA/1", "SrvRefA/2"]
               },
               {
                   "startup_level": 5,
-                  "server_instances": ["RefMaster/1"]
+                  "server_instances": ["SrvRefMaster/Elt", "SrvRefAlarmHandler/Elt", "SrvRefTelState/Elt"]
               }
           ]
     }

@@ -2,7 +2,7 @@
     "api_version": "v1",
     "tango_servers": [
       {
-          "server_name": "RefA",
+          "server_name": "SvrRefA",
           "server_instances": [
               {
                   "instance_name": "1",
@@ -25,7 +25,7 @@
             ]
         },
         {
-            "server_name": "RefAchild",
+            "server_name": "SvrRefAchild",
             "server_instances": [
                 {
                     "instance_name": "1",
@@ -48,10 +48,10 @@
               ]
         },
         {
-            "server_name": "RefMaster",
+            "server_name": "SvrRefMaster",
             "server_instances": [
                 {
-                    "instance_name": "1",
+                    "instance_name": "Elt",
                     "device_classes": [
                         {
                             "class_name": "RefMaster",
@@ -62,10 +62,10 @@
               ]
         },
         {
-            "server_name": "FileLogger",
+            "server_name": "SvrFileLogger",
             "server_instances": [
                 {
-                    "instance_name": "elt",
+                    "instance_name": "Elt",
                     "device_classes": [
                         {
                             "class_name": "FileLogger",
@@ -74,20 +74,57 @@
                     ]
                 },
                 {
-                    "instance_name": "central",
+                    "instance_name": "Central",
                     "device_classes": [
                         {
                             "class_name": "FileLogger",
                             "devices": ["ref/central/logger"]
                         }
                     ]
-                },
+                }
+              ]
+        },
+        {
+            "server_name": "SvrRefAlarmHandler",
+            "server_instances": [
                 {
-                    "instance_name": "another",
+                    "instance_name": "Elt",
                     "device_classes": [
                         {
-                            "class_name": "FileLogger",
-                            "devices": ["ref/central/another_logger"]
+                            "class_name": "RefAlarmHandler",
+                            "devices": ["ref/elt/alarmhandler"]
+                        }
+                    ]
+                },
+                {
+                    "instance_name": "SubElt1",
+                    "device_classes": [
+                        {
+                            "class_name": "RefAlarmHandler",
+                            "devices": ["ref/subelt1/alarmhandler"]
+                        }
+                    ]
+                },
+                {
+                    "instance_name": "SubElt2",
+                    "device_classes": [
+                        {
+                            "class_name": "RefAlarmHandler",
+                            "devices": ["ref/subelt2/alarmhandler"]
+                        }
+                    ]
+                }
+              ]
+        },
+        {
+            "server_name": "SvrRefTelState",
+            "server_instances": [
+                {
+                    "instance_name": "Elt",
+                    "device_classes": [
+                        {
+                            "class_name": "RefTelState",
+                            "devices": ["ref/elt/telstate"]
                         }
                     ]
                 }

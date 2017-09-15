@@ -79,6 +79,13 @@ cd ~/git/levpro/ansible
 ./play-task.sh install-sw
 ```
 
+### To configure a TANGO facility and start its device servers.
+```
+./play-task.sh register-elt-in-tangodb
+or
+ansible-playbook -i hosts site.yml --limit local --tags "register-elt-in-tangodb"
+```
+
 # NOTES:
 
 ### Note 1: Role tags

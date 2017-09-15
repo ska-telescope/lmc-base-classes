@@ -445,6 +445,6 @@ def _build_group(definition):
         group.add(device_name)
     for subgroup_definition in subgroups:
         subgroup = _build_group(subgroup_definition)  # recurse
-        #group.add(subgroup)
+        group.add(subgroup)
 
     return group

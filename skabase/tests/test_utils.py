@@ -123,11 +123,11 @@ BAD_GROUP_KEYS = [
 
 
 def _jsonify_group_configs(group_configs):
-    """Returns list of JSON defintions for groups."""
-    defintions = []
+    """Returns list of JSON definitions for groups."""
+    definitions = []
     for group_config in group_configs:
-        defintions.append(json.dumps(group_config))
-    return defintions
+        definitions.append(json.dumps(group_config))
+    return definitions
 
 
 def _get_group_configs_from_keys(group_keys):

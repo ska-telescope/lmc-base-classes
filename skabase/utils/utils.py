@@ -383,11 +383,11 @@ def get_groups_from_json(json_definitions):
         - If invalid groups included.
         - If a group has multiple parent groups.
         - If a device is included multiple time in a hierarchy.
-          E.g.  g1:[a,b] g2:[a,c] g3:[g1,g2]
+          E.g. g1:[a,b] g2:[a,c] g3:[g1,g2]
 
     """
     try:
-        # Parse and validate user's defitions
+        # Parse and validate user's definitions
         groups = {}
         for json_definition in json_definitions:
             definition = json_loads_byteified(json_definition)

@@ -1,0 +1,179 @@
+---
+- hosts: devlt
+  remote_user: kat
+  tasks:
+  
+#################################################################
+## Ensure that your apt-get package index is up to update      ##
+#################################################################
+
+  - name: update apt packages
+    become: yes
+    apt:
+      update_cache=yes
+      cache_valid_time=3600
+
+#################################################################
+## Install the Java Development Kit package with apt-get       ##
+#################################################################
+
+  - name: Java Development Kit
+    become: yes
+    apt:
+      pkg=default-jdk
+      state=present
+
+#################################################################
+## Create a temporary working directory                        ##
+#################################################################
+
+  - name: Create working dir
+    file:
+      path=/tmp/working
+      state=directory
+
+#################################################################
+## Download apache-tomcat catalina web server into working dir ##
+#################################################################
+  - name: Download tomcat web server
+    get_url:
+      url=https://archive.apache.org/dist/tomcat/tomcat-8/v8.0.9/bin/apache-tomcat-8.0.9.tar.gz
+      dest=/tmp/working/
+
+#################################################################
+## Create a tomcat directory                                   ##
+#################################################################
+
+  - name: Create tomcat dir
+    become: yes
+    file:
+      path=/opt/tomcat/
+      state=directory
+
+#################################################################
+## Extract the archive to the tomcat directory                 ##
+#################################################################
+  - name: Extract web server
+    become: yes
+    shell:
+      tar xzvf apache-tomcat-8*tar.gz -C /opt/tomcat/ --strip-components=1
+      chdir=/tmp/working/
+
+#################################################################
+## Download tango webapp file into working dir                 ##
+#################################################################
+
+  - name: Download tango webapp war file
+    get_url:
+      url=https://github.com/Ingvord/tango-webapp/releases/download/0.1/TangoWebapp.war
+      dest=/tmp/working/
+
+
+#################################################################
+## Copy tango webapp file into tomcat webapp directory         ##
+#################################################################
+
+  - name: Copy tango webapp file
+    become: yes
+    copy:
+      remote_src=True
+      src=/tmp/working/TangoWebapp.war
+      dest=/opt/tomcat/webapps/
+
+#################################################################
+## Download mTango REST server                                ##
+#################################################################
+
+  - name: Donwnload mTango REST server
+    get_url:
+      url=https://bitbucket.org/hzgwpn/mtangorest.server/downloads/mtangorest.server-rc4-0.1.jar
+      dest=/tmp/working/
+
+#################################################################
+## Download mTango REST server war file                        ##
+#################################################################
+
+  - name: Donwnload mTango REST war file
+    get_url:
+      url=https://bitbucket.org/hzgwpn/mtangorest.server/downloads/mtangorest.server-rc4-0.1.zip
+      dest=/tmp/working/
+
+#################################################################
+## Extract mTango REST server war file                         ##
+#################################################################
+
+  - name: Extract mTango REST war file
+    become: yes
+    unarchive:
+      remote_src=True
+      src=/tmp/working/mtangorest.server-rc4-0.1.zip
+      dest=/tmp/working/
+
+#################################################################
+## Copy mTango REST server war file to tomcat                  ##
+#################################################################
+
+  - name: Copy mTango REST war file
+    become: yes
+    copy:
+      remote_src=True
+      src=/tmp/working/mtangorest.server-rc4-0.1/tango.war
+      dest=/opt/tomcat/webapps/
+
+#################################################################
+## Change mTango REST server to executable mode                ##
+#################################################################
+
+  - name: mTango REST server executable mode
+    become: yes
+    file:
+      mode=a+x
+      dest=/tmp/working/mtangorest.server-rc4-0.1.jar
+
+#################################################################
+## Move mTango REST server to usr/local/bin                    ##
+#################################################################
+
+  - name: Move mTango REST server
+    become: yes
+    shell:
+      mv mtangorest.server-rc4-0.1.jar /usr/local/bin/
+      chdir=/tmp/working/
+
+#################################################################
+## Remove the temporary working directory                      ##
+#################################################################
+
+  - name: Clean artifact path
+    file:
+      path=/tmp/working/
+      state=absent
+
+#################################################################
+## Update the bashrc file with globals                         ##
+#################################################################
+
+  - name: New string at the end of the file
+    lineinfile: dest=~/.bashrc
+                insertafter=EOF
+                line='export CATALINA_HOME=/opt/tomcat\nexport JAVA_HOME=/usr/lib/jvm/java-7-openjdk-amd64'
+
+#################################################################
+## Adding tomcat user                                          ##
+#################################################################
+  - name: Add tomcat user
+    become: yes
+    lineinfile: dest=/opt/tomcat/conf/tomcat-users.xml 
+                regexp='^</tomcat-users>'
+                insertbefore='^</tomcat-users>'
+                line='  <role rolename="admin-gui"/>\n  <role rolename="manager-gui"/>\n  <role rolename="mtango-rest"/>\n  <user username="tomcat" password="tomcat" roles="manager-gui,admin-gui"/>\n  <user username="kat" password="kat" roles="mtango-rest"/>\n</tomcat-users>'
+
+#################################################################
+## Start up the tomcat web server                              ##
+#################################################################
+
+  - name: Start tomcat
+    become: yes
+    shell:
+      sh startup.sh
+      chdir=/opt/tomcat/bin/

@@ -53,6 +53,7 @@
     - gawk
     - telnet
     - tcpdump
+    - lsof
   tags:
     - debs
     - deploy-tangobox-debs
@@ -160,6 +161,8 @@
     - ipython<6.0
     - fandango
     - PyTango
+    - pytest
+    - mock
   tags:
     - pip
     - deploy-tangobox-pip

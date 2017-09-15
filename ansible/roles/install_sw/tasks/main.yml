@@ -48,6 +48,9 @@
       - levpro/skabase/SKAMaster
       - levpro/skabase/SKASubarray
       - levpro/skabase/SKACapability
+      - levpro/skabase/SKAAlarmHandler
+      - levpro/skabase/SKATelState
+      - levpro/skabase/SKALogger
   become: True
   tags:
     - install-sw-skabase

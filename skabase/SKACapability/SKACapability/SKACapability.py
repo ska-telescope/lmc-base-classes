@@ -47,9 +47,6 @@ class SKACapability(SKAObsDevice):
 
 
 
-
-
-
     CapType = device_property(
         dtype='str',
         mandatory=True

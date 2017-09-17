@@ -52,6 +52,7 @@
     - ftp
     - gawk
     - telnet
+    - unzip
     - tcpdump
   tags:
     - debs

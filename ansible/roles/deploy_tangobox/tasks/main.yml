@@ -53,6 +53,7 @@
     - gawk
     - telnet
     - tcpdump
+    - xauth
   tags:
     - debs
     - deploy-tangobox-debs

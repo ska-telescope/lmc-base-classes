@@ -53,6 +53,7 @@
     - gawk
     - telnet
     - tcpdump
+    - xauth
     - lsof
   tags:
     - debs
@@ -149,6 +150,28 @@
   tags:
     - tango-java
     - deploy-tangobox-tango-java
+
+#################################
+# Download and copy Pogo 9.6.0
+#################################
+
+
+- name: Download Pogo 9.6.0
+  get_url:
+     url=https://bintray.com/tango-controls/maven/download_file?file_path=org%2Ftango%2Ftools%2Fpogo%2Fgui%2FPogo%2F9.6.0%2FPogo-9.6.0.jar
+     dest=/usr/share/java/
+  tags:
+    - tango-java
+    - deploy-tangobox-tango-java
+    - deploy-tangobox-tango-java-pogo
+
+- name: Create symlink /user/share/java/org.tango.pogo.jar to Pogo 9.6.0
+  file: src=/usr/share/java/Pogo-9.6.0.jar  dest=/usr/share/java/org.tango.pogo.jar state=link
+  tags:
+    - tango-java
+    - deploy-tangobox-tango-java
+    - deploy-tangobox-tango-java-pogo
+
 
 #################################
 # Pip install tango packages

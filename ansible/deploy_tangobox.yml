@@ -1,0 +1,9 @@
+---
+
+- name: deploy_tangobox
+  hosts: local
+  gather_facts: False
+  roles:
+    - {role: 'deploy_tangobox', tags: ['deploy-tangobox'], become: yes}
+
+

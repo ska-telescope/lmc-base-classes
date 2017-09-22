@@ -1,11 +1,8 @@
 ---
 # file: site.yml
 
-- name: all
-  hosts: all
-  roles:
-    - {role: 'deploy_tangobox', tags: 'deploy-tangobox', become: yes}
-    - {role: 'deploy_sw', tags: 'deploy-sw'}
-    - {role: 'refresh_sw', tags: 'refresh-sw'}
-    - {role: 'install_sw', tags: 'install-sw'}
-    - {role: 'register_refelt', tags: 'register-refelt'}
+- include: deploy_sw.yml
+- include: deploy_tangobox.yml
+- include: install_sw.yml
+- include: refresh_sw.yml
+- include: register_refelt.yml

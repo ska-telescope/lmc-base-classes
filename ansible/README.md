@@ -26,6 +26,22 @@ or
 ./play-task.sh deploy-tangobox start-tango
 ```
 
+## To run a role
+
+To see all playbooks exposing the roles:
+```
+ls -la *.yml
+```
+
+To run the role, run the playbook like any of the lines below:
+```
+./play-task.sh install-sw
+./play-task.sh refresh-sw
+ansible-playbook -i hosts install_sw.yml --list-tags
+ansible-playbook -i hosts install_sw.yml
+ansible-playbook -i hosts install_sw.yml -t install-sw-levpro
+```
+
 ### To deploy SW on local: # Git clone if not available, else git pull
 ```
 ./play-task.sh deploy-sw

@@ -64,7 +64,7 @@
 - name: Extract web server
   become: yes
   shell:
-    tar xzvf apache-tomcat-8*tar.gz -C /opt/tomcat/ --strip-components=1
+    tar xzvf apache-tomcat-8.0.9.tar.gz -C /opt/tomcat/ --strip-components=1
     chdir=/tmp/working/
   tags:
     - deploy-tangobox-tango-webapp
@@ -99,7 +99,7 @@
 
 - name: Download mTango REST server
   get_url:
-    url=https://bitbucket.org/hzgwpn/mtangorest.server/downloads/mtangorest.server-rc4-0.1.jar
+    url=https://bitbucket.org/hzgwpn/mtangorest.server/downloads/mtangorest.server-rc4-0.3.jar
     dest=/tmp/working/
   tags:
     - deploy-tangobox-tango-webapp
@@ -110,7 +110,7 @@
 
 - name: Download mTango REST war file
   get_url:
-    url=https://bitbucket.org/hzgwpn/mtangorest.server/downloads/mtangorest.server-rc4-0.1.zip
+    url=https://bitbucket.org/hzgwpn/mtangorest.server/downloads/mtangorest.server-rc4-0.3.zip
     dest=/tmp/working/
   tags:
     - deploy-tangobox-tango-webapp
@@ -123,7 +123,7 @@
   become: yes
   unarchive:
     remote_src=True
-    src=/tmp/working/mtangorest.server-rc4-0.1.zip
+    src=/tmp/working/mtangorest.server-rc4-0.3.zip
     dest=/tmp/working/
   tags:
     - deploy-tangobox-tango-webapp
@@ -136,8 +136,20 @@
   become: yes
   copy:
     remote_src=True
-    src=/tmp/working/mtangorest.server-rc4-0.1/tango.war
+    src=/tmp/working/mtangorest.server-rc4-0.3/tango.war
     dest=/opt/tomcat/webapps/
+tags:
+  - deploy-tangobox-tango-webapp
+
+#################################################################
+## Change tango war to executable mode                         ##
+#################################################################
+
+- name: tango war executable mode
+  become: yes
+  file:
+    mode=a+x
+    dest=/opt/tomcat/webapps/tango.war
   tags:
     - deploy-tangobox-tango-webapp
 
@@ -149,7 +161,7 @@
   become: yes
   file:
     mode=a+x
-    dest=/tmp/working/mtangorest.server-rc4-0.1.jar
+    dest=/tmp/working/mtangorest.server-rc4-0.3.jar
   tags:
     - deploy-tangobox-tango-webapp
 
@@ -160,7 +172,7 @@
 - name: Move mTango REST server
   become: yes
   shell:
-    mv mtangorest.server-rc4-0.1.jar /usr/local/bin/
+    mv mtangorest.server-rc4-0.3.jar /usr/local/bin/
     chdir=/tmp/working/
   tags:
     - deploy-tangobox-tango-webapp
@@ -208,6 +220,7 @@
   become: yes
   shell:
     sh startup.sh
+    remote_src=True
     chdir=/opt/tomcat/bin/
   tags:
     - deploy-tangobox-tango-webapp

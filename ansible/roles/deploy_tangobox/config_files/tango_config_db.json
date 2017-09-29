@@ -9,7 +9,7 @@
                     "device_classes":
                     [{
                         "class_name": "TangoRestServer",
-                        "devices": ["test/rest/0"]
+                        "devices": ["tango/rest/0"]
                     }]
                 }]
         }]

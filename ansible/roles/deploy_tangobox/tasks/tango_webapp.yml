@@ -245,11 +245,11 @@
 - block:
   - name: Register mtango rest server
     register_element:
-        elt_config_file: ../config_files/tango_config_db.json
+        elt_config_file: roles/deploy_tangobox/config_files/tango_config_db.json
     register: writable_result
   - name: Register the mtango rest server device properties
     register_device_properties:
-        elt_config_file: ../config_files/tango_device_properties.json
+        elt_config_file: roles/deploy_tangobox/config_files/tango_device_properties.json
     register: writable_result
   tags:
     - deploy-tangobox-tango-webapp

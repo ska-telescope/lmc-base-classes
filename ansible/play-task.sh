@@ -9,14 +9,12 @@ else
   if [ -z $2 ]; then
     # No seperate taskid, replace underscores with dashes
     roletag=${1//[_]/-}
-    cmd="ansible-playbook -i hosts site.yml --limit local --tags $roletag "\
-        "--verbose --ask-sudo-pass"
+    cmd="ansible-playbook -i hosts site.yml --limit local --tags $roletag --verbose --ask-sudo-pass"
   else
     # Both roletag and taskid - replace underscores with dashes
     roletag=${1//[_]/-}
     taskid=${2//[_]/-}
-    cmd="ansible-playbook -i hosts site.yml --limit local --tags $roletag-$taskid "\
-        "--verbose --ask-sudo-pass"
+    cmd="ansible-playbook -i hosts site.yml --limit local --tags $roletag-$taskid --verbose --ask-sudo-pass"
   fi
 fi
 

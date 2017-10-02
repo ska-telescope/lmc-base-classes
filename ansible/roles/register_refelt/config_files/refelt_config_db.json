@@ -62,13 +62,13 @@
               ]
         },
         {
-            "server_name": "SvrFileLogger",
+            "server_name": "SKALogger",
             "server_instances": [
                 {
                     "instance_name": "Elt",
                     "device_classes": [
                         {
-                            "class_name": "FileLogger",
+                            "class_name": "SKALogger",
                             "devices": ["ref/elt/logger"]
                         }
                     ]
@@ -77,7 +77,7 @@
                     "instance_name": "Central",
                     "device_classes": [
                         {
-                            "class_name": "FileLogger",
+                            "class_name": "SKALogger",
                             "devices": ["ref/central/logger"]
                         }
                     ]

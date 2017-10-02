@@ -353,6 +353,6 @@
       ln -s /etc/init.d/tomcat S71tomcat
       chdir=/etc/rc5.d
   tags:
-    - deploy-tangobox-tango-webapp1
+    - deploy-tangobox-tango-webapp
 
 ...

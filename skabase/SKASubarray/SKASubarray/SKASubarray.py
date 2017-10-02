@@ -47,9 +47,6 @@ class SKASubarray(SKAObsDevice):
 
 
 
-
-
-
     SubID = device_property(
         dtype='str',
         mandatory=True

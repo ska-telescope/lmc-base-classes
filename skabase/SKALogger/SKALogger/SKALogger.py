@@ -124,6 +124,7 @@ class SKALogger(SKABaseDevice):
             logger.addHandler(handler)
             logger_dict[source_device] = logger
 
+        # This should log at the specified level
         logger.info("{}]\t{}".format(timestamp,message))
         # print argin
         # PROTECTED REGION END #    //  SKALogger.Log

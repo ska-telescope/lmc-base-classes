@@ -188,14 +188,19 @@
     - deploy-tangobox-tango-webapp
 
 #################################################################
-## Move mTango REST server to usr/local/bin                    ##
+## Move mTango REST server to /usr/lib/tango/server/           ##
 #################################################################
 
 - block:
+  - name: Create tango server dir
+    become: yes
+    file:
+      path=/usr/lib/tango/server/
+      state=directory
   - name: Move mTango REST server
     become: yes
     shell:
-      mv mtangorest.server-rc4-0.3.jar /usr/local/bin/
+      mv mtangorest.server-rc4-0.3.jar /usr/lib/tango/server/
       chdir=/tmp/working/
   tags:
     - deploy-tangobox-tango-webapp
@@ -254,7 +259,63 @@
   tags:
     - deploy-tangobox-tango-webapp
 
-################################################################
+#################################################################
+# Generate executable to be uesed by astor (starter)           ##
+#################################################################
+
+- block:
+  - name: Create bash file to be used by astor
+    become: yes
+    file: path=/usr/local/bin/TangRestServer state=touch
+  - stat: path=/usr/local/bin/TangRestServer
+    register: file_path
+  - debug: msg="File exists"
+    when: file_path.stat.exists == true
+  - name: Write to bash file
+    become: yes
+    lineinfile: dest=/usr/local/bin/TangRestServer
+                line='#!/bin/bash\n\nif [ -z $TANGO_HOST ]; then\n    TANGO_HOST=127.0.0.1:10000\nfi\n\necho "Using TANGO_HOST=$TANGO_HOST"\n\nINSTANCE_NAME=$1\necho "Using INSTANCE_NAME=$INSTANCE_NAME"\n\nJAVA_OPTS="-Xmx4G -Xshare:off -XX:+UseG1GC -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=5009"\necho "using JAVA_OPTS=$JAVA_OPTS"\n\n/usr/bin/java -jar $JAVA_OPTS -DTANGO_HOST=$TANGO_HOST /usr/lib/tango/server/mtangorest.server-rc4-0.3.jar $INSTANCE_NAME &'
+  - name: Create executable to be used by astor
+    become: yes
+    file:
+      mode=a+x
+      dest=/usr/local/bin/TangRestServer
+  tags:
+    - deploy-tangobox-tango-webapp
+
+#################################################################
+# Register in ASTOR                                            ##
+#################################################################
+
+- block:
+  - name: Set StartDsPath
+    set_starter_ds_path:
+      facility_name="refelt"
+      facility_config="TBD"
+      starter_path="/usr/local/bin/"
+    register: the_result
+  tags:
+    - deploy-tangobox-tango-webapp
+
+- block:
+  - name: Register refelt servers in Astor
+    register_refelt:
+      action="in_astor"
+      facility_name="refelt"
+      facility_config="TBD"
+    register: the_result
+  tags:
+    - deploy-tangobox-tango-webapp
+
+- block:
+  - name: Register the rest server in Astor and start with Starter.
+    start_element:
+      element_config: roles/deploy_tangobox/config_files/tango_config_starter.json
+    register: writable_result
+  tags:
+    - deploy-tangobox-tango-webapp
+
+#################################################################
 ## Start up the tomcat web server                              ##
 #################################################################
 
@@ -267,3 +328,31 @@
       chdir=/opt/tomcat/bin/
   tags:
     - deploy-tangobox-tango-webapp
+
+#################################################################
+## Start Tomcat and Apache at Boot Time                        ##
+#################################################################
+
+- block:
+  - name: Create bash file to be used by astor
+    become: yes
+    file: path=/etc/init.d/tomcat state=touch
+  - stat: path=/etc/init.d/tomcat
+    register: file_path
+  - debug: msg="File exists"
+    when: file_path.stat.exists == true
+  - name: Write to bash file
+    become: yes
+    lineinfile:
+      dest=/etc/init.d/tomcat
+      line='#!/bin/bash\n#\n# tomcat\n#\n# Description -     Start up the Tomcat servlet engine. \n\n# Source function library.\n. /etc/init.d/functions\n\n\nRETVAL=$?\nCATALINA_HOME="/opt/tomcat/"\ncase "$1" in\n start)\n        if [ -f $CATALINA_HOME/bin/startup.sh ];\n          then\n        echo $"Starting Tomcat"\n            /bin/su tomcat $CATALINA_HOME/bin/startup.sh\n        fi\n    ;;\n stop)\n        if n/su tomcat $CATALINA_HOME/bin/shutdown.sh\n        fi\n    ;;\n *)\n   echo $"Usage - $0 {start|[ -f $CATALINA_HOME/bin/shutdown.sh ];\n          then\n      echo $"Stopping Tomcat"\n            /bistop}"\n    exit 1\n    ;;\nesac\n\nexit $RETVAL'
+      state=present
+  - name: Create link to be used at start up
+    become: yes
+    shell:
+      ln -s /etc/init.d/tomcat S71tomcat
+      chdir=/etc/rc5.d
+  tags:
+    - deploy-tangobox-tango-webapp1
+
+...

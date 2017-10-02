@@ -13,28 +13,38 @@
 ###########################################
 
 
+
 - block:
   - name: Generate skabase
-    command: pogo -src {{software_root}}/levpro/skabase/{item}
+    command: pogo -src {{item}}.xmi
+    args:
+        chdir: "{{software_root}}/levpro/skabase/{{item}}"
+    environment:
+        DISPLAY: "{{ lookup('env','DISPLAY') }}"
     with_items:
-      - SKABaseDevice/SKABaseDevice.xmi
-      - SKAObsDevice/SKAObsDevice.xmi
-      - SKAMaster/SKAMaster.xmi
-      - SKASubarray/SKASubarray.xmi
-      - SKACapability/SKACapability.xmi
-      - SKAAlarmHandler/SKAAlarmHandler.xmi
-      - SKATelState/SKATelState.xmi
-      - SKALogger/SKALogger.xmi
+      - SKABaseDevice
+      - SKAObsDevice
+      - SKAMaster
+      - SKASubarray
+      - SKACapability
+      - SKAAlarmHandler
+      - SKATelState
+      - SKALogger
   become: True
+  become_user: kat
   tags:
     - generate-sw-skabase
 
 - block:
   - name: Generate refelt
-    command: pogo -src {{software_root}}/levpro/refelt/{item}
+    command: pogo -src {{item}}.xmi
+    args:
+        chdir: "{{software_root}}/levpro/refelt/refelt"
+    environment:
+        DISPLAY: "localhost:10.0"
     with_items:
-      - RefMaster.xmi
-      - RefA.xmi
+      - RefMaster
+      - RefA
   become: True
   tags:
     - generate-sw-refelt

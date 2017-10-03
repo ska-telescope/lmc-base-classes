@@ -20,7 +20,7 @@
     args:
         chdir: "{{software_root}}/levpro/skabase/{{item}}"
     environment:
-        DISPLAY: "{{ lookup('env','DISPLAY') }}"
+        DISPLAY: "localhost:10.0"
     with_items:
       - SKABaseDevice
       - SKAObsDevice

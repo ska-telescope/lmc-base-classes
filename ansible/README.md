@@ -94,13 +94,18 @@ cd ~/git/levpro/ansible
 ./play-task.sh refresh-sw
 ./play-task.sh install-sw
 ```
+### To regenerate POGO output:
+```
+cd ~/git/levpro/ansible
+./play-task.sh generate-sw
+```
 
-### To configure a TANGO facility and start its device servers.
+### To configure the RefElt TANGO facility and start its device servers.
 ```
-./play-task.sh register-elt-in-tangodb
-or
-ansible-playbook -i hosts site.yml --limit local --tags "register-elt-in-tangodb"
+./play-task.sh register-refelt-in-tangodb
+./play-task.sh register-refelt-in-astor
 ```
+
 
 # NOTES:
 
@@ -135,10 +140,6 @@ Format is "<role-tag>-<task-tag>" e.g. install-sw-refelt
     "{}-{}".format(role_tag,task_id).replace("_","-").lower()
 ```
 
-### Current TASK ids:
-
-     For deployment:      debs, tango-debs, core, pip
-     For software:        tango-simlib, levpro, skabase, refelt
 ### Current TASK tags:
 To list the current task tags:
 ```

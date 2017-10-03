@@ -30,8 +30,6 @@
       - SKAAlarmHandler
       - SKATelState
       - SKALogger
-  become: True
-  become_user: kat
   tags:
     - generate-sw-skabase
 
@@ -45,7 +43,6 @@
     with_items:
       - RefMaster
       - RefA
-  become: True
   tags:
     - generate-sw-refelt
 

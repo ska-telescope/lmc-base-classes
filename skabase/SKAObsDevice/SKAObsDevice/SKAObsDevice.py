@@ -47,10 +47,6 @@ class SKAObsDevice(SKABaseDevice):
 
 
 
-
-
-
-
     # ----------
     # Attributes
     # ----------

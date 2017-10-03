@@ -39,7 +39,7 @@ class SKAObsDeviceDeviceTestCase(DeviceTestCase):
     # PROTECTED REGION ID(SKAObsDevice.test_additionnal_import) ENABLED START #
     # PROTECTED REGION END #    //  SKAObsDevice.test_additionnal_import
     device = SKAObsDevice
-    properties = {'SkaLevel': '4', 'CentralLoggingTarget': '', 'ElementLoggingTarget': '', 'StorageLoggingTarget': 'localhost', 'CentralLoggingLevelDefault': '2', 'ElementLoggingLevelDefault': '3', 'StorageLoggingLevelStorage': '4', 'MetricList': 'healthState,adminMode,controlMode', 'GroupDefinitions': '', 'StorageLoggingLevelDefault': '4', 
+    properties = {'SkaLevel': '4', 'CentralLoggingTarget': '', 'ElementLoggingTarget': '', 'StorageLoggingTarget': 'localhost', 'MetricList': 'healthState,adminMode,controlMode', 'GroupDefinitions': '', 
                   }
     empty = None  # Should be []
 

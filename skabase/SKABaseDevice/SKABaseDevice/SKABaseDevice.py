@@ -195,18 +195,6 @@ class SKABaseDevice(Device):
         dtype='str', default_value="localhost"
     )
 
-    CentralLoggingLevelDefault = device_property(
-        dtype='uint16', default_value=2
-    )
-
-    ElementLoggingLevelDefault = device_property(
-        dtype='uint16', default_value=3
-    )
-
-    StorageLoggingLevelDefault = device_property(
-        dtype='uint16', default_value=4
-    )
-
     # ----------
     # Attributes
     # ----------

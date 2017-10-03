@@ -10,18 +10,18 @@ To see all task tags execute:
 ./play-task.sh
 ```
 
-To run a full role (use the ROLE name with underscores)
+To run a full role (use the ROLE name)
 ```
 ./play-task.sh install-sw
 or
 ./play-task.sh refresh-sw
 ```
 
-To run a specific task (use ROLE tags plus TASK IDs with dashes)
+To run a specific task (use ROLE tags plus TASK ID)
 ```
-./play-task.sh install-sw skabase
-or
 ./play-task.sh install-sw-skabase
+or
+./play-task.sh install-sw skabase
 or
 ./play-task.sh deploy-tangobox start-tango
 ```
@@ -94,13 +94,18 @@ cd ~/git/levpro/ansible
 ./play-task.sh refresh-sw
 ./play-task.sh install-sw
 ```
+### To regenerate POGO output:
+```
+cd ~/git/levpro/ansible
+./play-task.sh generate-sw
+```
 
-### To configure a TANGO facility and start its device servers.
+### To configure the RefElt TANGO facility and start its device servers.
 ```
-./play-task.sh register-elt-in-tangodb
-or
-ansible-playbook -i hosts site.yml --limit local --tags "register-elt-in-tangodb"
+./play-task.sh register-refelt-in-tangodb
+./play-task.sh register-refelt-in-astor
 ```
+
 
 # NOTES:
 
@@ -135,8 +140,37 @@ Format is "<role-tag>-<task-tag>" e.g. install-sw-refelt
     "{}-{}".format(role_tag,task_id).replace("_","-").lower()
 ```
 
-### Current TASK ids:
-     For deployment:      debs, tango-debs, core, pip
-     For software:        tango-simlib, levpro, skabase, refelt
 ### Current TASK tags:
-     [deploy-sw|refresh-sw|install-sw]-[tango-simlib|levpro|skabase|refelt]
+To list the current task tags:
+```
+./play-task.sh 
+
+kat@levpro.devl4.camlab.kat.ac.za:~/git/levpro/ansible$ ./play-task.sh 
+You have to specify a roletag, and optional task-id
+
+---------------------------<<<< ANSIBLE COMMAND LINE >>>>--------------------------------------------
+echo The available task tags are:; ansible-playbook -i hosts site.yml --list-tags
+-----------------------------------------------------------------------------------------------------
+
+The available task tags are:
+
+playbook: site.yml
+
+  play #1 (local): deploy_sw	TAGS: []
+      TASK TAGS: [deploy-sw, deploy-sw-levpro, deploy-sw-tango-simlib]
+
+  play #2 (local): deploy_tangobox	TAGS: []
+      TASK TAGS: [debs, deploy-box-tango-java, deploy-tangobox, deploy-tangobox-debs, deploy-tangobox-itango, deploy-tangobox-mysql, deploy-tangobox-mysql-installed, deploy-tangobox-pip, deploy-tangobox-start-tango, deploy-tangobox-tango-core, deploy-tangobox-tango-java, deploy-tangobox-tango-java-pogo, itango, mysql, pip, tango-core, tango-java]
+
+  play #3 (local): install_sw	TAGS: []
+      TASK TAGS: [install-sw, install-sw-levpro, install-sw-refelt, install-sw-skabase, install-sw-tango-simlib]
+
+  play #4 (local): refresh_sw	TAGS: []
+      TASK TAGS: [refresh-sw, refresh-sw-levpro, refresh-sw-tango-simlib]
+
+  play #5 (local): register_refelt	TAGS: []
+      TASK TAGS: [register-elt-in-astor, register-elt-in-tangodb, register-refelt, register-refelt-in-astor, register-refelt-in-astor-ds-path, register-refelt-in-tangodb]
+
+  play #6 (local): generate_sw	TAGS: []
+      TASK TAGS: [generate-sw, generate-sw-refelt, generate-sw-skabase]
+```

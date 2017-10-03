@@ -6,3 +6,4 @@
 - include: install_sw.yml
 - include: refresh_sw.yml
 - include: register_refelt.yml
+- include: generate_sw.yml

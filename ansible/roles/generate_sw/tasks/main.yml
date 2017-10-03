@@ -1,0 +1,49 @@
+---
+
+###########################################
+##     PRINT STUFF
+###########################################
+
+- name: Print software_root directory
+  debug: msg="rootdir = {{software_root}}"
+
+
+###########################################
+##     Pip install working directories
+###########################################
+
+
+
+- block:
+  - name: Generate skabase
+    command: pogo -src {{item}}.xmi
+    args:
+        chdir: "{{software_root}}/levpro/skabase/{{item}}"
+    environment:
+        DISPLAY: "localhost:10.0"
+    with_items:
+      - SKABaseDevice
+      - SKAObsDevice
+      - SKAMaster
+      - SKASubarray
+      - SKACapability
+      - SKAAlarmHandler
+      - SKATelState
+      - SKALogger
+  tags:
+    - generate-sw-skabase
+
+- block:
+  - name: Generate refelt
+    command: pogo -src {{item}}.xmi
+    args:
+        chdir: "{{software_root}}/levpro/refelt/refelt"
+    environment:
+        DISPLAY: "localhost:10.0"
+    with_items:
+      - RefMaster
+      - RefA
+  tags:
+    - generate-sw-refelt
+
+...

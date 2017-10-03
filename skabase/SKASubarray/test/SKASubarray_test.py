@@ -39,7 +39,7 @@ class SKASubarrayDeviceTestCase(DeviceTestCase):
     # PROTECTED REGION ID(SKASubarray.test_additionnal_import) ENABLED START #
     # PROTECTED REGION END #    //  SKASubarray.test_additionnal_import
     device = SKASubarray
-    properties = {'SkaLevel': '4', 'CentralLoggingTarget': '', 'ElementLoggingTarget': '', 'StorageLoggingTarget': 'localhost', 'CentralLoggingLevelDefault': '', 'ElementLoggingLevelDefault': '', 'StorageLoggingLevelStorage': '', 'MetricList': 'healthState,adminMode,controlMode', 'GroupDefinitions': '', 'SubID': '', 'CapabililtyTypes': '', 
+    properties = {'SkaLevel': '4', 'CentralLoggingTarget': '', 'ElementLoggingTarget': '', 'StorageLoggingTarget': 'localhost', 'MetricList': 'healthState,adminMode,controlMode', 'GroupDefinitions': '', 'SubID': '', 'CapabililtyTypes': '', 
                   }
     empty = None  # Should be []
 

@@ -4,8 +4,8 @@ from . import RefB
 from . import RefBchild
 from . import RefMaster
 from . import RefTelState
-from . import RefAlarms
-#from . import RefSubarray
+from . import RefAlarmHandler
+from . import RefSubarray
 #from . import RefCapCorrelator
 #from . import RefCapPssBeams
 #from . import RefCapPstBeams

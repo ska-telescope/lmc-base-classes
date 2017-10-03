@@ -57,6 +57,12 @@ class SKALoggerDeviceTestCase(DeviceTestCase):
         # PROTECTED REGION END #    //  SKALogger.test_properties
         pass
 
+    def test_Log(self):
+        """Test for Log"""
+        # PROTECTED REGION ID(SKALogger.test_Log) ENABLED START #
+        self.device.Log([""])
+        # PROTECTED REGION END #    //  SKALogger.test_Log
+
     def test_State(self):
         """Test for State"""
         # PROTECTED REGION ID(SKALogger.test_State) ENABLED START #

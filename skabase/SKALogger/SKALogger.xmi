@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="ASCII"?>
 <pogoDsl:PogoSystem xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:pogoDsl="http://www.esrf.fr/tango/pogo/PogoDsl">
-  <classes name="SKALogger" pogoRevision="9.5">
-    <description description="A generic base device for Logging for SKA." title="SKALogger" sourcePath="/Users/lvdheever/link-devl4/git/levpro/skabase/SKALogger" language="PythonHL" filestogenerate="XMI   file,Code files,Python Package,Protected Regions" license="GPL" copyright="" hasMandatoryProperty="false" hasConcreteProperty="false" hasAbstractCommand="true" hasAbstractAttribute="false">
+  <classes name="SKALogger" pogoRevision="9.6">
+    <description description="A generic base device for Logging for SKA." title="SKALogger" sourcePath="/home/kat/git/levpro/skabase/SKALogger" language="PythonHL" filestogenerate="XMI   file,Code files, Python Package, Protected Regions" license="GPL" copyright="" hasMandatoryProperty="false" hasConcreteProperty="true" hasAbstractCommand="true" hasAbstractAttribute="false">
       <inheritances classname="Device_Impl" sourcePath=""/>
       <inheritances classname="SKABaseDevice" sourcePath="../SKABaseDevice"/>
       <identification contact="at ska.ac.za - cam" author="cam" emailDomain="ska.ac.za" classFamily="OtherInstruments" siteSpecific="" platform="All Platforms" bus="Not Applicable" manufacturer="SKASA" reference="SKA-SKALogger"/>
@@ -48,6 +48,15 @@
       <status abstract="false" inherited="false" concrete="true"/>
       <DefaultPropValue>4</DefaultPropValue>
     </deviceProperties>
+    <commands name="Log" description="LogConsumer interface" displayLevel="OPERATOR" polledPeriod="0">
+      <argin description="none">
+        <type xsi:type="pogoDsl:StringArrayType"/>
+      </argin>
+      <argout description="No output arguments">
+        <type xsi:type="pogoDsl:VoidType"/>
+      </argout>
+      <status abstract="false" inherited="false" concrete="true" concreteHere="true"/>
+    </commands>
     <commands name="State" description="This command gets the device state (stored in its device_state data member) and returns it to the caller." execMethod="dev_state" displayLevel="OPERATOR" polledPeriod="0">
       <argin description="none">
         <type xsi:type="pogoDsl:VoidType"/>
@@ -203,6 +212,6 @@
     <states name="DISABLE" description="The device cannot be switched ON for an external reason. E.g. the power supply has its door open, the safety conditions are not satisfactory to allow the device to operate.">
       <status abstract="false" inherited="true" concrete="true"/>
     </states>
-    <preferences docHome="./doc_html" makefileHome="$(TANGO_HOME)"/>
+    <preferences docHome="./doc_html" makefileHome="/usr/share/pogo/preferences"/>
   </classes>
 </pogoDsl:PogoSystem>

@@ -14,40 +14,17 @@
 ##     Register in TANGO db
 ###########################################
 
-#---
-#- hosts: your_host
-#  vars:
-#    jsonVar: "{{ lookup('file', 'var.json') | from_json }}"
-#  tasks:
-#    - name: test loop
-#      with_dict: "{{ jsonVar['queue'] }}"
-#      shell: |
-#        if echo "blue" | grep -q "{{ item.value.color }}" ; then
-#            echo "success"
-#        fi
-
-- block:
-  - name: Register RefElt servers, classes, devices
-    register_refelt:
-      action="in_tangodb"
-      facility_name="refelt"
-      facility_config="TBD"
-      #config="{{ refelt_config_dir }}"
-    register: writable_result
-  tags:
-    - register-refelt-in-tangodb
-
 - block:
   - name: Register RefElt servers, classes, devices
     register_element:
         elt_config_file: /home/kat/git/levpro/ansible/roles/register_refelt/config_files/refelt_config_db.json
-    register: writable_result
-  - name: Register the Element's device properties
+    register: the_result
+  - name: Register RefElt device properties
     register_device_properties:
       elt_config_file: /home/kat/git/levpro/ansible/roles/register_refelt/config_files/refelt_device_properties.json
-    register: writable_result
+    register: the_result
   tags:
-    - register-elt-in-tangodb
+    - register-refelt-in-tangodb
 
 ###########################################
 ###     Register in ASTOR
@@ -75,7 +52,7 @@
   - name: Register the Element in Astor and start with Starter.
     start_element:
       element_config: /home/kat/git/levpro/ansible/roles/register_refelt/config_files/refelt_config_starter.json
-    register: writable_result
+    register: the_result
   tags:
-    - register-elt-in-astor
+    - register-refelt-in-astor
 ...

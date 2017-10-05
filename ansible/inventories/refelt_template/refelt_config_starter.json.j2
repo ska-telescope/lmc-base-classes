@@ -1,0 +1,23 @@
+{
+    "api_version": "v1",
+    "tango_hosts": {
+          "levpro": [
+              {
+                  "startup_level": 1,
+                  "server_instances": ["SKALogger/Elt", "SKALogger/Central"]
+              },
+              {
+                  "startup_level": 2,
+                  "server_instances": ["SvrRefAchild/11", "SvrRefAchildA/12", "SvrRefAchild/21", "SvrRefAchild/22"]
+              },
+              {
+                  "startup_level": 3,
+                  "server_instances": ["SvrRefA/1", "SvrRefA/2"]
+              },
+              {
+                  "startup_level": 5,
+                  "server_instances": ["SvrRefMaster/Elt", "SvrRefAlarmHandler/Elt", "SvrRefTelState/Elt"]
+              }
+          ]
+    }
+}

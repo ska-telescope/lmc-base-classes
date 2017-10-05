@@ -1,0 +1,66 @@
+---
+# THIS IS SPECIFIC FOR REFELT - JUST TO GET A REFELT REGISTERED
+# GENERALISATION OF CONFIG AND FOR OTHER ELEMENTS IS TBD
+
+###########################################
+##     PRINT STUFF
+###########################################
+
+- name: Extract relevant vars
+  vars:
+    refelt_type: "{{element_details[type]}}"
+    refelt_name: "{{element_details[name]}}"
+    refelt_template: "{{element_details[template]}}"
+
+- name: Print vars
+  debug: msg="rootdir = {{software_root}}"
+  debug: msg="element_details = {{element_details}}"
+
+
+###########################################
+##     Register in TANGO db
+###########################################
+
+- block:
+  - name: Register MyRefElt servers, classes, devices
+    register_element:
+        elt_config_file: /home/kat/git/levpro/ansible/inventories/facility/config_files/facility_config_db.json
+    register: the_result
+
+  - name: Register Facility device properties
+    register_device_properties:
+      elt_config_file: /home/kat/git/levpro/ansible/inventories/facility/config_files/facility_device_properties.json
+    register: the_result
+
+  tags:
+    - register-myrefelt-in-tangodb
+
+###########################################
+###     Register in ASTOR
+############################################
+- block:
+  - name: Set StartDsPath
+    set_starter_ds_path:
+      facility_name="elt"
+      facility_config="TBD"
+      starter_path="/usr/local/bin/"
+    register: the_result
+  tags:
+    - register-myrefelt-in-astor
+    - register-myrefelt-in-astor-ds-path
+
+- block:
+  - name: Register MyRefElt servers in Astor
+    register_refelt:
+      action="in_astor"
+      facility_name="{{facility_name}}"
+      facility_config="TBD"
+    register: the_result
+
+  - name: Register MyRefElt in Astor and start with Starter.
+    start_element:
+      element_config: /home/kat/git/levpro/ansible/roles/register_facitily/config_files/facility_config_starter.json
+    register: the_result
+  tags:
+    - register-myrefelt-in-astor
+...

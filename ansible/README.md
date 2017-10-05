@@ -106,6 +106,29 @@ cd ~/git/levpro/ansible
 ./play-task.sh register-refelt-in-astor
 ```
 
+### To configure any RefElt TANGO facility and start its device servers.
+You need to add the group to hosts e.g.
+[devl4]
+devl4levpro
+
+And define ansible/group_vars for the group:
+```
+- ## Element personality
+- element_details:
+    - type: refelt
+    - name: ref
+    - template: refelt_template
+```
+
+and ansible/host_vars for each host in the group as appropriate, at least:
+```
+ansible_ssh_host: levpro.devl4.camlab.kat.ac.za
+```
+
+Then do
+```
+ansible-playbook register-my-refelt.yml --extra-vars "which=devl4"
+```
 
 # NOTES:
 

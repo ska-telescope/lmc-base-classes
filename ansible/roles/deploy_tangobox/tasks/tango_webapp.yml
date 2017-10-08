@@ -236,10 +236,16 @@
 - block:
   - name: Add tomcat user
     become: yes
-    lineinfile: dest=/opt/tomcat/conf/tomcat-users.xml
-                regexp='^</tomcat-users>'
-                insertbefore='^</tomcat-users>'
-                line='  <role rolename="admin-gui"/>\n  <role rolename="manager-gui"/>\n  <role rolename="mtango-rest"/>\n  <user username="tomcat" password="tomcat" roles="manager-gui,admin-gui"/>\n  <user username="kat" password="kat" roles="mtango-rest"/>\n</tomcat-users>'
+    lineinfile: 
+      dest=/opt/tomcat/conf/tomcat-users.xml.bk
+      insertbefore='^</tomcat-users>'
+      line="{{ item.line }}"
+    with_items:
+      - { line: '  <role rolename="admin-gui"/>' }
+      - { line: '  <role rolename="manager-gui"/>' }
+      - { line: '  <role rolename="mtango-rest"/>' }
+      - { line: '  <user username="tomcat" password="tomcat" roles="manager-gui,admin-gui"/>' }
+      - { line: '  <user username="kat" password="kat" roles="mtango-rest"/>' }
   tags:
     - deploy-tangobox-tango-webapp
 
@@ -266,14 +272,14 @@
 - block:
   - name: Create bash file to be used by astor
     become: yes
-    file: path=/usr/local/bin/TangRestServer state=touch
-  - stat: path=/usr/local/bin/TangRestServer
+    file: path=/usr/local/bin/TangoRestServer state=touch
+  - stat: path=/usr/local/bin/TangoRestServer
     register: file_path
   - debug: msg="File exists"
     when: file_path.stat.exists == true
   - name: Write to bash file
     become: yes
-    lineinfile: dest=/usr/local/bin/TangRestServer
+    lineinfile: dest=/usr/local/bin/TangoRestServer
                 line='#!/bin/bash\n\nif [ -z $TANGO_HOST ]; then\n    TANGO_HOST=127.0.0.1:10000\nfi\n\necho "Using TANGO_HOST=$TANGO_HOST"\n\nINSTANCE_NAME=$1\necho "Using INSTANCE_NAME=$INSTANCE_NAME"\n\nJAVA_OPTS="-Xmx4G -Xshare:off -XX:+UseG1GC -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=5009"\necho "using JAVA_OPTS=$JAVA_OPTS"\n\n/usr/bin/java -jar $JAVA_OPTS -DTANGO_HOST=$TANGO_HOST /usr/lib/tango/server/mtangorest.server-rc4-0.3.jar $INSTANCE_NAME &'
   - name: Create executable to be used by astor
     become: yes
@@ -334,7 +340,7 @@
 #################################################################
 
 - block:
-  - name: Create bash file to be used by astor
+  - name: Create an init.d file to start-up tomcat server
     become: yes
     file: path=/etc/init.d/tomcat state=touch
   - stat: path=/etc/init.d/tomcat

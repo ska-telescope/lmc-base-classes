@@ -237,7 +237,7 @@
   - name: Add tomcat user
     become: yes
     lineinfile: 
-      dest=/opt/tomcat/conf/tomcat-users.xml.bk
+      dest=/opt/tomcat/conf/tomcat-users.xml
       insertbefore='^</tomcat-users>'
       line="{{ item.line }}"
     with_items:

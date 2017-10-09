@@ -279,13 +279,20 @@
     when: file_path.stat.exists == true
   - name: Write to bash file
     become: yes
-    lineinfile: dest=/usr/local/bin/TangoRestServer
-                line='#!/bin/bash\n\nif [ -z $TANGO_HOST ]; then\n    TANGO_HOST=127.0.0.1:10000\nfi\n\necho "Using TANGO_HOST=$TANGO_HOST"\n\nINSTANCE_NAME=$1\necho "Using INSTANCE_NAME=$INSTANCE_NAME"\n\nJAVA_OPTS="-Xmx4G -Xshare:off -XX:+UseG1GC -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=5009"\necho "using JAVA_OPTS=$JAVA_OPTS"\n\n/usr/bin/java -jar $JAVA_OPTS -DTANGO_HOST=$TANGO_HOST /usr/lib/tango/server/mtangorest.server-rc4-0.3.jar $INSTANCE_NAME &'
-  - name: Create executable to be used by astor
-    become: yes
-    file:
-      mode=a+x
-      dest=/usr/local/bin/TangRestServer
+    lineinfile:
+      dest=/usr/local/bin/TangoRestServer
+      line={{ item.line }}
+    with_items:
+      - { line: '#!/bin/bash' }
+      - { line: 'if [ -z $TANGO_HOST ]; then' }
+      - { line: '    TANGO_HOST=127.0.0.1:10000' }
+      - { line: 'fi' }
+      - { line: 'echo "Using TANGO_HOST=$TANGO_HOST"' }
+      - { line: 'INSTANCE_NAME=$1' }
+      - { line: 'echo "Using INSTANCE_NAME=$INSTANCE_NAME"'}
+      - { line: 'JAVA_OPTS="-Xmx4G -Xshare:off -XX:+UseG1GC -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=5009"' }
+      - { line: 'echo "using JAVA_OPTS=$JAVA_OPTS"' }
+      - { line: '/usr/bin/java -jar $JAVA_OPTS -DTANGO_HOST=$TANGO_HOST /usr/lib/tango/server/mtangorest.server-rc4-0.3.jar $INSTANCE_NAME' }
   tags:
     - deploy-tangobox-tango-webapp
 
@@ -304,7 +311,7 @@
     - deploy-tangobox-tango-webapp
 
 - block:
-  - name: Register refelt servers in Astor
+  - name: Register device servers in Astor
     register_refelt:
       action="in_astor"
       facility_name="refelt"
@@ -336,7 +343,7 @@
     - deploy-tangobox-tango-webapp
 
 #################################################################
-## Start Tomcat and Apache at Boot Time                        ##
+## Start Tomcat  as system service                             ##
 #################################################################
 
 - block:
@@ -349,15 +356,42 @@
     when: file_path.stat.exists == true
   - name: Write to bash file
     become: yes
-    lineinfile:
+    lineinfile: 
       dest=/etc/init.d/tomcat
-      line='#!/bin/bash\n#\n# tomcat\n#\n# Description -     Start up the Tomcat servlet engine. \n\n# Source function library.\n. /etc/init.d/functions\n\n\nRETVAL=$?\nCATALINA_HOME="/opt/tomcat/"\ncase "$1" in\n start)\n        if [ -f $CATALINA_HOME/bin/startup.sh ];\n          then\n        echo $"Starting Tomcat"\n            /bin/su tomcat $CATALINA_HOME/bin/startup.sh\n        fi\n    ;;\n stop)\n        if n/su tomcat $CATALINA_HOME/bin/shutdown.sh\n        fi\n    ;;\n *)\n   echo $"Usage - $0 {start|[ -f $CATALINA_HOME/bin/shutdown.sh ];\n          then\n      echo $"Stopping Tomcat"\n            /bistop}"\n    exit 1\n    ;;\nesac\n\nexit $RETVAL'
+      line="{{ item.line }}"
       state=present
-  - name: Create link to be used at start up
+    with_items:
+      - { line: '#!/bin/bash' }
+      - { line: '#' }
+      - { line: '# Description -     Start up the Tomcat servlet engine.' }
+      - { line: 'RETVAL=$?' }
+      - { line: 'CATALINA_HOME="/opt/tomcat/"' }
+      - { line: 'case $1 in' }
+      - { line: ' start)' }
+      - { line: '        if [ -f $CATALINA_HOME/bin/startup.sh ];' }
+      - { line: '          then' }
+      - { line: '            echo $"Starting Tomcat"' }
+      - { line: '            /bin/sh $CATALINA_HOME/bin/startup.sh' }
+      - { line: '        fi' }
+      - { line: '        ;;' }
+      - { line: ' stop)' }
+      - { line: '       if [ -f $CATALINA_HOME/bin/shutdown.sh ];' }
+      - { line: '         then' }
+      - { line: '           echo $"Stopping Tomcat"' }
+      - { line: '           /bin/sh $CATALINA_HOME/bin/shutdown.sh' }
+      - { line: '       fi' }
+      - { line: '       ;;' }
+      - { line: ' *)' }
+      - { line: '         echo $"Usage $0 {start|stop}"' }
+      - { line: '         exit 1' }
+      - { line: '         ;;' }
+      - { line: 'esac' }
+      - { line: 'exit $REVAL' }
+  - name: Change mode of file to executable
     become: yes
-    shell:
-      ln -s /etc/init.d/tomcat S71tomcat
-      chdir=/etc/rc5.d
+    file:
+      mode=a+x
+      dest=/etc/init.d/tomcat
   tags:
     - deploy-tangobox-tango-webapp
 

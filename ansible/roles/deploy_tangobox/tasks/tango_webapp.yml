@@ -290,9 +290,7 @@
       - { line: 'echo "Using TANGO_HOST=$TANGO_HOST"' }
       - { line: 'INSTANCE_NAME=$1' }
       - { line: 'echo "Using INSTANCE_NAME=$INSTANCE_NAME"'}
-      - { line: 'JAVA_OPTS="-Xmx4G -Xshare:off -XX:+UseG1GC -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=5009"' }
-      - { line: 'echo "using JAVA_OPTS=$JAVA_OPTS"' }
-      - { line: '/usr/bin/java -jar $JAVA_OPTS -DTANGO_HOST=$TANGO_HOST /usr/lib/tango/server/mtangorest.server-rc4-0.3.jar $INSTANCE_NAME' }
+      - { line: '/usr/bin/java -jar -DTANGO_HOST=$TANGO_HOST /usr/lib/tango/server/mtangorest.server-rc4-0.3.jar $INSTANCE_NAME' }
   tags:
     - deploy-tangobox-tango-webapp
 

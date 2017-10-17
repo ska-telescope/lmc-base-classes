@@ -3,7 +3,7 @@
     "devices": {
         "tango/rest/0": {
             "TANGO_ACCESS": "tango://localhost:10000/sys/access_control/1",
-            "TANGO_DB": "tango://LOCALHOST:10000/sys/database/2",
+            "TANGO_DB": "tango://localhost:10000/sys/database/2",
             "TOMCAT_AUTH_CONFIG_CLASS": "org.tango.web.server.PlainTextAuthConfiguration",
             "TOMCAT_PORT": 8844
         }

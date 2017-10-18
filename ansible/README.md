@@ -14,16 +14,23 @@ To run a full role (use the ROLE name)
 ```
 ./play-task.sh install-sw
 or
-./play-task.sh refresh-sw
+./play-task.sh refresh_sw
 ```
 
 To run a specific task (use ROLE tags plus TASK ID)
 ```
 ./play-task.sh install-sw-skabase
 or
-./play-task.sh install-sw skabase
+./play-task.sh deploy-tangobox-start-tango
+```
+
+The above all run the site.y,l playbook with "--limit local".
+
+To run on specific hosts, update hosts file and then specific a hosts group like this:
+```
+./play-task.sh install-sw devXX
 or
-./play-task.sh deploy-tangobox start-tango
+./play-task.sh install-sw-skabase refelt
 ```
 
 ## To run a role
@@ -36,8 +43,12 @@ ls -la *.yml
 To run the role, run the playbook like any of the lines below:
 ```
 ./play-task.sh install-sw
-./play-task.sh refresh-sw
-ansible-playbook -i hosts install_sw.yml --list-tags
+./play-task.sh refresh-sw devXX
+```
+or using ansible-playbook directly 
+```
+ansible-playbook -i hosts install_sw.yml --list-tags [--limit devXX]
+ansible-playbook -i hosts install_sw.yml --list-hosts [--limit devXX]
 ansible-playbook -i hosts install_sw.yml
 ansible-playbook -i hosts install_sw.yml -t install-sw-levpro
 ```
@@ -45,16 +56,20 @@ ansible-playbook -i hosts install_sw.yml -t install-sw-levpro
 ### To deploy SW on local: # Git clone if not available, else git pull
 ```
 ./play-task.sh deploy-sw
-or
+```
+or using ansible-playbook directly 
+```
 ansible-playbook -i hosts site.yml --limit local --tags "deploy-sw"
 ```
 
 ### To refresh SW on local: # Git pull
 ```
 ./play-task.sh refresh-sw
-./play-task.sh refresh-sw levpro
-./play-task.sh refresh-sw tango-simlib
-or
+./play-task.sh refresh-sw-levpro
+./play-task.sh refresh-sw-tango-simlib
+```
+or using ansible-playbook directly 
+```
 ansible-playbook -i hosts site.yml --limit local --tags "refresh-sw"
 ansible-playbook -i hosts site.yml --limit local --tags "refresh-sw-levpro"
 ansible-playbook -i hosts site.yml --limit local --tags "refresh-sw-tango-simlib"
@@ -66,7 +81,9 @@ ansible-playbook -i hosts site.yml --limit local --tags "refresh-sw-tango-simlib
 ./play-task.sh install-sw-levpro
 ./play-task.sh install-sw-skabase
 ./play-task.sh install-sw-refelt
-or
+```
+or using ansible-playbook directly 
+```
 ansible-playbook -i hosts site.yml --limit local --tags "install-sw" # all
 ansible-playbook -i hosts site.yml --limit local --tags "install-sw-levpro"
 ansible-playbook -i hosts site.yml --limit local --tags "install-sw-skabase"
@@ -75,8 +92,8 @@ ansible-playbook -i hosts site.yml --limit local --tags "install-sw-refelt"
 
 ### To get going with a fresh node:
 ```
-fab proxmox.create_nodes_by_group:devl4,
-ssh kat@devl4.monctl.camlab.kat.ac.za
+fab proxmox.create_nodes_by_group:devXX,
+ssh kat@levpro.devXX.camlab.kat.ac.za
 # Add this apt repo to get recent version of ansible (>=2.3.2)
 # Needed on Ubuntu 14.04, might not be required on later releases
 sudo add-apt-repository ppa:ansible/ansible
@@ -108,32 +125,32 @@ cd ~/git/levpro/ansible
 
 ### To configure any RefElt TANGO facility and start its device servers.
 You need to add the group to hosts e.g.
-[devl4]
-devl4levpro
+[devXX]
+devXXlevpro
 
-And define ansible/group_vars for the group:
+And group vars for the group in ansible/group_vars/devXX:
 ```
 - ## Element personality
 - element_details:
     - type: refelt
-    - name: ref
+    - name: refXX
     - template: refelt_template
 ```
 
 and ansible/host_vars for each host in the group as appropriate, at least:
 ```
-ansible_ssh_host: levpro.devl4.camlab.kat.ac.za
+ansible_ssh_host: levpro.devXX.camlab.kat.ac.za
 ```
 
 Then do
 ```
-ansible-playbook register-my-refelt.yml --extra-vars "which=devl4"
+ansible-playbook register-my-refelt.yml --extra-vars "which=devXX"
 ```
 
 # NOTES:
 
 ### Note 1: Role tags
-Each role is included with a tag with dashes in site.yml
+Each role is included in site.yml with a tag which is the same as the role name, but using dashes
     e.g. {roles: "deploy_sw", tags: "deploy-sw"}
 To execute the _full_ role use the role tag defined in site.yml
     e.g. --tags deploy-sw
@@ -146,19 +163,19 @@ Current ROLE tags:
 
 
 ### Note 2: Task tags:
-Each task within a role is tagged with a tagname that starts with the samples
-role tag defined in in roles/xxx/tasks/main.yml followed by a task specialisation
+Each task within a role is tagged with a tagname that starts with the same
+role-tag defined in in roles/xxx/tasks/main.yml followed by a task specialisation
 (separated with dashes)
-The tag starting with e.g. will be found in the deploy_sw.yml role
+E.g. any tag starting with deploy-sw will be found in the deploy_sw.yml role
 ```
     tags:
        - deploy-sw-levpro
 ```
-To execute a specific task specify the full --tags from the role file e.g.
+To execute a specific task specify the full --tags from the task file e.g.
 ```
      --tags deploy-sw-levpro
 ```
-Format is "<role-tag>-<task-tag>" e.g. install-sw-refelt
+Format is "<role-tag>-<task-id>" e.g. install-sw-refelt
 ```
     "{}-{}".format(role_tag,task_id).replace("_","-").lower()
 ```
@@ -168,7 +185,7 @@ To list the current task tags:
 ```
 ./play-task.sh 
 
-kat@levpro.devl4.camlab.kat.ac.za:~/git/levpro/ansible$ ./play-task.sh 
+kat@levpro.devXX.camlab.kat.ac.za:~/git/levpro/ansible$ ./play-task.sh 
 You have to specify a roletag, and optional task-id
 
 ---------------------------<<<< ANSIBLE COMMAND LINE >>>>--------------------------------------------

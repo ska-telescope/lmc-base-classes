@@ -1,6 +1,6 @@
 
 - name: register_refelt
-  hosts: local
+  hosts: operational
   gather_facts: False
   roles:
     - {role: 'register_refelt', tags: ['register-refelt']}

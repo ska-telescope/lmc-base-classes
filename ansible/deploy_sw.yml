@@ -3,7 +3,7 @@
 #  roles:
 
 - name: deploy_sw
-  hosts: local
+  hosts: operational
   gather_facts: False
   roles:
     - {role: 'deploy_sw', tags: ['deploy-sw']}

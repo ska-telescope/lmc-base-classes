@@ -6,15 +6,25 @@
 ##     PRINT STUFF
 ###########################################
 
-- name: Extract relevant vars
-  vars:
-    refelt_type: "{{element_details[type]}}"
-    refelt_name: "{{element_details[name]}}"
-    refelt_template: "{{element_details[template]}}"
 
-- name: Print vars
+- name: Print rootdir
   debug: msg="rootdir = {{software_root}}"
-  debug: msg="element_details = {{element_details}}"
+
+- name: Print hostvars
+  debug: msg="hostvars = {{hostvars}}"
+  
+- name: Print groupvars
+  debug: msg="groupvars = {{groupvars}}"
+  
+- name: Print groupvars
+  debug: msg="element_details = {{groupvars['element_details']}}"
+
+#- name: Extract relevant vars
+#  vars:
+#    refelt_type: "{{groupvars['element_details']['type']}}"
+#    refelt_name: "{{groupvars['element_details']['name']}}"
+#    refelt_template: "{{groupvars['element_details']['template']}}"
+
 
 
 ###########################################

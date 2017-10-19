@@ -12,9 +12,14 @@ else
   else
     hosts_limit="$2"
   fi
-  # Replace underscores with dashes for role-tag[-task-id]
-  roletask=${1//[_]/-}
-  cmd="ansible-playbook -i hosts site.yml --limit $hosts_limit --tags $roletask --verbose --ask-become-pass"
+  if [[ $1 == *.yml ]]; then
+      # Run a different yml as per $1, instead of site.yml
+      cmd="ansible-playbook -i hosts $1 --limit $hosts_limit --verbose --ask-become-pass"
+  else
+    # Replace underscores with dashes for role-tag[-task-id]
+    roletask=${1//[_]/-}
+    cmd="ansible-playbook -i hosts site.yml --limit $hosts_limit --tags $roletask --verbose --ask-become-pass"
+  fi
 fi
 
 echo

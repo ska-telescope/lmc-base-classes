@@ -1,37 +1,37 @@
 {
     "api_version": "v1",
     "devices": {
-        "ref/A/1": {
+        "ref4/A/1": {
             "GroupDefinitions": []
         },
-        "ref/A/2": {
+        "ref4/A/2": {
             "GroupDefinitions": []
         },
-        "ref/achild/11": {
+        "ref4/achild/11": {
             "GroupDefinitions": []
         },
-        "ref/achild/12": {
+        "ref4/achild/12": {
             "GroupDefinitions": []
         },
-        "ref/achild/21": {
+        "ref4/achild/21": {
             "GroupDefinitions": []
         },
-        "ref/achild/22": {
+        "ref4/achild/22": {
             "GroupDefinitions": []
         },
-        "ref/elt/master": {
+        "ref4/elt/master": {
             "GroupDefinitions": []
         },
-        "ref/elt/logger": {
+        "ref4/elt/logger": {
             "GroupDefinitions": []
         },
-        "ref/central/logger": {
+        "ref4/central/logger": {
             "GroupDefinitions": []
         },
-        "ref/elt/telstate": {
+        "ref4/elt/telstate": {
             "GroupDefinitions": []
         },
-        "ref/elt/alarmhandler": {
+        "ref4/elt/alarmhandler": {
             "GroupDefinitions": []
         }
     }

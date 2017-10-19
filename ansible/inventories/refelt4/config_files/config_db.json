@@ -2,14 +2,14 @@
     "api_version": "v1",
     "tango_servers": [
       {
-	      "server_name": "SvrRefA",
+	      "server_name": "SvrRef4A",
 	      "server_instances": [
 	          {
 	              "instance_name": "1",
 	              "device_classes": [
 	                  {
 	                      "class_name": "RefA",
-	                      "devices": ["ref/a/1"]
+	                      "devices": ["ref4/a/1"]
 	                  }
 	              ]
 	          },
@@ -18,21 +18,21 @@
 	              "device_classes": [
 	                  {
 	                      "class_name": "RefA",
-	                      "devices": ["ref/a/2"]
+	                      "devices": ["ref4/a/2"]
 	                  }
 	              ]
 	          }
 	        ]
         },
         {
-            "server_name": "SvrRefAchild",
+            "server_name": "SvrRef4Achild",
             "server_instances": [
                 {
                     "instance_name": "1",
                     "device_classes": [
                         {
                             "class_name": "RefAchild",
-                            "devices": ["ref/achild/11", "ref/achild/12"]
+                            "devices": ["ref4/achild/11", "ref4/achild/12"]
                         }
                     ]
                 },
@@ -41,35 +41,35 @@
                     "device_classes": [
                         {
                             "class_name": "RefAchild",
-                            "devices": ["ref/achild/21", "ref/achild/22"]
+                            "devices": ["ref4/achild/21", "ref4/achild/22"]
                         }
                     ]
                 }
               ]
         },
         {
-            "server_name": "SvrRefMaster",
+            "server_name": "SvrRef4Master",
             "server_instances": [
                 {
                     "instance_name": "Elt",
                     "device_classes": [
                         {
                             "class_name": "RefMaster",
-                            "devices": ["ref/elt/master"]
+                            "devices": ["ref4/elt/master"]
                         }
                     ]
                 }
               ]
         },
         {
-            "server_name": "SKALogger",
+            "server_name": "SvrRef4SKALogger",
             "server_instances": [
                 {
                     "instance_name": "Elt",
                     "device_classes": [
                         {
                             "class_name": "SKALogger",
-                            "devices": ["ref/elt/logger"]
+                            "devices": ["ref4/elt/logger"]
                         }
                     ]
                 },
@@ -78,21 +78,21 @@
                     "device_classes": [
                         {
                             "class_name": "SKALogger",
-                            "devices": ["ref/central/logger"]
+                            "devices": ["ref4/central/logger"]
                         }
                     ]
                 }
               ]
         },
         {
-            "server_name": "SvrRefAlarmHandler",
+            "server_name": "SvrRef4AlarmHandler",
             "server_instances": [
                 {
                     "instance_name": "Elt",
                     "device_classes": [
                         {
                             "class_name": "RefAlarmHandler",
-                            "devices": ["ref/elt/alarmhandler"]
+                            "devices": ["ref4/elt/alarmhandler"]
                         }
                     ]
                 },
@@ -101,7 +101,7 @@
                     "device_classes": [
                         {
                             "class_name": "RefAlarmHandler",
-                            "devices": ["ref/subelt1/alarmhandler"]
+                            "devices": ["ref4/subelt1/alarmhandler"]
                         }
                     ]
                 },
@@ -110,35 +110,35 @@
                     "device_classes": [
                         {
                             "class_name": "RefAlarmHandler",
-                            "devices": ["ref/subelt2/alarmhandler"]
+                            "devices": ["ref4/subelt2/alarmhandler"]
                         }
                     ]
                 }
               ]
         },
         {
-            "server_name": "SvrRefTelState",
+            "server_name": "SvrRef4TelState",
             "server_instances": [
                 {
                     "instance_name": "Elt",
                     "device_classes": [
                         {
                             "class_name": "RefTelState",
-                            "devices": ["ref/elt/telstate"]
+                            "devices": ["ref4/elt/telstate"]
                         }
                     ]
                 }
               ]
         },
         {
-            "server_name": "SvrRefSubarray",
+            "server_name": "SvrRef4Subarray",
             "server_instances": [
                 {
                     "instance_name": "Sub1",
                     "device_classes": [
                         {
                             "class_name": "RefSubarray",
-                            "devices": ["ref/subarray/1"]
+                            "devices": ["ref4/subarray/1"]
                         }
                     ]
                 },
@@ -147,21 +147,21 @@
                     "device_classes": [
                         {
                             "class_name": "RefSubarray",
-                            "devices": ["ref/subarray/2"]
+                            "devices": ["ref4/subarray/2"]
                         }
                     ]
                 }
               ]
         },
         {
-            "server_name": "SvrRefCapability",
+            "server_name": "SvrRef4Capability",
             "server_instances": [
                 {
                     "instance_name": "CapSub1CalcA",
                     "device_classes": [
                         {
                             "class_name": "RefCapability",
-                            "devices": ["ref/capability/sub1calca"]
+                            "devices": ["ref4/capability/sub1calca"]
                         }
                     ]
                 },
@@ -170,7 +170,7 @@
                     "device_classes": [
                         {
                             "class_name": "RefCapability",
-                            "devices": ["ref/capability/sub1calcb"]
+                            "devices": ["ref4/capability/sub1calcb"]
                         }
                     ]
                 },
@@ -179,7 +179,7 @@
                     "device_classes": [
                         {
                             "class_name": "RefCapability",
-                            "devices": ["ref/capability/sub1procc"]
+                            "devices": ["ref4/capability/sub1procc"]
                         }
                     ]
                 },
@@ -188,7 +188,7 @@
                     "device_classes": [
                         {
                             "class_name": "RefCapability",
-                            "devices": ["ref/capability/sub1procd"]
+                            "devices": ["ref4/capability/sub1procd"]
                         }
                     ]
                 },
@@ -197,7 +197,7 @@
                     "device_classes": [
                         {
                             "class_name": "RefCapability",
-                            "devices": ["ref/capability/sub2calca"]
+                            "devices": ["ref4/capability/sub2calca"]
                         }
                     ]
                 },
@@ -206,7 +206,7 @@
                     "device_classes": [
                         {
                             "class_name": "RefCapability",
-                            "devices": ["ref/capability/sub2calcb"]
+                            "devices": ["ref4/capability/sub2calcb"]
                         }
                     ]
                 },
@@ -215,7 +215,7 @@
                     "device_classes": [
                         {
                             "class_name": "RefCapability",
-                            "devices": ["ref/capability/sub2procc"]
+                            "devices": ["ref4/capability/sub2procc"]
                         }
                     ]
                 },
@@ -224,7 +224,7 @@
                     "device_classes": [
                         {
                             "class_name": "RefCapability",
-                            "devices": ["ref/capability/sub2procd"]
+                            "devices": ["ref4/capability/sub2procd"]
                         }
                     ]
                 }

@@ -6,8 +6,8 @@ software_root: /home/kat/src
 
 ## Element personality
 element_details:
-    - type: refelt
-    - name: refelt
-    - template: refelt_template
+    type: refelt
+    name: refelt
+    template: refelt_template
 
 ...

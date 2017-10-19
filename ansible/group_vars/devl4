@@ -6,8 +6,8 @@ software_root: /home/kat/git
 
 ## Element personality
 element_details:
-    - type: refelt
-    - name: refelt4
-    - template: refelt_template
+    type: refelt
+    name: refelt4
+    template: refelt_template
 
 ...

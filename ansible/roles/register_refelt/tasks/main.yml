@@ -40,16 +40,9 @@
     - register-refelt-in-astor
     - register-refelt-in-astor-ds-path
 
-- block:
-  - name: Register refelt servers in Astor
-    register_refelt:
-      action="in_astor"
-      facility_name="refelt"
-      facility_config="TBD"
-    register: the_result
 
 - block:
-  - name: Register the Element in Astor and start with Starter.
+  - name: Register RefElt in Astor and restart with Starter
     start_element:
       element_config: /home/kat/git/levpro/ansible/inventories/refelt/config_files/config_starter.json
     register: the_result

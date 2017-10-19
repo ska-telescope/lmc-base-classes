@@ -5,7 +5,7 @@
 	      "server_name": "SvrRefA",
 	      "server_instances": [
 	          {
-	              "instance_name": "1",
+	              "instance_name": "Ref1",
 	              "device_classes": [
 	                  {
 	                      "class_name": "RefA",
@@ -14,7 +14,7 @@
 	              ]
 	          },
 	          {
-	              "instance_name": "2",
+	              "instance_name": "Ref2",
 	              "device_classes": [
 	                  {
 	                      "class_name": "RefA",
@@ -28,7 +28,7 @@
             "server_name": "SvrRefAchildren",
             "server_instances": [
                 {
-                    "instance_name": "1",
+                    "instance_name": "Ref1",
                     "device_classes": [
                         {
                             "class_name": "RefAchild",
@@ -37,7 +37,7 @@
                     ]
                 },
                 {
-                    "instance_name": "2",
+                    "instance_name": "Ref2",
                     "device_classes": [
                         {
                             "class_name": "RefAchild",
@@ -51,7 +51,7 @@
             "server_name": "SvrRefMaster",
             "server_instances": [
                 {
-                    "instance_name": "Elt",
+                    "instance_name": "RefElt",
                     "device_classes": [
                         {
                             "class_name": "RefMaster",
@@ -62,10 +62,10 @@
               ]
         },
         {
-            "server_name": "SvrRefLogger",
+            "server_name": "SKALogger",
             "server_instances": [
                 {
-                    "instance_name": "Elt",
+                    "instance_name": "RefElt",
                     "device_classes": [
                         {
                             "class_name": "SKALogger",
@@ -74,7 +74,7 @@
                     ]
                 },
                 {
-                    "instance_name": "Central",
+                    "instance_name": "RefCentral",
                     "device_classes": [
                         {
                             "class_name": "SKALogger",
@@ -88,7 +88,7 @@
             "server_name": "SvrRefAlarmHandler",
             "server_instances": [
                 {
-                    "instance_name": "Elt",
+                    "instance_name": "RefElt",
                     "device_classes": [
                         {
                             "class_name": "RefAlarmHandler",
@@ -102,7 +102,7 @@
             "server_name": "SvrRefTelState",
             "server_instances": [
                 {
-                    "instance_name": "Elt",
+                    "instance_name": "RefElt",
                     "device_classes": [
                         {
                             "class_name": "RefTelState",
@@ -116,7 +116,7 @@
             "server_name": "SvrRefSubarray",
             "server_instances": [
                 {
-                    "instance_name": "Sub1",
+                    "instance_name": "Ref1",
                     "device_classes": [
                         {
                             "class_name": "RefSubarray",
@@ -125,7 +125,7 @@
                     ]
                 },
                 {
-                    "instance_name": "Sub2",
+                    "instance_name": "Ref2",
                     "device_classes": [
                         {
                             "class_name": "RefSubarray",
@@ -139,7 +139,7 @@
             "server_name": "SvrRefCapability",
             "server_instances": [
                 {
-                    "instance_name": "CapSub1CalcA",
+                    "instance_name": "Ref1A",
                     "device_classes": [
                         {
                             "class_name": "RefCapability",
@@ -148,7 +148,7 @@
                     ]
                 },
                 {
-                    "instance_name": "CapSub1CalcB",
+                    "instance_name": "Ref1B",
                     "device_classes": [
                         {
                             "class_name": "RefCapability",
@@ -157,7 +157,7 @@
                     ]
                 },
                 {
-                    "instance_name": "CapSub1ProcC",
+                    "instance_name": "Ref1C",
                     "device_classes": [
                         {
                             "class_name": "RefCapability",
@@ -166,7 +166,7 @@
                     ]
                 },
                 {
-                    "instance_name": "CapSub1ProcD",
+                    "instance_name": "Ref1D",
                     "device_classes": [
                         {
                             "class_name": "RefCapability",
@@ -175,7 +175,7 @@
                     ]
                 },
                 {
-                    "instance_name": "CapSub2CalcA",
+                    "instance_name": "Ref2A",
                     "device_classes": [
                         {
                             "class_name": "RefCapability",
@@ -184,7 +184,7 @@
                     ]
                 },
                 {
-                    "instance_name": "CapSub2CalcB",
+                    "instance_name": "Ref2B",
                     "device_classes": [
                         {
                             "class_name": "RefCapability",
@@ -193,7 +193,7 @@
                     ]
                 },
                 {
-                    "instance_name": "CapSub2ProcC",
+                    "instance_name": "Ref2C",
                     "device_classes": [
                         {
                             "class_name": "RefCapability",
@@ -202,7 +202,7 @@
                     ]
                 },
                 {
-                    "instance_name": "CapSub2ProcD",
+                    "instance_name": "Ref2D",
                     "device_classes": [
                         {
                             "class_name": "RefCapability",

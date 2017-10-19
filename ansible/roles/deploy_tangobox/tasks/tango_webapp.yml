@@ -291,12 +291,12 @@
       - { line: 'INSTANCE_NAME=$1' }
       - { line: 'echo "Using INSTANCE_NAME=$INSTANCE_NAME"'}
       - { line: '/usr/bin/java -jar -DTANGO_HOST=$TANGO_HOST /usr/lib/tango/server/mtangorest.server-rc4-0.3.jar $INSTANCE_NAME' }
-  tags:
   - name: Change mode of file to executable
     become: yes
     file:
       mode=a+x
       dest=/usr/local/bin/TangoRestServer
+  tags:
     - deploy-tangobox-tango-webapp
 
 #################################################################

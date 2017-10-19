@@ -2,7 +2,6 @@
 
 - name: deploy_tangobox
   hosts: operational
-  gather_facts: False
   roles:
     - {role: 'deploy_tangobox', tags: ['deploy-tangobox'], become: yes}
 

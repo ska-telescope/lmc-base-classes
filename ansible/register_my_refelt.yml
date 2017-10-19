@@ -1,7 +1,6 @@
 
 - name: register_my_refelt
   hosts: operational
-  gather_facts: True
   roles:
     - {role: 'register_my_refelt', tags: ['register-my-refelt']}
 

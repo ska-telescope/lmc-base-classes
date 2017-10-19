@@ -8,3 +8,4 @@
 - include: register_refelt.yml
 - include: register_my_refelt.yml
 - include: generate_sw.yml
+#- include: deregister_refelts:.yml

@@ -1,6 +1,5 @@
 ---
-# THIS IS SPECIFIC FOR REFELT - JUST TO GET A REFELT REGISTERED
-# GENERALISATION OF CONFIG AND FOR OTHER ELEMENTS IS TBD
+# STOP AND DEREGISTER ALL SERVERS STARTING WITH SvrRef
 
 ###########################################
 ##     PRINT STUFF
@@ -15,37 +14,22 @@
 ###########################################
 
 - block:
-  - name: Register RefElt servers, classes, devices
-    register_element:
-        elt_config_file: /home/kat/git/levpro/ansible/inventories/refelt/config_files/config_db.json
-    register: the_result
-  - name: Register RefElt device properties
-    register_device_properties:
-      elt_config_file: /home/kat/git/levpro/ansible/inventories/refelt/config_files/device_properties.json
-    register: the_result
+  - name: Deregister RefElt servers, classes, devices
+    deregister_selected_servers:
+      do_what: "delete_servers"
+      startswith: "SvrRef,SKALogger"
   tags:
-    - register-refelt-in-tangodb
+    - deregister-refelts-delete-in-tangodb
 
 ###########################################
-###     Register in ASTOR
+###     Stop in ASTOR
 ############################################
-- block:
-  - name: Set StartDsPath
-    set_starter_ds_path:
-      facility_name="refelt"
-      facility_config="TBD"
-      starter_path="/usr/local/bin/"
-    register: the_result
-  tags:
-    - register-refelt-in-astor
-    - register-refelt-in-astor-ds-path
-
 
 - block:
-  - name: Register RefElt in Astor and restart with Starter
-    start_element:
-      element_config: /home/kat/git/levpro/ansible/inventories/refelt/config_files/config_starter.json
-    register: the_result
+  - name: Stop all servers starting with SvrRef in Astor
+    deregister_selected_servers:
+      do_what: "stop_servers"
+      startswith: "SvrRef,SKALogger"
   tags:
-    - register-refelt-in-astor
+    - deregister-refelts-stop-in-astor
 ...

@@ -25,7 +25,7 @@
 	        ]
         },
         {
-            "server_name": "SvrRefAchild",
+            "server_name": "SvrRefAchildren",
             "server_instances": [
                 {
                     "instance_name": "1",
@@ -62,7 +62,7 @@
               ]
         },
         {
-            "server_name": "SKALogger",
+            "server_name": "SvrRefLogger",
             "server_instances": [
                 {
                     "instance_name": "Elt",
@@ -95,24 +95,6 @@
                             "devices": ["ref/elt/alarmhandler"]
                         }
                     ]
-                },
-                {
-                    "instance_name": "SubElt1",
-                    "device_classes": [
-                        {
-                            "class_name": "RefAlarmHandler",
-                            "devices": ["ref/subelt1/alarmhandler"]
-                        }
-                    ]
-                },
-                {
-                    "instance_name": "SubElt2",
-                    "device_classes": [
-                        {
-                            "class_name": "RefAlarmHandler",
-                            "devices": ["ref/subelt2/alarmhandler"]
-                        }
-                    ]
                 }
               ]
         },
@@ -143,7 +125,7 @@
                     ]
                 },
                 {
-                    "instance_name": "Subs",
+                    "instance_name": "Sub2",
                     "device_classes": [
                         {
                             "class_name": "RefSubarray",

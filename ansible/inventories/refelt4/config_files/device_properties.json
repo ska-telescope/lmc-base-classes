@@ -29,9 +29,19 @@
             "GroupDefinitions": []
         },
         "ref4/elt/telstate": {
+            "Config": [],
             "GroupDefinitions": []
         },
         "ref4/elt/alarmhandler": {
+            "Config": [],
+            "GroupDefinitions": []
+        },
+        "ref4/subelt1/alarmhandler": {
+            "Config": [],
+            "GroupDefinitions": []
+        },
+        "ref4/subelt2/alarmhandler": {
+            "Config": [],
             "GroupDefinitions": []
         }
     }

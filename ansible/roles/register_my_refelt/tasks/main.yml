@@ -7,23 +7,40 @@
 ###########################################
 
 
-- name: Print rootdir
-  debug: msg="rootdir = {{software_root}}"
+- name: Print my hostvars
+  debug:
+      msg="{{item}}"
+  with_items:
+      - "hostvars[{{ inventory_hostname }}] = {{hostvars[inventory_hostname]}}"
 
-- name: Print hostvars
-  debug: msg="hostvars = {{hostvars}}"
-  
-- name: Print groupvars
-  debug: msg="groupvars = {{groupvars}}"
-  
-- name: Print groupvars
-  debug: msg="element_details = {{groupvars['element_details']}}"
+- name: Print vars
+  debug:
+      msg={{item}}
+  with_items:
+      - "software_root = {{software_root}}"
+      - "ansible_distribution = {{ ansible_distribution }}"
+      - "ansible_hostname = {{ ansible_hostname }}"
+      - "ansible_nodename = {{ ansible_nodename }}"
+      - "inventory_hostname = {{ inventory_hostname }}"
+      - "hostvars[{{ inventory_hostname }}].group_names = {{hostvars[inventory_hostname].group_names}}"
+      - "hostvars[{{ inventory_hostname }}].element_details = {{hostvars[inventory_hostname].element_details}}"
+      - "element_details.type = {{hostvars[inventory_hostname].element_details.type}}"
+      - "element_details.name = {{hostvars[inventory_hostname].element_details.name}}"
+      - "element_details.template = {{hostvars[inventory_hostname].element_details.template}}"
 
-#- name: Extract relevant vars
-#  vars:
-#    refelt_type: "{{groupvars['element_details']['type']}}"
-#    refelt_name: "{{groupvars['element_details']['name']}}"
-#    refelt_template: "{{groupvars['element_details']['template']}}"
+
+- name: Extract my vars
+  set_fact:
+    my_element_details: "{{hostvars[inventory_hostname].element_details}}"
+    my_groups: "{{hostvars[inventory_hostname].group_names}}"
+    my_name: "{{hostvars[inventory_hostname].element_details.name}}"
+
+- name: Print my vars
+  debug:
+      msg="{{item}}"
+  with_items:
+      - "my_name = {{my_name}}"
+      - "my_groups = {{ my_groups }}"
 
 
 
@@ -34,12 +51,12 @@
 - block:
   - name: Register MyRefElt servers, classes, devices
     register_element:
-        elt_config_file: /home/kat/git/levpro/ansible/inventories/facility/config_files/facility_config_db.json
+        elt_config_file: /home/kat/git/levpro/ansible/inventories/{{my_name}}/config_files/config_db.json
     register: the_result
 
   - name: Register Facility device properties
     register_device_properties:
-      elt_config_file: /home/kat/git/levpro/ansible/inventories/facility/config_files/facility_device_properties.json
+      elt_config_file: /home/kat/git/levpro/ansible/inventories/{{my_name}}/config_files/device_properties.json
     register: the_result
 
   tags:
@@ -63,13 +80,13 @@
   - name: Register MyRefElt servers in Astor
     register_refelt:
       action="in_astor"
-      facility_name="{{facility_name}}"
+      facility_name="{{my_name}}"
       facility_config="TBD"
     register: the_result
 
   - name: Register MyRefElt in Astor and start with Starter.
     start_element:
-      element_config: /home/kat/git/levpro/ansible/roles/register_facitily/config_files/facility_config_starter.json
+      element_config: /home/kat/git/levpro/ansible/inventories/{{my_name}}/config_files/config_starter.json
     register: the_result
   tags:
     - register-myrefelt-in-astor

@@ -49,12 +49,12 @@
 ###########################################
 
 - block:
-  - name: Register MyRefElt servers, classes, devices
+  - name: Register MyRefElt servers, classes, devices in TANGO db
     register_element:
         elt_config_file: /home/kat/git/levpro/ansible/inventories/{{my_name}}/config_files/config_db.json
     register: the_result
 
-  - name: Register Facility device properties
+  - name: Register MyRefElt device properties in TANGO db
     register_device_properties:
       elt_config_file: /home/kat/git/levpro/ansible/inventories/{{my_name}}/config_files/device_properties.json
     register: the_result
@@ -77,14 +77,7 @@
     - register-myrefelt-in-astor-ds-path
 
 - block:
-  - name: Register MyRefElt servers in Astor
-    register_refelt:
-      action="in_astor"
-      facility_name="{{my_name}}"
-      facility_config="TBD"
-    register: the_result
-
-  - name: Register MyRefElt in Astor and start with Starter.
+  - name: Register MyRefElt in Astor and restart with Starter
     start_element:
       element_config: /home/kat/git/levpro/ansible/inventories/{{my_name}}/config_files/config_starter.json
     register: the_result

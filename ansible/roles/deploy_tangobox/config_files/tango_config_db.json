@@ -1,0 +1,16 @@
+{
+    "api_version": "v1",
+    "tango_servers": 
+        [{
+            "server_name": "TangoRestServer",
+            "server_instances":
+                [{
+                    "instance_name": "test",
+                    "device_classes":
+                    [{
+                        "class_name": "TangoRestServer",
+                        "devices": ["tango/rest/0"]
+                    }]
+                }]
+        }]
+}

@@ -3,8 +3,8 @@
 import json
 import pytest
 
-from skabase.utils.utils import get_groups_from_json
-from skabase.utils.faults import GroupDefinitionsError
+from skabase.utils import get_groups_from_json
+from skabase.utils import GroupDefinitionsError
 
 
 TEST_GROUPS = {

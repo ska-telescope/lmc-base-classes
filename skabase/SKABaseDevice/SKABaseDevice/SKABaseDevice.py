@@ -27,8 +27,8 @@ import json
 
 from PyTango import DeviceProxy
 
-from skabase.utils.utils import (get_dp_command, exception_manager,
-                                 tango_type_conversion, coerce_value)
+from skabase.utils import (get_dp_command, exception_manager,
+                           tango_type_conversion, coerce_value)
 
 # PROTECTED REGION END #    //  SKABaseDevice.additionnal_import
 

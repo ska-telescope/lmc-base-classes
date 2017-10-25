@@ -28,7 +28,8 @@ import json
 from PyTango import DeviceProxy
 
 from skabase.utils import (get_dp_command, exception_manager,
-                           tango_type_conversion, coerce_value)
+                           tango_type_conversion, coerce_value,
+                           get_groups_from_json)
 
 # PROTECTED REGION END #    //  SKABaseDevice.additionnal_import
 
@@ -271,6 +272,12 @@ class SKABaseDevice(Device):
     def init_device(self):
         Device.init_device(self)
         # PROTECTED REGION ID(SKABaseDevice.init_device) ENABLED START #
+
+        # create TANGO Groups objects dict, according to property
+        self.debug_stream("Groups definitions: {}".format(self.GroupDefinitions))
+        self.groups = get_groups_from_json(self.GroupDefinitions)
+        self.info_stream("Groups loaded: {}".format(sorted(self.groups.keys())))
+
         # PROTECTED REGION END #    //  SKABaseDevice.init_device
 
     def always_executed_hook(self):

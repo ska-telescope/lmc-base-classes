@@ -159,6 +159,11 @@ def bad_group_configs(request):
 def test_get_groups_from_json_empty_list():
     groups = get_groups_from_json([])
     assert groups == {}
+    # empty or whitespace strings should also be ignored
+    groups = get_groups_from_json([''])
+    assert groups == {}
+    groups = get_groups_from_json(['  ', '', ' '])
+    assert groups == {}
 
 
 def _validate_group(definition, group):

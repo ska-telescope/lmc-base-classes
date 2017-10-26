@@ -42,15 +42,18 @@ class Rack(SKABaseDevice):
     # -----------------
 
     pdus = device_property(
-        dtype=('str',)
+        dtype=('str',),
+        mandatory=True
     )
 
     switches = device_property(
-        dtype=('str',)
+        dtype=('str',),
+        mandatory=True
     )
 
     servers = device_property(
-        dtype=('str',)
+        dtype=('str',),
+        mandatory=True
     )
 
 
@@ -78,7 +81,7 @@ class Rack(SKABaseDevice):
 
 
     # ---------------
-    # Refral methods
+    # General methods
     # ---------------
 
     def init_device(self):

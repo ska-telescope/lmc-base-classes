@@ -65,7 +65,7 @@ class Server(SKABaseDevice):
 
 
     # ---------------
-    # Refral methods
+    # General methods
     # ---------------
 
     def init_device(self):

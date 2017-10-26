@@ -3,7 +3,7 @@
   <classes name="Rack" pogoRevision="9.5">
     <description description="Ref (Reference Elt) Rack device" title="Rack" sourcePath="/Users/lvdheever/link-devl5/git/levpro/refelt" language="PythonHL" filestogenerate="XMI   file,Code files,Protected Regions" license="GPL" copyright="" hasMandatoryProperty="true" hasConcreteProperty="true" hasAbstractCommand="false" hasAbstractAttribute="false">
       <inheritances classname="Device_Impl" sourcePath=""/>
-      <inheritances classname="SKABaseDevice" sourcePath="../skabase/SKABaseDevice"/>
+      <inheritances classname="SKABaseDevice" sourcePath="../../skabase/SKABaseDevice"/>
       <identification contact="at ska.ac.za - cam" author="cam" emailDomain="ska.ac.za" classFamily="OtherInstruments" siteSpecific="" platform="All Platforms" bus="Not Applicable" manufacturer="SKASA" reference="SKA-SKAObsDevice"/>
     </description>
     <deviceProperties name="pdus" mandatory="true" description="A list of Power Distribution Unit device names residing in this rack">

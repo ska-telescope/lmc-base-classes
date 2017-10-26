@@ -42,6 +42,22 @@ class SKABaseDevice(Device):
     __metaclass__ = DeviceMeta
     # PROTECTED REGION ID(SKABaseDevice.class_variable) ENABLED START #
 
+    def __init__(self, *args, **kwargs):
+        super(SKABaseDevice, self).__init__(*args, **kwargs)
+
+        # Initialize attribute values.
+        self._build_state = ""
+        self._version_id = ""
+        self._central_logging_level = 0
+        self._element_logging_level = 0
+        self._storage_logging_level = 0
+        self._health_state = 0
+        self._admin_mode = 0
+        self._control_mode = 0
+        self._simulation_mode = False
+        self._test_mode = ""
+
+
     def _get_device_json(self, args_dict):
         try:
 
@@ -289,87 +305,87 @@ class SKABaseDevice(Device):
 
     def read_buildState(self):
         # PROTECTED REGION ID(SKABaseDevice.buildState_read) ENABLED START #
-        return ''
+        return self._build_state
         # PROTECTED REGION END #    //  SKABaseDevice.buildState_read
 
     def read_versionId(self):
         # PROTECTED REGION ID(SKABaseDevice.versionId_read) ENABLED START #
-        return ''
+        return self._version_id
         # PROTECTED REGION END #    //  SKABaseDevice.versionId_read
 
     def read_centralLoggingLevel(self):
         # PROTECTED REGION ID(SKABaseDevice.centralLoggingLevel_read) ENABLED START #
-        return 0
+        return self._central_logging_level
         # PROTECTED REGION END #    //  SKABaseDevice.centralLoggingLevel_read
 
     def write_centralLoggingLevel(self, value):
         # PROTECTED REGION ID(SKABaseDevice.centralLoggingLevel_write) ENABLED START #
-        pass
+        self._central_logging_level = value
         # PROTECTED REGION END #    //  SKABaseDevice.centralLoggingLevel_write
 
     def read_elementLoggingLevel(self):
         # PROTECTED REGION ID(SKABaseDevice.elementLoggingLevel_read) ENABLED START #
-        return 0
+        return self._element_logging_level
         # PROTECTED REGION END #    //  SKABaseDevice.elementLoggingLevel_read
 
     def write_elementLoggingLevel(self, value):
         # PROTECTED REGION ID(SKABaseDevice.elementLoggingLevel_write) ENABLED START #
-        pass
+        self._element_logging_level = value
         # PROTECTED REGION END #    //  SKABaseDevice.elementLoggingLevel_write
 
     def read_storageLoggingLevel(self):
         # PROTECTED REGION ID(SKABaseDevice.storageLoggingLevel_read) ENABLED START #
-        return 0
+        return self._storage_logging_level
         # PROTECTED REGION END #    //  SKABaseDevice.storageLoggingLevel_read
 
     def write_storageLoggingLevel(self, value):
         # PROTECTED REGION ID(SKABaseDevice.storageLoggingLevel_write) ENABLED START #
-        pass
+        self._storage_logging_level = value
         # PROTECTED REGION END #    //  SKABaseDevice.storageLoggingLevel_write
 
     def read_healthState(self):
         # PROTECTED REGION ID(SKABaseDevice.healthState_read) ENABLED START #
-        return 0
+        return self._health_state
         # PROTECTED REGION END #    //  SKABaseDevice.healthState_read
 
     def read_adminMode(self):
         # PROTECTED REGION ID(SKABaseDevice.adminMode_read) ENABLED START #
-        return 0
+        return self._admin_mode
         # PROTECTED REGION END #    //  SKABaseDevice.adminMode_read
 
     def write_adminMode(self, value):
         # PROTECTED REGION ID(SKABaseDevice.adminMode_write) ENABLED START #
-        pass
+        self._admin_mode = value
         # PROTECTED REGION END #    //  SKABaseDevice.adminMode_write
 
     def read_controlMode(self):
         # PROTECTED REGION ID(SKABaseDevice.controlMode_read) ENABLED START #
-        return 0
+        return self._control_mode
         # PROTECTED REGION END #    //  SKABaseDevice.controlMode_read
 
     def write_controlMode(self, value):
         # PROTECTED REGION ID(SKABaseDevice.controlMode_write) ENABLED START #
-        pass
+        self._control_mode = value
         # PROTECTED REGION END #    //  SKABaseDevice.controlMode_write
 
     def read_simulationMode(self):
         # PROTECTED REGION ID(SKABaseDevice.simulationMode_read) ENABLED START #
-        return False
+        return self._simulation_mode
         # PROTECTED REGION END #    //  SKABaseDevice.simulationMode_read
 
     def write_simulationMode(self, value):
         # PROTECTED REGION ID(SKABaseDevice.simulationMode_write) ENABLED START #
-        pass
+        self._simulation_mode = value
         # PROTECTED REGION END #    //  SKABaseDevice.simulationMode_write
 
     def read_testMode(self):
         # PROTECTED REGION ID(SKABaseDevice.testMode_read) ENABLED START #
-        return ''
+        return self._test_mode
         # PROTECTED REGION END #    //  SKABaseDevice.testMode_read
 
     def write_testMode(self, value):
         # PROTECTED REGION ID(SKABaseDevice.testMode_write) ENABLED START #
-        pass
+        self._test_mode = value
         # PROTECTED REGION END #    //  SKABaseDevice.testMode_write
 
 

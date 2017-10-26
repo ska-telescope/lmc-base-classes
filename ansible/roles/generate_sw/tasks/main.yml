@@ -43,6 +43,20 @@
     with_items:
       - RefMaster
       - RefA
+      - PDU
+      - Rack
+      - RefAchild
+      - RefAlarmHandler
+      - RefB
+      - RefBchild
+      - RefCapCorrelator
+      - RefCapPssBeams
+      - RefCapPstBeams
+      - RefCapVlbiBeams
+      - RefSubarray
+      - RefTelState
+      - Server
+      - Switch
   tags:
     - generate-sw-refelt
 

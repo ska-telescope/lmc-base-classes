@@ -36,12 +36,13 @@ class SKAMaster(SKABaseDevice):
     __metaclass__ = DeviceMeta
     # PROTECTED REGION ID(SKAMaster.class_variable) ENABLED START #
     def __init__(self, *args, **kwargs):
-        """Initialize attribute values."""
         super(SKAMaster, self).__init__(*args, **kwargs)
-        self._element_logger_address = " "
-        self._element_alarm_address = " "
-        self._element_tel_state_address = " "
-        self._element_database_address = " "
+
+        #Initialize attribute values.
+        self._element_logger_address = ""
+        self._element_alarm_address = ""
+        self._element_tel_state_address = ""
+        self._element_database_address = ""
 
 
     # PROTECTED REGION END #    //  SKAMaster.class_variable

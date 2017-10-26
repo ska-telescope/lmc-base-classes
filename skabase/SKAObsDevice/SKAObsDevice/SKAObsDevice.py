@@ -36,8 +36,9 @@ class SKAObsDevice(SKABaseDevice):
     __metaclass__ = DeviceMeta
     # PROTECTED REGION ID(SKAObsDevice.class_variable) ENABLED START #
     def __init__(self, *args, **kwargs):
-        """Initialize attribute values."""
         super(SKAObsDevice, self).__init__(*args, **kwargs)
+
+        #Initialize attribute values.
         self._obs_state = 0
         self._obs_mode = 0
         self._config_progress = 0

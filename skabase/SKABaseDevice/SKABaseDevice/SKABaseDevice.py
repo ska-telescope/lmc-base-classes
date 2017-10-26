@@ -43,11 +43,11 @@ class SKABaseDevice(Device):
     # PROTECTED REGION ID(SKABaseDevice.class_variable) ENABLED START #
 
     def __init__(self, *args, **kwargs):
-        """Initialize attribute values."""
         super(SKABaseDevice, self).__init__(*args, **kwargs)
 
-        self._build_state = " "
-        self._version_id = " "
+        #Initialize attribute values.
+        self._build_state = ""
+        self._version_id = ""
         self._central_logging_level = 0
         self._element_logging_level = 0
         self._storage_logging_level = 0
@@ -55,7 +55,7 @@ class SKABaseDevice(Device):
         self._admin_mode = 0
         self._control_mode = 0
         self._simulation_mode = False
-        self._test_mode = " "
+        self._test_mode = ""
 
 
     def _get_device_json(self, args_dict):

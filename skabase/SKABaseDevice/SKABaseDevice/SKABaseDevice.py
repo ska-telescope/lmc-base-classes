@@ -45,7 +45,7 @@ class SKABaseDevice(Device):
     def __init__(self, *args, **kwargs):
         super(SKABaseDevice, self).__init__(*args, **kwargs)
 
-        #Initialize attribute values.
+        # Initialize attribute values.
         self._build_state = ""
         self._version_id = ""
         self._central_logging_level = 0

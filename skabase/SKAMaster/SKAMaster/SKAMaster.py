@@ -38,7 +38,7 @@ class SKAMaster(SKABaseDevice):
     def __init__(self, *args, **kwargs):
         super(SKAMaster, self).__init__(*args, **kwargs)
 
-        #Initialize attribute values.
+        # Initialize attribute values.
         self._element_logger_address = ""
         self._element_alarm_address = ""
         self._element_tel_state_address = ""

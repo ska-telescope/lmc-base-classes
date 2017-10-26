@@ -38,7 +38,7 @@ class SKAObsDevice(SKABaseDevice):
     def __init__(self, *args, **kwargs):
         super(SKAObsDevice, self).__init__(*args, **kwargs)
 
-        #Initialize attribute values.
+        # Initialize attribute values.
         self._obs_state = 0
         self._obs_mode = 0
         self._config_progress = 0

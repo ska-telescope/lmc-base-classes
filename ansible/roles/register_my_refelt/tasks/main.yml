@@ -26,7 +26,7 @@
       - "hostvars[{{ inventory_hostname }}].element_details = {{hostvars[inventory_hostname].element_details}}"
       - "element_details.type = {{hostvars[inventory_hostname].element_details.type}}"
       - "element_details.name = {{hostvars[inventory_hostname].element_details.name}}"
-      - "element_details.template = {{hostvars[inventory_hostname].element_details.template}}"
+      - "element_details.id = {{hostvars[inventory_hostname].element_details.id}}"
 
 
 - name: Extract my vars

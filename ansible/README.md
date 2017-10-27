@@ -2,6 +2,19 @@
 Notes for LEvPRo deployment can be found in:
 [LEvPro Deployment Notes](https://docs.google.com/document/d/12f495FEMOi0g3bJjoZL3icZaCCr7iSjTY3jToFqA2Ns/edit#)
 
+## Recent changes
+Moving refelt config files from role to inventories
+
+Adding register_my_refelt to support different refelts (e.g. Ref4 on devl4, Ref5 on devl5) with different config files (from inventoires) e.g. ./play-task.sh register_my_refelt devl
+
+Added deregister_refelts to remove registrations in Tango DB and Astor so that we can start again (but not added to site.yml) and added support to run a different .yml instead of site.yml e.g. ./play-task.sh deregsiter_refelts.yml
+
+
+## TODO
+
+Get the desired inventories from ansible variables instead of loading files
+
+
 ## play-task - A utility to run a single specific task
 (based on ROLE tags and TASK IDs desribed in NOTES below)
 

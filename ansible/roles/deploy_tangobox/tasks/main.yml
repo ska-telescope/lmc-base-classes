@@ -187,6 +187,8 @@
     - PyTango
     - pytest
     - mock
+    - tango-simlib
+    - jsonschema
   tags:
     - pip
     - deploy-tangobox-pip

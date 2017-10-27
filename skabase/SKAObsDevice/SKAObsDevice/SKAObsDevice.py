@@ -35,6 +35,15 @@ class SKAObsDevice(SKABaseDevice):
     """
     __metaclass__ = DeviceMeta
     # PROTECTED REGION ID(SKAObsDevice.class_variable) ENABLED START #
+    def __init__(self, *args, **kwargs):
+        super(SKAObsDevice, self).__init__(*args, **kwargs)
+
+        # Initialize attribute values.
+        self._obs_state = 0
+        self._obs_mode = 0
+        self._config_progress = 0
+        self._config_delay_expected = 0
+
     # PROTECTED REGION END #    //  SKAObsDevice.class_variable
 
     # -----------------
@@ -112,22 +121,22 @@ class SKAObsDevice(SKABaseDevice):
 
     def read_obsState(self):
         # PROTECTED REGION ID(SKAObsDevice.obsState_read) ENABLED START #
-        return 0
+        return self._obs_state
         # PROTECTED REGION END #    //  SKAObsDevice.obsState_read
 
     def read_obsMode(self):
         # PROTECTED REGION ID(SKAObsDevice.obsMode_read) ENABLED START #
-        return 0
+        return self._obs_mode
         # PROTECTED REGION END #    //  SKAObsDevice.obsMode_read
 
     def read_configurationProgress(self):
         # PROTECTED REGION ID(SKAObsDevice.configurationProgress_read) ENABLED START #
-        return 0
+        return self._config_progress
         # PROTECTED REGION END #    //  SKAObsDevice.configurationProgress_read
 
     def read_configurationDelayExpected(self):
         # PROTECTED REGION ID(SKAObsDevice.configurationDelayExpected_read) ENABLED START #
-        return 0
+        return self._config_delay_expected
         # PROTECTED REGION END #    //  SKAObsDevice.configurationDelayExpected_read
 
 

@@ -52,6 +52,7 @@
     - ftp
     - gawk
     - telnet
+    - unzip
     - tcpdump
     - xauth
     - lsof
@@ -215,5 +216,10 @@
   service: name=tango-db state=started
   tags:
     - deploy-tangobox-start-tango
+
+################################
+# Include Tango Webapp role
+################################
+- include: tango_webapp.yml
 
 ...

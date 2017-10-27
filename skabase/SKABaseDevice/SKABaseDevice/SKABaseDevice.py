@@ -29,8 +29,9 @@ from PyTango import DeviceProxy
 
 from skabase.utils import (get_dp_command, exception_manager,
                            tango_type_conversion, coerce_value,
-                           get_groups_from_json)
+                           get_groups_from_json, get_dp_attribute)
 
+from skabase.SKABaseDevice.release import version_info
 # PROTECTED REGION END #    //  SKABaseDevice.additionnal_import
 
 __all__ = ["SKABaseDevice", "main"]
@@ -134,42 +135,10 @@ class SKABaseDevice(Device):
         # Process all attributes
         attributes = {}
         for i, attr in enumerate(attr_config):
-
-            # Populate dictionary with attribute configuration conversion
-            attr_dict = {
-                'name': attr.name,
-                'polling_frequency': attr.events.per_event.period,
-                'min_value': (attr.min_value if attr.min_value != 'Not specified'
-                              else None),
-                'max_value': (attr.max_value if attr.min_value != 'Not specified'
-                              else None),
-                'readonly': attr.writable not in [PyTango.AttrWriteType.READ_WRITE,
-                                                  PyTango.AttrWriteType.WRITE,
-                                                  PyTango.AttrWriteType.READ_WITH_WRITE]
-            }
-
-            # Convert data type
-            if attr.data_format == PyTango.AttrDataFormat.SCALAR:
-                attr_dict["data_type"] = tango_type_conversion.get(
-                    attr.data_type, str(attr.data_type))
-            else:
-                # Data types we aren't really going to represent
-                attr_dict["data_type"] = "other"
-
-            # Add context if required
-            if with_context:
-                attr_dict['component'] = self.get_name()
-
-            # Add value if required
-            if with_value:
-                attr_dict['value'] = coerce_value(attr_values[i].value)
-                attr_dict['is_alarm'] = attr_values[i].quality == AttrQuality.ATTR_ALARM
-                # ts = datetime.fromtimestamp(attr_values[i].time.tv_sec)
-                # ts.replace(microsecond=attr_values[i].time.tv_usec)
-                # attr_dict['timestamp'] = ts.isoformat()
+            attr_dict = get_dp_attribute(device_proxy, attr, with_value, with_context)
 
             # Define attribute type
-            if attr.name in self.MetricList:
+            if attr_dict['name'] in [self.MetricList]:
                 attr_dict['attribute_type'] = 'metric'
             else:
                 attr_dict['attribute_type'] = 'attribute'
@@ -193,7 +162,7 @@ class SKABaseDevice(Device):
     )
 
     MetricList = device_property(
-        dtype='str', default_value="healthState,adminMode,controlMode"
+        dtype='str', default_value="healthState"#,adminMode,controlMode"
     )
 
     GroupDefinitions = device_property(
@@ -408,7 +377,7 @@ class SKABaseDevice(Device):
         # PROTECTED REGION ID(SKABaseDevice.GetMetrics) ENABLED START #
         ### TBD - read the value of each of the attributes in the MetricList
         with exception_manager(self):
-            args_dict = {'with_value': False, 'with_commands': False,
+            args_dict = {'with_value': True, 'with_commands': False,
                          'with_metrics': True, 'with_attributes': False}
             device_dict = self._get_device_json(args_dict)
             argout = json.dumps(device_dict)
@@ -443,7 +412,7 @@ class SKABaseDevice(Device):
     @DebugIt()
     def GetVersionInfo(self):
         # PROTECTED REGION ID(SKABaseDevice.GetVersionInfo) ENABLED START #
-        return [""]
+        return version_info
         # PROTECTED REGION END #    //  SKABaseDevice.GetVersionInfo
 
 # ----------

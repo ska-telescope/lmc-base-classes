@@ -23,15 +23,19 @@ from PyTango import AttrQuality, DispLevel, DevState
 from PyTango import AttrWriteType, PipeWriteType
 # Additional import
 # PROTECTED REGION ID(SKABaseDevice.additionnal_import) ENABLED START #
+import logging
 import json
-
-from PyTango import DeviceProxy
+from datetime import datetime
+from PyTango import DeviceProxy, DevFailed
 
 from skabase.utils import (get_dp_command, exception_manager,
                            tango_type_conversion, coerce_value,
-                           get_groups_from_json, get_dp_attribute)
+                           get_groups_from_json, get_dp_attribute,
+                           get_tango_device_type_id)
 
-from skabase.SKABaseDevice.release import version_info
+from . import release
+
+MODULE_LOGGER = logging.getLogger(__name__)
 # PROTECTED REGION END #    //  SKABaseDevice.additionnal_import
 
 __all__ = ["SKABaseDevice", "main"]
@@ -48,8 +52,9 @@ class SKABaseDevice(Device):
         super(SKABaseDevice, self).__init__(*args, **kwargs)
 
         # Initialize attribute values.
-        self._build_state = ""
-        self._version_id = ""
+        self._build_state = '{}, {}, {}'.format(release.name, release.version,
+                                                release.description)
+        self._version_id = release.version
         self._central_logging_level = 0
         self._element_logging_level = 0
         self._storage_logging_level = 0
@@ -118,38 +123,72 @@ class SKABaseDevice(Device):
         ### TBD - Why use DeviceProxy?
         ### Can this not be known through self which is a Device
 
-        # Get attribute configuration
-        device_proxy = DeviceProxy(self.get_name())
-        if attribute_name is not None:
-            attr_config = device_proxy.get_attribute_config_ex(attribute_name)
-        else:
-            attr_config = device_proxy.get_attribute_config_ex(
-                device_proxy.get_attribute_list())
+        # Test - get attributes configuration
 
-        # Get attribute values if required
-        if with_value and attribute_name is not None:
-            attr_values = device_proxy.read_attributes([attribute_name])
-        elif with_value:
-            attr_values = device_proxy.read_attributes(device_proxy.get_attribute_list())
+        m_attr = self.get_device_attr()
+        attr_list = m_attr.get_attribute_list()
 
-        # Process all attributes
         attributes = {}
-        for i, attr in enumerate(attr_config):
-            attr_dict = get_dp_attribute(device_proxy, attr, with_value, with_context)
+
+        # TypeError: No to_python (by-value) converter found for C++
+        # type: Tango::Attribute*
+        for index in range(len(attr_list)):
+
+            attrib = attr_list[index]
+            attr_name = attrib.get_name()
+
+            if attr_name in ['State', 'Status']:
+                continue
+            if attribute_name is not None:
+                if attr_name != attribute_name:
+                    continue
+
+            attr_dict = {
+                'name': attr_name,
+                'polling_frequency': attrib.get_polling_period()
+            }
+
+            try:
+                attr_dict['min_value'] = attrib.get_min_value()
+            except AttributeError as attr_err:
+                MODULE_LOGGER.info(str(attr_err), exc_info=True)
+            except DevFailed as derr:
+                MODULE_LOGGER.info(str(derr), exc_info=True)
+
+            try:
+                attr_dict['max_value'] = attrib.get_max_value()
+            except AttributeError as attr_err:
+                MODULE_LOGGER.info(str(attr_err), exc_info=True)
+            except DevFailed as derr:
+                MODULE_LOGGER.info(str(derr), exc_info=True)
+
+            attr_dict['readonly'] = (
+                attrib.get_writable() not in [AttrWriteType.READ_WRITE,
+                                              AttrWriteType.WRITE,
+                                              AttrWriteType.READ_WITH_WRITE])
+
+            if with_context:
+                device_type, device_id = get_tango_device_type_id(self.get_name())
+                attr_dict['component_type'] = device_type
+                attr_dict['component_id'] = device_id
+
+
+            if with_value:
+                attr_dict['value'] = coerce_value(
+                    getattr(self, 'read_{}'.format(attr_name))())
+                attr_dict['is_alarm'] = attrib.get_quality == AttrQuality.ATTR_ALARM
 
             # Define attribute type
-            if attr_dict['name'] in [self.MetricList]:
+            if attr_name in self.MetricList:
                 attr_dict['attribute_type'] = 'metric'
             else:
                 attr_dict['attribute_type'] = 'attribute'
-
-            # Add to return attribute list
+            # Add to return attribute dict
             if with_metrics and attr_dict['attribute_type'] == 'metric':
-                attributes[attr.name] = attr_dict
-            elif with_attributes and attr_dict['attribute_type'] == 'attribute':
-                attributes[attr.name] = attr_dict
-
+                attributes[attr_name] = attr_dict
+        print attributes
         return attributes
+
 
     # PROTECTED REGION END #    //  SKABaseDevice.class_variable
 
@@ -162,7 +201,7 @@ class SKABaseDevice(Device):
     )
 
     MetricList = device_property(
-        dtype='str', default_value="healthState,adminMode,controlMode"
+        dtype=('str',), default_value=["healthState", "adminMode", "controlMode"]
     )
 
     GroupDefinitions = device_property(
@@ -181,7 +220,7 @@ class SKABaseDevice(Device):
         dtype='str', default_value="localhost"
     )
 
-     ----------
+    # ----------
     # Attributes
     # ----------
 
@@ -212,7 +251,7 @@ class SKABaseDevice(Device):
         access=AttrWriteType.READ_WRITE,
         memorized=True,
         doc="Current logging level to Syslog for this device - \ninitialises from  StorageLoggingLevelDefault on first execution of device.\nNeeds to be READ_WRITE To make it memorized - but writing this attribute should \ndo the same as command SetStorageLoggingLevel to ensure the targets and adjustments\nare made correctly",
-    )
+   )
 
     healthState = attribute(
         dtype='DevEnum',
@@ -412,7 +451,8 @@ class SKABaseDevice(Device):
     @DebugIt()
     def GetVersionInfo(self):
         # PROTECTED REGION ID(SKABaseDevice.GetVersionInfo) ENABLED START #
-        return version_info
+        #import IPython; IPython.embed()
+        return ['{}, {}'.format(self.__class__.__name__, self.read_buildState())]
         # PROTECTED REGION END #    //  SKABaseDevice.GetVersionInfo
 
 # ----------

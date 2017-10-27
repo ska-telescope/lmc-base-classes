@@ -327,7 +327,8 @@ def get_groups_from_json(json_definitions):
 
     Each string in the list is a JSON serialised dict defining the "group_name",
     "devices" and "subgroups" in the group.  The tango.Group() created enables
-    easy access to the managed devices in bulk, or individually.
+    easy access to the managed devices in bulk, or individually. Empty and
+    whitespace-only strings will be ignored.
 
     The general format of the list is as follows, with optional "devices" and
     "subgroups" keys:
@@ -369,10 +370,11 @@ def get_groups_from_json(json_definitions):
 
     Returns
     -------
-    groups: dict or None
+    groups: dict
         The keys of the dict are the names of the groups, in the following form:
             {"<group name 1>": <tango.Group>,
              "<group name 2>": <tango.Group>, ...}.
+        Will be an empty dict if no groups were specified.
 
     Raises
     ------
@@ -390,10 +392,12 @@ def get_groups_from_json(json_definitions):
         # Parse and validate user's definitions
         groups = {}
         for json_definition in json_definitions:
-            definition = json_loads_byteified(json_definition)
-            _validate_group(definition)
-            group_name = definition['group_name']
-            groups[group_name] = _build_group(definition)
+            json_definition = json_definition.strip()
+            if json_definition:
+                definition = json_loads_byteified(json_definition)
+                _validate_group(definition)
+                group_name = definition['group_name']
+                groups[group_name] = _build_group(definition)
         return groups
 
     except Exception as exc:

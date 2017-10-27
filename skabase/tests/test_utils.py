@@ -3,8 +3,8 @@
 import json
 import pytest
 
-from skabase.utils.utils import get_groups_from_json
-from skabase.utils.faults import GroupDefinitionsError
+from skabase.utils import get_groups_from_json
+from skabase.utils import GroupDefinitionsError
 
 
 TEST_GROUPS = {
@@ -158,6 +158,11 @@ def bad_group_configs(request):
 
 def test_get_groups_from_json_empty_list():
     groups = get_groups_from_json([])
+    assert groups == {}
+    # empty or whitespace strings should also be ignored
+    groups = get_groups_from_json([''])
+    assert groups == {}
+    groups = get_groups_from_json(['  ', '', ' '])
     assert groups == {}
 
 

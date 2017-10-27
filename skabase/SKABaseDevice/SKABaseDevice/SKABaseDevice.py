@@ -162,7 +162,7 @@ class SKABaseDevice(Device):
     )
 
     MetricList = device_property(
-        dtype='str', default_value="healthState"#,adminMode,controlMode"
+        dtype='str', default_value="healthState,adminMode,controlMode"
     )
 
     GroupDefinitions = device_property(
@@ -181,7 +181,7 @@ class SKABaseDevice(Device):
         dtype='str', default_value="localhost"
     )
 
-    # ----------
+     ----------
     # Attributes
     # ----------
 

@@ -116,7 +116,7 @@ mkdir ~/git
 git clone https://github.com/ska-sa/levpro ~/git/levpro
 ```
 
-### Deploy tangobox on a fresh node:
+### Deploy tangobox on a fresh node
 ```
 cd ~/git/levpro/ansible
 ./play-task.sh deploy-tangobox
@@ -124,19 +124,19 @@ cd ~/git/levpro/ansible
 ./play-task.sh refresh-sw
 ./play-task.sh install-sw
 ```
-### To regenerate POGO output:
+### To regenerate POGO output
 ```
 cd ~/git/levpro/ansible
 ./play-task.sh generate-sw
 ```
 
-### To configure the RefElt TANGO facility and start its device servers.
+### To configure the RefElt TANGO facility and start its device servers
 ```
 ./play-task.sh register-refelt-in-tangodb
 ./play-task.sh register-refelt-in-astor
 ```
 
-### To configure any RefElt TANGO facility and start its device servers.
+### To configure any RefElt TANGO facility and start its device servers (my_refelt)
 You need to add the group to hosts e.g.
 [devXX]
 devXXlevpro
@@ -145,19 +145,23 @@ And group vars for the group in ansible/group_vars/devXX:
 ```
 - ## Element personality
 - element_details:
-    - type: refelt
-    - name: refXX
-    - template: refelt_template
+    type: refelt
+    name: refXXX
+    id: refX
 ```
 
 and ansible/host_vars for each host in the group as appropriate, at least:
 ```
-ansible_ssh_host: levpro.devXX.camlab.kat.ac.za
+ansible_ssh_host: levpro.devXXX.camlab.kat.ac.za
 ```
 
 Then do
 ```
-ansible-playbook register-my-refelt.yml --extra-vars "which=devXX"
+ansible-playbook register-my-refelt.yml devXXX
+```
+this produces the ansible command line (note the --limit):
+```
+ansible-playbook -i hosts site.yml --limit devXXX --tags register-my-refelt --verbose --ask-become-pass
 ```
 
 # NOTES:

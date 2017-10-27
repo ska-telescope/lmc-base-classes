@@ -60,4 +60,20 @@
   tags:
     - generate-sw-refelt
 
+- block:
+  - name: Generate refelt simlib
+    become: yes
+    command: >
+        tango-simlib-generator
+        --sim-data-file {{software_root}}/levpro/refelt/refelt/{{item}}.xmi
+        --dserver-name {{item}}-simlib-DS
+        --directory /usr/local/bin/
+    with_items:
+      - PDU
+      - Rack
+      - Server
+      - Switch
+  tags:
+      - generate-sw-refelt-simlib
+
 ...

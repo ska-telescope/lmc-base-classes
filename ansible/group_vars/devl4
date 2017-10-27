@@ -8,6 +8,6 @@ software_root: /home/kat/git
 element_details:
     type: refelt
     name: refelt4
-    template: refelt_template
+    id: ref4
 
 ...

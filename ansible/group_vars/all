@@ -8,6 +8,6 @@ software_root: /home/kat/src
 element_details:
     type: refelt
     name: refelt
-    template: refelt_template
+    id: ref
 
 ...

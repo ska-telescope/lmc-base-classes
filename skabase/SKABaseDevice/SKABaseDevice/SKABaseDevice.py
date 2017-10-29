@@ -33,7 +33,7 @@ from skabase.utils import (get_dp_command, exception_manager,
                            get_groups_from_json, get_dp_attribute,
                            get_tango_device_type_id)
 
-from . import release
+from skabase.SKABaseDevice import release
 
 MODULE_LOGGER = logging.getLogger(__name__)
 # PROTECTED REGION END #    //  SKABaseDevice.additionnal_import
@@ -119,26 +119,20 @@ class SKABaseDevice(Device):
     def get_device_attributes(self, with_value=False,
                               with_context=True, with_metrics=True,
                               with_attributes=True, attribute_name=None):
-        """ Get device proxy attributes"""
-        ### TBD - Why use DeviceProxy?
-        ### Can this not be known through self which is a Device
+        """ Get device attributes"""
 
-        # Test - get attributes configuration
-
-        m_attr = self.get_device_attr()
-        attr_list = m_attr.get_attribute_list()
+        multi_attribute = self.get_device_attr()
+        attr_list = multi_attribute.get_attribute_list()
 
         attributes = {}
 
-        # TypeError: No to_python (by-value) converter found for C++
-        # type: Tango::Attribute*
+        # Cannot loop over the attr_list object (not python-wrapped): raises TypeError:
+        # No to_python (by-value) converter found for C++ type: Tango::Attribute*
         for index in range(len(attr_list)):
 
             attrib = attr_list[index]
             attr_name = attrib.get_name()
 
-            if attr_name in ['State', 'Status']:
-                continue
             if attribute_name is not None:
                 if attr_name != attribute_name:
                     continue
@@ -183,10 +177,18 @@ class SKABaseDevice(Device):
                 attr_dict['attribute_type'] = 'metric'
             else:
                 attr_dict['attribute_type'] = 'attribute'
+
             # Add to return attribute dict
-            if with_metrics and attr_dict['attribute_type'] == 'metric':
+            if with_metrics and with_attributes:
+                if attr_dict['attribute_type'] == 'metric':
+                    attributes[attr_name] = attr_dict
+                elif attr_dict['attribute_type'] == 'attribute':
+                    attributes[attr_name] = attr_dict
+            elif with_metrics and attr_dict['attribute_type'] == 'metric':
                 attributes[attr_name] = attr_dict
-        print attributes
+            elif with_attributes and attr_dict['attribute_type'] == 'attribute':
+                attributes[attr_name] = attr_dict
+            
         return attributes
 
 
@@ -251,7 +253,7 @@ class SKABaseDevice(Device):
         access=AttrWriteType.READ_WRITE,
         memorized=True,
         doc="Current logging level to Syslog for this device - \ninitialises from  StorageLoggingLevelDefault on first execution of device.\nNeeds to be READ_WRITE To make it memorized - but writing this attribute should \ndo the same as command SetStorageLoggingLevel to ensure the targets and adjustments\nare made correctly",
-   )
+    )
 
     healthState = attribute(
         dtype='DevEnum',
@@ -451,7 +453,6 @@ class SKABaseDevice(Device):
     @DebugIt()
     def GetVersionInfo(self):
         # PROTECTED REGION ID(SKABaseDevice.GetVersionInfo) ENABLED START #
-        #import IPython; IPython.embed()
         return ['{}, {}'.format(self.__class__.__name__, self.read_buildState())]
         # PROTECTED REGION END #    //  SKABaseDevice.GetVersionInfo
 

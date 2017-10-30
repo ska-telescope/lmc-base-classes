@@ -25,13 +25,11 @@ from PyTango import AttrWriteType, PipeWriteType
 # PROTECTED REGION ID(SKABaseDevice.additionnal_import) ENABLED START #
 import logging
 import json
-from datetime import datetime
 from PyTango import DeviceProxy, DevFailed
 
 from skabase.utils import (get_dp_command, exception_manager,
                            tango_type_conversion, coerce_value,
-                           get_groups_from_json, get_dp_attribute,
-                           get_tango_device_type_id)
+                           get_groups_from_json, get_tango_device_type_id)
 
 from skabase.SKABaseDevice import release
 
@@ -161,6 +159,8 @@ class SKABaseDevice(Device):
                                               AttrWriteType.WRITE,
                                               AttrWriteType.READ_WITH_WRITE])
 
+            # TODO (KM 2017-10-30): Add the data type of the attribute in the dict.
+
             if with_context:
                 device_type, device_id = get_tango_device_type_id(self.get_name())
                 attr_dict['component_type'] = device_type
@@ -168,8 +168,16 @@ class SKABaseDevice(Device):
 
 
             if with_value:
-                attr_dict['value'] = coerce_value(
-                    getattr(self, 'read_{}'.format(attr_name))())
+                # To get the values for the State and Status attributes, we need to call
+                # their get methods, respectively. The device does not implement the
+                # read_<attribute_name> methods for them.
+                if attr_name in ['State', 'Status']:
+                    attr_dict['value'] = coerce_value(
+                        getattr(self, 'get_{}'.format(attr_name.lower()))())
+                else:
+                    attr_dict['value'] = coerce_value(
+                        getattr(self, 'read_{}'.format(attr_name))())
+
                 attr_dict['is_alarm'] = attrib.get_quality == AttrQuality.ATTR_ALARM
 
             # Define attribute type
@@ -184,11 +192,10 @@ class SKABaseDevice(Device):
                     attributes[attr_name] = attr_dict
                 elif attr_dict['attribute_type'] == 'attribute':
                     attributes[attr_name] = attr_dict
-            elif with_metrics and attr_dict['attribute_type'] == 'metric':
+            elif (with_metrics and attr_dict['attribute_type'] == 'metric' or
+                  with_attributes and attr_dict['attribute_type'] == 'attribute'):
                 attributes[attr_name] = attr_dict
-            elif with_attributes and attr_dict['attribute_type'] == 'attribute':
-                attributes[attr_name] = attr_dict
-            
+
         return attributes
 
 

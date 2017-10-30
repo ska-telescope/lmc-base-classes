@@ -187,12 +187,7 @@ class SKABaseDevice(Device):
                 attr_dict['attribute_type'] = 'attribute'
 
             # Add to return attribute dict
-            if with_metrics and with_attributes:
-                if attr_dict['attribute_type'] == 'metric':
-                    attributes[attr_name] = attr_dict
-                elif attr_dict['attribute_type'] == 'attribute':
-                    attributes[attr_name] = attr_dict
-            elif (with_metrics and attr_dict['attribute_type'] == 'metric' or
+            if (with_metrics and attr_dict['attribute_type'] == 'metric' or
                   with_attributes and attr_dict['attribute_type'] == 'attribute'):
                 attributes[attr_name] = attr_dict
 

@@ -24,6 +24,9 @@ from PyTango import AttrWriteType, PipeWriteType
 from SKABaseDevice import SKABaseDevice
 # Additional import
 # PROTECTED REGION ID(SKATestDevice.additionnal_import) ENABLED START #
+import json
+
+from skabase.utils import (exception_manager, convert_api_value, coerce_value)
 # PROTECTED REGION END #    //  SKATestDevice.additionnal_import
 
 __all__ = ["SKATestDevice", "main"]
@@ -138,6 +141,45 @@ class SKATestDevice(SKABaseDevice):
     # --------
     # Commands
     # --------
+
+    @command(
+    dtype_in='str',
+    doc_in="JSON encoded dict with this format\n{``group``: str,  # name of existing group\n  ``command``: str, # name of command to run\n  ``arg_type``: str,  # data type of command input argument\n  ``arg_value``: str, # value for command input argument\n  ``forward``: bool  # True if command should be forwarded to all subgroups (default)\n}",
+    dtype_out='str',
+    doc_out="Return value from command on the group, as a JSON encoded string.\nThis will be a list of dicts of the form \n[ \n{``device_name``: str,  # TANGO device name\n  ``argout``: <value>,  # return value from command (type depends on command)\n  ``failed``: bool  # True if command failed\n},\n{ ... },\n ... ]",
+    )
+    @DebugIt()
+    def RunGroupCommand(self, argin):
+        # PROTECTED REGION ID(SKATestDevice.RunGroupCommand) ENABLED START #
+        with exception_manager(self):
+            defaults = {'arg_type': None, 'arg_value': None, 'forward': True}
+            required = ('group', 'command', 'arg_type', 'arg_value', 'forward')
+            args = self._parse_argin(argin, defaults=defaults, required=required)
+            group_name = args['group']
+            group = self.groups.get(group_name)
+            if group:
+                command = args['command']
+                forward = args['forward']
+                if args['arg_type']:
+                    _, param = convert_api_value({'type': args['arg_type'],
+                                                  'value': args['arg_value']})
+                    replies = group.command_inout(command, param, forward=forward)
+                else:
+                    replies = group.command_inout(command, forward=forward)
+                results = []
+                for reply in replies:
+                    result = {
+                        'device_name': reply.dev_name(),
+                        'argout': coerce_value(reply.get_data()),
+                        'failed': reply.has_failed(),
+                    }
+                    results.append(result)
+                argout = json.dumps(results, sort_keys=True)
+            else:
+                raise RuntimeError("Invalid group requested. '{}' not in '{}'"
+                                   .format(group_name, sorted(self.groups.keys())))
+        return argout
+        # PROTECTED REGION END #    //  SKATestDevice.RunGroupCommand
 
 # ----------
 # Run server

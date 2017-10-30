@@ -99,6 +99,12 @@ class SKATestDeviceDeviceTestCase(DeviceTestCase):
         self.device.Status()
         # PROTECTED REGION END #    //  SKATestDevice.test_Status
 
+    def test_RunGroupCommand(self):
+        """Test for RunGroupCommand"""
+        # PROTECTED REGION ID(SKATestDevice.test_RunGroupCommand) ENABLED START #
+        self.device.RunGroupCommand("")
+        # PROTECTED REGION END #    //  SKATestDevice.test_RunGroupCommand
+
     def test_obsState(self):
         """Test for obsState"""
         # PROTECTED REGION ID(SKATestDevice.test_obsState) ENABLED START #

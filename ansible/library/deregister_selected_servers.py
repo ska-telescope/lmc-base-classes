@@ -7,35 +7,45 @@ import PyTango
 
 DOCUMENTATION = '''
 ---
-module: start_element
+module: deregister all servers starting with the items listed
 
-short_description: Start element device servers.
+short_description: Deregister selected servers
 
 description:
-    - Start the device servers in the element using Astor.
+    - Deregister servers starting with specified items from TANGO DB and Astor.
 
 options:
-    element_config:
+    do_what:
         description:
-            - A json file defining the list of device server instances grouped
-              according to their startup levels.
+            - Either "stop_servers" or "delete_servers". To stop servers in Astor
+              or delete servers in Tango DB.
         required: true
+        
+    startswith:
+        description:
+            - Comma delimited list of items to match server names. Only servers starting
+              with any of the items in the list will be processed.
+        required: true
+        
 
 author:
     - CAM (cam@ska.ac.za)
 '''
 
 EXAMPLES = '''
-- name: Start the Element's device servers.
-  start_element:
-    element_config: refelt_config_starter.json
+- name: Delete RefEltN servers
+  deregister_selected_servers:
+    do_what: "delete_servers"
+    startswith: "SvrRef"
 '''
 
 RETURN = '''
 success_output:
-    : The list of server instances processed successfully.
+    : The list of servers processed successfully.
 failed_output:
-    : The list of server instances for which processing failed.
+    : The list of servers for which processing failed.
+skipped_output:
+    : The list of servers for which processing were skipped.
 '''
 
 success_output = []
@@ -50,20 +60,21 @@ def stop_servers(startswith_list):
     db = PyTango.Database()
     datum = db.get_server_list()
     
-    for server_instance in datum.value_string:
+    for server_name in datum.value_string:
         # Operate on servers starting with the specified strings
-        items = [item for item in startswith_list if server_instance.startswith(item)]
+        items = [item for item in startswith_list if server_name.startswith(item)]
         if items:
             try:
-                #db.delete_server(server_instance)
-                #success_output.append(server_instance)
-                failed_output.append(server_instance+"(NO-OP IN DELETING:{})".format(exc))
+                # TBD - add the 
+                # astor.stop_server(server_name)
+                # success_output.append(server_name)
+                failed_output.append(server_name+"(NO-OP IN STOPPING:{})".format(exc))
             except Exception as exc:
-                logging.error("EXCEPTION in deleting {} {}".format(
-                    server_instance, exc))
-                failed_output.append(server_instance+"(EXC IN DELETING:{})".format(exc))
+                logging.error("EXCEPTION in stopping {} {}".format(
+                    server_name, exc))
+                failed_output.append(server_name+"(EXC IN STOPPING:{})".format(exc))
         else:
-            skipped_output.append(server_instance+" (SKIPPED)")
+            skipped_output.append(server_name+" (SKIPPED)")
 
 
 def delete_servers(startswith_list):
@@ -71,19 +82,19 @@ def delete_servers(startswith_list):
     db = PyTango.Database()
     datum = db.get_server_list()
     
-    for server_instance in datum.value_string:
+    for server_name in datum.value_string:
         # Operate on servers starting with the specified strings
-        items = [item for item in startswith_list if server_instance.startswith(item)]
+        items = [item for item in startswith_list if server_name.startswith(item)]
         if items:
             try:
-                db.delete_server(server_instance)
-                success_output.append(server_instance)
+                db.delete_server(server_name)
+                success_output.append(server_name)
             except Exception as exc:
                 logging.error("EXCEPTION in deleting {} {}".format(
-                    server_instance, exc))
-                failed_output.append(server_instance+"(EXC IN DELETING:{})".format(exc))
+                    server_name, exc))
+                failed_output.append(server_name+"(EXC IN DELETING:{})".format(exc))
         else:
-            skipped_output.append(server_instance+" (SKIPPED)")
+            skipped_output.append(server_name+" (SKIPPED)")
 
 def run_module():
     # define the available arguments/parameters that a user can pass to
@@ -100,6 +111,7 @@ def run_module():
     result = dict(
         changed=False,
         success_output='',
+        skipped_output='',
         failed_output=''
     )
     module = AnsibleModule(
@@ -118,7 +130,8 @@ def run_module():
         stop_servers(module.params['startswith'].split(","))
     elif module.params['do_what'] == "delete_servers":
         delete_servers(module.params['startswith'].split(","))
-    result['success_output'] = success_output + skipped_output
+    result['success_output'] = success_output
+    result['skipped_output'] = skipped_output
     result['failed_output'] = failed_output
 
     # use whatever logic you need to determine whether or not this module

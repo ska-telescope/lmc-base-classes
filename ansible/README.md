@@ -5,7 +5,7 @@ Notes for LEvPRo deployment can be found in:
 ## Recent changes
 Moving refelt config files from role to inventories
 
-Adding register_my_refelt to support different refelts (e.g. Ref4 on devl4, Ref5 on devl5) with different config files (from inventoires) e.g. ./play-task.sh register_my_refelt devl
+Adding register_my_refelt to support different refelts (e.g. Ref4 on devl4, Ref5 on devl5) with different config files (from inventories) e.g. ./play-task.sh register_my_refelt devl
 
 Added deregister_refelts to remove registrations in Tango DB and Astor so that we can start again (but not added to site.yml) and added support to run a different .yml instead of site.yml e.g. ./play-task.sh deregsiter_refelts.yml
 
@@ -107,8 +107,24 @@ ansible-playbook -i hosts site.yml --limit local --tags "install-sw-refelt"
 ```
 fab proxmox.create_nodes_by_group:devXX,
 ssh kat@levpro.devXX.camlab.kat.ac.za
+```
+
+
+# Install latest version of pip (required on Ubuntu 14.04):
+Old Ubuntu packages cause an issue, so remove manually.  Can’t easily be done using Ansible, since removing the Python packages removes ansible while it is running!
+```
+sudo apt-get remove -y python-setuptools python-pkg-resources
+cd /tmp
+wget --no-check-certificate https://bootstrap.pypa.io/get-pip.py
+sudo python get-pip.py
+rm get-pip.py
+cd  
+```
+
 # Add this apt repo to get recent version of ansible (>=2.3.2)
 # Needed on Ubuntu 14.04, might not be required on later releases
+
+```
 sudo add-apt-repository ppa:ansible/ansible
 sudo apt-get update
 sudo apt-get install ansible
@@ -132,14 +148,20 @@ cd ~/git/levpro/ansible
 
 ### To configure the RefElt TANGO facility and start its device servers
 ```
+./play-task.sh register-refelt
+```
+or
+```
 ./play-task.sh register-refelt-in-tangodb
 ./play-task.sh register-refelt-in-astor
 ```
 
-### To configure any RefElt TANGO facility and start its device servers (my_refelt)
-You need to add the group to hosts e.g.
+### To configure a specific RefEltX TANGO facility and start its device servers (my_refelt)
+You need to add the group to levpro/ansible/hosts e.g.
+```
 [devXX]
 devXXlevpro
+```
 
 And group vars for the group in ansible/group_vars/devXX:
 ```
@@ -155,13 +177,27 @@ and ansible/host_vars for each host in the group as appropriate, at least:
 ansible_ssh_host: levpro.devXXX.camlab.kat.ac.za
 ```
 
+and ansible/host_vars/devXXlevpro for each host in the group as appropriate, at least:
+```
+ansible_ssh_host: levpro.devXXX.camlab.kat.ac.za
+```
+
+Lastly, you need to create an inventory for devXX in ansible/inventories/devXX defining the refXXX element. 
+Note: this may later be templated for RefElts (as it may be a useful pattern for DSH)
+
+(If need be, deregister previous registrations with:)
+```
+ansible-playbook deregister-refelts.yml
+```
+
+
 Then do
 ```
-ansible-playbook register-my-refelt.yml devXXX
+ansible-playbook register-my-refelt.yml devXX
 ```
 this produces the ansible command line (note the --limit):
 ```
-ansible-playbook -i hosts site.yml --limit devXXX --tags register-my-refelt --verbose --ask-become-pass
+ansible-playbook -i hosts site.yml --limit devXX --tags register-my-refelt --verbose --ask-become-pass
 ```
 
 # NOTES:

@@ -65,14 +65,14 @@ def start_element(elt_config):
                     print """EXCEPTION IN SET LEVEL in ASTOR"""
                     print """host={!r}  level={!r} server_instance={!r}.""".format(
                         host_name, srv_instance_startup_level, server_instance)
-                    servers_not_running.append(server_instance+"(EXC IN SET LEVEL:{})".format(exc))
+                    servers_not_running.append("{}(EXC IN SET LEVEL:{})".format(server_instance, exc))
                     continue
 
                 # For now - start each server - else they do not show up in the
                 # Astor GUI. Start them independently since they do not all exist
                 # in StartDsPath yet
                 try:
-                    # aster.restart_servers does not return a value on whether it was successful or not
+                    # astor.restart_servers does not return a value on whether it was successful or not
                     # even if the Server was not registered on the DsPath it returns None, also when
                     # it successfully restarted it returns also None.
                     # Thus we use stop and start (ignoring errors on stop)
@@ -92,21 +92,21 @@ def start_element(elt_config):
                             print """ERROR IN START in ASTOR"""
                             print """host={!r}  level={!r} server_instance={!r}.""".format(
                                 host_name, srv_instance_startup_level, server_instance)
-                            servers_not_running.append(server_instance+"(ERROR IN START:{})".format(result))
+                            servers_not_running.append("{}(ERROR IN START:{})".format(server_instance, result))
                     except Exception as exc:
                         logging.error("EXC in start {} {}".
                                   format(server_instance, exc))
                         print """EXC IN START in ASTOR"""
                         print """host={!r}  level={!r} server_instance={!r}.""".format(
                             host_name, srv_instance_startup_level, server_instance)
-                        servers_not_running.append(server_instance+"(EXC IN START:{})".format(exc))
+                        servers_not_running.append("{}(EXC IN START:{})".format(server_instance, exc))
                 except Exception as exc:
                     logging.error("EXCEPTION in restart {} {}".
                                   format(server_instance, exc))
                     print """EXCEPTION IN RESTART in ASTOR"""
                     print """host={!r}  level={!r} server_instance={!r}.""".format(
                         host_name, srv_instance_startup_level, server_instance)
-                    servers_not_running.append(server_instance+"(EXC IN RESTART:{})".format(exc))
+                    servers_not_running.append("{}(EXC IN RESTART:{})".format(server_instance, exc))
 
 
 def run_module():

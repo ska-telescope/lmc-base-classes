@@ -17,11 +17,11 @@
 - block:
   - name: Register RefElt servers, classes, devices
     register_element:
-        elt_config_file: /home/kat/git/levpro/ansible/roles/register_refelt/config_files/refelt_config_db.json
+        elt_config_file: roles/register_refelt/config_files/refelt_config_db.json
     register: the_result
   - name: Register RefElt device properties
     register_device_properties:
-      elt_config_file: /home/kat/git/levpro/ansible/roles/register_refelt/config_files/refelt_device_properties.json
+      elt_config_file: roles/register_refelt/config_files/refelt_device_properties.json
     register: the_result
   tags:
     - register-refelt-in-tangodb
@@ -51,7 +51,7 @@
 - block:
   - name: Register the Element in Astor and start with Starter.
     start_element:
-      element_config: /home/kat/git/levpro/ansible/roles/register_refelt/config_files/refelt_config_starter.json
+      element_config: roles/register_refelt/config_files/refelt_config_starter.json
     register: the_result
   tags:
     - register-refelt-in-astor

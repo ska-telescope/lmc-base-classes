@@ -1,28 +1,28 @@
 {
     "api_version": "v1",
     "tango_servers": [
-      {
-	      "server_name": "SvrRefA",
-	      "server_instances": [
-	          {
-	              "instance_name": "1",
-	              "device_classes": [
-	                  {
-	                      "class_name": "RefA",
-	                      "devices": ["ref/a/1"]
-	                  }
-	              ]
-	          },
-	          {
-	              "instance_name": "2",
-	              "device_classes": [
-	                  {
-	                      "class_name": "RefA",
-	                      "devices": ["ref/a/2"]
-	                  }
-	              ]
-	          }
-	        ]
+        {
+            "server_name": "SvrRefA",
+            "server_instances": [
+              {
+                    "instance_name": "1",
+                    "device_classes": [
+                        {
+                            "class_name": "RefA",
+                            "devices": ["ref/a/1"]
+                        }
+                    ]
+              },
+              {
+                    "instance_name": "2",
+                    "device_classes": [
+                        {
+                            "class_name": "RefA",
+                            "devices": ["ref/a/2"]
+                        }
+                    ]
+              }
+           ]
         },
         {
             "server_name": "SvrRefAchild",
@@ -45,7 +45,7 @@
                         }
                     ]
                 }
-              ]
+            ]
         },
         {
             "server_name": "SvrRefMaster",
@@ -228,9 +228,64 @@
                         }
                     ]
                 }
-              ]
+            ]
+        },
+        {
+            "server_name": "SvrPDUSim",
+            "server_instances": [
+                {
+                    "instance_name": "Elt",
+                    "device_classes": [
+                        {
+                            "class_name": "PDU",
+                            "devices": ["elt/pdu/rackA", "elt/pdu/rackB"]
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "server_name": "SvrServerSim,
+            "server_instances": [
+                {
+                    "instance_name": "Elt",
+                    "device_classes": [
+                        {
+                            "class_name": "Server",
+                            "devices": ["elt/server/1", "elt/server/2",
+                                        "elt/server/3", "elt/server/4"]
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "server_name": "SvrRackSim",
+            "server_instances": [
+                {
+                    "instance_name": "Elt",
+                    "device_classes": [
+                        {
+                            "class_name": "Rack",
+                            "devices": ["elt/rack/A", "elt/rack/B"]
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "server_name": "SvrSwitchSim",
+            "server_instances": [
+                {
+                    "instance_name": "Elt",
+                    "device_classes": [
+                        {
+                            "class_name": "Switch",
+                            "devices": ["elt/switch/A", "elt/switch/B"]
+                        }
+                    ]
+                }
+            ]
         }
-
-
     ]
 }

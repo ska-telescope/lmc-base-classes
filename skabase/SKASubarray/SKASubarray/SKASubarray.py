@@ -24,7 +24,7 @@ from PyTango import AttrWriteType, PipeWriteType
 from SKAObsDevice import SKAObsDevice
 # Additional import
 # PROTECTED REGION ID(SKASubarray.additionnal_import) ENABLED START #
-from PyTango import DeviceProxy
+from PyTango import DeviceProxy, Except, ErrSeverity
 # PROTECTED REGION END #    //  SKASubarray.additionnal_import
 
 __all__ = ["SKASubarray", "main"]
@@ -186,28 +186,41 @@ class SKASubarray(SKAObsDevice):
         dp = DeviceProxy(self.get_name())
 
         obstate_labels = list(dp.attribute_query('obsState').enum_labels)
-        obs_value = obstate_labels.index('IDLE')
+        obs_idle = obstate_labels.index('IDLE')
 
         admin_labels = list(dp.attribute_query('adminMode').enum_labels)
-        admin_value = admin_labels.index('ON-LINE')
+        admin_online = admin_labels.index('ON-LINE')
+        admin_maintenance = admin_labels.index('MAINTENANCE')
+        admin_offline = admin_labels.index('OFF-LINE')
+        admin_not_fitted = admin_labels.index('NOT-FITTED')
 
         argout = []
-        if self.read_obsState() == obs_value and (self.read_adminMode() == admin_value or
-                self.read_adminMode() == admin_value):
-            # Assign resources...
-            rsrcs = self._assigned_resources
-            for rsrc in argin:
-                if rsrc not in self._assigned_resources:
-                    self._assigned_resourcese.append(rsrc)
-                    argout.append(rsrc)
-        elif self.adminMode() == admin_value or self.adminMode() == admin_value:
+
+        if (self.read_adminMode() == admin_offline or
+                self.read_adminMode() == admin_not_fitted):
             # Raise an error...
-            Except.throw_exception("Command failed!",  "Not in the correct mode",
-                                   "ReleaseResources", ErrSeverity.ERROR)
+            Except.throw_exception("Command failed!",  "Subarray adminMode is 'OFF-LINE'"
+                                   " or in 'NOT-FITTED'", "ReleaseResources",
+                                   ErrSeverity.ERR)
+
+        if self.read_obsState() == obs_idle:
+            if (self.read_adminMode() == admin_online or
+                    self.read_adminMode() == admin_maintenance):
+                # Assign resources...
+                resources = self._assigned_resources[:]
+                for resource in argin:
+                    if resource not in resources:
+                        self._assigned_resources.append(resource)
+                    argout.append(resource)
+            else:
+                Except.throw_exception("Command failed!", "Subarray adminMode not"
+                                       " 'ON-LINE' or in 'MAINTENANCE'.",
+                                       "ReleaseResources", ErrSeverity.ERR)
+
         else:
             # Raise an error...
-            Except.throw_exception("Command failed!",  "Not in the correct mode",
-                                   "ReleaseResources", ErrSeverity.ERROR)
+            Except.throw_exception("Command failed!",  "Subarray obsState not 'IDLE'.",
+                                   "ReleaseResources", ErrSeverity.ERR)
         return argout
 
     @command(
@@ -222,30 +235,41 @@ class SKASubarray(SKAObsDevice):
         dp = DeviceProxy(self.get_name())
 
         obstate_labels = list(dp.attribute_query('obsState').enum_labels)
-        obs_value = obstate_labels.index('IDLE')
+        obs_idle = obstate_labels.index('IDLE')
 
         admin_labels = list(dp.attribute_query('adminMode').enum_labels)
-        admin_value = admin_labels.index('ON-LINE')
+        admin_online = admin_labels.index('ON-LINE')
+        admin_maintenance = admin_labels.index('MAINTENANCE')
+        admin_offline = admin_labels.index('OFF-LINE')
+        admin_not_fitted = admin_labels.index('NOT-FITTED')
 
         argout = []
-        if self.read_obsState() == obs_value and (self.read_adminMode() == admin_value or
-                self.read_adminMode() == admin_value):
-            # Release resources...
-            rsrcs = self._assigned_resources
-            for rsrc in argin:
-                try:
-                    self._assigned_resources.remove(rsrc)
-                    argout.append(rsrc)
-                except ValueError:
-                    pass
-        elif self.adminMode() == admin_value or self.adminMode() == admin_value:
+
+        if (self.read_adminMode() == admin_offline or
+                self.read_adminMode() == admin_not_fitted):
             # Raise an error...
-            Except.throw_exception("Command failed!",  "Not in the correct mode",
-                                   "ReleaseResources", ErrSeverity.ERROR)
+            Except.throw_exception("Command failed!", "Subarray adminMode is 'OFF-LINE'"
+                                   " or in 'NOT-FITTED'.", "ReleaseResources",
+                                   ErrSeverity.ERR)
+
+        if self.read_obsState() == obs_idle:
+            if (self.read_adminMode() == admin_online or
+                    self.read_adminMode() == admin_maintenance):
+                # Release resources...
+                resources = self._assigned_resources[:]
+                for resource in argin:
+                    if resource in resources:
+                        self._assigned_resources.remove(resource)
+                        argout.append(resource)
+            else:
+                Except.throw_exception("Command failed!", "Subarray adminMode not"
+                                       " 'ON-LINE' or in 'MAINTENANCE'.",
+                                       "ReleaseResources", ErrSeverity.ERR)
+
         else:
             # Raise an error...
-            Except.throw_exception("Command failed!",  "Not in the correct mode",
-                                   "ReleaseResources", ErrSeverity.ERROR)
+            Except.throw_exception("Command failed!",  "Subarray obsState not 'IDLE'.",
+                                   "ReleaseResources", ErrSeverity.ERR)
         return argout
         # PROTECTED REGION END #    //  SKASubarray.ReleaseResources
 
@@ -256,8 +280,16 @@ class SKASubarray(SKAObsDevice):
     @DebugIt()
     def ReleaseAllResources(self):
         # PROTECTED REGION ID(SKASubarray.ReleaseAllResources) ENABLED START #
-        resources = self._assigned_resources
+        resources = self._assigned_resources[:]
         released_resources = self.ReleaseResources(resources)
+        #if self._assigned_resources == []:
+        #    self.set_state(DevState.ON)
+        #    admin_labels = list(dp.attribute_query('adminMode').enum_labels)
+        #    admin_online = admin_labels.index('ON-LINE')
+        #    self.write_adminMode(admin_online)
+        #    obstate_labels = list(dp.attribute_query('obsState').enum_labels)
+        #    obs_idle = obstate_labels.index('IDLE')
+        #    self._obs_mode = obs_idle
         return released_resources
         # PROTECTED REGION END #    //  SKASubarray.ReleaseAllResources
 

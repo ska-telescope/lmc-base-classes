@@ -46,7 +46,15 @@ def put_device_property(device_name, device_properties):
         print "Setting device {} properties {}: {}".format(
             device_name, property_name, property_value)
         try:
-            fantango.put_device_property(device_name, {str(property_name): property_value})
+            import fandango
+            if fandango.functional.isSequence(property_value):
+                property_values = []
+                for prop in property_value:
+                    property_values.append(json.dumps(prop))
+                prop_val = property_values
+            else:
+                prop_val = property_value
+            fantango.put_device_property(device_name, {str(property_name): prop_val})
         except PyTango.DevError as deverr:
             logging.error("FAILED to register device property {} {}."
                           .format(property_name, deverr))

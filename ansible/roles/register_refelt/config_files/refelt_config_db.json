@@ -2,27 +2,27 @@
     "api_version": "v1",
     "tango_servers": [
       {
-	      "server_name": "SvrRefA",
-	      "server_instances": [
-	          {
-	              "instance_name": "1",
-	              "device_classes": [
-	                  {
-	                      "class_name": "RefA",
-	                      "devices": ["ref/a/1"]
-	                  }
-	              ]
-	          },
-	          {
-	              "instance_name": "2",
-	              "device_classes": [
-	                  {
-	                      "class_name": "RefA",
-	                      "devices": ["ref/a/2"]
-	                  }
-	              ]
-	          }
-	        ]
+          "server_name": "SvrRefA",
+          "server_instances": [
+              {
+                  "instance_name": "1",
+                  "device_classes": [
+                      {
+                          "class_name": "RefA",
+                          "devices": ["ref/a/1"]
+                      }
+                  ]
+              },
+              {
+                  "instance_name": "2",
+                  "device_classes": [
+                      {
+                          "class_name": "RefA",
+                          "devices": ["ref/a/2"]
+                      }
+                  ]
+              }
+            ]
         },
         {
             "server_name": "SvrRefAchild",

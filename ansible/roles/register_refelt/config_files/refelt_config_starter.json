@@ -14,11 +14,11 @@
               },
               {
                   "startup_level": 3,
-                  "server_instances": ["SvrRefA/1", "SvrRefA/2", "SvrPDUSim/Elt", "SvrServerSim/Elt"]
+                  "server_instances": ["SvrRefA/1", "SvrRefA/2"]
               },
               {
                   "startup_level": 5,
-                  "server_instances": ["SvrRefMaster/Elt", "SvrRefAlarmHandler/Elt", "SvrRefTelState/Elt", "SvrSwitchSim/Elt"]
+                  "server_instances": ["SvrRefMaster/Elt", "SvrRefAlarmHandler/Elt", "SvrRefTelState/Elt"]
               }
           ]
     }

@@ -238,7 +238,7 @@
                     "device_classes": [
                         {
                             "class_name": "PDU",
-                            "devices": ["elt/pdu/rackA", "elt/pdu/rackB"]
+                            "devices": ["ref/pdu/rackA", "ref/pdu/rackB"]
                         }
                     ]
                 }
@@ -252,8 +252,8 @@
                     "device_classes": [
                         {
                             "class_name": "Server",
-                            "devices": ["elt/server/1", "elt/server/2",
-                                        "elt/server/3", "elt/server/4"]
+                            "devices": ["ref/server/1", "ref/server/2",
+                                        "ref/server/3", "ref/server/4"]
                         }
                     ]
                 }
@@ -267,7 +267,7 @@
                     "device_classes": [
                         {
                             "class_name": "Rack",
-                            "devices": ["elt/rack/A", "elt/rack/B"]
+                            "devices": ["ref/rack/A", "ref/rack/B"]
                         }
                     ]
                 }
@@ -281,7 +281,7 @@
                     "device_classes": [
                         {
                             "class_name": "Switch",
-                            "devices": ["elt/switch/A", "elt/switch/B"]
+                            "devices": ["ref/switch/A", "ref/switch/B"]
                         }
                     ]
                 }

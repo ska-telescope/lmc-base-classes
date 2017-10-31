@@ -1,17 +1,14 @@
-Ref
-===
+## Ref
 
 An SKA Reference Element (called Ref)
 
-Requirement
-===========
+## Requirement
 
 - PyTango >= 8.1.6
 - devicetest (for using tests)
 - sphinx (for building sphinx documentation)
 
-Installation
-============
+## Installation
 
 Run python setup.py install
 
@@ -21,8 +18,7 @@ run python setup.py build_sphinx
 If you want to pass the tests,
 run python setup.py test
 
-Usage
-=====
+## Usage
 
 Now you can start your device servers in any
 Terminal or console by calling it :

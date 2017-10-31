@@ -12,7 +12,7 @@
               },
               {
                   "startup_level": 3,
-                  "server_instances": ["SvrRefA/1", "SvrRefA/2", "SvrServerSim", "SvrRackSim/Elt"]
+                  "server_instances": ["SvrRefA/1", "SvrRefA/2", "SvrPDUSim/Elt", "SvrServerSim/Elt"]
               },
               {
                   "startup_level": 5,

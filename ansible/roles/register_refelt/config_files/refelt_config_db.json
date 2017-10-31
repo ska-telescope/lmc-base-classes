@@ -62,7 +62,7 @@
               ]
         },
         {
-            "server_name": "SvrSKALogger",
+            "server_name": "SKALogger",
             "server_instances": [
                 {
                     "instance_name": "Elt",

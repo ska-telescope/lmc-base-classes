@@ -245,7 +245,7 @@
             ]
         },
         {
-            "server_name": "SvrServerSim,
+            "server_name": "SvrServerSim",
             "server_instances": [
                 {
                     "instance_name": "Elt",

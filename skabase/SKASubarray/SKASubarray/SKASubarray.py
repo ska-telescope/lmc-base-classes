@@ -282,14 +282,6 @@ class SKASubarray(SKAObsDevice):
         # PROTECTED REGION ID(SKASubarray.ReleaseAllResources) ENABLED START #
         resources = self._assigned_resources[:]
         released_resources = self.ReleaseResources(resources)
-        #if self._assigned_resources == []:
-        #    self.set_state(DevState.ON)
-        #    admin_labels = list(dp.attribute_query('adminMode').enum_labels)
-        #    admin_online = admin_labels.index('ON-LINE')
-        #    self.write_adminMode(admin_online)
-        #    obstate_labels = list(dp.attribute_query('obsState').enum_labels)
-        #    obs_idle = obstate_labels.index('IDLE')
-        #    self._obs_mode = obs_idle
         return released_resources
         # PROTECTED REGION END #    //  SKASubarray.ReleaseAllResources
 

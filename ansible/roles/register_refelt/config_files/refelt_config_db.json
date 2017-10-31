@@ -231,7 +231,7 @@
             ]
         },
         {
-            "server_name": "SvrPDUSim",
+            "server_name": "SvrPduSim",
             "server_instances": [
                 {
                     "instance_name": "Elt",

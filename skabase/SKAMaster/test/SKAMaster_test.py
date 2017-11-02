@@ -93,6 +93,12 @@ class SKAMasterDeviceTestCase(DeviceTestCase):
         self.device.GetVersionInfo()
         # PROTECTED REGION END #    //  SKAMaster.test_GetVersionInfo
 
+    def test_isCapabilityAchievable(self):
+        """Test for isCapabilityAchievable"""
+        # PROTECTED REGION ID(SKAMaster.test_isCapabilityAchievable) ENABLED START #
+        self.device.isCapabilityAchievable([""])
+        # PROTECTED REGION END #    //  SKAMaster.test_isCapabilityAchievable
+
     def test_elementLoggerAddress(self):
         """Test for elementLoggerAddress"""
         # PROTECTED REGION ID(SKAMaster.test_elementLoggerAddress) ENABLED START #
@@ -176,6 +182,18 @@ class SKAMasterDeviceTestCase(DeviceTestCase):
         # PROTECTED REGION ID(SKAMaster.test_testMode) ENABLED START #
         self.device.testMode
         # PROTECTED REGION END #    //  SKAMaster.test_testMode
+
+    def test_maxCapabilities(self):
+        """Test for maxCapabilities"""
+        # PROTECTED REGION ID(SKAMaster.test_maxCapabilities) ENABLED START #
+        self.device.maxCapabilities
+        # PROTECTED REGION END #    //  SKAMaster.test_maxCapabilities
+
+    def test_availableCapabilities(self):
+        """Test for availableCapabilities"""
+        # PROTECTED REGION ID(SKAMaster.test_availableCapabilities) ENABLED START #
+        self.device.availableCapabilities
+        # PROTECTED REGION END #    //  SKAMaster.test_availableCapabilities
 
 
 # Main execution

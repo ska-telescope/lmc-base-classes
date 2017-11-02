@@ -43,7 +43,8 @@ class SKAMaster(SKABaseDevice):
         self._element_alarm_address = ""
         self._element_tel_state_address = ""
         self._element_database_address = ""
-
+        self._max_capabilities = []
+        self._available_capabilities = []
 
     # PROTECTED REGION END #    //  SKAMaster.class_variable
 
@@ -97,6 +98,18 @@ class SKAMaster(SKABaseDevice):
 
 
 
+    maxCapabilities = attribute(
+        dtype=('uint16',),
+        max_dim_x=10,
+        doc="Maximum instances of each capability type, in the same order as the CapabilityTypes",
+    )
+
+    availableCapabilities = attribute(
+        dtype=('uint16',),
+        max_dim_x=10,
+        doc="Available instances of each capability type, in the same order as the CapabilityTypes",
+    )
+
     # ---------------
     # General methods
     # ---------------
@@ -140,10 +153,31 @@ class SKAMaster(SKABaseDevice):
         return self._element_database_address
         # PROTECTED REGION END #    //  SKAMaster.elementDatabaseAddress_read
 
+    def read_maxCapabilities(self):
+        # PROTECTED REGION ID(SKAMaster.maxCapabilities_read) ENABLED START #
+        return self._max_capabilities
+        # PROTECTED REGION END #    //  SKAMaster.maxCapabilities_read
+
+    def read_availableCapabilities(self):
+        # PROTECTED REGION ID(SKAMaster.availableCapabilities_read) ENABLED START #
+        return self._available_capabilities
+        # PROTECTED REGION END #    //  SKAMaster.availableCapabilities_read
+
 
     # --------
     # Commands
     # --------
+
+    @command(
+    dtype_in=('str',),
+    doc_in="Capability type, nrInstances",
+    dtype_out='bool',
+    )
+    @DebugIt()
+    def isCapabilityAchievable(self, argin):
+        # PROTECTED REGION ID(SKAMaster.isCapabilityAchievable) ENABLED START #
+        return False
+        # PROTECTED REGION END #    //  SKAMaster.isCapabilityAchievable
 
 # ----------
 # Run server

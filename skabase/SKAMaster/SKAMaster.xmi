@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="ASCII"?>
 <pogoDsl:PogoSystem xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:pogoDsl="http://www.esrf.fr/tango/pogo/PogoDsl">
   <classes name="SKAMaster" pogoRevision="9.6">
-    <description description="A master test" title="SKAMaster" sourcePath="/home/kat/git/levpro/skabase/SKAMaster" language="PythonHL" filestogenerate="XMI   file,Code files, Python Package, Protected Regions" license="GPL" hasMandatoryProperty="false" hasConcreteProperty="true" hasAbstractCommand="true" hasAbstractAttribute="false">
+    <description description="A master test" title="SKAMaster" sourcePath="/home/kat/git/levpro/skabase/SKAMaster" language="PythonHL" filestogenerate="XMI   file,Code files,Python Package,Protected Regions" license="GPL" hasMandatoryProperty="false" hasConcreteProperty="true" hasAbstractCommand="true" hasAbstractAttribute="false">
       <inheritances classname="Device_Impl" sourcePath=""/>
       <inheritances classname="SKABaseDevice" sourcePath="../SKABaseDevice"/>
       <identification contact="at ska.ac.za - cam" author="cam" emailDomain="ska.ac.za" classFamily="SkaBase" siteSpecific="" platform="All Platforms" bus="Not Applicable" manufacturer="none" reference=""/>
@@ -29,7 +29,7 @@
       <status abstract="false" inherited="true" concrete="true"/>
       <DefaultPropValue>healthState,adminMode,controlMode</DefaultPropValue>
     </deviceProperties>
-    <deviceProperties name="GroupDefinitions" description="List of grouped devices managed by a master.  Each string in the array is a JSON &#xA;document defining the ``groupname``, ``devices`` and ``groups`` in the group.&#xA;A proxy client will be opened for each of the managed devices.&#xA;A group will be instantiated for the managed devices per group.&#xA;Each entry in the array contains a JSON defining the group, like:&#xA;[ {``groupname``: ``group1``, &#xA;    ``devices``: ``csv list of devices in group1``},&#xA;  {``groupname``: ``group2``, # a group with devices and a subgroup&#xA;    ``devices``: ``csv list of devices in group2``,&#xA;     ``groups`` : ``csv list of sub groups``},&#xA;  {``groupname``: ``group3``, &#xA;     ``devices`` : ``csv list of devices in group3``}},&#xA;  {``groupname``: ``group4``, # a group with only subgroups&#xA;    ``groups`` : ``csv list of sub groups``}}]&#xA;&#xA;e.g. for a hierarchy of racks, servers and switches&#xA;[{ ``groupname``: ``servers``, &#xA;   ``devices``: ``elt/server/1,elt/server/2,elt/server/3,elt/server/4``},&#xA;  {``groupname``: ``switches``, &#xA;    ``devices``: ``elt/switch/A,elt/switch/B``},&#xA;  {``groupname``: ``pdus``, &#xA;    ``devices``: ``elt/pdu/rackA,elt/pdu/rackB``},&#xA;  {``groupname``:``rackA``, &#xA;    ``devices``: ``elt/server/1,elt/server/2,elt/switch/A,elt/pdu/rackA``},&#xA;  {``groupname``:``rackB``,&#xA;    ``devices``: ``elt/server/3,elt/server/4,elt/switch/B,elt/pdu/rackB``},&#xA;  {``groupname``:``racks``,&#xA;     ``groups``: ``rackA,rackB``}]">
+    <deviceProperties name="GroupDefinitions" description="Each string in the list is a JSON serialised dict defining the ``group_name``,&#xA;``devices`` and ``subgroups`` in the group.  A TANGO Group object is created&#xA;for each item in the list, according to the hierarchy defined.  This provides&#xA;easy access to the managed devices in bulk, or individually.&#xA;&#xA;The general format of the list is as follows, with optional ``devices`` and&#xA;``subgroups`` keys:&#xA;    [ {``group_name``: ``&lt;name>``,&#xA;       ``devices``: [``&lt;dev name>``, ...]},&#xA;      {``group_name``: ``&lt;name>``,&#xA;       ``devices``: [``&lt;dev name>``, ``&lt;dev name>``, ...],&#xA;       ``subgroups`` : [{&lt;nested group>},&#xA;                              {&lt;nested group>}, ...]},&#xA;      ...&#xA;      ]&#xA;&#xA;For example, a hierarchy of racks, servers and switches:&#xA;    [ {``group_name``: ``servers``,&#xA;       ``devices``: [``elt/server/1``, ``elt/server/2``,&#xA;                       ``elt/server/3``, ``elt/server/4``]},&#xA;      {``group_name``: ``switches``,&#xA;       ``devices``: [``elt/switch/A``, ``elt/switch/B``]},&#xA;      {``group_name``: ``pdus``,&#xA;       ``devices``: [``elt/pdu/rackA``, ``elt/pdu/rackB``]},&#xA;      {``group_name``: ``racks``,&#xA;      ``subgroups``: [&#xA;            {``group_name``: ``rackA``,&#xA;             ``devices``: [``elt/server/1``, ``elt/server/2``,&#xA;                               ``elt/switch/A``, ``elt/pdu/rackA``]},&#xA;            {``group_name``: ``rackB``,&#xA;             ``devices``: [``elt/server/3``, ``elt/server/4``,&#xA;                              ``elt/switch/B``, ``elt/pdu/rackB``],&#xA;             ``subgroups``: []}&#xA;       ]} ]">
       <type xsi:type="pogoDsl:StringVectorType"/>
       <status abstract="false" inherited="true" concrete="true"/>
     </deviceProperties>
@@ -99,6 +99,15 @@
         <type xsi:type="pogoDsl:StringArrayType"/>
       </argout>
       <status abstract="false" inherited="true" concrete="true"/>
+    </commands>
+    <commands name="isCapabilityAchievable" description="" execMethod="is_capability_achievable" displayLevel="OPERATOR" polledPeriod="0" isDynamic="false">
+      <argin description="Capability type, nrInstances">
+        <type xsi:type="pogoDsl:StringArrayType"/>
+      </argin>
+      <argout description="">
+        <type xsi:type="pogoDsl:BooleanType"/>
+      </argout>
+      <status abstract="false" inherited="false" concrete="true" concreteHere="true"/>
     </commands>
     <attributes name="elementLoggerAddress" attType="Scalar" rwType="READ" displayLevel="OPERATOR" polledPeriod="60000" maxX="" maxY="" allocReadMember="true" isDynamic="false">
       <dataType xsi:type="pogoDsl:StringType"/>
@@ -201,6 +210,22 @@
       <archiveEvent fire="false" libCheckCriteria="false"/>
       <status abstract="false" inherited="true" concrete="true" concreteHere="false"/>
       <properties description="The test mode of the device. &#xA;Either no test mode (empty string) or an indication of the test mode." label="" unit="" standardUnit="" displayUnit="" format="" maxValue="" minValue="" maxAlarm="" minAlarm="" maxWarning="" minWarning="" deltaTime="" deltaValue=""/>
+    </attributes>
+    <attributes name="maxCapabilities" attType="Spectrum" rwType="READ" displayLevel="OPERATOR" polledPeriod="1000" maxX="10" maxY="" allocReadMember="true" isDynamic="false">
+      <dataType xsi:type="pogoDsl:UShortType"/>
+      <changeEvent fire="false" libCheckCriteria="false"/>
+      <archiveEvent fire="false" libCheckCriteria="false"/>
+      <dataReadyEvent fire="false" libCheckCriteria="true"/>
+      <status abstract="false" inherited="false" concrete="true" concreteHere="true"/>
+      <properties description="Maximum instances of each capability type, in the same order as the CapabilityTypes" label="" unit="" standardUnit="" displayUnit="" format="" maxValue="" minValue="" maxAlarm="" minAlarm="" maxWarning="" minWarning="" deltaTime="" deltaValue=""/>
+    </attributes>
+    <attributes name="availableCapabilities" attType="Spectrum" rwType="READ" displayLevel="OPERATOR" polledPeriod="1000" maxX="10" maxY="" allocReadMember="true" isDynamic="false">
+      <dataType xsi:type="pogoDsl:UShortType"/>
+      <changeEvent fire="false" libCheckCriteria="false"/>
+      <archiveEvent fire="false" libCheckCriteria="false"/>
+      <dataReadyEvent fire="false" libCheckCriteria="true"/>
+      <status abstract="false" inherited="false" concrete="true" concreteHere="true"/>
+      <properties description="Available instances of each capability type, in the same order as the CapabilityTypes" label="" unit="" standardUnit="" displayUnit="" format="" maxValue="" minValue="" maxAlarm="" minAlarm="" maxWarning="" minWarning="" deltaTime="" deltaValue=""/>
     </attributes>
     <states name="ON" description="This state could have been called OK or OPERATIONAL. It means that the device is in its operational state. (E.g. the power supply is giving its nominal current, th motor is ON and ready to move, the instrument is operating). This state is modified by the Attribute alarm checking of the DeviceImpl:dev_state method. i.e. if the State is ON and one attribute has its quality factor to ATTR_WARNING or ATTR_ALARM, then the State is modified to ALARM.">
       <status abstract="false" inherited="true" concrete="true"/>

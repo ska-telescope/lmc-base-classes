@@ -7,7 +7,7 @@ software_root: /home/kat/git
 ## Element personality
 element_details:
     type: refelt
-    name: refelt
-    id: ref
+    name: refelt4
+    id: ref4
 
 ...

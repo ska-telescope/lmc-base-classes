@@ -52,11 +52,11 @@ def put_device_property(device_name, device_properties):
                           .format(property_name, deverr))
             print """Failed to register device property {} in the database.
                   """.format(property_name)
-            properties_not_registered.append(property_name)
+            properties_not_registered.append("/".join([device_name,property_name]))
         else:
             print """Successfully registered device property {} in the database.
                   """.format(property_name)
-            registered_properties.append(property_name)
+            registered_properties.append("/".join([device_name,property_name]))
 
 
 def update_device_properties(elt_config):

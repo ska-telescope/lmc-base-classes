@@ -1,7 +1,6 @@
 
 - name: install_sw
-  hosts: local
-  gather_facts: False
+  hosts: operational
   roles:
     - {role: 'install_sw', tags: ['install-sw']}
 

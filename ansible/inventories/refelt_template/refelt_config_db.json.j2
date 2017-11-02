@@ -1,0 +1,236 @@
+{
+    "api_version": "v1",
+    "tango_servers": [
+      {
+	      "server_name": "SvrRefA",
+	      "server_instances": [
+	          {
+	              "instance_name": "1",
+	              "device_classes": [
+	                  {
+	                      "class_name": "RefA",
+	                      "devices": ["{{refelt_name}}/a/1"]
+	                  }
+	              ]
+	          },
+	          {
+	              "instance_name": "2",
+	              "device_classes": [
+	                  {
+	                      "class_name": "RefA",
+	                      "devices": ["{{refelt_name}}/a/2"]
+	                  }
+	              ]
+	          }
+	        ]
+        },
+        {
+            "server_name": "SvrRefAchild",
+            "server_instances": [
+                {
+                    "instance_name": "1",
+                    "device_classes": [
+                        {
+                            "class_name": "RefAchild",
+                            "devices": ["{{refelt_name}}/achild/11", "{{refelt_name}}/achild/12"]
+                        }
+                    ]
+                },
+                {
+                    "instance_name": "2",
+                    "device_classes": [
+                        {
+                            "class_name": "RefAchild",
+                            "devices": ["{{refelt_name}}/achild/21", "{{refelt_name}}/achild/22"]
+                        }
+                    ]
+                }
+              ]
+        },
+        {
+            "server_name": "SvrRefMaster",
+            "server_instances": [
+                {
+                    "instance_name": "Elt",
+                    "device_classes": [
+                        {
+                            "class_name": "RefMaster",
+                            "devices": ["{{refelt_name}}/elt/master"]
+                        }
+                    ]
+                }
+              ]
+        },
+        {
+            "server_name": "SKALogger",
+            "server_instances": [
+                {
+                    "instance_name": "Elt",
+                    "device_classes": [
+                        {
+                            "class_name": "SKALogger",
+                            "devices": ["{{refelt_name}}/elt/logger"]
+                        }
+                    ]
+                },
+                {
+                    "instance_name": "Central",
+                    "device_classes": [
+                        {
+                            "class_name": "SKALogger",
+                            "devices": ["{{refelt_name}}/central/logger"]
+                        }
+                    ]
+                }
+              ]
+        },
+        {
+            "server_name": "SvrRefAlarmHandler",
+            "server_instances": [
+                {
+                    "instance_name": "Elt",
+                    "device_classes": [
+                        {
+                            "class_name": "RefAlarmHandler",
+                            "devices": ["{{refelt_name}}/elt/alarmhandler"]
+                        }
+                    ]
+                },
+                {
+                    "instance_name": "SubElt1",
+                    "device_classes": [
+                        {
+                            "class_name": "RefAlarmHandler",
+                            "devices": ["{{refelt_name}}/subelt1/alarmhandler"]
+                        }
+                    ]
+                },
+                {
+                    "instance_name": "SubElt2",
+                    "device_classes": [
+                        {
+                            "class_name": "RefAlarmHandler",
+                            "devices": ["{{refelt_name}}/subelt2/alarmhandler"]
+                        }
+                    ]
+                }
+              ]
+        },
+        {
+            "server_name": "SvrRefTelState",
+            "server_instances": [
+                {
+                    "instance_name": "Elt",
+                    "device_classes": [
+                        {
+                            "class_name": "RefTelState",
+                            "devices": ["{{refelt_name}}/elt/telstate"]
+                        }
+                    ]
+                }
+              ]
+        },
+        {
+            "server_name": "SvrRefSubarray",
+            "server_instances": [
+                {
+                    "instance_name": "Sub1",
+                    "device_classes": [
+                        {
+                            "class_name": "RefSubarray",
+                            "devices": ["{{refelt_name}}/subarray/1"]
+                        }
+                    ]
+                },
+                {
+                    "instance_name": "Subs",
+                    "device_classes": [
+                        {
+                            "class_name": "RefSubarray",
+                            "devices": ["{{refelt_name}}/subarray/2"]
+                        }
+                    ]
+                }
+              ]
+        },
+        {
+            "server_name": "SvrRefCapability",
+            "server_instances": [
+                {
+                    "instance_name": "CapSub1CalcA",
+                    "device_classes": [
+                        {
+                            "class_name": "RefCapability",
+                            "devices": ["{{refelt_name}}/capability/sub1calca"]
+                        }
+                    ]
+                },
+                {
+                    "instance_name": "CapSub1CalcB",
+                    "device_classes": [
+                        {
+                            "class_name": "RefCapability",
+                            "devices": ["{{refelt_name}}/capability/sub1calcb"]
+                        }
+                    ]
+                },
+                {
+                    "instance_name": "CapSub1ProcC",
+                    "device_classes": [
+                        {
+                            "class_name": "RefCapability",
+                            "devices": ["{{refelt_name}}/capability/sub1procc"]
+                        }
+                    ]
+                },
+                {
+                    "instance_name": "CapSub1ProcD",
+                    "device_classes": [
+                        {
+                            "class_name": "RefCapability",
+                            "devices": ["{{refelt_name}}/capability/sub1procd"]
+                        }
+                    ]
+                },
+                {
+                    "instance_name": "CapSub2CalcA",
+                    "device_classes": [
+                        {
+                            "class_name": "RefCapability",
+                            "devices": ["{{refelt_name}}/capability/sub2calca"]
+                        }
+                    ]
+                },
+                {
+                    "instance_name": "CapSub2CalcB",
+                    "device_classes": [
+                        {
+                            "class_name": "RefCapability",
+                            "devices": ["{{refelt_name}}/capability/sub2calcb"]
+                        }
+                    ]
+                },
+                {
+                    "instance_name": "CapSub2ProcC",
+                    "device_classes": [
+                        {
+                            "class_name": "RefCapability",
+                            "devices": ["{{refelt_name}}/capability/sub2procc"]
+                        }
+                    ]
+                },
+                {
+                    "instance_name": "CapSub2ProcD",
+                    "device_classes": [
+                        {
+                            "class_name": "RefCapability",
+                            "devices": ["{{refelt_name}}/capability/sub2procd"]
+                        }
+                    ]
+                }
+              ]
+        }
+
+
+    ]
+}

@@ -3,12 +3,20 @@
 monctl.devlt
 
 [devl5]
-monctl.devl5.camlab.kat.ac.za
+devl5levpro
+
+[devl4]
+devl4levpro
+
+[refelt]
+localhost ansible_connection=local
 
 [local]
 127.0.0.1 ansible_connection=local
-#localhost ansible_connection=ssh
+localhost ansible_connection=local
 
-[localhost]
-127.0.0.1 ansible_connection=local
-#localhost ansible_connection=ssh
+[operational]
+devl4levpro
+devl5levpro
+localhost # assume local is an operational node
+

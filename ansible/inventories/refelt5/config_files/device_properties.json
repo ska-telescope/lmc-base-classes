@@ -1,0 +1,48 @@
+{
+    "api_version": "v1",
+    "devices": {
+        "ref5/A/1": {
+            "GroupDefinitions": []
+        },
+        "ref5/A/2": {
+            "GroupDefinitions": []
+        },
+        "ref5/achild/11": {
+            "GroupDefinitions": []
+        },
+        "ref5/achild/12": {
+            "GroupDefinitions": []
+        },
+        "ref5/achild/21": {
+            "GroupDefinitions": []
+        },
+        "ref5/achild/22": {
+            "GroupDefinitions": []
+        },
+        "ref5/elt/master": {
+            "GroupDefinitions": []
+        },
+        "ref5/elt/logger": {
+            "GroupDefinitions": []
+        },
+        "ref5/central/logger": {
+            "GroupDefinitions": []
+        },
+        "ref5/elt/telstate": {
+            "Config": [],
+            "GroupDefinitions": []
+        },
+        "ref5/elt/alarmhandler": {
+            "Config": [],
+            "GroupDefinitions": []
+        },
+        "ref5/subelt1/alarmhandler": {
+            "Config": [],
+            "GroupDefinitions": []
+        },
+        "ref5/subelt2/alarmhandler": {
+            "Config": [],
+            "GroupDefinitions": []
+        }
+    }
+}

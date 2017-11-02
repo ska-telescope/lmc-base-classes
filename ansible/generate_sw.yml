@@ -1,7 +1,6 @@
 
 - name: generate_sw
-  hosts: local
-  gather_facts: False
+  hosts: operational
   roles:
     - {role: 'generate_sw', tags: ['generate-sw']}
 

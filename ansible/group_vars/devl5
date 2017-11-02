@@ -2,12 +2,12 @@
 python_path: /usr/lib/python2.7/site-packages
 
 ## SOFTWARE BASE DIR
-software_root: /home/kat/git
+software_root: /home/kat/src
 
 ## Element personality
 element_details:
     type: refelt
-    name: refelt
-    id: ref
+    name: refelt5
+    id: ref5
 
 ...

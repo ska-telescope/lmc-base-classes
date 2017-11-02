@@ -63,11 +63,11 @@ def register_devices(device_class_name, server_name, server_instance_name,
                           format(device_name, deverr))
             print """Failed to register device {} due to an error with the database.
                   """.format(device_name)
-            devices_not_registered.append(device_name)
+            devices_not_registered.append("{}({})".format(device_name, svr_name))
         else:
             print """Successfully registered device {} in the database.
                   """.format(device_name)
-            registered_devices.append(device_name)
+            registered_devices.append(device_name+"({})".format(svr_name))
 
 
 def register_element(config_file):

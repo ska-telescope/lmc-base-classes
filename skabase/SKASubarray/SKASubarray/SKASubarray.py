@@ -41,10 +41,58 @@ class SKASubarray(SKAObsDevice):
 
         # Initialize attribute values.
         self._activation_time = 0.0
-        self._max_capabilities = [0]
-        self._available_capabilites = [0]
         self._assigned_resources = [""]
         self._configured_capabilites = [""]
+
+
+    def _is_command_allowed(self, command_name):
+
+        dp = DeviceProxy(self.get_name())
+
+        obstate_labels = list(dp.attribute_query('obsState').enum_labels)
+        obs_idle = obstate_labels.index('IDLE')
+
+        admin_labels = list(dp.attribute_query('adminMode').enum_labels)
+        admin_online = admin_labels.index('ON-LINE')
+        admin_maintenance = admin_labels.index('MAINTENANCE')
+        admin_offline = admin_labels.index('OFF-LINE')
+        admin_not_fitted = admin_labels.index('NOT-FITTED')
+        current_admin_mode = self.read_adminMode()
+
+        if command_name in ["ReleaseResources", "AssignResources"]:
+            if (current_admin_mode == admin_offline or
+                   current_admin_mode == admin_not_fitted):
+                # Raise an error...
+                Except.throw_exception("Command failed!", "Subarray adminMode is 'OFF-LINE'"
+                                       " or in 'NOT-FITTED'.", command_name,
+                                       ErrSeverity.ERR)
+
+            if self.read_obsState() == obs_idle:
+                if (current_admin_mode == admin_online or
+                        current_admin_mode == admin_maintenance):
+                    # Release resources...
+                    return True
+                else:
+                    Except.throw_exception("Command failed!", "Subarray adminMode not"
+                                           " 'ON-LINE' or in 'MAINTENANCE'.",
+                                           command_name, ErrSeverity.ERR)
+
+            else:
+                # Raise an error...
+                Except.throw_exception("Command failed!",  "Subarray obsState not 'IDLE'.",
+                                       command_name, ErrSeverity.ERR)
+
+
+    def is_AssignResources_allowed(self):
+        return self._is_command_allowed("AssignResources")
+
+
+    def is_ReleaseResources_allowed(self):
+        return self._is_command_allowed("ReleaseResources")
+
+
+    def is_ReleaseAllResources_allowed(self):
+        return self._is_command_allowed("ReleaseResources")
     # PROTECTED REGION END #    //  SKASubarray.class_variable
 
     # -----------------
@@ -91,18 +139,6 @@ class SKASubarray(SKAObsDevice):
 
 
 
-    maxCapabilities = attribute(
-        dtype=('uint16',),
-        max_dim_x=10,
-        doc="Maximum instances of each capability type, in the same order as the CapabilityTypes",
-    )
-
-    availableCapabilities = attribute(
-        dtype=('uint16',),
-        max_dim_x=10,
-        doc="Available instances of each capability type, in the same order as the CapabilityTypes",
-    )
-
     assignedResources = attribute(
         dtype=('str',),
         max_dim_x=100,
@@ -147,16 +183,6 @@ class SKASubarray(SKAObsDevice):
         return self._activation_time
         # PROTECTED REGION END #    //  SKASubarray.activationTime_read
 
-    def read_maxCapabilities(self):
-        # PROTECTED REGION ID(SKASubarray.maxCapabilities_read) ENABLED START #
-        return self._max_capabilities
-        # PROTECTED REGION END #    //  SKASubarray.maxCapabilities_read
-
-    def read_availableCapabilities(self):
-        # PROTECTED REGION ID(SKASubarray.availableCapabilities_read) ENABLED START #
-        self._available_capabilites
-        # PROTECTED REGION END #    //  SKASubarray.availableCapabilities_read
-
     def read_assignedResources(self):
         # PROTECTED REGION ID(SKASubarray.assignedResources_read) ENABLED START #
         return self._assigned_resources
@@ -181,46 +207,12 @@ class SKASubarray(SKAObsDevice):
     @DebugIt()
     def AssignResources(self, argin):
         # PROTECTED REGION ID(SKASubarray.AssignResources) ENABLED START #
-        # There currently is no way of get an attributes enum labels using the Device
-        # object. So I am going to use the DeviceProxy for now.
-        dp = DeviceProxy(self.get_name())
-
-        obstate_labels = list(dp.attribute_query('obsState').enum_labels)
-        obs_idle = obstate_labels.index('IDLE')
-
-        admin_labels = list(dp.attribute_query('adminMode').enum_labels)
-        admin_online = admin_labels.index('ON-LINE')
-        admin_maintenance = admin_labels.index('MAINTENANCE')
-        admin_offline = admin_labels.index('OFF-LINE')
-        admin_not_fitted = admin_labels.index('NOT-FITTED')
-
         argout = []
-
-        if (self.read_adminMode() == admin_offline or
-                self.read_adminMode() == admin_not_fitted):
-            # Raise an error...
-            Except.throw_exception("Command failed!",  "Subarray adminMode is 'OFF-LINE'"
-                                   " or in 'NOT-FITTED'", "ReleaseResources",
-                                   ErrSeverity.ERR)
-
-        if self.read_obsState() == obs_idle:
-            if (self.read_adminMode() == admin_online or
-                    self.read_adminMode() == admin_maintenance):
-                # Assign resources...
-                resources = self._assigned_resources[:]
-                for resource in argin:
-                    if resource not in resources:
-                        self._assigned_resources.append(resource)
-                    argout.append(resource)
-            else:
-                Except.throw_exception("Command failed!", "Subarray adminMode not"
-                                       " 'ON-LINE' or in 'MAINTENANCE'.",
-                                       "ReleaseResources", ErrSeverity.ERR)
-
-        else:
-            # Raise an error...
-            Except.throw_exception("Command failed!",  "Subarray obsState not 'IDLE'.",
-                                   "ReleaseResources", ErrSeverity.ERR)
+        resources = self._assigned_resources[:]
+        for resource in argin:
+            if resource not in resources:
+                self._assigned_resources.append(resource)
+            argout.append(resource)
         return argout
 
     @command(
@@ -232,45 +224,26 @@ class SKASubarray(SKAObsDevice):
     @DebugIt()
     def ReleaseResources(self, argin):
         # PROTECTED REGION ID(SKASubarray.ReleaseResources) ENABLED START #
-        dp = DeviceProxy(self.get_name())
-
-        obstate_labels = list(dp.attribute_query('obsState').enum_labels)
-        obs_idle = obstate_labels.index('IDLE')
-
-        admin_labels = list(dp.attribute_query('adminMode').enum_labels)
-        admin_online = admin_labels.index('ON-LINE')
-        admin_maintenance = admin_labels.index('MAINTENANCE')
-        admin_offline = admin_labels.index('OFF-LINE')
-        admin_not_fitted = admin_labels.index('NOT-FITTED')
-
         argout = []
-
-        if (self.read_adminMode() == admin_offline or
-                self.read_adminMode() == admin_not_fitted):
-            # Raise an error...
-            Except.throw_exception("Command failed!", "Subarray adminMode is 'OFF-LINE'"
-                                   " or in 'NOT-FITTED'.", "ReleaseResources",
-                                   ErrSeverity.ERR)
-
-        if self.read_obsState() == obs_idle:
-            if (self.read_adminMode() == admin_online or
-                    self.read_adminMode() == admin_maintenance):
-                # Release resources...
-                resources = self._assigned_resources[:]
-                for resource in argin:
-                    if resource in resources:
-                        self._assigned_resources.remove(resource)
-                        argout.append(resource)
-            else:
-                Except.throw_exception("Command failed!", "Subarray adminMode not"
-                                       " 'ON-LINE' or in 'MAINTENANCE'.",
-                                       "ReleaseResources", ErrSeverity.ERR)
-
-        else:
-            # Raise an error...
-            Except.throw_exception("Command failed!",  "Subarray obsState not 'IDLE'.",
-                                   "ReleaseResources", ErrSeverity.ERR)
+        # Release resources...
+        resources = self._assigned_resources[:]
+        for resource in argin:
+            if resource in resources:
+                self._assigned_resources.remove(resource)
+            argout.append(resource)
         return argout
+        # PROTECTED REGION END #    //  SKASubarray.ReleaseResources
+
+    @command(
+    dtype_in=('str',),
+    doc_in="List of resources to remove from the subarray.",
+    dtype_out=('str',),
+    doc_out="List of resources removed from the subarray.",
+    )
+    @DebugIt()
+    def ReleaseResources(self, argin):
+        # PROTECTED REGION ID(SKASubarray.ReleaseResources) ENABLED START #
+        return [""]
         # PROTECTED REGION END #    //  SKASubarray.ReleaseResources
 
     @command(
@@ -294,17 +267,6 @@ class SKASubarray(SKAObsDevice):
         # PROTECTED REGION ID(SKASubarray.ConfigureCapability) ENABLED START #
         pass
         # PROTECTED REGION END #    //  SKASubarray.ConfigureCapability
-
-    @command(
-    dtype_in=('str',),
-    doc_in="Capability type, nrInstances",
-    dtype_out='bool',
-    )
-    @DebugIt()
-    def isCapabilityAchievable(self, argin):
-        # PROTECTED REGION ID(SKASubarray.isCapabilityAchievable) ENABLED START #
-        return False
-        # PROTECTED REGION END #    //  SKASubarray.isCapabilityAchievable
 
     @command(
     )

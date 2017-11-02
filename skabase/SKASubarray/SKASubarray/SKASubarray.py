@@ -63,9 +63,9 @@ class SKASubarray(SKAObsDevice):
             if (current_admin_mode == admin_offline or
                    current_admin_mode == admin_not_fitted):
                 # Raise an error...
-                Except.throw_exception("Command failed!", "Subarray adminMode is 'OFF-LINE'"
-                                       " or in 'NOT-FITTED'.", command_name,
-                                       ErrSeverity.ERR)
+                Except.throw_exception("Command failed!", "Subarray adminMode is"
+                                       " 'OFF-LINE' or is in 'NOT-FITTED' mode.",
+                                       command_name, ErrSeverity.ERR)
 
             if self.read_obsState() == obs_idle:
                 if (current_admin_mode == admin_online or
@@ -74,12 +74,12 @@ class SKASubarray(SKAObsDevice):
                     return True
                 else:
                     Except.throw_exception("Command failed!", "Subarray adminMode not"
-                                           " 'ON-LINE' or in 'MAINTENANCE'.",
+                                           "'ON-LINE' or not in 'MAINTENANCE'.",
                                            command_name, ErrSeverity.ERR)
 
             else:
                 # Raise an error...
-                Except.throw_exception("Command failed!",  "Subarray obsState not 'IDLE'.",
+                Except.throw_exception("Command failed!", "Subarray obsState not 'IDLE'.",
                                        command_name, ErrSeverity.ERR)
 
 

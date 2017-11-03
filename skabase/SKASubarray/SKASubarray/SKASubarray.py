@@ -46,7 +46,26 @@ class SKASubarray(SKAObsDevice):
 
 
     def _is_command_allowed(self, command_name):
+        """Determine whether the command specified by the command_name parameter should
+        be allowed to execute or not.
 
+        Parameters
+        ==========
+        command_name: str
+            The name of the command which is to be executed.
+
+        Returns
+        =======
+        True or False: boolean
+            A True is returned when the device is in the allowed states and modes to
+            execute the command. Returns False if the command name is not in the list of
+            commands with rules specified for them.
+
+        Throws
+        ======
+        PyTango.DevFailed: If the device is not in the allowed states and/modes to to
+            execute the command.
+        """
         dp = DeviceProxy(self.get_name())
 
         obstate_labels = list(dp.attribute_query('obsState').enum_labels)
@@ -62,15 +81,13 @@ class SKASubarray(SKAObsDevice):
         if command_name in ["ReleaseResources", "AssignResources"]:
             if (current_admin_mode == admin_offline or
                    current_admin_mode == admin_not_fitted):
-                # Raise an error...
                 Except.throw_exception("Command failed!", "Subarray adminMode is"
-                                       " 'OFF-LINE' or is in 'NOT-FITTED' mode.",
+                                       " 'OFF-LINE' or 'NOT-FITTED'.",
                                        command_name, ErrSeverity.ERR)
 
             if self.read_obsState() == obs_idle:
                 if (current_admin_mode == admin_online or
                         current_admin_mode == admin_maintenance):
-                    # Release resources...
                     return True
                 else:
                     Except.throw_exception("Command failed!", "Subarray adminMode not"
@@ -78,9 +95,10 @@ class SKASubarray(SKAObsDevice):
                                            command_name, ErrSeverity.ERR)
 
             else:
-                # Raise an error...
                 Except.throw_exception("Command failed!", "Subarray obsState not 'IDLE'.",
                                        command_name, ErrSeverity.ERR)
+
+        return False
 
 
     def is_AssignResources_allowed(self):
@@ -232,18 +250,6 @@ class SKASubarray(SKAObsDevice):
                 self._assigned_resources.remove(resource)
             argout.append(resource)
         return argout
-        # PROTECTED REGION END #    //  SKASubarray.ReleaseResources
-
-    @command(
-    dtype_in=('str',),
-    doc_in="List of resources to remove from the subarray.",
-    dtype_out=('str',),
-    doc_out="List of resources removed from the subarray.",
-    )
-    @DebugIt()
-    def ReleaseResources(self, argin):
-        # PROTECTED REGION ID(SKASubarray.ReleaseResources) ENABLED START #
-        return [""]
         # PROTECTED REGION END #    //  SKASubarray.ReleaseResources
 
     @command(

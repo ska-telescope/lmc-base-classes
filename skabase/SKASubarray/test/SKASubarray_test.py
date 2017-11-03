@@ -123,12 +123,6 @@ class SKASubarrayDeviceTestCase(DeviceTestCase):
         self.device.ConfigureCapability([""])
         # PROTECTED REGION END #    //  SKASubarray.test_ConfigureCapability
 
-    def test_isCapabilityAchievable(self):
-        """Test for isCapabilityAchievable"""
-        # PROTECTED REGION ID(SKASubarray.test_isCapabilityAchievable) ENABLED START #
-        self.device.isCapabilityAchievable([""])
-        # PROTECTED REGION END #    //  SKASubarray.test_isCapabilityAchievable
-
     def test_Abort(self):
         """Test for Abort"""
         # PROTECTED REGION ID(SKASubarray.test_Abort) ENABLED START #
@@ -266,18 +260,6 @@ class SKASubarrayDeviceTestCase(DeviceTestCase):
         # PROTECTED REGION ID(SKASubarray.test_versionId) ENABLED START #
         self.device.versionId
         # PROTECTED REGION END #    //  SKASubarray.test_versionId
-
-    def test_maxCapabilities(self):
-        """Test for maxCapabilities"""
-        # PROTECTED REGION ID(SKASubarray.test_maxCapabilities) ENABLED START #
-        self.device.maxCapabilities
-        # PROTECTED REGION END #    //  SKASubarray.test_maxCapabilities
-
-    def test_availableCapabilities(self):
-        """Test for availableCapabilities"""
-        # PROTECTED REGION ID(SKASubarray.test_availableCapabilities) ENABLED START #
-        self.device.availableCapabilities
-        # PROTECTED REGION END #    //  SKASubarray.test_availableCapabilities
 
     def test_assignedResources(self):
         """Test for assignedResources"""

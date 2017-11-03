@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 import json
 import logging
+import fandango
 
 import PyTango
 import fandango.tango as fantango
@@ -46,7 +47,6 @@ def put_device_property(device_name, device_properties):
         print "Setting device {} properties {}: {}".format(
             device_name, property_name, property_value)
         try:
-            import fandango
             if fandango.functional.isSequence(property_value):
                 property_values = []
                 for prop in property_value:

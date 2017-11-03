@@ -20,7 +20,25 @@
             "GroupDefinitions": []
         },
         "ref/elt/master": {
-            "GroupDefinitions": []
+            "GroupDefinitions":
+            [
+                {"group_name": "servers",
+                    "devices": ["ref/server/1", "ref/server/2",
+                                "ref/server/3", "ref/server/4"]},
+                {"group_name": "switches",
+                    "devices": ["ref/switch/A", "ref/switch/B"]},
+                {"group_name": "pdus",
+                    "devices": ["ref/pdu/rackA", "ref/pdu/rackB"]},
+                {"group_name": "racks",
+                    "devices": ["ref/rack/A", "ref/rack/B"],
+                    "subgroups": [
+                        {"group_name": "rackA",
+                            "devices": ["ref/server/1", "ref/server/2",
+                                        "ref/switch/A", "ref/pdu/rackA"]}]},
+                        {"group_name": "rackB",
+                            "devices": ["ref/server/3", "ref/server/4",
+                                        "ref/switch/B", "ref/pdu/rackB"]}
+            ]
         },
         "ref/elt/logger": {
             "GroupDefinitions": []

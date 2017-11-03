@@ -1,28 +1,28 @@
 {
     "api_version": "v1",
     "tango_servers": [
-      {
-	      "server_name": "SvrRefA",
-	      "server_instances": [
-	          {
-	              "instance_name": "Ref1",
-	              "device_classes": [
-	                  {
-	                      "class_name": "RefA",
-	                      "devices": ["ref/a/1"]
-	                  }
-	              ]
-	          },
-	          {
-	              "instance_name": "Ref2",
-	              "device_classes": [
-	                  {
-	                      "class_name": "RefA",
-	                      "devices": ["ref/a/2"]
-	                  }
-	              ]
-	          }
-	        ]
+        {
+            "server_name": "SvrRefA",
+            "server_instances": [
+              {
+                    "instance_name": "Ref1",
+                    "device_classes": [
+                        {
+                            "class_name": "RefA",
+                            "devices": ["ref/a/1"]
+                        }
+                    ]
+              },
+              {
+                    "instance_name": "Ref2",
+                    "device_classes": [
+                        {
+                            "class_name": "RefA",
+                            "devices": ["ref/a/2"]
+                        }
+                    ]
+              }
+           ]
         },
         {
             "server_name": "SvrRefAchild",
@@ -45,7 +45,7 @@
                         }
                     ]
                 }
-              ]
+            ]
         },
         {
             "server_name": "SvrRefMaster",
@@ -59,7 +59,7 @@
                         }
                     ]
                 }
-              ]
+            ]
         },
         {
             "server_name": "SKALogger",
@@ -82,7 +82,7 @@
                         }
                     ]
                 }
-              ]
+            ]
         },
         {
             "server_name": "SvrRefAlarmHandler",
@@ -96,7 +96,7 @@
                         }
                     ]
                 }
-              ]
+            ]
         },
         {
             "server_name": "SvrRefTelState",
@@ -110,7 +110,7 @@
                         }
                     ]
                 }
-              ]
+            ]
         },
         {
             "server_name": "SvrRefSubarray",
@@ -133,7 +133,7 @@
                         }
                     ]
                 }
-              ]
+            ]
         },
         {
             "server_name": "SvrRefCapability",
@@ -210,9 +210,81 @@
                         }
                     ]
                 }
-              ]
+            ]
+        },
+        {
+            "server_name": "SvrPduSim",
+            "server_instances": [
+                {
+                    "instance_name": "RefElt",
+                    "device_classes": [
+                        {
+                            "class_name": "PDU",
+                            "devices": ["ref/pdu/rackA", "ref/pdu/rackB"]
+                        },
+                        {
+                            "class_name": "PDUSimControl",
+                            "devices": ["ref/pdu_control/rackA", "ref/pdu_control/rackB"]
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "server_name": "SvrServerSim",
+            "server_instances": [
+                {
+                    "instance_name": "RefElt",
+                    "device_classes": [
+                        {
+                            "class_name": "Server",
+                            "devices": ["ref/server/1", "ref/server/2",
+                                        "ref/server/3", "ref/server/4"]
+                        },
+                        {
+                            "class_name": "ServerSimControl",
+                            "devices": ["ref/server_control/1", "ref/server_control/2",
+                                        "ref/server_control/3", "ref/server_control/4"]
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "server_name": "SvrRackSim",
+            "server_instances": [
+                {
+                    "instance_name": "RefElt",
+                    "device_classes": [
+                        {
+                            "class_name": "Rack",
+                            "devices": ["ref/rack/A", "ref/rack/B"]
+                        },
+                        {
+                            "class_name": "RackSimControl",
+                            "devices": ["ref/rack_control/A", "ref/rack_control/B"]
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "server_name": "SvrSwitchSim",
+            "server_instances": [
+                {
+                    "instance_name": "RefElt",
+                    "device_classes": [
+                        {
+                            "class_name": "Switch",
+                            "devices": ["ref/switch/A", "ref/switch/B"]
+                        },
+                        {
+                            "class_name": "SwitchSimControl",
+                            "devices": ["ref/switch_control/A", "ref/switch_control/B"]
+                        }
+                    ]
+                }
+            ]
         }
-
-
     ]
 }

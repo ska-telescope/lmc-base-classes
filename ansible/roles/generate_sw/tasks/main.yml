@@ -43,7 +43,37 @@
     with_items:
       - RefMaster
       - RefA
+      - PDU
+      - Rack
+      - RefAchild
+      - RefAlarmHandler
+      - RefB
+      - RefBchild
+      - RefCapCorrelator
+      - RefCapPssBeams
+      - RefCapPstBeams
+      - RefCapVlbiBeams
+      - RefSubarray
+      - RefTelState
+      - Server
+      - Switch
   tags:
     - generate-sw-refelt
+
+- block:
+  - name: Generate refelt simlib
+    become: yes
+    command: >
+        tango-simlib-generator
+        --sim-data-file {{software_root}}/levpro/refelt/refelt/{{item}}.xmi
+        --dserver-name Svr{{item}}Sim
+        --directory /usr/local/bin/
+    with_items:
+      - PDU
+      - Rack
+      - Server
+      - Switch
+  tags:
+    - generate-sw-refelt-simlib
 
 ...

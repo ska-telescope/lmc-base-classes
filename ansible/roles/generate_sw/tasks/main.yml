@@ -43,7 +43,7 @@
     with_items:
       - RefMaster
       - RefA
-      - PDU
+      - Pdu
       - Rack
       - RefAchild
       - RefAlarmHandler
@@ -69,7 +69,7 @@
         --dserver-name Svr{{item}}Sim
         --directory /usr/local/bin/
     with_items:
-      - PDU
+      - Pdu
       - Rack
       - Server
       - Switch

@@ -262,6 +262,26 @@ class SKASubarray(SKAObsDevice):
         pass
         # PROTECTED REGION END #    //  SKASubarray.Resume
 
+    @command(
+    dtype_in=('str',), 
+    doc_in="Capability Type, nrInstances", 
+    )
+    @DebugIt()
+    def DeconfigureCapability(self, argin):
+        # PROTECTED REGION ID(SKASubarray.DeconfigureCapability) ENABLED START #
+        pass
+        # PROTECTED REGION END #    //  SKASubarray.DeconfigureCapability
+
+    @command(
+    dtype_in='str', 
+    doc_in="Capability Type", 
+    )
+    @DebugIt()
+    def DeconfigureAllCapabilities(self, argin):
+        # PROTECTED REGION ID(SKASubarray.DeconfigureAllCapabilities) ENABLED START #
+        pass
+        # PROTECTED REGION END #    //  SKASubarray.DeconfigureAllCapabilities
+
 # ----------
 # Run server
 # ----------

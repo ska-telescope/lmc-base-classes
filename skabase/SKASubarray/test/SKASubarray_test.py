@@ -165,6 +165,18 @@ class SKASubarrayDeviceTestCase(DeviceTestCase):
         self.device.Resume()
         # PROTECTED REGION END #    //  SKASubarray.test_Resume
 
+    def test_DeconfigureCapability(self):
+        """Test for DeconfigureCapability"""
+        # PROTECTED REGION ID(SKASubarray.test_DeconfigureCapability) ENABLED START #
+        self.device.DeconfigureCapability([""])
+        # PROTECTED REGION END #    //  SKASubarray.test_DeconfigureCapability
+
+    def test_DeconfigureAllCapabilities(self):
+        """Test for DeconfigureAllCapabilities"""
+        # PROTECTED REGION ID(SKASubarray.test_DeconfigureAllCapabilities) ENABLED START #
+        self.device.DeconfigureAllCapabilities("")
+        # PROTECTED REGION END #    //  SKASubarray.test_DeconfigureAllCapabilities
+
     def test_activationTime(self):
         """Test for activationTime"""
         # PROTECTED REGION ID(SKASubarray.test_activationTime) ENABLED START #

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="ASCII"?>
 <pogoDsl:PogoSystem xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:pogoDsl="http://www.esrf.fr/tango/pogo/PogoDsl">
   <classes name="SKASubarray" pogoRevision="9.6">
-    <description description="SubArray handling device" title="SKASubarray" sourcePath="/home/kat/git/levpro/skabase/SKASubarray" language="PythonHL" filestogenerate="XMI   file,Code files, Python Package, Protected Regions" license="GPL" copyright="" hasMandatoryProperty="false" hasConcreteProperty="true" hasAbstractCommand="false" hasAbstractAttribute="false">
+    <description description="SubArray handling device" title="SKASubarray" sourcePath="/home/kat/git/levpro/skabase/SKASubarray" language="PythonHL" filestogenerate="XMI   file,Code files,Python Package,Protected Regions" license="GPL" copyright="" hasMandatoryProperty="false" hasConcreteProperty="true" hasAbstractCommand="false" hasAbstractAttribute="false">
       <inheritances classname="Device_Impl" sourcePath=""/>
       <inheritances classname="SKAObsDevice" sourcePath="../SKAObsDevice"/>
       <identification contact="at ska.ac.za - cam" author="cam" emailDomain="ska.ac.za" classFamily="SkaBase" siteSpecific="" platform="All Platforms" bus="Not Applicable" manufacturer="none" reference=""/>
@@ -33,11 +33,11 @@
       <type xsi:type="pogoDsl:StringVectorType"/>
       <status abstract="false" inherited="true" concrete="true"/>
     </deviceProperties>
-    <deviceProperties name="SubID" mandatory="false" description="Unique identifier of the subarray device.">
+    <deviceProperties name="SubID" description="Unique identifier of the subarray device.">
       <type xsi:type="pogoDsl:StringType"/>
       <status abstract="false" inherited="false" concrete="true" concreteHere="true"/>
     </deviceProperties>
-    <deviceProperties name="CapabililtyTypes" mandatory="false" description="List of Capability types e.g. capCorr, capPss,&#xA;capPstBf, capVlbi, this will be used to dynamically&#xA;define groups for subarray.">
+    <deviceProperties name="CapabililtyTypes" description="List of Capability types e.g. capCorr, capPss,&#xA;capPstBf, capVlbi, this will be used to dynamically&#xA;define groups for subarray.">
       <type xsi:type="pogoDsl:StringVectorType"/>
       <status abstract="false" inherited="false" concrete="true" concreteHere="true"/>
     </deviceProperties>
@@ -203,6 +203,24 @@
       </argout>
       <status abstract="false" inherited="false" concrete="true" concreteHere="true"/>
     </commands>
+    <commands name="DeconfigureCapability" description="" execMethod="deconfigure_capability" displayLevel="OPERATOR" polledPeriod="0" isDynamic="false">
+      <argin description="Capability Type, nrInstances">
+        <type xsi:type="pogoDsl:StringArrayType"/>
+      </argin>
+      <argout description="">
+        <type xsi:type="pogoDsl:VoidType"/>
+      </argout>
+      <status abstract="false" inherited="false" concrete="true" concreteHere="true"/>
+    </commands>
+    <commands name="DeconfigureAllCapabilities" description="Deconfigure all instances of the given Capability type." execMethod="deconfigure_all_capabilities" displayLevel="OPERATOR" polledPeriod="0" isDynamic="false">
+      <argin description="Capability Type">
+        <type xsi:type="pogoDsl:StringType"/>
+      </argin>
+      <argout description="">
+        <type xsi:type="pogoDsl:VoidType"/>
+      </argout>
+      <status abstract="false" inherited="false" concrete="true" concreteHere="true"/>
+    </commands>
     <attributes name="activationTime" attType="Scalar" rwType="READ" displayLevel="OPERATOR" polledPeriod="1000" maxX="" maxY="" allocReadMember="true" isDynamic="false">
       <dataType xsi:type="pogoDsl:DoubleType"/>
       <changeEvent fire="false" libCheckCriteria="false"/>
@@ -313,27 +331,42 @@
       <status abstract="false" inherited="false" concrete="true" concreteHere="true"/>
       <properties description="A list of capability types with no. of instances in use on this subarray; e.g.&#xA;Correlators:512, PssBeams:4, PstBeams:4, VlbiBeams:0." label="" unit="" standardUnit="" displayUnit="" format="" maxValue="" minValue="" maxAlarm="" minAlarm="" maxWarning="" minWarning="" deltaTime="" deltaValue=""/>
     </attributes>
-    <states name="ON" description="">
+    <states name="ON" description="This state could have been called OK or OPERATIONAL. It means that the device is in its operational state. (E.g. the power supply is giving its nominal current, th motor is ON and ready to move, the instrument is operating). This state is modified by the Attribute alarm checking of the DeviceImpl:dev_state method. i.e. if the State is ON and one attribute has its quality factor to ATTR_WARNING or ATTR_ALARM, then the State is modified to ALARM.">
       <status abstract="false" inherited="true" concrete="true"/>
     </states>
-    <states name="OFF" description="">
+    <states name="OFF" description="The device is in normal condition but is not active. E.g. the power supply main circuit breaker is open; the RF transmitter has no power etc...">
       <status abstract="false" inherited="true" concrete="true"/>
     </states>
-    <states name="FAULT" description="">
+    <states name="FAULT" description="The device has a major failure that prevents it to work. For instance, A power supply has stopped due to over temperature A motor cannot move because it has fault conditions. Usually we cannot get out from this state without an intervention on the hardware or a reset command.">
       <status abstract="false" inherited="true" concrete="true"/>
     </states>
-    <states name="INIT" description="">
+    <states name="INIT" description="This state is reserved to the starting phase of the device server. It means that the software is not fully operational and that the user must wait">
       <status abstract="false" inherited="true" concrete="true"/>
     </states>
-    <states name="ALARM" description="">
+    <states name="ALARM" description="ALARM - The device is operating but&#xA;at least one of the attributes is out of range. It can be linked to alarm conditions set by attribute properties or a specific case. (E.g. temperature alarm on a stepper motor, end switch pressed on a stepper motor, up water level in a tank, etc....). In alarm, usually the device does its job, but the operator has to perform an action to avoid a bigger problem that may switch the state to FAULT.">
       <status abstract="false" inherited="true" concrete="true"/>
     </states>
-    <states name="UNKNOWN" description="">
+    <states name="UNKNOWN" description="The device cannot retrieve its state. It is the case when there is a communication problem to the hardware (network cut, broken cable etc...) It could also represent an incoherent situation">
       <status abstract="false" inherited="true" concrete="true"/>
     </states>
-    <states name="STANDBY" description="Equates to LOW-POWER mode.&#xA;This is the initial transition from INIT &#xA;if the device supports a low-power mode.">
+    <states name="STANDBY" description="Equates to LOW-POWER mode. This is the initial transition from INIT if the device supports a low-power mode. The device is not fully active but is ready to operate.">
+      <status abstract="false" inherited="true" concrete="true"/>
+    </states>
+    <states name="DISABLE" description="The device cannot be switched ON for an external reason. E.g. the power supply has its door open, the safety conditions are not satisfactory to allow the device to operate.">
       <status abstract="false" inherited="true" concrete="true"/>
     </states>
     <preferences docHome="./doc_html" makefileHome="/usr/share/pogo/preferences"/>
+    <overlodedPollPeriodObject name="adminMode" type="attribute" pollPeriod="0"/>
+    <overlodedPollPeriodObject name="centralLoggingLevel" type="attribute" pollPeriod="0"/>
+    <overlodedPollPeriodObject name="configurationDelayExpected" type="attribute" pollPeriod="0"/>
+    <overlodedPollPeriodObject name="configurationProgress" type="attribute" pollPeriod="0"/>
+    <overlodedPollPeriodObject name="controlMode" type="attribute" pollPeriod="0"/>
+    <overlodedPollPeriodObject name="elementLoggingLevel" type="attribute" pollPeriod="0"/>
+    <overlodedPollPeriodObject name="healthState" type="attribute" pollPeriod="0"/>
+    <overlodedPollPeriodObject name="obsMode" type="attribute" pollPeriod="0"/>
+    <overlodedPollPeriodObject name="obsState" type="attribute" pollPeriod="0"/>
+    <overlodedPollPeriodObject name="simulationMode" type="attribute" pollPeriod="0"/>
+    <overlodedPollPeriodObject name="storageLoggingLevel" type="attribute" pollPeriod="0"/>
+    <overlodedPollPeriodObject name="testMode" type="attribute" pollPeriod="0"/>
   </classes>
 </pogoDsl:PogoSystem>

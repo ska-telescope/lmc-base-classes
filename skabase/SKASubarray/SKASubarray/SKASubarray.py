@@ -54,20 +54,20 @@ class SKASubarray(SKAObsDevice):
         be allowed to execute or not.
 
         Parameters
-        ==========
+        ----------
         command_name: str
             The name of the command which is to be executed.
 
         Returns
-        =======
+        -------
         True or False: boolean
             A True is returned when the device is in the allowed states and modes to
             execute the command. Returns False if the command name is not in the list of
             commands with rules specified for them.
 
-        Throws
-        ======
-        PyTango.DevFailed: If the device is not in the allowed states and/modes to to
+        Raises
+        ------
+        PyTango.DevFailed: If the device is not in the allowed states and/modes to
             execute the command.
         """
         dp = DeviceProxy(self.get_name())
@@ -84,15 +84,13 @@ class SKASubarray(SKAObsDevice):
         current_admin_mode = self.read_adminMode()
 
         if command_name in ["ReleaseResources", "AssignResources"]:
-            if (current_admin_mode == admin_offline or
-                   current_admin_mode == admin_not_fitted):
+            if current_admin_mode in [admin_offline, admin_not_fitted]:
                 Except.throw_exception("Command failed!", "Subarray adminMode is"
                                        " 'OFF-LINE' or 'NOT-FITTED'.",
                                        command_name, ErrSeverity.ERR)
 
             if self.read_obsState() == obs_idle:
-                if (current_admin_mode == admin_online or
-                        current_admin_mode == admin_maintenance):
+                if current_admin_mode in [admin_online, admin_maintenance]:
                     return True
                 else:
                     Except.throw_exception("Command failed!", "Subarray adminMode not"

@@ -24,7 +24,8 @@ from PyTango import AttrWriteType, PipeWriteType
 from SKAObsDevice import SKAObsDevice
 # Additional import
 # PROTECTED REGION ID(SKASubarray.additionnal_import) ENABLED START #
-from PyTango import DeviceProxy, Except, ErrSeverity
+import time
+from PyTango import DeviceProxy, Except, ErrSeverity, DevState
 # PROTECTED REGION END #    //  SKASubarray.additionnal_import
 
 __all__ = ["SKASubarray", "main"]
@@ -42,7 +43,10 @@ class SKASubarray(SKAObsDevice):
         # Initialize attribute values.
         self._activation_time = 0.0
         self._assigned_resources = [""]
-        self._configured_capabilites = [""]
+        # self._configured_capabilities is gonna be kept as a dictionary internally. The
+        # keys and value will represent the capability type name and the number of
+        # instances, respectively.
+        self._configured_capabilities = {}
 
 
     def _is_command_allowed(self, command_name):
@@ -70,6 +74,7 @@ class SKASubarray(SKAObsDevice):
 
         obstate_labels = list(dp.attribute_query('obsState').enum_labels)
         obs_idle = obstate_labels.index('IDLE')
+        obs_ready = obstate_labels.index('READY')
 
         admin_labels = list(dp.attribute_query('adminMode').enum_labels)
         admin_online = admin_labels.index('ON-LINE')
@@ -98,6 +103,17 @@ class SKASubarray(SKAObsDevice):
                 Except.throw_exception("Command failed!", "Subarray obsState not 'IDLE'.",
                                        command_name, ErrSeverity.ERR)
 
+        elif command_name in ['ConfigureCapability']:
+            if self.get_state() == DevState.ON and self.read_adminMode() == admin_online:
+                if self.read_obsState() in [obs_idle, obs_ready]:
+                    return True
+                else:
+                    Except.throw_exception("Command failed!", "Subarray obsState not 'IDLE'."
+                                           " or 'READY'.", command_name, ErrSeverity.ERR)
+            else:
+                Except.throw_exception("Command failed!", "Subarray State not 'ON' and/or."
+                                       " or adminMode not 'ON-LINE'.", command_name, ErrSeverity.ERR)
+
         return False
 
 
@@ -111,6 +127,11 @@ class SKASubarray(SKAObsDevice):
 
     def is_ReleaseAllResources_allowed(self):
         return self._is_command_allowed("ReleaseResources")
+
+
+    def is_ConfigureCapability_allowed(self):
+        self.set_state(DevState.ON)
+        return self._is_command_allowed('ConfigureCapability')
     # PROTECTED REGION END #    //  SKASubarray.class_variable
 
     # -----------------
@@ -208,7 +229,10 @@ class SKASubarray(SKAObsDevice):
 
     def read_configuredCapabilities(self):
         # PROTECTED REGION ID(SKASubarray.configuredCapabilities_read) ENABLED START #
-        return self._configured_capabilities
+        configured_capabilities = []
+        for cap_type, cap_instances in self._configured_capabilities.items():
+            configured_capabilities.append("{}:{}".format(cap_type, cap_instances))
+        return configured_capabilities
         # PROTECTED REGION END #    //  SKASubarray.configuredCapabilities_read
 
 
@@ -271,7 +295,23 @@ class SKASubarray(SKAObsDevice):
     @DebugIt()
     def ConfigureCapability(self, argin):
         # PROTECTED REGION ID(SKASubarray.ConfigureCapability) ENABLED START #
-        pass
+        dp = DeviceProxy(self.get_name())
+        obstate_labels = list(dp.attribute_query('obsState').enum_labels)
+        obs_configuring = obstate_labels.index('CONFIGURING')
+        self._obs_state = obs_configuring
+        #dp.write_attribute('obsState', obs_configuring)
+        # Do some configuring...
+        time.sleep(0.25)
+        for caps in argin:
+            cap_type, cap_instances = caps.split(",")
+            if self._configured_capabilities.has_key(cap_type):
+                self._configured_capabilities[cap_type] += int(cap_instances)
+            else:
+                self._configured_capabilities[cap_type] = int(cap_instances)
+        # Change the obsstate to READY
+        obs_ready = obstate_labels.index('READY')
+        self._obs_state = obs_ready
+        #dp.write_attribute('obsState', obs_ready)
         # PROTECTED REGION END #    //  SKASubarray.ConfigureCapability
 
     @command(
@@ -324,23 +364,33 @@ class SKASubarray(SKAObsDevice):
         # PROTECTED REGION END #    //  SKASubarray.Resume
 
     @command(
-    dtype_in=('str',), 
-    doc_in="Capability Type, nrInstances", 
+    dtype_in=('str',),
+    doc_in="Capability Type, nrInstances",
     )
     @DebugIt()
     def DeconfigureCapability(self, argin):
         # PROTECTED REGION ID(SKASubarray.DeconfigureCapability) ENABLED START #
-        pass
+        for caps in argin:
+            cap_type, cap_instances = caps.split(",")
+            if self._configured_capabilities.has_key(cap_type):
+                self._configured_capabilities[cap_type] -= int(cap_instances)
+                if self._configured_capabilities[cap_type] < 0:
+                    self._configured_capabilities[cap_type] = 0
+            else:
+                # log some message/or raise an error that no instances for that cap type
+                # have been configured.
+                pass
+
         # PROTECTED REGION END #    //  SKASubarray.DeconfigureCapability
 
     @command(
-    dtype_in='str', 
-    doc_in="Capability Type", 
+    dtype_in='str',
+    doc_in="Capability Type",
     )
     @DebugIt()
     def DeconfigureAllCapabilities(self, argin):
         # PROTECTED REGION ID(SKASubarray.DeconfigureAllCapabilities) ENABLED START #
-        pass
+        self._configured_capabilities[argin] = 0
         # PROTECTED REGION END #    //  SKASubarray.DeconfigureAllCapabilities
 
 # ----------

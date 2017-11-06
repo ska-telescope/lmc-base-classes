@@ -28,16 +28,16 @@
                 {"group_name": "switches",
                     "devices": ["ref/switch/A", "ref/switch/B"]},
                 {"group_name": "pdus",
-                    "devices": ["ref/pdu/rackA", "ref/pdu/rackB"]},
+                    "devices": ["ref/pdu/A", "ref/pdu/B"]},
                 {"group_name": "racks",
                     "devices": ["ref/rack/A", "ref/rack/B"],
                     "subgroups": [
                         {"group_name": "rackA",
                             "devices": ["ref/server/1", "ref/server/2",
-                                        "ref/switch/A", "ref/pdu/rackA"]}]},
+                                        "ref/switch/A", "ref/pdu/A"]}]},
                         {"group_name": "rackB",
                             "devices": ["ref/server/3", "ref/server/4",
-                                        "ref/switch/B", "ref/pdu/rackB"]}
+                                        "ref/switch/B", "ref/pdu/B"]}
             ]
         },
         "ref/elt/logger": {

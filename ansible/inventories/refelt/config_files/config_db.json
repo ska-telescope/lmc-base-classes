@@ -213,25 +213,25 @@
             ]
         },
         {
-            "server_name": "SvrPduSim",
+            "server_name": "SvrSimPdu",
             "server_instances": [
                 {
                     "instance_name": "RefElt",
                     "device_classes": [
                         {
                             "class_name": "PDU",
-                            "devices": ["ref/pdu/rackA", "ref/pdu/rackB"]
+                            "devices": ["ref/pdu/A", "ref/pdu/B"]
                         },
                         {
                             "class_name": "PDUSimControl",
-                            "devices": ["ref/pdu_control/rackA", "ref/pdu_control/rackB"]
+                            "devices": ["ref/sim_control/pduA", "ref/sim_control/pduB"]
                         }
                     ]
                 }
             ]
         },
         {
-            "server_name": "SvrServerSim",
+            "server_name": "SvrSimServer",
             "server_instances": [
                 {
                     "instance_name": "RefElt",
@@ -243,15 +243,15 @@
                         },
                         {
                             "class_name": "ServerSimControl",
-                            "devices": ["ref/server_control/1", "ref/server_control/2",
-                                        "ref/server_control/3", "ref/server_control/4"]
+                            "devices": ["ref/sim_control/svr1", "ref/sim_control/svr2",
+                                        "ref/sim_control/svr3", "ref/sim_control/svr4"]
                         }
                     ]
                 }
             ]
         },
         {
-            "server_name": "SvrRackSim",
+            "server_name": "SvrSimRack",
             "server_instances": [
                 {
                     "instance_name": "RefElt",
@@ -262,14 +262,14 @@
                         },
                         {
                             "class_name": "RackSimControl",
-                            "devices": ["ref/rack_control/A", "ref/rack_control/B"]
+                            "devices": ["ref/sim_control/rackA", "ref/sim_control/rackB"]
                         }
                     ]
                 }
             ]
         },
         {
-            "server_name": "SvrSwitchSim",
+            "server_name": "SvrSimSwitch",
             "server_instances": [
                 {
                     "instance_name": "RefElt",
@@ -280,7 +280,7 @@
                         },
                         {
                             "class_name": "SwitchSimControl",
-                            "devices": ["ref/switch_control/A", "ref/switch_control/B"]
+                            "devices": ["ref/sim_control/switchA", "ref/sim_control/switchB"]
                         }
                     ]
                 }

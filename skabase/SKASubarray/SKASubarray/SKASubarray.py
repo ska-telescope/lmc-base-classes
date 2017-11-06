@@ -24,8 +24,12 @@ from PyTango import AttrWriteType, PipeWriteType
 from SKAObsDevice import SKAObsDevice
 # Additional import
 # PROTECTED REGION ID(SKASubarray.additionnal_import) ENABLED START #
+import logging
 import time
 from PyTango import DeviceProxy, Except, ErrSeverity, DevState
+
+
+MODULE_LOGGER = logging.getLogger(__name__)
 # PROTECTED REGION END #    //  SKASubarray.additionnal_import
 
 __all__ = ["SKASubarray", "main"]
@@ -106,11 +110,13 @@ class SKASubarray(SKAObsDevice):
                 if self.read_obsState() in [obs_idle, obs_ready]:
                     return True
                 else:
-                    Except.throw_exception("Command failed!", "Subarray obsState not 'IDLE'."
-                                           " or 'READY'.", command_name, ErrSeverity.ERR)
+                    Except.throw_exception(
+                        "Command failed!", "Subarray obsState not 'IDLE' or 'READY'.",
+                        command_name, ErrSeverity.ERR)
             else:
-                Except.throw_exception("Command failed!", "Subarray State not 'ON' and/or."
-                                       " or adminMode not 'ON-LINE'.", command_name, ErrSeverity.ERR)
+                Except.throw_exception(
+                    "Command failed!", "Subarray State not 'ON' and/or adminMode not"
+                    " 'ON-LINE'.", command_name, ErrSeverity.ERR)
 
         return False
 
@@ -296,20 +302,19 @@ class SKASubarray(SKAObsDevice):
         dp = DeviceProxy(self.get_name())
         obstate_labels = list(dp.attribute_query('obsState').enum_labels)
         obs_configuring = obstate_labels.index('CONFIGURING')
+        # Set obsState to 'CONFIGURING'.
         self._obs_state = obs_configuring
-        #dp.write_attribute('obsState', obs_configuring)
-        # Do some configuring...
-        time.sleep(0.25)
-        for caps in argin:
-            cap_type, cap_instances = caps.split(",")
-            if self._configured_capabilities.has_key(cap_type):
-                self._configured_capabilities[cap_type] += int(cap_instances)
+        # Perform the configuration.
+        for capability_request in argin:
+            capability_type, capability_instances = caps.split(",")
+            if self._configured_capabilities.has_key(capability_type):
+                self._configured_capabilities[capability_type] += (
+                    int(capability_instances))
             else:
-                self._configured_capabilities[cap_type] = int(cap_instances)
-        # Change the obsstate to READY
+                self._configured_capabilities[cap_type] = int(capability_instances)
+        # Change the obsState to 'READY'.
         obs_ready = obstate_labels.index('READY')
         self._obs_state = obs_ready
-        #dp.write_attribute('obsState', obs_ready)
         # PROTECTED REGION END #    //  SKASubarray.ConfigureCapability
 
     @command(
@@ -368,16 +373,19 @@ class SKASubarray(SKAObsDevice):
     @DebugIt()
     def DeconfigureCapability(self, argin):
         # PROTECTED REGION ID(SKASubarray.DeconfigureCapability) ENABLED START #
-        for caps in argin:
-            cap_type, cap_instances = caps.split(",")
+        for capability_request in argin:
+            capability_type, capability_instances = caps.split(",")
             if self._configured_capabilities.has_key(cap_type):
-                self._configured_capabilities[cap_type] -= int(cap_instances)
-                if self._configured_capabilities[cap_type] < 0:
+                if self._configured_capabilities[cap_type] < int(capability_instances):
                     self._configured_capabilities[cap_type] = 0
+                else:
+                    self._configured_capabilities[cap_type] -= int(cap_instances)
+
             else:
-                # log some message/or raise an error that no instances for that cap type
+                # Log some message/or raise an error that no instances for that cap type
                 # have been configured.
-                pass
+                MODULE_LOGGER.info("The Capability type {} is not in the list.".format(
+                    capability_type)
 
         # PROTECTED REGION END #    //  SKASubarray.DeconfigureCapability
 

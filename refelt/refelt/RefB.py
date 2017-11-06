@@ -81,7 +81,7 @@ class RefB(SKABaseDevice):
     )
 
     # ---------------
-    # Refral methods
+    # General methods
     # ---------------
 
     def init_device(self):

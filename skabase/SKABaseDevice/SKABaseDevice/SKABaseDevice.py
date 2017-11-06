@@ -33,6 +33,8 @@ from skabase.utils import (get_dp_command, exception_manager,
 
 from skabase.SKABaseDevice import release
 
+from skabase.faults import GroupDefinitionsError
+
 MODULE_LOGGER = logging.getLogger(__name__)
 # PROTECTED REGION END #    //  SKABaseDevice.additionnal_import
 
@@ -303,8 +305,13 @@ class SKABaseDevice(Device):
 
         # create TANGO Groups objects dict, according to property
         self.debug_stream("Groups definitions: {}".format(self.GroupDefinitions))
-        self.groups = get_groups_from_json(self.GroupDefinitions)
-        self.info_stream("Groups loaded: {}".format(sorted(self.groups.keys())))
+        try:
+            self.groups = get_groups_from_json(self.GroupDefinitions)
+            self.info_stream("Groups loaded: {}".format(sorted(self.groups.keys())))
+        except GroupDefinitionsError:
+            self.info_stream("No Groups loaded for device: {}".format(
+                                 self.get_name()))
+
 
         # PROTECTED REGION END #    //  SKABaseDevice.init_device
 

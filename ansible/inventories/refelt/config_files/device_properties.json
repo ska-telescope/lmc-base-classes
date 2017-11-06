@@ -20,7 +20,25 @@
             "GroupDefinitions": []
         },
         "ref/elt/master": {
-            "GroupDefinitions": []
+            "GroupDefinitions":
+            [
+                {"group_name": "servers",
+                    "devices": ["ref/server/1", "ref/server/2",
+                                "ref/server/3", "ref/server/4"]},
+                {"group_name": "switches",
+                    "devices": ["ref/switch/A", "ref/switch/B"]},
+                {"group_name": "pdus",
+                    "devices": ["ref/pdu/A", "ref/pdu/B"]},
+                {"group_name": "racks",
+                    "devices": ["ref/rack/A", "ref/rack/B"],
+                    "subgroups": [
+                        {"group_name": "rackA",
+                            "devices": ["ref/server/1", "ref/server/2",
+                                        "ref/switch/A", "ref/pdu/A"]}]},
+                        {"group_name": "rackB",
+                            "devices": ["ref/server/3", "ref/server/4",
+                                        "ref/switch/B", "ref/pdu/B"]}
+            ]
         },
         "ref/elt/logger": {
             "GroupDefinitions": []
@@ -34,6 +52,46 @@
         },
         "ref/elt/alarmhandler": {
             "Config": [],
+            "GroupDefinitions": []
+        },
+        "ref/pdu_control/rackA": {
+            "model_key": "ref/pdu/rackA",
+            "GroupDefinitions": []
+        },
+        "ref/pdu_control/rackB": {
+            "model_key": "ref/pdu/rackB",
+            "GroupDefinitions": []
+        },
+        "ref/server_control/1": {
+            "model_key": "ref/server/1",
+            "GroupDefinitions": []
+        },
+        "ref/server_control/2": {
+            "model_key": "ref/server/2",
+            "GroupDefinitions": []
+        },
+        "ref/server_control/3": {
+            "model_key": "ref/server/3",
+            "GroupDefinitions": []
+        },
+        "ref/server_control/4": {
+            "model_key": "ref/server/4",
+            "GroupDefinitions": []
+        },
+        "ref/rack_control/A": {
+            "model_key": "ref/rack/A",
+            "GroupDefinitions": []
+        },
+        "ref/rack_control/B": {
+            "model_key": "ref/rack/B",
+            "GroupDefinitions": []
+        },
+        "ref/switch_control/A": {
+            "model_key": "ref/switch/A",
+            "GroupDefinitions": []
+        },
+        "ref/switch_control/B": {
+            "model_key": "ref/switch/B",
             "GroupDefinitions": []
         }
     }

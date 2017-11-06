@@ -16,7 +16,7 @@ Get the desired inventories from ansible variables instead of loading files
 
 
 ## play-task - A utility to run a single specific task
-(based on ROLE tags and TASK IDs desribed in NOTES below)
+(based on ROLE tags and TASK IDs described in NOTES below)
 
 To see all task tags execute:
 ```
@@ -37,7 +37,7 @@ or
 ./play-task.sh deploy-tangobox-start-tango
 ```
 
-The above all run the site.y,l playbook with "--limit local".
+The above all run the site.yml playbook with "--limit local".
 
 To run on specific hosts, update hosts file and then specific a hosts group like this:
 ```

@@ -69,7 +69,7 @@ class RefMaster(SKAMaster):
 
 
     # ---------------
-    # Refral methods
+    # General methods
     # ---------------
 
     def init_device(self):
@@ -105,8 +105,8 @@ class RefMaster(SKAMaster):
         # PROTECTED REGION END #    //  RefMaster.Reset
 
     @command(
-    dtype_out='str',
-    doc_out="Observation state",
+    dtype_out='str', 
+    doc_out="Observation state", 
     )
     @DebugIt()
     def ObsState(self):

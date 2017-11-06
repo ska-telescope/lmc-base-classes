@@ -4,11 +4,13 @@
           "levpro": [
               {
                   "startup_level": 1,
-                  "server_instances": ["SKALogger/RefElt", "SKALogger/RefCentral"]
+                  "server_instances": ["SKALogger/Elt", "SKALogger/Central", "SvrSimPdu/RefElt",
+                                       "SvrSimServer/RefElt", "SvrSimRack/RefElt"]
               },
               {
                   "startup_level": 2,
-                  "server_instances": ["SvrRefAchild/Ref1", "SvrRefAchild/Ref2"]
+                  "server_instances": ["SvrRefAchild/11", "SvrRefAchildA/12", "SvrRefAchild/21",
+                                       "SvrRefAchild/22", "SvrSimSwitch/RefElt"]
               },
               {
                   "startup_level": 3,

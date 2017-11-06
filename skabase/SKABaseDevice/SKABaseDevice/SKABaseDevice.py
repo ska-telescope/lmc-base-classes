@@ -310,7 +310,7 @@ class SKABaseDevice(Device):
             self.info_stream("Groups loaded: {}".format(sorted(self.groups.keys())))
         except GroupDefinitionsError:
             self.info_stream("No Groups loaded for device: {}".format(
-                                 sorted(self.get_name())))
+                                 self.get_name()))
 
 
         # PROTECTED REGION END #    //  SKABaseDevice.init_device

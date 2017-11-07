@@ -217,7 +217,7 @@
       <archiveEvent fire="false" libCheckCriteria="false"/>
       <dataReadyEvent fire="false" libCheckCriteria="true"/>
       <status abstract="false" inherited="false" concrete="true" concreteHere="true"/>
-      <properties description="Maximum instances of each capability type, in the same order as the CapabilityTypes" label="" unit="" standardUnit="" displayUnit="" format="" maxValue="" minValue="" maxAlarm="" minAlarm="" maxWarning="" minWarning="" deltaTime="" deltaValue=""/>
+      <properties description="Maximum number of instances of each capability type, in the same order as the CapabilityTypes" label="" unit="" standardUnit="" displayUnit="" format="" maxValue="" minValue="" maxAlarm="" minAlarm="" maxWarning="" minWarning="" deltaTime="" deltaValue=""/>
     </attributes>
     <attributes name="availableCapabilities" attType="Spectrum" rwType="READ" displayLevel="OPERATOR" polledPeriod="1000" maxX="10" maxY="" allocReadMember="true" isDynamic="false">
       <dataType xsi:type="pogoDsl:UShortType"/>
@@ -225,7 +225,7 @@
       <archiveEvent fire="false" libCheckCriteria="false"/>
       <dataReadyEvent fire="false" libCheckCriteria="true"/>
       <status abstract="false" inherited="false" concrete="true" concreteHere="true"/>
-      <properties description="Available instances of each capability type, in the same order as the CapabilityTypes" label="" unit="" standardUnit="" displayUnit="" format="" maxValue="" minValue="" maxAlarm="" minAlarm="" maxWarning="" minWarning="" deltaTime="" deltaValue=""/>
+      <properties description="Available number of instances of each capability type, in the same order as the CapabilityTypes" label="" unit="" standardUnit="" displayUnit="" format="" maxValue="" minValue="" maxAlarm="" minAlarm="" maxWarning="" minWarning="" deltaTime="" deltaValue=""/>
     </attributes>
     <states name="ON" description="This state could have been called OK or OPERATIONAL. It means that the device is in its operational state. (E.g. the power supply is giving its nominal current, th motor is ON and ready to move, the instrument is operating). This state is modified by the Attribute alarm checking of the DeviceImpl:dev_state method. i.e. if the State is ON and one attribute has its quality factor to ATTR_WARNING or ATTR_ALARM, then the State is modified to ALARM.">
       <status abstract="false" inherited="true" concrete="true"/>

@@ -40,9 +40,9 @@ class SKAMaster(SKABaseDevice):
 
         # Initialize attribute values.
         self._element_logger_address = ""
-        self._element_alarm_address = ""
-        self._element_tel_state_address = ""
-        self._element_database_address = ""
+        self._element_alarm_device = ""
+        self._element_tel_state_device = ""
+        self._element_database_device = ""
         self._max_capabilities = []
         self._available_capabilities = []
 
@@ -101,13 +101,13 @@ class SKAMaster(SKABaseDevice):
     maxCapabilities = attribute(
         dtype=('uint16',),
         max_dim_x=10,
-        doc="Maximum instances of each capability type, in the same order as the CapabilityTypes",
+        doc="Maximum number of instances of each capability type, in the same order as the CapabilityTypes",
     )
 
     availableCapabilities = attribute(
         dtype=('uint16',),
         max_dim_x=10,
-        doc="Available instances of each capability type, in the same order as the CapabilityTypes",
+        doc="Available number of instances of each capability type, in the same order as the CapabilityTypes",
     )
 
     # ---------------

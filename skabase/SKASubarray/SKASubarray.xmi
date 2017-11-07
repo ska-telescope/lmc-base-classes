@@ -50,7 +50,7 @@
       </argout>
       <status abstract="false" inherited="false" concrete="true" concreteHere="true"/>
     </commands>
-    <commands name="ConfigureCapability" description="Configures number of instances for each capability." execMethod="configure_capability" displayLevel="OPERATOR" polledPeriod="0" isDynamic="false">
+    <commands name="ConfigureCapability" description="Configures number of instances for each capability. If the capability exists, &#xA;it increments the configured instances by the number of instances requested." execMethod="configure_capability" displayLevel="OPERATOR" polledPeriod="0" isDynamic="false">
       <argin description="[Number of capabilities for each capability type][Capability types]">
         <type xsi:type="pogoDsl:LongStringArrayType"/>
       </argin>
@@ -68,7 +68,7 @@
       </argout>
       <status abstract="false" inherited="false" concrete="true" concreteHere="true"/>
     </commands>
-    <commands name="DeconfigureCapability" description="" execMethod="deconfigure_capability" displayLevel="OPERATOR" polledPeriod="0" isDynamic="false">
+    <commands name="DeconfigureCapability" description="Deconfigures a given number of instances for each capability. If the capability does not exists, &#xA;it is logged." execMethod="deconfigure_capability" displayLevel="OPERATOR" polledPeriod="0" isDynamic="false">
       <argin description="[Number of instances for each capability type][Capability types]">
         <type xsi:type="pogoDsl:LongStringArrayType"/>
       </argin>

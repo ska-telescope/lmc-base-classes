@@ -279,7 +279,7 @@ class SKASubarray(SKAObsDevice):
         capabilities_instances, capability_types = argin
         for capability_instances, capability_type in zip(
                 capabilities_instances, capability_types):
-            if self._configured_capabilities.has_key(capability_type):
+            if capability_type in self._configured_capabilities:
                 self._configured_capabilities[capability_type] += (
                     int(capability_instances))
             else:
@@ -309,7 +309,7 @@ class SKASubarray(SKAObsDevice):
         capabilities_instances, capability_types = argin
         for capability_instances, capability_type in zip(
                 capabilities_instances, capability_types):
-            if self._configured_capabilities.has_key(capability_type):
+            if capability_type in self._configured_capabilities:
                 if self._configured_capabilities[capability_type] < int(
                         capability_instances):
                     self._configured_capabilities[capability_type] = 0

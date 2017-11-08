@@ -24,6 +24,7 @@ from PyTango import AttrWriteType, PipeWriteType
 from SKAObsDevice import SKAObsDevice
 # Additional import
 # PROTECTED REGION ID(SKASubarray.additionnal_import) ENABLED START #
+from PyTango import DeviceProxy, Except, ErrSeverity
 # PROTECTED REGION END #    //  SKASubarray.additionnal_import
 
 __all__ = ["SKASubarray", "main"]
@@ -35,6 +36,79 @@ class SKASubarray(SKAObsDevice):
     """
     __metaclass__ = DeviceMeta
     # PROTECTED REGION ID(SKASubarray.class_variable) ENABLED START #
+    def __init__(self, *args, **kwargs):
+        super(SKASubarray, self).__init__(*args, **kwargs)
+
+        # Initialize attribute values.
+        self._activation_time = 0.0
+        self._assigned_resources = [""]
+        self._configured_capabilites = [""]
+
+
+    def _is_command_allowed(self, command_name):
+        """Determine whether the command specified by the command_name parameter should
+        be allowed to execute or not.
+
+        Parameters
+        ----------
+        command_name: str
+            The name of the command which is to be executed.
+
+        Returns
+        -------
+        True or False: boolean
+            A True is returned when the device is in the allowed states and modes to
+            execute the command. Returns False if the command name is not in the list of
+            commands with rules specified for them.
+
+        Raises
+        ------
+        PyTango.DevFailed: If the device is not in the allowed states and/modes to
+            execute the command.
+        """
+        dp = DeviceProxy(self.get_name())
+
+        obstate_labels = list(dp.attribute_query('obsState').enum_labels)
+        obs_idle = obstate_labels.index('IDLE')
+
+        admin_labels = list(dp.attribute_query('adminMode').enum_labels)
+        admin_online = admin_labels.index('ON-LINE')
+        admin_maintenance = admin_labels.index('MAINTENANCE')
+        admin_offline = admin_labels.index('OFF-LINE')
+        admin_not_fitted = admin_labels.index('NOT-FITTED')
+        current_admin_mode = self.read_adminMode()
+
+        if command_name in ["ReleaseResources", "AssignResources"]:
+            if current_admin_mode in [admin_offline, admin_not_fitted]:
+                Except.throw_exception("Command failed!", "Subarray adminMode is"
+                                       " 'OFF-LINE' or 'NOT-FITTED'.",
+                                       command_name, ErrSeverity.ERR)
+
+            if self.read_obsState() == obs_idle:
+                if current_admin_mode in [admin_online, admin_maintenance]:
+                    return True
+                else:
+                    Except.throw_exception("Command failed!", "Subarray adminMode not"
+                                           "'ON-LINE' or not in 'MAINTENANCE'.",
+                                           command_name, ErrSeverity.ERR)
+
+            else:
+                Except.throw_exception("Command failed!", "Subarray obsState not 'IDLE'.",
+                                       command_name, ErrSeverity.ERR)
+
+        return False
+
+
+    def is_AssignResources_allowed(self):
+        return self._is_command_allowed("AssignResources")
+
+
+    def is_ReleaseResources_allowed(self):
+        return self._is_command_allowed("ReleaseResources")
+
+
+    def is_ReleaseAllResources_allowed(self):
+        return self._is_command_allowed("ReleaseResources")
     # PROTECTED REGION END #    //  SKASubarray.class_variable
 
     # -----------------
@@ -81,18 +155,6 @@ class SKASubarray(SKAObsDevice):
 
 
 
-    maxCapabilities = attribute(
-        dtype=('uint16',),
-        max_dim_x=10,
-        doc="Maximum instances of each capability type, in the same order as the CapabilityTypes",
-    )
-
-    availableCapabilities = attribute(
-        dtype=('uint16',),
-        max_dim_x=10,
-        doc="Available instances of each capability type, in the same order as the CapabilityTypes",
-    )
-
     assignedResources = attribute(
         dtype=('str',),
         max_dim_x=100,
@@ -112,6 +174,10 @@ class SKASubarray(SKAObsDevice):
     def init_device(self):
         SKAObsDevice.init_device(self)
         # PROTECTED REGION ID(SKASubarray.init_device) ENABLED START #
+
+        # When Subarray in not in use it reports:
+        self.set_state(DevState.DISABLE)
+
         # PROTECTED REGION END #    //  SKASubarray.init_device
 
     def always_executed_hook(self):
@@ -130,27 +196,17 @@ class SKASubarray(SKAObsDevice):
 
     def read_activationTime(self):
         # PROTECTED REGION ID(SKASubarray.activationTime_read) ENABLED START #
-        return 0
+        return self._activation_time
         # PROTECTED REGION END #    //  SKASubarray.activationTime_read
-
-    def read_maxCapabilities(self):
-        # PROTECTED REGION ID(SKASubarray.maxCapabilities_read) ENABLED START #
-        return [0]
-        # PROTECTED REGION END #    //  SKASubarray.maxCapabilities_read
-
-    def read_availableCapabilities(self):
-        # PROTECTED REGION ID(SKASubarray.availableCapabilities_read) ENABLED START #
-        return [0]
-        # PROTECTED REGION END #    //  SKASubarray.availableCapabilities_read
 
     def read_assignedResources(self):
         # PROTECTED REGION ID(SKASubarray.assignedResources_read) ENABLED START #
-        return ['']
+        return self._assigned_resources
         # PROTECTED REGION END #    //  SKASubarray.assignedResources_read
 
     def read_configuredCapabilities(self):
         # PROTECTED REGION ID(SKASubarray.configuredCapabilities_read) ENABLED START #
-        return ['']
+        return self._configured_capabilities
         # PROTECTED REGION END #    //  SKASubarray.configuredCapabilities_read
 
 
@@ -159,59 +215,62 @@ class SKASubarray(SKAObsDevice):
     # --------
 
     @command(
-    dtype_in=('str',), 
-    doc_in="List of Resources to add to subarray.", 
-    dtype_out=('str',), 
-    doc_out="A list of Resources added to the subarray.", 
+    dtype_in=('str',),
+    doc_in="List of Resources to add to subarray.",
+    dtype_out=('str',),
+    doc_out="A list of Resources added to the subarray.",
     )
     @DebugIt()
     def AssignResources(self, argin):
         # PROTECTED REGION ID(SKASubarray.AssignResources) ENABLED START #
-        return [""]
-        # PROTECTED REGION END #    //  SKASubarray.AssignResources
+        argout = []
+        resources = self._assigned_resources[:]
+        for resource in argin:
+            if resource not in resources:
+                self._assigned_resources.append(resource)
+            argout.append(resource)
+        return argout
 
     @command(
-    dtype_in=('str',), 
-    doc_in="List of resources to remove from the subarray.", 
-    dtype_out=('str',), 
-    doc_out="List of resources removed from the subarray.", 
+    dtype_in=('str',),
+    doc_in="List of resources to remove from the subarray.",
+    dtype_out=('str',),
+    doc_out="List of resources removed from the subarray.",
     )
     @DebugIt()
     def ReleaseResources(self, argin):
         # PROTECTED REGION ID(SKASubarray.ReleaseResources) ENABLED START #
-        return [""]
+        argout = []
+        # Release resources...
+        resources = self._assigned_resources[:]
+        for resource in argin:
+            if resource in resources:
+                self._assigned_resources.remove(resource)
+            argout.append(resource)
+        return argout
         # PROTECTED REGION END #    //  SKASubarray.ReleaseResources
 
     @command(
-    dtype_out=('str',), 
-    doc_out="List of resources removed from the subarray.", 
+    dtype_out=('str',),
+    doc_out="List of resources removed from the subarray.",
     )
     @DebugIt()
     def ReleaseAllResources(self):
         # PROTECTED REGION ID(SKASubarray.ReleaseAllResources) ENABLED START #
-        return [""]
+        resources = self._assigned_resources[:]
+        released_resources = self.ReleaseResources(resources)
+        return released_resources
         # PROTECTED REGION END #    //  SKASubarray.ReleaseAllResources
 
     @command(
-    dtype_in=('str',), 
-    doc_in="Capability type, nrInstances.", 
+    dtype_in=('str',),
+    doc_in="Capability type, nrInstances.",
     )
     @DebugIt()
     def ConfigureCapability(self, argin):
         # PROTECTED REGION ID(SKASubarray.ConfigureCapability) ENABLED START #
         pass
         # PROTECTED REGION END #    //  SKASubarray.ConfigureCapability
-
-    @command(
-    dtype_in=('str',), 
-    doc_in="Capability type, nrInstances", 
-    dtype_out='bool', 
-    )
-    @DebugIt()
-    def isCapabilityAchievable(self, argin):
-        # PROTECTED REGION ID(SKASubarray.isCapabilityAchievable) ENABLED START #
-        return False
-        # PROTECTED REGION END #    //  SKASubarray.isCapabilityAchievable
 
     @command(
     )
@@ -230,7 +289,7 @@ class SKASubarray(SKAObsDevice):
         # PROTECTED REGION END #    //  SKASubarray.EndSB
 
     @command(
-    dtype_in=('str',), 
+    dtype_in=('str',),
     )
     @DebugIt()
     def Scan(self, argin):

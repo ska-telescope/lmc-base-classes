@@ -222,6 +222,6 @@
 ################################
 # Include Tango Webapp role
 ################################
-- include: tango_webapp.yml
+- import_tasks: tango_webapp.yml
 
 ...

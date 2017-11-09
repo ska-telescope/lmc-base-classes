@@ -171,17 +171,14 @@ class SKASubarray(SKAObsDevice):
 
 
     def is_ConfigureCapability_allowed(self):
-        self.set_state(DevState.ON)
         return self._is_command_allowed('ConfigureCapability')
 
 
     def is_DeconfigureCapability_allowed(self):
-        self.set_state(DevState.ON)
         return self._is_command_allowed('DeconfigureCapability')
 
 
     def is_DeconfigureAllCapabilities_allowed(self):
-        self.set_state(DevState.ON)
         return self._is_command_allowed('DeconfigureAllCapabilities')
     # PROTECTED REGION END #    //  SKASubarray.class_variable
 

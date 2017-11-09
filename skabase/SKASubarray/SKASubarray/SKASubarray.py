@@ -26,6 +26,8 @@ from SKAObsDevice import SKAObsDevice
 # PROTECTED REGION ID(SKASubarray.additionnal_import) ENABLED START #
 import logging
 
+from itertools import izip
+
 from PyTango import DeviceProxy, Except, ErrSeverity, DevState, DevVarLongStringArray
 
 
@@ -317,7 +319,7 @@ class SKASubarray(SKAObsDevice):
         self._obs_state = obs_configuring
 
         # Perform the configuration.
-        for capability_instances, capability_type in zip(
+        for capability_instances, capability_type in izip(
                 capabilities_instances, capability_types):
             self._configured_capabilities[capability_type] += capability_instances
 
@@ -355,7 +357,7 @@ class SKASubarray(SKAObsDevice):
         capabilities_instances, capability_types = argin
 
         # Perform the deconfiguration
-        for capability_instances, capability_type in zip(
+        for capability_instances, capability_type in izip(
                 capabilities_instances, capability_types):
             if self._configured_capabilities[capability_type] < int(capability_instances):
                 self._configured_capabilities[capability_type] = 0

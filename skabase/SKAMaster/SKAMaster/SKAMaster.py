@@ -37,15 +37,6 @@ class SKAMaster(SKABaseDevice):
     # PROTECTED REGION ID(SKAMaster.class_variable) ENABLED START #
     def __init__(self, *args, **kwargs):
         super(SKAMaster, self).__init__(*args, **kwargs)
-
-        # Initialize attribute values.
-        self._element_logger_address = ""
-        self._element_alarm_device = ""
-        self._element_tel_state_device = ""
-        self._element_database_device = ""
-        self._max_capabilities = []
-        self._available_capabilities = []
-
     # PROTECTED REGION END #    //  SKAMaster.class_variable
 
     # -----------------
@@ -99,15 +90,15 @@ class SKAMaster(SKABaseDevice):
 
 
     maxCapabilities = attribute(
-        dtype=('uint16',),
-        max_dim_x=10,
-        doc="Maximum number of instances of each capability type, in the same order as the CapabilityTypes",
+        dtype=('str',),
+        max_dim_x=20,
+        doc="Maximum number of instances of each capability type, e.g. "CORRELATOR:512", "PSS-BEAMS:4".",
     )
 
     availableCapabilities = attribute(
-        dtype=('uint16',),
-        max_dim_x=10,
-        doc="Available number of instances of each capability type, in the same order as the CapabilityTypes",
+        dtype=('str',),
+        max_dim_x=20,
+        doc="A list of available number of instances of each capability type, e.g. "CORRELATOR:512", "PSS-BEAMS:4".",
     )
 
     # ---------------
@@ -117,6 +108,20 @@ class SKAMaster(SKABaseDevice):
     def init_device(self):
         SKABaseDevice.init_device(self)
         # PROTECTED REGION ID(SKAMaster.init_device) ENABLED START #
+
+        # Initialize attribute values.
+        self._element_logger_address = ""
+        self._element_alarm_device = ""
+        self._element_tel_state_device = ""
+        self._element_database_device = ""
+
+        self._max_capabilities = {}
+        if self.MaxCapabilities:
+            for max_capability in self.MaxCapabilities:
+                capability_type, max_capability_instances = max_capability.split(":")
+                self._max_capabilities[capability_type] = max_capability_instances
+
+        self._available_capabilities = self._max_capabilities.copy()
         # PROTECTED REGION END #    //  SKAMaster.init_device
 
     def always_executed_hook(self):
@@ -155,12 +160,22 @@ class SKAMaster(SKABaseDevice):
 
     def read_maxCapabilities(self):
         # PROTECTED REGION ID(SKAMaster.maxCapabilities_read) ENABLED START #
-        return self._max_capabilities
+        max_capabilities = []
+        for capability_type, capability_instances in (
+                self._max_capabilities.items()):
+            max_capabilities.append(
+                "{}:{}".format(capability_type, capability_instances))
+        return sorted(self._max_capabilities)
         # PROTECTED REGION END #    //  SKAMaster.maxCapabilities_read
 
     def read_availableCapabilities(self):
         # PROTECTED REGION ID(SKAMaster.availableCapabilities_read) ENABLED START #
-        return self._available_capabilities
+        available_capabilities = []
+        for capability_type, capability_instances in (
+                self._available_capabilities.items()):
+            available_capabilities.append(
+                "{}:{}".format(capability_type, capability_instances))
+        return sorted(self._available_capabilities)
         # PROTECTED REGION END #    //  SKAMaster.availableCapabilities_read
 
 
@@ -169,13 +184,17 @@ class SKAMaster(SKABaseDevice):
     # --------
 
     @command(
-    dtype_in='DevVarLongStringArray', 
-    doc_in="[Capability type][nrInstances]", 
-    dtype_out='bool', 
+    dtype_in='DevVarLongStringArray',
+    doc_in="[Capability type][nrInstances]",
+    dtype_out='bool',
     )
     @DebugIt()
     def isCapabilityAchievable(self, argin):
         # PROTECTED REGION ID(SKAMaster.isCapabilityAchievable) ENABLED START #
+        capabilities_instances, capability_types = argin
+        if self._available_capability[capability_type] >= capabilities_instances:
+            return True
+
         return False
         # PROTECTED REGION END #    //  SKAMaster.isCapabilityAchievable
 

@@ -60,35 +60,53 @@ def start_element(elt_config):
                     astor.set_server_level(server_instance, host_name,
                                            srv_instance_startup_level)
                 except Exception as exc:
-                    logging.error("EXCEPTION in register {} {}".format(
+                    logging.error("EXCEPTION in set level {} {}".format(
                         server_instance, exc))
-                    print """EXCEPTION IN REGISTER in ASTOR"""
+                    print """EXCEPTION IN SET LEVEL in ASTOR"""
                     print """host={!r}  level={!r} server_instance={!r}.""".format(
                         host_name, srv_instance_startup_level, server_instance)
-                    servers_not_running.append(server_instance)
+                    servers_not_running.append("{}(EXC IN SET LEVEL:{})".format(server_instance, exc))
                     continue
 
                 # For now - start each server - else they do not show up in the
                 # Astor GUI. Start them independently since they do not all exist
                 # in StartDsPath yet
                 try:
-                    result = astor.start_servers([server_instance], host=host_name)
-                    if not result:
-                        logging.error("FAILED to start {}".
-                                      format(server_instance))
-                        print """FAILED TO START in ASTOR"""
+                    # astor.restart_servers does not return a value on whether it was successful or not
+                    # even if the Server was not registered on the DsPath it returns None, also when
+                    # it successfully restarted it returns also None.
+                    # Thus we use stop and start (ignoring errors on stop)
+                    try:
+                        astor.stop_servers([server_instance])
+                    except Exception as exc:
+                        # Ignore errors on stop
+                        pass
+
+                    result = astor.start_servers([server_instance])
+                    try:
+                        if result:
+                            running_servers.append(server_instance)
+                        else:
+                            logging.error("ERROR in start {} {}".
+                                      format(server_instance, result))
+                            print """ERROR IN START in ASTOR"""
+                            print """host={!r}  level={!r} server_instance={!r}.""".format(
+                                host_name, srv_instance_startup_level, server_instance)
+                            servers_not_running.append("{}(ERROR IN START:{})".format(server_instance, result))
+                    except Exception as exc:
+                        logging.error("EXC in start {} {}".
+                                  format(server_instance, exc))
+                        print """EXC IN START in ASTOR"""
                         print """host={!r}  level={!r} server_instance={!r}.""".format(
                             host_name, srv_instance_startup_level, server_instance)
-                        servers_not_running.append(server_instance)
-                    else:
-                        running_servers.append(server_instance)
+                        servers_not_running.append("{}(EXC IN START:{})".format(server_instance, exc))
                 except Exception as exc:
-                    logging.error("EXCEPTION in start {} {}".
+                    logging.error("EXCEPTION in restart {} {}".
                                   format(server_instance, exc))
-                    print """EXCEPTION IN START in ASTOR"""
+                    print """EXCEPTION IN RESTART in ASTOR"""
                     print """host={!r}  level={!r} server_instance={!r}.""".format(
                         host_name, srv_instance_startup_level, server_instance)
-                    servers_not_running.append(server_instance)
+                    servers_not_running.append("{}(EXC IN RESTART:{})".format(server_instance, exc))
 
 
 def run_module():

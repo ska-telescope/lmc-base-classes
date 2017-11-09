@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 import json
 import logging
+import fandango
 
 import PyTango
 import fandango.tango as fantango
@@ -46,17 +47,24 @@ def put_device_property(device_name, device_properties):
         print "Setting device {} properties {}: {}".format(
             device_name, property_name, property_value)
         try:
-            fantango.put_device_property(device_name, {str(property_name): property_value})
+            if fandango.functional.isSequence(property_value):
+                property_values = []
+                for prop in property_value:
+                    property_values.append(json.dumps(prop))
+                prop_val = property_values
+            else:
+                prop_val = property_value
+            fantango.put_device_property(device_name, {str(property_name): prop_val})
         except PyTango.DevError as deverr:
             logging.error("FAILED to register device property {} {}."
                           .format(property_name, deverr))
             print """Failed to register device property {} in the database.
                   """.format(property_name)
-            properties_not_registered.append(property_name)
+            properties_not_registered.append("/".join([device_name,property_name]))
         else:
             print """Successfully registered device property {} in the database.
                   """.format(property_name)
-            registered_properties.append(property_name)
+            registered_properties.append("/".join([device_name,property_name]))
 
 
 def update_device_properties(elt_config):

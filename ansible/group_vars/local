@@ -1,16 +1,13 @@
 ---
 python_path: /usr/lib/python2.7/site-packages
 
-
 ## SOFTWARE BASE DIR
 software_root: /home/kat/git
 
-## ELEMENT CONFIGURATION FILE DIRECTORY
-refelt_config_dir: 
-
-## ELEMENT CONFIGURATION FILE NAMES
-refelt_db_json: refelt_config_db.json
-refelt_starter_json: refelt_config_starter.json
-refelt_device_properties_json: refelt_config_device_properties.json
+## Element personality
+element_details:
+    type: refelt
+    name: refelt
+    id: ref
 
 ...

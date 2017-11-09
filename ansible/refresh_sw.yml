@@ -1,7 +1,6 @@
 
 - name: refresh_sw
-  hosts: local
-  gather_facts: False
+  hosts: operational
   roles:
     - {role: 'refresh_sw', tags: ['refresh-sw']}
 

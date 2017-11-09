@@ -67,7 +67,7 @@ class RefAchild(SKABaseDevice):
 
 
     # ---------------
-    # Refral methods
+    # General methods
     # ---------------
 
     def init_device(self):

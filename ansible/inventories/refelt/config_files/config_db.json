@@ -1,0 +1,290 @@
+{
+    "api_version": "v1",
+    "tango_servers": [
+        {
+            "server_name": "SvrRefA",
+            "server_instances": [
+              {
+                    "instance_name": "Ref1",
+                    "device_classes": [
+                        {
+                            "class_name": "RefA",
+                            "devices": ["ref/a/1"]
+                        }
+                    ]
+              },
+              {
+                    "instance_name": "Ref2",
+                    "device_classes": [
+                        {
+                            "class_name": "RefA",
+                            "devices": ["ref/a/2"]
+                        }
+                    ]
+              }
+           ]
+        },
+        {
+            "server_name": "SvrRefAchild",
+            "server_instances": [
+                {
+                    "instance_name": "Ref1",
+                    "device_classes": [
+                        {
+                            "class_name": "RefAchild",
+                            "devices": ["ref/achild/11", "ref/achild/12"]
+                        }
+                    ]
+                },
+                {
+                    "instance_name": "Ref2",
+                    "device_classes": [
+                        {
+                            "class_name": "RefAchild",
+                            "devices": ["ref/achild/21", "ref/achild/22"]
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "server_name": "SvrRefMaster",
+            "server_instances": [
+                {
+                    "instance_name": "RefElt",
+                    "device_classes": [
+                        {
+                            "class_name": "RefMaster",
+                            "devices": ["ref/elt/master"]
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "server_name": "SKALogger",
+            "server_instances": [
+                {
+                    "instance_name": "RefElt",
+                    "device_classes": [
+                        {
+                            "class_name": "SKALogger",
+                            "devices": ["ref/elt/logger"]
+                        }
+                    ]
+                },
+                {
+                    "instance_name": "RefCentral",
+                    "device_classes": [
+                        {
+                            "class_name": "SKALogger",
+                            "devices": ["ref/central/logger"]
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "server_name": "SvrRefAlarmHandler",
+            "server_instances": [
+                {
+                    "instance_name": "RefElt",
+                    "device_classes": [
+                        {
+                            "class_name": "RefAlarmHandler",
+                            "devices": ["ref/elt/alarmhandler"]
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "server_name": "SvrRefTelState",
+            "server_instances": [
+                {
+                    "instance_name": "RefElt",
+                    "device_classes": [
+                        {
+                            "class_name": "RefTelState",
+                            "devices": ["ref/elt/telstate"]
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "server_name": "SvrRefSubarray",
+            "server_instances": [
+                {
+                    "instance_name": "Ref1",
+                    "device_classes": [
+                        {
+                            "class_name": "RefSubarray",
+                            "devices": ["ref/subarray/1"]
+                        }
+                    ]
+                },
+                {
+                    "instance_name": "Ref2",
+                    "device_classes": [
+                        {
+                            "class_name": "RefSubarray",
+                            "devices": ["ref/subarray/2"]
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "server_name": "SvrRefCapability",
+            "server_instances": [
+                {
+                    "instance_name": "Ref1A",
+                    "device_classes": [
+                        {
+                            "class_name": "RefCapability",
+                            "devices": ["ref/capability/sub1calca"]
+                        }
+                    ]
+                },
+                {
+                    "instance_name": "Ref1B",
+                    "device_classes": [
+                        {
+                            "class_name": "RefCapability",
+                            "devices": ["ref/capability/sub1calcb"]
+                        }
+                    ]
+                },
+                {
+                    "instance_name": "Ref1C",
+                    "device_classes": [
+                        {
+                            "class_name": "RefCapability",
+                            "devices": ["ref/capability/sub1procc"]
+                        }
+                    ]
+                },
+                {
+                    "instance_name": "Ref1D",
+                    "device_classes": [
+                        {
+                            "class_name": "RefCapability",
+                            "devices": ["ref/capability/sub1procd"]
+                        }
+                    ]
+                },
+                {
+                    "instance_name": "Ref2A",
+                    "device_classes": [
+                        {
+                            "class_name": "RefCapability",
+                            "devices": ["ref/capability/sub2calca"]
+                        }
+                    ]
+                },
+                {
+                    "instance_name": "Ref2B",
+                    "device_classes": [
+                        {
+                            "class_name": "RefCapability",
+                            "devices": ["ref/capability/sub2calcb"]
+                        }
+                    ]
+                },
+                {
+                    "instance_name": "Ref2C",
+                    "device_classes": [
+                        {
+                            "class_name": "RefCapability",
+                            "devices": ["ref/capability/sub2procc"]
+                        }
+                    ]
+                },
+                {
+                    "instance_name": "Ref2D",
+                    "device_classes": [
+                        {
+                            "class_name": "RefCapability",
+                            "devices": ["ref/capability/sub2procd"]
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "server_name": "SvrSimPdu",
+            "server_instances": [
+                {
+                    "instance_name": "RefElt",
+                    "device_classes": [
+                        {
+                            "class_name": "PDU",
+                            "devices": ["ref/pdu/A", "ref/pdu/B"]
+                        },
+                        {
+                            "class_name": "PDUSimControl",
+                            "devices": ["ref/sim_control/pduA", "ref/sim_control/pduB"]
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "server_name": "SvrSimServer",
+            "server_instances": [
+                {
+                    "instance_name": "RefElt",
+                    "device_classes": [
+                        {
+                            "class_name": "Server",
+                            "devices": ["ref/server/1", "ref/server/2",
+                                        "ref/server/3", "ref/server/4"]
+                        },
+                        {
+                            "class_name": "ServerSimControl",
+                            "devices": ["ref/sim_control/svr1", "ref/sim_control/svr2",
+                                        "ref/sim_control/svr3", "ref/sim_control/svr4"]
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "server_name": "SvrSimRack",
+            "server_instances": [
+                {
+                    "instance_name": "RefElt",
+                    "device_classes": [
+                        {
+                            "class_name": "Rack",
+                            "devices": ["ref/rack/A", "ref/rack/B"]
+                        },
+                        {
+                            "class_name": "RackSimControl",
+                            "devices": ["ref/sim_control/rackA", "ref/sim_control/rackB"]
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "server_name": "SvrSimSwitch",
+            "server_instances": [
+                {
+                    "instance_name": "RefElt",
+                    "device_classes": [
+                        {
+                            "class_name": "Switch",
+                            "devices": ["ref/switch/A", "ref/switch/B"]
+                        },
+                        {
+                            "class_name": "SwitchSimControl",
+                            "devices": ["ref/sim_control/switchA", "ref/sim_control/switchB"]
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

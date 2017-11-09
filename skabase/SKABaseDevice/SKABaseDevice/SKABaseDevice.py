@@ -23,14 +23,19 @@ from PyTango import AttrQuality, DispLevel, DevState
 from PyTango import AttrWriteType, PipeWriteType
 # Additional import
 # PROTECTED REGION ID(SKABaseDevice.additionnal_import) ENABLED START #
+import logging
 import json
-
-from PyTango import DeviceProxy
+from PyTango import DeviceProxy, DevFailed
 
 from skabase.utils import (get_dp_command, exception_manager,
                            tango_type_conversion, coerce_value,
-                           get_groups_from_json)
+                           get_groups_from_json, get_tango_device_type_id)
 
+from skabase.SKABaseDevice import release
+
+from skabase.faults import GroupDefinitionsError
+
+MODULE_LOGGER = logging.getLogger(__name__)
 # PROTECTED REGION END #    //  SKABaseDevice.additionnal_import
 
 __all__ = ["SKABaseDevice", "main"]
@@ -47,8 +52,9 @@ class SKABaseDevice(Device):
         super(SKABaseDevice, self).__init__(*args, **kwargs)
 
         # Initialize attribute values.
-        self._build_state = ""
-        self._version_id = ""
+        self._build_state = '{}, {}, {}'.format(release.name, release.version,
+                                                release.description)
+        self._version_id = release.version
         self._central_logging_level = 0
         self._element_logging_level = 0
         self._storage_logging_level = 0
@@ -113,74 +119,82 @@ class SKABaseDevice(Device):
     def get_device_attributes(self, with_value=False,
                               with_context=True, with_metrics=True,
                               with_attributes=True, attribute_name=None):
-        """ Get device proxy attributes"""
-        ### TBD - Why use DeviceProxy?
-        ### Can this not be known through self which is a Device
+        """ Get device attributes"""
 
-        # Get attribute configuration
-        device_proxy = DeviceProxy(self.get_name())
-        if attribute_name is not None:
-            attr_config = device_proxy.get_attribute_config_ex(attribute_name)
-        else:
-            attr_config = device_proxy.get_attribute_config_ex(
-                device_proxy.get_attribute_list())
+        multi_attribute = self.get_device_attr()
+        attr_list = multi_attribute.get_attribute_list()
 
-        # Get attribute values if required
-        if with_value and attribute_name is not None:
-            attr_values = device_proxy.read_attributes([attribute_name])
-        elif with_value:
-            attr_values = device_proxy.read_attributes(device_proxy.get_attribute_list())
-
-        # Process all attributes
         attributes = {}
-        for i, attr in enumerate(attr_config):
 
-            # Populate dictionary with attribute configuration conversion
+        # Cannot loop over the attr_list object (not python-wrapped): raises TypeError:
+        # No to_python (by-value) converter found for C++ type: Tango::Attribute*
+        for index in range(len(attr_list)):
+
+            attrib = attr_list[index]
+            attr_name = attrib.get_name()
+
+            if attribute_name is not None:
+                if attr_name != attribute_name:
+                    continue
+
             attr_dict = {
-                'name': attr.name,
-                'polling_frequency': attr.events.per_event.period,
-                'min_value': (attr.min_value if attr.min_value != 'Not specified'
-                              else None),
-                'max_value': (attr.max_value if attr.min_value != 'Not specified'
-                              else None),
-                'readonly': attr.writable not in [PyTango.AttrWriteType.READ_WRITE,
-                                                  PyTango.AttrWriteType.WRITE,
-                                                  PyTango.AttrWriteType.READ_WITH_WRITE]
+                'name': attr_name,
+                'polling_frequency': attrib.get_polling_period()
             }
 
-            # Convert data type
-            if attr.data_format == PyTango.AttrDataFormat.SCALAR:
-                attr_dict["data_type"] = tango_type_conversion.get(
-                    attr.data_type, str(attr.data_type))
-            else:
-                # Data types we aren't really going to represent
-                attr_dict["data_type"] = "other"
+            try:
+                attr_dict['min_value'] = attrib.get_min_value()
+            except AttributeError as attr_err:
+                MODULE_LOGGER.info(str(attr_err), exc_info=True)
+            except DevFailed as derr:
+                MODULE_LOGGER.info(str(derr), exc_info=True)
 
-            # Add context if required
+            try:
+                attr_dict['max_value'] = attrib.get_max_value()
+            except AttributeError as attr_err:
+                MODULE_LOGGER.info(str(attr_err), exc_info=True)
+            except DevFailed as derr:
+                MODULE_LOGGER.info(str(derr), exc_info=True)
+
+            attr_dict['readonly'] = (
+                attrib.get_writable() not in [AttrWriteType.READ_WRITE,
+                                              AttrWriteType.WRITE,
+                                              AttrWriteType.READ_WITH_WRITE])
+
+            # TODO (KM 2017-10-30): Add the data type of the attribute in the dict.
+
             if with_context:
-                attr_dict['component'] = self.get_name()
+                device_type, device_id = get_tango_device_type_id(self.get_name())
+                attr_dict['component_type'] = device_type
+                attr_dict['component_id'] = device_id
 
-            # Add value if required
+
             if with_value:
-                attr_dict['value'] = coerce_value(attr_values[i].value)
-                attr_dict['is_alarm'] = attr_values[i].quality == AttrQuality.ATTR_ALARM
-                # ts = datetime.fromtimestamp(attr_values[i].time.tv_sec)
-                # ts.replace(microsecond=attr_values[i].time.tv_usec)
-                # attr_dict['timestamp'] = ts.isoformat()
+                # To get the values for the State and Status attributes, we need to call
+                # their get methods, respectively. The device does not implement the
+                # read_<attribute_name> methods for them.
+                if attr_name in ['State', 'Status']:
+                    attr_dict['value'] = coerce_value(
+                        getattr(self, 'get_{}'.format(attr_name.lower()))())
+                else:
+                    attr_dict['value'] = coerce_value(
+                        getattr(self, 'read_{}'.format(attr_name))())
+
+                attr_dict['is_alarm'] = attrib.get_quality == AttrQuality.ATTR_ALARM
 
             # Define attribute type
-            if attr.name in self.MetricList:
+            if attr_name in self.MetricList:
                 attr_dict['attribute_type'] = 'metric'
             else:
                 attr_dict['attribute_type'] = 'attribute'
 
-            # Add to return attribute list
-            if with_metrics and attr_dict['attribute_type'] == 'metric':
-                attributes[attr.name] = attr_dict
-            elif with_attributes and attr_dict['attribute_type'] == 'attribute':
-                attributes[attr.name] = attr_dict
+            # Add to return attribute dict
+            if (with_metrics and attr_dict['attribute_type'] == 'metric' or
+                  with_attributes and attr_dict['attribute_type'] == 'attribute'):
+                attributes[attr_name] = attr_dict
 
         return attributes
+
 
     # PROTECTED REGION END #    //  SKABaseDevice.class_variable
 
@@ -193,7 +207,7 @@ class SKABaseDevice(Device):
     )
 
     MetricList = device_property(
-        dtype='str', default_value="healthState,adminMode,controlMode"
+        dtype=('str',), default_value=["healthState", "adminMode", "controlMode"]
     )
 
     GroupDefinitions = device_property(
@@ -291,8 +305,13 @@ class SKABaseDevice(Device):
 
         # create TANGO Groups objects dict, according to property
         self.debug_stream("Groups definitions: {}".format(self.GroupDefinitions))
-        self.groups = get_groups_from_json(self.GroupDefinitions)
-        self.info_stream("Groups loaded: {}".format(sorted(self.groups.keys())))
+        try:
+            self.groups = get_groups_from_json(self.GroupDefinitions)
+            self.info_stream("Groups loaded: {}".format(sorted(self.groups.keys())))
+        except GroupDefinitionsError:
+            self.info_stream("No Groups loaded for device: {}".format(
+                                 self.get_name()))
+
 
         # PROTECTED REGION END #    //  SKABaseDevice.init_device
 
@@ -408,7 +427,7 @@ class SKABaseDevice(Device):
         # PROTECTED REGION ID(SKABaseDevice.GetMetrics) ENABLED START #
         ### TBD - read the value of each of the attributes in the MetricList
         with exception_manager(self):
-            args_dict = {'with_value': False, 'with_commands': False,
+            args_dict = {'with_value': True, 'with_commands': False,
                          'with_metrics': True, 'with_attributes': False}
             device_dict = self._get_device_json(args_dict)
             argout = json.dumps(device_dict)
@@ -443,7 +462,7 @@ class SKABaseDevice(Device):
     @DebugIt()
     def GetVersionInfo(self):
         # PROTECTED REGION ID(SKABaseDevice.GetVersionInfo) ENABLED START #
-        return [""]
+        return ['{}, {}'.format(self.__class__.__name__, self.read_buildState())]
         # PROTECTED REGION END #    //  SKABaseDevice.GetVersionInfo
 
 # ----------

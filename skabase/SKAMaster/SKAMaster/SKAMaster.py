@@ -35,8 +35,6 @@ class SKAMaster(SKABaseDevice):
     """
     __metaclass__ = DeviceMeta
     # PROTECTED REGION ID(SKAMaster.class_variable) ENABLED START #
-    def __init__(self, *args, **kwargs):
-        super(SKAMaster, self).__init__(*args, **kwargs)
     # PROTECTED REGION END #    //  SKAMaster.class_variable
 
     # -----------------
@@ -185,14 +183,14 @@ class SKAMaster(SKABaseDevice):
 
     @command(
     dtype_in='DevVarLongStringArray',
-    doc_in="[Capability type][nrInstances]",
+    doc_in="[nrInstances][Capability type]",
     dtype_out='bool',
     )
     @DebugIt()
     def isCapabilityAchievable(self, argin):
         # PROTECTED REGION ID(SKAMaster.isCapabilityAchievable) ENABLED START #
-        capabilities_instances, capability_types = argin
-        if self._available_capability[capability_type] >= capabilities_instances:
+        capability_instances, capability_type = argin
+        if self._available_capability[capability_type] >= capability_instances:
             return True
 
         return False

@@ -6,7 +6,7 @@
       <inheritances classname="SKAObsDevice" sourcePath="../SKAObsDevice"/>
       <identification contact="at ska.ac.za - cam" author="cam" emailDomain="ska.ac.za" classFamily="SkaBase" siteSpecific="" platform="All Platforms" bus="Not Applicable" manufacturer="none" reference=""/>
     </description>
-    <deviceProperties name="CapabililtyTypes" description="List of Capability types e.g. capCorr, capPss,&#xA;capPstBf, capVlbi, this will be used to dynamically&#xA;define groups for subarray.">
+    <deviceProperties name="CapabilityTypes" description="List of Capability types e.g. capCorr, capPss,&#xA;capPstBf, capVlbi, this will be used to dynamically&#xA;define groups for subarray.">
       <type xsi:type="pogoDsl:StringVectorType"/>
       <status abstract="false" inherited="false" concrete="true" concreteHere="true"/>
     </deviceProperties>
@@ -50,8 +50,8 @@
       </argout>
       <status abstract="false" inherited="false" concrete="true" concreteHere="true"/>
     </commands>
-    <commands name="ConfigureCapability" description="Configures number of instances for each capability. If the capability exists, &#xA;it increments the configured instances by the number of instances requested." execMethod="configure_capability" displayLevel="OPERATOR" polledPeriod="0" isDynamic="false">
-      <argin description="[Number of capabilities for each capability type][Capability types]">
+    <commands name="ConfigureCapability" description="Configures number of instances for each capability. If the capability exists, &#xA;it increments the configured instances by the number of instances requested, &#xA;otherwise an exception will be raised.&#xA;Note: The two lists arguments must be of equal length or an exception will be raised." execMethod="configure_capability" displayLevel="OPERATOR" polledPeriod="0" isDynamic="false">
+      <argin description="[Number of instances to add][Capability types]">
         <type xsi:type="pogoDsl:LongStringArrayType"/>
       </argin>
       <argout description="">
@@ -59,7 +59,7 @@
       </argout>
       <status abstract="false" inherited="false" concrete="true" concreteHere="true"/>
     </commands>
-    <commands name="DeconfigureAllCapabilities" description="Deconfigure all instances of the given Capability type." execMethod="deconfigure_all_capabilities" displayLevel="OPERATOR" polledPeriod="0" isDynamic="false">
+    <commands name="DeconfigureAllCapabilities" description="Deconfigure all instances of the given Capability type. If the capability type does not exist an exception will be raised, &#xA;otherwise it sets the configured instances for that capability type to zero." execMethod="deconfigure_all_capabilities" displayLevel="OPERATOR" polledPeriod="0" isDynamic="false">
       <argin description="Capability type">
         <type xsi:type="pogoDsl:StringType"/>
       </argin>
@@ -68,8 +68,8 @@
       </argout>
       <status abstract="false" inherited="false" concrete="true" concreteHere="true"/>
     </commands>
-    <commands name="DeconfigureCapability" description="Deconfigures a given number of instances for each capability. If the capability does not exists, &#xA;it is logged." execMethod="deconfigure_capability" displayLevel="OPERATOR" polledPeriod="0" isDynamic="false">
-      <argin description="[Number of instances for each capability type][Capability types]">
+    <commands name="DeconfigureCapability" description="Deconfigures a given number of instances for each capability. If the capability exists, &#xA;it decrements the configured instances by the number of instances requested,&#xA;otherwise an exceptioin will be raised.&#xA;Note: The two lists arguments must be of equal length or an exception will be raised" execMethod="deconfigure_capability" displayLevel="OPERATOR" polledPeriod="0" isDynamic="false">
+      <argin description="[Number of instances to remove][Capability types]">
         <type xsi:type="pogoDsl:LongStringArrayType"/>
       </argin>
       <argout description="">

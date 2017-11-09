@@ -26,7 +26,7 @@ from SKAObsDevice import SKAObsDevice
 # PROTECTED REGION ID(SKASubarray.additionnal_import) ENABLED START #
 import logging
 
-from PyTango import DeviceProxy, Except, ErrSeverity, DevState
+from PyTango import DeviceProxy, Except, ErrSeverity, DevState, DevVarLongStringArray
 
 
 MODULE_LOGGER = logging.getLogger(__name__)
@@ -50,7 +50,11 @@ class SKASubarray(SKAObsDevice):
         # self._configured_capabilities is gonna be kept as a dictionary internally. The
         # keys and value will represent the capability type name and the number of
         # instances, respectively.
-        self._configured_capabilities = {}
+        try:
+            self._configured_capabilities = dict.fromkeys(self.CapabilityTypes, 0)
+        except TypeError:
+            # Might need to have the device property be mandatory in the database.
+            self._configured_capabilities = {}
 
 
     def _is_command_allowed(self, command_name):
@@ -122,6 +126,38 @@ class SKASubarray(SKAObsDevice):
         return False
 
 
+    def _validate_capability_types(self, command_name, argin):
+        """Determine whether the command specified by the command_name parameter should
+        be allowed to execute or not.
+
+        Parameters
+        ----------
+        command_name: str
+            The name of the command which is to be executed.
+        argin: PyTango.DevVarLongStringArray
+            A tuple of two lists representing [number of instances][capability types]
+
+        Raises
+        ------
+        PyTango.DevFailed: If the capabilities requested are not valid.
+        """
+        capabilities_instances, capability_types = argin
+        # Check if the two lists are of equal length, if not raise an error.
+        if len(capabilities_instances) != len(capability_types):
+            Except.throw_exception("Command failed!", "Argin value lists size mismatch.",
+                                   command_name, ErrSeverity.ERR)
+
+        # Check if the requested capability types are valid. If they are not, raise an
+        # exception.
+        invalid_capabilities = list(
+            set(capability_types) - set(self._configured_capabilities))
+
+        if invalid_capabilities != []:
+            Except.throw_exception(
+                "Command failed!", "Invalid capability types requested {}".format(
+                    invalid_capabilities), command_name, ErrSeverity.ERR)
+
+
     def is_AssignResources_allowed(self):
         return self._is_command_allowed("AssignResources")
 
@@ -135,14 +171,17 @@ class SKASubarray(SKAObsDevice):
 
 
     def is_ConfigureCapability_allowed(self):
+        self.set_state(DevState.ON)
         return self._is_command_allowed('ConfigureCapability')
 
 
     def is_DeconfigureCapability_allowed(self):
+        self.set_state(DevState.ON)
         return self._is_command_allowed('DeconfigureCapability')
 
 
     def is_DeconfigureAllCapabilities_allowed(self):
+        self.set_state(DevState.ON)
         return self._is_command_allowed('DeconfigureAllCapabilities')
     # PROTECTED REGION END #    //  SKASubarray.class_variable
 
@@ -150,7 +189,7 @@ class SKASubarray(SKAObsDevice):
     # Device Properties
     # -----------------
 
-    CapabililtyTypes = device_property(
+    CapabilityTypes = device_property(
         dtype=('str',),
     )
 
@@ -263,8 +302,8 @@ class SKASubarray(SKAObsDevice):
         # PROTECTED REGION END #    //  SKASubarray.Abort
 
     @command(
-    dtype_in='DevVarLongStringArray', 
-    doc_in="[Number of capabilities for each capability type][Capability types]", 
+    dtype_in='DevVarLongStringArray',
+    doc_in="[Number of instances to add][Capability types]",
     )
     @DebugIt()
     def ConfigureCapability(self, argin):
@@ -272,64 +311,67 @@ class SKASubarray(SKAObsDevice):
         dp = DeviceProxy(self.get_name())
         obstate_labels = list(dp.attribute_query('obsState').enum_labels)
         obs_configuring = obstate_labels.index('CONFIGURING')
+
+        self._validate_capability_types('ConfigureCapability', argin)
+
+        capabilities_instances, capability_types = argin
+
         # Set obsState to 'CONFIGURING'.
         self._obs_state = obs_configuring
+
         # Perform the configuration.
-        #import IPython; IPython.embed()
-        capabilities_instances, capability_types = argin
         for capability_instances, capability_type in zip(
                 capabilities_instances, capability_types):
-            if capability_type in self._configured_capabilities:
-                self._configured_capabilities[capability_type] += (
-                    int(capability_instances))
-            else:
-                self._configured_capabilities[capability_type] = int(capability_instances)
+            self._configured_capabilities[capability_type] += capability_instances
+
         # Change the obsState to 'READY'.
         obs_ready = obstate_labels.index('READY')
         self._obs_state = obs_ready
         # PROTECTED REGION END #    //  SKASubarray.ConfigureCapability
 
     @command(
-    dtype_in='str', 
-    doc_in="Capability type", 
+    dtype_in='str',
+    doc_in="Capability type",
     )
     @DebugIt()
     def DeconfigureAllCapabilities(self, argin):
         # PROTECTED REGION ID(SKASubarray.DeconfigureAllCapabilities) ENABLED START #
+        if argin not in self._configured_capabilities:
+            Except.throw_exception(
+                "Command failed!",
+                "Invalid capability type requested '{}'.".format(argin),
+                "ConfigureCapability", ErrSeverity.ERR)
+
         self._configured_capabilities[argin] = 0
         # PROTECTED REGION END #    //  SKASubarray.DeconfigureAllCapabilities
 
     @command(
-    dtype_in='DevVarLongStringArray', 
-    doc_in="[Number of instances for each capability type][Capability types]", 
+    dtype_in='DevVarLongStringArray',
+    doc_in="[Number of instances to remove][Capability types]",
     )
     @DebugIt()
     def DeconfigureCapability(self, argin):
         # PROTECTED REGION ID(SKASubarray.DeconfigureCapability) ENABLED START #
+
+        self._validate_capability_types('DeconfigureCapability', argin)
+
         capabilities_instances, capability_types = argin
+
+        # Perform the deconfiguration
         for capability_instances, capability_type in zip(
                 capabilities_instances, capability_types):
-            if capability_type in self._configured_capabilities:
-                if self._configured_capabilities[capability_type] < int(
-                        capability_instances):
-                    self._configured_capabilities[capability_type] = 0
-                else:
-                    self._configured_capabilities[capability_type] -= (
-                        int(capability_instances))
-
+            if self._configured_capabilities[capability_type] < int(capability_instances):
+                self._configured_capabilities[capability_type] = 0
             else:
-                # Log some message/or raise an error that no instances for that cap type
-                # have been configured.
-                MODULE_LOGGER.info("The Capability type {} is not in the list.".format(
-                    capability_type))
-
+                self._configured_capabilities[capability_type] -= (
+                    int(capability_instances))
         # PROTECTED REGION END #    //  SKASubarray.DeconfigureCapability
 
     @command(
-    dtype_in=('str',), 
-    doc_in="List of Resources to add to subarray.", 
-    dtype_out=('str',), 
-    doc_out="A list of Resources added to the subarray.", 
+    dtype_in=('str',),
+    doc_in="List of Resources to add to subarray.",
+    dtype_out=('str',),
+    doc_out="A list of Resources added to the subarray.",
     )
     @DebugIt()
     def AssignResources(self, argin):
@@ -386,8 +428,8 @@ class SKASubarray(SKAObsDevice):
         # PROTECTED REGION END #    //  SKASubarray.Pause
 
     @command(
-    dtype_out=('str',), 
-    doc_out="List of resources removed from the subarray.", 
+    dtype_out=('str',),
+    doc_out="List of resources removed from the subarray.",
     )
     @DebugIt()
     def ReleaseAllResources(self):
@@ -398,10 +440,10 @@ class SKASubarray(SKAObsDevice):
         # PROTECTED REGION END #    //  SKASubarray.ReleaseAllResources
 
     @command(
-    dtype_in=('str',), 
-    doc_in="List of resources to remove from the subarray.", 
-    dtype_out=('str',), 
-    doc_out="List of resources removed from the subarray.", 
+    dtype_in=('str',),
+    doc_in="List of resources to remove from the subarray.",
+    dtype_out=('str',),
+    doc_out="List of resources removed from the subarray.",
     )
     @DebugIt()
     def ReleaseResources(self, argin):
@@ -418,7 +460,7 @@ class SKASubarray(SKAObsDevice):
         # PROTECTED REGION END #    //  SKASubarray.Resume
 
     @command(
-    dtype_in=('str',), 
+    dtype_in=('str',),
     )
     @DebugIt()
     def Scan(self, argin):

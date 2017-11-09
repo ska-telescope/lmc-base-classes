@@ -43,22 +43,6 @@ class SKASubarray(SKAObsDevice):
     """
     __metaclass__ = DeviceMeta
     # PROTECTED REGION ID(SKASubarray.class_variable) ENABLED START #
-    def __init__(self, *args, **kwargs):
-        super(SKASubarray, self).__init__(*args, **kwargs)
-
-        # Initialize attribute values.
-        self._activation_time = 0.0
-        self._assigned_resources = [""]
-        # self._configured_capabilities is gonna be kept as a dictionary internally. The
-        # keys and value will represent the capability type name and the number of
-        # instances, respectively.
-        try:
-            self._configured_capabilities = dict.fromkeys(self.CapabilityTypes, 0)
-        except TypeError:
-            # Might need to have the device property be mandatory in the database.
-            self._configured_capabilities = {}
-
-
     def _is_command_allowed(self, command_name):
         """Determine whether the command specified by the command_name parameter should
         be allowed to execute or not.
@@ -128,9 +112,33 @@ class SKASubarray(SKAObsDevice):
         return False
 
 
-    def _validate_capability_types(self, command_name, argin):
-        """Determine whether the command specified by the command_name parameter should
-        be allowed to execute or not.
+    def _validate_capability_types(self, command_name, capability_types):
+        """Check the validity of the input parameter passed on to the command specified
+        by the command_name parameter.
+
+        Parameters
+        ----------
+        command_name: str
+            The name of the command which is to be executed.
+        capability_types: list
+            A list strings representing capability types.
+
+        Raises
+        ------
+        PyTango.DevFailed: If any of the capabilities requested are not valid.
+        """
+        invalid_capabilities = list(
+            set(capability_types) - set(self._configured_capabilities))
+
+        if invalid_capabilities:
+            Except.throw_exception(
+                "Command failed!", "Invalid capability types requested {}".format(
+                    invalid_capabilities), command_name, ErrSeverity.ERR)
+
+
+    def _validate_input_sizes(self, command_name, argin):
+        """Check the validity of the input parameters passed on to the command specified
+        by the command_name parameter.
 
         Parameters
         ----------
@@ -141,23 +149,12 @@ class SKASubarray(SKAObsDevice):
 
         Raises
         ------
-        PyTango.DevFailed: If the capabilities requested are not valid.
+        PyTango.DevFailed: If the two lists are not equal in length.
         """
         capabilities_instances, capability_types = argin
-        # Check if the two lists are of equal length, if not raise an error.
         if len(capabilities_instances) != len(capability_types):
             Except.throw_exception("Command failed!", "Argin value lists size mismatch.",
                                    command_name, ErrSeverity.ERR)
-
-        # Check if the requested capability types are valid. If they are not, raise an
-        # exception.
-        invalid_capabilities = list(
-            set(capability_types) - set(self._configured_capabilities))
-
-        if invalid_capabilities != []:
-            Except.throw_exception(
-                "Command failed!", "Invalid capability types requested {}".format(
-                    invalid_capabilities), command_name, ErrSeverity.ERR)
 
 
     def is_AssignResources_allowed(self):
@@ -248,6 +245,18 @@ class SKASubarray(SKAObsDevice):
         SKAObsDevice.init_device(self)
         # PROTECTED REGION ID(SKASubarray.init_device) ENABLED START #
 
+        # Initialize attribute values.
+        self._activation_time = 0.0
+        self._assigned_resources = [""]
+        # self._configured_capabilities is gonna be kept as a dictionary internally. The
+        # keys and value will represent the capability type name and the number of
+        # instances, respectively.
+        try:
+            self._configured_capabilities = dict.fromkeys(self.CapabilityTypes, 0)
+        except TypeError:
+            # Might need to have the device property be mandatory in the database.
+            self._configured_capabilities = {}
+
         # When Subarray in not in use it reports:
         self.set_state(DevState.DISABLE)
 
@@ -307,13 +316,14 @@ class SKASubarray(SKAObsDevice):
     @DebugIt()
     def ConfigureCapability(self, argin):
         # PROTECTED REGION ID(SKASubarray.ConfigureCapability) ENABLED START #
+        command_name = 'ConfigureCapability'
         dp = DeviceProxy(self.get_name())
         obstate_labels = list(dp.attribute_query('obsState').enum_labels)
         obs_configuring = obstate_labels.index('CONFIGURING')
 
-        self._validate_capability_types('ConfigureCapability', argin)
-
         capabilities_instances, capability_types = argin
+        self._validate_capability_types(command_name, capability_types)
+        self._validate_input_sizes(command_name, argin)
 
         # Set obsState to 'CONFIGURING'.
         self._obs_state = obs_configuring
@@ -334,13 +344,8 @@ class SKASubarray(SKAObsDevice):
     )
     @DebugIt()
     def DeconfigureAllCapabilities(self, argin):
-        # PROTECTED REGION ID(SKASubarray.DeconfigureAllCapabilities) ENABLED START #
-        if argin not in self._configured_capabilities:
-            Except.throw_exception(
-                "Command failed!",
-                "Invalid capability type requested '{}'.".format(argin),
-                "ConfigureCapability", ErrSeverity.ERR)
-
+        # PROTECTED REGION ID(SKASubarray.DeconfigureAllCapabilities) ENABLED START #i
+        self._validate_capability_types('DeconfigureAllCapabilities', [argin])
         self._configured_capabilities[argin] = 0
         # PROTECTED REGION END #    //  SKASubarray.DeconfigureAllCapabilities
 
@@ -351,10 +356,12 @@ class SKASubarray(SKAObsDevice):
     @DebugIt()
     def DeconfigureCapability(self, argin):
         # PROTECTED REGION ID(SKASubarray.DeconfigureCapability) ENABLED START #
-
-        self._validate_capability_types('DeconfigureCapability', argin)
-
+        command_name = 'DeconfigureCapability'
         capabilities_instances, capability_types = argin
+
+        self._validate_capability_types(command_name, capability_types)
+        self._validate_input_sizes(command_name, argin)
+
 
         # Perform the deconfiguration
         for capability_instances, capability_type in izip(

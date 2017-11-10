@@ -25,6 +25,7 @@ from SKABaseDevice import SKABaseDevice
 # Additional import
 # PROTECTED REGION ID(SKAMaster.additionnal_import) ENABLED START #
 from itertools import izip
+
 from skabase.utils import validate_capability_types, validate_input_sizes
 # PROTECTED REGION END #    //  SKAMaster.additionnal_import
 
@@ -185,9 +186,9 @@ class SKAMaster(SKABaseDevice):
     # --------
 
     @command(
-    dtype_in='DevVarLongStringArray', 
-    doc_in="[nrInstances][Capability types]", 
-    dtype_out='bool', 
+    dtype_in='DevVarLongStringArray',
+    doc_in="[nrInstances][Capability types]",
+    dtype_out='bool',
     )
     @DebugIt()
     def isCapabilityAchievable(self, argin):

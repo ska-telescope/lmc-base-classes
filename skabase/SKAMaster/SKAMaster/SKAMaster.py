@@ -26,7 +26,8 @@ from SKABaseDevice import SKABaseDevice
 # PROTECTED REGION ID(SKAMaster.additionnal_import) ENABLED START #
 from itertools import izip
 
-from skabase.utils import validate_capability_types, validate_input_sizes
+from skabase.utils import (validate_capability_types, validate_input_sizes,
+                           convert_dict_to_list)
 # PROTECTED REGION END #    //  SKAMaster.additionnal_import
 
 __all__ = ["SKAMaster", "main"]
@@ -118,11 +119,9 @@ class SKAMaster(SKABaseDevice):
 
         self._max_capabilities = {}
         if self.MaxCapabilities:
-            print self.MaxCapabilities
             for max_capability in self.MaxCapabilities:
                 capability_type, max_capability_instances = max_capability.split(":")
                 self._max_capabilities[capability_type] = int(max_capability_instances)
-                print self._max_capabilities
         self._available_capabilities = self._max_capabilities.copy()
         # PROTECTED REGION END #    //  SKAMaster.init_device
 
@@ -162,22 +161,12 @@ class SKAMaster(SKABaseDevice):
 
     def read_maxCapabilities(self):
         # PROTECTED REGION ID(SKAMaster.maxCapabilities_read) ENABLED START #
-        max_capabilities = []
-        for capability_type, capability_instances in (
-                self._max_capabilities.items()):
-            max_capabilities.append(
-                "{}:{}".format(capability_type, capability_instances))
-        return sorted(max_capabilities)
+        return convert_dict_to_list(self._max_capabilities.copy())
         # PROTECTED REGION END #    //  SKAMaster.maxCapabilities_read
 
     def read_availableCapabilities(self):
         # PROTECTED REGION ID(SKAMaster.availableCapabilities_read) ENABLED START #
-        available_capabilities = []
-        for capability_type, capability_instances in (
-                self._available_capabilities.items()):
-            available_capabilities.append(
-                "{}:{}".format(capability_type, capability_instances))
-        return sorted(available_capabilities)
+        return convert_dict_to_list(self._available_capabilities.copy())
         # PROTECTED REGION END #    //  SKAMaster.availableCapabilities_read
 
 

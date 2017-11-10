@@ -496,3 +496,11 @@ def validate_input_sizes(command_name, argin):
     if len(capabilities_instances) != len(capability_types):
         Except.throw_exception("Command failed!", "Argin value lists size mismatch.",
                                command_name, ErrSeverity.ERR)
+
+
+def convert_dict_to_list(dictionary):
+    the_list = []
+    for key, value in (dictionary.items()):
+        the_list.append("{}:{}".format(key, value))
+
+    return sorted(the_list)

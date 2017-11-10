@@ -6,10 +6,9 @@
       <inheritances classname="SKAObsDevice" sourcePath="../SKAObsDevice"/>
       <identification contact="at ska.ac.za - cam" author="cam" emailDomain="ska.ac.za" classFamily="SkaBase" siteSpecific="" platform="All Platforms" bus="Not Applicable" manufacturer="none" reference=""/>
     </description>
-    <deviceProperties name="SkaLevel" description="Indication of importance of the device in the SKA hierarchy &#xA;to support drill-down navigation: 1..6, with 1 highest.&#xA;Default is 4, making provision for &#xA;EltMaster, EltAlarms, EltTelState = 1&#xA;SubEltMaster = 2&#xA;Subarray, Capability = 2/3&#xA;Others = 4 (or 5 or 6)">
-      <type xsi:type="pogoDsl:ShortType"/>
-      <status abstract="false" inherited="true" concrete="true"/>
-      <DefaultPropValue>4</DefaultPropValue>
+    <deviceProperties name="CapabilityTypes" description="List of Capability types e.g. capCorr, capPss,&#xA;capPstBf, capVlbi, this will be used to dynamically&#xA;define groups for subarray.">
+      <type xsi:type="pogoDsl:StringVectorType"/>
+      <status abstract="false" inherited="false" concrete="true" concreteHere="true"/>
     </deviceProperties>
     <deviceProperties name="CentralLoggingTarget" description="Pre-configured logging target CentralLogger DS">
       <type xsi:type="pogoDsl:StringType"/>
@@ -19,105 +18,70 @@
       <type xsi:type="pogoDsl:StringType"/>
       <status abstract="false" inherited="true" concrete="true"/>
     </deviceProperties>
-    <deviceProperties name="StorageLoggingTarget" description="Pre-configured logging target for syslog">
-      <type xsi:type="pogoDsl:StringType"/>
+    <deviceProperties name="GroupDefinitions" description="List of grouped devices managed by a master.  Each string in the array is a JSON &#xA;document defining the ``groupname``, ``devices`` and ``groups`` in the group.&#xA;A proxy client will be opened for each of the managed devices.&#xA;A group will be instantiated for the managed devices per group.&#xA;Each entry in the array contains a JSON defining the group, like:&#xA;[ {``groupname``: ``group1``, &#xA;    ``devices``: ``csv list of devices in group1``},&#xA;  {``groupname``: ``group2``, # a group with devices and a subgroup&#xA;    ``devices``: ``csv list of devices in group2``,&#xA;     ``groups`` : ``csv list of sub groups``},&#xA;  {``groupname``: ``group3``, &#xA;     ``devices`` : ``csv list of devices in group3``}},&#xA;  {``groupname``: ``group4``, # a group with only subgroups&#xA;    ``groups`` : ``csv list of sub groups``}}]&#xA;&#xA;e.g. for a hierarchy of racks, servers and switches&#xA;[{ ``groupname``: ``servers``, &#xA;   ``devices``: ``elt/server/1,elt/server/2,elt/server/3,elt/server/4``},&#xA;  {``groupname``: ``switches``, &#xA;    ``devices``: ``elt/switch/A,elt/switch/B``},&#xA;  {``groupname``: ``pdus``, &#xA;    ``devices``: ``elt/pdu/rackA,elt/pdu/rackB``},&#xA;  {``groupname``:``rackA``, &#xA;    ``devices``: ``elt/server/1,elt/server/2,elt/switch/A,elt/pdu/rackA``},&#xA;  {``groupname``:``rackB``,&#xA;    ``devices``: ``elt/server/3,elt/server/4,elt/switch/B,elt/pdu/rackB``},&#xA;  {``groupname``:``racks``,&#xA;     ``groups``: ``rackA,rackB``}]">
+      <type xsi:type="pogoDsl:StringVectorType"/>
       <status abstract="false" inherited="true" concrete="true"/>
-      <DefaultPropValue>localhost</DefaultPropValue>
     </deviceProperties>
     <deviceProperties name="MetricList" description="A subset of attributes we want to expose as metrics for this device.">
       <type xsi:type="pogoDsl:StringType"/>
       <status abstract="false" inherited="true" concrete="true"/>
       <DefaultPropValue>healthState,adminMode,controlMode</DefaultPropValue>
     </deviceProperties>
-    <deviceProperties name="GroupDefinitions" description="List of grouped devices managed by a master.  Each string in the array is a JSON &#xA;document defining the ``groupname``, ``devices`` and ``groups`` in the group.&#xA;A proxy client will be opened for each of the managed devices.&#xA;A group will be instantiated for the managed devices per group.&#xA;Each entry in the array contains a JSON defining the group, like:&#xA;[ {``groupname``: ``group1``, &#xA;    ``devices``: ``csv list of devices in group1``},&#xA;  {``groupname``: ``group2``, # a group with devices and a subgroup&#xA;    ``devices``: ``csv list of devices in group2``,&#xA;     ``groups`` : ``csv list of sub groups``},&#xA;  {``groupname``: ``group3``, &#xA;     ``devices`` : ``csv list of devices in group3``}},&#xA;  {``groupname``: ``group4``, # a group with only subgroups&#xA;    ``groups`` : ``csv list of sub groups``}}]&#xA;&#xA;e.g. for a hierarchy of racks, servers and switches&#xA;[{ ``groupname``: ``servers``, &#xA;   ``devices``: ``elt/server/1,elt/server/2,elt/server/3,elt/server/4``},&#xA;  {``groupname``: ``switches``, &#xA;    ``devices``: ``elt/switch/A,elt/switch/B``},&#xA;  {``groupname``: ``pdus``, &#xA;    ``devices``: ``elt/pdu/rackA,elt/pdu/rackB``},&#xA;  {``groupname``:``rackA``, &#xA;    ``devices``: ``elt/server/1,elt/server/2,elt/switch/A,elt/pdu/rackA``},&#xA;  {``groupname``:``rackB``,&#xA;    ``devices``: ``elt/server/3,elt/server/4,elt/switch/B,elt/pdu/rackB``},&#xA;  {``groupname``:``racks``,&#xA;     ``groups``: ``rackA,rackB``}]">
-      <type xsi:type="pogoDsl:StringVectorType"/>
+    <deviceProperties name="SkaLevel" description="Indication of importance of the device in the SKA hierarchy &#xA;to support drill-down navigation: 1..6, with 1 highest.&#xA;Default is 4, making provision for &#xA;EltMaster, EltAlarms, EltTelState = 1&#xA;SubEltMaster = 2&#xA;Subarray, Capability = 2/3&#xA;Others = 4 (or 5 or 6)">
+      <type xsi:type="pogoDsl:ShortType"/>
       <status abstract="false" inherited="true" concrete="true"/>
+      <DefaultPropValue>4</DefaultPropValue>
+    </deviceProperties>
+    <deviceProperties name="StorageLoggingTarget" description="Pre-configured logging target for syslog">
+      <type xsi:type="pogoDsl:StringType"/>
+      <status abstract="false" inherited="true" concrete="true"/>
+      <DefaultPropValue>localhost</DefaultPropValue>
     </deviceProperties>
     <deviceProperties name="SubID" description="Unique identifier of the subarray device.">
       <type xsi:type="pogoDsl:StringType"/>
       <status abstract="false" inherited="false" concrete="true" concreteHere="true"/>
     </deviceProperties>
-    <deviceProperties name="CapabililtyTypes" description="List of Capability types e.g. capCorr, capPss,&#xA;capPstBf, capVlbi, this will be used to dynamically&#xA;define groups for subarray.">
-      <type xsi:type="pogoDsl:StringVectorType"/>
-      <status abstract="false" inherited="false" concrete="true" concreteHere="true"/>
-    </deviceProperties>
-    <commands name="AssignResources" description="" execMethod="assign_resources" displayLevel="OPERATOR" polledPeriod="0" isDynamic="false">
-      <argin description="List of Resources to add to subarray.">
-        <type xsi:type="pogoDsl:StringArrayType"/>
-      </argin>
-      <argout description="A list of Resources added to the subarray.">
-        <type xsi:type="pogoDsl:StringArrayType"/>
-      </argout>
-      <status abstract="false" inherited="false" concrete="true" concreteHere="true"/>
-    </commands>
-    <commands name="ReleaseResources" description="Delta removal of assigned resources." execMethod="release_resources" displayLevel="OPERATOR" polledPeriod="0" isDynamic="false">
-      <argin description="List of resources to remove from the subarray.">
-        <type xsi:type="pogoDsl:StringArrayType"/>
-      </argin>
-      <argout description="List of resources removed from the subarray.">
-        <type xsi:type="pogoDsl:StringArrayType"/>
-      </argout>
-      <status abstract="false" inherited="false" concrete="true" concreteHere="true"/>
-    </commands>
-    <commands name="ReleaseAllResources" description="Remove all resources to tear down to an empty subarray." execMethod="release_all_resources" displayLevel="OPERATOR" polledPeriod="0" isDynamic="false">
-      <argin description="">
-        <type xsi:type="pogoDsl:VoidType"/>
-      </argin>
-      <argout description="List of resources removed from the subarray.">
-        <type xsi:type="pogoDsl:StringArrayType"/>
-      </argout>
-      <status abstract="false" inherited="false" concrete="true" concreteHere="true"/>
-    </commands>
-    <commands name="ObsState" description="Set the observation state" execMethod="obs_state" displayLevel="OPERATOR" polledPeriod="0">
-      <argin description="">
-        <type xsi:type="pogoDsl:VoidType"/>
-      </argin>
-      <argout description="Observation state">
-        <type xsi:type="pogoDsl:ConstStringType"/>
-      </argout>
-      <status abstract="true" inherited="true" concrete="true" concreteHere="false"/>
-    </commands>
-    <commands name="Reset" description="Reset device to its default state" execMethod="reset" displayLevel="OPERATOR" polledPeriod="0">
+    <commands name="Abort" description="Change obsState to ABORTED." execMethod="abort" displayLevel="OPERATOR" polledPeriod="0" isDynamic="false">
       <argin description="">
         <type xsi:type="pogoDsl:VoidType"/>
       </argin>
       <argout description="">
         <type xsi:type="pogoDsl:VoidType"/>
       </argout>
-      <status abstract="true" inherited="true" concrete="true" concreteHere="false"/>
+      <status abstract="false" inherited="false" concrete="true" concreteHere="true"/>
     </commands>
-    <commands name="State" description="This command gets the device state (stored in its device_state data member) and returns it to the caller." execMethod="dev_state" displayLevel="OPERATOR" polledPeriod="0">
-      <argin description="none">
-        <type xsi:type="pogoDsl:VoidType"/>
+    <commands name="ConfigureCapability" description="Configures number of instances for each capability. If the capability exists, &#xA;it increments the configured instances by the number of instances requested, &#xA;otherwise an exception will be raised.&#xA;Note: The two lists arguments must be of equal length or an exception will be raised." execMethod="configure_capability" displayLevel="OPERATOR" polledPeriod="0" isDynamic="false">
+      <argin description="[Number of instances to add][Capability types]">
+        <type xsi:type="pogoDsl:LongStringArrayType"/>
       </argin>
-      <argout description="Device state">
-        <type xsi:type="pogoDsl:StateType"/>
+      <argout description="">
+        <type xsi:type="pogoDsl:VoidType"/>
       </argout>
-      <status abstract="true" inherited="true" concrete="true"/>
+      <status abstract="false" inherited="false" concrete="true" concreteHere="true"/>
     </commands>
-    <commands name="Status" description="This command gets the device status (stored in its device_status data member) and returns it to the caller." execMethod="dev_status" displayLevel="OPERATOR" polledPeriod="0">
-      <argin description="none">
-        <type xsi:type="pogoDsl:VoidType"/>
+    <commands name="DeconfigureAllCapabilities" description="Deconfigure all instances of the given Capability type. If the capability type does not exist an exception will be raised, &#xA;otherwise it sets the configured instances for that capability type to zero." execMethod="deconfigure_all_capabilities" displayLevel="OPERATOR" polledPeriod="0" isDynamic="false">
+      <argin description="Capability type">
+        <type xsi:type="pogoDsl:StringType"/>
       </argin>
-      <argout description="Device status">
-        <type xsi:type="pogoDsl:ConstStringType"/>
+      <argout description="">
+        <type xsi:type="pogoDsl:VoidType"/>
       </argout>
-      <status abstract="true" inherited="true" concrete="true"/>
+      <status abstract="false" inherited="false" concrete="true" concreteHere="true"/>
+    </commands>
+    <commands name="DeconfigureCapability" description="Deconfigures a given number of instances for each capability. If the capability exists, &#xA;it decrements the configured instances by the number of instances requested,&#xA;otherwise an exceptioin will be raised.&#xA;Note: The two lists arguments must be of equal length or an exception will be raised" execMethod="deconfigure_capability" displayLevel="OPERATOR" polledPeriod="0" isDynamic="false">
+      <argin description="[Number of instances to remove][Capability types]">
+        <type xsi:type="pogoDsl:LongStringArrayType"/>
+      </argin>
+      <argout description="">
+        <type xsi:type="pogoDsl:VoidType"/>
+      </argout>
+      <status abstract="false" inherited="false" concrete="true" concreteHere="true"/>
     </commands>
     <commands name="GetMetrics" description="Gets list of attributes marked as metrics, with their values, &#xA;for device" execMethod="get_metrics" displayLevel="OPERATOR" polledPeriod="0">
       <argin description="">
         <type xsi:type="pogoDsl:VoidType"/>
       </argin>
       <argout description="">
-        <type xsi:type="pogoDsl:StringType"/>
-      </argout>
-      <status abstract="false" inherited="true" concrete="true"/>
-    </commands>
-    <commands name="ToJson" description="Returns a JSON translation of this device.&#xA;Defaults for empty string argin gives commands and metris:&#xA;with_value:false, &#xA;with_commands:true, &#xA;with_metrics:true, &#xA;with_attributes:false" execMethod="to_json" displayLevel="OPERATOR" polledPeriod="0">
-      <argin description="Requests the JSON string representing this device, can be filtered &#xA;by with_commands, with_metrics, with_attributes and &#xA;with_value. Defaults for empty string  argin are:&#xA;{`with_value`:`false`, `with_commands`:`true`,&#xA;  `with_metrics`:`true, `with_attributes`:`false}">
-        <type xsi:type="pogoDsl:StringType"/>
-      </argin>
-      <argout description="The JSON string representing this device, &#xA;filtered as per the input argument flags">
         <type xsi:type="pogoDsl:StringType"/>
       </argout>
       <status abstract="false" inherited="true" concrete="true"/>
@@ -131,16 +95,34 @@
       </argout>
       <status abstract="false" inherited="true" concrete="true"/>
     </commands>
-    <commands name="ConfigureCapability" description="" execMethod="configure_capability" displayLevel="OPERATOR" polledPeriod="0" isDynamic="false">
-      <argin description="Capability type, nrInstances.">
+    <commands name="Status" description="This command gets the device status (stored in its device_status data member) and returns it to the caller." execMethod="dev_status" displayLevel="OPERATOR" polledPeriod="0">
+      <argin description="none">
+        <type xsi:type="pogoDsl:VoidType"/>
+      </argin>
+      <argout description="Device status">
+        <type xsi:type="pogoDsl:ConstStringType"/>
+      </argout>
+      <status abstract="true" inherited="true" concrete="true"/>
+    </commands>
+    <commands name="State" description="This command gets the device state (stored in its device_state data member) and returns it to the caller." execMethod="dev_state" displayLevel="OPERATOR" polledPeriod="0">
+      <argin description="none">
+        <type xsi:type="pogoDsl:VoidType"/>
+      </argin>
+      <argout description="Device state">
+        <type xsi:type="pogoDsl:StateType"/>
+      </argout>
+      <status abstract="true" inherited="true" concrete="true"/>
+    </commands>
+    <commands name="AssignResources" description="" execMethod="assign_resources" displayLevel="OPERATOR" polledPeriod="0" isDynamic="false">
+      <argin description="List of Resources to add to subarray.">
         <type xsi:type="pogoDsl:StringArrayType"/>
       </argin>
-      <argout description="">
-        <type xsi:type="pogoDsl:VoidType"/>
+      <argout description="A list of Resources added to the subarray.">
+        <type xsi:type="pogoDsl:StringArrayType"/>
       </argout>
       <status abstract="false" inherited="false" concrete="true" concreteHere="true"/>
     </commands>
-    <commands name="Abort" description="Change obsState to ABORTED." execMethod="abort" displayLevel="OPERATOR" polledPeriod="0" isDynamic="false">
+    <commands name="EndSB" description="Change obsState to IDLE." execMethod="end_sb" displayLevel="OPERATOR" polledPeriod="0" isDynamic="false">
       <argin description="">
         <type xsi:type="pogoDsl:VoidType"/>
       </argin>
@@ -149,7 +131,61 @@
       </argout>
       <status abstract="false" inherited="false" concrete="true" concreteHere="true"/>
     </commands>
-    <commands name="EndSB" description="Change obsState to IDLE." execMethod="end_sb" displayLevel="OPERATOR" polledPeriod="0" isDynamic="false">
+    <commands name="EndScan" description="Terminate scan." execMethod="end_scan" displayLevel="OPERATOR" polledPeriod="0" isDynamic="false">
+      <argin description="">
+        <type xsi:type="pogoDsl:VoidType"/>
+      </argin>
+      <argout description="">
+        <type xsi:type="pogoDsl:VoidType"/>
+      </argout>
+      <status abstract="false" inherited="false" concrete="true" concreteHere="true"/>
+    </commands>
+    <commands name="ObsState" description="Set the observation state" execMethod="obs_state" displayLevel="OPERATOR" polledPeriod="0">
+      <argin description="">
+        <type xsi:type="pogoDsl:VoidType"/>
+      </argin>
+      <argout description="Observation state">
+        <type xsi:type="pogoDsl:ConstStringType"/>
+      </argout>
+      <status abstract="true" inherited="true" concrete="true" concreteHere="false"/>
+    </commands>
+    <commands name="Pause" description="Pause scan." execMethod="pause" displayLevel="OPERATOR" polledPeriod="0" isDynamic="false">
+      <argin description="">
+        <type xsi:type="pogoDsl:VoidType"/>
+      </argin>
+      <argout description="">
+        <type xsi:type="pogoDsl:VoidType"/>
+      </argout>
+      <status abstract="false" inherited="false" concrete="true" concreteHere="true"/>
+    </commands>
+    <commands name="ReleaseAllResources" description="Remove all resources to tear down to an empty subarray." execMethod="release_all_resources" displayLevel="OPERATOR" polledPeriod="0" isDynamic="false">
+      <argin description="">
+        <type xsi:type="pogoDsl:VoidType"/>
+      </argin>
+      <argout description="List of resources removed from the subarray.">
+        <type xsi:type="pogoDsl:StringArrayType"/>
+      </argout>
+      <status abstract="false" inherited="false" concrete="true" concreteHere="true"/>
+    </commands>
+    <commands name="ReleaseResources" description="Delta removal of assigned resources." execMethod="release_resources" displayLevel="OPERATOR" polledPeriod="0" isDynamic="false">
+      <argin description="List of resources to remove from the subarray.">
+        <type xsi:type="pogoDsl:StringArrayType"/>
+      </argin>
+      <argout description="List of resources removed from the subarray.">
+        <type xsi:type="pogoDsl:StringArrayType"/>
+      </argout>
+      <status abstract="false" inherited="false" concrete="true" concreteHere="true"/>
+    </commands>
+    <commands name="Reset" description="Reset device to its default state" execMethod="reset" displayLevel="OPERATOR" polledPeriod="0">
+      <argin description="">
+        <type xsi:type="pogoDsl:VoidType"/>
+      </argin>
+      <argout description="">
+        <type xsi:type="pogoDsl:VoidType"/>
+      </argout>
+      <status abstract="true" inherited="true" concrete="true" concreteHere="false"/>
+    </commands>
+    <commands name="Resume" description="Resume scan." execMethod="resume" displayLevel="OPERATOR" polledPeriod="0" isDynamic="false">
       <argin description="">
         <type xsi:type="pogoDsl:VoidType"/>
       </argin>
@@ -167,32 +203,14 @@
       </argout>
       <status abstract="false" inherited="false" concrete="true" concreteHere="true"/>
     </commands>
-    <commands name="EndScan" description="Terminate scan." execMethod="end_scan" displayLevel="OPERATOR" polledPeriod="0" isDynamic="false">
-      <argin description="">
-        <type xsi:type="pogoDsl:VoidType"/>
+    <commands name="ToJson" description="Returns a JSON translation of this device.&#xA;Defaults for empty string argin gives commands and metris:&#xA;with_value:false, &#xA;with_commands:true, &#xA;with_metrics:true, &#xA;with_attributes:false" execMethod="to_json" displayLevel="OPERATOR" polledPeriod="0">
+      <argin description="Requests the JSON string representing this device, can be filtered &#xA;by with_commands, with_metrics, with_attributes and &#xA;with_value. Defaults for empty string  argin are:&#xA;{`with_value`:`false`, `with_commands`:`true`,&#xA;  `with_metrics`:`true, `with_attributes`:`false}">
+        <type xsi:type="pogoDsl:StringType"/>
       </argin>
-      <argout description="">
-        <type xsi:type="pogoDsl:VoidType"/>
+      <argout description="The JSON string representing this device, &#xA;filtered as per the input argument flags">
+        <type xsi:type="pogoDsl:StringType"/>
       </argout>
-      <status abstract="false" inherited="false" concrete="true" concreteHere="true"/>
-    </commands>
-    <commands name="Pause" description="Pause scan." execMethod="pause" displayLevel="OPERATOR" polledPeriod="0" isDynamic="false">
-      <argin description="">
-        <type xsi:type="pogoDsl:VoidType"/>
-      </argin>
-      <argout description="">
-        <type xsi:type="pogoDsl:VoidType"/>
-      </argout>
-      <status abstract="false" inherited="false" concrete="true" concreteHere="true"/>
-    </commands>
-    <commands name="Resume" description="Resume scan." execMethod="resume" displayLevel="OPERATOR" polledPeriod="0" isDynamic="false">
-      <argin description="">
-        <type xsi:type="pogoDsl:VoidType"/>
-      </argin>
-      <argout description="">
-        <type xsi:type="pogoDsl:VoidType"/>
-      </argout>
-      <status abstract="false" inherited="false" concrete="true" concreteHere="true"/>
+      <status abstract="false" inherited="true" concrete="true"/>
     </commands>
     <attributes name="activationTime" attType="Scalar" rwType="READ" displayLevel="OPERATOR" polledPeriod="1000" maxX="" maxY="" allocReadMember="true" isDynamic="false">
       <dataType xsi:type="pogoDsl:DoubleType"/>

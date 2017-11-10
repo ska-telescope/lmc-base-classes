@@ -446,18 +446,6 @@ class SKASubarray(SKAObsDevice):
         # PROTECTED REGION END #    //  SKASubarray.ReleaseAllResources
 
     @command(
-    dtype_in=('str',),
-    doc_in="List of resources to remove from the subarray.",
-    dtype_out=('str',),
-    doc_out="List of resources removed from the subarray.",
-    )
-    @DebugIt()
-    def ReleaseResources(self, argin):
-        # PROTECTED REGION ID(SKASubarray.ReleaseResources) ENABLED START #
-        return [""]
-        # PROTECTED REGION END #    //  SKASubarray.ReleaseResources
-
-    @command(
     )
     @DebugIt()
     def Resume(self):

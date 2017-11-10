@@ -486,7 +486,7 @@ def validate_input_sizes(command_name, argin):
     command_name: str
         The name of the command which is to be executed.
     argin: PyTango.DevVarLongStringArray
-        A tuple of two lists representing [number of instances][capability types]
+        A tuple of two lists.
 
     Raises
     ------

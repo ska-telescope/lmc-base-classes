@@ -131,7 +131,7 @@ class SKACapability(SKAObsDevice):
 
     def read_configuredInstances(self):
         # PROTECTED REGION ID(SKACapability.configuredInstances_read) ENABLED START #
-        return 0
+        return self._configured_instances
         # PROTECTED REGION END #    //  SKACapability.configuredInstances_read
 
     def read_usedComponents(self):
@@ -151,7 +151,7 @@ class SKACapability(SKAObsDevice):
     @DebugIt()
     def ConfigureInstances(self, argin):
         # PROTECTED REGION ID(SKACapability.ConfigureInstances) ENABLED START #
-        self._configured_instances += argin
+        self._configured_instances = argin
         # PROTECTED REGION END #    //  SKACapability.ConfigureInstances
 
 # ----------

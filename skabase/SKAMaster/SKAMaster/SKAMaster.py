@@ -161,12 +161,12 @@ class SKAMaster(SKABaseDevice):
 
     def read_maxCapabilities(self):
         # PROTECTED REGION ID(SKAMaster.maxCapabilities_read) ENABLED START #
-        return convert_dict_to_list(self._max_capabilities.copy())
+        return convert_dict_to_list(self._max_capabilities)
         # PROTECTED REGION END #    //  SKAMaster.maxCapabilities_read
 
     def read_availableCapabilities(self):
         # PROTECTED REGION ID(SKAMaster.availableCapabilities_read) ENABLED START #
-        return convert_dict_to_list(self._available_capabilities.copy())
+        return convert_dict_to_list(self._available_capabilities)
         # PROTECTED REGION END #    //  SKAMaster.availableCapabilities_read
 
 
@@ -185,7 +185,8 @@ class SKAMaster(SKABaseDevice):
         command_name = 'isCapabilityAchievable'
         capabilities_instances, capability_types = argin
         validate_input_sizes(command_name, argin)
-        validate_capability_types(command_name, capability_types, self._max_capabilities)
+        validate_capability_types(command_name, capability_types,
+                                  self._max_capabilities.keys())
 
         for capability_type, capability_instances in izip(
                 capability_types, capabilities_instances):

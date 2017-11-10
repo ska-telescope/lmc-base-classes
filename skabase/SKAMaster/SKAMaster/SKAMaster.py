@@ -24,6 +24,8 @@ from PyTango import AttrWriteType, PipeWriteType
 from SKABaseDevice import SKABaseDevice
 # Additional import
 # PROTECTED REGION ID(SKAMaster.additionnal_import) ENABLED START #
+from itertools import izip
+from skabase.utils import validate_capability_types, validate_input_sizes
 # PROTECTED REGION END #    //  SKAMaster.additionnal_import
 
 __all__ = ["SKAMaster", "main"]
@@ -90,13 +92,13 @@ class SKAMaster(SKABaseDevice):
     maxCapabilities = attribute(
         dtype=('str',),
         max_dim_x=20,
-        doc="Maximum number of instances of each capability type, e.g. "CORRELATOR:512", "PSS-BEAMS:4".",
+        doc="Maximum number of instances of each capability type, e.g. 'CORRELATOR:512', 'PSS-BEAMS:4'.",
     )
 
     availableCapabilities = attribute(
         dtype=('str',),
         max_dim_x=20,
-        doc="A list of available number of instances of each capability type, e.g. "CORRELATOR:512", "PSS-BEAMS:4".",
+        doc="A list of available number of instances of each capability type, e.g. 'CORRELATOR:512', 'PSS-BEAMS:4'.",
     )
 
     # ---------------
@@ -115,10 +117,11 @@ class SKAMaster(SKABaseDevice):
 
         self._max_capabilities = {}
         if self.MaxCapabilities:
+            print self.MaxCapabilities
             for max_capability in self.MaxCapabilities:
                 capability_type, max_capability_instances = max_capability.split(":")
-                self._max_capabilities[capability_type] = max_capability_instances
-
+                self._max_capabilities[capability_type] = int(max_capability_instances)
+                print self._max_capabilities
         self._available_capabilities = self._max_capabilities.copy()
         # PROTECTED REGION END #    //  SKAMaster.init_device
 
@@ -163,7 +166,7 @@ class SKAMaster(SKABaseDevice):
                 self._max_capabilities.items()):
             max_capabilities.append(
                 "{}:{}".format(capability_type, capability_instances))
-        return sorted(self._max_capabilities)
+        return sorted(max_capabilities)
         # PROTECTED REGION END #    //  SKAMaster.maxCapabilities_read
 
     def read_availableCapabilities(self):
@@ -173,7 +176,7 @@ class SKAMaster(SKABaseDevice):
                 self._available_capabilities.items()):
             available_capabilities.append(
                 "{}:{}".format(capability_type, capability_instances))
-        return sorted(self._available_capabilities)
+        return sorted(available_capabilities)
         # PROTECTED REGION END #    //  SKAMaster.availableCapabilities_read
 
 
@@ -182,18 +185,24 @@ class SKAMaster(SKABaseDevice):
     # --------
 
     @command(
-    dtype_in='DevVarLongStringArray',
-    doc_in="[nrInstances][Capability type]",
-    dtype_out='bool',
+    dtype_in='DevVarLongStringArray', 
+    doc_in="[nrInstances][Capability types]", 
+    dtype_out='bool', 
     )
     @DebugIt()
     def isCapabilityAchievable(self, argin):
         # PROTECTED REGION ID(SKAMaster.isCapabilityAchievable) ENABLED START #
-        capability_instances, capability_type = argin
-        if self._available_capability[capability_type] >= capability_instances:
-            return True
+        command_name = 'isCapabilityAchievable'
+        capabilities_instances, capability_types = argin
+        validate_input_sizes(command_name, argin)
+        validate_capability_types(command_name, capability_types, self._max_capabilities)
 
-        return False
+        for capability_type, capability_instances in izip(
+                capability_types, capabilities_instances):
+            if not self._available_capabilities[capability_type] >= capability_instances:
+               return False
+
+        return True
         # PROTECTED REGION END #    //  SKAMaster.isCapabilityAchievable
 
 # ----------

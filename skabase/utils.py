@@ -11,7 +11,8 @@ from collections import OrderedDict, Counter
 from datetime import datetime
 
 import PyTango
-from PyTango import DeviceProxy, DbDatum, DevState, DbDevInfo, AttrQuality, AttrWriteType
+from PyTango import (DeviceProxy, DbDatum, DevState, DbDevInfo, AttrQuality,
+                     AttrWriteType, Except, ErrSeverity)
 from PyTango._PyTango import DevState as _DevState
 from contextlib import contextmanager
 
@@ -448,3 +449,50 @@ def _build_group(definition):
         group.add(subgroup)
 
     return group
+
+
+def validate_capability_types(
+        command_name, requested_capabilities, valid_capabilities):
+    """Check the validity of the input parameter passed on to the command specified
+    by the command_name parameter.
+
+    Parameters
+    ----------
+    command_name: str
+        The name of the command which is to be executed.
+    requested_capabilities: list
+        A list of strings representing capability types.
+    valid_capabilities: list
+        A list of strings representing capability types.
+    Raises
+    ------
+    PyTango.DevFailed: If any of the capabilities requested are not valid.
+    """
+    invalid_capabilities = list(
+        set(requested_capabilities) - set(valid_capabilities))
+
+    if invalid_capabilities:
+        Except.throw_exception(
+            "Command failed!", "Invalid capability types requested {}".format(
+                invalid_capabilities), command_name, ErrSeverity.ERR)
+
+
+def validate_input_sizes(command_name, argin):
+    """Check the validity of the input parameters passed on to the command specified
+    by the command_name parameter.
+
+    Parameters
+    ----------
+    command_name: str
+        The name of the command which is to be executed.
+    argin: PyTango.DevVarLongStringArray
+        A tuple of two lists representing [number of instances][capability types]
+
+    Raises
+    ------
+    PyTango.DevFailed: If the two lists are not equal in length.
+    """
+    capabilities_instances, capability_types = argin
+    if len(capabilities_instances) != len(capability_types):
+        Except.throw_exception("Command failed!", "Argin value lists size mismatch.",
+                               command_name, ErrSeverity.ERR)

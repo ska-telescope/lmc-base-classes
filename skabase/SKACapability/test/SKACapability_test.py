@@ -195,11 +195,11 @@ class SKACapabilityDeviceTestCase(DeviceTestCase):
         self.device.testMode
         # PROTECTED REGION END #    //  SKACapability.test_testMode
 
-    def test_configuredCapabilities(self):
-        """Test for configuredCapabilities"""
-        # PROTECTED REGION ID(SKACapability.test_configuredCapabilities) ENABLED START #
-        self.device.configuredCapabilities
-        # PROTECTED REGION END #    //  SKACapability.test_configuredCapabilities
+    def test_configuredInstances(self):
+        """Test for configuredInstances"""
+        # PROTECTED REGION ID(SKACapability.test_configuredInstances) ENABLED START #
+        self.device.configuredInstances
+        # PROTECTED REGION END #    //  SKACapability.test_configuredInstances
 
     def test_usedComponents(self):
         """Test for usedComponents"""

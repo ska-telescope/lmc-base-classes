@@ -87,7 +87,7 @@ class SKACapability(SKAObsDevice):
 
 
 
-    configuredCapabilities = attribute(
+    configuredInstances = attribute(
         dtype='uint16',
         doc="Number of instances of this Capability Type currently in use on this subarray.",
     )
@@ -105,6 +105,9 @@ class SKACapability(SKAObsDevice):
     def init_device(self):
         SKAObsDevice.init_device(self)
         # PROTECTED REGION ID(SKACapability.init_device) ENABLED START #
+        self._activation_time = 0.0
+        self._configured_instances = 0
+        self._used_components = [""]
         # PROTECTED REGION END #    //  SKACapability.init_device
 
     def always_executed_hook(self):
@@ -123,17 +126,17 @@ class SKACapability(SKAObsDevice):
 
     def read_activationTime(self):
         # PROTECTED REGION ID(SKACapability.activationTime_read) ENABLED START #
-        return 0
+        return self._activation_time
         # PROTECTED REGION END #    //  SKACapability.activationTime_read
 
-    def read_configuredCapabilities(self):
-        # PROTECTED REGION ID(SKACapability.configuredCapabilities_read) ENABLED START #
+    def read_configuredInstances(self):
+        # PROTECTED REGION ID(SKACapability.configuredInstances_read) ENABLED START #
         return 0
-        # PROTECTED REGION END #    //  SKACapability.configuredCapabilities_read
+        # PROTECTED REGION END #    //  SKACapability.configuredInstances_read
 
     def read_usedComponents(self):
         # PROTECTED REGION ID(SKACapability.usedComponents_read) ENABLED START #
-        return ''
+        return self._used_components
         # PROTECTED REGION END #    //  SKACapability.usedComponents_read
 
 
@@ -142,13 +145,13 @@ class SKACapability(SKAObsDevice):
     # --------
 
     @command(
-    dtype_in='uint16', 
-    doc_in="The number of instances to configure for this Capability.", 
+    dtype_in='uint16',
+    doc_in="The number of instances to configure for this Capability.",
     )
     @DebugIt()
     def ConfigureInstances(self, argin):
         # PROTECTED REGION ID(SKACapability.ConfigureInstances) ENABLED START #
-        pass
+        self._configured_instances += argin
         # PROTECTED REGION END #    //  SKACapability.ConfigureInstances
 
 # ----------

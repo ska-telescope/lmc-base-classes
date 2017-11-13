@@ -128,13 +128,13 @@ cd
 sudo add-apt-repository ppa:ansible/ansible
 sudo apt-get update
 sudo apt-get install ansible
-mkdir ~/git
-git clone https://github.com/ska-sa/levpro ~/git/levpro
+mkdir ~/src
+git clone https://github.com/ska-sa/levpro ~/src/levpro
 ```
 
 ### Deploy tangobox on a fresh node
 ```
-cd ~/git/levpro/ansible
+cd ~/src/levpro/ansible
 ./play-task.sh deploy-tangobox
 ./play-task.sh deploy-sw
 ./play-task.sh refresh-sw
@@ -142,7 +142,7 @@ cd ~/git/levpro/ansible
 ```
 ### To regenerate POGO output
 ```
-cd ~/git/levpro/ansible
+cd ~/src/levpro/ansible
 ./play-task.sh generate-sw
 ```
 
@@ -238,7 +238,7 @@ To list the current task tags:
 ```
 ./play-task.sh 
 
-kat@levpro.devXX.camlab.kat.ac.za:~/git/levpro/ansible$ ./play-task.sh 
+kat@levpro.devXX.camlab.kat.ac.za:~/src/levpro/ansible$ ./play-task.sh 
 You have to specify a roletag, and optional task-id
 
 ---------------------------<<<< ANSIBLE COMMAND LINE >>>>--------------------------------------------

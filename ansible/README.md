@@ -249,21 +249,25 @@ The available task tags are:
 
 playbook: site.yml
 
-  play #1 (local): deploy_sw	TAGS: []
+  play #1 (operational): deploy_sw	TAGS: []
       TASK TAGS: [deploy-sw, deploy-sw-levpro, deploy-sw-tango-simlib]
 
-  play #2 (local): deploy_tangobox	TAGS: []
-      TASK TAGS: [debs, deploy-box-tango-java, deploy-tangobox, deploy-tangobox-debs, deploy-tangobox-itango, deploy-tangobox-mysql, deploy-tangobox-mysql-installed, deploy-tangobox-pip, deploy-tangobox-start-tango, deploy-tangobox-tango-core, deploy-tangobox-tango-java, deploy-tangobox-tango-java-pogo, itango, mysql, pip, tango-core, tango-java]
+  play #2 (operational): deploy_tangobox	TAGS: []
+      TASK TAGS: [debs, deploy-box-tango-java, deploy-tangobox, deploy-tangobox-debs, deploy-tangobox-itango, deploy-tangobox-mysql, deploy-tangobox-mysql-installed, deploy-tangobox-pip, deploy-tangobox-start-tango, deploy-tangobox-tango-core, deploy-tangobox-tango-java, deploy-tangobox-tango-java-pogo, deploy-tangobox-tango-webapp, itango, mysql, pip, tango-core, tango-java]
 
-  play #3 (local): install_sw	TAGS: []
+  play #3 (operational): install_sw	TAGS: []
       TASK TAGS: [install-sw, install-sw-levpro, install-sw-refelt, install-sw-skabase, install-sw-tango-simlib]
 
-  play #4 (local): refresh_sw	TAGS: []
+  play #4 (operational): refresh_sw	TAGS: []
       TASK TAGS: [refresh-sw, refresh-sw-levpro, refresh-sw-tango-simlib]
 
-  play #5 (local): register_refelt	TAGS: []
-      TASK TAGS: [register-elt-in-astor, register-elt-in-tangodb, register-refelt, register-refelt-in-astor, register-refelt-in-astor-ds-path, register-refelt-in-tangodb]
+  play #5 (operational): register_refelt	TAGS: []
+      TASK TAGS: [register-refelt, register-refelt-in-astor, register-refelt-in-astor-ds-path, register-refelt-in-tangodb]
 
-  play #6 (local): generate_sw	TAGS: []
-      TASK TAGS: [generate-sw, generate-sw-refelt, generate-sw-skabase]
+  play #6 (operational): register_my_refelt	TAGS: []
+      TASK TAGS: [register-my-refelt, register-myrefelt-in-astor, register-myrefelt-in-astor-ds-path, register-myrefelt-in-tangodb]
+
+  play #7 (operational): generate_sw	TAGS: []
+      TASK TAGS: [generate-sw, generate-sw-refelt, generate-sw-refelt-simlib, generate-sw-skabase]
+
 ```

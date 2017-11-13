@@ -132,14 +132,17 @@ mkdir ~/src
 git clone https://github.com/ska-sa/levpro ~/src/levpro
 ```
 
-### Deploy tangobox on a fresh node
+### Deploy tangobox and a levpro RefElt on a fresh node
 ```
 cd ~/src/levpro/ansible
 ./play-task.sh deploy-tangobox
 ./play-task.sh deploy-sw
 ./play-task.sh refresh-sw
 ./play-task.sh install-sw
+./play-task.sh generate-sw
+./play-task.sh register-refelt
 ```
+
 ### To regenerate POGO output
 ```
 cd ~/src/levpro/ansible

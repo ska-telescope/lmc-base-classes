@@ -206,7 +206,6 @@
     - numpy
     - ipython<6.0
     - fandango
-    - PyTango
     - pytest
     - mock
     - tango-simlib

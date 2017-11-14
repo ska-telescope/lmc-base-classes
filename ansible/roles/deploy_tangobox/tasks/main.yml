@@ -15,6 +15,9 @@
   apt: >
     update_cache=yes
     cache_valid_time=3600
+  tags:
+    - debs
+    - deploy-tangobox-debs
 
 #################################
 # Install deb packages
@@ -59,6 +62,7 @@
   tags:
     - debs
     - deploy-tangobox-debs
+
 
 #################################
 # Install mysql
@@ -127,6 +131,24 @@
     - libtango-dev
     - liblog4tango-dev
     - liblog4tango-doc
+#    - supervisor
+    - python-numpy
+    - python-enum34
+    - python-guiqwt
+    - python-h5py
+    - python-lxml
+#    - python-pint
+    - python-ply
+    - python-pytango
+    - python-qt4
+    - python-qwt5-qt4
+    - python-spyderlib
+#    - python-pymca5
+    - qt4-designer
+#    - python-sphinx-rtd-theme
+    - graphviz
+#    - python-pyqtgraph
+
   tags:
     - tango-core
     - deploy-tangobox-tango-core

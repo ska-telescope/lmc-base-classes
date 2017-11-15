@@ -126,12 +126,12 @@
     - tango-test
     - tango-accesscontrol
     - liblog4tango5v5
+#    - liblog4tango5
     - libtango9
     - libtango-doc
     - libtango-dev
     - liblog4tango-dev
     - liblog4tango-doc
-#    - supervisor
     - python-numpy
     - python-enum34
     - python-guiqwt
@@ -139,7 +139,7 @@
     - python-lxml
 #    - python-pint
     - python-ply
-    - python-pytango
+#    - python-pytango
     - python-qt4
     - python-qwt5-qt4
     - python-spyderlib
@@ -207,6 +207,7 @@
     - ipython<6.0
     - fandango
     - pytest
+#    - PyTango
     - mock
     - tango-simlib
     - jsonschema

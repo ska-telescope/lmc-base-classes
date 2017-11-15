@@ -116,6 +116,7 @@
     - tango-core
     - deploy-tangobox-tango-core
 
+
 - name: Install tango core packages
   apt:
     name={{item}} force=yes state=latest
@@ -126,32 +127,31 @@
     - tango-test
     - tango-accesscontrol
     - liblog4tango5v5
-#    - liblog4tango5
     - libtango9
     - libtango-doc
     - libtango-dev
     - liblog4tango-dev
     - liblog4tango-doc
-    - python-numpy
     - python-enum34
     - python-guiqwt
     - python-h5py
     - python-lxml
-#    - python-pint
+##    - python-pint
     - python-ply
-#    - python-pytango
+##    - python-pytango
     - python-qt4
     - python-qwt5-qt4
     - python-spyderlib
-#    - python-pymca5
+##    - python-pymca5
     - qt4-designer
-#    - python-sphinx-rtd-theme
+##    - python-sphinx-rtd-theme
     - graphviz
-#    - python-pyqtgraph
+##    - python-pyqtgraph
 
   tags:
     - tango-core
     - deploy-tangobox-tango-core
+
 
 ###############################################
 # Install tango java tools like pogo and jive
@@ -207,7 +207,7 @@
     - ipython<6.0
     - fandango
     - pytest
-#    - PyTango
+    - PyTango
     - mock
     - tango-simlib
     - jsonschema

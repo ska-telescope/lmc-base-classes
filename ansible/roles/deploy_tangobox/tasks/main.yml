@@ -132,20 +132,20 @@
     - libtango-dev
     - liblog4tango-dev
     - liblog4tango-doc
-    - python-enum34
-    - python-guiqwt
-    - python-h5py
-    - python-lxml
+#    - python-enum34
+#    - python-guiqwt
+#    - python-h5py
+#    - python-lxml
 ##    - python-pint
-    - python-ply
+#    - python-ply
 ##    - python-pytango
-    - python-qt4
-    - python-qwt5-qt4
-    - python-spyderlib
+#    - python-qt4
+#    - python-qwt5-qt4
+#    - python-spyderlib
 ##    - python-pymca5
-    - qt4-designer
+#    - qt4-designer
 ##    - python-sphinx-rtd-theme
-    - graphviz
+###############################################    - graphviz
 ##    - python-pyqtgraph
 
   tags:

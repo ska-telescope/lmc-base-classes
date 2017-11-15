@@ -24,6 +24,10 @@ from PyTango import AttrWriteType, PipeWriteType
 from SKABaseDevice import SKABaseDevice
 # Additional import
 # PROTECTED REGION ID(SKAMaster.additionnal_import) ENABLED START #
+from itertools import izip
+
+from skabase.utils import (validate_capability_types, validate_input_sizes,
+                           convert_dict_to_list)
 # PROTECTED REGION END #    //  SKAMaster.additionnal_import
 
 __all__ = ["SKAMaster", "main"]
@@ -35,16 +39,6 @@ class SKAMaster(SKABaseDevice):
     """
     __metaclass__ = DeviceMeta
     # PROTECTED REGION ID(SKAMaster.class_variable) ENABLED START #
-    def __init__(self, *args, **kwargs):
-        super(SKAMaster, self).__init__(*args, **kwargs)
-
-        # Initialize attribute values.
-        self._element_logger_address = ""
-        self._element_alarm_address = ""
-        self._element_tel_state_address = ""
-        self._element_database_address = ""
-
-
     # PROTECTED REGION END #    //  SKAMaster.class_variable
 
     # -----------------
@@ -97,6 +91,18 @@ class SKAMaster(SKABaseDevice):
 
 
 
+    maxCapabilities = attribute(
+        dtype=('str',),
+        max_dim_x=20,
+        doc="Maximum number of instances of each capability type, e.g. 'CORRELATOR:512', 'PSS-BEAMS:4'.",
+    )
+
+    availableCapabilities = attribute(
+        dtype=('str',),
+        max_dim_x=20,
+        doc="A list of available number of instances of each capability type, e.g. 'CORRELATOR:512', 'PSS-BEAMS:4'.",
+    )
+
     # ---------------
     # General methods
     # ---------------
@@ -104,6 +110,19 @@ class SKAMaster(SKABaseDevice):
     def init_device(self):
         SKABaseDevice.init_device(self)
         # PROTECTED REGION ID(SKAMaster.init_device) ENABLED START #
+
+        # Initialize attribute values.
+        self._element_logger_address = ""
+        self._element_alarm_device = ""
+        self._element_tel_state_device = ""
+        self._element_database_device = ""
+
+        self._max_capabilities = {}
+        if self.MaxCapabilities:
+            for max_capability in self.MaxCapabilities:
+                capability_type, max_capability_instances = max_capability.split(":")
+                self._max_capabilities[capability_type] = int(max_capability_instances)
+        self._available_capabilities = self._max_capabilities.copy()
         # PROTECTED REGION END #    //  SKAMaster.init_device
 
     def always_executed_hook(self):
@@ -140,10 +159,42 @@ class SKAMaster(SKABaseDevice):
         return self._element_database_address
         # PROTECTED REGION END #    //  SKAMaster.elementDatabaseAddress_read
 
+    def read_maxCapabilities(self):
+        # PROTECTED REGION ID(SKAMaster.maxCapabilities_read) ENABLED START #
+        return convert_dict_to_list(self._max_capabilities)
+        # PROTECTED REGION END #    //  SKAMaster.maxCapabilities_read
+
+    def read_availableCapabilities(self):
+        # PROTECTED REGION ID(SKAMaster.availableCapabilities_read) ENABLED START #
+        return convert_dict_to_list(self._available_capabilities)
+        # PROTECTED REGION END #    //  SKAMaster.availableCapabilities_read
+
 
     # --------
     # Commands
     # --------
+
+    @command(
+    dtype_in='DevVarLongStringArray',
+    doc_in="[nrInstances][Capability types]",
+    dtype_out='bool',
+    )
+    @DebugIt()
+    def isCapabilityAchievable(self, argin):
+        # PROTECTED REGION ID(SKAMaster.isCapabilityAchievable) ENABLED START #
+        command_name = 'isCapabilityAchievable'
+        capabilities_instances, capability_types = argin
+        validate_input_sizes(command_name, argin)
+        validate_capability_types(command_name, capability_types,
+                                  self._max_capabilities.keys())
+
+        for capability_type, capability_instances in izip(
+                capability_types, capabilities_instances):
+            if not self._available_capabilities[capability_type] >= capability_instances:
+               return False
+
+        return True
+        # PROTECTED REGION END #    //  SKAMaster.isCapabilityAchievable
 
 # ----------
 # Run server

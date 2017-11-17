@@ -17,7 +17,7 @@ setup_dir = os.path.dirname(os.path.abspath(__file__))
 # make sure we use latest info from local code
 sys.path.insert(0, setup_dir)
 
-readme_filename = os.path.join(setup_dir, 'README.rst')
+readme_filename = os.path.join(setup_dir, 'README.md')
 with open(readme_filename) as file:
     long_description = file.read()
 

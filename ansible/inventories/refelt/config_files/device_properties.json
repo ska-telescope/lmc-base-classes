@@ -2,22 +2,18 @@
     "api_version": "v1",
     "devices": {
         "ref/A/1": {
-            "GroupDefinitions": []
+            "GroupDefinitions":
+            [
+                {"group_name": "children",
+                    "devices": ["ref/achild/11", "ref/achild/12"]}
+	            ]
         },
         "ref/A/2": {
-            "GroupDefinitions": []
-        },
-        "ref/achild/11": {
-            "GroupDefinitions": []
-        },
-        "ref/achild/12": {
-            "GroupDefinitions": []
-        },
-        "ref/achild/21": {
-            "GroupDefinitions": []
-        },
-        "ref/achild/22": {
-            "GroupDefinitions": []
+            "GroupDefinitions":
+            [
+                {"group_name": "children",
+                    "devices": ["ref/achild/21", "ref/achild/22"]}
+	            ]
         },
         "ref/elt/master": {
             "GroupDefinitions":
@@ -40,59 +36,41 @@
                                         "ref/switch/B", "ref/pdu/B"]}
             ]
         },
-        "ref/elt/logger": {
-            "GroupDefinitions": []
-        },
-        "ref/central/logger": {
-            "GroupDefinitions": []
-        },
         "ref/elt/telstate": {
-            "Config": [],
-            "GroupDefinitions": []
+            "Config": []
         },
         "ref/elt/alarmhandler": {
-            "Config": [],
-            "GroupDefinitions": []
+            "Config": []
         },
-        "ref/pdu_control/rackA": {
-            "model_key": "ref/pdu/rackA",
-            "GroupDefinitions": []
+        "ref/sim_control/pduA": {
+            "model_key": "ref/pdu/rackA"
         },
-        "ref/pdu_control/rackB": {
-            "model_key": "ref/pdu/rackB",
-            "GroupDefinitions": []
+        "ref/sim_control/pduB": {
+            "model_key": "ref/pdu/rackB"
         },
-        "ref/server_control/1": {
-            "model_key": "ref/server/1",
-            "GroupDefinitions": []
+        "ref/sim_control/svr1": {
+            "model_key": "ref/server/1"
         },
-        "ref/server_control/2": {
-            "model_key": "ref/server/2",
-            "GroupDefinitions": []
+        "ref/sim_control/svr2": {
+            "model_key": "ref/server/2"
         },
-        "ref/server_control/3": {
-            "model_key": "ref/server/3",
-            "GroupDefinitions": []
+        "ref/sim_control/svr3": {
+            "model_key": "ref/server/3"
         },
-        "ref/server_control/4": {
-            "model_key": "ref/server/4",
-            "GroupDefinitions": []
+        "ref/sim_control/svr4": {
+            "model_key": "ref/server/4"
         },
-        "ref/rack_control/A": {
-            "model_key": "ref/rack/A",
-            "GroupDefinitions": []
+        "ref/sim_control/rackA": {
+            "model_key": "ref/rack/A"
         },
-        "ref/rack_control/B": {
-            "model_key": "ref/rack/B",
-            "GroupDefinitions": []
+        "ref/sim_control/rackB": {
+            "model_key": "ref/rack/B"
         },
-        "ref/switch_control/A": {
-            "model_key": "ref/switch/A",
-            "GroupDefinitions": []
+        "ref/sim_control/switchA": {
+            "model_key": "ref/switch/A"
         },
-        "ref/switch_control/B": {
-            "model_key": "ref/switch/B",
-            "GroupDefinitions": []
+        "ref/sim_control/switchB": {
+            "model_key": "ref/switch/B"
         }
     }
 }

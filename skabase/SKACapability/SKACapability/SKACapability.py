@@ -145,8 +145,8 @@ class SKACapability(SKAObsDevice):
     # --------
 
     @command(
-    dtype_in='uint16',
-    doc_in="The number of instances to configure for this Capability.",
+    dtype_in='uint16', 
+    doc_in="The number of instances to configure for this Capability.", 
     )
     @DebugIt()
     def ConfigureInstances(self, argin):

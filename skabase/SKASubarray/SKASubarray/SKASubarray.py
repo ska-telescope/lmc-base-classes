@@ -310,8 +310,8 @@ class SKASubarray(SKAObsDevice):
         # PROTECTED REGION END #    //  SKASubarray.Abort
 
     @command(
-    dtype_in='DevVarLongStringArray',
-    doc_in="[Number of instances to add][Capability types]",
+    dtype_in='DevVarLongStringArray', 
+    doc_in="[Number of instances to add][Capability types]", 
     )
     @DebugIt()
     def ConfigureCapability(self, argin):
@@ -339,8 +339,8 @@ class SKASubarray(SKAObsDevice):
         # PROTECTED REGION END #    //  SKASubarray.ConfigureCapability
 
     @command(
-    dtype_in='str',
-    doc_in="Capability type",
+    dtype_in='str', 
+    doc_in="Capability type", 
     )
     @DebugIt()
     def DeconfigureAllCapabilities(self, argin):
@@ -350,8 +350,8 @@ class SKASubarray(SKAObsDevice):
         # PROTECTED REGION END #    //  SKASubarray.DeconfigureAllCapabilities
 
     @command(
-    dtype_in='DevVarLongStringArray',
-    doc_in="[Number of instances to remove][Capability types]",
+    dtype_in='DevVarLongStringArray', 
+    doc_in="[Number of instances to remove][Capability types]", 
     )
     @DebugIt()
     def DeconfigureCapability(self, argin):
@@ -374,10 +374,10 @@ class SKASubarray(SKAObsDevice):
         # PROTECTED REGION END #    //  SKASubarray.DeconfigureCapability
 
     @command(
-    dtype_in=('str',),
-    doc_in="List of Resources to add to subarray.",
-    dtype_out=('str',),
-    doc_out="A list of Resources added to the subarray.",
+    dtype_in=('str',), 
+    doc_in="List of Resources to add to subarray.", 
+    dtype_out=('str',), 
+    doc_out="A list of Resources added to the subarray.", 
     )
     @DebugIt()
     def AssignResources(self, argin):
@@ -434,8 +434,8 @@ class SKASubarray(SKAObsDevice):
         # PROTECTED REGION END #    //  SKASubarray.Pause
 
     @command(
-    dtype_out=('str',),
-    doc_out="List of resources removed from the subarray.",
+    dtype_out=('str',), 
+    doc_out="List of resources removed from the subarray.", 
     )
     @DebugIt()
     def ReleaseAllResources(self):
@@ -446,6 +446,18 @@ class SKASubarray(SKAObsDevice):
         # PROTECTED REGION END #    //  SKASubarray.ReleaseAllResources
 
     @command(
+    dtype_in=('str',), 
+    doc_in="List of resources to remove from the subarray.", 
+    dtype_out=('str',), 
+    doc_out="List of resources removed from the subarray.", 
+    )
+    @DebugIt()
+    def ReleaseResources(self, argin):
+        # PROTECTED REGION ID(SKASubarray.ReleaseResources) ENABLED START #
+        return [""]
+        # PROTECTED REGION END #    //  SKASubarray.ReleaseResources
+
+    @command(
     )
     @DebugIt()
     def Resume(self):
@@ -454,7 +466,7 @@ class SKASubarray(SKAObsDevice):
         # PROTECTED REGION END #    //  SKASubarray.Resume
 
     @command(
-    dtype_in=('str',),
+    dtype_in=('str',), 
     )
     @DebugIt()
     def Scan(self, argin):

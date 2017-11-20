@@ -3,7 +3,7 @@
     "global": {
         "CentralLoggingTarget": "central/logger/1",
         "ElementLoggingTarget": "ref/elt/logger",
-        "StorageLoggingTarget": "/dev/null",
+        "StorageLoggingTarget": "/dev/log",
         "CentralLoggingLevelDefault": 2,
         "ElementLoggingLevelDefault": 3,
         "StorageLoggingLevelDefault": 3

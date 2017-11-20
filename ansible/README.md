@@ -22,7 +22,7 @@ ssh kat@levpro.devXX.camlab.kat.ac.za
 ```
 
 ## Install latest version of pip (required on Ubuntu 14.04):
-Old Ubuntu packages cause an issue, so remove manually.  Can###34m~@~Yt easily be done using Ansible, since removing the Python packages removes ansible while it is running!
+Old Ubuntu packages cause an issue, so remove manually.  Can't easily be done using Ansible, since removing the Python packages removes ansible while it is running!
 ```
 sudo apt-get remove -y python-setuptools python-pkg-resources
 cd /tmp

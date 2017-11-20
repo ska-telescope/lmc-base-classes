@@ -17,7 +17,7 @@
   - name: Deregister RefElt servers, classes, devices
     deregister_selected_servers:
       do_what: "delete_servers"
-      startswith: "SvrRef,SKALogger"
+      startswith: "SvrRef,SvrSim,SKALogger"
   tags:
     - deregister-refelts-delete-in-tangodb
 
@@ -29,7 +29,7 @@
   - name: Stop all servers starting with SvrRef in Astor
     deregister_selected_servers:
       do_what: "stop_servers"
-      startswith: "SvrRef,SKALogger"
+      startswith: "SvrRef,SvrSim,SKALogger"
   tags:
     - deregister-refelts-stop-in-astor
 ...

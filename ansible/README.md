@@ -48,7 +48,7 @@ git clone https://github.com/ska-sa/levpro ~/src/levpro
 cd ~/src/levpro/ansible
 ./play-task.sh deploy-tangobox
 ./play-task.sh deploy-sw
-./play-task.sh refresh-sw
+./play-task.sh refresh-sw  # Not required for fresh node
 ./play-task.sh install-sw
 ./play-task.sh generate-sw
 ./play-task.sh register-refelt

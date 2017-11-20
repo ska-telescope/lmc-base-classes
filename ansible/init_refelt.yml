@@ -1,0 +1,8 @@
+---
+# file: init_refelt.yml
+
+- import_playbook: deploy_tangobox.yml
+- import_playbook: deploy_sw.yml
+- import_playbook: generate_sw.yml
+- import_playbook: install_sw.yml
+- import_playbook: register_refelt.yml

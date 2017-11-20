@@ -4,7 +4,7 @@
           "levpro": [
               {
                   "startup_level": 4,
-                  "server_instances": ["TangoRestServer/test"]
+                  "server_instances": ["TangoRestServer/rest"]
               }
           ]
      }

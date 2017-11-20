@@ -5,7 +5,7 @@
             "server_name": "TangoRestServer",
             "server_instances":
                 [{
-                    "instance_name": "test",
+                    "instance_name": "rest",
                     "device_classes":
                     [{
                         "class_name": "TangoRestServer",

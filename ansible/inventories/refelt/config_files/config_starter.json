@@ -9,7 +9,6 @@
               {
                   "startup_level": 2,
                   "server_instances": ["SvrSimPdu/A", "SvrSimPdu/B",
-                                       "SvrSimServer/all",
                                        "SvrSimServer/1", "SvrSimServer/2",
                                        "SvrSimServer/3", "SvrSimServer/4",
                                        "SvrSimRack/A", "SvrSimRack/B",

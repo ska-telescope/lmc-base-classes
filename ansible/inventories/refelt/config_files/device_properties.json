@@ -93,10 +93,10 @@
             "Config": []
         },
         "sim_control/pdu/A": {
-            "model_key": "ref/pdu/rackA"
+            "model_key": "ref/pdu/A"
         },
         "sim_control/pdu/B": {
-            "model_key": "ref/pdu/rackB"
+            "model_key": "ref/pdu/B"
         },
         "sim_control/server/1": {
             "model_key": "ref/server/1"

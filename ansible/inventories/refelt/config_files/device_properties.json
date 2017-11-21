@@ -1,27 +1,36 @@
 {
     "api_version": "v1",
+    "global": {
+        "CentralLoggingTarget": "central/logger/1",
+        "ElementLoggingTarget": "ref/elt/logger",
+        "StorageLoggingTarget": "/dev/log",
+        "CentralLoggingLevelDefault": 2,
+        "ElementLoggingLevelDefault": 3,
+        "StorageLoggingLevelDefault": 3
+    },
     "devices": {
-        "ref/A/1": {
-            "GroupDefinitions": []
-        },
-        "ref/A/2": {
-            "GroupDefinitions": []
-        },
-        "ref/achild/11": {
-            "GroupDefinitions": []
-        },
-        "ref/achild/12": {
-            "GroupDefinitions": []
-        },
-        "ref/achild/21": {
-            "GroupDefinitions": []
-        },
-        "ref/achild/22": {
-            "GroupDefinitions": []
-        },
-        "ref/elt/master": {
+        "ref/a/1": {
             "GroupDefinitions":
             [
+                {"group_name": "children",
+                    "devices": ["ref/achild/11", "ref/achild/12"]}
+	            ]
+        },
+        "ref/a/2": {
+            "GroupDefinitions":
+            [
+                {"group_name": "children",
+                    "devices": ["ref/achild/21", "ref/achild/22"]}
+            ]
+        },
+        "ref/elt/master": {
+            "NrSubarrays": 4,
+            "CapabilityTypes": ["calca", "calcb", "procc", "procd"],
+            "GroupDefinitions":
+            [
+                {"group_name": "subarrays",
+                    "devices": ["ref/subarray/1", "ref/subarray/2",
+                                "ref/subarray/3", "ref/subarray/4"]},
                 {"group_name": "servers",
                     "devices": ["ref/server/1", "ref/server/2",
                                 "ref/server/3", "ref/server/4"]},
@@ -34,65 +43,87 @@
                     "subgroups": [
                         {"group_name": "rackA",
                             "devices": ["ref/server/1", "ref/server/2",
-                                        "ref/switch/A", "ref/pdu/A"]}]},
+                                        "ref/switch/A", "ref/pdu/A"]},
                         {"group_name": "rackB",
                             "devices": ["ref/server/3", "ref/server/4",
                                         "ref/switch/B", "ref/pdu/B"]}
+                        ]
+                }
+            ]
+        },
+        "ref/subarray/1": {
+            "GroupDefinitions":
+            [
+                {"group_name": "capabilities",
+                    "devices": ["ref/cap/sub1calca", "ref/cap/sub1calcb",
+                                "ref/cap/sub1procc", "ref/cap/sub1procd"]}
+            ]
+        },
+        "ref/subarray/2": {
+            "GroupDefinitions":
+            [
+                {"group_name": "capabilities",
+                    "devices": ["ref/cap/sub2calca", "ref/cap/sub2calcb",
+                                "ref/cap/sub2procc", "ref/cap/sub2procd"]}
+            ]
+        },
+        "ref/subarray/3": {
+            "GroupDefinitions":
+            [
+                {"group_name": "capabilities",
+                    "devices": ["ref/cap/sub3calca", "ref/cap/sub3calcb",
+                                "ref/cap/sub3procc", "ref/cap/sub3procd"]}
+            ]
+        },
+        "ref/subarray/4": {
+            "GroupDefinitions":
+            [
+                {"group_name": "capabilities",
+                    "devices": ["ref/cap/sub4calca", "ref/cap/sub4calcb",
+                                "ref/cap/sub4procc", "ref/cap/sub4procd"]}
             ]
         },
         "ref/elt/logger": {
-            "GroupDefinitions": []
-        },
-        "ref/central/logger": {
-            "GroupDefinitions": []
+            "Config": []
         },
         "ref/elt/telstate": {
-            "Config": [],
-            "GroupDefinitions": []
+            "TelStateConfigFile": []
         },
         "ref/elt/alarmhandler": {
-            "Config": [],
-            "GroupDefinitions": []
+            "Config": []
         },
-        "ref/pdu_control/rackA": {
-            "model_key": "ref/pdu/rackA",
-            "GroupDefinitions": []
+        "sim_control/pdu/A": {
+            "model_key": "ref/pdu/A"
         },
-        "ref/pdu_control/rackB": {
-            "model_key": "ref/pdu/rackB",
-            "GroupDefinitions": []
+        "sim_control/pdu/B": {
+            "model_key": "ref/pdu/B"
         },
-        "ref/server_control/1": {
-            "model_key": "ref/server/1",
-            "GroupDefinitions": []
+        "sim_control/server/1": {
+            "model_key": "ref/server/1"
         },
-        "ref/server_control/2": {
-            "model_key": "ref/server/2",
-            "GroupDefinitions": []
+        "sim_control/server/2": {
+            "model_key": "ref/server/2"
         },
-        "ref/server_control/3": {
-            "model_key": "ref/server/3",
-            "GroupDefinitions": []
+        "sim_control/server/3": {
+            "model_key": "ref/server/3"
         },
-        "ref/server_control/4": {
-            "model_key": "ref/server/4",
-            "GroupDefinitions": []
+        "sim_control/server/4": {
+            "model_key": "ref/server/4"
         },
-        "ref/rack_control/A": {
-            "model_key": "ref/rack/A",
-            "GroupDefinitions": []
+        "sim_control/rack/A": {
+            "model_key": "ref/rack/A"
         },
-        "ref/rack_control/B": {
-            "model_key": "ref/rack/B",
-            "GroupDefinitions": []
+        "sim_control/rack/B": {
+            "model_key": "ref/rack/B"
         },
-        "ref/switch_control/A": {
-            "model_key": "ref/switch/A",
-            "GroupDefinitions": []
+        "sim_control/switch/A": {
+            "model_key": "ref/switch/A"
         },
-        "ref/switch_control/B": {
-            "model_key": "ref/switch/B",
-            "GroupDefinitions": []
+        "sim_control/switch/B": {
+            "model_key": "ref/switch/B"
+        },
+        "central/logger/1": {
+            "Config": []
         }
     }
 }

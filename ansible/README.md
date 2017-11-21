@@ -15,7 +15,50 @@ Added deregister_refelts to remove registrations in Tango DB and Astor so that w
 Get the desired inventories from ansible variables instead of loading files
 
 
-## play-task - A utility to run a single specific task
+# To get going with a fresh node:
+```
+fab proxmox.create_nodes_by_group:devXX,
+ssh kat@levpro.devXX.camlab.kat.ac.za
+```
+
+## Install latest version of pip (required on Ubuntu 14.04):
+Old Ubuntu packages cause an issue, so remove manually.  Can't easily be done using Ansible, since removing the Python packages removes ansible while it is running!
+```
+sudo apt-get remove -y python-setuptools python-pkg-resources
+cd /tmp
+wget --no-check-certificate https://bootstrap.pypa.io/get-pip.py
+sudo python get-pip.py
+rm get-pip.py
+cd
+```
+
+## Add this apt repo to get recent version of ansible (>=2.3.2)
+## Needed on Ubuntu 14.04, might not be required on later releases
+
+```
+sudo add-apt-repository ppa:ansible/ansible
+sudo apt-get update
+sudo apt-get install ansible
+mkdir ~/src
+git clone https://github.com/ska-sa/levpro ~/src/levpro
+```
+
+## Deploy tangobox and a levpro RefElt on a fresh node
+```
+cd ~/src/levpro/ansible
+./play-task.sh deploy-tangobox
+./play-task.sh deploy-sw
+./play-task.sh refresh-sw  # Not required for fresh node
+./play-task.sh install-sw
+./play-task.sh generate-sw
+./play-task.sh register-refelt
+Optional:
+./play-task.sh register-my-refelt devXn
+./play-task.sh deregister_refelts.yml
+```
+
+
+# play-task - A utility to run a single specific task
 (based on ROLE tags and TASK IDs described in NOTES below)
 
 To see all task tags execute:
@@ -103,47 +146,9 @@ ansible-playbook -i hosts site.yml --limit local --tags "install-sw-skabase"
 ansible-playbook -i hosts site.yml --limit local --tags "install-sw-refelt"
 ```
 
-### To get going with a fresh node:
-```
-fab proxmox.create_nodes_by_group:devXX,
-ssh kat@levpro.devXX.camlab.kat.ac.za
-```
-
-
-# Install latest version of pip (required on Ubuntu 14.04):
-Old Ubuntu packages cause an issue, so remove manually.  Can’t easily be done using Ansible, since removing the Python packages removes ansible while it is running!
-```
-sudo apt-get remove -y python-setuptools python-pkg-resources
-cd /tmp
-wget --no-check-certificate https://bootstrap.pypa.io/get-pip.py
-sudo python get-pip.py
-rm get-pip.py
-cd  
-```
-
-# Add this apt repo to get recent version of ansible (>=2.3.2)
-# Needed on Ubuntu 14.04, might not be required on later releases
-
-```
-sudo add-apt-repository ppa:ansible/ansible
-sudo apt-get update
-sudo apt-get install ansible
-mkdir ~/src
-git clone https://github.com/ska-sa/levpro ~/src/levpro
-```
-
-### Deploy tangobox and a levpro RefElt on a fresh node
-```
-cd ~/src/levpro/ansible
-./play-task.sh deploy-tangobox
-./play-task.sh deploy-sw
-./play-task.sh refresh-sw
-./play-task.sh install-sw
-./play-task.sh generate-sw
-./play-task.sh register-refelt
-```
 
 ### To regenerate POGO output
+When XMI or code has been changed
 ```
 cd ~/src/levpro/ansible
 ./play-task.sh generate-sw

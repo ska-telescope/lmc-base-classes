@@ -175,9 +175,9 @@ class SKAMaster(SKABaseDevice):
     # --------
 
     @command(
-    dtype_in='DevVarLongStringArray',
-    doc_in="[nrInstances][Capability types]",
-    dtype_out='bool',
+    dtype_in='DevVarLongStringArray', 
+    doc_in="[nrInstances][Capability types]", 
+    dtype_out='bool', 
     )
     @DebugIt()
     def isCapabilityAchievable(self, argin):

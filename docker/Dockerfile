@@ -14,53 +14,84 @@ ENV DEBIAN_FRONTEND noninteractive
 # Avoid ERROR: invoke-rc.d: policy-rc.d denied execution of start.
 RUN sed -i "s/^exit 101$/exit 0/" /usr/sbin/policy-rc.d
 
-# Install apt utilities and common properties
-RUN apt-get install -y --no-install-recommends apt-utils
-RUN apt-get install -y software-properties-common \
-                       python-software-properties
-RUN apt-get update
+# Install base deb packages
+RUN apt-get install -y --force-yes \
+                        language-pack-en \
+                        bind9-host \
+                        tmux \
+                        screen \
+                        mosh \
+                        psmisc \
+                        python \
+                        python-pip \
+                        python-dev \
+                        rsync \
+                        vim \
+                        wget \
+                        build-essential \
+                        apt-transport-https \
+                        software-properties-common \
+                        perl \
+                        perl-modules \
+                        git
 
-# Install deb packages
-RUN apt-get install -y --force-yes aptitude \
-                       libffi-dev \
-                       build-essential \
-                       git-core \
-                       python-dev \
-                       python-pip \
-                       libboost-python-dev \
-                       screen \
-                       xauth \
-                       lsof
+# Remove some packages from the base template
+RUN apt-get -y purge postfix
 
 # Upgrade pip to latest
 RUN pip install --upgrade pip
-
 
 # Installing ansible
 RUN add-apt-repository -y ppa:ansible/ansible
 RUN apt-get update
 RUN apt-get install -y ansible
 
-# Install common software properties
-RUN apt-get install -y software-properties-common
-RUN apt-get update
+# Install other deb packages
+RUN apt-get install -y --force-yes \
+                        aptitude \
+                        libffi-dev \
+                        build-essential \
+                        git-core \
+                        language-pack-en-base \
+                        libatk1.0-dev \
+                        libcairo2-dev \
+                        libevent-dev \
+                        libfontconfig1-dev \
+                        libfreetype6-dev \
+                        libpng12-dev \
+                        libpq-dev \
+                        python-cairo-dev \
+                        libboost-python-dev \
+                        gfortran \
+                        screen \
+                        zlib1g-dev \
+                        tzdata \
+                        ntpdate \
+                        liblapack-dev \
+                        libf2c2-dev \
+                        libatlas-base-dev \
+                        libssl0.9.8 \
+                        man-db \
+                        manpages \
+                        ftp \
+                        gawk \
+                        telnet \
+                        unzip \
+                        tcpdump \
+                        xauth \
+                        lsof
+
+# Install mysql
+RUN apt-get install -y mysql-client-core-5.6 \
+                       mysql-client-5.6 \
+                       mysql-server-5.6
 
 # Add tango ppa for latest tango core
 RUN add-apt-repository ppa:lmc-cam-ska/tango
 RUN apt-get update
 
-# Install mysql
-RUN apt-get install -y mysql-client-5.6 \
-                       mysql-client-core-5.6 \
-                       mysql-server-5.6 \
-                       mysql-server-core-5.6
-
 # Install tango core packages
-RUN apt-get install -y tango-db \
-                       tango-common \
-                       tango-starter \
-                       tango-test \
-                       tango-accesscontrol \
+RUN apt-get install -y tango-common \
                        liblog4tango5v5 \
                        libtango9 \
                        libtango-doc \
@@ -68,20 +99,27 @@ RUN apt-get install -y tango-db \
                        liblog4tango-dev \
                        liblog4tango-doc
 
+# Start mysql & install tango database packages
+RUN service mysql start && apt-get install -y \
+                       tango-db \
+                       tango-starter \
+                       tango-test \
+                       tango-accesscontrol
 
 # Pip install tango support packages
-#RUN pip install numpy \
-#                ipython \
-#                fandango \
-##                tango-simlib \
-#                jsonschema \
-#                pytest \
-#                mock
+RUN pip install numpy \
+                enum34 \
+                ipython \
+                fandango \
+                tango-simlib \
+                jsonschema \
+                pytest \
+                mock
 
 # Pip install itango cli
-#RUN pip install tango-admin \
-#                six \
-#                itango
+RUN pip install tango-admin \
+                six \
+                itango
 
 # Install virtual monitor
 RUN apt-get install -y xvfb
@@ -100,10 +138,6 @@ RUN touch /home/tango/.bashrc
 ENV ORB_PORT=10000
 ENV TANGO_HOST=127.0.0.1:${ORB_PORT}
 EXPOSE ${ORB_PORT}
-
-# Create user
-RUN useradd -ms /bin/bash tango
-USER tango
 
 # Configure supervisord
 COPY supervisord.conf /etc/supervisor/conf.d/

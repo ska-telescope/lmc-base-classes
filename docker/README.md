@@ -12,6 +12,7 @@ The primary use of this Docker image is to use it in our Continuous Integration 
 But you may also run it on your own machine.
 
 First build the image:
+
 ~~~~
 docker image build . -t tango
 ~~~~
@@ -19,7 +20,13 @@ docker image build . -t tango
 Start up the tango container:
 
 ~~~~
-docker run --rm --name tango -v ../../levpro:/home/tango/src/levpro -p 5666:5666 -it tango
+docker run --rm --name tango -v -p 5666:5666 -it tango:latest
+~~~~
+
+or start with levpro project mounted in container for develepment
+
+~~~~
+docker run --rm --name tango -v ../../levpro:/home/tango/src/levpro -p 5666:5666 -it tango:latest
 ~~~~
 
 Then you can log into the container with:
@@ -28,4 +35,6 @@ Then you can log into the container with:
 docker exec -it tango bash
 ~~~~
 
-Note: This image does not contain levpro itself (since it is designed for installing development versions of lepro) but you can install it easily **from your container** (for more details, see [LEvPro Deployment Notes](https://docs.google.com/document/d/12f495FEMOi0g3bJjoZL3icZaCCr7iSjTY3jToFqA2Ns/edit#heading=h.tzfrhvg9rcoo)).
+Note: This image does not contain levpro itself (since it is designed for installing development versions of levpro) but you can
+install it easily **from your container** (for more details, see [LEvPro Deployment Notes](
+https://docs.google.com/document/d/12f495FEMOi0g3bJjoZL3icZaCCr7iSjTY3jToFqA2Ns/edit#heading=h.tzfrhvg9rcoo)).

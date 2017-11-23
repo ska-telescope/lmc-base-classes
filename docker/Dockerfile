@@ -50,7 +50,6 @@ RUN apt-get install -y ansible
 RUN apt-get install -y --force-yes \
                         aptitude \
                         libffi-dev \
-                        build-essential \
                         git-core \
                         language-pack-en-base \
                         libatk1.0-dev \
@@ -63,7 +62,6 @@ RUN apt-get install -y --force-yes \
                         python-cairo-dev \
                         libboost-python-dev \
                         gfortran \
-                        screen \
                         zlib1g-dev \
                         tzdata \
                         ntpdate \
@@ -109,7 +107,7 @@ RUN service mysql start && apt-get install -y \
 # Pip install tango support packages
 RUN pip install numpy \
                 enum34 \
-                ipython \
+                "ipython<6.0" \
                 fandango \
                 tango-simlib \
                 jsonschema \
@@ -118,7 +116,7 @@ RUN pip install numpy \
 
 # Pip install itango cli
 RUN pip install tango-admin \
-                six \
+                "six>=1.9.0" \
                 itango
 
 # Install virtual monitor

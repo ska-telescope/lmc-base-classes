@@ -14,25 +14,25 @@ But you may also run it on your own machine.
 First build the image:
 
 ~~~~
-docker image build . -t tango
+docker build . -t tango-levpro
 ~~~~
 
 Start up the tango container:
 
 ~~~~
-docker run --rm --name tango -v -p 5666:5666 -it tango:latest
+docker run --rm --name tango -v -p 5666:5666 -it tango-levpro:latest
 ~~~~
 
 or start with levpro project mounted in container for develepment
 
 ~~~~
-docker run --rm --name tango -v ../../levpro:/home/tango/src/levpro -p 5666:5666 -it tango:latest
+docker run --rm --name levpro -v ../../levpro:/home/tango/src/levpro -p 5666:5666 -it tango-levpro:latest
 ~~~~
 
 Then you can log into the container with:
 
 ~~~~
-docker exec -it tango bash
+docker exec -it levpro bash
 ~~~~
 
 Note: This image does not contain levpro itself (since it is designed for installing development versions of levpro) but you can

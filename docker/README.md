@@ -20,13 +20,13 @@ docker build . -t tango-levpro
 Start up the tango container:
 
 ~~~~
-docker run --rm --name tango -v -p 5666:5666 -it tango-levpro:latest
+docker run --rm --name tango -it tango-levpro:latest
 ~~~~
 
 or start with levpro project mounted in container for develepment
 
 ~~~~
-docker run --rm --name levpro -v ../../levpro:/home/tango/src/levpro -p 5666:5666 -it tango-levpro:latest
+docker run --rm --name levpro -v ../../levpro:/home/tango/src/levpro -it tango-levpro:latest
 ~~~~
 
 Then you can log into the container with:

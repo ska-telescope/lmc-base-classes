@@ -23,7 +23,7 @@ Start up the tango container:
 docker run --rm --name tango -it tango-levpro:latest
 ~~~~
 
-or start with levpro project (/home/user/src/levpro) mounted in container for develepment
+or start with levpro project (/home/user/src/levpro) mounted in container for development
 
 ~~~~
 docker run --rm --name levpro -v /home/user/src/levpro:/home/tango/src/levpro -it tango-levpro:latest

@@ -16,24 +16,24 @@ RUN sed -i "s/^exit 101$/exit 0/" /usr/sbin/policy-rc.d
 
 # Install base deb packages
 RUN apt-get install -y --force-yes \
-                        language-pack-en \
-                        bind9-host \
-                        tmux \
-                        screen \
-                        mosh \
-                        psmisc \
-                        python \
-                        python-pip \
-                        python-dev \
-                        rsync \
-                        vim \
-                        wget \
-                        build-essential \
                         apt-transport-https \
-                        software-properties-common \
+                        bind9-host \
+                        build-essential \
+                        git \
+                        language-pack-en \
+                        mosh \
                         perl \
                         perl-modules \
-                        git
+                        psmisc \
+                        python \
+                        python-dev \
+                        python-pip \
+                        rsync \
+                        screen \
+                        software-properties-common \
+                        tmux \
+                        vim \
+                        wget 
 
 # Remove some packages from the base template
 RUN apt-get -y purge postfix
@@ -49,35 +49,35 @@ RUN apt-get install -y ansible
 # Install other deb packages
 RUN apt-get install -y --force-yes \
                         aptitude \
-                        libffi-dev \
+                        ftp \
+                        gawk \
+                        gfortran \
                         git-core \
                         language-pack-en-base \
                         libatk1.0-dev \
+                        libatlas-base-dev \
+                        libboost-python-dev \
                         libcairo2-dev \
                         libevent-dev \
+                        libf2c2-dev \
+                        libffi-dev \
                         libfontconfig1-dev \
                         libfreetype6-dev \
+                        liblapack-dev \
                         libpng12-dev \
                         libpq-dev \
-                        python-cairo-dev \
-                        libboost-python-dev \
-                        gfortran \
-                        zlib1g-dev \
-                        tzdata \
-                        ntpdate \
-                        liblapack-dev \
-                        libf2c2-dev \
-                        libatlas-base-dev \
                         libssl0.9.8 \
-                        man-db \
+                        lsof \
                         manpages \
-                        ftp \
-                        gawk \
-                        telnet \
-                        unzip \
+                        man-db \
+                        ntpdate \
+                        python-cairo-dev \
                         tcpdump \
+                        telnet \
+                        tzdata \
+                        unzip \
                         xauth \
-                        lsof
+                        zlib1g-dev
 
 # Install mysql
 RUN apt-get install -y mysql-client-core-5.6 \
@@ -91,33 +91,34 @@ RUN apt-get update
 # Install tango core packages
 RUN apt-get install -y tango-common \
                        liblog4tango5v5 \
-                       libtango9 \
-                       libtango-doc \
-                       libtango-dev \
                        liblog4tango-dev \
-                       liblog4tango-doc
+                       liblog4tango-doc \
+                       libtango-dev \
+                       libtango-doc \
+                       libtango9 
 
 # Start mysql & install tango database packages
 RUN service mysql start && apt-get install -y \
+                       tango-accesscontrol \
                        tango-db \
                        tango-starter \
-                       tango-test \
-                       tango-accesscontrol
+                       tango-test 
 
 # Pip install tango support packages
-RUN pip install numpy \
-                enum34 \
+RUN pip install enum34 \
                 "ipython<6.0" \
                 fandango \
-                tango-simlib \
                 jsonschema \
+                mock \
+                numpy \
                 pytest \
-                mock
+                tango-simlib
 
 # Pip install itango cli
-RUN pip install tango-admin \
+RUN pip install itango \
                 "six>=1.9.0" \
-                itango
+                tango-admin 
+                
 
 # Install virtual monitor
 RUN apt-get install -y xvfb

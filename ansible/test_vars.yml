@@ -1,0 +1,66 @@
+# TESTTING WITH :
+# ansible-playbook -i hosts test_vars.yml --limit devl5 --verbose
+
+- hosts: all
+  vars:
+    testVars: "{{ lookup('file', '{{ software_root}}/levpro/ansible/inventories/{{ hostvars[inventory_hostname].element_details.name }}/config_files/test_vars.json') | from_json }}"
+  tasks:
+    - name: Print my hostvars
+      debug:
+          msg="{{item}}"
+      with_items:
+          - "hostvars[{{ inventory_hostname }}] = {{ hostvars[inventory_hostname] }}"
+      tags:
+        - prints
+
+    - name: Print vars
+      debug:
+          msg={{item}}
+      with_items:
+          - "software_root = {{ software_root }}"
+          - "ansible_distribution = {{ ansible_distribution }}"
+          - "ansible_hostname = {{ ansible_hostname }}"
+          - "ansible_nodename = {{ ansible_nodename }}"
+          - "inventory_hostname = {{ inventory_hostname }}"
+          - "hostvars[{{ inventory_hostname }}].group_names = {{ hostvars[inventory_hostname].group_names }}"
+          - "hostvars[{{ inventory_hostname }}].element_details = {{ hostvars[inventory_hostname].element_details }}"
+          - "element_details.type = {{ hostvars[inventory_hostname].element_details.type }}"
+          - "element_details.name = {{ hostvars[inventory_hostname].element_details.name }}"
+          - "element_details.id = {{ hostvars[inventory_hostname].element_details.id }}"
+      tags:
+        - prints
+
+
+    - name: Extract my vars
+      set_fact:
+        my_element_details: "{{ hostvars[inventory_hostname].element_details }}"
+        my_groups: "{{ hostvars[inventory_hostname].group_names }}"
+        my_name: "{{ hostvars[inventory_hostname].element_details.name }}"
+        my_id: "{{ hostvars[inventory_hostname].element_details.id }}"
+      tags:
+        - prints
+
+    - name: Print my vars
+      debug:
+          msg="{{item}}"
+      with_items:
+          - "my_name = {{ my_name }}"
+          - "my_id = {{ my_id }}"
+          - "my_groups = {{ my_groups }}"
+      tags:
+        - prints
+
+    - name: testVars find blue cars
+      with_dict: "{{ testVars['queue'] }}"
+      shell: |
+        if echo "{{ item.value.color }}" | grep -q "blue" ; then
+            echo "success"
+        fi
+
+    - name: testVars find my id
+      with_dict: "{{ testVars['queue'] }}"
+      shell: |
+        if echo "{{ item.value.car }}" | grep -q "{{ my_id }}" ; then
+            echo "success - found {{ my_id }} at {{ item.key }}"
+        fi
+

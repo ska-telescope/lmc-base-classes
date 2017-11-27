@@ -11,37 +11,42 @@
   debug:
       msg="{{item}}"
   with_items:
-      - "hostvars[{{ inventory_hostname }}] = {{hostvars[inventory_hostname]}}"
+      - "hostvars[{{ inventory_hostname }}] = {{ hostvars[inventory_hostname] }}"
 
 - name: Print vars
   debug:
       msg={{item}}
   with_items:
-      - "software_root = {{software_root}}"
+      - "software_root = {{ software_root }}"
       - "ansible_distribution = {{ ansible_distribution }}"
       - "ansible_hostname = {{ ansible_hostname }}"
       - "ansible_nodename = {{ ansible_nodename }}"
       - "inventory_hostname = {{ inventory_hostname }}"
-      - "hostvars[{{ inventory_hostname }}].group_names = {{hostvars[inventory_hostname].group_names}}"
-      - "hostvars[{{ inventory_hostname }}].element_details = {{hostvars[inventory_hostname].element_details}}"
-      - "element_details.type = {{hostvars[inventory_hostname].element_details.type}}"
-      - "element_details.name = {{hostvars[inventory_hostname].element_details.name}}"
-      - "element_details.id = {{hostvars[inventory_hostname].element_details.id}}"
+      - "hostvars[{{ inventory_hostname }}].group_names = {{ hostvars[inventory_hostname].group_names }}"
+      - "hostvars[{{ inventory_hostname }}].element_details = {{ hostvars[inventory_hostname].element_details }}"
+      - "element_details.type = {{ hostvars[inventory_hostname].element_details.type }}"
+      - "element_details.name = {{ hostvars[inventory_hostname].element_details.name }}"
+      - "element_details.id = {{ hostvars[inventory_hostname].element_details.id }}"
+  tags:
+    - register-myrefelt-prints
 
 
 - name: Extract my vars
   set_fact:
-    my_element_details: "{{hostvars[inventory_hostname].element_details}}"
-    my_groups: "{{hostvars[inventory_hostname].group_names}}"
-    my_name: "{{hostvars[inventory_hostname].element_details.name}}"
+    my_element_details: "{{ hostvars[inventory_hostname].element_details }}"
+    my_groups: "{{ hostvars[inventory_hostname].group_names }}"
+    my_name: "{{ hostvars[inventory_hostname].element_details.name }}"
+  tags:
+    - register-myrefelt-prints
 
 - name: Print my vars
   debug:
       msg="{{item}}"
   with_items:
-      - "my_name = {{my_name}}"
+      - "my_name = {{ my_name }}"
       - "my_groups = {{ my_groups }}"
-
+  tags:
+    - register-myrefelt-prints
 
 
 ###########################################
@@ -51,12 +56,14 @@
 - block:
   - name: Register MyRefElt servers, classes, devices in TANGO db
     register_element:
-        elt_config_file: "{{software_root}}/levpro/ansible/inventories/{{my_name}}/config_files/config_db.json"
+        elt_config_file: "{{ software_root }}/levpro/ansible/inventories/{{ my_name }}/config_files/config_db.json"
+        elt_config_json: "{{ config_db_json }}"
     register: the_result
 
   - name: Register MyRefElt device properties in TANGO db
     register_device_properties:
-      elt_config_file: "{{software_root}}/levpro/ansible/inventories/{{my_name}}/config_files/device_properties.json"
+      elt_config_file: "{{ software_root}}/levpro/ansible/inventories/{{my_name}}/config_files/device_properties.json"
+      elt_config_json: "{{ device_properties_json }}"
     register: the_result
 
   tags:
@@ -79,7 +86,8 @@
 - block:
   - name: Register MyRefElt in Astor and restart with Starter
     start_element:
-      element_config: "{{software_root}}/levpro/ansible/inventories/{{my_name}}/config_files/config_starter.json"
+      element_config: "{{ software_root }}/levpro/ansible/inventories/{{ my_name }}/config_files/config_starter.json"
+      element_config_json: "{{ config_starter_json }}"
     register: the_result
   tags:
     - register-myrefelt-in-astor

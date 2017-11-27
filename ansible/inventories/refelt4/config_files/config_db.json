@@ -2,46 +2,46 @@
     "api_version": "v1",
     "tango_servers": [
       {
-	      "server_name": "SvrRefA",
-	      "server_instances": [
-	          {
-	              "instance_name": "Ref4_1",
-	              "device_classes": [
-	                  {
-	                      "class_name": "RefA",
-	                      "devices": ["ref4/a/1"]
-	                  }
-	              ]
-	          },
-	          {
-	              "instance_name": "Ref4_2",
-	              "device_classes": [
-	                  {
-	                      "class_name": "RefA",
-	                      "devices": ["ref4/a/2"]
-	                  }
-	              ]
-	          }
-	        ]
+          "server_name": "SvrRefA",
+          "server_instances": [
+              {
+                  "instance_name": "1",
+                  "device_classes": [
+                      {
+                          "class_name": "RefA",
+                          "devices": ["{{ my_id }}/a/1"]
+                      }
+                  ]
+              },
+              {
+                  "instance_name": "2",
+                  "device_classes": [
+                      {
+                          "class_name": "RefA",
+                          "devices": ["{{ my_id }}/a/2"]
+                      }
+                  ]
+              }
+            ]
         },
         {
             "server_name": "SvrRefAchild",
             "server_instances": [
                 {
-                    "instance_name": "Ref4_1",
+                    "instance_name": "1",
                     "device_classes": [
                         {
                             "class_name": "RefAchild",
-                            "devices": ["ref4/achild/11", "ref4/achild/12"]
+                            "devices": ["{{ my_id }}/achild/11", "{{ my_id }}/achild/12"]
                         }
                     ]
                 },
                 {
-                    "instance_name": "Ref4_2",
+                    "instance_name": "2",
                     "device_classes": [
                         {
                             "class_name": "RefAchild",
-                            "devices": ["ref4/achild/21", "ref4/achild/22"]
+                            "devices": ["{{ my_id }}/achild/21", "{{ my_id }}/achild/22"]
                         }
                     ]
                 }
@@ -51,11 +51,11 @@
             "server_name": "SvrRefMaster",
             "server_instances": [
                 {
-                    "instance_name": "Ref4_Elt",
+                    "instance_name": "Elt",
                     "device_classes": [
                         {
                             "class_name": "RefMaster",
-                            "devices": ["ref4/elt/master"]
+                            "devices": ["{{ my_id }}/elt/master"]
                         }
                     ]
                 }
@@ -65,20 +65,20 @@
             "server_name": "SKALogger",
             "server_instances": [
                 {
-                    "instance_name": "Ref4_Elt",
+                    "instance_name": "{{ my_id }}",
                     "device_classes": [
                         {
                             "class_name": "SKALogger",
-                            "devices": ["ref4/elt/logger"]
+                            "devices": ["{{ my_id }}/elt/logger"]
                         }
                     ]
                 },
                 {
-                    "instance_name": "Ref4_Central",
+                    "instance_name": "Central",
                     "device_classes": [
                         {
                             "class_name": "SKALogger",
-                            "devices": ["ref4/central/logger"]
+                            "devices": ["central/logger/{{ my_id }}"]
                         }
                     ]
                 }
@@ -88,29 +88,29 @@
             "server_name": "SvrRefAlarmHandler",
             "server_instances": [
                 {
-                    "instance_name": "Ref4_Elt",
+                    "instance_name": "{{ my_id }}",
                     "device_classes": [
                         {
                             "class_name": "RefAlarmHandler",
-                            "devices": ["ref4/elt/alarmhandler"]
+                            "devices": ["{{ my_id }}/elt/alarmhandler"]
                         }
                     ]
                 },
                 {
-                    "instance_name": "Ref4_SubElt1",
+                    "instance_name": "Subelt1",
                     "device_classes": [
                         {
                             "class_name": "RefAlarmHandler",
-                            "devices": ["ref4/subelt1/alarmhandler"]
+                            "devices": ["{{ my_id }}/subelt1/alarmhandler"]
                         }
                     ]
                 },
                 {
-                    "instance_name": "Ref4_SubElt2",
+                    "instance_name": "Subelt2",
                     "device_classes": [
                         {
                             "class_name": "RefAlarmHandler",
-                            "devices": ["ref4/subelt2/alarmhandler"]
+                            "devices": ["{{ my_id }}/subelt2/alarmhandler"]
                         }
                     ]
                 }
@@ -120,11 +120,11 @@
             "server_name": "SvrRefTelState",
             "server_instances": [
                 {
-                    "instance_name": "Ref4_Elt",
+                    "instance_name": "{{ my_id }}",
                     "device_classes": [
                         {
                             "class_name": "RefTelState",
-                            "devices": ["ref4/elt/telstate"]
+                            "devices": ["{{ my_id }}/elt/telstate"]
                         }
                     ]
                 }
@@ -134,20 +134,20 @@
             "server_name": "SvrRefSubarray",
             "server_instances": [
                 {
-                    "instance_name": "Ref4_1",
+                    "instance_name": "1",
                     "device_classes": [
                         {
                             "class_name": "RefSubarray",
-                            "devices": ["ref4/subarray/1"]
+                            "devices": ["{{ my_id }}/subarray/1"]
                         }
                     ]
                 },
                 {
-                    "instance_name": "Ref4_2",
+                    "instance_name": "2",
                     "device_classes": [
                         {
                             "class_name": "RefSubarray",
-                            "devices": ["ref4/subarray/2"]
+                            "devices": ["{{ my_id }}/subarray/2"]
                         }
                     ]
                 }
@@ -157,80 +157,30 @@
             "server_name": "SvrRefCapability",
             "server_instances": [
                 {
-                    "instance_name": "Ref4_1A",
+                    "instance_name": "1",
                     "device_classes": [
                         {
                             "class_name": "RefCapability",
-                            "devices": ["ref4/capability/sub1calca"]
+                            "devices": ["{{ my_id }}/capability/sub1calca",
+                                        "{{ my_id }}/capability/sub1calcb",
+                                        "{{ my_id }}/capability/sub1procc",
+                                        "{{ my_id }}/capability/sub1procd"]
                         }
                     ]
                 },
                 {
-                    "instance_name": "Ref4_1B",
+                    "instance_name": "2",
                     "device_classes": [
                         {
                             "class_name": "RefCapability",
-                            "devices": ["ref4/capability/sub1calcb"]
-                        }
-                    ]
-                },
-                {
-                    "instance_name": "Ref4_1C",
-                    "device_classes": [
-                        {
-                            "class_name": "RefCapability",
-                            "devices": ["ref4/capability/sub1procc"]
-                        }
-                    ]
-                },
-                {
-                    "instance_name": "Ref4_1D",
-                    "device_classes": [
-                        {
-                            "class_name": "RefCapability",
-                            "devices": ["ref4/capability/sub1procd"]
-                        }
-                    ]
-                },
-                {
-                    "instance_name": "Ref4_2A",
-                    "device_classes": [
-                        {
-                            "class_name": "RefCapability",
-                            "devices": ["ref4/capability/sub2calca"]
-                        }
-                    ]
-                },
-                {
-                    "instance_name": "Ref4_2B",
-                    "device_classes": [
-                        {
-                            "class_name": "RefCapability",
-                            "devices": ["ref4/capability/sub2calcb"]
-                        }
-                    ]
-                },
-                {
-                    "instance_name": "Ref4_2C",
-                    "device_classes": [
-                        {
-                            "class_name": "RefCapability",
-                            "devices": ["ref4/capability/sub2procc"]
-                        }
-                    ]
-                },
-                {
-                    "instance_name": "Ref4_2D",
-                    "device_classes": [
-                        {
-                            "class_name": "RefCapability",
-                            "devices": ["ref4/capability/sub2procd"]
+                            "devices": ["{{ my_id }}/capability/sub2calca",
+                                        "{{ my_id }}/capability/sub2calcb",
+                                        "{{ my_id }}/capability/sub2procc",
+                                        "{{ my_id }}/capability/sub2procd"]
                         }
                     ]
                 }
-              ]
+            ]
         }
-
-
     ]
 }

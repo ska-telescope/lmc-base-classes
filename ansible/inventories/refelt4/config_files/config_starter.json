@@ -4,26 +4,26 @@
           "levpro": [
               {
                   "startup_level": 1,
-                  "server_instances": ["SKALogger/Ref4_Elt", "SKALogger/Ref4_Central"]
+                  "server_instances": ["SKALogger/{{ my_id }}", "SKALogger/Central"]
               },
               {
                   "startup_level": 2,
-                  "server_instances": ["SvrRefAchild/Ref4_1", "SvrRefAchild/Ref4_2",
-                      "SvrRefCapability/Ref4_1A", "SvrRefCapability/Ref4_1B", "SvrRefCapability/Ref4_1C", "SvrRefCapability/Ref4_1D",
-                      "SvrRefCapability/Ref4_2A", "SvrRefCapability/Ref4_2B", "SvrRefCapability/Ref4_2C", "SvrRefCapability/Ref4_2D"]
+                  "server_instances": ["SvrRefAchild/1", "SvrRefAchild/2",
+                      "SvrRefCapability/1A", "SvrRefCapability/1B", "SvrRefCapability/1C", "SvrRefCapability/1D",
+                      "SvrRefCapability/2A", "SvrRefCapability/2B", "SvrRefCapability/2C", "SvrRefCapability/2D"]
               },
               {
                   "startup_level": 3,
-                  "server_instances": ["SvrRefA/Ref4_1", "SvrRefA/Ref4_2"]
+                  "server_instances": ["SvrRefA/1", "SvrRefA/2"]
               },
               {
                   "startup_level": 4,
-                  "server_instances": ["SvrRefSubarray/Ref4_1", "SvrRefSubarray/Ref4_2"]
+                  "server_instances": ["SvrRefSubarray/1", "SvrRefSubarray/2"]
               },
               {
                   "startup_level": 5,
-                  "server_instances": ["SvrRefMaster/Ref4_Elt", "SvrRefTelState/Ref4_Elt", 
-                                       "SvrRefAlarmHandler/Ref4_Elt", "SvrRefAlarmHandler/Ref4_SubElt1", "SvrRefAlarmHandler/Ref4_SubElt2"]
+                  "server_instances": ["SvrRefMaster/{{ my_id }}", "SvrRefTelState/{{ my_id }}", 
+                                       "SvrRefAlarmHandler/{{ my_id }}", "SvrRefAlarmHandler/SubElt1", "SvrRefAlarmHandler/SubElt2"]
               }
           ]
     }

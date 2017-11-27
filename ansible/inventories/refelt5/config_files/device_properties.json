@@ -1,46 +1,46 @@
 {
     "api_version": "v1",
     "devices": {
-        "ref5/A/1": {
+        "{{ my_id }}/a/1": {
             "GroupDefinitions": []
         },
-        "ref5/A/2": {
+        "{{ my_id }}/a/2": {
             "GroupDefinitions": []
         },
-        "ref5/achild/11": {
+        "{{ my_id }}/achild/11": {
             "GroupDefinitions": []
         },
-        "ref5/achild/12": {
+        "{{ my_id }}/achild/12": {
             "GroupDefinitions": []
         },
-        "ref5/achild/21": {
+        "{{ my_id }}/achild/21": {
             "GroupDefinitions": []
         },
-        "ref5/achild/22": {
+        "{{ my_id }}/achild/22": {
             "GroupDefinitions": []
         },
-        "ref5/elt/master": {
+        "{{ my_id }}/elt/master": {
             "GroupDefinitions": []
         },
-        "ref5/elt/logger": {
+        "{{ my_id }}/elt/logger": {
             "GroupDefinitions": []
         },
-        "ref5/central/logger": {
+        "central/logger/ref5": {
             "GroupDefinitions": []
         },
-        "ref5/elt/telstate": {
+        "{{ my_id }}/elt/telstate": {
             "Config": [],
             "GroupDefinitions": []
         },
-        "ref5/elt/alarmhandler": {
+        "{{ my_id }}/elt/alarmhandler": {
             "Config": [],
             "GroupDefinitions": []
         },
-        "ref5/subelt1/alarmhandler": {
+        "{{ my_id }}/subelt1/alarmhandler": {
             "Config": [],
             "GroupDefinitions": []
         },
-        "ref5/subelt2/alarmhandler": {
+        "{{ my_id }}/subelt2/alarmhandler": {
             "Config": [],
             "GroupDefinitions": []
         }

@@ -4,19 +4,32 @@
           "levpro": [
               {
                   "startup_level": 1,
-                  "server_instances": ["SKALogger/Elt", "SKALogger/Central"]
+                  "server_instances": ["SKALogger/{{ instance }}", "SKALogger/Central"]
               },
               {
                   "startup_level": 2,
-                  "server_instances": ["SvrRefAchild/11", "SvrRefAchildA/12", "SvrRefAchild/21", "SvrRefAchild/22"]
+                  "server_instances": ["SvrSimPdu/A", "SvrSimPdu/B",
+                                       "SvrSimServer/1", "SvrSimServer/2",
+                                       "SvrSimServer/3", "SvrSimServer/4",
+                                       "SvrSimRack/A", "SvrSimRack/B",
+                                       "SvrSimSwitch/A", "SvrSimSwitch/B"]
               },
               {
                   "startup_level": 3,
-                  "server_instances": ["SvrRefA/1", "SvrRefA/2"]
+                  "server_instances": ["SvrRefAchild/11", "SvrRefAchildA/12",
+                                       "SvrRefAchild/21", "SvrRefAchildA/22",
+                                       "SvrRefCapability/1", "SvrRefCapability/2",
+                                       "SvrRefCapability/3", "SvrRefCapability/4"]
+              },
+              {
+                  "startup_level": 4,
+                  "server_instances": ["SvrRefA/1", "SvrRefA/2",
+                                       "SvrRefSubarray/1", "SvrRefSubarray/2",
+                                       "SvrRefSubarray/3", "SvrRefSubarray/4"]
               },
               {
                   "startup_level": 5,
-                  "server_instances": ["SvrRefMaster/Elt", "SvrRefAlarmHandler/Elt", "SvrRefTelState/Elt"]
+                  "server_instances": ["SvrRefMaster/{{ instance }}", "SvrRefAlarmHandler/{{ instance }}", "SvrRefTelState/{{ instance }}"]
               }
           ]
     }

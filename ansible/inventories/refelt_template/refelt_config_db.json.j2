@@ -1,28 +1,28 @@
 {
     "api_version": "v1",
     "tango_servers": [
-      {
-	      "server_name": "SvrRefA",
-	      "server_instances": [
-	          {
-	              "instance_name": "1",
-	              "device_classes": [
-	                  {
-	                      "class_name": "RefA",
-	                      "devices": ["{{refelt_name}}/a/1"]
-	                  }
-	              ]
-	          },
-	          {
-	              "instance_name": "2",
-	              "device_classes": [
-	                  {
-	                      "class_name": "RefA",
-	                      "devices": ["{{refelt_name}}/a/2"]
-	                  }
-	              ]
-	          }
-	        ]
+        {
+            "server_name": "SvrRefA",
+            "server_instances": [
+              {
+                    "instance_name": "1",
+                    "device_classes": [
+                        {
+                            "class_name": "RefA",
+                            "devices": ["{{ my_id }}/a/1"]
+                        }
+                    ]
+              },
+              {
+                    "instance_name": "2",
+                    "device_classes": [
+                        {
+                            "class_name": "RefA",
+                            "devices": ["{{ my_id }}/a/2"]
+                        }
+                    ]
+              }
+           ]
         },
         {
             "server_name": "SvrRefAchild",
@@ -32,7 +32,7 @@
                     "device_classes": [
                         {
                             "class_name": "RefAchild",
-                            "devices": ["{{refelt_name}}/achild/11", "{{refelt_name}}/achild/12"]
+                            "devices": ["{{ my_id }}/achild/11", "{{ my_id }}/achild/12"]
                         }
                     ]
                 },
@@ -41,35 +41,35 @@
                     "device_classes": [
                         {
                             "class_name": "RefAchild",
-                            "devices": ["{{refelt_name}}/achild/21", "{{refelt_name}}/achild/22"]
+                            "devices": ["{{ my_id }}/achild/21", "{{ my_id }}/achild/22"]
                         }
                     ]
                 }
-              ]
+            ]
         },
         {
             "server_name": "SvrRefMaster",
             "server_instances": [
                 {
-                    "instance_name": "Elt",
+                    "instance_name": "{{ instance }}",
                     "device_classes": [
                         {
                             "class_name": "RefMaster",
-                            "devices": ["{{refelt_name}}/elt/master"]
+                            "devices": ["{{ my_id }}/elt/master"]
                         }
                     ]
                 }
-              ]
+            ]
         },
         {
             "server_name": "SKALogger",
             "server_instances": [
                 {
-                    "instance_name": "Elt",
+                    "instance_name": "{{ instance }}",
                     "device_classes": [
                         {
                             "class_name": "SKALogger",
-                            "devices": ["{{refelt_name}}/elt/logger"]
+                            "devices": ["{{ my_id }}/elt/logger"]
                         }
                     ]
                 },
@@ -78,159 +78,283 @@
                     "device_classes": [
                         {
                             "class_name": "SKALogger",
-                            "devices": ["{{refelt_name}}/central/logger"]
+                            "devices": ["central/logger/1"]
                         }
                     ]
                 }
-              ]
+            ]
         },
         {
             "server_name": "SvrRefAlarmHandler",
             "server_instances": [
                 {
-                    "instance_name": "Elt",
+                    "instance_name": "{{ instance }}",
                     "device_classes": [
                         {
                             "class_name": "RefAlarmHandler",
-                            "devices": ["{{refelt_name}}/elt/alarmhandler"]
-                        }
-                    ]
-                },
-                {
-                    "instance_name": "SubElt1",
-                    "device_classes": [
-                        {
-                            "class_name": "RefAlarmHandler",
-                            "devices": ["{{refelt_name}}/subelt1/alarmhandler"]
-                        }
-                    ]
-                },
-                {
-                    "instance_name": "SubElt2",
-                    "device_classes": [
-                        {
-                            "class_name": "RefAlarmHandler",
-                            "devices": ["{{refelt_name}}/subelt2/alarmhandler"]
+                            "devices": ["{{ my_id }}/elt/alarmhandler"]
                         }
                     ]
                 }
-              ]
+            ]
         },
         {
             "server_name": "SvrRefTelState",
             "server_instances": [
                 {
-                    "instance_name": "Elt",
+                    "instance_name": "{{ instance }}",
                     "device_classes": [
                         {
                             "class_name": "RefTelState",
-                            "devices": ["{{refelt_name}}/elt/telstate"]
+                            "devices": ["{{ my_id }}/elt/telstate"]
                         }
                     ]
                 }
-              ]
+            ]
         },
         {
             "server_name": "SvrRefSubarray",
             "server_instances": [
                 {
-                    "instance_name": "Sub1",
+                    "instance_name": "1",
                     "device_classes": [
                         {
                             "class_name": "RefSubarray",
-                            "devices": ["{{refelt_name}}/subarray/1"]
+                            "devices": ["{{ my_id }}/subarray/1"]
                         }
                     ]
                 },
                 {
-                    "instance_name": "Subs",
+                    "instance_name": "2",
                     "device_classes": [
                         {
                             "class_name": "RefSubarray",
-                            "devices": ["{{refelt_name}}/subarray/2"]
+                            "devices": ["{{ my_id }}/subarray/2"]
+                        }
+                    ]
+                },
+                {
+                    "instance_name": "3",
+                    "device_classes": [
+                        {
+                            "class_name": "RefSubarray",
+                            "devices": ["{{ my_id }}/subarray/3"]
+                        }
+                    ]
+                },
+                {
+                    "instance_name": "4",
+                    "device_classes": [
+                        {
+                            "class_name": "RefSubarray",
+                            "devices": ["{{ my_id }}/subarray/4"]
                         }
                     ]
                 }
-              ]
+            ]
         },
         {
             "server_name": "SvrRefCapability",
             "server_instances": [
                 {
-                    "instance_name": "CapSub1CalcA",
+                    "instance_name": "1",
                     "device_classes": [
                         {
                             "class_name": "RefCapability",
-                            "devices": ["{{refelt_name}}/cap/sub1calca"]
+                            "devices": ["{{ my_id }}/cap/sub1calca",
+                                        "{{ my_id }}/cap/sub1calcb",
+                                        "{{ my_id }}/cap/sub1procc",
+                                        "{{ my_id }}/cap/sub1procd"]
                         }
                     ]
                 },
                 {
-                    "instance_name": "CapSub1CalcB",
+                    "instance_name": "2",
                     "device_classes": [
                         {
                             "class_name": "RefCapability",
-                            "devices": ["{{refelt_name}}/cap/sub1calcb"]
+                            "devices": ["{{ my_id }}/cap/sub2calca",
+                                        "{{ my_id }}/cap/sub2calcb",
+                                        "{{ my_id }}/cap/sub2procc",
+                                        "{{ my_id }}/cap/sub2procd"]
                         }
                     ]
                 },
                 {
-                    "instance_name": "CapSub1ProcC",
+                    "instance_name": "3",
                     "device_classes": [
                         {
                             "class_name": "RefCapability",
-                            "devices": ["{{refelt_name}}/cap/sub1procc"]
+                            "devices": ["{{ my_id }}/cap/sub3calca",
+                                        "{{ my_id }}/cap/sub3calcb",
+                                        "{{ my_id }}/cap/sub3procc",
+                                        "{{ my_id }}/cap/sub3procd"]
                         }
                     ]
                 },
                 {
-                    "instance_name": "CapSub1ProcD",
+                    "instance_name": "4",
                     "device_classes": [
                         {
                             "class_name": "RefCapability",
-                            "devices": ["{{refelt_name}}/cap/sub1procd"]
-                        }
-                    ]
-                },
-                {
-                    "instance_name": "CapSub2CalcA",
-                    "device_classes": [
-                        {
-                            "class_name": "RefCapability",
-                            "devices": ["{{refelt_name}}/cap/sub2calca"]
-                        }
-                    ]
-                },
-                {
-                    "instance_name": "CapSub2CalcB",
-                    "device_classes": [
-                        {
-                            "class_name": "RefCapability",
-                            "devices": ["{{refelt_name}}/cap/sub2calcb"]
-                        }
-                    ]
-                },
-                {
-                    "instance_name": "CapSub2ProcC",
-                    "device_classes": [
-                        {
-                            "class_name": "RefCapability",
-                            "devices": ["{{refelt_name}}/cap/sub2procc"]
-                        }
-                    ]
-                },
-                {
-                    "instance_name": "CapSub2ProcD",
-                    "device_classes": [
-                        {
-                            "class_name": "RefCapability",
-                            "devices": ["{{refelt_name}}/cap/sub2procd"]
+                            "devices": ["{{ my_id }}/cap/sub4calca",
+                                        "{{ my_id }}/cap/sub4calcb",
+                                        "{{ my_id }}/cap/sub4procc",
+                                        "{{ my_id }}/cap/sub4procd"]
                         }
                     ]
                 }
-              ]
+            ]
+        },
+        {
+            "server_name": "SvrSimPdu",
+            "server_instances": [
+                {
+                    "instance_name": "A",
+                    "device_classes": [
+                        {
+                            "class_name": "PDU",
+                            "devices": ["{{ my_id }}/pdu/a"]
+                        },
+                        {
+                            "class_name": "PDUSimControl",
+                            "devices": ["sim_control/pdu/a"]
+                        }
+                    ]
+                },
+                {
+                    "instance_name": "B",
+                    "device_classes": [
+                        {
+                            "class_name": "PDU",
+                            "devices": ["{{ my_id }}/pdu/b"]
+                        },
+                        {
+                            "class_name": "PDUSimControl",
+                            "devices": ["sim_control/pdu/b"]
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "server_name": "SvrSimServer",
+            "server_instances": [
+                {
+                    "instance_name": "1",
+                    "device_classes": [
+                        {
+                            "class_name": "Server",
+                            "devices": ["{{ my_id }}/server/1"]
+                        },
+                        {
+                            "class_name": "ServerSimControl",
+                            "devices": ["sim_control/server/1"]
+                        }
+                    ]
+                },
+                {
+                    "instance_name": "2",
+                    "device_classes": [
+                        {
+                            "class_name": "Server",
+                            "devices": ["{{ my_id }}/server/2"]
+                        },
+                        {
+                            "class_name": "ServerSimControl",
+                            "devices": ["sim_control/server/2"]
+                        }
+                    ]
+                },
+                {
+                    "instance_name": "3",
+                    "device_classes": [
+                        {
+                            "class_name": "Server",
+                            "devices": ["{{ my_id }}/server/3"]
+                        },
+                        {
+                            "class_name": "ServerSimControl",
+                            "devices": ["sim_control/server/3"]
+                        }
+                    ]
+                },
+                {
+                    "instance_name": "4",
+                    "device_classes": [
+                        {
+                            "class_name": "Server",
+                            "devices": ["{{ my_id }}/server/4"]
+                        },
+                        {
+                            "class_name": "ServerSimControl",
+                            "devices": ["sim_control/server/4"]
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "server_name": "SvrSimRack",
+            "server_instances": [
+                {
+                    "instance_name": "A",
+                    "device_classes": [
+                        {
+                            "class_name": "Rack",
+                            "devices": ["{{ my_id }}/rack/a"]
+                        },
+                        {
+                            "class_name": "RackSimControl",
+                            "devices": ["sim_control/rack/a"]
+                        }
+                    ]
+                },
+                {
+                    "instance_name": "B",
+                    "device_classes": [
+                        {
+                            "class_name": "Rack",
+                            "devices": ["{{ my_id }}/rack/b"]
+                        },
+                        {
+                            "class_name": "RackSimControl",
+                            "devices": ["sim_control/rack/b"]
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "server_name": "SvrSimSwitch",
+            "server_instances": [
+                {
+                    "instance_name": "A",
+                    "device_classes": [
+                        {
+                            "class_name": "Switch",
+                            "devices": ["{{ my_id }}/switch/a"]
+                        },
+                        {
+                            "class_name": "SwitchSimControl",
+                            "devices": ["sim_control/switch/a"]
+                        }
+                    ]
+                },
+                {
+                    "instance_name": "B",
+                    "device_classes": [
+                        {
+                            "class_name": "Switch",
+                            "devices": ["{{ my_id }}/switch/B"]
+                        },
+                        {
+                            "class_name": "SwitchSimControl",
+                            "devices": ["sim_control/switch/b"]
+                        }
+                    ]
+                }
+            ]
         }
-
-
     ]
 }

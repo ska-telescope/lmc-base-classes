@@ -95,10 +95,10 @@ DEFAULT_REFELT_TANGO_CONFIG = dict(
           "Sub2": (("RefSubarray", "ref/subarray/2"),),
       },
       "SvrRefCapability" : {
-          "Sub1CapCalcA": (("RefCapability", "ref/capability/sub1_calca"),),
-          "Sub1CapCalcB": (("RefCapability", "ref/capability/sub1_calcb"),),
-          "Sub1CapProcC": (("RefCapability", "ref/capability/sub1_procc"),),
-          "Sub1CapProcD": (("RefCapability", "ref/capability/sub1_procd"),),
+          "Sub1CapCalcA": (("RefCapability", "ref/cap/sub1_calca"),),
+          "Sub1CapCalcB": (("RefCapability", "ref/cap/sub1_calcb"),),
+          "Sub1CapProcC": (("RefCapability", "ref/cap/sub1_procc"),),
+          "Sub1CapProcD": (("RefCapability", "ref/cap/sub1_procd"),),
           # or
           #"Sub1CapA": (("RefCapability", "ref/subarray1/calca"),),
           #"Sub1CapB": (("RefCapability", "ref/subarray1/calcb"),),
@@ -110,10 +110,10 @@ DEFAULT_REFELT_TANGO_CONFIG = dict(
           #"Sub1CapC": (("RefCapability", "ref/calcb/sub1"),),
           #"Sub1CapD": (("RefCapability", "ref/calcb/sub2"),),
           #or
-          "Sub2CapCalcA": (("RefCapability", "ref/capability/sub2_calca"),),
-          "Sub2CapCalcB": (("RefCapability", "ref/capability/sub2_calcb"),),
-          "Sub2CapProcC": (("RefCapability", "ref/capability/sub2_procc"),),
-          "Sub2CapProcD": (("RefCapability", "ref/capability/sub2_procd"),),
+          "Sub2CapCalcA": (("RefCapability", "ref/cap/sub2_calca"),),
+          "Sub2CapCalcB": (("RefCapability", "ref/cap/sub2_calcb"),),
+          "Sub2CapProcC": (("RefCapability", "ref/cap/sub2_procc"),),
+          "Sub2CapProcD": (("RefCapability", "ref/cap/sub2_procd"),),
       },
     })
 

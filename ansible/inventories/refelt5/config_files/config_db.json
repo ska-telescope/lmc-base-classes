@@ -161,7 +161,7 @@
                     "device_classes": [
                         {
                             "class_name": "RefCapability",
-                            "devices": ["{{ my_id }}/capability/sub1calca"]
+                            "devices": ["{{ my_id }}/cap/sub1calca"]
                         }
                     ]
                 },
@@ -170,7 +170,7 @@
                     "device_classes": [
                         {
                             "class_name": "RefCapability",
-                            "devices": ["{{ my_id }}/capability/sub1calcb"]
+                            "devices": ["{{ my_id }}/cap/sub1calcb"]
                         }
                     ]
                 },
@@ -179,7 +179,7 @@
                     "device_classes": [
                         {
                             "class_name": "RefCapability",
-                            "devices": ["{{ my_id }}/capability/sub1procc"]
+                            "devices": ["{{ my_id }}/cap/sub1procc"]
                         }
                     ]
                 },
@@ -188,7 +188,7 @@
                     "device_classes": [
                         {
                             "class_name": "RefCapability",
-                            "devices": ["{{ my_id }}/capability/sub1procd"]
+                            "devices": ["{{ my_id }}/cap/sub1procd"]
                         }
                     ]
                 },
@@ -197,7 +197,7 @@
                     "device_classes": [
                         {
                             "class_name": "RefCapability",
-                            "devices": ["{{ my_id }}/capability/sub2calca"]
+                            "devices": ["{{ my_id }}/cap/sub2calca"]
                         }
                     ]
                 },
@@ -206,7 +206,7 @@
                     "device_classes": [
                         {
                             "class_name": "RefCapability",
-                            "devices": ["{{ my_id }}/capability/sub2calcb"]
+                            "devices": ["{{ my_id }}/cap/sub2calcb"]
                         }
                     ]
                 },
@@ -215,7 +215,7 @@
                     "device_classes": [
                         {
                             "class_name": "RefCapability",
-                            "devices": ["{{ my_id }}/capability/sub2procc"]
+                            "devices": ["{{ my_id }}/cap/sub2procc"]
                         }
                     ]
                 },
@@ -224,7 +224,7 @@
                     "device_classes": [
                         {
                             "class_name": "RefCapability",
-                            "devices": ["{{ my_id }}/capability/sub2procd"]
+                            "devices": ["{{ my_id }}/cap/sub2procd"]
                         }
                     ]
                 }

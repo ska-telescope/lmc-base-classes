@@ -161,10 +161,10 @@
                     "device_classes": [
                         {
                             "class_name": "RefCapability",
-                            "devices": ["{{ my_id }}/capability/sub1calca",
-                                        "{{ my_id }}/capability/sub1calcb",
-                                        "{{ my_id }}/capability/sub1procc",
-                                        "{{ my_id }}/capability/sub1procd"]
+                            "devices": ["{{ my_id }}/cap/sub1calca",
+                                        "{{ my_id }}/cap/sub1calcb",
+                                        "{{ my_id }}/cap/sub1procc",
+                                        "{{ my_id }}/cap/sub1procd"]
                         }
                     ]
                 },
@@ -173,10 +173,10 @@
                     "device_classes": [
                         {
                             "class_name": "RefCapability",
-                            "devices": ["{{ my_id }}/capability/sub2calca",
-                                        "{{ my_id }}/capability/sub2calcb",
-                                        "{{ my_id }}/capability/sub2procc",
-                                        "{{ my_id }}/capability/sub2procd"]
+                            "devices": ["{{ my_id }}/cap/sub2calca",
+                                        "{{ my_id }}/cap/sub2calcb",
+                                        "{{ my_id }}/cap/sub2procc",
+                                        "{{ my_id }}/cap/sub2procd"]
                         }
                     ]
                 }

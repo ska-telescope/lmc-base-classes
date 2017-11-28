@@ -33,7 +33,7 @@ RUN apt-get install -y --force-yes \
                         software-properties-common \
                         tmux \
                         vim \
-                        wget 
+                        wget
 
 # Remove some packages from the base template
 RUN apt-get -y purge postfix
@@ -95,14 +95,14 @@ RUN apt-get install -y tango-common \
                        liblog4tango-doc \
                        libtango-dev \
                        libtango-doc \
-                       libtango9 
+                       libtango9
 
 # Start mysql & install tango database packages
 RUN service mysql start && apt-get install -y \
                        tango-accesscontrol \
                        tango-db \
                        tango-starter \
-                       tango-test 
+                       tango-test
 
 # Pip install tango support packages
 RUN pip install enum34 \
@@ -117,8 +117,7 @@ RUN pip install enum34 \
 # Pip install itango cli
 RUN pip install itango \
                 "six>=1.9.0" \
-                tango-admin 
-                
+                tango-admin
 
 # Install virtual monitor
 RUN apt-get install -y xvfb
@@ -126,7 +125,12 @@ RUN apt-get install -y xvfb
 # Configure virtual monitor env variable
 ENV DISPLAY=:1.0
 
-# adding user
+# Provide TANGO admin utilities (tango_admin, Starter, etc.)
+COPY tango_register_device /usr/local/bin/
+RUN chmod 755 /usr/local/bin/tango_register_device \
+ && ln -s /usr/lib/tango/* /usr/local/bin/
+
+# Add user
 RUN useradd -ms /bin/bash tango-cs \
  && echo tango-cs:tango | chpasswd \
  && echo "tango-cs ALL=(root) NOPASSWD:ALL" > /etc/sudoers.d/tango-cs \

@@ -51,7 +51,7 @@
             "server_name": "SvrRefMaster",
             "server_instances": [
                 {
-                    "instance_name": "{{ prefix }}",
+                    "instance_name": "{{ instance }}",
                     "device_classes": [
                         {
                             "class_name": "RefMaster",
@@ -65,7 +65,7 @@
             "server_name": "SKALogger",
             "server_instances": [
                 {
-                    "instance_name": "{{ prefix }}",
+                    "instance_name": "{{ instance }}",
                     "device_classes": [
                         {
                             "class_name": "SKALogger",
@@ -88,7 +88,7 @@
             "server_name": "SvrRefAlarmHandler",
             "server_instances": [
                 {
-                    "instance_name": "{{ prefix }}",
+                    "instance_name": "{{ instance }}",
                     "device_classes": [
                         {
                             "class_name": "RefAlarmHandler",
@@ -102,7 +102,7 @@
             "server_name": "SvrRefTelState",
             "server_instances": [
                 {
-                    "instance_name": "{{ prefix }}",
+                    "instance_name": "{{ instance }}",
                     "device_classes": [
                         {
                             "class_name": "RefTelState",

@@ -16,4 +16,4 @@ from . import FileLogger
 from . import Rack
 from . import Server
 from . import Switch
-from . import PDU
+from . import Pdu

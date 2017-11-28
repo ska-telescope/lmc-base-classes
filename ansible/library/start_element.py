@@ -1,6 +1,8 @@
 #!/usr/bin/python
 import json
 import logging
+import os.path
+import platform
 
 import fandango as fn
 
@@ -40,8 +42,8 @@ Servers_not_running:
 running_servers = []
 servers_not_running = []
 
-def start_element(elt_config):
 
+def start_element(elt_config):
     astor = fn.Astor()
 
     with open(elt_config) as elt_config_file:
@@ -50,6 +52,11 @@ def start_element(elt_config):
     hosts_data = facility_data["tango_hosts"]
 
     for host_name, host_data in hosts_data.items():
+
+        # if inside a Docker container, then Starter must just user the container
+        # (in future could use Ansible templating to modify config file instead)
+        if os.path.exists('/.dockerenv'):
+            host_name = platform.node()
 
         for data in host_data:
             srv_instance_startup_level = data["startup_level"]

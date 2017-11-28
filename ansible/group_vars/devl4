@@ -9,6 +9,6 @@ element_details:
     type: refelt
     name: refelt4
     id: ref4
-    prefix: Ref4
+    instance: Ref4
 
 ...

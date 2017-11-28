@@ -3,7 +3,7 @@
 
 - hosts: all
   vars:
-    testVars: "{{ lookup('file', '{{ software_root}}/levpro/ansible/inventories/{{ hostvars[inventory_hostname].element_details.name }}/config_files/test_vars.json') | from_json }}"
+    testVars: "{{ lookup('file', './inventories/{{ hostvars[inventory_hostname].element_details.name }}/config_files/test_vars.json') | from_json }}"
   tasks:
     - name: Print my hostvars
       debug:
@@ -54,13 +54,13 @@
       with_dict: "{{ testVars['queue'] }}"
       shell: |
         if echo "{{ item.value.color }}" | grep -q "blue" ; then
-            echo "success"
+            echo "SUCCESS - found blue at {{ item.key }}"
         fi
 
     - name: testVars find my id
       with_dict: "{{ testVars['queue'] }}"
       shell: |
         if echo "{{ item.value.car }}" | grep -q "{{ my_id }}" ; then
-            echo "success - found {{ my_id }} at {{ item.key }}"
+            echo "SUCCESS - found {{ my_id }} at {{ item.key }}"
         fi
 

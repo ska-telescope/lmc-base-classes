@@ -131,6 +131,12 @@ RUN useradd -ms /bin/bash tango-cs \
  && echo tango-cs:tango | chpasswd \
  && echo "tango-cs ALL=(root) NOPASSWD:ALL" > /etc/sudoers.d/tango-cs \
  && chmod 0440 /etc/sudoers.d/tango-cs
+
+# Create mount point, so we can create more files here when inside container,
+# with external volume mounted
+RUN mkdir /home/tango-cs/src \
+ && chown -R tango-cs:tango-cs /home/tango-cs
+
 WORKDIR /home/tango-cs
 
 # Expose connection for TANGO DB

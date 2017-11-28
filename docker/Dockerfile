@@ -142,4 +142,5 @@ EXPOSE ${ORB_PORT}
 COPY supervisord.conf /etc/supervisor/conf.d/
 
 # Start supervisor as deamon
-CMD ["/usr/bin/supervisord"]
+CMD ["/usr/bin/supervisord", "--configuration", "/etc/supervisor/supervisord.conf"]
+

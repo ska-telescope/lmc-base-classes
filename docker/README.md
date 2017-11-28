@@ -20,25 +20,25 @@ docker build . -t tango-levpro
 Start up the tango container:
 
 ~~~~
-docker run --rm --name tango -it tango-levpro:latest
+docker run --rm --name levpro -it tango-levpro:latest
 ~~~~
 
 or start with levpro project (/home/user/src/levpro) mounted in container for development
 
 ~~~~
-docker run --rm --name levpro -v /home/user/src/levpro:/home/tango/src/levpro -it tango-levpro:latest
+docker run --rm --name levpro -v /home/user/src/levpro:/home/tango-cs/src/levpro -it tango-levpro:latest
 ~~~~
 
 or if you want TANGO DB available outside the container, export the port
 
 ~~~~
-docker run --rm --name levpro -v /home/user/src/levpro:/home/tango/src/levpro -p 10123:10000 -it tango-levpro:latest
+docker run --rm --name levpro -v /home/user/src/levpro:/home/tango-cs/src/levpro -p 10123:10000 -it tango-levpro:latest
 ~~~~
 
 Then you can log into the container with:
 
 ~~~~
-docker exec -it levpro bash
+docker exec --user tango-cs -it levpro bash
 ~~~~
 
 Connecting to the TANGO DB using jive

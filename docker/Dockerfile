@@ -126,14 +126,14 @@ RUN apt-get install -y xvfb
 # Configure virtual monitor env variable
 ENV DISPLAY=:1.0
 
-# Make home directory
-RUN mkdir /home/tango
-ENV HOME /home/tango
+# adding user
+RUN useradd -ms /bin/bash tango-cs \
+ && echo tango-cs:tango | chpasswd \
+ && echo "tango-cs ALL=(root) NOPASSWD:ALL" > /etc/sudoers.d/tango-cs \
+ && chmod 0440 /etc/sudoers.d/tango-cs
+WORKDIR /home/tango-cs
 
-# Create a bashrc file
-RUN touch /home/tango/.bashrc
-
-# Expose connection
+# Expose connection for TANGO DB
 ENV ORB_PORT=10000
 ENV TANGO_HOST=127.0.0.1:${ORB_PORT}
 EXPOSE ${ORB_PORT}

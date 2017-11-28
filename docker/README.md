@@ -7,7 +7,7 @@ It is based on a [Ubuntu](https://www.ubuntu.com/) 14.04 (trusty) and it provide
 - xvfb, for headless GUI testing
 - levpro dependencies and recommended packages (PyTango, pytest, tango-simlib, Fandango, ...)
 - A Tango DB and TangoTest DS configured and running for testing levpro
- 
+
 The primary use of this Docker image is to use it in our Continuous Integration workflow.
 But you may also run it on your own machine.
 
@@ -38,7 +38,7 @@ docker run --rm --name levpro -v /home/user/src/levpro:/home/tango-cs/src/levpro
 Then you can log into the container with:
 
 ~~~~
-docker exec --user tango-cs -it levpro bash
+docker exec -it levpro bash
 ~~~~
 
 Connecting to the TANGO DB using jive

@@ -141,6 +141,8 @@ RUN useradd -ms /bin/bash tango-cs \
 RUN mkdir /home/tango-cs/src \
  && chown -R tango-cs:tango-cs /home/tango-cs
 
+# Start the container as tango-cs user and in home directory
+USER tango-cs
 WORKDIR /home/tango-cs
 
 # Expose connection for TANGO DB
@@ -150,7 +152,7 @@ EXPOSE ${ORB_PORT}
 
 # Configure supervisord
 COPY supervisord.conf /etc/supervisor/conf.d/
+RUN mkdir /var/tmp/supervisord.child
 
 # Start supervisor as deamon
 CMD ["/usr/bin/supervisord", "--configuration", "/etc/supervisor/supervisord.conf"]
-

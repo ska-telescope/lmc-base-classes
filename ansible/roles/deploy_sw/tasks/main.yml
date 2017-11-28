@@ -11,28 +11,6 @@
 ##     Clone repos
 ###########################################
 
-## tango-simlib
-
-- name: Check for tango-simlib in software_root
-  stat: path={{software_root}}/tango-simlib
-  register: p_tsl
-  #when: p_tsl.stat.isdir is defined and p_tsl.stat.isdir
-  tags:
-    - deploy-sw-tango-simlib
-
-- name: Clone tango-simlib if dir not existing
-  command: git clone https://github.com/ska-sa/tango-simlib {{software_root}}/tango-simlib
-  when: not p_tsl.stat.exists
-  #ignore_errors: True
-  tags:
-    - deploy-sw-tango-simlib
-
-- name: Git pull tango-simlib if dir exists
-  command: git -C {{software_root}}/tango-simlib pull
-  when: p_tsl.stat.isdir is defined and p_tsl.stat.isdir
-  tags:
-    - deploy-sw-tango-simlib
-
 ## levpro
 
 - name: Check for levpro in software_root

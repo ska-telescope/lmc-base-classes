@@ -13,18 +13,6 @@
 ###########################################
 
 - block:
-  - name: Install tango-simlib
-    #command: sudo pip install {{software_root}}/tango-simlib -U --no-deps
-    pip:
-      name: "{{software_root}}/{{item}}"
-      extra_args: -U --no-deps
-    with_items:
-      - tango-simlib
-  become: True
-  tags:
-    - install-sw-tango-simlib
-
-- block:
   - name: Install levpro
     #command: sudo pip install {{software_root}}/levpro -U --no-deps
     pip:

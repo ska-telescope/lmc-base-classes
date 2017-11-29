@@ -46,8 +46,11 @@ setup(name="levpro",
           "nose",
           "nosexcover",
           "pytest",
+          "python-devicetest",
           "unittest2"
       ],
+      dependency_links=[
+          'git+https://github.com/vxgmichel/pytango-devicetest.git#egg=python_devicetest'],
       keywords="levpro lmc ska",
       test_suite="nose.collector",
       zip_safe=False)

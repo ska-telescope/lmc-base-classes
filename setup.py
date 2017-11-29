@@ -46,6 +46,7 @@ setup(name="levpro",
           "nose",
           "nosexcover",
           "pytest",
+          'pytest-xdist',
           "python-devicetest",
           "unittest2"
       ],

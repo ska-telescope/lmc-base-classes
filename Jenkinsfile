@@ -30,13 +30,14 @@ node('docker') {
                             // use Ansible to do pip installs, using current WORKSPACE
                             // as the software_root
                             sh '''
+                                PARENT_DIR=`dirname $WORKSPACE`
                                 cd ansible
                                 ansible-playbook -i hosts install_sw.yml \
                                   --limit "local" \
                                   --tags install-sw-levpro \
                                   --tags install-sw-skabase \
                                   --verbose \
-                                  --extra-vars software_root=$WORKSPACE
+                                  --extra-vars software_root=$PARENT_DIR
                                 cd ..
                             '''
 

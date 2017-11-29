@@ -25,7 +25,10 @@ node('docker') {
                         try {
                             sh 'export'
                             sh 'mount'
-                            sh 'python setup.py test --addopts="--junitxml results.xml"'
+                            sh '''
+                                python setup.py test \
+                                  --addopts="--junitxml results.xml --color=yes"
+                            '''
                         }
                         finally {
                             step([$class: 'JUnitResultArchiver', testResults: 'results.xml'])

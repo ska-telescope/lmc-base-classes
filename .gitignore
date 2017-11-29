@@ -2,6 +2,7 @@
 
 # Packages
 *.egg
+*.eggs
 *.egg-info
 dist
 build
@@ -24,6 +25,7 @@ pip-log.txt
 .tox
 .cache
 nosetests.xml
+results.xml
 
 # Developer tools
 *~
@@ -31,3 +33,6 @@ nosetests.xml
 
 # Ansible
 *.retry
+
+# Miscellaneous
+.DS_Store

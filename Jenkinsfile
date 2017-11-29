@@ -23,8 +23,9 @@ node('docker') {
                 timeout(time: 30, unit: 'MINUTES') {
                     ansiColor('xterm') {
                         try {
-                            // Install this repo
-                            sh 'pip install . -U --pre'
+                            // Add a symbolic link to levpro dir, as the Ansible scripts
+                            // assume that is part of the path
+                            sh 'ln -sv $WORKSPACE ../levpro'
 
                             // use Ansible to do pip installs, using current WORKSPACE
                             // as the software_root
@@ -32,6 +33,7 @@ node('docker') {
                                 cd ansible
                                 ansible-playbook -i hosts install_sw.yml \
                                   --limit "local" \
+                                  --tags install-sw-levpro \
                                   --tags install-sw-skabase \
                                   --verbose \
                                   --extra-vars software_root=$WORKSPACE

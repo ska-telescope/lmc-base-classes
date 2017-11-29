@@ -43,8 +43,6 @@ setup(name="levpro",
       ],
       tests_require=[
           "coverage",
-          "nose",
-          "nosexcover",
           "pytest",
           'pytest-xdist',
           "python-devicetest",

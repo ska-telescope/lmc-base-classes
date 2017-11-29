@@ -2,7 +2,7 @@
 python_path: /usr/lib/python2.7/site-packages
 
 ## SOFTWARE BASE DIR
-software_root: /home/tango-cs/git
+software_root: /home/kat/git
 
 ## Element personality
 element_details:

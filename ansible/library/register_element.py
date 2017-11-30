@@ -70,10 +70,7 @@ def register_devices(device_class_name, server_name, server_instance_name,
             registered_devices.append(device_name+"({})".format(svr_name))
 
 
-def register_element(config_file):
-
-    with open(config_file) as elt_config_file:
-        config_data = json.load(elt_config_file)
+def register_element(config_json):
 
     servers = config_data['tango_servers']
 
@@ -96,7 +93,8 @@ def run_module():
     # define the available arguments/parameters that a user can pass to
     # the module
     module_args = dict(
-        elt_config_file=dict(type='str', required=True)
+        elt_config_file=dict(type='str', required=False),
+        elt_config_json=dict(type='str', required=False)
     )
 
     # seed the result dict in the object
@@ -126,7 +124,20 @@ def run_module():
 
     # manipulate or modify the state as needed (this is going to be the
     # part where your module will do what it needs to do)
-    register_element(module.params['elt_config_file'])
+
+    result['debug'] = module.params['elt_config_json']
+    module.exit_json(msg="Successful run!!!", **result)
+    
+    # Load config from file of json
+    if module.params['elt_config_json']:
+        config_data = json.loads(module.params['elt_config_json'])
+        register_element(config_data)
+    else:
+        elt_config_file = module.params['elt_config_file']
+        with open(elt_config_file) as config_file:
+            config_data = json.load(config_file)
+        register_element(config_data)
+
     result['Registered_devices'] = registered_devices
     result['Devices_not_registered'] = devices_not_registered
 

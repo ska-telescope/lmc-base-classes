@@ -36,6 +36,8 @@
     my_element_details: "{{ hostvars[inventory_hostname].element_details }}"
     my_groups: "{{ hostvars[inventory_hostname].group_names }}"
     my_name: "{{ hostvars[inventory_hostname].element_details.name }}"
+    my_id: "{{ hostvars[inventory_hostname].element_details.id }}"
+    my_instance: "{{ hostvars[inventory_hostname].element_details.instance }}"
   tags:
     - register-myrefelt-prints
 
@@ -43,27 +45,37 @@
   debug:
       msg="{{item}}"
   with_items:
+      - "my_element_details = {{ my_element_details }}"
       - "my_name = {{ my_name }}"
+      - "my_id = {{ my_id }}"
+      - "my_instance = {{ my_instance }}"
       - "my_groups = {{ my_groups }}"
   tags:
     - register-myrefelt-prints
+
 
 
 ###########################################
 ##     Register in TANGO db
 ###########################################
 
+
 - block:
+
   - name: Register MyRefElt servers, classes, devices in TANGO db
+    vars:
+        my_id : "{{ hostvars[inventory_hostname].element_details.id }}"
+        var_config_db: "{{ lookup('file', '{{ software_root }}/levpro/ansible/inventories/{{ my_name }}/config_files/config_db.json') | from_json }}"
+        var_config_properties: "{{ lookup('file', '{{ software_root}}/levpro/ansible/inventories/{{my_name}}/config_files/device_properties.json') | from_json }}"
     register_element:
         elt_config_file: "{{ software_root }}/levpro/ansible/inventories/{{ my_name }}/config_files/config_db.json"
-        elt_config_json: "{{ config_db_json }}"
+        elt_config_json: "{{ var_config_db }}"
     register: the_result
 
   - name: Register MyRefElt device properties in TANGO db
     register_device_properties:
-      elt_config_file: "{{ software_root}}/levpro/ansible/inventories/{{my_name}}/config_files/device_properties.json"
-      elt_config_json: "{{ device_properties_json }}"
+        elt_config_file: "{{ software_root}}/levpro/ansible/inventories/{{my_name}}/config_files/device_properties.json"
+        elt_config_json: "{{ var_config_properties }}"
     register: the_result
 
   tags:
@@ -85,9 +97,11 @@
 
 - block:
   - name: Register MyRefElt in Astor and restart with Starter
+    vars:
+        var_config_starter: "{{ lookup('file', '{{ software_root }}/levpro/ansible/inventories/{{ my_name }}/config_files/config_starter.json') | from_json }}"
     start_element:
       element_config: "{{ software_root }}/levpro/ansible/inventories/{{ my_name }}/config_files/config_starter.json"
-      element_config_json: "{{ config_starter_json }}"
+      element_config_json: "{{ var_config_starter }}"
     register: the_result
   tags:
     - register-myrefelt-in-astor

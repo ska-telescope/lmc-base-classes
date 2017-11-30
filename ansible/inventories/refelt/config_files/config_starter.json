@@ -16,10 +16,9 @@
               },
               {
                   "startup_level": 3,
-                  "server_instances": ["SvrRefAchild/11", "SvrRefAchildA/12",
-                                       "SvrRefAchild/21", "SvrRefAchildA/22",
-                                       "SvrRefCapability/1", "SvrRefCapability/2",
-                                       "SvrRefCapability/3", "SvrRefCapability/4"]
+                  "server_instances": ["SvrRefAchild/1", "SvrRefAchild/2",
+                                       "SvrRefCapabilityA/1", "SvrRefCapabilityA/2",
+                                       "SvrRefCapabilityA/3", "SvrRefCapabilityA/4"]
               },
               {
                   "startup_level": 4,

@@ -154,7 +154,7 @@
             ]
         },
         {
-            "server_name": "SvrRefCapability",
+            "server_name": "SvrRefCapabilityA",
             "server_instances": [
                 {
                     "instance_name": "1",

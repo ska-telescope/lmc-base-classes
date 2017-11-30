@@ -33,7 +33,7 @@ RUN apt-get install -y --force-yes \
                         software-properties-common \
                         tmux \
                         vim \
-                        wget 
+                        wget
 
 # Remove some packages from the base template
 RUN apt-get -y purge postfix
@@ -95,14 +95,14 @@ RUN apt-get install -y tango-common \
                        liblog4tango-doc \
                        libtango-dev \
                        libtango-doc \
-                       libtango9 
+                       libtango9
 
 # Start mysql & install tango database packages
 RUN service mysql start && apt-get install -y \
                        tango-accesscontrol \
                        tango-db \
                        tango-starter \
-                       tango-test 
+                       tango-test
 
 # Pip install tango support packages
 RUN pip install enum34 \
@@ -117,8 +117,7 @@ RUN pip install enum34 \
 # Pip install itango cli
 RUN pip install itango \
                 "six>=1.9.0" \
-                tango-admin 
-                
+                tango-admin
 
 # Install virtual monitor
 RUN apt-get install -y xvfb
@@ -126,20 +125,34 @@ RUN apt-get install -y xvfb
 # Configure virtual monitor env variable
 ENV DISPLAY=:1.0
 
-# Make home directory
-RUN mkdir /home/tango
-ENV HOME /home/tango
+# Provide TANGO admin utilities (tango_admin, Starter, etc.)
+COPY tango_register_device /usr/local/bin/
+RUN chmod 755 /usr/local/bin/tango_register_device \
+ && ln -s /usr/lib/tango/* /usr/local/bin/
 
-# Create a bashrc file
-RUN touch /home/tango/.bashrc
+# Add user
+RUN useradd -ms /bin/bash tango-cs \
+ && echo tango-cs:tango | chpasswd \
+ && echo "tango-cs ALL=(root) NOPASSWD:ALL" > /etc/sudoers.d/tango-cs \
+ && chmod 0440 /etc/sudoers.d/tango-cs
 
-# Expose connection
+# Create mount point, so we can create more files here when inside container,
+# with external volume mounted
+RUN mkdir /home/tango-cs/src \
+ && chown -R tango-cs:tango-cs /home/tango-cs
+
+# Start the container as tango-cs user and in home directory
+USER tango-cs
+WORKDIR /home/tango-cs
+
+# Expose connection for TANGO DB
 ENV ORB_PORT=10000
 ENV TANGO_HOST=127.0.0.1:${ORB_PORT}
 EXPOSE ${ORB_PORT}
 
 # Configure supervisord
 COPY supervisord.conf /etc/supervisor/conf.d/
+RUN mkdir /var/tmp/supervisord.child
 
 # Start supervisor as deamon
-CMD ["/usr/bin/supervisord"]
+CMD ["/usr/bin/supervisord", "--configuration", "/etc/supervisor/supervisord.conf"]

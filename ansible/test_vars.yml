@@ -3,7 +3,14 @@
 
 - hosts: all
   vars:
-    testVars: "{{ lookup('file', './inventories/{{ hostvars[inventory_hostname].element_details.name }}/config_files/test_vars.json') | from_json }}"
+    my_element_details: "{{ hostvars[inventory_hostname].element_details }}"
+    my_groups: "{{ hostvars[inventory_hostname].group_names }}"
+    my_name: "{{ hostvars[inventory_hostname].element_details.name }}"
+    my_id: "{{ hostvars[inventory_hostname].element_details.id }}"
+    my_instance: "{{ hostvars[inventory_hostname].element_details.instance }}"
+    testVars: "{{ lookup('file', './inventories/{{ my_name }}/config_files/test_vars.json') | from_json }}"
+    configDbVars: "{{ lookup('file', './inventories/{{ my_name }}/config_files/config_db.json') | from_json }}"
+
   tasks:
     - name: Print my hostvars
       debug:
@@ -31,21 +38,25 @@
         - prints
 
 
-    - name: Extract my vars
-      set_fact:
-        my_element_details: "{{ hostvars[inventory_hostname].element_details }}"
-        my_groups: "{{ hostvars[inventory_hostname].group_names }}"
-        my_name: "{{ hostvars[inventory_hostname].element_details.name }}"
-        my_id: "{{ hostvars[inventory_hostname].element_details.id }}"
-      tags:
-        - prints
+    #- name: Extract my vars
+    #  set_fact:
+    #    my_element_details: "{{ hostvars[inventory_hostname].element_details }}"
+    #    my_groups: "{{ hostvars[inventory_hostname].group_names }}"
+    #    my_name: "{{ hostvars[inventory_hostname].element_details.name }}"
+    #    my_id: "{{ hostvars[inventory_hostname].element_details.id }}"
+    #  tags:
+    #    - prints
 
     - name: Print my vars
       debug:
           msg="{{item}}"
       with_items:
+          - "my_element_details = {{ my_element_details }}"
+          - "my_groups = {{ my_groups }}"
+
           - "my_name = {{ my_name }}"
           - "my_id = {{ my_id }}"
+          - "my_instance = {{ my_instance }}"
           - "my_groups = {{ my_groups }}"
       tags:
         - prints
@@ -64,3 +75,10 @@
             echo "SUCCESS - found {{ my_id }} at {{ item.key }}"
         fi
 
+    - name: Print configDbVars
+      debug:
+          msg="{{item}}"
+      with_items:
+          - "configDbVars = {{ configDbVars }}"
+      tags:
+        - prints

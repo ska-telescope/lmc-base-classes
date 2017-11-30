@@ -25,7 +25,7 @@
         "{{ my_id }}/elt/logger": {
             "GroupDefinitions": []
         },
-        "central/logger/ref5": {
+        "central/logger/{{ my_id }}": {
             "GroupDefinitions": []
         },
         "{{ my_id }}/elt/telstate": {

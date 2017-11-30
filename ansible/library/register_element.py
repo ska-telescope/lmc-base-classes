@@ -70,7 +70,7 @@ def register_devices(device_class_name, server_name, server_instance_name,
             registered_devices.append(device_name+"({})".format(svr_name))
 
 
-def register_element(config_json):
+def register_element(config_data):
 
     servers = config_data['tango_servers']
 
@@ -126,7 +126,7 @@ def run_module():
     # part where your module will do what it needs to do)
 
     result['debug'] = module.params['elt_config_json']
-    module.exit_json(msg="Successful run!!!", **result)
+    ####module.exit_json(msg="Successful run!!!", **result)
     
     # Load config from file of json
     if module.params['elt_config_json']:
@@ -136,7 +136,7 @@ def run_module():
         elt_config_file = module.params['elt_config_file']
         with open(elt_config_file) as config_file:
             config_data = json.load(config_file)
-        register_element(config_data)
+            register_element(config_data)
 
     result['Registered_devices'] = registered_devices
     result['Devices_not_registered'] = devices_not_registered

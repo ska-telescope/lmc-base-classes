@@ -69,13 +69,13 @@
         var_config_properties: "{{ lookup('file', '{{ software_root}}/levpro/ansible/inventories/{{my_name}}/config_files/device_properties.json') | from_json }}"
     register_element:
         elt_config_file: "{{ software_root }}/levpro/ansible/inventories/{{ my_name }}/config_files/config_db.json"
-        elt_config_json: "{{ var_config_db }}"
+        #elt_config_json: "{{ var_config_db }}"
     register: the_result
 
   - name: Register MyRefElt device properties in TANGO db
     register_device_properties:
         elt_config_file: "{{ software_root}}/levpro/ansible/inventories/{{my_name}}/config_files/device_properties.json"
-        elt_config_json: "{{ var_config_properties }}"
+        #elt_config_json: "{{ var_config_properties }}"
     register: the_result
 
   tags:
@@ -101,7 +101,7 @@
         var_config_starter: "{{ lookup('file', '{{ software_root }}/levpro/ansible/inventories/{{ my_name }}/config_files/config_starter.json') | from_json }}"
     start_element:
       element_config: "{{ software_root }}/levpro/ansible/inventories/{{ my_name }}/config_files/config_starter.json"
-      element_config_json: "{{ var_config_starter }}"
+      #element_config_json: "{{ var_config_starter }}"
     register: the_result
   tags:
     - register-myrefelt-in-astor

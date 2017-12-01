@@ -8,7 +8,13 @@
 # WRITTEN PERMISSION OF SKA SA.                                               #
 ###############################################################################
 
+import sys
+
 from setuptools import setup, find_packages
+
+# prevent unnecessary installation of pytest-runner
+needs_pytest = {'pytest', 'test', 'ptr'}.intersection(sys.argv)
+pytest_runner = ['pytest-runner'] if needs_pytest else []
 
 setup(name="levpro",
       description="Element Base Classes - Evolutionary Prototype",
@@ -30,17 +36,20 @@ setup(name="levpro",
           "Topic :: Software Development :: Libraries :: Python Modules",
           "Topic :: Scientific/Engineering :: Astronomy"],
       platforms=["OS Independent"],
-      setup_requires=[],
+      setup_requires=[] + pytest_runner,
       install_requires=[
           "enum34",
           "argparse"
       ],
       tests_require=[
-          "nose",
           "coverage",
-          "nosexcover",
+          "pytest",
+          'pytest-xdist',
+          "python-devicetest",
           "unittest2"
       ],
-      keywords="elt lmc ska",
+      dependency_links=[
+          'git+https://github.com/vxgmichel/pytango-devicetest.git#egg=python_devicetest'],
+      keywords="levpro lmc ska",
       test_suite="nose.collector",
       zip_safe=False)

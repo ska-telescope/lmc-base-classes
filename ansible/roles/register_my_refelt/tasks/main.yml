@@ -65,17 +65,21 @@
   - name: Register MyRefElt servers, classes, devices in TANGO db
     vars:
         my_id : "{{ hostvars[inventory_hostname].element_details.id }}"
-        var_config_db: "{{ lookup('template', '{{ software_root }}/levpro/ansible/inventories/{{ my_name }}/config_files/config_db.json') | from_json }}"
-        var_config_properties: "{{ lookup('template', '{{ software_root}}/levpro/ansible/inventories/{{my_name}}/config_files/device_properties.json') | from_json }}"
+        # NOTE - the space before the double open curly brackets " {{..." is required
+        # else ansible template processing replaces the double quotes with single qoutes
+        # breaking the json
+        # https://stackoverflow.com/questions/41144922/ansible-passing-json-string-in-environment-to-shell-module
+        var_config_db: " {{ lookup('template', '{{ software_root }}/levpro/ansible/inventories/{{ my_name }}/config_files/config_db.json.j2') | to_json }}"
     register_element:
-        #elt_config_file: "{{ software_root }}/levpro/ansible/inventories/{{ my_name }}/config_files/config_db.json"
-        elt_config_json: "{{ var_config_db }}"
+        config_json: "{{ var_config_db }}"
     register: the_result
 
   - name: Register MyRefElt device properties in TANGO db
-    register_device_properties:
-        #elt_config_file: "{{ software_root}}/levpro/ansible/inventories/{{my_name}}/config_files/device_properties.json"
-        elt_config_json: "{{ var_config_properties }}"
+    vars:
+        # NOTE - the space before the double open curly brackets " {{..." is required - see above
+        var_config_properties: " {{ lookup('template', '{{ software_root}}/levpro/ansible/inventories/{{my_name}}/config_files/config_properties.json.j2') | to_json }}"
+    register_properties:
+        properties_json: "{{ var_config_properties }}"
     register: the_result
 
   tags:
@@ -87,8 +91,6 @@
 - block:
   - name: Set StartDsPath
     set_starter_ds_path:
-      facility_name="elt"
-      facility_config="TBD"
       starter_path="/usr/local/bin/"
     register: the_result
   tags:
@@ -98,10 +100,10 @@
 - block:
   - name: Register MyRefElt in Astor and restart with Starter
     vars:
-        var_config_starter: "{{ lookup('template', '{{ software_root }}/levpro/ansible/inventories/{{ my_name }}/config_files/config_starter.json') | from_json }}"
+        # NOTE - the space before the double open curly brackets " {{..." is required - see above
+        var_config_starter: " {{ lookup('template', '{{ software_root }}/levpro/ansible/inventories/{{ my_name }}/config_files/config_starter.json.j2') | to_json }}"
     start_element:
-      #element_config: "{{ software_root }}/levpro/ansible/inventories/{{ my_name }}/config_files/config_starter.json"
-      element_config_json: "{{ var_config_starter }}"
+      starter_json: "{{ var_config_starter }}"
     register: the_result
   tags:
     - register-myrefelt-in-astor

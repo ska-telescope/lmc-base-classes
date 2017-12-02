@@ -2,27 +2,27 @@
     "api_version": "v1",
     "tango_servers": [
       {
-	      "server_name": "SvrRefA",
-	      "server_instances": [
-	          {
-	              "instance_name": "1",
-	              "device_classes": [
-	                  {
-	                      "class_name": "RefA",
-	                      "devices": ["{{ my_id }}/a/1"]
-	                  }
-	              ]
-	          },
-	          {
-	              "instance_name": "2",
-	              "device_classes": [
-	                  {
-	                      "class_name": "RefA",
-	                      "devices": ["{{ my_id }}/a/2"]
-	                  }
-	              ]
-	          }
-	        ]
+          "server_name": "SvrRefA",
+          "server_instances": [
+              {
+                  "instance_name": "1",
+                  "device_classes": [
+                      {
+                          "class_name": "RefA",
+                          "devices": ["{{ my_id }}/a/1"]
+                      }
+                  ]
+              },
+              {
+                  "instance_name": "2",
+                  "device_classes": [
+                      {
+                          "class_name": "RefA",
+                          "devices": ["{{ my_id }}/a/2"]
+                      }
+                  ]
+              }
+            ]
         },
         {
             "server_name": "SvrRefAchild",
@@ -229,8 +229,156 @@
                     ]
                 }
               ]
+        },
+        {
+            "server_name": "SvrSimPdu",
+            "server_instances": [
+                {
+                    "instance_name": "A",
+                    "device_classes": [
+                        {
+                            "class_name": "PDU",
+                            "devices": ["{{ my_id }}/pdu/a"]
+                        },
+                        {
+                            "class_name": "PDUSimControl",
+                            "devices": ["sim_control/pdu/a"]
+                        }
+                    ]
+                },
+                {
+                    "instance_name": "B",
+                    "device_classes": [
+                        {
+                            "class_name": "PDU",
+                            "devices": ["{{ my_id }}/pdu/b"]
+                        },
+                        {
+                            "class_name": "PDUSimControl",
+                            "devices": ["sim_control/pdu/b"]
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "server_name": "SvrSimServer",
+            "server_instances": [
+                {
+                    "instance_name": "1",
+                    "device_classes": [
+                        {
+                            "class_name": "Server",
+                            "devices": ["{{ my_id }}/server/1"]
+                        },
+                        {
+                            "class_name": "ServerSimControl",
+                            "devices": ["sim_control/server/1"]
+                        }
+                    ]
+                },
+                {
+                    "instance_name": "2",
+                    "device_classes": [
+                        {
+                            "class_name": "Server",
+                            "devices": ["{{ my_id }}/server/2"]
+                        },
+                        {
+                            "class_name": "ServerSimControl",
+                            "devices": ["sim_control/server/2"]
+                        }
+                    ]
+                },
+                {
+                    "instance_name": "3",
+                    "device_classes": [
+                        {
+                            "class_name": "Server",
+                            "devices": ["{{ my_id }}/server/3"]
+                        },
+                        {
+                            "class_name": "ServerSimControl",
+                            "devices": ["sim_control/server/3"]
+                        }
+                    ]
+                },
+                {
+                    "instance_name": "4",
+                    "device_classes": [
+                        {
+                            "class_name": "Server",
+                            "devices": ["{{ my_id }}/server/4"]
+                        },
+                        {
+                            "class_name": "ServerSimControl",
+                            "devices": ["sim_control/server/4"]
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "server_name": "SvrSimRack",
+            "server_instances": [
+                {
+                    "instance_name": "A",
+                    "device_classes": [
+                        {
+                            "class_name": "Rack",
+                            "devices": ["{{ my_id }}/rack/a"]
+                        },
+                        {
+                            "class_name": "RackSimControl",
+                            "devices": ["sim_control/rack/a"]
+                        }
+                    ]
+                },
+                {
+                    "instance_name": "B",
+                    "device_classes": [
+                        {
+                            "class_name": "Rack",
+                            "devices": ["{{ my_id }}/rack/b"]
+                        },
+                        {
+                            "class_name": "RackSimControl",
+                            "devices": ["sim_control/rack/b"]
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "server_name": "SvrSimSwitch",
+            "server_instances": [
+                {
+                    "instance_name": "A",
+                    "device_classes": [
+                        {
+                            "class_name": "Switch",
+                            "devices": ["{{ my_id }}/switch/a"]
+                        },
+                        {
+                            "class_name": "SwitchSimControl",
+                            "devices": ["sim_control/switch/a"]
+                        }
+                    ]
+                },
+                {
+                    "instance_name": "B",
+                    "device_classes": [
+                        {
+                            "class_name": "Switch",
+                            "devices": ["{{ my_id }}/switch/B"]
+                        },
+                        {
+                            "class_name": "SwitchSimControl",
+                            "devices": ["sim_control/switch/b"]
+                        }
+                    ]
+                }
+            ]
         }
-
-
     ]
 }

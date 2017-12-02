@@ -9,7 +9,12 @@
     my_id: "{{ hostvars[inventory_hostname].element_details.id }}"
     my_instance: "{{ hostvars[inventory_hostname].element_details.instance }}"
     testVars: "{{ lookup('file', './inventories/{{ my_name }}/config_files/test_vars.json') | from_json }}"
-    configDbVars: "{{ lookup('file', './inventories/{{ my_name }}/config_files/config_db.json') | from_json }}"
+    configDbFile: "{{ lookup('file', './inventories/{{ my_name }}/config_files/config_db.json') | from_json }}"
+    configDbJson: "{{ lookup('template', './inventories/{{ my_name }}/config_files/config_db.json') }}"
+    configPropertiesFile: "{{ lookup('file', './inventories/{{ my_name }}/config_files/config_properties.json') | from_json }}"
+    configPropertiesJson: "{{ lookup('template', './inventories/{{ my_name }}/config_files/config_properties.json') }}"
+    configStarterFile: "{{ lookup('file', './inventories/{{ my_name }}/config_files/config_starter.json') | from_json }}"
+    configStarterJson: "{{ lookup('template', './inventories/{{ my_name }}/config_files/config_starter.json') }}"
 
   tasks:
     - name: Print my hostvars
@@ -75,10 +80,13 @@
             echo "SUCCESS - found {{ my_id }} at {{ item.key }}"
         fi
 
-    - name: Print configDbVars
+    - name: Print config files and vars
       debug:
           msg="{{item}}"
       with_items:
-          - "configDbVars = {{ configDbVars }}"
+          - "configDbFile = {{ configDbFile }}"
+          - "configDbJson = {{ configDbJson }}"
+          - "configPropertiesFile = {{ configPropertiesFile }}"
+          - "configPropertiesJson = {{ configPropertiesJson }}"
       tags:
         - prints

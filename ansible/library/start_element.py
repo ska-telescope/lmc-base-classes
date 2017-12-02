@@ -43,13 +43,10 @@ running_servers = []
 servers_not_running = []
 
 
-def start_element(elt_config):
+def start_element(config_data):
     astor = fn.Astor()
 
-    with open(elt_config) as elt_config_file:
-        facility_data = json.load(elt_config_file)
-
-    hosts_data = facility_data["tango_hosts"]
+    hosts_data = config_data["tango_hosts"]
 
     for host_name, host_data in hosts_data.items():
 
@@ -120,7 +117,8 @@ def run_module():
     # define the available arguments/parameters that a user can pass to
     # the module
     module_args = dict(
-        element_config=dict(type='str', required=True)
+        starter_file=dict(type='str', required=False),
+        starter_json=dict(type='str', required=False)
     )
 
     # seed the result dict in the object
@@ -148,9 +146,19 @@ def run_module():
     if module.check_mode:
         return result
 
-    # manipulate or modify the state as needed (this is going to be the
-    # part where your module will do what it needs to do)
-    start_element(module.params['element_config'])
+    # Load config from file or json
+    if module.params['starter_json']:
+        config_data = json.loads(module.params['starter_json'])
+        start_element(config_data)
+    elif module.params['starter_file']:
+        config_file = module.params['starter_file']
+        with open(config_file) as config_fileh:
+            config_data = json.load(config_fileh)
+            start_element(config_data)
+    else:
+        module.fail_json(msg='Required parameter starter_json or starter_file is missing',
+                         **result)
+
     result['Running_servers'] = running_servers
     result['Servers_not_running'] = servers_not_running
 

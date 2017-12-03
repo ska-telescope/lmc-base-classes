@@ -121,9 +121,9 @@ def run_module():
     if module.check_mode:
         return result
 
-    config_data = json.loads(module.params['config_json'])
-    result['debug'] = config_data
-    module.exit_json(msg="Debug!!!", **result)
+    #config_data = json.loads(module.params['config_json'])
+    #result['debug'] = config_data
+    #module.exit_json(msg="Debug!!!", **result)
     
     # Load config from file or json
     config_data = json.loads(module.params['config_json'])

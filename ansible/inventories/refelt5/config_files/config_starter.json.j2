@@ -1,27 +1,3 @@
-
-              {
-                  "startup_level": 2,
-                  "server_instances": ["SvrRefAchild/11", "SvrRefAchild/12", "SvrRefAchild/21", "SvrRefAchild/22",
-                      "SvrRefCapability/1A", "SvrRefCapability/1B", "SvrRefCapability/1C", "SvrRefCapability/1D",
-                      "SvrRefCapability/2A", "SvrRefCapability/2B", "SvrRefCapability/2C", "SvrRefCapability/2D"]
-              },
-              {
-                  "startup_level": 3,
-                  "server_instances": ["SvrRefA/1", "SvrRefA/2"]
-              },
-              {
-                  "startup_level": 5,
-                  "server_instances": ["SvrRefSubarray/1", "SvrRefSubarray/2"]
-              },
-              {
-                  "startup_level": 5,
-                  "server_instances": ["SvrRefMaster/{{ my_instance }}", "SvrRefTelState/{{ my_instance }}",
-                                       "SvrRefAlarmHandler/{{ my_instance }}"]
-              }
-          ]
-    }
-}
-
 {
     "api_version": "v1",
     "tango_hosts": {
@@ -32,11 +8,13 @@
               },
               {
                   "startup_level": 2,
-                  "server_instances": ["SvrRefAchild/21", "SvrRefAchild/22",
+                  "server_instances": ["SvrRefAchild/11", "SvrRefAchild/12",
+                                       "SvrRefAchild/21", "SvrRefAchild/22",
                                        "SvrRefCapability/1A", "SvrRefCapability/1B",
                                        "SvrRefCapability/1C", "SvrRefCapability/1D",
                                        "SvrRefCapability/2A", "SvrRefCapability/2B",
-                                       "SvrRefCapability/2C", "SvrRefCapability/2D"                                       "SvrSimPdu/A", "SvrSimPdu/B",
+                                       "SvrRefCapability/2C", "SvrRefCapability/2D",
+                                       "SvrSimPdu/A", "SvrSimPdu/B",
                                        "SvrSimServer/1", "SvrSimServer/2",
                                        "SvrSimServer/3", "SvrSimServer/4",
                                        "SvrSimRack/A", "SvrSimRack/B",
@@ -50,13 +28,14 @@
               },
               {
                   "startup_level": 4,
-                  "server_instances": ["SvrRefA/1", "SvrRefA/2",
-                                       "SvrRefSubarray/1", "SvrRefSubarray/2",
+                  "server_instances": ["SvrRefSubarray/1", "SvrRefSubarray/2",
                                        "SvrRefSubarray/3", "SvrRefSubarray/4"]
               },
               {
                   "startup_level": 5,
-                  "server_instances": ["SvrRefMaster/{{ server_instance }}", "SvrRefAlarmHandler/{{ server_instance }}", "SvrRefTelState/{{ server_instance }}"]
+                  "server_instances": ["SvrRefMaster/{{ my_instance }}",
+                                       "SvrRefAlarmHandler/{{ my_instance }}",
+                                       "SvrRefTelState/{{ my_instance }}"]
               }
           ]
     }

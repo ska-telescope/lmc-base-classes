@@ -16,9 +16,9 @@ description:
     - Start the device servers in the element using Astor.
 
 options:
-    element_config:
+    starter_json:
         description:
-            - A json file defining the list of device server instances grouped
+            - A json string defining the list of device server instances grouped
               according to their startup levels.
         required: true
 
@@ -29,7 +29,7 @@ author:
 EXAMPLES = '''
 - name: Start the Element's device servers.
   start_element:
-    element_config: refelt_config_starter.json
+    starter_json: json templated from config_starter.json.j2
 '''
 
 RETURN = '''
@@ -117,8 +117,7 @@ def run_module():
     # define the available arguments/parameters that a user can pass to
     # the module
     module_args = dict(
-        starter_file=dict(type='str', required=False),
-        starter_json=dict(type='str', required=False)
+        starter_json=dict(type='str', required=True)
     )
 
     # seed the result dict in the object
@@ -146,18 +145,11 @@ def run_module():
     if module.check_mode:
         return result
 
-    # Load config from file or json
-    if module.params['starter_json']:
-        config_data = json.loads(module.params['starter_json'])
-        start_element(config_data)
-    elif module.params['starter_file']:
-        config_file = module.params['starter_file']
-        with open(config_file) as config_fileh:
-            config_data = json.load(config_fileh)
-            start_element(config_data)
-    else:
-        module.fail_json(msg='Required parameter starter_json or starter_file is missing',
-                         **result)
+    # Load config from json
+    config_data = json.loads(module.params['starter_json'])
+    #result['debug'] = config_data
+    #module.exit_json(msg="Debug!!!", **result)
+    start_element(config_data)
 
     result['Running_servers'] = running_servers
     result['Servers_not_running'] = servers_not_running

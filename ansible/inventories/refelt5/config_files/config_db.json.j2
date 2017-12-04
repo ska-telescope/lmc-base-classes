@@ -1,27 +1,27 @@
 {
     "api_version": "v1",
     "tango_servers": [
-      {
-          "server_name": "SvrRefA",
-          "server_instances": [
-              {
-                  "instance_name": "1",
-                  "device_classes": [
-                      {
-                          "class_name": "RefA",
-                          "devices": ["{{ my_id }}/a/1"]
-                      }
-                  ]
-              },
-              {
-                  "instance_name": "2",
-                  "device_classes": [
-                      {
-                          "class_name": "RefA",
-                          "devices": ["{{ my_id }}/a/2"]
-                      }
-                  ]
-              }
+        {
+            "server_name": "SvrRefA",
+            "server_instances": [
+                {
+                    "instance_name": "1",
+                    "device_classes": [
+                        {
+                            "class_name": "RefA",
+                            "devices": ["{{ my_id }}/a/1"]
+                        }
+                    ]
+                },
+                {
+                    "instance_name": "2",
+                    "device_classes": [
+                        {
+                            "class_name": "RefA",
+                            "devices": ["{{ my_id }}/a/2"]
+                        }
+                    ]
+                }
             ]
         },
         {
@@ -63,7 +63,7 @@
                         }
                     ]
                 }
-              ]
+            ]
         },
         {
             "server_name": "SvrRefMaster",
@@ -77,7 +77,7 @@
                         }
                     ]
                 }
-              ]
+            ]
         },
         {
             "server_name": "SKALogger",
@@ -100,7 +100,7 @@
                         }
                     ]
                 }
-              ]
+            ]
         },
         {
             "server_name": "SvrRefAlarmHandler",
@@ -114,7 +114,7 @@
                         }
                     ]
                 }
-              ]
+            ]
         },
         {
             "server_name": "SvrRefTelState",
@@ -128,7 +128,7 @@
                         }
                     ]
                 }
-              ]
+            ]
         },
         {
             "server_name": "SvrRefSubarray",
@@ -150,8 +150,26 @@
                             "devices": ["{{ my_id }}/subarray/2"]
                         }
                     ]
+                },
+                {
+                    "instance_name": "3",
+                    "device_classes": [
+                        {
+                            "class_name": "RefSubarray",
+                            "devices": ["{{ my_id }}/subarray/3"]
+                        }
+                    ]
+                },
+                {
+                    "instance_name": "4",
+                    "device_classes": [
+                        {
+                            "class_name": "RefSubarray",
+                            "devices": ["{{ my_id }}/subarray/4"]
+                        }
+                    ]
                 }
-              ]
+            ]
         },
         {
             "server_name": "SvrRefCapability",

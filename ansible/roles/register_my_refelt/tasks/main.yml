@@ -48,7 +48,7 @@
       - "my_element_details = {{ my_element_details }}"
       - "my_name = {{ my_name }}"
       - "my_id = {{ my_id }}"
-      - "my_instance = server_instance"
+      - "my_instance = {{ my_instance }}"
       - "my_groups = {{ my_groups }}"
   tags:
     - register-myrefelt-prints

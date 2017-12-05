@@ -101,7 +101,7 @@ To run the role, run the playbook like any of the lines below:
 ./play-task.sh install-sw
 ./play-task.sh refresh-sw devXX
 ```
-or using ansible-playbook directly 
+or using ansible-playbook directly
 ```
 ansible-playbook -i hosts install_sw.yml --list-tags [--limit devXX]
 ansible-playbook -i hosts install_sw.yml --list-hosts [--limit devXX]
@@ -113,7 +113,7 @@ ansible-playbook -i hosts install_sw.yml -t install-sw-levpro
 ```
 ./play-task.sh deploy-sw
 ```
-or using ansible-playbook directly 
+or using ansible-playbook directly
 ```
 ansible-playbook -i hosts site.yml --limit local --tags "deploy-sw"
 ```
@@ -122,13 +122,11 @@ ansible-playbook -i hosts site.yml --limit local --tags "deploy-sw"
 ```
 ./play-task.sh refresh-sw
 ./play-task.sh refresh-sw-levpro
-./play-task.sh refresh-sw-tango-simlib
 ```
-or using ansible-playbook directly 
+or using ansible-playbook directly
 ```
 ansible-playbook -i hosts site.yml --limit local --tags "refresh-sw"
 ansible-playbook -i hosts site.yml --limit local --tags "refresh-sw-levpro"
-ansible-playbook -i hosts site.yml --limit local --tags "refresh-sw-tango-simlib"
 ```
 
 ### To install SW on local: # sudo pip install
@@ -138,7 +136,7 @@ ansible-playbook -i hosts site.yml --limit local --tags "refresh-sw-tango-simlib
 ./play-task.sh install-sw-skabase
 ./play-task.sh install-sw-refelt
 ```
-or using ansible-playbook directly 
+or using ansible-playbook directly
 ```
 ansible-playbook -i hosts site.yml --limit local --tags "install-sw" # all
 ansible-playbook -i hosts site.yml --limit local --tags "install-sw-levpro"
@@ -190,7 +188,7 @@ and ansible/host_vars/devXXlevpro for each host in the group as appropriate, at 
 ansible_ssh_host: levpro.devXXX.camlab.kat.ac.za
 ```
 
-Lastly, you need to create an inventory for devXX in ansible/inventories/devXX defining the refXXX element. 
+Lastly, you need to create an inventory for devXX in ansible/inventories/devXX defining the refXXX element.
 Note: this may later be templated for RefElts (as it may be a useful pattern for DSH)
 
 (If need be, deregister previous registrations with:)
@@ -244,9 +242,9 @@ Format is "<role-tag>-<task-id>" e.g. install-sw-refelt
 ### Current TASK tags:
 To list the current task tags:
 ```
-./play-task.sh 
+./play-task.sh
 
-kat@levpro.devXX.camlab.kat.ac.za:~/src/levpro/ansible$ ./play-task.sh 
+kat@levpro.devXX.camlab.kat.ac.za:~/src/levpro/ansible$ ./play-task.sh
 You have to specify a roletag, and optional task-id
 
 ---------------------------<<<< ANSIBLE COMMAND LINE >>>>--------------------------------------------
@@ -258,16 +256,16 @@ The available task tags are:
 playbook: site.yml
 
   play #1 (operational): deploy_sw	TAGS: []
-      TASK TAGS: [deploy-sw, deploy-sw-levpro, deploy-sw-tango-simlib]
+      TASK TAGS: [deploy-sw, deploy-sw-levpro]
 
   play #2 (operational): deploy_tangobox	TAGS: []
       TASK TAGS: [debs, deploy-box-tango-java, deploy-tangobox, deploy-tangobox-debs, deploy-tangobox-itango, deploy-tangobox-mysql, deploy-tangobox-mysql-installed, deploy-tangobox-pip, deploy-tangobox-start-tango, deploy-tangobox-tango-core, deploy-tangobox-tango-java, deploy-tangobox-tango-java-pogo, deploy-tangobox-tango-webapp, itango, mysql, pip, tango-core, tango-java]
 
   play #3 (operational): install_sw	TAGS: []
-      TASK TAGS: [install-sw, install-sw-levpro, install-sw-refelt, install-sw-skabase, install-sw-tango-simlib]
+      TASK TAGS: [install-sw, install-sw-levpro, install-sw-refelt, install-sw-skabase]
 
   play #4 (operational): refresh_sw	TAGS: []
-      TASK TAGS: [refresh-sw, refresh-sw-levpro, refresh-sw-tango-simlib]
+      TASK TAGS: [refresh-sw, refresh-sw-levpro]
 
   play #5 (operational): register_refelt	TAGS: []
       TASK TAGS: [register-refelt, register-refelt-in-astor, register-refelt-in-astor-ds-path, register-refelt-in-tangodb]

@@ -19,7 +19,7 @@ class Receiving(Device):
 
     @command(dtype_in='DevVarStringArray', dtype_out=None)
     def log(self, details):
-	message = details[3]
+        message = details[3]
 #        print(message)
         self.debug_stream(message)
 
@@ -34,7 +34,7 @@ if '--register' in sys.argv:
     dev_info.server = 'ReceivingDS/logdev'
     dev_info.name = name
     db.add_device(dev_info)
-    print("In registration....")
+    print("In registration")
 else:
-    print("Runing DS....")
+    print("Running DS")
     run([Receiving])

@@ -27,7 +27,7 @@ author:
 EXAMPLES = '''
 - name: Register the Reference Element devices.
   register_element:
-    config_json: config_db.json
+    config_json: json templated from config_db.json.j2
 '''
 
 RETURN = '''

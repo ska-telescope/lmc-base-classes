@@ -19,7 +19,7 @@
     register_element:
         elt_config_file: "{{software_root}}/levpro/ansible/inventories/refelt/config_files/config_db.json"
     register: the_result
-  - name: Register RefElt device properties
+  - name: Register RefElt properties
     register_properties:
       elt_config_file: "{{software_root}}/levpro/ansible/inventories/refelt/config_files/device_properties.json"
     register: the_result

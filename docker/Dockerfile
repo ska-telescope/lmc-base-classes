@@ -119,6 +119,17 @@ RUN pip install itango \
                 "six>=1.9.0" \
                 tango-admin
 
+# Install tango java tools like pogo and jive
+RUN apt-get update \
+ && apt-get install -y default-jre \
+                       liblog4j1.2-java
+RUN wget 'https://people.debian.org/~picca/libtango-java_9.2.5a-1_all.deb' -P /tmp/ \
+ && dpkg -i /tmp/libtango-java_9.2.5a-1_all.deb \
+ && rm -f /tmp/libtango-java_9.2.5a-1_all.deb \
+ && wget 'https://bintray.com/tango-controls/maven/download_file?file_path=org%2Ftango%2Ftools%2Fpogo%2Fgui%2FPogo%2F9.6.1%2FPogo-9.6.1.jar' \
+          -O /usr/share/java/Pogo-9.6.1.jar \
+ && ln -sfv /usr/share/java/Pogo-9.6.1.jar /usr/share/java/org.tango.pogo.jar
+
 # Install virtual monitor
 RUN apt-get install -y xvfb
 

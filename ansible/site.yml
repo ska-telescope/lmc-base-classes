@@ -3,11 +3,11 @@
 
 - import_playbook: deploy_tangobox.yml
 - import_playbook: deploy_sw.yml
+- import_playbook: generate_sw.yml
 - import_playbook: install_sw.yml
 - import_playbook: refresh_sw.yml
 - import_playbook: register_refelt.yml
 - import_playbook: register_my_refelt.yml
-- import_playbook: generate_sw.yml
 
 # Additional helper playbooks
 #- include: deregister_refelts:.yml

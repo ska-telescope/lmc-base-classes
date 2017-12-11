@@ -259,7 +259,7 @@
         elt_config_file: roles/deploy_tangobox/config_files/tango_config_db.json
     register: writable_result
   - name: Register the mtango rest server device properties
-    register_device_properties:
+    register_properties:
         elt_config_file: roles/deploy_tangobox/config_files/tango_device_properties.json
     register: writable_result
   tags:

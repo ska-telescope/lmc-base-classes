@@ -15,9 +15,9 @@ description:
     - This module is used to register TANGO devices of an Element to the database.
 
 options:
-    element_config:
+    config_json:
         description:
-            - A json file defining the list of devices in an element.
+            - A json defining the list of devices in an element.
         required: true
 
 author:
@@ -27,7 +27,7 @@ author:
 EXAMPLES = '''
 - name: Register the Reference Element devices.
   register_element:
-    element_config: refelt_config_db.json
+    config_json: json templated from config_db.json.j2
 '''
 
 RETURN = '''
@@ -70,10 +70,7 @@ def register_devices(device_class_name, server_name, server_instance_name,
             registered_devices.append(device_name+"({})".format(svr_name))
 
 
-def register_element(config_file):
-
-    with open(config_file) as elt_config_file:
-        config_data = json.load(elt_config_file)
+def register_element(config_data):
 
     servers = config_data['tango_servers']
 
@@ -96,7 +93,7 @@ def run_module():
     # define the available arguments/parameters that a user can pass to
     # the module
     module_args = dict(
-        elt_config_file=dict(type='str', required=True)
+        config_json=dict(type='str', required=True)
     )
 
     # seed the result dict in the object
@@ -124,9 +121,12 @@ def run_module():
     if module.check_mode:
         return result
 
-    # manipulate or modify the state as needed (this is going to be the
-    # part where your module will do what it needs to do)
-    register_element(module.params['elt_config_file'])
+    # Load config from json
+    config_data = json.loads(module.params['config_json'])
+    #result['debug'] = config_data
+    #module.exit_json(msg="Debug!!!", **result)
+    register_element(config_data)
+
     result['Registered_devices'] = registered_devices
     result['Devices_not_registered'] = devices_not_registered
 

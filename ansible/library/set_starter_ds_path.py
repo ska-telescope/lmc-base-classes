@@ -14,8 +14,6 @@ def main():
     ## Create ansible module
     module = AnsibleModule(
         argument_spec=dict(
-            facility_name=dict(required=True),
-            facility_config=dict(required=True),
             starter_path=dict(required=True)),
         supports_check_mode=True
         )

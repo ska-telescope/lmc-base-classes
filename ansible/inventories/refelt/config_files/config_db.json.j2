@@ -9,7 +9,7 @@
                     "device_classes": [
                         {
                             "class_name": "RefA",
-                            "devices": ["ref/a/1"]
+                            "devices": ["{{ my_id }}/a/1"]
                         }
                     ]
               },
@@ -18,7 +18,7 @@
                     "device_classes": [
                         {
                             "class_name": "RefA",
-                            "devices": ["ref/a/2"]
+                            "devices": ["{{ my_id }}/a/2"]
                         }
                     ]
               }
@@ -32,7 +32,7 @@
                     "device_classes": [
                         {
                             "class_name": "RefAchild",
-                            "devices": ["ref/achild/11", "ref/achild/12"]
+                            "devices": ["{{ my_id }}/achild/11", "{{ my_id }}/achild/12"]
                         }
                     ]
                 },
@@ -41,7 +41,7 @@
                     "device_classes": [
                         {
                             "class_name": "RefAchild",
-                            "devices": ["ref/achild/21", "ref/achild/22"]
+                            "devices": ["{{ my_id }}/achild/21", "{{ my_id }}/achild/22"]
                         }
                     ]
                 }
@@ -51,11 +51,11 @@
             "server_name": "SvrRefMaster",
             "server_instances": [
                 {
-                    "instance_name": "Elt",
+                    "instance_name": "{{ my_instance }}",
                     "device_classes": [
                         {
                             "class_name": "RefMaster",
-                            "devices": ["ref/elt/master"]
+                            "devices": ["{{ my_id }}/elt/master"]
                         }
                     ]
                 }
@@ -65,11 +65,11 @@
             "server_name": "SKALogger",
             "server_instances": [
                 {
-                    "instance_name": "Elt",
+                    "instance_name": "{{ my_instance }}",
                     "device_classes": [
                         {
                             "class_name": "SKALogger",
-                            "devices": ["ref/elt/logger"]
+                            "devices": ["{{ my_id }}/elt/logger"]
                         }
                     ]
                 },
@@ -88,11 +88,11 @@
             "server_name": "SvrRefAlarmHandler",
             "server_instances": [
                 {
-                    "instance_name": "Elt",
+                    "instance_name": "{{ my_instance }}",
                     "device_classes": [
                         {
                             "class_name": "RefAlarmHandler",
-                            "devices": ["ref/elt/alarmhandler"]
+                            "devices": ["{{ my_id }}/elt/alarmhandler"]
                         }
                     ]
                 }
@@ -102,11 +102,11 @@
             "server_name": "SvrRefTelState",
             "server_instances": [
                 {
-                    "instance_name": "Elt",
+                    "instance_name": "{{ my_instance }}",
                     "device_classes": [
                         {
                             "class_name": "RefTelState",
-                            "devices": ["ref/elt/telstate"]
+                            "devices": ["{{ my_id }}/elt/telstate"]
                         }
                     ]
                 }
@@ -120,7 +120,7 @@
                     "device_classes": [
                         {
                             "class_name": "RefSubarray",
-                            "devices": ["ref/subarray/1"]
+                            "devices": ["{{ my_id }}/subarray/1"]
                         }
                     ]
                 },
@@ -129,7 +129,7 @@
                     "device_classes": [
                         {
                             "class_name": "RefSubarray",
-                            "devices": ["ref/subarray/2"]
+                            "devices": ["{{ my_id }}/subarray/2"]
                         }
                     ]
                 },
@@ -138,7 +138,7 @@
                     "device_classes": [
                         {
                             "class_name": "RefSubarray",
-                            "devices": ["ref/subarray/3"]
+                            "devices": ["{{ my_id }}/subarray/3"]
                         }
                     ]
                 },
@@ -147,7 +147,7 @@
                     "device_classes": [
                         {
                             "class_name": "RefSubarray",
-                            "devices": ["ref/subarray/4"]
+                            "devices": ["{{ my_id }}/subarray/4"]
                         }
                     ]
                 }
@@ -161,10 +161,10 @@
                     "device_classes": [
                         {
                             "class_name": "RefCapability",
-                            "devices": ["ref/cap/sub1calca",
-                                        "ref/cap/sub1calcb",
-                                        "ref/cap/sub1procc",
-                                        "ref/cap/sub1procd"]
+                            "devices": ["{{ my_id }}/cap/sub1calca",
+                                        "{{ my_id }}/cap/sub1calcb",
+                                        "{{ my_id }}/cap/sub1procc",
+                                        "{{ my_id }}/cap/sub1procd"]
                         }
                     ]
                 },
@@ -173,10 +173,10 @@
                     "device_classes": [
                         {
                             "class_name": "RefCapability",
-                            "devices": ["ref/cap/sub2calca",
-                                        "ref/cap/sub2calcb",
-                                        "ref/cap/sub2procc",
-                                        "ref/cap/sub2procd"]
+                            "devices": ["{{ my_id }}/cap/sub2calca",
+                                        "{{ my_id }}/cap/sub2calcb",
+                                        "{{ my_id }}/cap/sub2procc",
+                                        "{{ my_id }}/cap/sub2procd"]
                         }
                     ]
                 },
@@ -185,10 +185,10 @@
                     "device_classes": [
                         {
                             "class_name": "RefCapability",
-                            "devices": ["ref/cap/sub3calca",
-                                        "ref/cap/sub3calcb",
-                                        "ref/cap/sub3procc",
-                                        "ref/cap/sub3procd"]
+                            "devices": ["{{ my_id }}/cap/sub3calca",
+                                        "{{ my_id }}/cap/sub3calcb",
+                                        "{{ my_id }}/cap/sub3procc",
+                                        "{{ my_id }}/cap/sub3procd"]
                         }
                     ]
                 },
@@ -197,10 +197,10 @@
                     "device_classes": [
                         {
                             "class_name": "RefCapability",
-                            "devices": ["ref/cap/sub4calca",
-                                        "ref/cap/sub4calcb",
-                                        "ref/cap/sub4procc",
-                                        "ref/cap/sub4procd"]
+                            "devices": ["{{ my_id }}/cap/sub4calca",
+                                        "{{ my_id }}/cap/sub4calcb",
+                                        "{{ my_id }}/cap/sub4procc",
+                                        "{{ my_id }}/cap/sub4procd"]
                         }
                     ]
                 }
@@ -214,11 +214,11 @@
                     "device_classes": [
                         {
                             "class_name": "PDU",
-                            "devices": ["ref/pdu/A"]
+                            "devices": ["{{ my_id }}/pdu/a"]
                         },
                         {
                             "class_name": "PDUSimControl",
-                            "devices": ["sim_control/pdu/A"]
+                            "devices": ["sim_control/pdu/a"]
                         }
                     ]
                 },
@@ -227,11 +227,11 @@
                     "device_classes": [
                         {
                             "class_name": "PDU",
-                            "devices": ["ref/pdu/B"]
+                            "devices": ["{{ my_id }}/pdu/b"]
                         },
                         {
                             "class_name": "PDUSimControl",
-                            "devices": ["sim_control/pdu/B"]
+                            "devices": ["sim_control/pdu/b"]
                         }
                     ]
                 }
@@ -245,7 +245,7 @@
                     "device_classes": [
                         {
                             "class_name": "Server",
-                            "devices": ["ref/server/1"]
+                            "devices": ["{{ my_id }}/server/1"]
                         },
                         {
                             "class_name": "ServerSimControl",
@@ -258,7 +258,7 @@
                     "device_classes": [
                         {
                             "class_name": "Server",
-                            "devices": ["ref/server/2"]
+                            "devices": ["{{ my_id }}/server/2"]
                         },
                         {
                             "class_name": "ServerSimControl",
@@ -271,7 +271,7 @@
                     "device_classes": [
                         {
                             "class_name": "Server",
-                            "devices": ["ref/server/3"]
+                            "devices": ["{{ my_id }}/server/3"]
                         },
                         {
                             "class_name": "ServerSimControl",
@@ -284,7 +284,7 @@
                     "device_classes": [
                         {
                             "class_name": "Server",
-                            "devices": ["ref/server/4"]
+                            "devices": ["{{ my_id }}/server/4"]
                         },
                         {
                             "class_name": "ServerSimControl",
@@ -302,11 +302,11 @@
                     "device_classes": [
                         {
                             "class_name": "Rack",
-                            "devices": ["ref/rack/A"]
+                            "devices": ["{{ my_id }}/rack/a"]
                         },
                         {
                             "class_name": "RackSimControl",
-                            "devices": ["sim_control/rack/A"]
+                            "devices": ["sim_control/rack/a"]
                         }
                     ]
                 },
@@ -315,11 +315,11 @@
                     "device_classes": [
                         {
                             "class_name": "Rack",
-                            "devices": ["ref/rack/B"]
+                            "devices": ["{{ my_id }}/rack/b"]
                         },
                         {
                             "class_name": "RackSimControl",
-                            "devices": ["sim_control/rack/B"]
+                            "devices": ["sim_control/rack/b"]
                         }
                     ]
                 }
@@ -333,11 +333,11 @@
                     "device_classes": [
                         {
                             "class_name": "Switch",
-                            "devices": ["ref/switch/A"]
+                            "devices": ["{{ my_id }}/switch/a"]
                         },
                         {
                             "class_name": "SwitchSimControl",
-                            "devices": ["sim_control/switch/A"]
+                            "devices": ["sim_control/switch/a"]
                         }
                     ]
                 },
@@ -346,11 +346,11 @@
                     "device_classes": [
                         {
                             "class_name": "Switch",
-                            "devices": ["ref/switch/B"]
+                            "devices": ["{{ my_id }}/switch/B"]
                         },
                         {
                             "class_name": "SwitchSimControl",
-                            "devices": ["sim_control/switch/B"]
+                            "devices": ["sim_control/switch/b"]
                         }
                     ]
                 }

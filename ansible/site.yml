@@ -8,4 +8,7 @@
 - import_playbook: refresh_sw.yml
 - import_playbook: register_refelt.yml
 - import_playbook: register_my_refelt.yml
+
+# Additional helper playbooks
 #- include: deregister_refelts:.yml
+#- include: test_vars:.yml

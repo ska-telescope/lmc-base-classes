@@ -8,9 +8,9 @@ import fandango.tango as fantango
 
 DOCUMENTATION = '''
 ---
-module: register_device_properties
+module: register_properties
 
-short_description: Register device properties.
+short_description: Register global and device properties.
 
 description:
     - A Python script used to register TANGO device properties
@@ -27,8 +27,8 @@ author:
 
 EXAMPLES = '''
 - name: Register the Reference Element device properties.
-  register_device_properties:
-    element_config: refelt_config_device_properties.json
+  register_properties:
+    config_json: config_properties.json
 '''
 
 RETURN = '''
@@ -67,10 +67,7 @@ def put_device_property(device_name, device_properties):
             registered_properties.append("/".join([device_name,property_name]))
 
 
-def update_device_properties(elt_config):
-
-    with open(elt_config) as elt_config_file:
-        config_data = json.load(elt_config_file)
+def update_device_properties(config_data):
 
     devices = config_data['devices']
 
@@ -82,7 +79,8 @@ def run_module():
     # define the available arguments/parameters that a user can pass to
     # the module
     module_args = dict(
-        elt_config_file=dict(type='str', required=True)
+        properties_file=dict(type='str', required=False),
+        properties_json=dict(type='str', required=False)
     )
 
     # seed the result dict in the object
@@ -110,9 +108,19 @@ def run_module():
     if module.check_mode:
         return result
 
-    # manipulate or modify the state as needed (this is going to be the
-    # part where your module will do what it needs to do)
-    update_device_properties(module.params['elt_config_file'])
+    # Load config from file or json
+    if module.params['properties_json']:
+        config_data = json.loads(module.params['properties_json'])
+        update_device_properties(config_data)
+    elif module.params['properties_file']:
+        config_file = module.params['properties_file']
+        with open(config_file) as config_fileh:
+            config_data = json.load(config_fileh)
+            update_device_properties(config_data)
+    else:
+        module.fail_json(msg='Required parameter properties_json or properties_file'
+                             ' is missing', **result)
+
     result['Registered_properties'] = registered_properties
     result['Properties_not_registered'] = properties_not_registered
 

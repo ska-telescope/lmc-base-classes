@@ -4,7 +4,7 @@
           "levpro": [
               {
                   "startup_level": 1,
-                  "server_instances": ["SKALogger/Elt", "SKALogger/Central"]
+                  "server_instances": ["SKALogger/{{ my_instance }}", "SKALogger/Central"]
               },
               {
                   "startup_level": 2,
@@ -28,7 +28,9 @@
               },
               {
                   "startup_level": 5,
-                  "server_instances": ["SvrRefMaster/Elt", "SvrRefAlarmHandler/Elt", "SvrRefTelState/Elt"]
+                  "server_instances": ["SvrRefMaster/{{ my_instance }}",
+                                       "SvrRefAlarmHandler/{{ my_instance }}",
+                                       "SvrRefTelState/{{ my_instance }}"]
               }
           ]
     }

@@ -1,0 +1,35 @@
+{
+    "api_version": "v1",
+    "tango_hosts": {
+          "levpro": [
+              {
+                  "startup_level": 1,
+                  "server_instances": ["SKALogger/{{ my_instance }}", "SKALogger/Central"]
+              },
+              {
+                  "startup_level": 2,
+                  "server_instances": ["SvrRefAchild/1", "SvrRefAchild/2",
+                                       "SvrRefCapability/1A", "SvrRefCapability/1B",
+                                       "SvrRefCapability/1C", "SvrRefCapability/1D",
+                                       "SvrRefCapability/2A", "SvrRefCapability/2B",
+                                       "SvrRefCapability/2C", "SvrRefCapability/2D"]
+              },
+              {
+                  "startup_level": 3,
+                  "server_instances": ["SvrRefA/1", "SvrRefA/2"]
+              },
+              {
+                  "startup_level": 4,
+                  "server_instances": ["SvrRefSubarray/1", "SvrRefSubarray/2"]
+              },
+              {
+                  "startup_level": 5,
+                  "server_instances": ["SvrRefMaster/{{ my_instance }}",
+                                       "SvrRefTelState/{{ my_instance }}", 
+                                       "SvrRefAlarmHandler/{{ my_instance }}",
+                                       "SvrRefAlarmHandler/SubElt1",
+                                       "SvrRefAlarmHandler/SubElt2"]
+              }
+          ]
+    }
+}

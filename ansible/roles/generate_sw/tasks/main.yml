@@ -12,15 +12,13 @@
 ##     Pip install working directories
 ###########################################
 
-
-
 - block:
   - name: Generate skabase
     command: pogo -src {{item}}.xmi
     args:
         chdir: "{{software_root}}/levpro/skabase/{{item}}"
     environment:
-        DISPLAY: "localhost:10.0"
+        DISPLAY: "localhost:1.0"
     with_items:
       - SKABaseDevice
       - SKAObsDevice
@@ -39,7 +37,7 @@
     args:
         chdir: "{{software_root}}/levpro/refelt/refelt"
     environment:
-        DISPLAY: "localhost:10.0"
+        DISPLAY: "localhost:1.0"
     with_items:
       - RefMaster
       - RefA

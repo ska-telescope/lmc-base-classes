@@ -75,6 +75,25 @@ def update_device_properties(config_data):
         put_device_property(device_name, device_properties)
 
 
+def update_global_properties(config_data):
+    
+    global_properties = config_data['global']
+    global_property_name = 'telescope'
+    for property_name, property_value in global_properties.items():
+        try:
+            fantango.put_free_property(global_property_name, {str(property_name): property_value})
+        except PyTango.DevError as deverr:
+            logging.error("FAILED to register global property {} {}."
+                          .format(property_name, deverr))
+            print """Failed to register global property {} in the database.
+                  """.format(property_name)
+            properties_not_registered.append("/".join([property_name]))
+        else:
+            print """Successfully registered property {} in the database.
+                  """.format(property_name)
+            registered_properties.append("/".join([property_name]))
+
+
 def run_module():
     # define the available arguments/parameters that a user can pass to
     # the module
@@ -112,11 +131,13 @@ def run_module():
     if module.params['properties_json']:
         config_data = json.loads(module.params['properties_json'])
         update_device_properties(config_data)
+        update_global_properties(config_data)
     elif module.params['properties_file']:
         config_file = module.params['properties_file']
         with open(config_file) as config_fileh:
             config_data = json.load(config_fileh)
             update_device_properties(config_data)
+            update_global_properties(config_data)
     else:
         module.fail_json(msg='Required parameter properties_json or properties_file'
                              ' is missing', **result)

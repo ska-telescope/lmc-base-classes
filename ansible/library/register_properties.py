@@ -60,11 +60,11 @@ def put_device_property(device_name, device_properties):
                           .format(property_name, deverr))
             print """Failed to register device property {} in the database.
                   """.format(property_name)
-            properties_not_registered.append("/".join([device_name,property_name]))
+            properties_not_registered.append("/".join([device_name, property_name]))
         else:
             print """Successfully registered device property {} in the database.
                   """.format(property_name)
-            registered_properties.append("/".join([device_name,property_name]))
+            registered_properties.append("/".join([device_name, property_name]))
 
 
 def update_device_properties(config_data):
@@ -76,7 +76,7 @@ def update_device_properties(config_data):
 
 
 def update_global_properties(config_data):
-    
+
     global_properties = config_data['global']
     global_property_name = 'telescope'
     for property_name, property_value in global_properties.items():

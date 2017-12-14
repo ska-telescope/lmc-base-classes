@@ -84,12 +84,12 @@ def update_database_properties(config_data):
     for property_type in config_data:
         if property_type == 'devices':
             for device_name, device_properties in config_data[property_type].items():
-                put_property('device', device_name, device_properties)
+                put_properties('device', device_name, device_properties)
         elif property_type == 'classes':
             for class_name, class_properties in config_data[property_type].items():
-                put_property('class', class_name, class_properties)
+                put_properties('class', class_name, class_properties)
         elif property_type == 'global':
-            put_property('free', global_property_name, config_data[property_type])
+            put_properties('free', global_property_name, config_data[property_type])
 
 
 def run_module():

@@ -1,12 +1,14 @@
 {
     "api_version": "v1",
     "global": {
-        "CentralLoggingTarget": "central/logger/1",
-        "ElementLoggingTarget": "{{ my_id }}/elt/logger",
-        "StorageLoggingTarget": "/dev/log",
-        "CentralLoggingLevelDefault": 2,
-        "ElementLoggingLevelDefault": 3,
-        "StorageLoggingLevelDefault": 3
+        "Logging": {
+            "CentralLoggingTarget": "central/logger/1",
+            "ElementLoggingTarget": "{{ my_id }}/elt/logger",
+            "StorageLoggingTarget": "/dev/log",
+            "CentralLoggingLevelDefault": 2,
+            "ElementLoggingLevelDefault": 3,
+            "StorageLoggingLevelDefault": 3
+        }  
     },
     "devices": {
         "{{ my_id }}/a/1": {

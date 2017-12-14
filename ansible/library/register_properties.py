@@ -57,8 +57,6 @@ def put_properties(property_type, target_name, properties):
         A collection of the property names and property values.
     """
     for property_name, property_value in properties.items():
-        print "Setting {} properties {}: {}".format(
-            property_type, property_name, property_value)
 
         try:
             if fandango.functional.isSequence(property_value):
@@ -74,12 +72,8 @@ def put_properties(property_type, target_name, properties):
         except PyTango.DevError as deverr:
             logging.error("FAILED to register {} property {} {}."
                           .format(property_type, property_name, deverr))
-            print """Failed to register {} property {} in the database.
-                  """.format(property_type, property_name)
             properties_not_registered.append("/".join([target_name, property_name]))
         else:
-            print """Successfully registered {} property {} in the database.
-                  """.format(property_type, property_name)
             registered_properties.append("/".join([target_name, property_name]))
 
 

@@ -79,8 +79,6 @@ def put_properties(property_type, target_name, properties):
 
 def update_database_properties(config_data):
 
-    global_property_name = 'telescope'
-
     for property_type in config_data:
         if property_type == 'devices':
             for device_name, device_properties in config_data[property_type].items():
@@ -89,7 +87,9 @@ def update_database_properties(config_data):
             for class_name, class_properties in config_data[property_type].items():
                 put_properties('class', class_name, class_properties)
         elif property_type == 'global':
-            put_properties('free', global_property_name, config_data[property_type])
+            for global_property_category, free_properties in (
+                    config_data[property_type].items()):
+                put_properties('free', global_property_category, free_properties)
 
 
 def run_module():

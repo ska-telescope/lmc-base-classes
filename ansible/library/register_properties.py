@@ -42,7 +42,7 @@ registered_properties = []
 properties_not_registered = []
 
 
-def put_property(property_type, target_name, properties):
+def put_properties(property_type, target_name, properties):
     """
     A generic helper function used to register properties in the TANGO database.
 

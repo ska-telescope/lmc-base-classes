@@ -42,10 +42,24 @@ registered_properties = []
 properties_not_registered = []
 
 
-def put_device_property(device_name, device_properties):
-    for property_name, property_value in device_properties.items():
-        print "Setting device {} properties {}: {}".format(
-            device_name, property_name, property_value)
+def put_property(property_type, target_name, properties):
+    """
+    A generic helper function used to register properties in the TANGO database.
+
+    Parameters
+    ----------
+    property_type: str
+        The type of property (device, class, or free).
+    target_name: str
+        The target which the property is going to be registered against. Either the
+        device-name, class-name or the name of the free property.
+    properties: dict
+        A collection of the property names and property values.
+    """
+    for property_name, property_value in properties.items():
+        print "Setting {} properties {}: {}".format(
+            property_type, property_name, property_value)
+
         try:
             if fandango.functional.isSequence(property_value):
                 property_values = []
@@ -54,44 +68,34 @@ def put_device_property(device_name, device_properties):
                 prop_val = property_values
             else:
                 prop_val = property_value
-            fantango.put_device_property(device_name, {str(property_name): prop_val})
+
+            fun = getattr(fantango, 'put_{}_property'.format(property_type))
+            fun(target_name, {str(property_name): prop_val})
         except PyTango.DevError as deverr:
-            logging.error("FAILED to register device property {} {}."
-                          .format(property_name, deverr))
+            logging.error("FAILED to register {} property {} {}."
+                          .format(property_type, property_name, deverr))
             print """Failed to register device property {} in the database.
                   """.format(property_name)
-            properties_not_registered.append("/".join([device_name, property_name]))
+            properties_not_registered.append("/".join([target_name, property_name]))
         else:
-            print """Successfully registered device property {} in the database.
-                  """.format(property_name)
-            registered_properties.append("/".join([device_name, property_name]))
+            print """Successfully registered {} property {} in the database.
+                  """.format(property_type, property_name)
+            registered_properties.append("/".join([target_name, property_name]))
 
 
-def update_device_properties(config_data):
+def update_database_properties(config_data):
 
-    devices = config_data['devices']
-
-    for device_name, device_properties in devices.items():
-        put_device_property(device_name, device_properties)
-
-
-def update_global_properties(config_data):
-
-    global_properties = config_data['global']
     global_property_name = 'telescope'
-    for property_name, property_value in global_properties.items():
-        try:
-            fantango.put_free_property(global_property_name, {str(property_name): property_value})
-        except PyTango.DevError as deverr:
-            logging.error("FAILED to register global property {} {}."
-                          .format(property_name, deverr))
-            print """Failed to register global property {} in the database.
-                  """.format(property_name)
-            properties_not_registered.append("/".join([property_name]))
-        else:
-            print """Successfully registered property {} in the database.
-                  """.format(property_name)
-            registered_properties.append("/".join([property_name]))
+
+    for property_type in config_data:
+        if property_type == 'devices':
+            for device_name, device_properties in config_data[property_type].items():
+                put_property('device', device_name, device_properties)
+        elif property_type == 'classes':
+            for class_name, class_properties in config_data[property_type].items():
+                put_property('class', class_name, class_properties)
+        elif property_type == 'global':
+            put_property('free', global_property_name, config_data[property_type])
 
 
 def run_module():
@@ -130,14 +134,12 @@ def run_module():
     # Load config from file or json
     if module.params['properties_json']:
         config_data = json.loads(module.params['properties_json'])
-        update_device_properties(config_data)
-        update_global_properties(config_data)
+        update_database_properties(config_data)
     elif module.params['properties_file']:
         config_file = module.params['properties_file']
         with open(config_file) as config_fileh:
             config_data = json.load(config_fileh)
-            update_device_properties(config_data)
-            update_global_properties(config_data)
+            update_database_properties(config_data)
     else:
         module.fail_json(msg='Required parameter properties_json or properties_file'
                              ' is missing', **result)

@@ -12,6 +12,7 @@
 # Path
 import sys
 import os
+import pytest
 path = os.path.join(os.path.dirname(__file__), os.pardir)
 sys.path.insert(0, os.path.abspath(path))
 
@@ -19,8 +20,6 @@ sys.path.insert(0, os.path.abspath(path))
 from time import sleep
 from mock import MagicMock
 from PyTango import DevFailed, DevState
-from devicetest import DeviceTestCase, main
-from SKABaseDevice import SKABaseDevice
 
 # Note:
 #
@@ -34,123 +33,114 @@ from SKABaseDevice import SKABaseDevice
 
 
 # Device test case
-class SKABaseDeviceDeviceTestCase(DeviceTestCase):
+@pytest.mark.usefixtures("tango_device_proxy")
+class TestSKABaseDevice(object):
     """Test case for packet generation."""
     # PROTECTED REGION ID(SKABaseDevice.test_additionnal_import) ENABLED START #
     # PROTECTED REGION END #    //  SKABaseDevice.test_additionnal_import
-    device = SKABaseDevice
     properties = {'SkaLevel': '4', 'MetricList': 'healthState', 'GroupDefinitions': '', 'CentralLoggingTarget': '', 'ElementLoggingTarget': '', 'StorageLoggingTarget': 'localhost', 
                   }
-    empty = None  # Should be []
 
-    @classmethod
-    def mocking(cls):
-        """Mock external libraries."""
-        # Example : Mock numpy
-        # cls.numpy = SKABaseDevice.numpy = MagicMock()
-        # PROTECTED REGION ID(SKABaseDevice.test_mocking) ENABLED START #
-        # PROTECTED REGION END #    //  SKABaseDevice.test_mocking
-
-    def test_properties(self):
+    def test_properties(self, tango_device_proxy):
         # test the properties
         # PROTECTED REGION ID(SKABaseDevice.test_properties) ENABLED START #
         # PROTECTED REGION END #    //  SKABaseDevice.test_properties
         pass
 
-    def test_State(self):
+    def test_State(self, tango_device_proxy):
         """Test for State"""
         # PROTECTED REGION ID(SKABaseDevice.test_State) ENABLED START #
-        self.device.State()
+        tango_device_proxy.State()
         # PROTECTED REGION END #    //  SKABaseDevice.test_State
 
-    def test_Status(self):
+    def test_Status(self, tango_device_proxy):
         """Test for Status"""
         # PROTECTED REGION ID(SKABaseDevice.test_Status) ENABLED START #
-        self.device.Status()
+        tango_device_proxy.Status()
         # PROTECTED REGION END #    //  SKABaseDevice.test_Status
 
-    def test_Reset(self):
+    def test_Reset(self, tango_device_proxy):
         """Test for Reset"""
         # PROTECTED REGION ID(SKABaseDevice.test_Reset) ENABLED START #
-        self.device.Reset()
+        tango_device_proxy.Reset()
         # PROTECTED REGION END #    //  SKABaseDevice.test_Reset
 
-    def test_GetMetrics(self):
+    def test_GetMetrics(self, tango_device_proxy):
         """Test for GetMetrics"""
         # PROTECTED REGION ID(SKABaseDevice.test_GetMetrics) ENABLED START #
-        self.device.GetMetrics()
+        tango_device_proxy.GetMetrics()
         # PROTECTED REGION END #    //  SKABaseDevice.test_GetMetrics
 
-    def test_ToJson(self):
+    def test_ToJson(self, tango_device_proxy):
         """Test for ToJson"""
         # PROTECTED REGION ID(SKABaseDevice.test_ToJson) ENABLED START #
-        self.device.ToJson("")
+        tango_device_proxy.ToJson("")
         # PROTECTED REGION END #    //  SKABaseDevice.test_ToJson
 
-    def test_GetVersionInfo(self):
+    def test_GetVersionInfo(self, tango_device_proxy):
         """Test for GetVersionInfo"""
         # PROTECTED REGION ID(SKABaseDevice.test_GetVersionInfo) ENABLED START #
-        self.device.GetVersionInfo()
+        tango_device_proxy.GetVersionInfo()
         # PROTECTED REGION END #    //  SKABaseDevice.test_GetVersionInfo
 
-    def test_buildState(self):
+    def test_buildState(self, tango_device_proxy):
         """Test for buildState"""
         # PROTECTED REGION ID(SKABaseDevice.test_buildState) ENABLED START #
-        self.device.buildState
+        tango_device_proxy.buildState
         # PROTECTED REGION END #    //  SKABaseDevice.test_buildState
 
-    def test_versionId(self):
+    def test_versionId(self, tango_device_proxy):
         """Test for versionId"""
         # PROTECTED REGION ID(SKABaseDevice.test_versionId) ENABLED START #
-        self.device.versionId
+        tango_device_proxy.versionId
         # PROTECTED REGION END #    //  SKABaseDevice.test_versionId
 
-    def test_centralLoggingLevel(self):
+    def test_centralLoggingLevel(self, tango_device_proxy):
         """Test for centralLoggingLevel"""
         # PROTECTED REGION ID(SKABaseDevice.test_centralLoggingLevel) ENABLED START #
-        self.device.centralLoggingLevel
+        tango_device_proxy.centralLoggingLevel
         # PROTECTED REGION END #    //  SKABaseDevice.test_centralLoggingLevel
 
-    def test_elementLoggingLevel(self):
+    def test_elementLoggingLevel(self, tango_device_proxy):
         """Test for elementLoggingLevel"""
         # PROTECTED REGION ID(SKABaseDevice.test_elementLoggingLevel) ENABLED START #
-        self.device.elementLoggingLevel
+        tango_device_proxy.elementLoggingLevel
         # PROTECTED REGION END #    //  SKABaseDevice.test_elementLoggingLevel
 
-    def test_storageLoggingLevel(self):
+    def test_storageLoggingLevel(self, tango_device_proxy):
         """Test for storageLoggingLevel"""
         # PROTECTED REGION ID(SKABaseDevice.test_storageLoggingLevel) ENABLED START #
-        self.device.storageLoggingLevel
+        tango_device_proxy.storageLoggingLevel
         # PROTECTED REGION END #    //  SKABaseDevice.test_storageLoggingLevel
 
-    def test_healthState(self):
+    def test_healthState(self, tango_device_proxy):
         """Test for healthState"""
         # PROTECTED REGION ID(SKABaseDevice.test_healthState) ENABLED START #
-        self.device.healthState
+        tango_device_proxy.healthState
         # PROTECTED REGION END #    //  SKABaseDevice.test_healthState
 
-    def test_adminMode(self):
+    def test_adminMode(self, tango_device_proxy):
         """Test for adminMode"""
         # PROTECTED REGION ID(SKABaseDevice.test_adminMode) ENABLED START #
-        self.device.adminMode
+        tango_device_proxy.adminMode
         # PROTECTED REGION END #    //  SKABaseDevice.test_adminMode
 
-    def test_controlMode(self):
+    def test_controlMode(self, tango_device_proxy):
         """Test for controlMode"""
         # PROTECTED REGION ID(SKABaseDevice.test_controlMode) ENABLED START #
-        self.device.controlMode
+        tango_device_proxy.controlMode
         # PROTECTED REGION END #    //  SKABaseDevice.test_controlMode
 
-    def test_simulationMode(self):
+    def test_simulationMode(self, tango_device_proxy):
         """Test for simulationMode"""
         # PROTECTED REGION ID(SKABaseDevice.test_simulationMode) ENABLED START #
-        self.device.simulationMode
+        tango_device_proxy.simulationMode
         # PROTECTED REGION END #    //  SKABaseDevice.test_simulationMode
 
-    def test_testMode(self):
+    def test_testMode(self, tango_device_proxy):
         """Test for testMode"""
         # PROTECTED REGION ID(SKABaseDevice.test_testMode) ENABLED START #
-        self.device.testMode
+        tango_device_proxy.testMode
         # PROTECTED REGION END #    //  SKABaseDevice.test_testMode
 
 

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="ASCII"?>
 <pogoDsl:PogoSystem xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:pogoDsl="http://www.esrf.fr/tango/pogo/PogoDsl">
   <classes name="SKABaseDevice" pogoRevision="9.6">
-    <description description="A generic base device for SKA." title="SKABASE" sourcePath="/home/kat/src/levpro/skabase/SKABaseDevice" language="PythonHL" filestogenerate="XMI   file,Code files, Python Package, Protected Regions" license="GPL" copyright="" hasMandatoryProperty="false" hasConcreteProperty="true" hasAbstractCommand="true" hasAbstractAttribute="false">
+    <description description="A generic base device for SKA." title="SKABASE" sourcePath="/home/tango-cs/src/levpro/skabase/SKABaseDevice" language="PythonHL" filestogenerate="XMI   file,Code files,Python Package,Protected Regions" license="GPL" copyright="" hasMandatoryProperty="false" hasConcreteProperty="true" hasAbstractCommand="false" hasAbstractAttribute="false">
       <inheritances classname="Device_Impl" sourcePath=""/>
       <identification contact="at ska.ac.za - cam" author="cam" emailDomain="ska.ac.za" classFamily="OtherInstruments" siteSpecific="" platform="All Platforms" bus="Not Applicable" manufacturer="SKASA" reference="SKA-SKABaseDevice"/>
     </description>
@@ -59,7 +59,7 @@
       <argout description="">
         <type xsi:type="pogoDsl:VoidType"/>
       </argout>
-      <status abstract="true" inherited="false" concrete="false" concreteHere="false"/>
+      <status abstract="false" inherited="false" concrete="true" concreteHere="true"/>
     </commands>
     <commands name="GetMetrics" description="Gets list of attributes marked as metrics, with their values, &#xA;for device" execMethod="get_metrics" displayLevel="OPERATOR" polledPeriod="0" isDynamic="false">
       <argin description="">

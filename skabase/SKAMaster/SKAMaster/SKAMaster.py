@@ -113,6 +113,9 @@ class SKAMaster(SKABaseDevice):
 
         # Initialize attribute values.
         self._element_logger_address = ""
+        self._element_alarm_address = ""
+        self._element_tel_state_address = ""
+        self._element_database_address = ""
         self._element_alarm_device = ""
         self._element_tel_state_device = ""
         self._element_database_device = ""

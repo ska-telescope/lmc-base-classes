@@ -42,13 +42,18 @@ node('docker') {
                                 pip install coverage
                                 cd ..
                             '''
+                            
+                            catchError {
+                                // run tests
+                                sh '''
+                                    python setup.py test \
+                                      --addopts="--junitxml results.xml --color=yes --cov=skabase --cov=refelt --cov-report=term --cov-config .coveragerc"
+                                '''
+                            }
 
-                            // run tests, and generate HTML coverage report
-                            sh '''
-                                python setup.py test \
-                                  --addopts="--junitxml results.xml --color=yes --cov=skabase --cov=refelt --cov-report=term --cov-config .coveragerc"
-                                coverage html
-                            '''
+                            // generate HTML coverage report
+                            sh 'coverage html'
+
                         }
                         finally {
                             step([$class: 'JUnitResultArchiver', testResults: 'results.xml'])

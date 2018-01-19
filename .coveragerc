@@ -1,0 +1,7 @@
+
+[run]
+omit = 
+    *test*
+    setup.py
+    release.py
+

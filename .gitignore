@@ -26,6 +26,7 @@ pip-log.txt
 .cache
 nosetests.xml
 results.xml
+htmlcov
 
 # Developer tools
 *~

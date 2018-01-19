@@ -96,7 +96,7 @@ class TestSKABaseDevice(object):
     def test_centralLoggingLevel(self, tango_context):
         """Test for centralLoggingLevel"""
         # PROTECTED REGION ID(SKABaseDevice.test_centralLoggingLevel) ENABLED START #
-        tango_context.device.centralLoggingLevel
+        assert tango_context.device.centralLoggingLevel == 0
         tango_context.device.write_attribute("centralLoggingLevel", 1)
         assert tango_context.device.centralLoggingLevel == 1
         # PROTECTED REGION END #    //  SKABaseDevice.test_centralLoggingLevel
@@ -112,7 +112,7 @@ class TestSKABaseDevice(object):
     def test_storageLoggingLevel(self, tango_context):
         """Test for storageLoggingLevel"""
         # PROTECTED REGION ID(SKABaseDevice.test_storageLoggingLevel) ENABLED START #
-        tango_context.device.storageLoggingLevel
+        assert tango_context.device.storageLoggingLevel == 0
         tango_context.device.write_attribute("storageLoggingLevel", 1)
         assert tango_context.device.storageLoggingLevel == 1
         # PROTECTED REGION END #    //  SKABaseDevice.test_storageLoggingLevel

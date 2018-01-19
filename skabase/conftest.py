@@ -52,5 +52,4 @@ def initialize_device(tango_context):
         Context to run a device without a database.
     """
     yield tango_context.device.Init()
-
-
+    

@@ -138,9 +138,9 @@ class TestSKABaseDevice(object):
     def test_simulationMode(self, tango_context):
         """Test for simulationMode"""
         # PROTECTED REGION ID(SKABaseDevice.test_simulationMode) ENABLED START #
+        assert tango_context.device.simulationMode == False
+        tango_context.device.write_attribute("simulationMode", True)
         assert tango_context.device.simulationMode == True
-        tango_context.device.write_attribute("simulationMode", False)
-        assert tango_context.device.simulateMode == True
         # PROTECTED REGION END #    //  SKABaseDevice.test_simulationMode
 
     def test_testMode(self, tango_context):

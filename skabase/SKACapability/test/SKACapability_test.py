@@ -39,7 +39,7 @@ class SKACapabilityDeviceTestCase(DeviceTestCase):
     # PROTECTED REGION ID(SKACapability.test_additionnal_import) ENABLED START #
     # PROTECTED REGION END #    //  SKACapability.test_additionnal_import
     device = SKACapability
-    properties = {'SkaLevel': '4', 'CentralLoggingTarget': '', 'ElementLoggingTarget': '', 'StorageLoggingTarget': 'localhost', 'MetricList': 'healthState,adminMode,controlMode', 'GroupDefinitions': '', 'CapType': '', 'CapID': '', 'subID': '', 
+    properties = {'SkaLevel': '4', 'CentralLoggingTarget': '', 'ElementLoggingTarget': '', 'StorageLoggingTarget': 'localhost', 'MetricList': 'healthState', 'GroupDefinitions': '', 'CapType': '', 'CapID': '', 'subID': '', 
                   }
     empty = None  # Should be []
 

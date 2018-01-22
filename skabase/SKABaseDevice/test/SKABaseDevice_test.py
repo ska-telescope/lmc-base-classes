@@ -32,7 +32,7 @@ from PyTango import DevFailed, DevState
 # Look at devicetest examples for more advanced testing
 
 # Device test case
-@pytest.mark.usefixtures("tango_context")
+@pytest.mark.usefixtures("tango_context", "initialize_device")
 class TestSKABaseDevice(object):
     """Test case for packet generation."""
     # PROTECTED REGION ID(SKABaseDevice.test_additionnal_import) ENABLED START #
@@ -96,19 +96,25 @@ class TestSKABaseDevice(object):
     def test_centralLoggingLevel(self, tango_context):
         """Test for centralLoggingLevel"""
         # PROTECTED REGION ID(SKABaseDevice.test_centralLoggingLevel) ENABLED START #
-        tango_context.device.centralLoggingLevel
+        assert tango_context.device.centralLoggingLevel == 0
+        tango_context.device.write_attribute("centralLoggingLevel", 1)
+        assert tango_context.device.centralLoggingLevel == 1
         # PROTECTED REGION END #    //  SKABaseDevice.test_centralLoggingLevel
 
     def test_elementLoggingLevel(self, tango_context):
         """Test for elementLoggingLevel"""
         # PROTECTED REGION ID(SKABaseDevice.test_elementLoggingLevel) ENABLED START #
-        tango_context.device.elementLoggingLevel
+        assert tango_context.device.elementLoggingLevel == 0
+        tango_context.device.write_attribute("elementLoggingLevel", 1)
+        assert tango_context.device.elementLoggingLevel == 1
         # PROTECTED REGION END #    //  SKABaseDevice.test_elementLoggingLevel
 
     def test_storageLoggingLevel(self, tango_context):
         """Test for storageLoggingLevel"""
         # PROTECTED REGION ID(SKABaseDevice.test_storageLoggingLevel) ENABLED START #
-        tango_context.device.storageLoggingLevel
+        assert tango_context.device.storageLoggingLevel == 0
+        tango_context.device.write_attribute("storageLoggingLevel", 1)
+        assert tango_context.device.storageLoggingLevel == 1
         # PROTECTED REGION END #    //  SKABaseDevice.test_storageLoggingLevel
 
     def test_healthState(self, tango_context):
@@ -132,7 +138,9 @@ class TestSKABaseDevice(object):
     def test_simulationMode(self, tango_context):
         """Test for simulationMode"""
         # PROTECTED REGION ID(SKABaseDevice.test_simulationMode) ENABLED START #
-        tango_context.device.simulationMode
+        assert tango_context.device.simulationMode == False
+        tango_context.device.write_attribute("simulationMode", True)
+        assert tango_context.device.simulationMode == True
         # PROTECTED REGION END #    //  SKABaseDevice.test_simulationMode
 
     def test_testMode(self, tango_context):

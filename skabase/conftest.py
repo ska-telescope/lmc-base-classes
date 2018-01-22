@@ -40,3 +40,14 @@ def tango_context(request):
 
     yield tango_context
     tango_context.stop()
+
+@pytest.fixture(scope="function")
+def initialize_device(tango_context):
+    """Re-initializes the device.
+
+    Parameters
+    ----------
+    tango_context: tango.test_context.DeviceTestContext
+        Context to run a device without a database.
+    """
+    yield tango_context.device.Init()

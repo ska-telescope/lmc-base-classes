@@ -47,24 +47,6 @@ class SKABaseDevice(Device):
     """
     __metaclass__ = DeviceMeta
     # PROTECTED REGION ID(SKABaseDevice.class_variable) ENABLED START #
-
-    def __init__(self, *args, **kwargs):
-        super(SKABaseDevice, self).__init__(*args, **kwargs)
-
-        # Initialize attribute values.
-        self._build_state = '{}, {}, {}'.format(release.name, release.version,
-                                                release.description)
-        self._version_id = release.version
-        self._central_logging_level = 0
-        self._element_logging_level = 0
-        self._storage_logging_level = 0
-        self._health_state = 0
-        self._admin_mode = 0
-        self._control_mode = 0
-        self._simulation_mode = False
-        self._test_mode = ""
-
-
     def _get_device_json(self, args_dict):
         try:
 
@@ -302,6 +284,19 @@ class SKABaseDevice(Device):
     def init_device(self):
         Device.init_device(self)
         # PROTECTED REGION ID(SKABaseDevice.init_device) ENABLED START #
+
+        # Initialize attribute values.
+        self._build_state = '{}, {}, {}'.format(release.name, release.version,
+                                                release.description)
+        self._version_id = release.version
+        self._central_logging_level = 0
+        self._element_logging_level = 0
+        self._storage_logging_level = 0
+        self._health_state = 0
+        self._admin_mode = 0
+        self._control_mode = 0
+        self._simulation_mode = False
+        self._test_mode = ""
 
         # create TANGO Groups objects dict, according to property
         self.debug_stream("Groups definitions: {}".format(self.GroupDefinitions))

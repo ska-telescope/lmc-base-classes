@@ -39,7 +39,7 @@ class SKALoggerDeviceTestCase(DeviceTestCase):
     # PROTECTED REGION ID(SKALogger.test_additionnal_import) ENABLED START #
     # PROTECTED REGION END #    //  SKALogger.test_additionnal_import
     device = SKALogger
-    properties = {'SkaLevel': '4', 'MetricList': 'healthState,adminMode,controlMode', 'GroupDefinitions': '', 'CentralLoggingTarget': '', 'ElementLoggingTarget': '', 'StorageLoggingTarget': 'localhost', 'CentralLoggingLevelDefault': '2', 'ElementLoggingLevelDefault': '3', 'StorageLoggingLevelDefault': '4', 
+    properties = {'SkaLevel': '4', 'MetricList': 'healthState', 'GroupDefinitions': '', 'CentralLoggingTarget': '', 'ElementLoggingTarget': '', 'StorageLoggingTarget': 'localhost', 'CentralLoggingLevelDefault': '2', 'ElementLoggingLevelDefault': '3', 'StorageLoggingLevelDefault': '4', 
                   }
     empty = None  # Should be []
 

@@ -39,7 +39,7 @@ class SKATestDeviceDeviceTestCase(DeviceTestCase):
     # PROTECTED REGION ID(SKATestDevice.test_additionnal_import) ENABLED START #
     # PROTECTED REGION END #    //  SKATestDevice.test_additionnal_import
     device = SKATestDevice
-    properties = {'SkaLevel': '4', 'CentralLoggingTarget': '', 'ElementLoggingTarget': '', 'StorageLoggingTarget': 'localhost', 'CentralLoggingLevelDefault': '', 'ElementLoggingLevelDefault': '', 'StorageLoggingLevelStorage': '', 'MetricList': 'healthState,adminMode,controlMode', 'GroupDefinitions': '', 'StorageLoggingLevelDefault': '', 
+    properties = {'SkaLevel': '4', 'CentralLoggingTarget': '', 'ElementLoggingTarget': '', 'StorageLoggingTarget': 'localhost', 'CentralLoggingLevelDefault': '', 'ElementLoggingLevelDefault': '', 'StorageLoggingLevelStorage': '', 'MetricList': 'healthState', 'GroupDefinitions': '', 'StorageLoggingLevelDefault': '', 
                   }
     empty = None  # Should be []
 
@@ -56,12 +56,6 @@ class SKATestDeviceDeviceTestCase(DeviceTestCase):
         # PROTECTED REGION ID(SKATestDevice.test_properties) ENABLED START #
         # PROTECTED REGION END #    //  SKATestDevice.test_properties
         pass
-
-    def test_ObsState(self):
-        """Test for ObsState"""
-        # PROTECTED REGION ID(SKATestDevice.test_ObsState) ENABLED START #
-        self.device.ObsState()
-        # PROTECTED REGION END #    //  SKATestDevice.test_ObsState
 
     def test_Reset(self):
         """Test for Reset"""

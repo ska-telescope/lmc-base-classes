@@ -143,10 +143,18 @@ class SKATestDevice(SKABaseDevice):
     # --------
 
     @command(
-    dtype_in='str',
-    doc_in="JSON encoded dict with this format\n{``group``: str,  # name of existing group\n  ``command``: str, # name of command to run\n  ``arg_type``: str,  # data type of command input argument\n  ``arg_value``: str, # value for command input argument\n  ``forward``: bool  # True if command should be forwarded to all subgroups (default)\n}",
-    dtype_out='str',
-    doc_out="Return value from command on the group, as a JSON encoded string.\nThis will be a list of dicts of the form \n[ \n{``device_name``: str,  # TANGO device name\n  ``argout``: <value>,  # return value from command (type depends on command)\n  ``failed``: bool  # True if command failed\n},\n{ ... },\n ... ]",
+    )
+    @DebugIt()
+    def Reset(self):
+        # PROTECTED REGION ID(SKATestDevice.Reset) ENABLED START #
+        pass
+        # PROTECTED REGION END #    //  SKATestDevice.Reset
+
+    @command(
+    dtype_in='str', 
+    doc_in="JSON encoded dict with this format\n{``group``: str,  # name of existing group\n  ``command``: str, # name of command to run\n  ``arg_type``: str,  # data type of command input argument\n  ``arg_value``: str, # value for command input argument\n  ``forward``: bool  # True if command should be forwarded to all subgroups (default)\n}", 
+    dtype_out='str', 
+    doc_out="Return value from command on the group, as a JSON encoded string.\nThis will be a list of dicts of the form \n[ \n{``device_name``: str,  # TANGO device name\n  ``argout``: <value>,  # return value from command (type depends on command)\n  ``failed``: bool  # True if command failed\n},\n{ ... },\n ... ]", 
     )
     @DebugIt()
     def RunGroupCommand(self, argin):

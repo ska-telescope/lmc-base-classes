@@ -30,7 +30,7 @@ from PyTango import DevState
 @pytest.mark.usefixtures("tango_context", "initialize_device")
 # PROTECTED REGION ID(SKAObsDevice.test_SKAObsDevice_decorators) ENABLED START #
 # PROTECTED REGION END #    //  SKAObsDevice.test_SKAObsDevice_decorators
-class TestSKAObsDevice(oject):
+class TestSKAObsDevice(object):
     """Test case for packet generation."""
 
     properties = {
@@ -61,7 +61,7 @@ class TestSKAObsDevice(oject):
     def test_ObsState(self, tango_context):
         """Test for ObsState"""
         # PROTECTED REGION ID(SKAObsDevice.test_ObsState) ENABLED START #
-        assert tango_context.device.ObsState(None) == ""
+        assert tango_context.device.ObsState() == ""
         # PROTECTED REGION END #    //  SKAObsDevice.test_ObsState
 
     # PROTECTED REGION ID(SKAObsDevice.test_State_decorators) ENABLED START #
@@ -85,7 +85,7 @@ class TestSKAObsDevice(oject):
     def test_GetMetrics(self, tango_context):
         """Test for GetMetrics"""
         # PROTECTED REGION ID(SKAObsDevice.test_GetMetrics) ENABLED START #
-        assert tango_context.device.GetMetrics(None) == ""
+        assert tango_context.device.GetMetrics() == ""
         # PROTECTED REGION END #    //  SKAObsDevice.test_GetMetrics
 
     # PROTECTED REGION ID(SKAObsDevice.test_ToJson_decorators) ENABLED START #
@@ -101,7 +101,7 @@ class TestSKAObsDevice(oject):
     def test_GetVersionInfo(self, tango_context):
         """Test for GetVersionInfo"""
         # PROTECTED REGION ID(SKAObsDevice.test_GetVersionInfo) ENABLED START #
-        assert tango_context.device.GetVersionInfo(None) == [""]
+        assert tango_context.device.GetVersionInfo() == [""]
         # PROTECTED REGION END #    //  SKAObsDevice.test_GetVersionInfo
 
     # PROTECTED REGION ID(SKAObsDevice.test_Reset_decorators) ENABLED START #
@@ -109,7 +109,7 @@ class TestSKAObsDevice(oject):
     def test_Reset(self, tango_context):
         """Test for Reset"""
         # PROTECTED REGION ID(SKAObsDevice.test_Reset) ENABLED START #
-        assert tango_context.device.Reset(None) == None
+        assert tango_context.device.Reset() == None
         # PROTECTED REGION END #    //  SKAObsDevice.test_Reset
 
 

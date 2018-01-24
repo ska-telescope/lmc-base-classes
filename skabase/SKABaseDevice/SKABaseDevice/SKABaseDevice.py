@@ -465,7 +465,7 @@ class SKABaseDevice(Device):
     @DebugIt()
     def Reset(self):
         # PROTECTED REGION ID(SKABaseDevice.Reset) ENABLED START #
-        return None
+        pass
         # PROTECTED REGION END #    //  SKABaseDevice.Reset
 
 # ----------

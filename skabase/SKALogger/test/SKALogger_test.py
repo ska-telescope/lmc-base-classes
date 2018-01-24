@@ -30,7 +30,7 @@ from PyTango import DevState
 @pytest.mark.usefixtures("tango_context", "initialize_device")
 # PROTECTED REGION ID(SKALogger.test_SKALogger_decorators) ENABLED START #
 # PROTECTED REGION END #    //  SKALogger.test_SKALogger_decorators
-class TestSKALogger(oject):
+class TestSKALogger(object):
     """Test case for packet generation."""
 
     properties = {
@@ -112,7 +112,7 @@ class TestSKALogger(oject):
     def test_GetMetrics(self, tango_context):
         """Test for GetMetrics"""
         # PROTECTED REGION ID(SKALogger.test_GetMetrics) ENABLED START #
-        assert tango_context.device.GetMetrics(None) == ""
+        assert tango_context.device.GetMetrics() == ""
         # PROTECTED REGION END #    //  SKALogger.test_GetMetrics
 
     # PROTECTED REGION ID(SKALogger.test_ToJson_decorators) ENABLED START #
@@ -128,7 +128,7 @@ class TestSKALogger(oject):
     def test_GetVersionInfo(self, tango_context):
         """Test for GetVersionInfo"""
         # PROTECTED REGION ID(SKALogger.test_GetVersionInfo) ENABLED START #
-        assert tango_context.device.GetVersionInfo(None) == [""]
+        assert tango_context.device.GetVersionInfo() == [""]
         # PROTECTED REGION END #    //  SKALogger.test_GetVersionInfo
 
     # PROTECTED REGION ID(SKALogger.test_Reset_decorators) ENABLED START #
@@ -136,7 +136,7 @@ class TestSKALogger(oject):
     def test_Reset(self, tango_context):
         """Test for Reset"""
         # PROTECTED REGION ID(SKALogger.test_Reset) ENABLED START #
-        assert tango_context.device.Reset(None) == None
+        assert tango_context.device.Reset() == None
         # PROTECTED REGION END #    //  SKALogger.test_Reset
 
 

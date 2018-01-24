@@ -30,7 +30,7 @@ from PyTango import DevState
 @pytest.mark.usefixtures("tango_context", "initialize_device")
 # PROTECTED REGION ID(SKAMaster.test_SKAMaster_decorators) ENABLED START #
 # PROTECTED REGION END #    //  SKAMaster.test_SKAMaster_decorators
-class TestSKAMaster(oject):
+class TestSKAMaster(object):
     """Test case for packet generation."""
 
     properties = {
@@ -80,7 +80,7 @@ class TestSKAMaster(oject):
     def test_GetMetrics(self, tango_context):
         """Test for GetMetrics"""
         # PROTECTED REGION ID(SKAMaster.test_GetMetrics) ENABLED START #
-        assert tango_context.device.GetMetrics(None) == ""
+        assert tango_context.device.GetMetrics() == ""
         # PROTECTED REGION END #    //  SKAMaster.test_GetMetrics
 
     # PROTECTED REGION ID(SKAMaster.test_ToJson_decorators) ENABLED START #
@@ -96,7 +96,7 @@ class TestSKAMaster(oject):
     def test_GetVersionInfo(self, tango_context):
         """Test for GetVersionInfo"""
         # PROTECTED REGION ID(SKAMaster.test_GetVersionInfo) ENABLED START #
-        assert tango_context.device.GetVersionInfo(None) == [""]
+        assert tango_context.device.GetVersionInfo() == [""]
         # PROTECTED REGION END #    //  SKAMaster.test_GetVersionInfo
 
     # PROTECTED REGION ID(SKAMaster.test_isCapabilityAchievable_decorators) ENABLED START #
@@ -112,7 +112,7 @@ class TestSKAMaster(oject):
     def test_Reset(self, tango_context):
         """Test for Reset"""
         # PROTECTED REGION ID(SKAMaster.test_Reset) ENABLED START #
-        assert tango_context.device.Reset(None) == None
+        assert tango_context.device.Reset() == None
         # PROTECTED REGION END #    //  SKAMaster.test_Reset
 
 

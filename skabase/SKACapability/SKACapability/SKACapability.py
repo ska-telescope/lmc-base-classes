@@ -145,14 +145,6 @@ class SKACapability(SKAObsDevice):
     # --------
 
     @command(
-    )
-    @DebugIt()
-    def Reset(self):
-        # PROTECTED REGION ID(SKACapability.Reset) ENABLED START #
-        pass
-        # PROTECTED REGION END #    //  SKACapability.Reset
-
-    @command(
     dtype_in='uint16', 
     doc_in="The number of instances to configure for this Capability.", 
     )

@@ -93,14 +93,6 @@ class SKATelState(SKABaseDevice):
     # Commands
     # --------
 
-    @command(
-    )
-    @DebugIt()
-    def Reset(self):
-        # PROTECTED REGION ID(SKATelState.Reset) ENABLED START #
-        pass
-        # PROTECTED REGION END #    //  SKATelState.Reset
-
 # ----------
 # Run server
 # ----------

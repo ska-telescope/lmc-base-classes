@@ -144,14 +144,6 @@ class SKAObsDevice(SKABaseDevice):
     # Commands
     # --------
 
-    @command(
-    )
-    @DebugIt()
-    def Reset(self):
-        # PROTECTED REGION ID(SKAObsDevice.Reset) ENABLED START #
-        pass
-        # PROTECTED REGION END #    //  SKAObsDevice.Reset
-
 # ----------
 # Run server
 # ----------

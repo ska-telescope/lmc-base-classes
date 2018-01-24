@@ -259,7 +259,7 @@ class SKABaseDevice(Device):
         dtype='DevEnum',
         access=AttrWriteType.READ_WRITE,
         memorized=True,
-        doc="The control mode of the device. REMOTE, LOCAL\nTANGO Device accepts only from a ?local? client and ignores commands and queries received from TM\nor any other ?remote? clients. The Local clients has to release LOCAL control before REMOTE clients\ncan take control again.",
+        doc="The control mode of the device. REMOTE, LOCAL\nTANGO Device accepts only from a ‘local’ client and ignores commands and queries received from TM\nor any other ‘remote’ clients. The Local clients has to release LOCAL control before REMOTE clients\ncan take control again.",
         enum_labels=["REMOTE", "LOCAL", ],
     )
 
@@ -415,14 +415,6 @@ class SKABaseDevice(Device):
     # --------
 
     @command(
-    )
-    @DebugIt()
-    def Reset(self):
-        # PROTECTED REGION ID(SKABaseDevice.Reset) ENABLED START #
-        pass
-        # PROTECTED REGION END #    //  SKABaseDevice.Reset
-
-    @command(
     dtype_out='str', 
     )
     @DebugIt()
@@ -467,6 +459,14 @@ class SKABaseDevice(Device):
         # PROTECTED REGION ID(SKABaseDevice.GetVersionInfo) ENABLED START #
         return ['{}, {}'.format(self.__class__.__name__, self.read_buildState())]
         # PROTECTED REGION END #    //  SKABaseDevice.GetVersionInfo
+
+    @command(
+    )
+    @DebugIt()
+    def Reset(self):
+        # PROTECTED REGION ID(SKABaseDevice.Reset) ENABLED START #
+        return None
+        # PROTECTED REGION END #    //  SKABaseDevice.Reset
 
 # ----------
 # Run server

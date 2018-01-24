@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#########################################################################################
 # -*- coding: utf-8 -*-
 #
 # This file is part of the SKASubarray project
@@ -7,6 +7,7 @@
 #
 # Distributed under the terms of the GPL license.
 # See LICENSE.txt for more info.
+#########################################################################################
 """Contain the tests for the SKASubarray."""
 
 # Path
@@ -16,32 +17,32 @@ path = os.path.join(os.path.dirname(__file__), os.pardir)
 sys.path.insert(0, os.path.abspath(path))
 
 # Imports
-from time import sleep
+import pytest
 from mock import MagicMock
-from PyTango import DevFailed, DevState
-from devicetest import DeviceTestCase, main
-from SKASubarray import SKASubarray
 
-# Note:
-#
-# Since the device uses an inner thread, it is necessary to
-# wait during the tests in order the let the device update itself.
-# Hence, the sleep calls have to be secured enough not to produce
-# any inconsistent behavior. However, the unittests need to run fast.
-# Here, we use a factor 3 between the read period and the sleep calls.
-#
-# Look at devicetest examples for more advanced testing
+from PyTango import DevState
+
+# PROTECTED REGION ID(SKASubarray.test_additional_imports) ENABLED START #
+# PROTECTED REGION END #    //  SKASubarray.test_additional_imports
 
 
 # Device test case
-class SKASubarrayDeviceTestCase(DeviceTestCase):
+@pytest.mark.usefixtures("tango_context", "initialize_device")
+# PROTECTED REGION ID(SKASubarray.test_SKASubarray_decorators) ENABLED START #
+# PROTECTED REGION END #    //  SKASubarray.test_SKASubarray_decorators
+class TestSKASubarray(oject):
     """Test case for packet generation."""
-    # PROTECTED REGION ID(SKASubarray.test_additionnal_import) ENABLED START #
-    # PROTECTED REGION END #    //  SKASubarray.test_additionnal_import
-    device = SKASubarray
-    properties = {'CapabilityTypes': '', 'CentralLoggingTarget': '', 'ElementLoggingTarget': '', 'GroupDefinitions': '', 'MetricList': 'healthState,adminMode,controlMode', 'SkaLevel': '4', 'StorageLoggingTarget': 'localhost', 'SubID': '', 
-                  }
-    empty = None  # Should be []
+
+    properties = {
+        'CapabilityTypes': '',
+        'CentralLoggingTarget': '',
+        'ElementLoggingTarget': '',
+        'GroupDefinitions': '',
+        'MetricList': 'healthState',
+        'SkaLevel': '4',
+        'StorageLoggingTarget': 'localhost',
+        'SubID': '',
+        }
 
     @classmethod
     def mocking(cls):
@@ -51,229 +52,299 @@ class SKASubarrayDeviceTestCase(DeviceTestCase):
         # PROTECTED REGION ID(SKASubarray.test_mocking) ENABLED START #
         # PROTECTED REGION END #    //  SKASubarray.test_mocking
 
-    def test_properties(self):
-        # test the properties
+    def test_properties(self, tango_context):
+        # Test the properties
         # PROTECTED REGION ID(SKASubarray.test_properties) ENABLED START #
         # PROTECTED REGION END #    //  SKASubarray.test_properties
         pass
 
-    def test_Abort(self):
+    # PROTECTED REGION ID(SKASubarray.test_Abort_decorators) ENABLED START #
+    # PROTECTED REGION END #    //  SKASubarray.test_Abort_decorators
+    def test_Abort(self, tango_context):
         """Test for Abort"""
         # PROTECTED REGION ID(SKASubarray.test_Abort) ENABLED START #
-        self.device.Abort()
+        assert tango_context.device.Abort(None) == None
         # PROTECTED REGION END #    //  SKASubarray.test_Abort
 
-    def test_ConfigureCapability(self):
+    # PROTECTED REGION ID(SKASubarray.test_ConfigureCapability_decorators) ENABLED START #
+    # PROTECTED REGION END #    //  SKASubarray.test_ConfigureCapability_decorators
+    def test_ConfigureCapability(self, tango_context):
         """Test for ConfigureCapability"""
         # PROTECTED REGION ID(SKASubarray.test_ConfigureCapability) ENABLED START #
-        self.device.ConfigureCapability([""])
+        assert tango_context.device.ConfigureCapability([[0], [""]]) == None
         # PROTECTED REGION END #    //  SKASubarray.test_ConfigureCapability
 
-    def test_DeconfigureAllCapabilities(self):
+    # PROTECTED REGION ID(SKASubarray.test_DeconfigureAllCapabilities_decorators) ENABLED START #
+    # PROTECTED REGION END #    //  SKASubarray.test_DeconfigureAllCapabilities_decorators
+    def test_DeconfigureAllCapabilities(self, tango_context):
         """Test for DeconfigureAllCapabilities"""
         # PROTECTED REGION ID(SKASubarray.test_DeconfigureAllCapabilities) ENABLED START #
-        self.device.DeconfigureAllCapabilities("")
+        assert tango_context.device.DeconfigureAllCapabilities("") == None
         # PROTECTED REGION END #    //  SKASubarray.test_DeconfigureAllCapabilities
 
-    def test_DeconfigureCapability(self):
+    # PROTECTED REGION ID(SKASubarray.test_DeconfigureCapability_decorators) ENABLED START #
+    # PROTECTED REGION END #    //  SKASubarray.test_DeconfigureCapability_decorators
+    def test_DeconfigureCapability(self, tango_context):
         """Test for DeconfigureCapability"""
         # PROTECTED REGION ID(SKASubarray.test_DeconfigureCapability) ENABLED START #
-        self.device.DeconfigureCapability([""])
+        assert tango_context.device.DeconfigureCapability([[0], [""]]) == None
         # PROTECTED REGION END #    //  SKASubarray.test_DeconfigureCapability
 
-    def test_GetMetrics(self):
+    # PROTECTED REGION ID(SKASubarray.test_GetMetrics_decorators) ENABLED START #
+    # PROTECTED REGION END #    //  SKASubarray.test_GetMetrics_decorators
+    def test_GetMetrics(self, tango_context):
         """Test for GetMetrics"""
         # PROTECTED REGION ID(SKASubarray.test_GetMetrics) ENABLED START #
-        self.device.GetMetrics()
+        assert tango_context.device.GetMetrics(None) == ""
         # PROTECTED REGION END #    //  SKASubarray.test_GetMetrics
 
-    def test_GetVersionInfo(self):
+    # PROTECTED REGION ID(SKASubarray.test_GetVersionInfo_decorators) ENABLED START #
+    # PROTECTED REGION END #    //  SKASubarray.test_GetVersionInfo_decorators
+    def test_GetVersionInfo(self, tango_context):
         """Test for GetVersionInfo"""
         # PROTECTED REGION ID(SKASubarray.test_GetVersionInfo) ENABLED START #
-        self.device.GetVersionInfo()
+        assert tango_context.device.GetVersionInfo(None) == [""]
         # PROTECTED REGION END #    //  SKASubarray.test_GetVersionInfo
 
-    def test_Status(self):
+    # PROTECTED REGION ID(SKASubarray.test_Status_decorators) ENABLED START #
+    # PROTECTED REGION END #    //  SKASubarray.test_Status_decorators
+    def test_Status(self, tango_context):
         """Test for Status"""
         # PROTECTED REGION ID(SKASubarray.test_Status) ENABLED START #
-        self.device.Status()
+        assert tango_context.device.Status() == ""
         # PROTECTED REGION END #    //  SKASubarray.test_Status
 
-    def test_State(self):
+    # PROTECTED REGION ID(SKASubarray.test_State_decorators) ENABLED START #
+    # PROTECTED REGION END #    //  SKASubarray.test_State_decorators
+    def test_State(self, tango_context):
         """Test for State"""
         # PROTECTED REGION ID(SKASubarray.test_State) ENABLED START #
-        self.device.State()
+        assert tango_context.device.State() == DevState.UNKNOWN
         # PROTECTED REGION END #    //  SKASubarray.test_State
 
-    def test_AssignResources(self):
+    # PROTECTED REGION ID(SKASubarray.test_AssignResources_decorators) ENABLED START #
+    # PROTECTED REGION END #    //  SKASubarray.test_AssignResources_decorators
+    def test_AssignResources(self, tango_context):
         """Test for AssignResources"""
         # PROTECTED REGION ID(SKASubarray.test_AssignResources) ENABLED START #
-        self.device.AssignResources([""])
+        assert tango_context.device.AssignResources([""]) == [""]
         # PROTECTED REGION END #    //  SKASubarray.test_AssignResources
 
-    def test_EndSB(self):
+    # PROTECTED REGION ID(SKASubarray.test_EndSB_decorators) ENABLED START #
+    # PROTECTED REGION END #    //  SKASubarray.test_EndSB_decorators
+    def test_EndSB(self, tango_context):
         """Test for EndSB"""
         # PROTECTED REGION ID(SKASubarray.test_EndSB) ENABLED START #
-        self.device.EndSB()
+        assert tango_context.device.EndSB(None) == None
         # PROTECTED REGION END #    //  SKASubarray.test_EndSB
 
-    def test_EndScan(self):
+    # PROTECTED REGION ID(SKASubarray.test_EndScan_decorators) ENABLED START #
+    # PROTECTED REGION END #    //  SKASubarray.test_EndScan_decorators
+    def test_EndScan(self, tango_context):
         """Test for EndScan"""
         # PROTECTED REGION ID(SKASubarray.test_EndScan) ENABLED START #
-        self.device.EndScan()
+        assert tango_context.device.EndScan(None) == None
         # PROTECTED REGION END #    //  SKASubarray.test_EndScan
 
-    def test_ObsState(self):
+    # PROTECTED REGION ID(SKASubarray.test_ObsState_decorators) ENABLED START #
+    # PROTECTED REGION END #    //  SKASubarray.test_ObsState_decorators
+    def test_ObsState(self, tango_context):
         """Test for ObsState"""
         # PROTECTED REGION ID(SKASubarray.test_ObsState) ENABLED START #
-        self.device.ObsState()
+        assert tango_context.device.ObsState(None) == ""
         # PROTECTED REGION END #    //  SKASubarray.test_ObsState
 
-    def test_Pause(self):
+    # PROTECTED REGION ID(SKASubarray.test_Pause_decorators) ENABLED START #
+    # PROTECTED REGION END #    //  SKASubarray.test_Pause_decorators
+    def test_Pause(self, tango_context):
         """Test for Pause"""
         # PROTECTED REGION ID(SKASubarray.test_Pause) ENABLED START #
-        self.device.Pause()
+        assert tango_context.device.Pause(None) == None
         # PROTECTED REGION END #    //  SKASubarray.test_Pause
 
-    def test_ReleaseAllResources(self):
+    # PROTECTED REGION ID(SKASubarray.test_ReleaseAllResources_decorators) ENABLED START #
+    # PROTECTED REGION END #    //  SKASubarray.test_ReleaseAllResources_decorators
+    def test_ReleaseAllResources(self, tango_context):
         """Test for ReleaseAllResources"""
         # PROTECTED REGION ID(SKASubarray.test_ReleaseAllResources) ENABLED START #
-        self.device.ReleaseAllResources()
+        assert tango_context.device.ReleaseAllResources(None) == [""]
         # PROTECTED REGION END #    //  SKASubarray.test_ReleaseAllResources
 
-    def test_ReleaseResources(self):
+    # PROTECTED REGION ID(SKASubarray.test_ReleaseResources_decorators) ENABLED START #
+    # PROTECTED REGION END #    //  SKASubarray.test_ReleaseResources_decorators
+    def test_ReleaseResources(self, tango_context):
         """Test for ReleaseResources"""
         # PROTECTED REGION ID(SKASubarray.test_ReleaseResources) ENABLED START #
-        self.device.ReleaseResources([""])
+        assert tango_context.device.ReleaseResources([""]) == [""]
         # PROTECTED REGION END #    //  SKASubarray.test_ReleaseResources
 
-    def test_Reset(self):
+    # PROTECTED REGION ID(SKASubarray.test_Reset_decorators) ENABLED START #
+    # PROTECTED REGION END #    //  SKASubarray.test_Reset_decorators
+    def test_Reset(self, tango_context):
         """Test for Reset"""
         # PROTECTED REGION ID(SKASubarray.test_Reset) ENABLED START #
-        self.device.Reset()
+        assert tango_context.device.Reset(None) == None
         # PROTECTED REGION END #    //  SKASubarray.test_Reset
 
-    def test_Resume(self):
+    # PROTECTED REGION ID(SKASubarray.test_Resume_decorators) ENABLED START #
+    # PROTECTED REGION END #    //  SKASubarray.test_Resume_decorators
+    def test_Resume(self, tango_context):
         """Test for Resume"""
         # PROTECTED REGION ID(SKASubarray.test_Resume) ENABLED START #
-        self.device.Resume()
+        assert tango_context.device.Resume(None) == None
         # PROTECTED REGION END #    //  SKASubarray.test_Resume
 
-    def test_Scan(self):
+    # PROTECTED REGION ID(SKASubarray.test_Scan_decorators) ENABLED START #
+    # PROTECTED REGION END #    //  SKASubarray.test_Scan_decorators
+    def test_Scan(self, tango_context):
         """Test for Scan"""
         # PROTECTED REGION ID(SKASubarray.test_Scan) ENABLED START #
-        self.device.Scan([""])
+        assert tango_context.device.Scan([""]) == None
         # PROTECTED REGION END #    //  SKASubarray.test_Scan
 
-    def test_ToJson(self):
+    # PROTECTED REGION ID(SKASubarray.test_ToJson_decorators) ENABLED START #
+    # PROTECTED REGION END #    //  SKASubarray.test_ToJson_decorators
+    def test_ToJson(self, tango_context):
         """Test for ToJson"""
         # PROTECTED REGION ID(SKASubarray.test_ToJson) ENABLED START #
-        self.device.ToJson("")
+        assert tango_context.device.ToJson("") == ""
         # PROTECTED REGION END #    //  SKASubarray.test_ToJson
 
-    def test_activationTime(self):
+
+    # PROTECTED REGION ID(SKASubarray.test_activationTime_decorators) ENABLED START #
+    # PROTECTED REGION END #    //  SKASubarray.test_activationTime_decorators
+    def test_activationTime(self, tango_context):
         """Test for activationTime"""
         # PROTECTED REGION ID(SKASubarray.test_activationTime) ENABLED START #
-        self.device.activationTime
+        assert tango_context.device.activationTime == 0.0
         # PROTECTED REGION END #    //  SKASubarray.test_activationTime
 
-    def test_adminMode(self):
+    # PROTECTED REGION ID(SKASubarray.test_adminMode_decorators) ENABLED START #
+    # PROTECTED REGION END #    //  SKASubarray.test_adminMode_decorators
+    def test_adminMode(self, tango_context):
         """Test for adminMode"""
         # PROTECTED REGION ID(SKASubarray.test_adminMode) ENABLED START #
-        self.device.adminMode
+        assert tango_context.device.adminMode == 0
         # PROTECTED REGION END #    //  SKASubarray.test_adminMode
 
-    def test_buildState(self):
+    # PROTECTED REGION ID(SKASubarray.test_buildState_decorators) ENABLED START #
+    # PROTECTED REGION END #    //  SKASubarray.test_buildState_decorators
+    def test_buildState(self, tango_context):
         """Test for buildState"""
         # PROTECTED REGION ID(SKASubarray.test_buildState) ENABLED START #
-        self.device.buildState
+        assert tango_context.device.buildState == ''
         # PROTECTED REGION END #    //  SKASubarray.test_buildState
 
-    def test_centralLoggingLevel(self):
+    # PROTECTED REGION ID(SKASubarray.test_centralLoggingLevel_decorators) ENABLED START #
+    # PROTECTED REGION END #    //  SKASubarray.test_centralLoggingLevel_decorators
+    def test_centralLoggingLevel(self, tango_context):
         """Test for centralLoggingLevel"""
         # PROTECTED REGION ID(SKASubarray.test_centralLoggingLevel) ENABLED START #
-        self.device.centralLoggingLevel
+        assert tango_context.device.centralLoggingLevel == 0
         # PROTECTED REGION END #    //  SKASubarray.test_centralLoggingLevel
 
-    def test_configurationDelayExpected(self):
+    # PROTECTED REGION ID(SKASubarray.test_configurationDelayExpected_decorators) ENABLED START #
+    # PROTECTED REGION END #    //  SKASubarray.test_configurationDelayExpected_decorators
+    def test_configurationDelayExpected(self, tango_context):
         """Test for configurationDelayExpected"""
         # PROTECTED REGION ID(SKASubarray.test_configurationDelayExpected) ENABLED START #
-        self.device.configurationDelayExpected
+        assert tango_context.device.configurationDelayExpected == 0
         # PROTECTED REGION END #    //  SKASubarray.test_configurationDelayExpected
 
-    def test_configurationProgress(self):
+    # PROTECTED REGION ID(SKASubarray.test_configurationProgress_decorators) ENABLED START #
+    # PROTECTED REGION END #    //  SKASubarray.test_configurationProgress_decorators
+    def test_configurationProgress(self, tango_context):
         """Test for configurationProgress"""
         # PROTECTED REGION ID(SKASubarray.test_configurationProgress) ENABLED START #
-        self.device.configurationProgress
+        assert tango_context.device.configurationProgress == 0
         # PROTECTED REGION END #    //  SKASubarray.test_configurationProgress
 
-    def test_controlMode(self):
+    # PROTECTED REGION ID(SKASubarray.test_controlMode_decorators) ENABLED START #
+    # PROTECTED REGION END #    //  SKASubarray.test_controlMode_decorators
+    def test_controlMode(self, tango_context):
         """Test for controlMode"""
         # PROTECTED REGION ID(SKASubarray.test_controlMode) ENABLED START #
-        self.device.controlMode
+        assert tango_context.device.controlMode == 0
         # PROTECTED REGION END #    //  SKASubarray.test_controlMode
 
-    def test_elementLoggingLevel(self):
+    # PROTECTED REGION ID(SKASubarray.test_elementLoggingLevel_decorators) ENABLED START #
+    # PROTECTED REGION END #    //  SKASubarray.test_elementLoggingLevel_decorators
+    def test_elementLoggingLevel(self, tango_context):
         """Test for elementLoggingLevel"""
         # PROTECTED REGION ID(SKASubarray.test_elementLoggingLevel) ENABLED START #
-        self.device.elementLoggingLevel
+        assert tango_context.device.elementLoggingLevel == 0
         # PROTECTED REGION END #    //  SKASubarray.test_elementLoggingLevel
 
-    def test_healthState(self):
+    # PROTECTED REGION ID(SKASubarray.test_healthState_decorators) ENABLED START #
+    # PROTECTED REGION END #    //  SKASubarray.test_healthState_decorators
+    def test_healthState(self, tango_context):
         """Test for healthState"""
         # PROTECTED REGION ID(SKASubarray.test_healthState) ENABLED START #
-        self.device.healthState
+        assert tango_context.device.healthState == 0
         # PROTECTED REGION END #    //  SKASubarray.test_healthState
 
-    def test_obsMode(self):
+    # PROTECTED REGION ID(SKASubarray.test_obsMode_decorators) ENABLED START #
+    # PROTECTED REGION END #    //  SKASubarray.test_obsMode_decorators
+    def test_obsMode(self, tango_context):
         """Test for obsMode"""
         # PROTECTED REGION ID(SKASubarray.test_obsMode) ENABLED START #
-        self.device.obsMode
+        assert tango_context.device.obsMode == 0
         # PROTECTED REGION END #    //  SKASubarray.test_obsMode
 
-    def test_obsState(self):
+    # PROTECTED REGION ID(SKASubarray.test_obsState_decorators) ENABLED START #
+    # PROTECTED REGION END #    //  SKASubarray.test_obsState_decorators
+    def test_obsState(self, tango_context):
         """Test for obsState"""
         # PROTECTED REGION ID(SKASubarray.test_obsState) ENABLED START #
-        self.device.obsState
+        assert tango_context.device.obsState == 0
         # PROTECTED REGION END #    //  SKASubarray.test_obsState
 
-    def test_simulationMode(self):
+    # PROTECTED REGION ID(SKASubarray.test_simulationMode_decorators) ENABLED START #
+    # PROTECTED REGION END #    //  SKASubarray.test_simulationMode_decorators
+    def test_simulationMode(self, tango_context):
         """Test for simulationMode"""
         # PROTECTED REGION ID(SKASubarray.test_simulationMode) ENABLED START #
-        self.device.simulationMode
+        assert tango_context.device.simulationMode == False
         # PROTECTED REGION END #    //  SKASubarray.test_simulationMode
 
-    def test_storageLoggingLevel(self):
+    # PROTECTED REGION ID(SKASubarray.test_storageLoggingLevel_decorators) ENABLED START #
+    # PROTECTED REGION END #    //  SKASubarray.test_storageLoggingLevel_decorators
+    def test_storageLoggingLevel(self, tango_context):
         """Test for storageLoggingLevel"""
         # PROTECTED REGION ID(SKASubarray.test_storageLoggingLevel) ENABLED START #
-        self.device.storageLoggingLevel
+        assert tango_context.device.storageLoggingLevel == 0
         # PROTECTED REGION END #    //  SKASubarray.test_storageLoggingLevel
 
-    def test_testMode(self):
+    # PROTECTED REGION ID(SKASubarray.test_testMode_decorators) ENABLED START #
+    # PROTECTED REGION END #    //  SKASubarray.test_testMode_decorators
+    def test_testMode(self, tango_context):
         """Test for testMode"""
         # PROTECTED REGION ID(SKASubarray.test_testMode) ENABLED START #
-        self.device.testMode
+        assert tango_context.device.testMode == ''
         # PROTECTED REGION END #    //  SKASubarray.test_testMode
 
-    def test_versionId(self):
+    # PROTECTED REGION ID(SKASubarray.test_versionId_decorators) ENABLED START #
+    # PROTECTED REGION END #    //  SKASubarray.test_versionId_decorators
+    def test_versionId(self, tango_context):
         """Test for versionId"""
         # PROTECTED REGION ID(SKASubarray.test_versionId) ENABLED START #
-        self.device.versionId
+        assert tango_context.device.versionId == ''
         # PROTECTED REGION END #    //  SKASubarray.test_versionId
 
-    def test_assignedResources(self):
+    # PROTECTED REGION ID(SKASubarray.test_assignedResources_decorators) ENABLED START #
+    # PROTECTED REGION END #    //  SKASubarray.test_assignedResources_decorators
+    def test_assignedResources(self, tango_context):
         """Test for assignedResources"""
         # PROTECTED REGION ID(SKASubarray.test_assignedResources) ENABLED START #
-        self.device.assignedResources
+        assert tango_context.device.assignedResources == ['']
         # PROTECTED REGION END #    //  SKASubarray.test_assignedResources
 
-    def test_configuredCapabilities(self):
+    # PROTECTED REGION ID(SKASubarray.test_configuredCapabilities_decorators) ENABLED START #
+    # PROTECTED REGION END #    //  SKASubarray.test_configuredCapabilities_decorators
+    def test_configuredCapabilities(self, tango_context):
         """Test for configuredCapabilities"""
         # PROTECTED REGION ID(SKASubarray.test_configuredCapabilities) ENABLED START #
-        self.device.configuredCapabilities
+        assert tango_context.device.configuredCapabilities == ['']
         # PROTECTED REGION END #    //  SKASubarray.test_configuredCapabilities
 
 
-# Main execution
-if __name__ == "__main__":
-    main()

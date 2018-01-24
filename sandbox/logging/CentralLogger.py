@@ -38,14 +38,14 @@ class CentralLogger(Device):
             i+=1
 
     """Logs are received from all element devices at all levels.
-       Filteration happens within the log function depending upon
+       Filtering happens within the log function depending upon
        CentralLoggingLevel of each element device.
        NOTE : This fiteration logic is still under consideration."""
     @command(dtype_in='DevVarStringArray', dtype_out=None)
     def log(self, details):
-	cmessage = details[3]
+        cmessage = details[3]
         clevel = details[1]
-        tango_log_level = {"FATAL":1,"ERROR":2,"WARN":3,"INFO":4,"DEBUG":5}
+        tango_log_level = {"FATAL": 1, "ERROR": 2, "WARN": 3, "INFO": 4, "DEBUG": 5}
         level_number = tango_log_level[clevel]
         clogsource = details[2]
         if clogsource == details[2]:
@@ -53,15 +53,15 @@ class CentralLogger(Device):
             deviceLogLevel = device.centralLoggingLevel
 
             if clevel == "FATAL" and level_number <= deviceLogLevel:
-                self.fatal_stream("%s : %s",clogsource, cmessage)
+                self.fatal_stream("%s : %s", clogsource, cmessage)
             elif clevel == "ERROR" and level_number <= deviceLogLevel:
-                self.error_stream("%s : %s",clogsource, cmessage)
+                self.error_stream("%s : %s", clogsource, cmessage)
             elif clevel == "WARN" and level_number <= deviceLogLevel:
-                self.warn_stream("%s : %s",clogsource, cmessage)
+                self.warn_stream("%s : %s", clogsource, cmessage)
             elif clevel == "INFO" and level_number <= deviceLogLevel:
-                self.info_stream("%s : %s",clogsource, cmessage)
+                self.info_stream("%s : %s", clogsource, cmessage)
             elif clevel == "DEBUG" and level_number <= deviceLogLevel:
-                self.debug_stream("%s : %s",clogsource, cmessage)
+                self.debug_stream("%s : %s", clogsource, cmessage)
             else:
                 pass
         else:

@@ -51,29 +51,29 @@ class ElementLogger(Device):
             i+=1
         
     """Logs are received from all element devices at all levels.
-       Filteration happens within the log function depending upon
+       Filtering happens within the log function depending upon
        ElementLoggingLevel of each element device.
        NOTE : This fiteration logic is still under consideration."""
     @command(dtype_in='DevVarStringArray', dtype_out=None)
     def log(self, details):
-	message = details[3]
+        message = details[3]
         level = details[1]
-        tango_log_level = {"FATAL":1,"ERROR":2,"WARN":3,"INFO":4,"DEBUG":5}
+        tango_log_level = {"FATAL": 1, "ERROR": 2, "WARN": 3, "INFO": 4, "DEBUG": 5}
         level_number = tango_log_level[level]
         logsource = details[2]
         if logsource == details[2]:
             device = DeviceProxy(logsource)
             deviceLogLevel = device.elementLoggingLevel
             if level == "FATAL" and level_number <= deviceLogLevel:
-                self.fatal_stream("%s : %s",logsource, message)
+                self.fatal_stream("%s : %s", logsource, message)
             elif level == "ERROR" and level_number <= deviceLogLevel:
-                self.error_stream("%s : %s",logsource, message)
+                self.error_stream("%s : %s", logsource, message)
             elif level == "WARN" and level_number <= deviceLogLevel:
-                self.warn_stream("%s : %s",logsource, message)
+                self.warn_stream("%s : %s", logsource, message)
             elif level == "INFO" and level_number <= deviceLogLevel:
-                self.info_stream("%s : %s",logsource, message)
+                self.info_stream("%s : %s", logsource, message)
             elif level == "DEBUG" and level_number <= deviceLogLevel: 
-                self.debug_stream("%s : %s",logsource, message)
+                self.debug_stream("%s : %s", logsource, message)
             else:
                 pass
         else:

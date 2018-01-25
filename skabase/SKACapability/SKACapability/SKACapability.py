@@ -54,7 +54,6 @@ class SKACapability(SKAObsDevice):
 
     CapID = device_property(
         dtype='str',
-        mandatory=True
     )
 
     subID = device_property(

@@ -39,7 +39,7 @@
       <type xsi:type="pogoDsl:StringType"/>
       <status abstract="false" inherited="false" concrete="true" concreteHere="true"/>
     </deviceProperties>
-    <deviceProperties name="CapID" mandatory="true" description="Unique identification of this capability device &lt;SubId>&lt;CapType>&#xA;e.g. Sub13PssBeams.">
+    <deviceProperties name="CapID" description="Unique identification of this capability device &lt;SubId>&lt;CapType>&#xA;e.g. Sub13PssBeams.">
       <type xsi:type="pogoDsl:StringType"/>
       <status abstract="false" inherited="false" concrete="true" concreteHere="true"/>
     </deviceProperties>

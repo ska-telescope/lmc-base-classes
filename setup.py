@@ -45,11 +45,7 @@ setup(name="levpro",
           "coverage",
           "pytest",
           "pytest-cov",
-          "pytest-xdist",
-          "python-devicetest",
-          "unittest2"
+          "pytest-xdist"
       ],
-      dependency_links=[
-          'git+https://github.com/vxgmichel/pytango-devicetest.git#egg=python_devicetest'],
       keywords="levpro lmc ska",
       zip_safe=False)

@@ -71,7 +71,7 @@ class TestSKAAlarmHandler(object):
     def test_Status(self, tango_context):
         """Test for Status"""
         # PROTECTED REGION ID(SKAAlarmHandler.test_Status) ENABLED START #
-        assert tango_context.device.Status() == ""
+        assert tango_context.device.Status() == "The device is in UNKNOWN state."
         # PROTECTED REGION END #    //  SKAAlarmHandler.test_Status
 
     # PROTECTED REGION ID(SKAAlarmHandler.test_GetAlarmRule_decorators) ENABLED START #

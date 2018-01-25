@@ -72,7 +72,7 @@ class TestSKAMaster(object):
     def test_Status(self, tango_context):
         """Test for Status"""
         # PROTECTED REGION ID(SKAMaster.test_Status) ENABLED START #
-        assert tango_context.device.Status() == ""
+        assert tango_context.device.Status() == "The device is in UNKNOWN state."
         # PROTECTED REGION END #    //  SKAMaster.test_Status
 
     # PROTECTED REGION ID(SKAMaster.test_GetMetrics_decorators) ENABLED START #

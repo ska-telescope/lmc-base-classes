@@ -159,14 +159,6 @@ class SKALogger(SKABaseDevice):
         pass
         # PROTECTED REGION END #    //  SKALogger.SetStorageLoggingLevel
 
-    @command(
-    )
-    @DebugIt()
-    def Reset(self):
-        # PROTECTED REGION ID(SKALogger.Reset) ENABLED START #
-        pass
-        # PROTECTED REGION END #    //  SKALogger.Reset
-
 # ----------
 # Run server
 # ----------

@@ -49,12 +49,10 @@ class SKACapability(SKAObsDevice):
 
     CapType = device_property(
         dtype='str',
-        mandatory=True
     )
 
     CapID = device_property(
         dtype='str',
-        mandatory=True
     )
 
     subID = device_property(
@@ -143,14 +141,6 @@ class SKACapability(SKAObsDevice):
     # --------
     # Commands
     # --------
-
-    @command(
-    )
-    @DebugIt()
-    def Reset(self):
-        # PROTECTED REGION ID(SKACapability.Reset) ENABLED START #
-        pass
-        # PROTECTED REGION END #    //  SKACapability.Reset
 
     @command(
     dtype_in='uint16', 

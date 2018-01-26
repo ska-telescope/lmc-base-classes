@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="ASCII"?>
 <pogoDsl:PogoSystem xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:pogoDsl="http://www.esrf.fr/tango/pogo/PogoDsl">
   <classes name="SKATelState" pogoRevision="9.6">
-    <description description="A generic base device for Telescope State for SKA." title="SKATelState" sourcePath="/home/kat/src/levpro/skabase/SKATelState" language="PythonHL" filestogenerate="XMI   file,Code files, Python Package, Protected Regions" license="GPL" copyright="" hasMandatoryProperty="false" hasConcreteProperty="true" hasAbstractCommand="false" hasAbstractAttribute="false">
+    <description description="A generic base device for Telescope State for SKA." title="SKATelState" sourcePath="/home/pogo/src/levpro/skabase/SKATelState" language="PythonHL" filestogenerate="XMI   file,Code files,Python Package,Protected Regions" license="GPL" copyright="" hasMandatoryProperty="false" hasConcreteProperty="true" hasAbstractCommand="false" hasAbstractAttribute="false">
       <inheritances classname="Device_Impl" sourcePath=""/>
       <inheritances classname="SKABaseDevice" sourcePath="../SKABaseDevice"/>
       <identification contact="at ska.ac.za - cam" author="cam" emailDomain="ska.ac.za" classFamily="OtherInstruments" siteSpecific="" platform="All Platforms" bus="Not Applicable" manufacturer="SKASA" reference="SKA-SKATelState"/>
@@ -16,11 +16,13 @@
       <DefaultPropValue>4</DefaultPropValue>
     </deviceProperties>
     <deviceProperties name="MetricList" description="A subset of attributes we want to expose as metrics for this device.">
-      <type xsi:type="pogoDsl:StringType"/>
+      <type xsi:type="pogoDsl:StringVectorType"/>
       <status abstract="false" inherited="true" concrete="true"/>
-      <DefaultPropValue>healthState,adminMode,controlMode</DefaultPropValue>
+      <DefaultPropValue>healthState</DefaultPropValue>
+      <DefaultPropValue>adminMode</DefaultPropValue>
+      <DefaultPropValue>controlMode</DefaultPropValue>
     </deviceProperties>
-    <deviceProperties name="GroupDefinitions" description="List of grouped devices managed by a master.  Each string in the array is a JSON &#xA;document defining the ``groupname``, ``devices`` and ``groups`` in the group.&#xA;A proxy client will be opened for each of the managed devices.&#xA;A group will be instantiated for the managed devices per group.&#xA;Each entry in the array contains a JSON defining the group, like:&#xA;[ {``groupname``: ``group1``, &#xA;    ``devices``: ``csv list of devices in group1``},&#xA;  {``groupname``: ``group2``, # a group with devices and a subgroup&#xA;    ``devices``: ``csv list of devices in group2``,&#xA;     ``groups`` : ``csv list of sub groups``},&#xA;  {``groupname``: ``group3``, &#xA;     ``devices`` : ``csv list of devices in group3``}},&#xA;  {``groupname``: ``group4``, # a group with only subgroups&#xA;    ``groups`` : ``csv list of sub groups``}}]&#xA;&#xA;e.g. for a hierarchy of racks, servers and switches&#xA;[{ ``groupname``: ``servers``, &#xA;   ``devices``: ``elt/server/1,elt/server/2,elt/server/3,elt/server/4``},&#xA;  {``groupname``: ``switches``, &#xA;    ``devices``: ``elt/switch/A,elt/switch/B``},&#xA;  {``groupname``: ``pdus``, &#xA;    ``devices``: ``elt/pdu/rackA,elt/pdu/rackB``},&#xA;  {``groupname``:``rackA``, &#xA;    ``devices``: ``elt/server/1,elt/server/2,elt/switch/A,elt/pdu/rackA``},&#xA;  {``groupname``:``rackB``,&#xA;    ``devices``: ``elt/server/3,elt/server/4,elt/switch/B,elt/pdu/rackB``},&#xA;  {``groupname``:``racks``,&#xA;     ``groups``: ``rackA,rackB``}]">
+    <deviceProperties name="GroupDefinitions" description="Each string in the list is a JSON serialised dict defining the ``group_name``,&#xA;``devices`` and ``subgroups`` in the group.  A TANGO Group object is created&#xA;for each item in the list, according to the hierarchy defined.  This provides&#xA;easy access to the managed devices in bulk, or individually.&#xA;&#xA;The general format of the list is as follows, with optional ``devices`` and&#xA;``subgroups`` keys:&#xA;    [ {``group_name``: ``&lt;name>``,&#xA;       ``devices``: [``&lt;dev name>``, ...]},&#xA;      {``group_name``: ``&lt;name>``,&#xA;       ``devices``: [``&lt;dev name>``, ``&lt;dev name>``, ...],&#xA;       ``subgroups`` : [{&lt;nested group>},&#xA;                              {&lt;nested group>}, ...]},&#xA;      ...&#xA;      ]&#xA;&#xA;For example, a hierarchy of racks, servers and switches:&#xA;    [ {``group_name``: ``servers``,&#xA;       ``devices``: [``elt/server/1``, ``elt/server/2``,&#xA;                       ``elt/server/3``, ``elt/server/4``]},&#xA;      {``group_name``: ``switches``,&#xA;       ``devices``: [``elt/switch/A``, ``elt/switch/B``]},&#xA;      {``group_name``: ``pdus``,&#xA;       ``devices``: [``elt/pdu/rackA``, ``elt/pdu/rackB``]},&#xA;      {``group_name``: ``racks``,&#xA;      ``subgroups``: [&#xA;            {``group_name``: ``rackA``,&#xA;             ``devices``: [``elt/server/1``, ``elt/server/2``,&#xA;                               ``elt/switch/A``, ``elt/pdu/rackA``]},&#xA;            {``group_name``: ``rackB``,&#xA;             ``devices``: [``elt/server/3``, ``elt/server/4``,&#xA;                              ``elt/switch/B``, ``elt/pdu/rackB``],&#xA;             ``subgroups``: []}&#xA;       ]} ]">
       <type xsi:type="pogoDsl:StringVectorType"/>
       <status abstract="false" inherited="true" concrete="true"/>
     </deviceProperties>
@@ -55,15 +57,6 @@
       </argout>
       <status abstract="true" inherited="true" concrete="true"/>
     </commands>
-    <commands name="Reset" description="Refresh the device to startup state - re-loading config file" execMethod="reset" displayLevel="OPERATOR" polledPeriod="0">
-      <argin description="">
-        <type xsi:type="pogoDsl:VoidType"/>
-      </argin>
-      <argout description="">
-        <type xsi:type="pogoDsl:VoidType"/>
-      </argout>
-      <status abstract="true" inherited="true" concrete="true" concreteHere="true"/>
-    </commands>
     <commands name="GetMetrics" description="Gets list of attributes marked as metrics, with their values, &#xA;for device" execMethod="get_metrics" displayLevel="OPERATOR" polledPeriod="0">
       <argin description="">
         <type xsi:type="pogoDsl:VoidType"/>
@@ -88,6 +81,15 @@
       </argin>
       <argout description="[ name: EltTelState ]">
         <type xsi:type="pogoDsl:StringArrayType"/>
+      </argout>
+      <status abstract="false" inherited="true" concrete="true"/>
+    </commands>
+    <commands name="Reset" description="Reset device to its default state" execMethod="reset" displayLevel="OPERATOR" polledPeriod="0">
+      <argin description="">
+        <type xsi:type="pogoDsl:VoidType"/>
+      </argin>
+      <argout description="">
+        <type xsi:type="pogoDsl:VoidType"/>
       </argout>
       <status abstract="false" inherited="true" concrete="true"/>
     </commands>
@@ -165,6 +167,6 @@
     <states name="DISABLE" description="The device cannot be switched ON for an external reason. E.g. the power supply has its door open, the safety conditions are not satisfactory to allow the device to operate.">
       <status abstract="false" inherited="true" concrete="true"/>
     </states>
-    <preferences docHome="./doc_html" makefileHome="/usr/share/pogo/preferences"/>
+    <preferences docHome="./doc_html" makefileHome="$(TANGO_HOME)"/>
   </classes>
 </pogoDsl:PogoSystem>

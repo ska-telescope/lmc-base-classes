@@ -143,14 +143,6 @@ class SKATestDevice(SKABaseDevice):
     # --------
 
     @command(
-    )
-    @DebugIt()
-    def Reset(self):
-        # PROTECTED REGION ID(SKATestDevice.Reset) ENABLED START #
-        pass
-        # PROTECTED REGION END #    //  SKATestDevice.Reset
-
-    @command(
     dtype_in='str', 
     doc_in="JSON encoded dict with this format\n{``group``: str,  # name of existing group\n  ``command``: str, # name of command to run\n  ``arg_type``: str,  # data type of command input argument\n  ``arg_value``: str, # value for command input argument\n  ``forward``: bool  # True if command should be forwarded to all subgroups (default)\n}", 
     dtype_out='str', 

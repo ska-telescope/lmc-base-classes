@@ -143,7 +143,7 @@ class TestSKAAlarmHandler(object):
     def test_GetVersionInfo(self, tango_context):
         """Test for GetVersionInfo"""
         # PROTECTED REGION ID(SKAAlarmHandler.test_GetVersionInfo) ENABLED START #
-        assert tango_context.device.GetVersionInfo() == [""]
+        assert tango_context.device.GetVersionInfo() == ("",)
         # PROTECTED REGION END #    //  SKAAlarmHandler.test_GetVersionInfo
 
 
@@ -272,7 +272,7 @@ class TestSKAAlarmHandler(object):
     def test_activeAlerts(self, tango_context):
         """Test for activeAlerts"""
         # PROTECTED REGION ID(SKAAlarmHandler.test_activeAlerts) ENABLED START #
-        assert tango_context.device.activeAlerts == ['']
+        assert tango_context.device.activeAlerts == ('',)
         # PROTECTED REGION END #    //  SKAAlarmHandler.test_activeAlerts
 
     # PROTECTED REGION ID(SKAAlarmHandler.test_activeAlarms_decorators) ENABLED START #
@@ -280,7 +280,7 @@ class TestSKAAlarmHandler(object):
     def test_activeAlarms(self, tango_context):
         """Test for activeAlarms"""
         # PROTECTED REGION ID(SKAAlarmHandler.test_activeAlarms) ENABLED START #
-        assert tango_context.device.activeAlarms == ['']
+        assert tango_context.device.activeAlarms == ('',)
         # PROTECTED REGION END #    //  SKAAlarmHandler.test_activeAlarms
 
 

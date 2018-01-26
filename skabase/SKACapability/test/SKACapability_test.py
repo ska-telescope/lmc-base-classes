@@ -104,7 +104,7 @@ class TestSKACapability(object):
     def test_GetVersionInfo(self, tango_context):
         """Test for GetVersionInfo"""
         # PROTECTED REGION ID(SKACapability.test_GetVersionInfo) ENABLED START #
-        assert tango_context.device.GetVersionInfo() == [""]
+        assert tango_context.device.GetVersionInfo() == ("",)
         # PROTECTED REGION END #    //  SKACapability.test_GetVersionInfo
 
     # PROTECTED REGION ID(SKACapability.test_ConfigureInstances_decorators) ENABLED START #
@@ -257,7 +257,7 @@ class TestSKACapability(object):
     def test_usedComponents(self, tango_context):
         """Test for usedComponents"""
         # PROTECTED REGION ID(SKACapability.test_usedComponents) ENABLED START #
-        assert tango_context.device.usedComponents == ['']
+        assert tango_context.device.usedComponents == ('',)
         # PROTECTED REGION END #    //  SKACapability.test_usedComponents
 
 

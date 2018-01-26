@@ -64,7 +64,7 @@ class TestSKALogger(object):
     def test_Log(self, tango_context):
         """Test for Log"""
         # PROTECTED REGION ID(SKALogger.test_Log) ENABLED START #
-        assert tango_context.device.Log([""]) == None
+        assert tango_context.device.Log(("",)) == None
         # PROTECTED REGION END #    //  SKALogger.test_Log
 
     # PROTECTED REGION ID(SKALogger.test_State_decorators) ENABLED START #
@@ -128,7 +128,7 @@ class TestSKALogger(object):
     def test_GetVersionInfo(self, tango_context):
         """Test for GetVersionInfo"""
         # PROTECTED REGION ID(SKALogger.test_GetVersionInfo) ENABLED START #
-        assert tango_context.device.GetVersionInfo() == [""]
+        assert tango_context.device.GetVersionInfo() == ("",)
         # PROTECTED REGION END #    //  SKALogger.test_GetVersionInfo
 
     # PROTECTED REGION ID(SKALogger.test_Reset_decorators) ENABLED START #

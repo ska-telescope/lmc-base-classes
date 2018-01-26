@@ -96,7 +96,7 @@ class TestSKAMaster(object):
     def test_GetVersionInfo(self, tango_context):
         """Test for GetVersionInfo"""
         # PROTECTED REGION ID(SKAMaster.test_GetVersionInfo) ENABLED START #
-        assert tango_context.device.GetVersionInfo() == ("",)
+        assert tango_context.device.GetVersionInfo() == [""]
         # PROTECTED REGION END #    //  SKAMaster.test_GetVersionInfo
 
     # PROTECTED REGION ID(SKAMaster.test_isCapabilityAchievable_decorators) ENABLED START #
@@ -104,7 +104,7 @@ class TestSKAMaster(object):
     def test_isCapabilityAchievable(self, tango_context):
         """Test for isCapabilityAchievable"""
         # PROTECTED REGION ID(SKAMaster.test_isCapabilityAchievable) ENABLED START #
-        assert tango_context.device.isCapabilityAchievable(([0], [""])) == False
+        assert tango_context.device.isCapabilityAchievable([[0], [""]]) == False
         # PROTECTED REGION END #    //  SKAMaster.test_isCapabilityAchievable
 
     # PROTECTED REGION ID(SKAMaster.test_Reset_decorators) ENABLED START #

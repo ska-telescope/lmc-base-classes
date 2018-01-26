@@ -143,7 +143,7 @@ class TestSKAAlarmHandler(object):
     def test_GetVersionInfo(self, tango_context):
         """Test for GetVersionInfo"""
         # PROTECTED REGION ID(SKAAlarmHandler.test_GetVersionInfo) ENABLED START #
-        assert tango_context.device.GetVersionInfo() == ("",)
+        assert tango_context.device.GetVersionInfo() == [""]
         # PROTECTED REGION END #    //  SKAAlarmHandler.test_GetVersionInfo
 
 

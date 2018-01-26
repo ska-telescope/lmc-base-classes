@@ -81,7 +81,7 @@ class TestSKATestDevice(object):
     def test_GetVersionInfo(self, tango_context):
         """Test for GetVersionInfo"""
         # PROTECTED REGION ID(SKATestDevice.test_GetVersionInfo) ENABLED START #
-        assert tango_context.device.GetVersionInfo() == ("",)
+        assert tango_context.device.GetVersionInfo() == [""]
         # PROTECTED REGION END #    //  SKATestDevice.test_GetVersionInfo
 
     # PROTECTED REGION ID(SKATestDevice.test_State_decorators) ENABLED START #

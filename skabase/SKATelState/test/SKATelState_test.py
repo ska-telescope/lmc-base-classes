@@ -94,7 +94,7 @@ class TestSKATelState(object):
     def test_GetVersionInfo(self, tango_context):
         """Test for GetVersionInfo"""
         # PROTECTED REGION ID(SKATelState.test_GetVersionInfo) ENABLED START #
-        assert tango_context.device.GetVersionInfo() == ("",)
+        assert tango_context.device.GetVersionInfo() == [""]
         # PROTECTED REGION END #    //  SKATelState.test_GetVersionInfo
 
     # PROTECTED REGION ID(SKATelState.test_Reset_decorators) ENABLED START #

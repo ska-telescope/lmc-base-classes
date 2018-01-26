@@ -344,7 +344,7 @@ class TestSKASubarray(object):
     def test_configuredCapabilities(self, tango_context):
         """Test for configuredCapabilities"""
         # PROTECTED REGION ID(SKASubarray.test_configuredCapabilities) ENABLED START #
-        assert tango_context.device.configuredCapabilities == ('',)
+        assert tango_context.device.configuredCapabilities == None
         # PROTECTED REGION END #    //  SKASubarray.test_configuredCapabilities
 
 

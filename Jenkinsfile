@@ -44,6 +44,9 @@ node('docker') {
                             '''
                             
                             catchError {
+                                // start the mysql and tango-db daemons
+                                sh 'nohup service mysql start'
+                                sh 'nohup service tango-db start'
                                 // run tests
                                 sh '''
                                     python setup.py test \

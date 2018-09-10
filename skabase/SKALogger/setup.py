@@ -5,8 +5,6 @@
 #
 #
 #
-# Distributed under the terms of the GPL license.
-# See LICENSE.txt for more info.
 
 import os
 import sys
@@ -35,7 +33,7 @@ setup(name=name,
       entry_points={'console_scripts':['SKALogger = SKALogger:main']},
       author='cam',
       author_email='cam at ska.ac.za',
-      license='GPL',
+      license='BSD-3-Clause',
       long_description=long_description,
       url='www.tango-controls.org',
       platforms="All Platforms"

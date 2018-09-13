@@ -1,5 +1,5 @@
-# LEvPro Deployment Notes
-Notes for LEvPRo deployment can be found in:
+# Deployment Notes
+Old notes for LEvPRo deployment can be found in:
 [LEvPro Deployment Notes](https://docs.google.com/document/d/12f495FEMOi0g3bJjoZL3icZaCCr7iSjTY3jToFqA2Ns/edit#)
 
 ## Recent changes
@@ -15,11 +15,36 @@ Added deregister_refelts to remove registrations in Tango DB and Astor so that w
 Get the desired inventories from ansible variables instead of loading files
 
 
-# To get going with a fresh node:
+# To get going with a fresh node (Docker container):
+
+## Run a Docker container:
+Follow the steps in `../docker/README.md`.  Launch the docker with the levpro project mounted inside the container.
+
+Obviously any changes made inside the container, e.g. software installed, will not persist.  Images can be made from a running container, if you want to keep changes (read the Docker docs).  Note that changes to the files in the levpro project will persist, because these files live on the host machine, and are just mounted inside the container.  
+
+## Install the levpro python modules and register TANGO devices
 ```
-fab proxmox.create_nodes_by_group:devXX,
-ssh kat@levpro.devXX.camlab.kat.ac.za
+cd ~/src/levpro/ansible
+./play-task.sh install-sw
+./play-task.sh generate-sw-refelt-simlib
+./play-task.sh register-my-refelt local  # startup can take 5 minutes!
 ```
+
+Note: `register-refelt` is deprecated.
+
+## Updating after .xmi file changes (POGO generation)
+```
+cd ~/src/levpro/ansible
+./play-task.sh deregister_refelts.yml
+./play-task.sh generate-sw
+./play-task.sh register-my-refelt local
+```
+
+Note: license file text may need to be updated in POGO generated files.
+
+# To get going with a fresh Ubuntu 14.04 system (not recommended!):
+
+If you don't have Docker, you could try a virtual machine. The ansible playbooks and instructions below have only been used on Ubuntu 14.04, so your mileage may vary on other versions of Linux.
 
 ## Install latest version of pip (required on Ubuntu 14.04):
 Old Ubuntu packages cause an issue, so remove manually.  Can't easily be done using Ansible, since removing the Python packages removes ansible while it is running!
@@ -48,15 +73,21 @@ git clone https://github.com/ska-sa/levpro ~/src/levpro
 cd ~/src/levpro/ansible
 ./play-task.sh deploy-tangobox
 ./play-task.sh deploy-sw
-./play-task.sh refresh-sw  # Not required for fresh node
 ./play-task.sh generate-sw
 ./play-task.sh install-sw
-./play-task.sh register-refelt
+./play-task.sh register-my-refelt local
 Optional:
 ./play-task.sh register-my-refelt devXn
 ./play-task.sh deregister_refelts.yml
 ```
 
+## Updating after .xmi file changes (POGO generation)
+```
+cd ~/src/levpro/ansible
+./play-task.sh deregister_refelts.yml
+./play-task.sh generate-sw
+./play-task.sh register-my-refelt local
+```
 
 # play-task - A utility to run a single specific task
 (based on ROLE tags and TASK IDs described in NOTES below)

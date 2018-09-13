@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="ASCII"?>
 <pogoDsl:PogoSystem xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:pogoDsl="http://www.esrf.fr/tango/pogo/PogoDsl">
   <classes name="RefCapabilityA" pogoRevision="9.6">
-    <description description="Ref (Reference Element) device of Type Capability A" title="RefCapabilityA" sourcePath="/home/tango-cs/src/levpro/refelt/refelt" language="PythonHL" filestogenerate="XMI   file,Code files,Protected Regions" license="GPL" copyright="" hasMandatoryProperty="true" hasConcreteProperty="false" hasAbstractCommand="false" hasAbstractAttribute="false">
+    <description description="Ref (Reference Element) device of Type Capability A" title="RefCapabilityA" sourcePath="/home/tango-cs/src/levpro/refelt/refelt" language="PythonHL" filestogenerate="XMI   file,Code files,Protected Regions" license="none" copyright="" hasMandatoryProperty="true" hasConcreteProperty="false" hasAbstractCommand="false" hasAbstractAttribute="false">
       <inheritances classname="Device_Impl" sourcePath=""/>
       <inheritances classname="SKAObsDevice" sourcePath="../../skabase/SKAObsDevice"/>
       <inheritances classname="SKACapability" sourcePath="../../skabase/SKACapability"/>

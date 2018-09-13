@@ -5,8 +5,6 @@
 #
 #
 #
-# Distributed under the terms of the GPL license.
-# See LICENSE.txt for more info.
 #########################################################################################
 """Contain the tests for the SKATelState."""
 

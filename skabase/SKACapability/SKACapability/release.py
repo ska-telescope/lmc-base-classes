@@ -4,8 +4,6 @@
 #
 #
 #
-# Distributed under the terms of the GPL license.
-# See LICENSE.txt for more info.
 
 """Release information for Python Package"""
 
@@ -15,6 +13,6 @@ version_info = version.split(".")
 description = """Subarray handling device"""
 author = "cam"
 author_email = "cam at ska.ac.za"
-license = """GPL"""
+license = """BSD-3-Clause"""
 url = """www.tango-controls.org"""
 copyright = """"""

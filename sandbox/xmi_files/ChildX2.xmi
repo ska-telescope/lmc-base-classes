@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="ASCII"?>
 <pogoDsl:PogoSystem xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:pogoDsl="http://www.esrf.fr/tango/pogo/PogoDsl">
   <classes name="ChildX2" pogoRevision="9.1">
-    <description description="" title="" sourcePath="/home/kmadisa/Desktop" language="Python" filestogenerate="XMI   file,Code files,Protected Regions" license="GPL" copyright="" hasMandatoryProperty="false" hasConcreteProperty="true" hasAbstractCommand="false" hasAbstractAttribute="false">
+    <description description="" title="" sourcePath="/home/kmadisa/Desktop" language="Python" filestogenerate="XMI   file,Code files,Protected Regions" license="none" copyright="" hasMandatoryProperty="false" hasConcreteProperty="true" hasAbstractCommand="false" hasAbstractAttribute="false">
       <inheritances classname="Device_Impl" sourcePath=""/>
       <inheritances classname="ParentX" sourcePath="./"/>
       <identification contact="at ska.ac.za - kmadisa" author="kmadisa" emailDomain="ska.ac.za" classFamily="Simulators" siteSpecific="" platform="All Platforms" bus="Ethernet" manufacturer="none" reference=""/>

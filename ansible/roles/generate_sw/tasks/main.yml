@@ -47,10 +47,7 @@
       - RefAlarmHandler
       - RefB
       - RefBchild
-      - RefCapCorrelator
-      - RefCapPssBeams
-      - RefCapPstBeams
-      - RefCapVlbiBeams
+      - RefCapabilityA
       - RefSubarray
       - RefTelState
       - Server

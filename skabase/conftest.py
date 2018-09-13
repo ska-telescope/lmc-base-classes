@@ -1,11 +1,3 @@
-###############################################################################
-# SKA South Africa (http://ska.ac.za/)                                        #
-# Author: cam@ska.ac.za                                                       #
-# Copyright @ 2018 SKA SA. All rights reserved.                               #
-#                                                                             #
-# THIS SOFTWARE MAY NOT BE COPIED OR DISTRIBUTED IN ANY FORM WITHOUT THE      #
-# WRITTEN PERMISSION OF SKA SA.                                               #
-###############################################################################
 """
 A module defining a list of fixture functions that are shared across all the skabase
 tests.
@@ -25,7 +17,7 @@ def tango_context(request):
     Parameters
     ----------
     request: _pytest.fixtures.SubRequest
-        A request object gives access to the requesting test context. 
+        A request object gives access to the requesting test context.
     """
     fq_test_class_name = request.cls.__module__
     fq_test_class_name_details = fq_test_class_name.split(".")

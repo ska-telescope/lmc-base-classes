@@ -7,7 +7,7 @@ Early work in this repo was done as part of the LMC Base Classes Evolutionary Pr
 
 ## Docs
 - SKA Control System guidelines:  [Google docs folder](https://drive.google.com/drive/folders/0B8fhAW5QnZQWQ2ZlcjhVS0NmRms)
-- LEvPro work area: [Google docs folder](https://drive.google.com/drive/folders/0B8fhAW5QnZQWVHVFVGVXT2Via28)
+- Old LEvPro work area: [Google docs folder](https://drive.google.com/drive/folders/0B8fhAW5QnZQWVHVFVGVXT2Via28)
 
 ## Contribute
 Contributions are always welcome! Please ensure that you adhere to our coding standards [CAM_Style_guide](https://docs.google.com/document/d/1aZoIyR9tz5rCWr2qJKuMTmKp2IzHlFjrCFrpDDHFypM/edit?usp=sharing).  Use [flake8](http://flake8.pycqa.org/en/latest/) for linting (default settings, except maximum line length of 90 characters).

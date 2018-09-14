@@ -1,7 +1,7 @@
 node('docker') {
 
     withDockerContainer(
-        image: 'tango-levpro:latest',
+        image: 'tango-lmc-base-classes:latest',
         args: '-u root'
     ) {
         stage 'Cleanup workspace'
@@ -23,9 +23,9 @@ node('docker') {
                 timeout(time: 30, unit: 'MINUTES') {
                     ansiColor('xterm') {
                         try {
-                            // Add a symbolic link to levpro dir, as the Ansible scripts
+                            // Add a symbolic link to lmc-base-classes dir, as the Ansible scripts
                             // assume that is part of the path
-                            sh 'ln -sv $WORKSPACE ../levpro'
+                            sh 'ln -sv $WORKSPACE ../lmc-base-classes'
 
                             // use Ansible to do pip installs, using current WORKSPACE
                             // as the software_root
@@ -35,14 +35,14 @@ node('docker') {
                                 cd ansible
                                 ansible-playbook -i hosts install_sw.yml \
                                   --limit "local" \
-                                  --tags install-sw-levpro \
+                                  --tags install-sw-lmc-base-classes \
                                   --tags install-sw-skabase \
                                   --verbose \
                                   --extra-vars software_root=$PARENT_DIR
                                 pip install coverage
                                 cd ..
                             '''
-                            
+
                             catchError {
                                 // run tests
                                 sh '''

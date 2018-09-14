@@ -8,17 +8,16 @@ from setuptools import setup, find_packages
 needs_pytest = {'pytest', 'test', 'ptr'}.intersection(sys.argv)
 pytest_runner = ['pytest-runner'] if needs_pytest else []
 
-setup(name="levpro",
+setup(name="ska_lmc",
       description="Element Base Classes - Evolutionary Prototype",
-      author="MeerKAT CAM Team",
-      author_email="cam@ska.ac.za",
+      author="SKA Team",
       packages=find_packages(),
       include_package_data=True,
       scripts=["scripts/gen_csv_info.py",
                "scripts/purge_xmi_tree.py",
                "scripts/elt_ctl.py",
                ],
-      url='http://ska.ac.za/',
+      url='https://www.skatelescope.org/',
       classifiers=[
           "Development Status :: 3 - Alpha",
           "Intended Audience :: Developers",
@@ -39,5 +38,5 @@ setup(name="levpro",
           "pytest-cov",
           "pytest-xdist"
       ],
-      keywords="levpro lmc ska",
+      keywords="lmc base classes ska",
       zip_safe=False)

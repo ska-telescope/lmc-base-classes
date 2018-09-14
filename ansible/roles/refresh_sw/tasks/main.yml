@@ -13,9 +13,9 @@
 
 # Do we want to pull on refresh_sw ???
 
-- name: Refresh levpro
-  command: git -C {{software_root}}/levpro pull
+- name: Refresh lmc-base-classes
+  command: git -C {{software_root}}/lmc-base-classes pull
   tags:
-    - refresh-sw-levpro
+    - refresh-sw-lmc-base-classes
 
 ...

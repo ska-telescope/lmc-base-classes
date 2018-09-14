@@ -13,44 +13,44 @@
 ###########################################
 
 - block:
-  - name: Install levpro
-    #command: sudo pip install {{software_root}}/levpro -U --no-deps
+  - name: Install lmc-base-classes
+    #command: sudo pip install {{software_root}}/lmc-base-classes -U --no-deps
     pip:
       name: "{{software_root}}/{{item}}"
       extra_args: -U --no-deps
     with_items:
-      - levpro
+      - lmc-base-classes
   become: True
   tags:
-    - install-sw-levpro
+    - install-sw-lmc-base-classes
 
 - block:
   - name: Install skabase
-    #command: sudo pip install {{software_root}}/levpro/skabase/{{item}} -U --no-deps
+    #command: sudo pip install {{software_root}}/lmc-base-classes/skabase/{{item}} -U --no-deps
     pip:
       name: "{{software_root}}/{{item}}"
       extra_args: -U --no-deps
     with_items:
-      - levpro/skabase/SKABaseDevice
-      - levpro/skabase/SKAObsDevice
-      - levpro/skabase/SKAMaster
-      - levpro/skabase/SKASubarray
-      - levpro/skabase/SKACapability
-      - levpro/skabase/SKAAlarmHandler
-      - levpro/skabase/SKATelState
-      - levpro/skabase/SKALogger
+      - lmc-base-classes/skabase/SKABaseDevice
+      - lmc-base-classes/skabase/SKAObsDevice
+      - lmc-base-classes/skabase/SKAMaster
+      - lmc-base-classes/skabase/SKASubarray
+      - lmc-base-classes/skabase/SKACapability
+      - lmc-base-classes/skabase/SKAAlarmHandler
+      - lmc-base-classes/skabase/SKATelState
+      - lmc-base-classes/skabase/SKALogger
   become: True
   tags:
     - install-sw-skabase
 
 - block:
   - name: Install refelt
-    #command: sudo pip install {{software_root}}/levpro/refelt -U --no-deps
+    #command: sudo pip install {{software_root}}/lmc-base-classes/refelt -U --no-deps
     pip:
       name: "{{software_root}}/{{item}}"
       extra_args: -U --no-deps
     with_items:
-      - levpro/refelt
+      - lmc-base-classes/refelt
   become: True
   tags:
     - install-sw-refelt

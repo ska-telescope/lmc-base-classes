@@ -36,7 +36,7 @@ from fandango import Astor
 
 DEFAULT_REFELT_ASTOR_CONFIG = dict(
 #node: {level: (server/instance,server/instance,...)}
-    { "levpro": {
+    { "lmc-base-classes": {
         0: ("TangoAccessControl/1",),
         1: ("SvrFileLogger/Central",),
         2: ("SvrFileLogger/Elt",),

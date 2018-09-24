@@ -1,18 +1,9 @@
-
-[devlt]
-monctl.devlt
-
-[devl5]
-devl5levpro
-
-[devl4]
-devl4levpro
+[dev4]
+dev4lmc
 
 [local]
 localhost ansible_connection=local
 
 [operational]
-devl4levpro
-devl5levpro
-localhost # assume local is an operational node
-
+dev4lmc
+localhost

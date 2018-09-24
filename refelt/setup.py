@@ -25,8 +25,7 @@ exec(open(release_filename).read())
 setup(name=name,
       version=version,
       description='An SKA Refence Element (Ref)',
-      author="MeerKAT CAM Team",
-      author_email="cam at ska.ac.za",
+      author="SKA Team",
       packages=find_packages(),  #pack
       include_package_data=True,
       entry_points={'console_scripts':[
@@ -48,7 +47,7 @@ setup(name=name,
           'SvrRefCapabilityC = refelt.RefCapabilityC:main',
           'SvrRefCapabilityD = refelt.RefCapabilityD:main',
           ]},
-      url='http://ska.ac.za/',
+      url='https://www.skatelescope.org/',
       classifiers=[
           "Development Status :: 3 - Alpha",
           "Intended Audience :: Developers",

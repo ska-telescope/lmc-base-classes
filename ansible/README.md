@@ -22,7 +22,7 @@ Note: `register-refelt` is deprecated.
 ## Updating after .xmi file changes (POGO generation)
 ```
 cd ~/src/lmc-base-classes
-./scripts/purge_xmi_tree.py
+purge_xmi_tree.py --path .
 cd ~/src/lmc-base-classes/ansible
 ./play-task.sh deregister_refelts.yml
 ./play-task.sh generate-sw
@@ -77,7 +77,7 @@ Optional:
 ## Updating after .xmi file changes (POGO generation)
 ```
 cd ~/src/lmc-base-classes
-./scripts/purge_xmi_tree.py
+purge_xmi_tree.py --path .
 cd ~/src/lmc-base-classes/ansible
 ./play-task.sh deregister_refelts.yml
 ./play-task.sh generate-sw
@@ -175,7 +175,7 @@ ansible-playbook -i hosts site.yml --limit local --tags "install-sw-refelt"
 When XMI has been changed
 ```
 cd ~/src/lmc-base-classes
-./scripts/purge_xmi_tree.py
+purge_xmi_tree.py --path .
 cd ~/src/lmc-base-classes/ansible
 ./play-task.sh deregister_refelts.yml
 ./play-task.sh generate-sw

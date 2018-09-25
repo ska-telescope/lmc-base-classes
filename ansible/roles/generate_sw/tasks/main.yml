@@ -16,7 +16,7 @@
   - name: Generate skabase
     command: pogo -src {{item}}.xmi
     args:
-        chdir: "{{software_root}}/levpro/skabase/{{item}}"
+        chdir: "{{software_root}}/lmc-base-classes/skabase/{{item}}"
     environment:
         DISPLAY: "localhost:1.0"
     with_items:
@@ -35,7 +35,7 @@
   - name: Generate refelt
     command: pogo -src {{item}}.xmi
     args:
-        chdir: "{{software_root}}/levpro/refelt/refelt"
+        chdir: "{{software_root}}/lmc-base-classes/refelt/refelt"
     environment:
         DISPLAY: "localhost:1.0"
     with_items:
@@ -60,7 +60,7 @@
     become: yes
     command: >
         tango-simlib-generator
-        --sim-data-file {{software_root}}/levpro/refelt/refelt/{{item}}.xmi
+        --sim-data-file {{software_root}}/lmc-base-classes/refelt/refelt/{{item}}.xmi
         --dserver-name SvrSim{{item}}
         --directory /usr/local/bin/
     with_items:

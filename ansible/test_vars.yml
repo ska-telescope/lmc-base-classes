@@ -9,12 +9,12 @@
     my_id: "{{ hostvars[inventory_hostname].element_details.id }}"
     my_instance: "{{ hostvars[inventory_hostname].element_details.instance }}"
     testVars: "{{ lookup('file', './inventories/{{ my_name }}/config_files/test_vars.json') | from_json }}"
-    configDbFile: "{{ lookup('file', './inventories/{{ my_name }}/config_files/config_db.json') | from_json }}"
-    configDbJson: "{{ lookup('template', './inventories/{{ my_name }}/config_files/config_db.json') }}"
-    configPropertiesFile: "{{ lookup('file', './inventories/{{ my_name }}/config_files/config_properties.json') | from_json }}"
-    configPropertiesJson: "{{ lookup('template', './inventories/{{ my_name }}/config_files/config_properties.json') }}"
-    configStarterFile: "{{ lookup('file', './inventories/{{ my_name }}/config_files/config_starter.json') | from_json }}"
-    configStarterJson: "{{ lookup('template', './inventories/{{ my_name }}/config_files/config_starter.json') }}"
+    configDbFile: "{{ lookup('file', './inventories/{{ my_name }}/config_files/config_db.json.j2') | from_json }}"
+    configDbJson: "{{ lookup('template', './inventories/{{ my_name }}/config_files/config_db.json.j2') }}"
+    configPropertiesFile: "{{ lookup('file', './inventories/{{ my_name }}/config_files/config_properties.json.j2') | from_json }}"
+    configPropertiesJson: "{{ lookup('template', './inventories/{{ my_name }}/config_files/config_properties.json.j2') }}"
+    configStarterFile: "{{ lookup('file', './inventories/{{ my_name }}/config_files/config_starter.json.j2') | from_json }}"
+    configStarterJson: "{{ lookup('template', './inventories/{{ my_name }}/config_files/config_starter.json.j2') }}"
 
   tasks:
     - name: Print my hostvars
@@ -66,17 +66,17 @@
       tags:
         - prints
 
-    - name: testVars find blue cars
+    - name: testVars find key2 22
       with_dict: "{{ testVars['queue'] }}"
       shell: |
-        if echo "{{ item.value.color }}" | grep -q "blue" ; then
-            echo "SUCCESS - found blue at {{ item.key }}"
+        if echo "{{ item.value.key2 }}" | grep -q "22" ; then
+            echo "SUCCESS - found 22 at {{ item.key }}"
         fi
 
     - name: testVars find my id
       with_dict: "{{ testVars['queue'] }}"
       shell: |
-        if echo "{{ item.value.car }}" | grep -q "{{ my_id }}" ; then
+        if echo "{{ item.value.key1 }}" | grep -q "{{ my_id }}" ; then
             echo "SUCCESS - found {{ my_id }} at {{ item.key }}"
         fi
 

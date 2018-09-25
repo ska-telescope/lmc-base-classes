@@ -2,31 +2,18 @@
 Old notes for LEvPRo deployment can be found in:
 [LEvPro Deployment Notes](https://docs.google.com/document/d/12f495FEMOi0g3bJjoZL3icZaCCr7iSjTY3jToFqA2Ns/edit#)
 
-## Recent changes
-Moving refelt config files from role to inventories
-
-Adding register_my_refelt to support different refelts (e.g. Ref4 on devl4, Ref5 on devl5) with different config files (from inventories) e.g. ./play-task.sh register_my_refelt devl
-
-Added deregister_refelts to remove registrations in Tango DB and Astor so that we can start again (but not added to site.yml) and added support to run a different .yml instead of site.yml e.g. ./play-task.sh deregsiter_refelts.yml
-
-
-## TODO
-
-Get the desired inventories from ansible variables instead of loading files
-
-
 # To get going with a fresh node (Docker container):
 
 ## Run a Docker container:
-Follow the steps in `../docker/README.md`.  Launch the docker with the levpro project mounted inside the container.
+Follow the steps in `../docker/README.md`.  Launch the docker with the lmc-base-classes project mounted inside the container.
 
-Obviously any changes made inside the container, e.g. software installed, will not persist.  Images can be made from a running container, if you want to keep changes (read the Docker docs).  Note that changes to the files in the levpro project will persist, because these files live on the host machine, and are just mounted inside the container.  
+Obviously any changes made inside the container, e.g. software installed, will not persist.  Images can be made from a running container, if you want to keep changes (read the Docker docs).  Note that changes to the files in the lmc-base-classes project will persist, because these files live on the host machine, and are just mounted inside the container.  
 
-## Install the levpro python modules and register TANGO devices
+## Install the lmc-base-classes python modules and register TANGO devices
 ```
-cd ~/src/levpro/ansible
-./play-task.sh install-sw
+cd ~/src/lmc-base-classes/ansible
 ./play-task.sh generate-sw-refelt-simlib
+./play-task.sh install-sw
 ./play-task.sh register-my-refelt local  # startup can take 5 minutes!
 ```
 
@@ -34,13 +21,19 @@ Note: `register-refelt` is deprecated.
 
 ## Updating after .xmi file changes (POGO generation)
 ```
-cd ~/src/levpro/ansible
+cd ~/src/lmc-base-classes
+purge_xmi_tree.py --path .
+cd ~/src/lmc-base-classes/ansible
 ./play-task.sh deregister_refelts.yml
 ./play-task.sh generate-sw
+./play-task.sh install-sw
 ./play-task.sh register-my-refelt local
 ```
 
-Note: license file text may need to be updated in POGO generated files.
+Notes:
+- license file text may need to be updated in POGO generated files.
+- The deregister_refelts.yml role removes registrations in Tango DB and Astor so that
+  we can start again, with nothing registered.
 
 # To get going with a fresh Ubuntu 14.04 system (not recommended!):
 
@@ -65,12 +58,12 @@ sudo add-apt-repository ppa:ansible/ansible
 sudo apt-get update
 sudo apt-get install ansible
 mkdir ~/src
-git clone https://github.com/ska-sa/levpro ~/src/levpro
+git clone https://github.com/ska-telescope/lmc-base-classes ~/src/lmc-base-classes
 ```
 
-## Deploy tangobox and a levpro RefElt on a fresh node
+## Deploy tangobox and a lmc-base-classes RefElt on a fresh node
 ```
-cd ~/src/levpro/ansible
+cd ~/src/lmc-base-classes/ansible
 ./play-task.sh deploy-tangobox
 ./play-task.sh deploy-sw
 ./play-task.sh generate-sw
@@ -83,9 +76,12 @@ Optional:
 
 ## Updating after .xmi file changes (POGO generation)
 ```
-cd ~/src/levpro/ansible
+cd ~/src/lmc-base-classes
+purge_xmi_tree.py --path .
+cd ~/src/lmc-base-classes/ansible
 ./play-task.sh deregister_refelts.yml
 ./play-task.sh generate-sw
+./play-task.sh install-sw
 ./play-task.sh register-my-refelt local
 ```
 
@@ -137,7 +133,7 @@ or using ansible-playbook directly
 ansible-playbook -i hosts install_sw.yml --list-tags [--limit devXX]
 ansible-playbook -i hosts install_sw.yml --list-hosts [--limit devXX]
 ansible-playbook -i hosts install_sw.yml
-ansible-playbook -i hosts install_sw.yml -t install-sw-levpro
+ansible-playbook -i hosts install_sw.yml -t install-sw-lmc-base-classes
 ```
 
 ### To deploy SW on local: # Git clone if not available, else git pull
@@ -152,52 +148,46 @@ ansible-playbook -i hosts site.yml --limit local --tags "deploy-sw"
 ### To refresh SW on local: # Git pull
 ```
 ./play-task.sh refresh-sw
-./play-task.sh refresh-sw-levpro
+./play-task.sh refresh-sw-lmc-base-classes
 ```
 or using ansible-playbook directly
 ```
 ansible-playbook -i hosts site.yml --limit local --tags "refresh-sw"
-ansible-playbook -i hosts site.yml --limit local --tags "refresh-sw-levpro"
+ansible-playbook -i hosts site.yml --limit local --tags "refresh-sw-lmc-base-classes"
 ```
 
 ### To install SW on local: # sudo pip install
 ```
 ./play-task.sh install-sw
-./play-task.sh install-sw-levpro
+./play-task.sh install-sw-lmc-base-classes
 ./play-task.sh install-sw-skabase
 ./play-task.sh install-sw-refelt
 ```
 or using ansible-playbook directly
 ```
 ansible-playbook -i hosts site.yml --limit local --tags "install-sw" # all
-ansible-playbook -i hosts site.yml --limit local --tags "install-sw-levpro"
+ansible-playbook -i hosts site.yml --limit local --tags "install-sw-lmc-base-classes"
 ansible-playbook -i hosts site.yml --limit local --tags "install-sw-skabase"
 ansible-playbook -i hosts site.yml --limit local --tags "install-sw-refelt"
 ```
 
-
 ### To regenerate POGO output
-When XMI or code has been changed
+When XMI has been changed
 ```
-cd ~/src/levpro/ansible
+cd ~/src/lmc-base-classes
+purge_xmi_tree.py --path .
+cd ~/src/lmc-base-classes/ansible
+./play-task.sh deregister_refelts.yml
 ./play-task.sh generate-sw
-```
-
-### To configure the RefElt TANGO facility and start its device servers
-```
-./play-task.sh register-refelt
-```
-or
-```
-./play-task.sh register-refelt-in-tangodb
-./play-task.sh register-refelt-in-astor
+./play-task.sh install-sw
+./play-task.sh register-my-refelt local
 ```
 
 ### To configure a specific RefEltX TANGO facility and start its device servers (my_refelt)
-You need to add the group to levpro/ansible/hosts e.g.
+You need to add the group to lmc-base-classes/ansible/hosts e.g.
 ```
 [devXX]
-devXXlevpro
+devXXlmc
 ```
 
 And group vars for the group in ansible/group_vars/devXX:
@@ -209,32 +199,27 @@ And group vars for the group in ansible/group_vars/devXX:
     id: refX
 ```
 
-and ansible/host_vars for each host in the group as appropriate, at least:
+and ansible/host_vars/devXXlmc for each host in the group as appropriate, at least:
 ```
-ansible_ssh_host: levpro.devXXX.camlab.kat.ac.za
-```
-
-and ansible/host_vars/devXXlevpro for each host in the group as appropriate, at least:
-```
-ansible_ssh_host: levpro.devXXX.camlab.kat.ac.za
+ansible_ssh_host: lmc.devXX.domain
 ```
 
-Lastly, you need to create an inventory for devXX in ansible/inventories/devXX defining the refXXX element.
+Lastly, you need to create an inventory for devXX in ansible/inventories/devXX defining the refX element.
 Note: this may later be templated for RefElts (as it may be a useful pattern for DSH)
 
 (If need be, deregister previous registrations with:)
 ```
-ansible-playbook deregister-refelts.yml
+./play-task.sh deregister_refelts.yml
 ```
 
 
 Then do
 ```
-ansible-playbook register-my-refelt.yml devXX
+./play-task.sh register-my-refelt devXX
 ```
 this produces the ansible command line (note the --limit):
 ```
-ansible-playbook -i hosts site.yml --limit devXX --tags register-my-refelt --verbose --ask-become-pass
+ansible-playbook -i hosts site.yml --limit devXX --tags register-my-refelt --verbose
 ```
 
 # NOTES:
@@ -259,11 +244,11 @@ role-tag defined in in roles/xxx/tasks/main.yml followed by a task specialisatio
 E.g. any tag starting with deploy-sw will be found in the deploy_sw.yml role
 ```
     tags:
-       - deploy-sw-levpro
+       - deploy-sw-lmc-base-classes
 ```
 To execute a specific task specify the full --tags from the task file e.g.
 ```
-     --tags deploy-sw-levpro
+     --tags deploy-sw-lmc-base-classes
 ```
 Format is "<role-tag>-<task-id>" e.g. install-sw-refelt
 ```
@@ -275,7 +260,7 @@ To list the current task tags:
 ```
 ./play-task.sh
 
-kat@levpro.devXX.camlab.kat.ac.za:~/src/levpro/ansible$ ./play-task.sh
+tango-cs@95f06d131e41:~/src/lmc-base-classes/ansible$ ./play-task.sh
 You have to specify a roletag, and optional task-id
 
 ---------------------------<<<< ANSIBLE COMMAND LINE >>>>--------------------------------------------
@@ -287,24 +272,21 @@ The available task tags are:
 playbook: site.yml
 
   play #1 (operational): deploy_sw	TAGS: []
-      TASK TAGS: [deploy-sw, deploy-sw-levpro]
+      TASK TAGS: [deploy-sw, deploy-sw-lmc-base-classes]
 
   play #2 (operational): deploy_tangobox	TAGS: []
       TASK TAGS: [debs, deploy-box-tango-java, deploy-tangobox, deploy-tangobox-debs, deploy-tangobox-itango, deploy-tangobox-mysql, deploy-tangobox-mysql-installed, deploy-tangobox-pip, deploy-tangobox-start-tango, deploy-tangobox-tango-core, deploy-tangobox-tango-java, deploy-tangobox-tango-java-pogo, deploy-tangobox-tango-webapp, itango, mysql, pip, tango-core, tango-java]
 
   play #3 (operational): install_sw	TAGS: []
-      TASK TAGS: [install-sw, install-sw-levpro, install-sw-refelt, install-sw-skabase]
+      TASK TAGS: [install-sw, install-sw-lmc-base-classes, install-sw-refelt, install-sw-skabase]
 
   play #4 (operational): refresh_sw	TAGS: []
-      TASK TAGS: [refresh-sw, refresh-sw-levpro]
+      TASK TAGS: [refresh-sw, refresh-sw-lmc-base-classes]
 
-  play #5 (operational): register_refelt	TAGS: []
-      TASK TAGS: [register-refelt, register-refelt-in-astor, register-refelt-in-astor-ds-path, register-refelt-in-tangodb]
-
-  play #6 (operational): register_my_refelt	TAGS: []
+  play #5 (operational): register_my_refelt	TAGS: []
       TASK TAGS: [register-my-refelt, register-myrefelt-in-astor, register-myrefelt-in-astor-ds-path, register-myrefelt-in-tangodb]
 
-  play #7 (operational): generate_sw	TAGS: []
+  play #6 (operational): generate_sw	TAGS: []
       TASK TAGS: [generate-sw, generate-sw-refelt, generate-sw-refelt-simlib, generate-sw-skabase]
 
 ```

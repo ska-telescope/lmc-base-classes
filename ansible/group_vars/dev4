@@ -2,13 +2,13 @@
 python_path: /usr/lib/python2.7/site-packages
 
 ## SOFTWARE BASE DIR
-software_root: /home/kat/src
+software_root: /home/tango-cs/src
 
 ## Element personality
 element_details:
     type: refelt
-    name: refelt5
-    id: ref5
-    instance: Ref5
+    name: refelt4
+    id: ref4
+    instance: Ref4
 
 ...

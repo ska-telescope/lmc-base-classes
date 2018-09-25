@@ -1,7 +1,0 @@
-
-- name: register_refelt
-  hosts: operational
-  roles:
-    - {role: 'register_refelt', tags: ['register-refelt']}
-
-

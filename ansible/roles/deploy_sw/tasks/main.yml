@@ -11,24 +11,24 @@
 ##     Clone repos
 ###########################################
 
-## levpro
+## lmc-base-classes
 
-- name: Check for levpro in software_root
-  stat: path={{software_root}}/levpro
-  register: p_levpro
+- name: Check for lmc-base-classes in software_root
+  stat: path={{software_root}}/lmc-base-classes
+  register: p_lmc_base_classes
   tags:
-    - deploy-sw-levpro
+    - deploy-sw-lmc-base-classes
 
-- name: Clone levpro if dir not existing
-  command: git clone https://github.com/ska-sa/levpro {{software_root}}/levpro
-  when: not p_levpro.stat.exists
+- name: Clone lmc-base-classes if dir not existing
+  command: git clone https://github.com/ska-telescope/lmc-base-classes {{software_root}}/lmc-base-classes
+  when: not p_lmc_base_classes.stat.exists
   tags:
-    - deploy-sw-levpro
+    - deploy-sw-lmc-base-classes
 
-- name: Git pull levpro if dir exists
-  command: git -C {{software_root}}/levpro pull
-  when: p_levpro.stat.isdir is defined and p_levpro.stat.isdir
+- name: Git pull lmc-base-classes if dir exists
+  command: git -C {{software_root}}/lmc-base-classes pull
+  when: p_lmc_base_classes.stat.isdir is defined and p_lmc_base_classes.stat.isdir
   tags:
-    - deploy-sw-levpro
+    - deploy-sw-lmc-base-classes
 
 ...

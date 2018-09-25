@@ -69,7 +69,7 @@
         # else ansible template processing replaces the double quotes with single qoutes
         # breaking the json
         # https://stackoverflow.com/questions/41144922/ansible-passing-json-string-in-environment-to-shell-module
-        var_config_db: " {{ lookup('template', '{{ software_root }}/levpro/ansible/inventories/{{ my_name }}/config_files/config_db.json.j2') | to_json }}"
+        var_config_db: " {{ lookup('template', '{{ software_root }}/lmc-base-classes/ansible/inventories/{{ my_name }}/config_files/config_db.json.j2') | to_json }}"
     register_element:
         config_json: "{{ var_config_db }}"
     register: the_result
@@ -77,7 +77,7 @@
   - name: Register MyRefElt device properties in TANGO db
     vars:
         # NOTE - the space before the double open curly brackets " {{..." is required - see above
-        var_config_properties: " {{ lookup('template', '{{ software_root}}/levpro/ansible/inventories/{{my_name}}/config_files/config_properties.json.j2') | to_json }}"
+        var_config_properties: " {{ lookup('template', '{{ software_root}}/lmc-base-classes/ansible/inventories/{{my_name}}/config_files/config_properties.json.j2') | to_json }}"
     register_properties:
         properties_json: "{{ var_config_properties }}"
     register: the_result
@@ -101,7 +101,7 @@
   - name: Register MyRefElt in Astor and restart with Starter
     vars:
         # NOTE - the space before the double open curly brackets " {{..." is required - see above
-        var_config_starter: " {{ lookup('template', '{{ software_root }}/levpro/ansible/inventories/{{ my_name }}/config_files/config_starter.json.j2') | to_json }}"
+        var_config_starter: " {{ lookup('template', '{{ software_root }}/lmc-base-classes/ansible/inventories/{{ my_name }}/config_files/config_starter.json.j2') | to_json }}"
     start_element:
       starter_json: "{{ var_config_starter }}"
     register: the_result

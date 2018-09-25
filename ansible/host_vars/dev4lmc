@@ -1,4 +1,4 @@
-ansible_ssh_host: levpro.devl4.camlab.kat.ac.za
+ansible_ssh_host: lmc.dev4.domain
 
 special_params:
     - name: spec1

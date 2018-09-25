@@ -1,40 +1,28 @@
 {
   "queue": {
     "first": {
-      "car": "bmw",
-      "year": "1990",
-      "model": "x3",
-      "color": "blue"
+      "key1": "value11",
+      "key2": "value21",
+      "key3": "value31",
+      "key4": "value41"
     },
     "second": {
-      "car": "bmw",
-      "year": "2000",
-      "model": "318",
-      "color": "red"
+      "key1": "value12",
+      "key2": "value22",
+      "key3": "value32",
+      "key4": "value42"
     },
     "3rd": {
-      "car": "ref5",
-      "year": "2000",
-      "model": "ref5",
-      "color": "colref5"
-    },
-    "4th": {
-      "car": "ref4",
-      "year": "2000",
-      "model": "ref4",
-      "color": "colref4"
-    },
-    "5th": {
-      "car": "ref",
-      "year": "2000",
-      "model": "ref",
-      "color": "colref"
+      "key1": "value13",
+      "key2": "value23",
+      "key3": "value33",
+      "key4": "value43"
     },
     "last": {
-      "car": "{{ my_id }}",
-      "year": "2000",
-      "model": "{{ my_name }}",
-      "color": "col{{my_id}}"
+      "key1": "{{ my_id }}",
+      "key2": "2000",
+      "key3": "{{ my_name }}",
+      "key4": "col{{my_id}}"
     }
   }
 }

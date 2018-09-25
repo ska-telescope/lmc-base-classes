@@ -180,6 +180,7 @@ cd ~/src/lmc-base-classes/ansible
 ./play-task.sh deregister_refelts.yml
 ./play-task.sh generate-sw
 ./play-task.sh install-sw
+./play-task.sh register-my-refelt local
 ```
 
 ### To configure a specific RefEltX TANGO facility and start its device servers (my_refelt)
@@ -208,17 +209,17 @@ Note: this may later be templated for RefElts (as it may be a useful pattern for
 
 (If need be, deregister previous registrations with:)
 ```
-ansible-playbook deregister_refelts.yml
+./play-task.sh deregister_refelts.yml
 ```
 
 
 Then do
 ```
-ansible-playbook register-my-refelt devXX
+./play-task.sh register-my-refelt devXX
 ```
 this produces the ansible command line (note the --limit):
 ```
-ansible-playbook -i hosts site.yml --limit devXX --tags register-my-refelt --verbose --ask-become-pass
+ansible-playbook -i hosts site.yml --limit devXX --tags register-my-refelt --verbose
 ```
 
 # NOTES:

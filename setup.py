@@ -8,7 +8,7 @@ from setuptools import setup, find_packages
 needs_pytest = {'pytest', 'test', 'ptr'}.intersection(sys.argv)
 pytest_runner = ['pytest-runner'] if needs_pytest else []
 
-setup(name="ska_lmc",
+setup(name="lmc_base_classes",
       description="Element Base Classes - Evolutionary Prototype",
       author="SKA Team",
       packages=find_packages(),

@@ -38,8 +38,9 @@ RUN apt-get install -y --force-yes \
 # Remove some packages from the base template
 RUN apt-get -y purge postfix
 
-# Upgrade pip to latest
-RUN pip install --upgrade pip
+# Upgrade pip to latest version that works nicely on Ubuntu 14.04
+# Also need a more recent version of setuptools
+RUN pip install --upgrade 'pip<10' setuptools
 
 # Installing ansible
 RUN add-apt-repository -y ppa:ansible/ansible
@@ -116,12 +117,10 @@ RUN pip install enum34 \
 
 # Pip install itango cli
 RUN pip install itango \
-                "six>=1.9.0" \
-                tango-admin
+                "six>=1.9.0"
 
 # Install tango java tools like pogo and jive
-RUN apt-get update \
- && apt-get install -y default-jre \
+RUN apt-get install -y default-jre \
                        liblog4j1.2-java
 RUN wget 'https://people.debian.org/~picca/libtango-java_9.2.5a-1_all.deb' -P /tmp/ \
  && dpkg -i /tmp/libtango-java_9.2.5a-1_all.deb \
@@ -146,6 +145,9 @@ RUN useradd -ms /bin/bash tango-cs \
  && echo tango-cs:tango | chpasswd \
  && echo "tango-cs ALL=(root) NOPASSWD:ALL" > /etc/sudoers.d/tango-cs \
  && chmod 0440 /etc/sudoers.d/tango-cs
+
+# create ipython profile to so that itango doesn't fail if ipython hasn't run yet
+RUN su tango-cs -c 'ipython profile create'
 
 # Create mount point, so we can create more files here when inside container,
 # with external volume mounted

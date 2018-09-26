@@ -146,6 +146,9 @@ RUN useradd -ms /bin/bash tango-cs \
  && echo "tango-cs ALL=(root) NOPASSWD:ALL" > /etc/sudoers.d/tango-cs \
  && chmod 0440 /etc/sudoers.d/tango-cs
 
+# create ipython profile to so that itango doesn't fail if ipython hasn't run yet
+RUN su tango-cs -c 'ipython profile create'
+
 # Create mount point, so we can create more files here when inside container,
 # with external volume mounted
 RUN mkdir /home/tango-cs/src \

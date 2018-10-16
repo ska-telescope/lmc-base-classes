@@ -118,7 +118,7 @@ class SKAMaster(SKABaseDevice):
         self._element_tel_state_device = ""
         self._element_database_device = ""
 
-        self._max_capabilities = {}
+        self._max_capabilities = {"cap1":10, "cap2":20}
         if self.MaxCapabilities:
             for max_capability in self.MaxCapabilities:
                 capability_type, max_capability_instances = max_capability.split(":")
@@ -167,6 +167,7 @@ class SKAMaster(SKABaseDevice):
 
     def read_availableCapabilities(self):
         # PROTECTED REGION ID(SKAMaster.availableCapabilities_read) ENABLED START #
+        print (self._available_capabilities)
         return convert_dict_to_list(self._available_capabilities)
         # PROTECTED REGION END #    //  SKAMaster.availableCapabilities_read
 

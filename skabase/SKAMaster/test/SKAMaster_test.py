@@ -78,7 +78,8 @@ class TestSKAMaster(object):
     def test_GetMetrics(self, tango_context):
         """Test for GetMetrics"""
         # PROTECTED REGION ID(SKAMaster.test_GetMetrics) ENABLED START #
-        assert tango_context.device.GetMetrics() == ""
+        #assert tango_context.device.GetMetrics() == ""
+        assert tango_context.device.GetMetrics() == {"attributes": [{"adminMode": {"name": "adminMode", "is_alarm": false, "attribute_type": "metric", "value": 0, "readonly": false, "polling_frequency": 0}, "healthState": {"name": "healthState", "is_alarm": false, "attribute_type": "metric", "value": 0, "readonly": true, "polling_frequency": 0}, "controlMode": {"name": "controlMode", "is_alarm": false, "attribute_type": "metric", "value": 0, "readonly": false, "polling_frequency": 0}}], "component": "tango://94d92a8221b1:36682/test/nodb/skamaster#dbase=no"}
         # PROTECTED REGION END #    //  SKAMaster.test_GetMetrics
 
     # PROTECTED REGION ID(SKAMaster.test_ToJson_decorators) ENABLED START #
@@ -94,7 +95,7 @@ class TestSKAMaster(object):
     def test_GetVersionInfo(self, tango_context):
         """Test for GetVersionInfo"""
         # PROTECTED REGION ID(SKAMaster.test_GetVersionInfo) ENABLED START #
-        assert tango_context.device.GetVersionInfo() == [""]
+        assert tango_context.device.GetVersionInfo() == ["SKAMaster, tangods-skabasedevice, 1.0.0, A generic base device for SKA."]
         # PROTECTED REGION END #    //  SKAMaster.test_GetVersionInfo
 
     # PROTECTED REGION ID(SKAMaster.test_isCapabilityAchievable_decorators) ENABLED START #
@@ -102,7 +103,7 @@ class TestSKAMaster(object):
     def test_isCapabilityAchievable(self, tango_context):
         """Test for isCapabilityAchievable"""
         # PROTECTED REGION ID(SKAMaster.test_isCapabilityAchievable) ENABLED START #
-        assert tango_context.device.isCapabilityAchievable([[0], [""]]) == False
+        assert tango_context.device.isCapabilityAchievable([[2], ["Cap1"]]) == False
         # PROTECTED REGION END #    //  SKAMaster.test_isCapabilityAchievable
 
     # PROTECTED REGION ID(SKAMaster.test_Reset_decorators) ENABLED START #
@@ -151,7 +152,7 @@ class TestSKAMaster(object):
     def test_buildState(self, tango_context):
         """Test for buildState"""
         # PROTECTED REGION ID(SKAMaster.test_buildState) ENABLED START #
-        assert tango_context.device.buildState == ''
+        assert tango_context.device.buildState == 'tangods-skabasedevice, 1.0.0, A generic base device for SKA.'
         # PROTECTED REGION END #    //  SKAMaster.test_buildState
 
     # PROTECTED REGION ID(SKAMaster.test_versionId_decorators) ENABLED START #
@@ -159,7 +160,7 @@ class TestSKAMaster(object):
     def test_versionId(self, tango_context):
         """Test for versionId"""
         # PROTECTED REGION ID(SKAMaster.test_versionId) ENABLED START #
-        assert tango_context.device.versionId == ''
+        assert tango_context.device.versionId == '1.0.0'
         # PROTECTED REGION END #    //  SKAMaster.test_versionId
 
     # PROTECTED REGION ID(SKAMaster.test_centralLoggingLevel_decorators) ENABLED START #
@@ -231,7 +232,7 @@ class TestSKAMaster(object):
     def test_maxCapabilities(self, tango_context):
         """Test for maxCapabilities"""
         # PROTECTED REGION ID(SKAMaster.test_maxCapabilities) ENABLED START #
-        assert tango_context.device.maxCapabilities == ('',)
+        assert tango_context.device.maxCapabilities == ('cap1:10', 'cap2:20') #('',)
         # PROTECTED REGION END #    //  SKAMaster.test_maxCapabilities
 
     # PROTECTED REGION ID(SKAMaster.test_availableCapabilities_decorators) ENABLED START #
@@ -239,7 +240,7 @@ class TestSKAMaster(object):
     def test_availableCapabilities(self, tango_context):
         """Test for availableCapabilities"""
         # PROTECTED REGION ID(SKAMaster.test_availableCapabilities) ENABLED START #
-        assert tango_context.device.availableCapabilities == ('',)
+        assert tango_context.device.availableCapabilities == ('cap1:10', 'cap2:20') #('',)
         # PROTECTED REGION END #    //  SKAMaster.test_availableCapabilities
 
 

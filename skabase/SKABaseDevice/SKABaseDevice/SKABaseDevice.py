@@ -442,6 +442,7 @@ class SKABaseDevice(Device):
         with exception_manager(self):
             defaults = {'with_value': False, 'with_commands': True,
                         'with_metrics': True, 'with_attributes': False}
+            #sys.stdout.write("Argin++++++" )
             args_dict = self._parse_argin(argin, defaults=defaults)
             device_dict = self._get_device_json(args_dict)
             argout = json.dumps(device_dict)

@@ -19,6 +19,7 @@ import pytest
 from mock import MagicMock
 
 from PyTango import DevState
+import json
 
 # PROTECTED REGION ID(SKABaseDevice.test_additional_imports) ENABLED START #
 # PROTECTED REGION END #    //  SKABaseDevice.test_additional_imports
@@ -44,7 +45,7 @@ class TestSKABaseDevice(object):
     def mocking(cls):
         """Mock external libraries."""
         # Example : Mock numpy
-        # cls.numpy = SKABaseDevice.numpy = MagicMock()
+        #cls.numpy = SKABaseDevice.numpy = MagicMock()
         # PROTECTED REGION ID(SKABaseDevice.test_mocking) ENABLED START #
         # PROTECTED REGION END #    //  SKABaseDevice.test_mocking
 
@@ -75,7 +76,8 @@ class TestSKABaseDevice(object):
     def test_GetMetrics(self, tango_context):
         """Test for GetMetrics"""
         # PROTECTED REGION ID(SKABaseDevice.test_GetMetrics) ENABLED START #
-        assert tango_context.device.GetMetrics() == ""
+        #assert tango_context.device.GetMetrics() == ""
+        assert tango_context.device.GetMetrics() == {"attributes": [{"adminMode": {"name": "adminMode", "is_alarm": false, "attribute_type": "metric", "value": 0, "readonly": false, "polling_frequency": 0}, "healthState": {"name": "healthState", "is_alarm": false, "attribute_type": "metric", "value": 0, "readonly": true, "polling_frequency": 0}, "controlMode": {"name": "controlMode", "is_alarm": false, "attribute_type": "metric", "value": 0, "readonly": false, "polling_frequency": 0}}], "component": "tango://94d92a8221b1:39142/test/nodb/skabasedevice#dbase=no"}
         # PROTECTED REGION END #    //  SKABaseDevice.test_GetMetrics
 
     # PROTECTED REGION ID(SKABaseDevice.test_ToJson_decorators) ENABLED START #
@@ -83,7 +85,7 @@ class TestSKABaseDevice(object):
     def test_ToJson(self, tango_context):
         """Test for ToJson"""
         # PROTECTED REGION ID(SKABaseDevice.test_ToJson) ENABLED START #
-        assert tango_context.device.ToJson("") == ""
+        assert tango_context.device.ToJson("") == "{'with_value': False, 'with_commands': True, 'with_metrics': True, 'with_attributes': False}"
         # PROTECTED REGION END #    //  SKABaseDevice.test_ToJson
 
     # PROTECTED REGION ID(SKABaseDevice.test_GetVersionInfo_decorators) ENABLED START #
@@ -91,7 +93,7 @@ class TestSKABaseDevice(object):
     def test_GetVersionInfo(self, tango_context):
         """Test for GetVersionInfo"""
         # PROTECTED REGION ID(SKABaseDevice.test_GetVersionInfo) ENABLED START #
-        assert tango_context.device.GetVersionInfo() == [""]
+        assert tango_context.device.GetVersionInfo() == ['SKABaseDevice, tangods-skabasedevice, 1.0.0, A generic base device for SKA.']
         # PROTECTED REGION END #    //  SKABaseDevice.test_GetVersionInfo
 
     # PROTECTED REGION ID(SKABaseDevice.test_Reset_decorators) ENABLED START #
@@ -108,7 +110,7 @@ class TestSKABaseDevice(object):
     def test_buildState(self, tango_context):
         """Test for buildState"""
         # PROTECTED REGION ID(SKABaseDevice.test_buildState) ENABLED START #
-        assert tango_context.device.buildState == ''
+        assert tango_context.device.buildState == 'tangods-skabasedevice, 1.0.0, A generic base device for SKA.'
         # PROTECTED REGION END #    //  SKABaseDevice.test_buildState
 
     # PROTECTED REGION ID(SKABaseDevice.test_versionId_decorators) ENABLED START #
@@ -116,7 +118,7 @@ class TestSKABaseDevice(object):
     def test_versionId(self, tango_context):
         """Test for versionId"""
         # PROTECTED REGION ID(SKABaseDevice.test_versionId) ENABLED START #
-        assert tango_context.device.versionId == ''
+        assert tango_context.device.versionId == '1.0.0'
         # PROTECTED REGION END #    //  SKABaseDevice.test_versionId
 
     # PROTECTED REGION ID(SKABaseDevice.test_centralLoggingLevel_decorators) ENABLED START #

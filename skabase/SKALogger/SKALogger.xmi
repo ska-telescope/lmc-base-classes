@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="ASCII"?>
 <pogoDsl:PogoSystem xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:pogoDsl="http://www.esrf.fr/tango/pogo/PogoDsl">
   <classes name="SKALogger" pogoRevision="9.6">
-    <description description="A generic base device for Logging for SKA." title="SKALogger" sourcePath="/home/pogo/src/lmc-base-classes/skabase/SKALogger" language="PythonHL" filestogenerate="XMI   file,Code files,Python Package,Protected Regions" license="none" copyright="" hasMandatoryProperty="false" hasConcreteProperty="true" hasAbstractCommand="false" hasAbstractAttribute="false">
+    <description description="A generic base device for Logging for SKA." title="SKALogger" sourcePath="/home/tango-cs/src/lmc-base-classes/skabase/SKALogger" language="PythonHL" filestogenerate="XMI   file,Code files,Python Package,Protected Regions,Sphinx" license="none" copyright="" hasMandatoryProperty="false" hasConcreteProperty="true" hasAbstractCommand="false" hasAbstractAttribute="false">
       <inheritances classname="Device_Impl" sourcePath=""/>
       <inheritances classname="SKABaseDevice" sourcePath="../SKABaseDevice"/>
       <identification contact="at ska.ac.za - cam" author="cam" emailDomain="ska.ac.za" classFamily="OtherInstruments" siteSpecific="" platform="All Platforms" bus="Not Applicable" manufacturer="SKASA" reference="SKA-SKALogger"/>
@@ -79,7 +79,7 @@
     </commands>
     <commands name="SetCentralLoggingLevel" description="Logging level to Central logging target:&#xA;(0=OFF, 1=FATAL, 2=ERROR, 3=WARNING, 4=INFO, 5=DEBUG)" execMethod="set_central_logging_level" displayLevel="OPERATOR" polledPeriod="0" isDynamic="false">
       <argin description="Central logging level for selected devices">
-        <type xsi:type="pogoDsl:StringType"/>
+        <type xsi:type="pogoDsl:LongStringArrayType"/>
       </argin>
       <argout description="No output arguments">
         <type xsi:type="pogoDsl:VoidType"/>
@@ -88,7 +88,7 @@
     </commands>
     <commands name="SetElementLoggingLevel" description="Logging level to Element logging target:&#xA;(0=OFF, 1=FATAL, 2=ERROR, 3=WARNING, 4=INFO, 5=DEBUG)" execMethod="set_element_logging_level" displayLevel="OPERATOR" polledPeriod="0" isDynamic="false">
       <argin description="Element logging level for selected devices">
-        <type xsi:type="pogoDsl:StringType"/>
+        <type xsi:type="pogoDsl:LongStringArrayType"/>
       </argin>
       <argout description="No output arguments">
         <type xsi:type="pogoDsl:VoidType"/>
@@ -97,7 +97,7 @@
     </commands>
     <commands name="SetStorageLoggingLevel" description="Logging level to Syslog storage logging target:&#xA;(0=OFF, 1=FATAL, 2=ERROR, 3=WARNING, 4=INFO, 5=DEBUG)" execMethod="set_storage_logging_level" displayLevel="OPERATOR" polledPeriod="0" isDynamic="false">
       <argin description="Storage logging level for selected devices">
-        <type xsi:type="pogoDsl:StringType"/>
+        <type xsi:type="pogoDsl:LongStringArrayType"/>
       </argin>
       <argout description="No output arguments">
         <type xsi:type="pogoDsl:VoidType"/>
@@ -214,6 +214,6 @@
     <states name="DISABLE" description="The device cannot be switched ON for an external reason. E.g. the power supply has its door open, the safety conditions are not satisfactory to allow the device to operate.">
       <status abstract="false" inherited="true" concrete="true"/>
     </states>
-    <preferences docHome="./doc_html" makefileHome="$(TANGO_HOME)"/>
+    <preferences docHome="./doc_html" makefileHome="/usr/share/pogo/preferences"/>
   </classes>
 </pogoDsl:PogoSystem>

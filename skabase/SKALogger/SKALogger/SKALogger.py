@@ -4,6 +4,8 @@
 #
 #
 #
+# Distributed under the terms of the none license.
+# See LICENSE.txt for more info.
 
 """ SKALogger
 
@@ -128,33 +130,86 @@ class SKALogger(SKABaseDevice):
         # PROTECTED REGION END #    //  SKALogger.Log
 
     @command(
-    dtype_in='str', 
+    dtype_in='DevVarLongStringArray', 
     doc_in="Central logging level for selected devices", 
     )
     @DebugIt()
     def SetCentralLoggingLevel(self, argin):
         # PROTECTED REGION ID(SKALogger.SetCentralLoggingLevel) ENABLED START #
-        pass
+        CentralLoggingLevel = argin[0][:]
+        CentralLoggingDevice = argin[1][:]
+        i = 0
+        while i < len(CentralLoggingLevel[:]):
+            self.info_stream("%s,%s", CentralLoggingLevel[i], CentralLoggingDevice[i])
+            dev1 = DeviceProxy(CentralLoggingDevice[i])
+            dev1.centralLoggingLevel = CentralLoggingLevel[i]
+            property_names = ["logging_level",
+                              "logging_target",
+                              ]
+            dev_properties = dev1.get_property(property_names)
+            dev_properties["logging_level"] = ["DEBUG"]
+            dev_properties["logging_target"].append("device::central/logger/1")
+            dev1.put_property(dev_properties)
+            dev1.add_logging_target("device::central/logger/1")
+            i += 1
         # PROTECTED REGION END #    //  SKALogger.SetCentralLoggingLevel
 
     @command(
-    dtype_in='str', 
+    dtype_in='DevVarLongStringArray', 
     doc_in="Element logging level for selected devices", 
     )
     @DebugIt()
     def SetElementLoggingLevel(self, argin):
         # PROTECTED REGION ID(SKALogger.SetElementLoggingLevel) ENABLED START #
-        pass
+        ElementLoggingLevel = argin[0][:]
+        ElementLoggingDevice = argin[1][:]
+        i = 0
+        while i < len(ElementLoggingLevel[:]):
+            self.info_stream("Element Logging level : %s, Device : %s", ElementLoggingLevel[i], ElementLoggingDevice[i])
+            logger.debug("Element Logging level : %s, Device : %s", ElementLoggingLevel[i], ElementLoggingDevice[i])
+            logger.info("Element Logging level : %s, Device : %s", ElementLoggingLevel[i], ElementLoggingDevice[i])
+            logger.warning("Element Logging level : %s, Device : %s", ElementLoggingLevel[i], ElementLoggingDevice[i])
+            logger.error("Element Logging level : %s, Device : %s", ElementLoggingLevel[i], ElementLoggingDevice[i])
+            logger.fatal("Element Logging level : %s, Device : %s", ElementLoggingLevel[i], ElementLoggingDevice[i])
+            dev1 = DeviceProxy(ElementLoggingDevice[i])
+            dev1.elementLoggingLevel = ElementLoggingLevel[i]
+            property_names = ["logging_level",
+                              "logging_target",
+                              "ElementLogger",
+                              "ElementLoglevel",
+                              "ServerHostName",
+                              ]
+            dev_properties = dev1.get_property(property_names)
+            dev_properties["logging_level"] = ["INFO"]
+            dev_properties["logging_target"] = ["device::localhost:10123/ref/elt/logger"]
+            dev_properties["ElementLogger"] = ["device::localhost:10123/ref/elt/logger"]
+            dev_properties["ElementLoglevel"] = [ElementLoggingLevel[i]]
+            dev_properties["ServerHostName"] = ["localhost"]
+            dev1.put_property(dev_properties)
+            dev1.add_logging_target("device::localhost:10123/ref/elt/logger")
+            i += 1
         # PROTECTED REGION END #    //  SKALogger.SetElementLoggingLevel
 
     @command(
-    dtype_in='str', 
+    dtype_in='DevVarLongStringArray', 
     doc_in="Storage logging level for selected devices", 
     )
     @DebugIt()
     def SetStorageLoggingLevel(self, argin):
         # PROTECTED REGION ID(SKALogger.SetStorageLoggingLevel) ENABLED START #
-        pass
+        StorageLoggingLevel = argin[0][:]
+        StorageLoggingDevice = argin[1][:]
+        i = 0
+        while i < len(StorageLoggingLevel[:]):
+            self.info_stream("Storage logging level : %s, Device : %s", StorageLoggingLevel[i], StorageLoggingDevice[i])
+            logger.debug("Storage logging level : %s, Device : %s", StorageLoggingLevel[i], StorageLoggingDevice[i])
+            logger.info("Storage logging level : %s, Device : %s", StorageLoggingLevel[i], StorageLoggingDevice[i])
+            logger.warning("Storage logging level : %s, Device : %s", StorageLoggingLevel[i], StorageLoggingDevice[i])
+            logger.error("Storage logging level : %s, Device : %s", StorageLoggingLevel[i], StorageLoggingDevice[i])
+            logger.fatal("Storage logging level : %s, Device : %s", StorageLoggingLevel[i], StorageLoggingDevice[i])
+            dev1 = DeviceProxy(StorageLoggingDevice[i])
+            dev1.storageLoggingLevel = StorageLoggingLevel[i]
+            i+=1
         # PROTECTED REGION END #    //  SKALogger.SetStorageLoggingLevel
 
 # ----------

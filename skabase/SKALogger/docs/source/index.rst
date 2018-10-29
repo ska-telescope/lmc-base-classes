@@ -1,2 +1,0 @@
-.. automodule:: SKALogger
-    :members: SKALogger

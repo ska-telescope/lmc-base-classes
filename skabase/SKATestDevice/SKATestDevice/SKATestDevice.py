@@ -4,6 +4,8 @@
 #
 #
 #
+# Distributed under the terms of the none license.
+# See LICENSE.txt for more info.
 
 """ SKATestDevice
 
@@ -20,7 +22,10 @@ from PyTango.server import device_property
 from PyTango import AttrQuality, DispLevel, DevState
 from PyTango import AttrWriteType, PipeWriteType
 from SKABaseDevice import SKABaseDevice
+import logging
 # Additional import
+logging.basicConfig()
+from logging.handlers import SysLogHandler
 # PROTECTED REGION ID(SKATestDevice.additionnal_import) ENABLED START #
 import json
 
@@ -29,6 +34,15 @@ from skabase.utils import (exception_manager, convert_api_value, coerce_value)
 
 __all__ = ["SKATestDevice", "main"]
 
+logger = logging.getLogger("SKATestDevice")
+#syslogs = SysLogHandler(address='/dev/log', facility='user')
+#formatter = logging.Formatter('%(name)s: %(levelname)s %(module)s %(message)r')
+#syslogs.setFormatter(formatter)
+#logger.addHandler(syslogs)
+
+ElementLogger = device_property(dtype=str, default_value="tango://localhost:10123/ref/elt/logger")
+#ElementLogger = "tango://localhost:10123/ref/elt/logger"
+logging_level = device_property(dtype=str, default_value="INFO")
 
 class SKATestDevice(SKABaseDevice):
     """
@@ -99,6 +113,7 @@ class SKATestDevice(SKABaseDevice):
     def init_device(self):
         SKABaseDevice.init_device(self)
         # PROTECTED REGION ID(SKATestDevice.init_device) ENABLED START #
+        logger.info("TurnOn Sending info")
         # PROTECTED REGION END #    //  SKATestDevice.init_device
 
     def always_executed_hook(self):
@@ -178,6 +193,68 @@ class SKATestDevice(SKABaseDevice):
                                    .format(group_name, sorted(self.groups.keys())))
         return argout
         # PROTECTED REGION END #    //  SKATestDevice.RunGroupCommand
+
+    # def devLogMsg(self, devlogmsg, devloglevel):
+    #     if self.elementLoggingLevel >= 1 and devloglevel == 1:
+    #         self.fatal_stream("%s", devlogmsg)
+    #         #            self.fatal_stream(devlogmsg, devlogtarget)
+    #     elif self.elementLoggingLevel >= 2 and devloglevel == 2:
+    #         self.error_stream("%s", devlogmsg)
+    #     elif self.elementLoggingLevel >= 3 and devloglevel == 3:
+    #         self.warn_stream("%s", devlogmsg)
+    #     elif self.elementLoggingLevel >= 4 and devloglevel == 4:
+    #         self.info_stream("%s", devlogmsg)
+    #     elif self.elementLoggingLevel >= 5 and devloglevel == 5:
+    #         self.debug_stream("%s", devlogmsg)
+    #     else:
+    #         pass
+
+
+    @command(
+    )
+    @DebugIt()
+    def On(self):
+        # PROTECTED REGION ID(SKATestDevice.On) ENABLED START #
+
+        # self.devLogMsg("TurnOn Sending DEBUG", 5)
+        # self.devLogMsg("TurnOn Sending INFO", 4)
+        # self.devLogMsg("TurnOn Sending WARNING", 3)
+        # self.devLogMsg("TurnOn Sending ERROR", 2)
+        # self.devLogMsg("TurnOn Sending FATAL", 1)
+
+        self.debug_stream("TurnOn Sending DEBUG")
+        self.info_stream("TurnOn Sending INFO")
+        self.warn_stream("TurnOn Sending WARNING")
+        self.error_stream("TurnOn Sending ERROR")
+        # self.fatal_stream("TurnOn Sending FATAL", "ellogger/elem/elem1")
+        self.fatal_stream("TurnOn Sending FATAL")
+
+        logger.debug("TurnOn Sending debug")
+        logger.info("TurnOn Sending info")
+        logger.warning("TurnOn Sending warn")
+        logger.error("TurnOn Sending error")
+        logger.fatal("TurnOn Sending fatal")
+        # PROTECTED REGION END #    //  SKATestDevice.On
+
+    @command(
+    )
+    @DebugIt()
+    def Stop(self):
+        # PROTECTED REGION ID(SKATestDevice.Stop) ENABLED START #
+
+        self.debug_stream("TurnOn Sending DEBUG")
+        self.info_stream("TurnOn Sending INFO")
+        self.warn_stream("TurnOn Sending WARNING")
+        self.error_stream("TurnOn Sending ERROR")
+        # self.fatal_stream("TurnOn Sending FATAL", "ellogger/elem/elem1")
+        self.fatal_stream("TurnOn Sending FATAL")
+
+        logger.debug("TurnOn Sending debug")
+        logger.info("TurnOn Sending info")
+        logger.warning("TurnOn Sending warn")
+        logger.error("TurnOn Sending error")
+        logger.fatal("TurnOn Sending fatal")
+        # PROTECTED REGION END #    //  SKATestDevice.Stop
 
 # ----------
 # Run server

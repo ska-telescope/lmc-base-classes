@@ -24,6 +24,8 @@ from PyTango import AttrWriteType, PipeWriteType
 import logging
 import json
 from PyTango import DeviceProxy, DevFailed
+import logging.handlers
+from logging.handlers import SysLogHandler
 
 from skabase.utils import (get_dp_command, exception_manager,
                            tango_type_conversion, coerce_value,
@@ -34,6 +36,7 @@ from skabase.SKABaseDevice import release
 from skabase.faults import GroupDefinitionsError
 
 MODULE_LOGGER = logging.getLogger(__name__)
+
 # PROTECTED REGION END #    //  SKABaseDevice.additionnal_import
 
 __all__ = ["SKABaseDevice", "main"]
@@ -287,14 +290,15 @@ class SKABaseDevice(Device):
         self._build_state = '{}, {}, {}'.format(release.name, release.version,
                                                 release.description)
         self._version_id = release.version
-        self._central_logging_level = 0
-        self._element_logging_level = 0
-        self._storage_logging_level = 0
+        self._central_logging_level = 5
+        self._element_logging_level = 5
+        self._storage_logging_level = 5
         self._health_state = 0
         self._admin_mode = 0
         self._control_mode = 0
         self._simulation_mode = False
         self._test_mode = ""
+        logger.setLevel(logging.DEBUG)
 
         # create TANGO Groups objects dict, according to property
         self.debug_stream("Groups definitions: {}".format(self.GroupDefinitions))
@@ -360,6 +364,18 @@ class SKABaseDevice(Device):
     def write_storageLoggingLevel(self, value):
         # PROTECTED REGION ID(SKABaseDevice.storageLoggingLevel_write) ENABLED START #
         self._storage_logging_level = value
+        if self._storage_logging_level == 1:
+            logger.setLevel(logging.FATAL)
+        elif self._storage_logging_level == 2:
+            logger.setLevel(logging.ERROR)
+        elif self._storage_logging_level == 3:
+            logger.setLevel(logging.WARNING)
+        elif self._storage_logging_level == 4:
+            logger.setLevel(logging.INFO)
+        elif self._storage_logging_level== 5:
+            logger.setLevel(logging.DEBUG)
+        else:
+            logger.setLevel(logging.DEBUG)
         # PROTECTED REGION END #    //  SKABaseDevice.storageLoggingLevel_write
 
     def read_healthState(self):

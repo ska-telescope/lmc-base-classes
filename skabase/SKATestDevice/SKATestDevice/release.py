@@ -15,6 +15,6 @@ version_info = version.split(".")
 description = """A generic Test device for testing SKA base class functionalites."""
 author = "cam"
 author_email = "cam at ska.ac.za"
-license = """none"""
+license = """BSD-3-Clause"""
 url = """www.tango-controls.org"""
 copyright = """"""

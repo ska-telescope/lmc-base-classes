@@ -290,15 +290,15 @@ class SKABaseDevice(Device):
         self._build_state = '{}, {}, {}'.format(release.name, release.version,
                                                 release.description)
         self._version_id = release.version
-        self._central_logging_level = 5
-        self._element_logging_level = 5
-        self._storage_logging_level = 5
+        self._central_logging_level = 0
+        self._element_logging_level = 0
+        self._storage_logging_level = 0
         self._health_state = 0
         self._admin_mode = 0
         self._control_mode = 0
         self._simulation_mode = False
         self._test_mode = ""
-        logger.setLevel(logging.DEBUG)
+        #logger.setLevel(logging.DEBUG)
 
         # create TANGO Groups objects dict, according to property
         self.debug_stream("Groups definitions: {}".format(self.GroupDefinitions))

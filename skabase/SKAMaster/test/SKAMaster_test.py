@@ -246,7 +246,7 @@ class TestSKAMaster(object):
     def test_availableCapabilities(self, tango_context):
         """Test for availableCapabilities"""
         # PROTECTED REGION ID(SKAMaster.test_availableCapabilities) ENABLED START #
-        assert tango_context.device.availableCapabilities == ('',)
+        assert tango_context.device.availableCapabilities == ('cap1:10', 'cap2:20') #('',)
         # PROTECTED REGION END #    //  SKAMaster.test_availableCapabilities
 
 

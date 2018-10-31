@@ -45,7 +45,7 @@ class TestSKABaseDevice(object):
     def mocking(cls):
         """Mock external libraries."""
         # Example : Mock numpy
-        # cls.numpy = SKABaseDevice.numpy = MagicMock()
+        #cls.numpy = SKABaseDevice.numpy = MagicMock()
         # PROTECTED REGION ID(SKABaseDevice.test_mocking) ENABLED START #
         # PROTECTED REGION END #    //  SKABaseDevice.test_mocking
 

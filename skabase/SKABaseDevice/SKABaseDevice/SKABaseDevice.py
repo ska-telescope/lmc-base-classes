@@ -364,18 +364,18 @@ class SKABaseDevice(Device):
     def write_storageLoggingLevel(self, value):
         # PROTECTED REGION ID(SKABaseDevice.storageLoggingLevel_write) ENABLED START #
         self._storage_logging_level = value
-        if self._storage_logging_level == 1:
-            logger.setLevel(logging.FATAL)
-        elif self._storage_logging_level == 2:
-            logger.setLevel(logging.ERROR)
-        elif self._storage_logging_level == 3:
-            logger.setLevel(logging.WARNING)
-        elif self._storage_logging_level == 4:
-            logger.setLevel(logging.INFO)
-        elif self._storage_logging_level== 5:
-            logger.setLevel(logging.DEBUG)
-        else:
-            logger.setLevel(logging.DEBUG)
+        # if self._storage_logging_level == 1:
+        #     logger.setLevel(logging.FATAL)
+        # elif self._storage_logging_level == 2:
+        #     logger.setLevel(logging.ERROR)
+        # elif self._storage_logging_level == 3:
+        #     logger.setLevel(logging.WARNING)
+        # elif self._storage_logging_level == 4:
+        #     logger.setLevel(logging.INFO)
+        # elif self._storage_logging_level== 5:
+        #     logger.setLevel(logging.DEBUG)
+        # else:
+        #     logger.setLevel(logging.DEBUG)
         # PROTECTED REGION END #    //  SKABaseDevice.storageLoggingLevel_write
 
     def read_healthState(self):

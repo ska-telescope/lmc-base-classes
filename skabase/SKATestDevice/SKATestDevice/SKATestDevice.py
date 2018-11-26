@@ -14,7 +14,7 @@ A generic Test device for testing SKA base class functionalites.
 
 # PyTango imports
 import PyTango
-from PyTango import DebugIt
+from PyTango import DebugIt, DeviceProxy
 from PyTango.server import run
 from PyTango.server import Device, DeviceMeta
 from PyTango.server import attribute, command
@@ -35,12 +35,14 @@ from skabase.utils import (exception_manager, convert_api_value, coerce_value)
 __all__ = ["SKATestDevice", "main"]
 
 logger = logging.getLogger("SKATestDevice")
-#syslogs = SysLogHandler(address='/dev/log', facility='user')
-#formatter = logging.Formatter('%(name)s: %(levelname)s %(module)s %(message)r')
-#syslogs.setFormatter(formatter)
-#logger.addHandler(syslogs)
+syslogs = SysLogHandler(address='/dev/log', facility='syslog')
+formatter = logging.Formatter('%(name)s: %(levelname)s %(module)s %(message)r')
+syslogs.setFormatter(formatter)
+logger.addHandler(syslogs)
 
 ElementLogger = device_property(dtype=str, default_value="tango://localhost:10123/ref/elt/logger")
+CentralLogger = device_property(dtype=str, default_value="tango://localhost:10123/central/logger/1")
+
 #ElementLogger = "tango://localhost:10123/ref/elt/logger"
 logging_level = device_property(dtype=str, default_value="INFO")
 
@@ -114,6 +116,10 @@ class SKATestDevice(SKABaseDevice):
         SKABaseDevice.init_device(self)
         # PROTECTED REGION ID(SKATestDevice.init_device) ENABLED START #
         logger.info("TurnOn Sending info")
+        self._storage_logging_level = 5
+        self._element_logging_level = 5
+        self._central_logging_level = 5
+        logger.setLevel(logging.DEBUG)
         # PROTECTED REGION END #    //  SKATestDevice.init_device
 
     def always_executed_hook(self):
@@ -150,7 +156,20 @@ class SKATestDevice(SKABaseDevice):
         return 0
         # PROTECTED REGION END #    //  SKATestDevice.configurationDelayExpected_read
 
-
+    def write_storageLoggingLevel(self, value):
+        self._storage_logging_level = value
+        if self._storage_logging_level == 1:
+            logger.setLevel(logging.FATAL)
+        elif self._storage_logging_level == 2:
+            logger.setLevel(logging.ERROR)
+        elif self._storage_logging_level == 3:
+            logger.setLevel(logging.WARNING)
+        elif self._storage_logging_level == 4:
+            logger.setLevel(logging.INFO)
+        elif self._storage_logging_level== 5:
+            logger.setLevel(logging.DEBUG)
+        else:
+            logger.setLevel(logging.DEBUG)
     # --------
     # Commands
     # --------
@@ -194,20 +213,46 @@ class SKATestDevice(SKABaseDevice):
         return argout
         # PROTECTED REGION END #    //  SKATestDevice.RunGroupCommand
 
-    # def devLogMsg(self, devlogmsg, devloglevel):
-    #     if self.elementLoggingLevel >= 1 and devloglevel == 1:
-    #         self.fatal_stream("%s", devlogmsg)
-    #         #            self.fatal_stream(devlogmsg, devlogtarget)
-    #     elif self.elementLoggingLevel >= 2 and devloglevel == 2:
-    #         self.error_stream("%s", devlogmsg)
-    #     elif self.elementLoggingLevel >= 3 and devloglevel == 3:
-    #         self.warn_stream("%s", devlogmsg)
-    #     elif self.elementLoggingLevel >= 4 and devloglevel == 4:
-    #         self.info_stream("%s", devlogmsg)
-    #     elif self.elementLoggingLevel >= 5 and devloglevel == 5:
-    #         self.debug_stream("%s", devlogmsg)
+    def devLogMsg(self, devlogmsg, devloglevel):
+
+        if self._element_logging_level >= 1 and devloglevel == 1:
+            self.fatal_stream("%s", devlogmsg)
+        elif self._element_logging_level >= 2 and devloglevel == 2:
+            self.error_stream("%s", devlogmsg)
+        elif self._element_logging_level >= 3 and devloglevel == 3:
+            self.warn_stream("%s", devlogmsg)
+        elif self._element_logging_level >= 4 and devloglevel == 4:
+            self.info_stream("%s", devlogmsg)
+        elif self._element_logging_level >= 5 and devloglevel == 5:
+            self.debug_stream("%s", devlogmsg)
     #     else:
     #         pass
+    #
+        if self._central_logging_level >= 1 and devloglevel == 1:
+            self.fatal_stream("%s", devlogmsg)
+        elif self._central_logging_level >= 2 and devloglevel == 2:
+            self.error_stream("%s", devlogmsg)
+        elif self._central_logging_level >= 3 and devloglevel == 3:
+            self.warn_stream("%s", devlogmsg)
+        elif self._central_logging_level >= 4 and devloglevel == 4:
+            self.info_stream("%s", devlogmsg)
+        elif self._central_logging_level >= 5 and devloglevel == 5:
+            self.debug_stream("%s", devlogmsg)
+
+
+        if self._storage_logging_level >= 1 and devloglevel == 1:
+            logger.fatal("%s", devlogmsg)
+        elif self._storage_logging_level >= 2 and devloglevel == 2:
+            logger.error("%s", devlogmsg)
+        elif self._storage_logging_level >= 3 and devloglevel == 3:
+            logger.warn("%s", devlogmsg)
+        elif self._storage_logging_level >= 4 and devloglevel == 4:
+            logger.info("%s", devlogmsg)
+        elif self._storage_logging_level >= 5 and devloglevel == 5:
+            logger.debug("%s", devlogmsg)
+        else:
+            pass
+
 
 
     @command(
@@ -216,24 +261,12 @@ class SKATestDevice(SKABaseDevice):
     def On(self):
         # PROTECTED REGION ID(SKATestDevice.On) ENABLED START #
 
-        # self.devLogMsg("TurnOn Sending DEBUG", 5)
-        # self.devLogMsg("TurnOn Sending INFO", 4)
-        # self.devLogMsg("TurnOn Sending WARNING", 3)
-        # self.devLogMsg("TurnOn Sending ERROR", 2)
-        # self.devLogMsg("TurnOn Sending FATAL", 1)
+        self.devLogMsg("TurnOn Sending DEBUG", 5)
+        self.devLogMsg("TurnOn Sending INFO", 4)
+        self.devLogMsg("TurnOn Sending WARNING", 3)
+        self.devLogMsg("TurnOn Sending ERROR", 2)
+        self.devLogMsg("TurnOn Sending FATAL", 1)
 
-        self.debug_stream("TurnOn Sending DEBUG")
-        self.info_stream("TurnOn Sending INFO")
-        self.warn_stream("TurnOn Sending WARNING")
-        self.error_stream("TurnOn Sending ERROR")
-        # self.fatal_stream("TurnOn Sending FATAL", "ellogger/elem/elem1")
-        self.fatal_stream("TurnOn Sending FATAL")
-
-        logger.debug("TurnOn Sending debug")
-        logger.info("TurnOn Sending info")
-        logger.warning("TurnOn Sending warn")
-        logger.error("TurnOn Sending error")
-        logger.fatal("TurnOn Sending fatal")
         # PROTECTED REGION END #    //  SKATestDevice.On
 
     @command(
@@ -242,19 +275,15 @@ class SKATestDevice(SKABaseDevice):
     def Stop(self):
         # PROTECTED REGION ID(SKATestDevice.Stop) ENABLED START #
 
-        self.debug_stream("TurnOn Sending DEBUG")
-        self.info_stream("TurnOn Sending INFO")
-        self.warn_stream("TurnOn Sending WARNING")
-        self.error_stream("TurnOn Sending ERROR")
-        # self.fatal_stream("TurnOn Sending FATAL", "ellogger/elem/elem1")
-        self.fatal_stream("TurnOn Sending FATAL")
+        self.devLogMsg("TurnOFF Sending DEBUG", 5)
+        self.devLogMsg("TurnOFF Sending INFO", 4)
+        self.devLogMsg("TurnOFF Sending WARNING", 3)
+        self.devLogMsg("TurnOFF Sending ERROR", 2)
+        self.devLogMsg("TurnOFF Sending FATAL", 1)
 
-        logger.debug("TurnOn Sending debug")
-        logger.info("TurnOn Sending info")
-        logger.warning("TurnOn Sending warn")
-        logger.error("TurnOn Sending error")
-        logger.fatal("TurnOn Sending fatal")
         # PROTECTED REGION END #    //  SKATestDevice.Stop
+
+
 
 # ----------
 # Run server

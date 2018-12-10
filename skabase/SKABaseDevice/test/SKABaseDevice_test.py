@@ -5,6 +5,8 @@
 #
 #
 #
+# Distributed under the terms of the none license.
+# See LICENSE.txt for more info.
 #########################################################################################
 """Contain the tests for the SKABASE."""
 
@@ -34,7 +36,6 @@ class TestSKABaseDevice(object):
 
     properties = {
         'SkaLevel': '4',
-        'MetricList': 'healthState',
         'GroupDefinitions': '',
         'CentralLoggingTarget': '',
         'ElementLoggingTarget': '',
@@ -45,7 +46,7 @@ class TestSKABaseDevice(object):
     def mocking(cls):
         """Mock external libraries."""
         # Example : Mock numpy
-        #cls.numpy = SKABaseDevice.numpy = MagicMock()
+        # cls.numpy = SKABaseDevice.numpy = MagicMock()
         # PROTECTED REGION ID(SKABaseDevice.test_mocking) ENABLED START #
         # PROTECTED REGION END #    //  SKABaseDevice.test_mocking
 
@@ -70,22 +71,6 @@ class TestSKABaseDevice(object):
         # PROTECTED REGION ID(SKABaseDevice.test_Status) ENABLED START #
         assert tango_context.device.Status() == "The device is in UNKNOWN state."
         # PROTECTED REGION END #    //  SKABaseDevice.test_Status
-
-    # PROTECTED REGION ID(SKABaseDevice.test_GetMetrics_decorators) ENABLED START #
-    # PROTECTED REGION END #    //  SKABaseDevice.test_GetMetrics_decorators
-    # def test_GetMetrics(self, tango_context):
-    #    """Test for GetMetrics"""
-    #    # PROTECTED REGION ID(SKABaseDevice.test_GetMetrics) ENABLED START #
-    #    assert tango_context.device.GetMetrics() == ""
-    #    # PROTECTED REGION END #    //  SKABaseDevice.test_GetMetrics
-
-    # PROTECTED REGION ID(SKABaseDevice.test_ToJson_decorators) ENABLED START #
-    # PROTECTED REGION END #    //  SKABaseDevice.test_ToJson_decorators
-    # def test_ToJson(self, tango_context):
-    #    """Test for ToJson"""
-    #    # PROTECTED REGION ID(SKABaseDevice.test_ToJson) ENABLED START #
-    #    assert tango_context.device.ToJson("") == ""
-    #    # PROTECTED REGION END #    //  SKABaseDevice.test_ToJson
 
     # PROTECTED REGION ID(SKABaseDevice.test_GetVersionInfo_decorators) ENABLED START #
     # PROTECTED REGION END #    //  SKABaseDevice.test_GetVersionInfo_decorators

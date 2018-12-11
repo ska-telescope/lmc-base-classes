@@ -4,6 +4,8 @@
 #
 #
 #
+# Distributed under the terms of the none license.
+# See LICENSE.txt for more info.
 
 """ SKAMaster
 
@@ -118,7 +120,7 @@ class SKAMaster(SKABaseDevice):
         self._element_tel_state_device = ""
         self._element_database_device = ""
 
-        self._max_capabilities = {"cap1":10, "cap2":20}
+        self._max_capabilities = {}
         if self.MaxCapabilities:
             for max_capability in self.MaxCapabilities:
                 capability_type, max_capability_instances = max_capability.split(":")
@@ -167,7 +169,6 @@ class SKAMaster(SKABaseDevice):
 
     def read_availableCapabilities(self):
         # PROTECTED REGION ID(SKAMaster.availableCapabilities_read) ENABLED START #
-        print (self._available_capabilities)
         return convert_dict_to_list(self._available_capabilities)
         # PROTECTED REGION END #    //  SKAMaster.availableCapabilities_read
 
@@ -179,7 +180,7 @@ class SKAMaster(SKABaseDevice):
     @command(
     dtype_in='DevVarLongStringArray', 
     doc_in="[nrInstances][Capability types]", 
-    dtype_out='bool', 
+    dtype_out='bool',
     )
     @DebugIt()
     def isCapabilityAchievable(self, argin):

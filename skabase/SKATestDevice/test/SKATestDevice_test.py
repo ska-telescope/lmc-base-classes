@@ -60,17 +60,21 @@ class TestSKATestDevice(object):
         # PROTECTED REGION END #    //  SKATestDevice.test_properties
         pass
 
-    def test_GetMetrics(self, tango_context):
-        """Test for GetMetrics"""
-        # PROTECTED REGION ID(SKATestDevice.test_GetMetrics) ENABLED START #
-        assert tango_context.device.GetMetrics() == ""
-        # PROTECTED REGION END #    //  SKATestDevice.test_GetMetrics
+    # PROTECTED REGION ID(SKATestDevice.test_GetMetrics_decorators) ENABLED START #
+    # PROTECTED REGION END #    //  SKATestDevice.test_GetMetrics_decorators
+    # def test_GetMetrics(self, tango_context):
+    #    """Test for GetMetrics"""
+    #    # PROTECTED REGION ID(SKATestDevice.test_GetMetrics) ENABLED START #
+    #    assert tango_context.device.GetMetrics() == ""
+    #    # PROTECTED REGION END #    //  SKATestDevice.test_GetMetrics
 
-    def test_ToJson(self, tango_context):
-        """Test for ToJson"""
-        # PROTECTED REGION ID(SKATestDevice.test_ToJson) ENABLED START #
-        assert tango_context.device.ToJson("") == ""
-        # PROTECTED REGION END #    //  SKATestDevice.test_ToJson
+    # PROTECTED REGION ID(SKATestDevice.test_ToJson_decorators) ENABLED START #
+    # PROTECTED REGION END #    //  SKATestDevice.test_ToJson_decorators
+    # def test_ToJson(self, tango_context):
+    #    """Test for ToJson"""
+    #    # PROTECTED REGION ID(SKATestDevice.test_ToJson) ENABLED START #
+    #    assert tango_context.device.ToJson("") == ""
+    #    # PROTECTED REGION END #    //  SKATestDevice.test_ToJson
 
     def test_GetVersionInfo(self, tango_context):
         """Test for GetVersionInfo"""

@@ -246,7 +246,7 @@
     <states name="DISABLE" description="The device cannot be switched ON for an external reason. E.g. the power supply has its door open, the safety conditions are not satisfactory to allow the device to operate.">
       <status abstract="false" inherited="true" concrete="true"/>
     </states>
-    <preferences docHome="./doc_html" makefileHome="/usr/share/pogo/preferences"/>
+    <preferences docHome="./doc_html" makefileHome="$(TANGO_HOME)"/>
     <overlodedPollPeriodObject name="centralLoggingLevel" type="attribute" pollPeriod="0"/>
     <overlodedPollPeriodObject name="elementLoggingLevel" type="attribute" pollPeriod="0"/>
     <overlodedPollPeriodObject name="storageLoggingLevel" type="attribute" pollPeriod="0"/>

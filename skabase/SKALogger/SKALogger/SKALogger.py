@@ -108,6 +108,7 @@ class SKALogger(SKABaseDevice):
     dtype_in=('str',),
     doc_in="Details of timestamp, logging level, source device and message.",
     dtype_out='str',
+    doc_out="Returns the logging message."
     )
     @DebugIt()
     def Log(self, argin):

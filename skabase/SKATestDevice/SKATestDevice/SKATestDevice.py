@@ -137,15 +137,15 @@ class SKATestDevice(SKABaseDevice):
 
     def write_storageLoggingLevel(self, value):
         self._storage_logging_level = value
-        if self._storage_logging_level == 1:
+        if self._storage_logging_level == int(tango.LogLevel.LOG_FATAL):
             logger.setLevel(logging.FATAL)
-        elif self._storage_logging_level == 2:
+        elif self._storage_logging_level == int(tango.LogLevel.LOG_ERROR):
             logger.setLevel(logging.ERROR)
-        elif self._storage_logging_level == 3:
+        elif self._storage_logging_level == int(tango.LogLevel.LOG_WARNING):
             logger.setLevel(logging.WARNING)
-        elif self._storage_logging_level == 4:
+        elif self._storage_logging_level == int(tango.LogLevel.LOG_INFO):
             logger.setLevel(logging.INFO)
-        elif self._storage_logging_level== 5:
+        elif self._storage_logging_level== int(tango.LogLevel.LOG_DEBUG):
             logger.setLevel(logging.DEBUG)
         else:
             logger.setLevel(logging.DEBUG)

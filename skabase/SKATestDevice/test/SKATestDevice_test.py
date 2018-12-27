@@ -39,7 +39,10 @@ class TestSKATestDevice(object):
     # PROTECTED REGION ID(SKATestDevice.test_additionnal_import) ENABLED START #
     # PROTECTED REGION END #    //  SKATestDevice.test_additionnal_import
 
-    properties = {'SkaLevel': '4', 'CentralLoggingTarget': '', 'ElementLoggingTarget': '', 'StorageLoggingTarget': 'localhost', 'CentralLoggingLevelDefault': '', 'ElementLoggingLevelDefault': '', 'StorageLoggingLevelStorage': '', 'MetricList': 'healthState', 'GroupDefinitions': '', 'StorageLoggingLevelDefault': '', 
+    properties = {'SkaLevel': '4', 'CentralLoggingTarget': '', 'ElementLoggingTarget': '',
+                  'StorageLoggingTarget': 'localhost', 'CentralLoggingLevelDefault': '',
+                  'ElementLoggingLevelDefault': '', 'StorageLoggingLevelStorage': '', 'MetricList': 'healthState',
+                  'GroupDefinitions': '', 'StorageLoggingLevelDefault': '',
                   }
 
 

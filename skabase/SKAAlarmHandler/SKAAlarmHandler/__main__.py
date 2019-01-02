@@ -5,5 +5,9 @@
 #
 #
 
+""" __main__
+Main module of SKAAlarmHandler base class.
+"""
+
 from SKAAlarmHandler import main
 main()

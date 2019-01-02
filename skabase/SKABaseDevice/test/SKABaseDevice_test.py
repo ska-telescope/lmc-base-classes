@@ -17,8 +17,7 @@ sys.path.insert(0, os.path.abspath(path))
 # Imports
 import pytest
 from mock import MagicMock
-
-from PyTango import DevState
+from tango import DevState
 
 # PROTECTED REGION ID(SKABaseDevice.test_additional_imports) ENABLED START #
 # PROTECTED REGION END #    //  SKABaseDevice.test_additional_imports
@@ -45,7 +44,8 @@ class TestSKABaseDevice(object):
         """Mock external libraries."""
         # Example : Mock numpy
         # cls.numpy = SKABaseDevice.numpy = MagicMock()
-        # PROTECTED REGION ID(SKABaseDevice.test_mocking) ENABLED START #
+        # PROTECTED REGION ID(SKABaseDevice.test_mocking)
+        # ENABLED START #
         # PROTECTED REGION END #    //  SKABaseDevice.test_mocking
 
     def test_properties(self, tango_context):

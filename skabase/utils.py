@@ -10,65 +10,65 @@ import sys
 from collections import OrderedDict, Counter
 from datetime import datetime
 
-import PyTango
-from PyTango import (DeviceProxy, DbDatum, DevState, DbDevInfo, AttrQuality,
+import tango
+from tango import (DeviceProxy, DbDatum, DevState, DbDevInfo, AttrQuality,
                      AttrWriteType, Except, ErrSeverity)
-from PyTango._PyTango import DevState as _DevState
+from tango._tango import DevState as _DevState
 from contextlib import contextmanager
 
 from .faults import GroupDefinitionsError
 
 
-int_types = {PyTango._PyTango.CmdArgType.DevUShort,
-             PyTango._PyTango.CmdArgType.DevLong,
-             PyTango._PyTango.CmdArgType.DevInt,
-             PyTango._PyTango.CmdArgType.DevULong,
-             PyTango._PyTango.CmdArgType.DevULong64,
-             PyTango._PyTango.CmdArgType.DevLong64,
-             PyTango._PyTango.CmdArgType.DevShort}
+int_types = {tango._tango.CmdArgType.DevUShort,
+             tango._tango.CmdArgType.DevLong,
+             tango._tango.CmdArgType.DevInt,
+             tango._tango.CmdArgType.DevULong,
+             tango._tango.CmdArgType.DevULong64,
+             tango._tango.CmdArgType.DevLong64,
+             tango._tango.CmdArgType.DevShort}
 
-float_types = {PyTango._PyTango.CmdArgType.DevDouble,
-               PyTango._PyTango.CmdArgType.DevFloat}
+float_types = {tango._tango.CmdArgType.DevDouble,
+               tango._tango.CmdArgType.DevFloat}
 
 # TBD - investigate just using (command argin data_type)
-tango_type_conversion = {PyTango.CmdArgType.DevUShort.real: 'int',
-                         PyTango.CmdArgType.DevLong.real: 'int',
-                         PyTango.CmdArgType.DevInt.real: 'int',
-                         PyTango.CmdArgType.DevULong.real: 'int',
-                         PyTango.CmdArgType.DevULong64.real: 'int',
-                         PyTango.CmdArgType.DevLong64.real: 'int',
-                         PyTango.CmdArgType.DevShort.real: 'int',
-                         PyTango.CmdArgType.DevDouble.real: 'float',
-                         PyTango.CmdArgType.DevFloat.real: 'float',
-                         PyTango.CmdArgType.DevString.real: 'str',
-                         PyTango.CmdArgType.DevBoolean.real: 'bool',
-                         PyTango.CmdArgType.DevEncoded.real: 'encoded',
-                         PyTango.CmdArgType.DevState.real: 'state',
-                         PyTango.CmdArgType.DevVoid.real: 'void',
-                         PyTango.CmdArgType.DevEnum.real: 'enum',
+tango_type_conversion = {tango.CmdArgType.DevUShort.real: 'int',
+                         tango.CmdArgType.DevLong.real: 'int',
+                         tango.CmdArgType.DevInt.real: 'int',
+                         tango.CmdArgType.DevULong.real: 'int',
+                         tango.CmdArgType.DevULong64.real: 'int',
+                         tango.CmdArgType.DevLong64.real: 'int',
+                         tango.CmdArgType.DevShort.real: 'int',
+                         tango.CmdArgType.DevDouble.real: 'float',
+                         tango.CmdArgType.DevFloat.real: 'float',
+                         tango.CmdArgType.DevString.real: 'str',
+                         tango.CmdArgType.DevBoolean.real: 'bool',
+                         tango.CmdArgType.DevEncoded.real: 'encoded',
+                         tango.CmdArgType.DevState.real: 'state',
+                         tango.CmdArgType.DevVoid.real: 'void',
+                         tango.CmdArgType.DevEnum.real: 'enum',
                          }
-# TBD - not all PyTango types are used
-# PyTango.CmdArgType.ConstDevString           PyTango.CmdArgType.DevState
-# PyTango.CmdArgType.DevVarLong64Array        PyTango.CmdArgType.conjugate
-# PyTango.CmdArgType.DevBoolean               PyTango.CmdArgType.DevString
-# PyTango.CmdArgType.DevVarLongArray          PyTango.CmdArgType.denominator
-# PyTango.CmdArgType.DevDouble                PyTango.CmdArgType.DevUChar
-# PyTango.CmdArgType.DevVarLongStringArray    PyTango.CmdArgType.imag
-# PyTango.CmdArgType.DevEncoded               PyTango.CmdArgType.DevULong
-# PyTango.CmdArgType.DevVarShortArray         PyTango.CmdArgType.mro
-# PyTango.CmdArgType.DevEnum                  PyTango.CmdArgType.DevULong64
-# PyTango.CmdArgType.DevVarStateArray         PyTango.CmdArgType.name
-# PyTango.CmdArgType.DevFloat                 PyTango.CmdArgType.DevUShort
-# PyTango.CmdArgType.DevVarStringArray        PyTango.CmdArgType.names
-# PyTango.CmdArgType.DevInt                   PyTango.CmdArgType.DevVarBooleanArray
-# PyTango.CmdArgType.DevVarULong64Array       PyTango.CmdArgType.numerator
-# PyTango.CmdArgType.DevLong                  PyTango.CmdArgType.DevVarCharArray
-# PyTango.CmdArgType.DevVarULongArray         PyTango.CmdArgType.real
-# PyTango.CmdArgType.DevLong64                PyTango.CmdArgType.DevVarDoubleArray
-# PyTango.CmdArgType.DevVarUShortArray        PyTango.CmdArgType.values
-# PyTango.CmdArgType.DevPipeBlob              PyTango.CmdArgType.DevVarDoubleStringArray
-# PyTango.CmdArgType.DevVoid
-# PyTango.CmdArgType.DevShort                 PyTango.CmdArgType.DevVarFloatArray
+# TBD - not all tango types are used
+# tango.CmdArgType.ConstDevString           tango.CmdArgType.DevState
+# tango.CmdArgType.DevVarLong64Array        tango.CmdArgType.conjugate
+# tango.CmdArgType.DevBoolean               tango.CmdArgType.DevString
+# tango.CmdArgType.DevVarLongArray          tango.CmdArgType.denominator
+# tango.CmdArgType.DevDouble                tango.CmdArgType.DevUChar
+# tango.CmdArgType.DevVarLongStringArray    tango.CmdArgType.imag
+# tango.CmdArgType.DevEncoded               tango.CmdArgType.DevULong
+# tango.CmdArgType.DevVarShortArray         tango.CmdArgType.mro
+# tango.CmdArgType.DevEnum                  tango.CmdArgType.DevULong64
+# tango.CmdArgType.DevVarStateArray         tango.CmdArgType.name
+# tango.CmdArgType.DevFloat                 tango.CmdArgType.DevUShort
+# tango.CmdArgType.DevVarStringArray        tango.CmdArgType.names
+# tango.CmdArgType.DevInt                   tango.CmdArgType.DevVarBooleanArray
+# tango.CmdArgType.DevVarULong64Array       tango.CmdArgType.numerator
+# tango.CmdArgType.DevLong                  tango.CmdArgType.DevVarCharArray
+# tango.CmdArgType.DevVarULongArray         tango.CmdArgType.real
+# tango.CmdArgType.DevLong64                tango.CmdArgType.DevVarDoubleArray
+# tango.CmdArgType.DevVarUShortArray        tango.CmdArgType.values
+# tango.CmdArgType.DevPipeBlob              tango.CmdArgType.DevVarDoubleStringArray
+# tango.CmdArgType.DevVoid
+# tango.CmdArgType.DevShort                 tango.CmdArgType.DevVarFloatArray
 
 
 @contextmanager
@@ -76,7 +76,7 @@ def exception_manager(cls, arguments="", callback=None):
     try:
         yield
 
-    except PyTango.DevFailed as df:
+    except tango.DevFailed as df:
         # Find caller from the relative point of this executing handler
         curframe = inspect.currentframe()
         calframe = inspect.getouterframes(curframe, 2)
@@ -98,7 +98,7 @@ def exception_manager(cls, arguments="", callback=None):
         if callback:
             callback()
 
-        PyTango.Except.re_throw_exception(df,
+        tango.Except.re_throw_exception(df,
                                           "SKA_CommandFailed",
                                           message,
                                           class_name + "::" + calframe[2][3])
@@ -124,7 +124,7 @@ def exception_manager(cls, arguments="", callback=None):
         if callback:
             callback()
 
-        PyTango.Except.throw_exception("SKA_CommandFailed",
+        tango.Except.throw_exception("SKA_CommandFailed",
                                        message,
                                        class_name + "::" + calframe[2][3])
 
@@ -179,8 +179,8 @@ def convert_api_value(param_dict):
 
 def coerce_value(value):
     # Enum is not serialised correctly as json
-    # _DevState  is PyTango._PyTango.DevState
-    # because DevState  is PyTango._PyTango.DevState != PyTango.DevState
+    # _DevState  is tango._tango.DevState
+    # because DevState  is tango._tango.DevState != tango.DevState
     if type(value) in [DevState, _DevState]:
         return str(value)
     return value
@@ -200,18 +200,18 @@ def get_dp_attribute(device_proxy, attribute, with_value=False, with_context=Fal
     }
 
     # TBD - use tango_type_conversion dict, or just str(attribute.data_format)
-    if attribute.data_format == PyTango._PyTango.AttrDataFormat.SCALAR:
+    if attribute.data_format == tango._tango.AttrDataFormat.SCALAR:
         if attribute.data_type in int_types:
             attr_dict["data_type"] = "int"
         elif attribute.data_type in float_types:
             attr_dict["data_type"] = "float"
-        elif attribute.data_type == PyTango._PyTango.CmdArgType.DevString:
+        elif attribute.data_type == tango._tango.CmdArgType.DevString:
             attr_dict["data_type"] = "str"
-        elif attribute.data_type == PyTango._PyTango.CmdArgType.DevBoolean:
+        elif attribute.data_type == tango._tango.CmdArgType.DevBoolean:
             attr_dict["data_type"] = "bool"
-        elif attribute.data_type == PyTango._PyTango.CmdArgType.DevEncoded:
+        elif attribute.data_type == tango._tango.CmdArgType.DevEncoded:
             attr_dict["data_type"] = "encoded"
-        elif attribute.data_type == PyTango._PyTango.CmdArgType.DevVoid:
+        elif attribute.data_type == tango._tango.CmdArgType.DevVoid:
             attr_dict["data_type"] = "void"
     else:
         # Data types we aren't really going to represent
@@ -445,7 +445,7 @@ def _build_group(definition):
     devices = definition.get('devices', [])
     subgroups = definition.get('subgroups', [])
 
-    group = PyTango.Group(group_name)
+    group = tango.Group(group_name)
     for device_name in devices:
         group.add(device_name)
     for subgroup_definition in subgroups:
@@ -470,7 +470,7 @@ def validate_capability_types(
         A list of strings representing capability types.
     Raises
     ------
-    PyTango.DevFailed: If any of the capabilities requested are not valid.
+    tango.DevFailed: If any of the capabilities requested are not valid.
     """
     invalid_capabilities = list(
         set(requested_capabilities) - set(valid_capabilities))
@@ -489,12 +489,12 @@ def validate_input_sizes(command_name, argin):
     ----------
     command_name: str
         The name of the command which is to be executed.
-    argin: PyTango.DevVarLongStringArray
+    argin: tango.DevVarLongStringArray
         A tuple of two lists.
 
     Raises
     ------
-    PyTango.DevFailed: If the two lists are not equal in length.
+    tango.DevFailed: If the two lists are not equal in length.
     """
     capabilities_instances, capability_types = argin
     if len(capabilities_instances) != len(capability_types):

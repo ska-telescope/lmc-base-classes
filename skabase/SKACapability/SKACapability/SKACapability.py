@@ -10,15 +10,12 @@
 Subarray handling device
 """
 
-# PyTango imports
-import PyTango
-from PyTango import DebugIt
-from PyTango.server import run
-from PyTango.server import Device, DeviceMeta
-from PyTango.server import attribute, command
-from PyTango.server import device_property
-from PyTango import AttrQuality, DispLevel, DevState
-from PyTango import AttrWriteType, PipeWriteType
+# tango imports
+from tango import DebugIt
+from tango.server import run
+from tango.server import DeviceMeta
+from tango.server import attribute, command
+from tango.server import device_property
 from SKAObsDevice import SKAObsDevice
 # Additional import
 # PROTECTED REGION ID(SKACapability.additionnal_import) ENABLED START #
@@ -38,12 +35,6 @@ class SKACapability(SKAObsDevice):
     # -----------------
     # Device Properties
     # -----------------
-
-
-
-
-
-
 
     CapType = device_property(
         dtype='str',
@@ -69,23 +60,10 @@ class SKACapability(SKAObsDevice):
         doc="Time of activation in seconds since Unix epoch.",
     )
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
     configuredInstances = attribute(
         dtype='uint16',
-        doc="Number of instances of this Capability Type currently in use on this subarray.",
+        doc="Number of instances of this Capability Type currently in use "
+            "on this subarray.",
     )
 
     usedComponents = attribute(
@@ -122,16 +100,28 @@ class SKACapability(SKAObsDevice):
 
     def read_activationTime(self):
         # PROTECTED REGION ID(SKACapability.activationTime_read) ENABLED START #
+        """
+        Time of activation in seconds since Unix epoch.
+        :return: The time since device is activated.
+        """
         return self._activation_time
         # PROTECTED REGION END #    //  SKACapability.activationTime_read
 
     def read_configuredInstances(self):
         # PROTECTED REGION ID(SKACapability.configuredInstances_read) ENABLED START #
+        """
+        Reads the configuredInstances attribute
+        :return: The number of configured instances.
+        """
         return self._configured_instances
         # PROTECTED REGION END #    //  SKACapability.configuredInstances_read
 
     def read_usedComponents(self):
         # PROTECTED REGION ID(SKACapability.usedComponents_read) ENABLED START #
+        """
+        Reads usedComponents attributes
+        :return: The number of components currently in use.
+        """
         return self._used_components
         # PROTECTED REGION END #    //  SKACapability.usedComponents_read
 
@@ -141,12 +131,18 @@ class SKACapability(SKAObsDevice):
     # --------
 
     @command(
-    dtype_in='uint16', 
-    doc_in="The number of instances to configure for this Capability.", 
+    dtype_in='uint16',
+    doc_in="The number of instances to configure for this Capability.",
     )
     @DebugIt()
     def ConfigureInstances(self, argin):
         # PROTECTED REGION ID(SKACapability.ConfigureInstances) ENABLED START #
+        """
+        This function indicates how many number of instances of the current capacity
+        should to be configured.
+        :param argin: Number of instnace to configure
+        :return: None.
+        """
         self._configured_instances = argin
         # PROTECTED REGION END #    //  SKACapability.ConfigureInstances
 
@@ -157,6 +153,7 @@ class SKACapability(SKAObsDevice):
 
 def main(args=None, **kwargs):
     # PROTECTED REGION ID(SKACapability.main) ENABLED START #
+    """Main function of the SKACapability module."""
     return run((SKACapability,), args=args, **kwargs)
     # PROTECTED REGION END #    //  SKACapability.main
 

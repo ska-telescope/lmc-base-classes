@@ -1,12 +1,11 @@
-#!/usr/bin/env python
+######################################################################
 # -*- coding: utf-8 -*-
 #
 # This file is part of the SKATestDevice project
 #
 #
 #
-# Distributed under the terms of the none license.
-# See LICENSE.txt for more info.
+######################################################################
 """Contain the tests for the SKATestDevice."""
 
 # Path
@@ -17,9 +16,7 @@ sys.path.insert(0, os.path.abspath(path))
 
 # Imports
 import pytest
-from time import sleep
-from mock import MagicMock
-from PyTango import DevFailed, DevState
+from tango import DevFailed, DevState
 
 # Note:
 #

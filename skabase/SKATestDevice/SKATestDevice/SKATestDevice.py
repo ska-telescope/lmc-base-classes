@@ -4,8 +4,6 @@
 #
 #
 #
-# Distributed under the terms of the none license.
-# See LICENSE.txt for more info.
 
 """ SKATestDevice
 
@@ -27,6 +25,7 @@ from logging.handlers import SysLogHandler
 # PROTECTED REGION ID(SKATestDevice.additionnal_import) ENABLED START #
 import json
 from skabase.utils import (exception_manager, convert_api_value, coerce_value)
+
 # PROTECTED REGION END #    //  SKATestDevice.additionnal_import
 
 __all__ = ["SKATestDevice", "main"]
@@ -38,10 +37,6 @@ formatter = logging.Formatter('%(name)s: %(levelname)s %(module)s %(message)r')
 syslogs.setFormatter(formatter)
 logger.addHandler(syslogs)
 
-ElementLogger = device_property(dtype=str, default_value="tango://localhost:10123/ref/elt/logger")
-CentralLogger = device_property(dtype=str, default_value="tango://localhost:10123/central/logger/1")
-
-logging_level = device_property(dtype=str, default_value="INFO")
 
 class SKATestDevice(SKABaseDevice):
     """
@@ -146,24 +141,29 @@ class SKATestDevice(SKABaseDevice):
             logger.setLevel(logging.WARNING)
         elif self._storage_logging_level == int(tango.LogLevel.LOG_INFO):
             logger.setLevel(logging.INFO)
-        elif self._storage_logging_level== int(tango.LogLevel.LOG_DEBUG):
+        elif self._storage_logging_level == int(tango.LogLevel.LOG_DEBUG):
             logger.setLevel(logging.DEBUG)
         else:
             logger.setLevel(logging.DEBUG)
+
     # --------
     # Commands
     # --------
 
     @command(
-    dtype_in='str', 
-    doc_in="JSON encoded dict with this format\n{``group``: str,  # name of existing group\n  ``command``: str, "
-           "# name of command to run\n  ``arg_type``: str,  # data type of command input argument\n  ``arg_value``: "
-           "str, # value for command input argument\n  ``forward``: bool  # True if command should be forwarded to "
-           "all subgroups (default)\n}",
-    dtype_out='str', 
-    doc_out="Return value from command on the group, as a JSON encoded string.\nThis will be a list of dicts of the "
-            "form \n[ \n{``device_name``: str,  # TANGO device name\n  ``argout``: <value>,  # return value from "
-            "command (type depends on command)\n  ``failed``: bool  # True if command failed\n},\n{ ... },\n ... ]",
+        dtype_in='str',
+        doc_in="JSON encoded dict with this format\n{``group``: str,  # name of existing group\n"
+               "  ``command``: str, # name of command to run\n"
+               "  ``arg_type``: str,  # data type of command input argument\n"
+               "  ``arg_value``: str, # value for command input argument\n"
+               "  ``forward``: bool  # True if command should be forwarded to "
+               "all subgroups (default)\n}",
+        dtype_out='str',
+        doc_out="Return value from command on the group, as a JSON encoded string.\n"
+                "This will be a list of dicts of the form \n[ \n{``device_name``: str,  "
+                "# TANGO device name\n  ``argout``: <value>,  # return value from "
+                "command (type depends on command)\n  ``failed``: bool  # True if command failed\n},"
+                "\n{ ... },\n ... ]",
     )
     @DebugIt()
     def RunGroupCommand(self, argin):
@@ -199,55 +199,55 @@ class SKATestDevice(SKABaseDevice):
         # PROTECTED REGION END #    //  SKATestDevice.RunGroupCommand
 
     def dev_logging(self, dev_log_msg, dev_log_level):
-        #Element Level Logging
-        if self._element_logging_level >= int(tango.LogLevel.LOG_FATAL) \
-                and dev_log_level == int(tango.LogLevel.LOG_FATAL):
+        # Element Level Logging
+        if self._element_logging_level >= int(tango.LogLevel.LOG_FATAL) and dev_log_level == int(
+                tango.LogLevel.LOG_FATAL):
             self.fatal_stream(dev_log_msg)
-        elif self._element_logging_level >= int(tango.LogLevel.LOG_ERROR) \
-                and dev_log_level == int(tango.LogLevel.LOG_ERROR):
+        elif self._element_logging_level >= int(tango.LogLevel.LOG_ERROR) and dev_log_level == int(
+                tango.LogLevel.LOG_ERROR):
             self.error_stream(dev_log_msg)
-        elif self._element_logging_level >= int(tango.LogLevel.LOG_WARN) \
-                and dev_log_level == int(tango.LogLevel.LOG_WARN):
+        elif self._element_logging_level >= int(tango.LogLevel.LOG_WARN) and dev_log_level == int(
+                tango.LogLevel.LOG_WARN):
             self.warn_stream(dev_log_msg)
-        elif self._element_logging_level >= int(tango.LogLevel.LOG_INFO) \
-                and dev_log_level == int(tango.LogLevel.LOG_INFO):
+        elif self._element_logging_level >= int(tango.LogLevel.LOG_INFO) and dev_log_level == int(
+                tango.LogLevel.LOG_INFO):
             self.info_stream(dev_log_msg)
-        elif self._element_logging_level >= int(tango.LogLevel.LOG_DEBUG) \
-                and dev_log_level == int(tango.LogLevel.LOG_DEBUG):
+        elif self._element_logging_level >= int(tango.LogLevel.LOG_DEBUG) and dev_log_level == int(
+                tango.LogLevel.LOG_DEBUG):
             self.debug_stream(dev_log_msg)
 
-        #Central Level Logging
-        if self._central_logging_level >= int(tango.LogLevel.LOG_FATAL) \
-                and dev_log_level == int(tango.LogLevel.LOG_FATAL):
+        # Central Level Logging
+        if self._central_logging_level >= int(tango.LogLevel.LOG_FATAL) and dev_log_level == int(
+                tango.LogLevel.LOG_FATAL):
             self.fatal_stream(dev_log_msg)
-        elif self._central_logging_level >= int(tango.LogLevel.LOG_ERROR) \
-                and dev_log_level == int(tango.LogLevel.LOG_ERROR):
+        elif self._central_logging_level >= int(tango.LogLevel.LOG_ERROR) and dev_log_level == int(
+                tango.LogLevel.LOG_ERROR):
             self.error_stream(dev_log_msg)
-        elif self._central_logging_level >= int(tango.LogLevel.LOG_WARN) \
-                and dev_log_level == int(tango.LogLevel.LOG_WARN):
+        elif self._central_logging_level >= int(tango.LogLevel.LOG_WARN) and dev_log_level == int(
+                tango.LogLevel.LOG_WARN):
             self.warn_stream(dev_log_msg)
-        elif self._central_logging_level >= int(tango.LogLevel.LOG_INFO) \
-                and dev_log_level == int(tango.LogLevel.LOG_INFO):
+        elif self._central_logging_level >= int(tango.LogLevel.LOG_INFO) and dev_log_level == int(
+                tango.LogLevel.LOG_INFO):
             self.info_stream(dev_log_msg)
-        elif self._central_logging_level >= int(tango.LogLevel.LOG_DEBUG) \
-                and dev_log_level == int(tango.LogLevel.LOG_DEBUG):
+        elif self._central_logging_level >= int(tango.LogLevel.LOG_DEBUG) and dev_log_level == int(
+                tango.LogLevel.LOG_DEBUG):
             self.debug_stream(dev_log_msg)
 
-        #Storage Level Logging
-        if self._storage_logging_level >= int(tango.LogLevel.LOG_FATAL) \
-                and dev_log_level == int(tango.LogLevel.LOG_FATAL):
+        # Storage Level Logging
+        if self._storage_logging_level >= int(tango.LogLevel.LOG_FATAL) and dev_log_level == int(
+                tango.LogLevel.LOG_FATAL):
             logger.fatal(dev_log_msg)
-        elif self._storage_logging_level >= int(tango.LogLevel.LOG_ERROR) \
-                and dev_log_level == int(tango.LogLevel.LOG_ERROR):
+        elif self._storage_logging_level >= int(tango.LogLevel.LOG_ERROR) and dev_log_level == int(
+                tango.LogLevel.LOG_ERROR):
             logger.error(dev_log_msg)
-        elif self._storage_logging_level >= int(tango.LogLevel.LOG_WARN) \
-                and dev_log_level == int(tango.LogLevel.LOG_WARN):
+        elif self._storage_logging_level >= int(tango.LogLevel.LOG_WARN) and dev_log_level == int(
+                tango.LogLevel.LOG_WARN):
             logger.warn(dev_log_msg)
-        elif self._storage_logging_level >= int(tango.LogLevel.LOG_INFO) \
-                and dev_log_level == int(tango.LogLevel.LOG_INFO):
+        elif self._storage_logging_level >= int(tango.LogLevel.LOG_INFO) and dev_log_level == int(
+                tango.LogLevel.LOG_INFO):
             logger.info(dev_log_msg)
-        elif self._storage_logging_level >= int(tango.LogLevel.LOG_DEBUG) \
-                and dev_log_level == int(tango.LogLevel.LOG_DEBUG):
+        elif self._storage_logging_level >= int(tango.LogLevel.LOG_DEBUG) and dev_log_level == int(
+                tango.LogLevel.LOG_DEBUG):
             logger.debug(dev_log_msg)
         else:
             pass
@@ -276,6 +276,7 @@ class SKATestDevice(SKABaseDevice):
         self.dev_logging("TurnOFF Sending FATAL", int(tango.LogLevel.LOG_FATAL))
         # PROTECTED REGION END #    //  SKATestDevice.Stop
 
+
 # ----------
 # Run server
 # ----------
@@ -284,6 +285,7 @@ def main(args=None, **kwargs):
     # PROTECTED REGION ID(SKATestDevice.main) ENABLED START #
     return run((SKATestDevice,), args=args, **kwargs)
     # PROTECTED REGION END #    //  SKATestDevice.main
+
 
 if __name__ == '__main__':
     main()

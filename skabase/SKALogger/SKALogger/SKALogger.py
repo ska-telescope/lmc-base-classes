@@ -123,7 +123,7 @@ class SKALogger(SKABaseDevice):
         log_message = argin[3]
         tango_log_level = {"FATAL": int(tango.LogLevel.LOG_FATAL),
                            "ERROR": int(tango.LogLevel.LOG_ERROR),
-                           "WARN": int(tango.LogLevel.LOG_ERROR),
+                           "WARN": int(tango.LogLevel.LOG_WARN),
                            "INFO": int(tango.LogLevel.LOG_INFO),
                            "DEBUG": int(tango.LogLevel.LOG_DEBUG)}
         level_number = tango_log_level[log_level]

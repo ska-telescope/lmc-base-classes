@@ -1,5 +1,5 @@
-import tango
-from tango import DeviceProxy, AttrQuality, AttributeProxy
+import PyTango
+from PyTango import DeviceProxy, AttrQuality, AttributeProxy
 from base import DeviceServerBaseTest
 import json
 from time import sleep
@@ -73,10 +73,10 @@ class TestGroup(DeviceServerBaseTest):
         member_dp.an_attr = 10
         attr = AttributeProxy(members[0] + '/an_attr')
         self.assertEqual(attr.read().quality, AttrQuality.ATTR_ALARM)
-        self.assertEqual(member_dp.state(), tango._tango.DevState.ALARM)
+        self.assertEqual(member_dp.state(), PyTango._PyTango.DevState.ALARM)
         i = 0
-        while (dp.state() != tango._tango.DevState.ALARM) and i < 3:
+        while (dp.state() != PyTango._PyTango.DevState.ALARM) and i < 3:
             sleep(1)
             i+=1
 
-        self.assertEqual(dp.state(), tango._tango.DevState.ALARM)
+        self.assertEqual(dp.state(), PyTango._PyTango.DevState.ALARM)

@@ -1,7 +1,7 @@
 from time import sleep
 from unittest import TestCase
 from subprocess import Popen
-from tango import Database, DbDevInfo, DbDatum
+from PyTango import Database, DbDevInfo, DbDatum
 from os.path import join, dirname, realpath
 import sys
 
@@ -64,6 +64,7 @@ class DeviceServerBaseTest(TestCase):
 
     @classmethod
     def add_device_prop(cls,device_ref,properties):
+
         for name,value in properties.iteritems():
             db_datum = DbDatum()
             db_datum.name = name

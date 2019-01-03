@@ -71,8 +71,7 @@ class TestSKATelState(object):
         assert tango_context.device.Status() == "The device is in UNKNOWN state."
         # PROTECTED REGION END #    //  SKATelState.test_Status
 
-    # PROTECTED REGION ID(SKATelState.test_GetMetrics_decorators)
-    # ENABLED START #
+    # PROTECTED REGION ID(SKATelState.test_GetMetrics_decorators) ENABLED START #
     # PROTECTED REGION END #    //  SKATelState.test_GetMetrics_decorators
     def test_GetMetrics(self, tango_context):
         """Test for GetMetrics"""
@@ -88,8 +87,7 @@ class TestSKATelState(object):
         assert tango_context.device.ToJson("") == ""
         # PROTECTED REGION END #    //  SKATelState.test_ToJson
 
-    # PROTECTED REGION ID(SKATelState.test_GetVersionInfo_decorators)
-    # ENABLED START #
+    # PROTECTED REGION ID(SKATelState.test_GetVersionInfo_decorators) ENABLED START #
     # PROTECTED REGION END #    //  SKATelState.test_GetVersionInfo_decorators
     def test_GetVersionInfo(self, tango_context):
         """Test for GetVersionInfo"""
@@ -106,8 +104,7 @@ class TestSKATelState(object):
         # PROTECTED REGION END #    //  SKATelState.test_Reset
 
 
-    # PROTECTED REGION ID(SKATelState.test_buildState_decorators)
-    # ENABLED START #
+    # PROTECTED REGION ID(SKATelState.test_buildState_decorators) ENABLED START #
     # PROTECTED REGION END #    //  SKATelState.test_buildState_decorators
     def test_buildState(self, tango_context):
         """Test for buildState"""
@@ -123,38 +120,31 @@ class TestSKATelState(object):
         assert tango_context.device.versionId == ''
         # PROTECTED REGION END #    //  SKATelState.test_versionId
 
-    # PROTECTED REGION ID(SKATelState.test_centralLoggingLevel_decorators)
-    # ENABLED START #
+    # PROTECTED REGION ID(SKATelState.test_centralLoggingLevel_decorators) ENABLED START #
     # PROTECTED REGION END #    //  SKATelState.test_centralLoggingLevel_decorators
     def test_centralLoggingLevel(self, tango_context):
         """Test for centralLoggingLevel"""
-        # PROTECTED REGION ID(SKATelState.test_centralLoggingLevel)
-        # ENABLED START #
+        # PROTECTED REGION ID(SKATelState.test_centralLoggingLevel) ENABLED START #
         assert tango_context.device.centralLoggingLevel == 0
         # PROTECTED REGION END #    //  SKATelState.test_centralLoggingLevel
 
-    # PROTECTED REGION ID(SKATelState.test_elementLoggingLevel_decorators)
-    # ENABLED START #
+    # PROTECTED REGION ID(SKATelState.test_elementLoggingLevel_decorators) ENABLED START #
     # PROTECTED REGION END #    //  SKATelState.test_elementLoggingLevel_decorators
     def test_elementLoggingLevel(self, tango_context):
         """Test for elementLoggingLevel"""
-        # PROTECTED REGION ID(SKATelState.test_elementLoggingLevel)
-        # ENABLED START #
+        # PROTECTED REGION ID(SKATelState.test_elementLoggingLevel) ENABLED START #
         assert tango_context.device.elementLoggingLevel == 0
         # PROTECTED REGION END #    //  SKATelState.test_elementLoggingLevel
 
-    # PROTECTED REGION ID(SKATelState.test_storageLoggingLevel_decorators)
-    # ENABLED START #
+    # PROTECTED REGION ID(SKATelState.test_storageLoggingLevel_decorators) ENABLED START #
     # PROTECTED REGION END #    //  SKATelState.test_storageLoggingLevel_decorators
     def test_storageLoggingLevel(self, tango_context):
         """Test for storageLoggingLevel"""
-        # PROTECTED REGION ID(SKATelState.test_storageLoggingLevel)
-        # ENABLED START #
+        # PROTECTED REGION ID(SKATelState.test_storageLoggingLevel) ENABLED START #
         assert tango_context.device.storageLoggingLevel == 0
         # PROTECTED REGION END #    //  SKATelState.test_storageLoggingLevel
 
-    # PROTECTED REGION ID(SKATelState.test_healthState_decorators)
-    # ENABLED START #
+    # PROTECTED REGION ID(SKATelState.test_healthState_decorators) ENABLED START #
     # PROTECTED REGION END #    //  SKATelState.test_healthState_decorators
     def test_healthState(self, tango_context):
         """Test for healthState"""
@@ -162,8 +152,7 @@ class TestSKATelState(object):
         assert tango_context.device.healthState == 0
         # PROTECTED REGION END #    //  SKATelState.test_healthState
 
-    # PROTECTED REGION ID(SKATelState.test_adminMode_decorators)
-    # ENABLED START #
+    # PROTECTED REGION ID(SKATelState.test_adminMode_decorators) ENABLED START #
     # PROTECTED REGION END #    //  SKATelState.test_adminMode_decorators
     def test_adminMode(self, tango_context):
         """Test for adminMode"""
@@ -171,8 +160,7 @@ class TestSKATelState(object):
         assert tango_context.device.adminMode == 0
         # PROTECTED REGION END #    //  SKATelState.test_adminMode
 
-    # PROTECTED REGION ID(SKATelState.test_controlMode_decorators)
-    # ENABLED START #
+    # PROTECTED REGION ID(SKATelState.test_controlMode_decorators) ENABLED START #
     # PROTECTED REGION END #    //  SKATelState.test_controlMode_decorators
     def test_controlMode(self, tango_context):
         """Test for controlMode"""
@@ -180,14 +168,11 @@ class TestSKATelState(object):
         assert tango_context.device.controlMode == 0
         # PROTECTED REGION END #    //  SKATelState.test_controlMode
 
-    # PROTECTED REGION ID(SKATelState.test_simulationMode_decorators)
-    # ENABLED START #
-    # PROTECTED REGION END #    /
-    # /  SKATelState.test_simulationMode_decorators
+    # PROTECTED REGION ID(SKATelState.test_simulationMode_decorators) ENABLED START #
+    # PROTECTED REGION END #    //  SKATelState.test_simulationMode_decorators
     def test_simulationMode(self, tango_context):
         """Test for simulationMode"""
-        # PROTECTED REGION ID(SKATelState.test_simulationMode)
-        # ENABLED START #
+        # PROTECTED REGION ID(SKATelState.test_simulationMode) ENABLED START #
         assert tango_context.device.simulationMode == False
         # PROTECTED REGION END #    //  SKATelState.test_simulationMode
 

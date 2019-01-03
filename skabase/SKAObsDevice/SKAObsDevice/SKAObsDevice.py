@@ -10,9 +10,15 @@
 A generic base device for Observations for SKA.
 """
 
-# tango imports
-from tango.server import run
-from tango.server import DeviceMeta, attribute
+# PyTango imports
+import PyTango
+from PyTango import DebugIt
+from PyTango.server import run
+from PyTango.server import Device, DeviceMeta
+from PyTango.server import attribute, command
+from PyTango.server import device_property
+from PyTango import AttrQuality, DispLevel, DevState
+from PyTango import AttrWriteType, PipeWriteType
 from SKABaseDevice import SKABaseDevice
 # Additional import
 # PROTECTED REGION ID(SKAObsDevice.additionnal_import) ENABLED START #
@@ -42,6 +48,12 @@ class SKAObsDevice(SKABaseDevice):
     # Device Properties
     # -----------------
 
+
+
+
+
+
+
     # ----------
     # Attributes
     # ----------
@@ -49,18 +61,13 @@ class SKAObsDevice(SKABaseDevice):
     obsState = attribute(
         dtype='DevEnum',
         doc="Observing State",
-        enum_labels=["IDLE", "CONFIGURING", "READY", "SCANNING", "PAUSED",
-                     "ABORTED", "FAULT", ],
+        enum_labels=["IDLE", "CONFIGURING", "READY", "SCANNING", "PAUSED", "ABORTED", "FAULT", ],
     )
 
     obsMode = attribute(
         dtype='DevEnum',
         doc="Observing Mode",
-        enum_labels=["IDLE", "IMG_CONTINUUM", "IMG_SPECTRAL_LINE",
-                     "IMG_ZOOM",
-                     "PULSAR_SEARCH",
-                     "TRANSIENT_SEARCH_FAST",
-                     "TRANSIENT_SEARCH_SLOW", "PULSAR_TIMING", "VLBI", ],
+        enum_labels=["IDLE", "IMG_CONTINUUM", "IMG_SPECTRAL_LINE", "IMG_ZOOM", "PULSAR_SEARCH", "TRANSIENT_SEARCH_FAST", "TRANSIENT_SEARCH_SLOW", "PULSAR_TIMING", "VLBI", ],
     )
 
     configurationProgress = attribute(
@@ -77,6 +84,16 @@ class SKAObsDevice(SKABaseDevice):
         doc="Configuration delay expected in seconds",
     )
 
+
+
+
+
+
+
+
+
+
+
     # ---------------
     # General methods
     # ---------------
@@ -92,8 +109,7 @@ class SKAObsDevice(SKABaseDevice):
         # PROTECTED REGION END #    //  SKAObsDevice.always_executed_hook
 
     def delete_device(self):
-        # PROTECTED REGION ID(SKAObsDevice.delete_device)
-        # ENABLED START #
+        # PROTECTED REGION ID(SKAObsDevice.delete_device) ENABLED START #
         pass
         # PROTECTED REGION END #    //  SKAObsDevice.delete_device
 
@@ -103,45 +119,38 @@ class SKAObsDevice(SKABaseDevice):
 
     def read_obsState(self):
         # PROTECTED REGION ID(SKAObsDevice.obsState_read) ENABLED START #
-        """Reads Observation State of the device"""
         return self._obs_state
         # PROTECTED REGION END #    //  SKAObsDevice.obsState_read
 
     def read_obsMode(self):
         # PROTECTED REGION ID(SKAObsDevice.obsMode_read) ENABLED START #
-        """Reads Observation Mode of the device"""
         return self._obs_mode
         # PROTECTED REGION END #    //  SKAObsDevice.obsMode_read
 
     def read_configurationProgress(self):
-        # PROTECTED REGION ID(SKAObsDevice.configurationProgress_read)
-        # ENABLED START #
-        """Reads percentage configuration progress of the device"""
+        # PROTECTED REGION ID(SKAObsDevice.configurationProgress_read) ENABLED START #
         return self._config_progress
         # PROTECTED REGION END #    //  SKAObsDevice.configurationProgress_read
 
     def read_configurationDelayExpected(self):
-        # PROTECTED REGION ID(SKAObsDevice.configurationDelayExpected_read)
-        # ENABLED START #
-        """Reads expected Configuration Delay in seconds"""
+        # PROTECTED REGION ID(SKAObsDevice.configurationDelayExpected_read) ENABLED START #
         return self._config_delay_expected
-        # PROTECTED REGION END #
-        # //  SKAObsDevice.configurationDelayExpected_read
+        # PROTECTED REGION END #    //  SKAObsDevice.configurationDelayExpected_read
 
-        # --------
-        # Commands
-        # --------
 
+    # --------
+    # Commands
+    # --------
 
 # ----------
 # Run server
 # ----------
 
+
 def main(args=None, **kwargs):
     # PROTECTED REGION ID(SKAObsDevice.main) ENABLED START #
     return run((SKAObsDevice,), args=args, **kwargs)
     # PROTECTED REGION END #    //  SKAObsDevice.main
-
 
 if __name__ == '__main__':
     main()

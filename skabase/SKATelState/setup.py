@@ -6,8 +6,6 @@
 #
 #
 
-"""Setup file of SKATelState base class"""
-
 import os
 import sys
 from setuptools import setup

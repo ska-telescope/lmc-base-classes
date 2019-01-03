@@ -11,9 +11,14 @@ A generic base device for Telescope State for SKA.
 """
 
 # PyTango imports
-from tango.server import run
-from tango.server import DeviceMeta
-from tango.server import device_property
+import PyTango
+from PyTango import DebugIt
+from PyTango.server import run
+from PyTango.server import Device, DeviceMeta
+from PyTango.server import attribute, command
+from PyTango.server import device_property
+from PyTango import AttrQuality, DispLevel, DevState
+from PyTango import AttrWriteType, PipeWriteType
 from SKABaseDevice import SKABaseDevice
 # Additional import
 # PROTECTED REGION ID(SKATelState.additionnal_import) ENABLED START #
@@ -38,9 +43,25 @@ class SKATelState(SKABaseDevice):
         dtype='str',
     )
 
+
+
+
+
+
+
     # ----------
     # Attributes
     # ----------
+
+
+
+
+
+
+
+
+
+
 
     # ---------------
     # General methods
@@ -77,12 +98,6 @@ class SKATelState(SKABaseDevice):
 
 def main(args=None, **kwargs):
     # PROTECTED REGION ID(SKATelState.main) ENABLED START #
-    """
-    Main function of the module
-    :param args: None
-    :param kwargs:
-    :return:
-    """
     return run((SKATelState,), args=args, **kwargs)
     # PROTECTED REGION END #    //  SKATelState.main
 

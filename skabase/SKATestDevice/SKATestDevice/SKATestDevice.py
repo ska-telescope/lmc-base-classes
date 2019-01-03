@@ -19,8 +19,7 @@ from PyTango.server import run
 from PyTango.server import Device, DeviceMeta
 from PyTango.server import attribute, command
 from PyTango.server import device_property
-from PyTango import AttrQuality, DispLevel, DevState
-from PyTango import AttrWriteType, PipeWriteType
+import tango
 from SKABaseDevice import SKABaseDevice
 import logging
 # Additional import
@@ -63,14 +62,16 @@ class SKATestDevice(SKABaseDevice):
     obsState = attribute(
         dtype='DevEnum',
         doc="Observing State",
-        enum_labels=["IDLE", "CONFIGURING", "READY", "SCANNING", "PAUSED", "ABORTED", "FAULT", ],
+        enum_labels=["IDLE", "CONFIGURING", "READY", "SCANNING",
+                     "PAUSED", "ABORTED", "FAULT", ],
     )
 
     obsMode = attribute(
         dtype='DevEnum',
         doc="Observing Mode",
-        enum_labels=["IDLE", "IMG_CONTINUUM", "IMG_SPECTRAL_LINE", "IMG_ZOOM", "PULSAR_SEARCH",
-                     "TRANSIENT_SEARCH_FAST", "TRANSIENT_SEARCH_SLOW", "PULSAR_TIMING", "VLBI", ],
+        enum_labels=["IDLE", "IMG_CONTINUUM", "IMG_SPECTRAL_LINE", "IMG_ZOOM",
+                     "PULSAR_SEARCH", "TRANSIENT_SEARCH_FAST", "TRANSIENT_SEARCH_SLOW",
+                     "PULSAR_TIMING", "VLBI", ],
     )
 
     configurationProgress = attribute(
@@ -95,9 +96,9 @@ class SKATestDevice(SKABaseDevice):
         SKABaseDevice.init_device(self)
         # PROTECTED REGION ID(SKATestDevice.init_device) ENABLED START #
         logger.info("TurnOn Sending info")
-        self._storage_logging_level = 5
-        self._element_logging_level = 5
-        self._central_logging_level = 5
+        self._storage_logging_level = int(tango.LogLevel.LOG_DEBUG)
+        self._element_logging_level = int(tango.LogLevel.LOG_DEBUG)
+        self._central_logging_level = int(tango.LogLevel.LOG_DEBUG)
         logger.setLevel(logging.DEBUG)
         # PROTECTED REGION END #    //  SKATestDevice.init_device
 
@@ -141,7 +142,7 @@ class SKATestDevice(SKABaseDevice):
             logger.setLevel(logging.FATAL)
         elif self._storage_logging_level == int(tango.LogLevel.LOG_ERROR):
             logger.setLevel(logging.ERROR)
-        elif self._storage_logging_level == int(tango.LogLevel.LOG_WARNING):
+        elif self._storage_logging_level == int(tango.LogLevel.LOG_WARN):
             logger.setLevel(logging.WARNING)
         elif self._storage_logging_level == int(tango.LogLevel.LOG_INFO):
             logger.setLevel(logging.INFO)
@@ -197,41 +198,56 @@ class SKATestDevice(SKABaseDevice):
         return argout
         # PROTECTED REGION END #    //  SKATestDevice.RunGroupCommand
 
-    def devLogMsg(self, dev_log_msg, dev_log_level):
+    def dev_logging(self, dev_log_msg, dev_log_level):
         #Element Level Logging
-        if self._element_logging_level >= 1 and dev_log_level == 1:
+        if self._element_logging_level >= int(tango.LogLevel.LOG_FATAL) \
+                and dev_log_level == int(tango.LogLevel.LOG_FATAL):
             self.fatal_stream(dev_log_msg)
-        elif self._element_logging_level >= 2 and dev_log_level == 2:
+        elif self._element_logging_level >= int(tango.LogLevel.LOG_ERROR) \
+                and dev_log_level == int(tango.LogLevel.LOG_ERROR):
             self.error_stream(dev_log_msg)
-        elif self._element_logging_level >= 3 and dev_log_level == 3:
+        elif self._element_logging_level >= int(tango.LogLevel.LOG_WARN) \
+                and dev_log_level == int(tango.LogLevel.LOG_WARN):
             self.warn_stream(dev_log_msg)
-        elif self._element_logging_level >= 4 and dev_log_level == 4:
+        elif self._element_logging_level >= int(tango.LogLevel.LOG_INFO) \
+                and dev_log_level == int(tango.LogLevel.LOG_INFO):
             self.info_stream(dev_log_msg)
-        elif self._element_logging_level >= 5 and dev_log_level == 5:
+        elif self._element_logging_level >= int(tango.LogLevel.LOG_DEBUG) \
+                and dev_log_level == int(tango.LogLevel.LOG_DEBUG):
             self.debug_stream(dev_log_msg)
 
         #Central Level Logging
-        if self._central_logging_level >= 1 and dev_log_level == 1:
+        if self._central_logging_level >= int(tango.LogLevel.LOG_FATAL) \
+                and dev_log_level == int(tango.LogLevel.LOG_FATAL):
             self.fatal_stream(dev_log_msg)
-        elif self._central_logging_level >= 2 and dev_log_level == 2:
+        elif self._central_logging_level >= int(tango.LogLevel.LOG_ERROR) \
+                and dev_log_level == int(tango.LogLevel.LOG_ERROR):
             self.error_stream(dev_log_msg)
-        elif self._central_logging_level >= 3 and dev_log_level == 3:
+        elif self._central_logging_level >= int(tango.LogLevel.LOG_WARN) \
+                and dev_log_level == int(tango.LogLevel.LOG_WARN):
             self.warn_stream(dev_log_msg)
-        elif self._central_logging_level >= 4 and dev_log_level == 4:
+        elif self._central_logging_level >= int(tango.LogLevel.LOG_INFO) \
+                and dev_log_level == int(tango.LogLevel.LOG_INFO):
             self.info_stream(dev_log_msg)
-        elif self._central_logging_level >= 5 and dev_log_level == 5:
+        elif self._central_logging_level >= int(tango.LogLevel.LOG_DEBUG) \
+                and dev_log_level == int(tango.LogLevel.LOG_DEBUG):
             self.debug_stream(dev_log_msg)
 
         #Storage Level Logging
-        if self._storage_logging_level >= 1 and dev_log_level == 1:
+        if self._storage_logging_level >= int(tango.LogLevel.LOG_FATAL) \
+                and dev_log_level == int(tango.LogLevel.LOG_FATAL):
             logger.fatal(dev_log_msg)
-        elif self._storage_logging_level >= 2 and dev_log_level == 2:
+        elif self._storage_logging_level >= int(tango.LogLevel.LOG_ERROR) \
+                and dev_log_level == int(tango.LogLevel.LOG_ERROR):
             logger.error(dev_log_msg)
-        elif self._storage_logging_level >= 3 and dev_log_level == 3:
+        elif self._storage_logging_level >= int(tango.LogLevel.LOG_WARN) \
+                and dev_log_level == int(tango.LogLevel.LOG_WARN):
             logger.warn(dev_log_msg)
-        elif self._storage_logging_level >= 4 and dev_log_level == 4:
+        elif self._storage_logging_level >= int(tango.LogLevel.LOG_INFO) \
+                and dev_log_level == int(tango.LogLevel.LOG_INFO):
             logger.info(dev_log_msg)
-        elif self._storage_logging_level >= 5 and dev_log_level == 5:
+        elif self._storage_logging_level >= int(tango.LogLevel.LOG_DEBUG) \
+                and dev_log_level == int(tango.LogLevel.LOG_DEBUG):
             logger.debug(dev_log_msg)
         else:
             pass
@@ -241,11 +257,11 @@ class SKATestDevice(SKABaseDevice):
     @DebugIt()
     def On(self):
         # PROTECTED REGION ID(SKATestDevice.On) ENABLED START #
-        self.devLogMsg("TurnOn Sending DEBUG", 5)
-        self.devLogMsg("TurnOn Sending INFO", 4)
-        self.devLogMsg("TurnOn Sending WARNING", 3)
-        self.devLogMsg("TurnOn Sending ERROR", 2)
-        self.devLogMsg("TurnOn Sending FATAL", 1)
+        self.dev_logging("TurnOn Sending DEBUG", int(tango.LogLevel.LOG_DEBUG))
+        self.dev_logging("TurnOn Sending INFO", int(tango.LogLevel.LOG_INFO))
+        self.dev_logging("TurnOn Sending WARNING", int(tango.LogLevel.LOG_WARN))
+        self.dev_logging("TurnOn Sending ERROR", int(tango.LogLevel.LOG_ERROR))
+        self.dev_logging("TurnOn Sending FATAL", int(tango.LogLevel.LOG_FATAL))
         # PROTECTED REGION END #    //  SKATestDevice.On
 
     @command(
@@ -253,11 +269,11 @@ class SKATestDevice(SKABaseDevice):
     @DebugIt()
     def Stop(self):
         # PROTECTED REGION ID(SKATestDevice.Stop) ENABLED START #
-        self.devLogMsg("TurnOFF Sending DEBUG", 5)
-        self.devLogMsg("TurnOFF Sending INFO", 4)
-        self.devLogMsg("TurnOFF Sending WARNING", 3)
-        self.devLogMsg("TurnOFF Sending ERROR", 2)
-        self.devLogMsg("TurnOFF Sending FATAL", 1)
+        self.dev_logging("TurnOFF Sending DEBUG", int(tango.LogLevel.LOG_DEBUG))
+        self.dev_logging("TurnOFF Sending INFO", int(tango.LogLevel.LOG_INFO))
+        self.dev_logging("TurnOFF Sending WARNING", int(tango.LogLevel.LOG_WARN))
+        self.dev_logging("TurnOFF Sending ERROR", int(tango.LogLevel.LOG_ERROR))
+        self.dev_logging("TurnOFF Sending FATAL", int(tango.LogLevel.LOG_FATAL))
         # PROTECTED REGION END #    //  SKATestDevice.Stop
 
 # ----------

@@ -17,15 +17,14 @@ from PyTango import DebugIt, DeviceProxy
 from PyTango.server import run
 from PyTango.server import Device, DeviceMeta
 from PyTango.server import attribute, command
-from PyTango.server import device_property
-from PyTango import AttrQuality, DispLevel, DevState
-from PyTango import AttrWriteType, PipeWriteType
 from SKABaseDevice import SKABaseDevice
+import tango
 # Additional import
 # PROTECTED REGION ID(SKALogger.additionnal_import) ENABLED START #
 import logging
 import logging.handlers
 from logging.handlers import SysLogHandler
+from skabase.SKALogger import release
 
 logger_dict = {}
 logging.basicConfig()
@@ -65,9 +64,12 @@ class SKALogger(SKABaseDevice):
     def init_device(self):
         SKABaseDevice.init_device(self)
         # PROTECTED REGION ID(SKALogger.init_device) ENABLED START #
-        self._storage_logging_level = 5
-        self._element_logging_level = 5
-        self._central_logging_level = 5
+        self._build_state = '{}, {}, {}'.format(release.name, release.version,
+                                                release.description)
+        self._version_id = release.version
+        self._storage_logging_level = int(tango.LogLevel.LOG_DEBUG)
+        self._element_logging_level = int(tango.LogLevel.LOG_DEBUG)
+        self._central_logging_level = int(tango.LogLevel.LOG_DEBUG)
 
     def write_storageLoggingLevel(self, value):
         self._storage_logging_level = value
@@ -116,11 +118,14 @@ class SKALogger(SKABaseDevice):
         """
         A method of LogConsumer Interface, to enable log viewer.
         """
-        log_time = argin[0]
         log_level = argin[1]
         log_source = argin[2]
         log_message = argin[3]
-        tango_log_level = {"FATAL": 1, "ERROR": 2, "WARN": 3, "INFO": 4, "DEBUG": 5}
+        tango_log_level = {"FATAL": int(tango.LogLevel.LOG_FATAL),
+                           "ERROR": int(tango.LogLevel.LOG_ERROR),
+                           "WARN": int(tango.LogLevel.LOG_ERROR),
+                           "INFO": int(tango.LogLevel.LOG_INFO),
+                           "DEBUG": int(tango.LogLevel.LOG_DEBUG)}
         level_number = tango_log_level[log_level]
         device = DeviceProxy(log_source)
 
@@ -173,20 +178,11 @@ class SKALogger(SKABaseDevice):
         central_logging_device = argin[1][:]
         i = 0
         while i < len(central_logging_level[:]):
-            self.info_stream("Central Logging level : %s, Device : %s", central_logging_level[i],
+            self.info_stream("Central Logging level : %s, Device : %s",
+                             central_logging_level[i],
                              central_logging_level[i])
             dev_proxy = DeviceProxy(central_logging_device[i])
             dev_proxy.centralLoggingLevel = central_logging_level[i]
-            property_names = ["logging_level",
-                              "logging_target",
-                              "CentralLogger"
-                              ]
-            dev_properties = dev_proxy.get_property(property_names)
-            dev_properties["logging_level"] = ["DEBUG"]
-            dev_properties["logging_target"].append("device::central/logger/1")
-            dev_properties["CentralLogger"] = ["device::central/logger/1"]
-            dev_proxy.put_property(dev_properties)
-            dev_proxy.add_logging_target("device::central/logger/1")
             i += 1
         # PROTECTED REGION END #    //  SKALogger.SetCentralLoggingLevel
 
@@ -204,24 +200,11 @@ class SKALogger(SKABaseDevice):
         element_logging_device = argin[1][:]
         i = 0
         while i < len(element_logging_level[:]):
-            self.info_stream("Element Logging level : %s, Device : %s", element_logging_level[i],
+            self.info_stream("Element Logging level : %s, Device : %s",
+                             element_logging_level[i],
                              element_logging_device[i])
             dev_proxy = DeviceProxy(element_logging_device[i])
             dev_proxy.elementLoggingLevel = element_logging_level[i]
-            property_names = ["logging_level",
-                              "logging_target",
-                              "ElementLogger",
-                              "ElementLoglevel",
-                              "ServerHostName",
-                              ]
-            dev_properties = dev_proxy.get_property(property_names)
-            dev_properties["logging_level"] = ["INFO"]
-            dev_properties["logging_target"].append("device::ref/elt/logger")
-            dev_properties["ElementLogger"] = ["device::ref/elt/logger"]
-            dev_properties["ElementLoglevel"] = [element_logging_level[i]]
-            dev_properties["ServerHostName"] = ["localhost"]
-            dev_proxy.put_property(dev_properties)
-            dev_proxy.add_logging_target("device::ref/elt/logger")
             i += 1
         # PROTECTED REGION END #    //  SKALogger.SetElementLoggingLevel
 
@@ -239,11 +222,12 @@ class SKALogger(SKABaseDevice):
         storage_logging_device = argin[1][:]
         i = 0
         while i < len(storage_logging_level[:]):
-            self.info_stream("Storage logging level : %s, Device : %s", storage_logging_level[i],
+            self.info_stream("Storage logging level : %s, Device : %s",
+                             storage_logging_level[i],
                              storage_logging_device[i])
             dev_proxy = DeviceProxy(storage_logging_device[i])
             dev_proxy.storageLoggingLevel = storage_logging_level[i]
-            i+=1
+            i += 1
 
         # PROTECTED REGION END #    //  SKALogger.SetStorageLoggingLevel
 

@@ -19,6 +19,7 @@ from mock import MagicMock
 from PyTango import DevState, DeviceProxy
 import pytest
 import re
+import tango
 
 # PROTECTED REGION ID(SKALogger.test_additional_imports) ENABLED START #
 # PROTECTED REGION END #    //  SKALogger.test_additional_imports
@@ -33,9 +34,9 @@ class TestSKALogger(object):
                   'CentralLoggingTarget': '',
                   'ElementLoggingTarget': '',
                   'StorageLoggingTarget': 'localhost',
-                  'CentralLoggingLevelDefault': '2',
-                  'ElementLoggingLevelDefault': '3',
-                  'StorageLoggingLevelDefault': '4',
+                  'CentralLoggingLevelDefault': int(tango.LogLevel.LOG_ERROR),
+                  'ElementLoggingLevelDefault': int(tango.LogLevel.LOG_WARN),
+                  'StorageLoggingLevelDefault': int(tango.LogLevel.LOG_INFO),
                   }
 
     @classmethod
@@ -56,7 +57,7 @@ class TestSKALogger(object):
         """Test for Log"""
         # PROTECTED REGION ID(SKALogger.test_Log) ENABLED START #
         log_details = ["123456789", "ERROR", "logger/test/1",
-                 "Error message", "0", "0"]
+                       "Error message", "0", "0"]
         assert tango_context.device.Log(log_details) == "Error message"
         # PROTECTED REGION END #    //  SKALogger.test_Log
 
@@ -72,7 +73,7 @@ class TestSKALogger(object):
         assert tango_context.device.Status() == "The device is in UNKNOWN state."
         # PROTECTED REGION END #    //  SKALogger.test_Status
 
-    @pytest.mark.parametrize("logging_level", [4])
+    @pytest.mark.parametrize("logging_level", [int(tango.LogLevel.LOG_INFO)])
     @pytest.mark.parametrize("logging_target", ["logger/test/1"])
     def test_SetCentralLoggingLevel(self, tango_context, logging_level, logging_target):
         """Test for SetCentralLoggingLevel"""
@@ -89,7 +90,7 @@ class TestSKALogger(object):
         assert dev_proxy.centralLoggingLevel == logging_level
         # PROTECTED REGION END #    //  SKALogger.test_SetCentralLoggingLevel
 
-    @pytest.mark.parametrize("logging_level", [2])
+    @pytest.mark.parametrize("logging_level", [int(tango.LogLevel.LOG_ERROR)])
     @pytest.mark.parametrize("logging_target", ["logger/test/1"])
     def test_SetElementLoggingLevel(self, tango_context, logging_level, logging_target):
         """Test for SetElementLoggingLevel"""
@@ -106,7 +107,7 @@ class TestSKALogger(object):
         assert dev_proxy.elementLoggingLevel == logging_level
         # PROTECTED REGION END #    //  SKALogger.test_SetElementLoggingLevel
 
-    @pytest.mark.parametrize("logging_level", [3])
+    @pytest.mark.parametrize("logging_level", [int(tango.LogLevel.LOG_WARN)])
     @pytest.mark.parametrize("logging_target", ["logger/test/1"])
     def test_SetStorageLoggingLevel(self, tango_context, logging_level, logging_target):
         """Test for SetStorageLoggingLevel"""
@@ -127,7 +128,7 @@ class TestSKALogger(object):
         """Test for GetVersionInfo"""
         # PROTECTED REGION ID(SKALogger.test_GetVersionInfo) ENABLED START #
         versionPattern = re.compile(
-            r'SKALogger, tangods-skabasedevice, [0-9].[0-9].[0-9], A generic base device for SKA')
+            r'SKALogger, tangods-skalogger, [0-9].[0-9].[0-9], A generic logger device for SKA')
         versionInfo = tango_context.device.GetVersionInfo()
         assert (re.match(versionPattern, versionInfo[0])) != None
         # PROTECTED REGION END #    //  SKALogger.test_GetVersionInfo
@@ -141,7 +142,7 @@ class TestSKALogger(object):
     def test_buildState(self, tango_context):
         """Test for buildState"""
         # PROTECTED REGION ID(SKALogger.test_buildState) ENABLED START #
-        assert tango_context.device.buildState == 'tangods-skabasedevice, 1.0.0, A generic base device for SKA.'
+        assert tango_context.device.buildState == 'tangods-skalogger, 1.0.0, A generic logger device for SKA.'
         # PROTECTED REGION END #    //  SKALogger.test_buildState
 
     def test_versionId(self, tango_context):
@@ -153,19 +154,19 @@ class TestSKALogger(object):
     def test_centralLoggingLevel(self, tango_context):
         """Test for centralLoggingLevel"""
         # PROTECTED REGION ID(SKALogger.test_centralLoggingLevel) ENABLED START #
-        assert tango_context.device.centralLoggingLevel == 5
+        assert tango_context.device.centralLoggingLevel == int(tango.LogLevel.LOG_DEBUG)
         # PROTECTED REGION END #    //  SKALogger.test_centralLoggingLevel
 
     def test_elementLoggingLevel(self, tango_context):
         """Test for elementLoggingLevel"""
         # PROTECTED REGION ID(SKALogger.test_elementLoggingLevel) ENABLED START #
-        assert tango_context.device.elementLoggingLevel == 5
+        assert tango_context.device.elementLoggingLevel == int(tango.LogLevel.LOG_DEBUG)
         # PROTECTED REGION END #    //  SKALogger.test_elementLoggingLevel
 
     def test_storageLoggingLevel(self, tango_context):
         """Test for storageLoggingLevel"""
         # PROTECTED REGION ID(SKALogger.test_storageLoggingLevel) ENABLED START #
-        assert tango_context.device.storageLoggingLevel == 5
+        assert tango_context.device.storageLoggingLevel == int(tango.LogLevel.LOG_DEBUG)
         # PROTECTED REGION END #    //  SKALogger.test_storageLoggingLevel
 
     def test_healthState(self, tango_context):

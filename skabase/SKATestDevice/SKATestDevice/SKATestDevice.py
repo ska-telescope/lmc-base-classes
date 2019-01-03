@@ -12,22 +12,30 @@ A generic Test device for testing SKA base class functionalites.
 
 # PyTango imports
 import PyTango
-from PyTango import DebugIt
+from PyTango import DebugIt, DeviceProxy
 from PyTango.server import run
 from PyTango.server import Device, DeviceMeta
 from PyTango.server import attribute, command
 from PyTango.server import device_property
-from PyTango import AttrQuality, DispLevel, DevState
-from PyTango import AttrWriteType, PipeWriteType
+import tango
 from SKABaseDevice import SKABaseDevice
+import logging
 # Additional import
+from logging.handlers import SysLogHandler
 # PROTECTED REGION ID(SKATestDevice.additionnal_import) ENABLED START #
 import json
-
 from skabase.utils import (exception_manager, convert_api_value, coerce_value)
+
 # PROTECTED REGION END #    //  SKATestDevice.additionnal_import
 
 __all__ = ["SKATestDevice", "main"]
+
+logging.basicConfig()
+logger = logging.getLogger("SKATestDevice")
+syslogs = SysLogHandler(address='/dev/log', facility='syslog')
+formatter = logging.Formatter('%(name)s: %(levelname)s %(module)s %(message)r')
+syslogs.setFormatter(formatter)
+logger.addHandler(syslogs)
 
 
 class SKATestDevice(SKABaseDevice):
@@ -42,16 +50,6 @@ class SKATestDevice(SKABaseDevice):
     # Device Properties
     # -----------------
 
-
-
-
-
-
-
-
-
-
-
     # ----------
     # Attributes
     # ----------
@@ -59,13 +57,16 @@ class SKATestDevice(SKABaseDevice):
     obsState = attribute(
         dtype='DevEnum',
         doc="Observing State",
-        enum_labels=["IDLE", "CONFIGURING", "READY", "SCANNING", "PAUSED", "ABORTED", "FAULT", ],
+        enum_labels=["IDLE", "CONFIGURING", "READY", "SCANNING",
+                     "PAUSED", "ABORTED", "FAULT", ],
     )
 
     obsMode = attribute(
         dtype='DevEnum',
         doc="Observing Mode",
-        enum_labels=["IDLE", "IMG_CONTINUUM", "IMG_SPECTRAL_LINE", "IMG_ZOOM", "PULSAR_SEARCH", "TRANSIENT_SEARCH_FAST", "TRANSIENT_SEARCH_SLOW", "PULSAR_TIMING", "VLBI", ],
+        enum_labels=["IDLE", "IMG_CONTINUUM", "IMG_SPECTRAL_LINE", "IMG_ZOOM",
+                     "PULSAR_SEARCH", "TRANSIENT_SEARCH_FAST", "TRANSIENT_SEARCH_SLOW",
+                     "PULSAR_TIMING", "VLBI", ],
     )
 
     configurationProgress = attribute(
@@ -82,16 +83,6 @@ class SKATestDevice(SKABaseDevice):
         doc="Configuration delay expected in seconds",
     )
 
-
-
-
-
-
-
-
-
-
-
     # ---------------
     # General methods
     # ---------------
@@ -99,6 +90,11 @@ class SKATestDevice(SKABaseDevice):
     def init_device(self):
         SKABaseDevice.init_device(self)
         # PROTECTED REGION ID(SKATestDevice.init_device) ENABLED START #
+        logger.info("TurnOn Sending info")
+        self._storage_logging_level = int(tango.LogLevel.LOG_DEBUG)
+        self._element_logging_level = int(tango.LogLevel.LOG_DEBUG)
+        self._central_logging_level = int(tango.LogLevel.LOG_DEBUG)
+        logger.setLevel(logging.DEBUG)
         # PROTECTED REGION END #    //  SKATestDevice.init_device
 
     def always_executed_hook(self):
@@ -135,16 +131,39 @@ class SKATestDevice(SKABaseDevice):
         return 0
         # PROTECTED REGION END #    //  SKATestDevice.configurationDelayExpected_read
 
+    def write_storageLoggingLevel(self, value):
+        self._storage_logging_level = value
+        if self._storage_logging_level == int(tango.LogLevel.LOG_FATAL):
+            logger.setLevel(logging.FATAL)
+        elif self._storage_logging_level == int(tango.LogLevel.LOG_ERROR):
+            logger.setLevel(logging.ERROR)
+        elif self._storage_logging_level == int(tango.LogLevel.LOG_WARN):
+            logger.setLevel(logging.WARNING)
+        elif self._storage_logging_level == int(tango.LogLevel.LOG_INFO):
+            logger.setLevel(logging.INFO)
+        elif self._storage_logging_level == int(tango.LogLevel.LOG_DEBUG):
+            logger.setLevel(logging.DEBUG)
+        else:
+            logger.setLevel(logging.DEBUG)
 
     # --------
     # Commands
     # --------
 
     @command(
-    dtype_in='str', 
-    doc_in="JSON encoded dict with this format\n{``group``: str,  # name of existing group\n  ``command``: str, # name of command to run\n  ``arg_type``: str,  # data type of command input argument\n  ``arg_value``: str, # value for command input argument\n  ``forward``: bool  # True if command should be forwarded to all subgroups (default)\n}", 
-    dtype_out='str', 
-    doc_out="Return value from command on the group, as a JSON encoded string.\nThis will be a list of dicts of the form \n[ \n{``device_name``: str,  # TANGO device name\n  ``argout``: <value>,  # return value from command (type depends on command)\n  ``failed``: bool  # True if command failed\n},\n{ ... },\n ... ]", 
+        dtype_in='str',
+        doc_in="JSON encoded dict with this format\n{``group``: str,  # name of existing group\n"
+               "  ``command``: str, # name of command to run\n"
+               "  ``arg_type``: str,  # data type of command input argument\n"
+               "  ``arg_value``: str, # value for command input argument\n"
+               "  ``forward``: bool  # True if command should be forwarded to "
+               "all subgroups (default)\n}",
+        dtype_out='str',
+        doc_out="Return value from command on the group, as a JSON encoded string.\n"
+                "This will be a list of dicts of the form \n[ \n{``device_name``: str,  "
+                "# TANGO device name\n  ``argout``: <value>,  # return value from "
+                "command (type depends on command)\n  ``failed``: bool  # True if command failed\n},"
+                "\n{ ... },\n ... ]",
     )
     @DebugIt()
     def RunGroupCommand(self, argin):
@@ -179,15 +198,94 @@ class SKATestDevice(SKABaseDevice):
         return argout
         # PROTECTED REGION END #    //  SKATestDevice.RunGroupCommand
 
+    def dev_logging(self, dev_log_msg, dev_log_level):
+        # Element Level Logging
+        if self._element_logging_level >= int(tango.LogLevel.LOG_FATAL) and dev_log_level == int(
+                tango.LogLevel.LOG_FATAL):
+            self.fatal_stream(dev_log_msg)
+        elif self._element_logging_level >= int(tango.LogLevel.LOG_ERROR) and dev_log_level == int(
+                tango.LogLevel.LOG_ERROR):
+            self.error_stream(dev_log_msg)
+        elif self._element_logging_level >= int(tango.LogLevel.LOG_WARN) and dev_log_level == int(
+                tango.LogLevel.LOG_WARN):
+            self.warn_stream(dev_log_msg)
+        elif self._element_logging_level >= int(tango.LogLevel.LOG_INFO) and dev_log_level == int(
+                tango.LogLevel.LOG_INFO):
+            self.info_stream(dev_log_msg)
+        elif self._element_logging_level >= int(tango.LogLevel.LOG_DEBUG) and dev_log_level == int(
+                tango.LogLevel.LOG_DEBUG):
+            self.debug_stream(dev_log_msg)
+
+        # Central Level Logging
+        if self._central_logging_level >= int(tango.LogLevel.LOG_FATAL) and dev_log_level == int(
+                tango.LogLevel.LOG_FATAL):
+            self.fatal_stream(dev_log_msg)
+        elif self._central_logging_level >= int(tango.LogLevel.LOG_ERROR) and dev_log_level == int(
+                tango.LogLevel.LOG_ERROR):
+            self.error_stream(dev_log_msg)
+        elif self._central_logging_level >= int(tango.LogLevel.LOG_WARN) and dev_log_level == int(
+                tango.LogLevel.LOG_WARN):
+            self.warn_stream(dev_log_msg)
+        elif self._central_logging_level >= int(tango.LogLevel.LOG_INFO) and dev_log_level == int(
+                tango.LogLevel.LOG_INFO):
+            self.info_stream(dev_log_msg)
+        elif self._central_logging_level >= int(tango.LogLevel.LOG_DEBUG) and dev_log_level == int(
+                tango.LogLevel.LOG_DEBUG):
+            self.debug_stream(dev_log_msg)
+
+        # Storage Level Logging
+        if self._storage_logging_level >= int(tango.LogLevel.LOG_FATAL) and dev_log_level == int(
+                tango.LogLevel.LOG_FATAL):
+            logger.fatal(dev_log_msg)
+        elif self._storage_logging_level >= int(tango.LogLevel.LOG_ERROR) and dev_log_level == int(
+                tango.LogLevel.LOG_ERROR):
+            logger.error(dev_log_msg)
+        elif self._storage_logging_level >= int(tango.LogLevel.LOG_WARN) and dev_log_level == int(
+                tango.LogLevel.LOG_WARN):
+            logger.warn(dev_log_msg)
+        elif self._storage_logging_level >= int(tango.LogLevel.LOG_INFO) and dev_log_level == int(
+                tango.LogLevel.LOG_INFO):
+            logger.info(dev_log_msg)
+        elif self._storage_logging_level >= int(tango.LogLevel.LOG_DEBUG) and dev_log_level == int(
+                tango.LogLevel.LOG_DEBUG):
+            logger.debug(dev_log_msg)
+        else:
+            pass
+
+    @command(
+    )
+    @DebugIt()
+    def On(self):
+        # PROTECTED REGION ID(SKATestDevice.On) ENABLED START #
+        self.dev_logging("TurnOn Sending DEBUG", int(tango.LogLevel.LOG_DEBUG))
+        self.dev_logging("TurnOn Sending INFO", int(tango.LogLevel.LOG_INFO))
+        self.dev_logging("TurnOn Sending WARNING", int(tango.LogLevel.LOG_WARN))
+        self.dev_logging("TurnOn Sending ERROR", int(tango.LogLevel.LOG_ERROR))
+        self.dev_logging("TurnOn Sending FATAL", int(tango.LogLevel.LOG_FATAL))
+        # PROTECTED REGION END #    //  SKATestDevice.On
+
+    @command(
+    )
+    @DebugIt()
+    def Stop(self):
+        # PROTECTED REGION ID(SKATestDevice.Stop) ENABLED START #
+        self.dev_logging("TurnOFF Sending DEBUG", int(tango.LogLevel.LOG_DEBUG))
+        self.dev_logging("TurnOFF Sending INFO", int(tango.LogLevel.LOG_INFO))
+        self.dev_logging("TurnOFF Sending WARNING", int(tango.LogLevel.LOG_WARN))
+        self.dev_logging("TurnOFF Sending ERROR", int(tango.LogLevel.LOG_ERROR))
+        self.dev_logging("TurnOFF Sending FATAL", int(tango.LogLevel.LOG_FATAL))
+        # PROTECTED REGION END #    //  SKATestDevice.Stop
+
+
 # ----------
 # Run server
 # ----------
-
 
 def main(args=None, **kwargs):
     # PROTECTED REGION ID(SKATestDevice.main) ENABLED START #
     return run((SKATestDevice,), args=args, **kwargs)
     # PROTECTED REGION END #    //  SKATestDevice.main
+
 
 if __name__ == '__main__':
     main()

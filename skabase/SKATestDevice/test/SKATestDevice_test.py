@@ -60,19 +60,19 @@ class TestSKATestDevice(object):
 
     # PROTECTED REGION ID(SKATestDevice.test_GetMetrics_decorators) ENABLED START #
     # PROTECTED REGION END #    //  SKATestDevice.test_GetMetrics_decorators
-    # def test_GetMetrics(self, tango_context):
-    #    """Test for GetMetrics"""
-    #    # PROTECTED REGION ID(SKATestDevice.test_GetMetrics) ENABLED START #
-    #    assert tango_context.device.GetMetrics() == ""
-    #    # PROTECTED REGION END #    //  SKATestDevice.test_GetMetrics
+    def test_GetMetrics(self, tango_context):
+        """Test for GetMetrics"""
+        # PROTECTED REGION ID(SKATestDevice.test_GetMetrics) ENABLED START #
+        assert tango_context.device.GetMetrics() == ""
+        # PROTECTED REGION END #    //  SKATestDevice.test_GetMetrics
 
     # PROTECTED REGION ID(SKATestDevice.test_ToJson_decorators) ENABLED START #
     # PROTECTED REGION END #    //  SKATestDevice.test_ToJson_decorators
-    # def test_ToJson(self, tango_context):
-    #    """Test for ToJson"""
-    #    # PROTECTED REGION ID(SKATestDevice.test_ToJson) ENABLED START #
-    #    assert tango_context.device.ToJson("") == ""
-    #    # PROTECTED REGION END #    //  SKATestDevice.test_ToJson
+    def test_ToJson(self, tango_context):
+        """Test for ToJson"""
+        # PROTECTED REGION ID(SKATestDevice.test_ToJson) ENABLED START #
+        assert tango_context.device.ToJson("") == ""
+        # PROTECTED REGION END #    //  SKATestDevice.test_ToJson
 
     # PROTECTED REGION ID(SKATestDevice.test_GetVersionInfo_decorators) ENABLED START #
     # PROTECTED REGION END #    //  SKATestDevice.test_GetVersionInfo_decorators
@@ -114,6 +114,17 @@ class TestSKATestDevice(object):
         assert tango_context.device.Reset() == None
         # PROTECTED REGION END #    //  SKATestDevice.test_Reset
 
+    def test_On(self):
+        """Test for On"""
+        # PROTECTED REGION ID(SKATestDevice.test_On) ENABLED START #
+        self.device.On()
+        # PROTECTED REGION END #    //  SKATestDevice.test_On
+
+    def test_Stop(self):
+        """Test for Stop"""
+        # PROTECTED REGION ID(SKATestDevice.test_Stop) ENABLED START #
+        self.device.Stop()
+        # PROTECTED REGION END #    //  SKATestDevice.test_Stop
 
     # PROTECTED REGION ID(SKATestDevice.test_obsState_decorators) ENABLED START #
     # PROTECTED REGION END #    //  SKATestDevice.test_obsState_decorators
@@ -226,5 +237,3 @@ class TestSKATestDevice(object):
         # PROTECTED REGION ID(SKATestDevice.test_testMode) ENABLED START #
         assert tango_context.device.testMode == ''
         # PROTECTED REGION END #    //  SKATestDevice.test_testMode
-
-

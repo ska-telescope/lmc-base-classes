@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="ASCII"?>
 <pogoDsl:PogoSystem xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:pogoDsl="http://www.esrf.fr/tango/pogo/PogoDsl">
   <classes name="SKALogger" pogoRevision="9.6">
-    <description description="A generic base device for Logging for SKA." title="SKALogger" sourcePath="/home/pogo/src/lmc-base-classes/skabase/SKALogger" language="PythonHL" filestogenerate="XMI   file,Code files,Python Package,Protected Regions" license="none" copyright="" hasMandatoryProperty="false" hasConcreteProperty="true" hasAbstractCommand="false" hasAbstractAttribute="false">
+    <description description="A generic base device for Logging for SKA." title="SKALogger" sourcePath="/home/tango-cs/src/lmc-base-classes/skabase/SKALogger" language="PythonHL" filestogenerate="XMI   file,Code files,Python Package,Protected Regions" license="none" copyright="" hasMandatoryProperty="false" hasConcreteProperty="true" hasAbstractCommand="false" hasAbstractAttribute="false">
       <inheritances classname="Device_Impl" sourcePath=""/>
       <inheritances classname="SKABaseDevice" sourcePath="../SKABaseDevice"/>
-      <identification contact="at ska.ac.za - cam" author="cam" emailDomain="ska.ac.za" classFamily="OtherInstruments" siteSpecific="" platform="All Platforms" bus="Not Applicable" manufacturer="SKASA" reference="SKA-SKALogger"/>
+      <identification contact="at gmail.com - lochanb.ska" author="lochanb.ska" emailDomain="gmail.com" classFamily="SKA Base Class" siteSpecific="" platform="All Platforms" bus="Not Applicable" manufacturer="SKA" reference="SKA-SKALogger"/>
     </description>
     <deviceProperties name="SkaLevel" description="Indication of importance of the device in the SKA hierarchy &#xA;to support drill-down navigation: 1..6, with 1 highest.&#xA;Default is 4, making provision for &#xA;EltMaster, EltAlarms, EltTelState = 1&#xA;SubEltMaster = 2&#xA;Subarray, Capability = 2/3&#xA;Others = 4 (or 5 or 6)">
       <type xsi:type="pogoDsl:ShortType"/>
@@ -50,12 +50,12 @@
       <status abstract="false" inherited="false" concrete="true"/>
       <DefaultPropValue>4</DefaultPropValue>
     </deviceProperties>
-    <commands name="Log" description="LogConsumer interface" execMethod="log" displayLevel="OPERATOR" polledPeriod="0">
-      <argin description="none">
+    <commands name="Log" description="LogConsumer interface" execMethod="log" displayLevel="OPERATOR" polledPeriod="0" isDynamic="false">
+      <argin description="Details of timestamp, logging level, source device and message.">
         <type xsi:type="pogoDsl:StringArrayType"/>
       </argin>
-      <argout description="No output arguments">
-        <type xsi:type="pogoDsl:VoidType"/>
+      <argout description="Returns the logging message.">
+        <type xsi:type="pogoDsl:StringType"/>
       </argout>
       <status abstract="false" inherited="false" concrete="true" concreteHere="true"/>
     </commands>
@@ -79,7 +79,7 @@
     </commands>
     <commands name="SetCentralLoggingLevel" description="Logging level to Central logging target:&#xA;(0=OFF, 1=FATAL, 2=ERROR, 3=WARNING, 4=INFO, 5=DEBUG)" execMethod="set_central_logging_level" displayLevel="OPERATOR" polledPeriod="0" isDynamic="false">
       <argin description="Central logging level for selected devices">
-        <type xsi:type="pogoDsl:StringType"/>
+        <type xsi:type="pogoDsl:LongStringArrayType"/>
       </argin>
       <argout description="No output arguments">
         <type xsi:type="pogoDsl:VoidType"/>
@@ -88,7 +88,7 @@
     </commands>
     <commands name="SetElementLoggingLevel" description="Logging level to Element logging target:&#xA;(0=OFF, 1=FATAL, 2=ERROR, 3=WARNING, 4=INFO, 5=DEBUG)" execMethod="set_element_logging_level" displayLevel="OPERATOR" polledPeriod="0" isDynamic="false">
       <argin description="Element logging level for selected devices">
-        <type xsi:type="pogoDsl:StringType"/>
+        <type xsi:type="pogoDsl:LongStringArrayType"/>
       </argin>
       <argout description="No output arguments">
         <type xsi:type="pogoDsl:VoidType"/>
@@ -97,7 +97,7 @@
     </commands>
     <commands name="SetStorageLoggingLevel" description="Logging level to Syslog storage logging target:&#xA;(0=OFF, 1=FATAL, 2=ERROR, 3=WARNING, 4=INFO, 5=DEBUG)" execMethod="set_storage_logging_level" displayLevel="OPERATOR" polledPeriod="0" isDynamic="false">
       <argin description="Storage logging level for selected devices">
-        <type xsi:type="pogoDsl:StringType"/>
+        <type xsi:type="pogoDsl:LongStringArrayType"/>
       </argin>
       <argout description="No output arguments">
         <type xsi:type="pogoDsl:VoidType"/>

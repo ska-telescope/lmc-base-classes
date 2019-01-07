@@ -4,8 +4,6 @@
 #
 #
 #
-# Distributed under the terms of the none license.
-# See LICENSE.txt for more info.
 
 from SKATestDevice import main
 main()

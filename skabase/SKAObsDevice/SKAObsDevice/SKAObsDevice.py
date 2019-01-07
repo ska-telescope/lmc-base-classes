@@ -10,15 +10,8 @@
 A generic base device for Observations for SKA.
 """
 
-# PyTango imports
-import PyTango
-from PyTango import DebugIt
-from PyTango.server import run
-from PyTango.server import Device, DeviceMeta
-from PyTango.server import attribute, command
-from PyTango.server import device_property
-from PyTango import AttrQuality, DispLevel, DevState
-from PyTango import AttrWriteType, PipeWriteType
+# tango imports
+from tango.server import run, DeviceMeta, attribute
 from SKABaseDevice import SKABaseDevice
 # Additional import
 # PROTECTED REGION ID(SKAObsDevice.additionnal_import) ENABLED START #
@@ -48,12 +41,6 @@ class SKAObsDevice(SKABaseDevice):
     # Device Properties
     # -----------------
 
-
-
-
-
-
-
     # ----------
     # Attributes
     # ----------
@@ -67,7 +54,8 @@ class SKAObsDevice(SKABaseDevice):
     obsMode = attribute(
         dtype='DevEnum',
         doc="Observing Mode",
-        enum_labels=["IDLE", "IMG_CONTINUUM", "IMG_SPECTRAL_LINE", "IMG_ZOOM", "PULSAR_SEARCH", "TRANSIENT_SEARCH_FAST", "TRANSIENT_SEARCH_SLOW", "PULSAR_TIMING", "VLBI", ],
+        enum_labels=["IDLE", "IMG_CONTINUUM", "IMG_SPECTRAL_LINE", "IMG_ZOOM", "PULSAR_SEARCH",
+                     "TRANSIENT_SEARCH_FAST", "TRANSIENT_SEARCH_SLOW", "PULSAR_TIMING", "VLBI", ],
     )
 
     configurationProgress = attribute(
@@ -83,16 +71,6 @@ class SKAObsDevice(SKABaseDevice):
         unit="seconds",
         doc="Configuration delay expected in seconds",
     )
-
-
-
-
-
-
-
-
-
-
 
     # ---------------
     # General methods
@@ -119,21 +97,25 @@ class SKAObsDevice(SKABaseDevice):
 
     def read_obsState(self):
         # PROTECTED REGION ID(SKAObsDevice.obsState_read) ENABLED START #
+        """Reads Observation State of the device"""
         return self._obs_state
         # PROTECTED REGION END #    //  SKAObsDevice.obsState_read
 
     def read_obsMode(self):
         # PROTECTED REGION ID(SKAObsDevice.obsMode_read) ENABLED START #
+        """Reads Observation Mode of the device"""
         return self._obs_mode
         # PROTECTED REGION END #    //  SKAObsDevice.obsMode_read
 
     def read_configurationProgress(self):
         # PROTECTED REGION ID(SKAObsDevice.configurationProgress_read) ENABLED START #
+        """Reads percentage configuration progress of the device"""
         return self._config_progress
         # PROTECTED REGION END #    //  SKAObsDevice.configurationProgress_read
 
     def read_configurationDelayExpected(self):
         # PROTECTED REGION ID(SKAObsDevice.configurationDelayExpected_read) ENABLED START #
+        """Reads expected Configuration Delay in seconds"""
         return self._config_delay_expected
         # PROTECTED REGION END #    //  SKAObsDevice.configurationDelayExpected_read
 
@@ -145,7 +127,6 @@ class SKAObsDevice(SKABaseDevice):
 # ----------
 # Run server
 # ----------
-
 
 def main(args=None, **kwargs):
     # PROTECTED REGION ID(SKAObsDevice.main) ENABLED START #

@@ -16,9 +16,7 @@ sys.path.insert(0, os.path.abspath(path))
 
 # Imports
 import pytest
-from mock import MagicMock
-
-from PyTango import DevState
+from tango import DevState
 
 # PROTECTED REGION ID(SKAObsDevice.test_additional_imports) ENABLED START #
 # PROTECTED REGION END #    //  SKAObsDevice.test_additional_imports

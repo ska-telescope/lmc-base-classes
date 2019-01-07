@@ -16,9 +16,7 @@ sys.path.insert(0, os.path.abspath(path))
 
 # Imports
 import pytest
-from mock import MagicMock
-
-from PyTango import DevState
+from tango import DevState
 
 # PROTECTED REGION ID(SKACapability.test_additional_imports) ENABLED START #
 # PROTECTED REGION END #    //  SKACapability.test_additional_imports
@@ -52,6 +50,7 @@ class TestSKACapability(object):
         # PROTECTED REGION END #    //  SKACapability.test_mocking
 
     def test_properties(self, tango_context):
+        """Test device properties"""
         # Test the properties
         # PROTECTED REGION ID(SKACapability.test_properties) ENABLED START #
         # PROTECTED REGION END #    //  SKACapability.test_properties

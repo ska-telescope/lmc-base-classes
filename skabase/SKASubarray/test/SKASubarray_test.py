@@ -206,7 +206,6 @@ class TestSKASubarray(object):
         assert tango_context.device.ToJson("") == ""
         # PROTECTED REGION END #    //  SKASubarray.test_ToJson
 
-
     # PROTECTED REGION ID(SKASubarray.test_activationTime_decorators) ENABLED START #
     # PROTECTED REGION END #    //  SKASubarray.test_activationTime_decorators
     def test_activationTime(self, tango_context):

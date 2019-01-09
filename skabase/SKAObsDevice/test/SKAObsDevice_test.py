@@ -108,7 +108,6 @@ class TestSKAObsDevice(object):
         assert tango_context.device.Reset() == None
         # PROTECTED REGION END #    //  SKAObsDevice.test_Reset
 
-
     # PROTECTED REGION ID(SKAObsDevice.test_obsState_decorators) ENABLED START #
     # PROTECTED REGION END #    //  SKAObsDevice.test_obsState_decorators
     def test_obsState(self, tango_context):

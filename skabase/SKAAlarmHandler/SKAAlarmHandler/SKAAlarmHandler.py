@@ -7,7 +7,9 @@
 
 """ SKAAlarmHandler
 
-A generic base device for Alarms for SKA.
+A generic base device for Alarms for SKA. It exposes SKA alarms and SKA alerts as TANGO attributes.
+SKA Alarms and SKA/Element Alerts are rules-based configurable conditions that can be defined over multiple
+attribute values and quality factors, and are separate from the "built-in" TANGO attribute alarms.
 """
 
 # tango imports

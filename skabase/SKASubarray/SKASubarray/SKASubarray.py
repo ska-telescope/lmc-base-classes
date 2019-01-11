@@ -7,7 +7,8 @@
 
 """ SKASubarray
 
-SubArray handling device
+A SubArray handling device. It allows the assigning/releasing of resources into/from Subarray, configuring
+capabilities, and exposes the related information like assigned resources, configured capabilities, etc.
 """
 
 # tango imports

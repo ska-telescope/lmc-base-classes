@@ -23,7 +23,7 @@ __all__ = ["SKACapability", "main"]
 
 class SKACapability(SKAObsDevice):
     """
-    Subarray handling device
+    A Subarray handling device. It exposes the instances of configured capabilities.
     """
     __metaclass__ = DeviceMeta
     # PROTECTED REGION ID(SKACapability.class_variable) ENABLED START #

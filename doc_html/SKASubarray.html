@@ -1,0 +1,446 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>SKA Subarray &mdash; LMC Base Classes 1.0 documentation</title>
+    
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="LMC Base Classes 1.0 documentation" href="index.html" />
+    <link rel="next" title="SKA TelState" href="SKATelState.html" />
+    <link rel="prev" title="SKA ObsDevice" href="SKAObsDevice.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="SKATelState.html" title="SKA TelState"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="SKAObsDevice.html" title="SKA ObsDevice"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">LMC Base Classes 1.0 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="ska-subarray">
+<h1>SKA Subarray<a class="headerlink" href="#ska-subarray" title="Permalink to this headline">¶</a></h1>
+<div class="toctree-wrapper compound">
+<ul class="simple">
+</ul>
+</div>
+<span class="target" id="module-SKASubarray.SKASubarray"></span><p>SKASubarray</p>
+<p>A SubArray handling device. It allows the assigning/releasing of resources into/from Subarray, configuring
+capabilities, and exposes the related information like assigned resources, configured capabilities, etc.</p>
+<dl class="class">
+<dt id="SKASubarray.SKASubarray.SKASubarray">
+<em class="property">class </em><tt class="descclassname">SKASubarray.SKASubarray.</tt><tt class="descname">SKASubarray</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#SKASubarray.SKASubarray.SKASubarray" title="Permalink to this definition">¶</a></dt>
+<dd><p>SubArray handling device</p>
+<dl class="method">
+<dt id="SKASubarray.SKASubarray.SKASubarray.Abort">
+<tt class="descname">Abort</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#SKASubarray.SKASubarray.SKASubarray.Abort" title="Permalink to this definition">¶</a></dt>
+<dd><p>Change obsState to ABORTED.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="SKASubarray.SKASubarray.SKASubarray.AssignResources">
+<tt class="descname">AssignResources</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#SKASubarray.SKASubarray.SKASubarray.AssignResources" title="Permalink to this definition">¶</a></dt>
+<dd><p>Assign resources to a Subarray</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="SKASubarray.SKASubarray.SKASubarray.CapabilityTypes">
+<tt class="descname">CapabilityTypes</tt><a class="headerlink" href="#SKASubarray.SKASubarray.SKASubarray.CapabilityTypes" title="Permalink to this definition">¶</a></dt>
+<dd><p>TANGO property</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="SKASubarray.SKASubarray.SKASubarray.CentralLoggingTarget">
+<tt class="descname">CentralLoggingTarget</tt><a class="headerlink" href="#SKASubarray.SKASubarray.SKASubarray.CentralLoggingTarget" title="Permalink to this definition">¶</a></dt>
+<dd><p>TANGO property</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="SKASubarray.SKASubarray.SKASubarray.ConfigureCapability">
+<tt class="descname">ConfigureCapability</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#SKASubarray.SKASubarray.SKASubarray.ConfigureCapability" title="Permalink to this definition">¶</a></dt>
+<dd><p>Configures number of instances for each capability. If the capability exists,
+it increments the configured instances by the number of instances requested,
+otherwise an exception will be raised.
+Note: The two lists arguments must be of equal length or an exception will be raised.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="SKASubarray.SKASubarray.SKASubarray.DeconfigureAllCapabilities">
+<tt class="descname">DeconfigureAllCapabilities</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#SKASubarray.SKASubarray.SKASubarray.DeconfigureAllCapabilities" title="Permalink to this definition">¶</a></dt>
+<dd><p>Deconfigure all instances of the given Capability type. If the capability
+type does not exist an exception will be raised, otherwise it sets the
+configured instances for that capability type to zero.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="SKASubarray.SKASubarray.SKASubarray.DeconfigureCapability">
+<tt class="descname">DeconfigureCapability</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#SKASubarray.SKASubarray.SKASubarray.DeconfigureCapability" title="Permalink to this definition">¶</a></dt>
+<dd><p>Deconfigures a given number of instances for each capability.
+If the capability exists, it decrements the configured instances by the
+number of instances requested, otherwise an exceptioin will be raised.
+Note: The two lists arguments must be of equal length or an exception
+will be raised</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="SKASubarray.SKASubarray.SKASubarray.ElementLoggingTarget">
+<tt class="descname">ElementLoggingTarget</tt><a class="headerlink" href="#SKASubarray.SKASubarray.SKASubarray.ElementLoggingTarget" title="Permalink to this definition">¶</a></dt>
+<dd><p>TANGO property</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="SKASubarray.SKASubarray.SKASubarray.EndSB">
+<tt class="descname">EndSB</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#SKASubarray.SKASubarray.SKASubarray.EndSB" title="Permalink to this definition">¶</a></dt>
+<dd><p>Change obsState to IDLE.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="SKASubarray.SKASubarray.SKASubarray.EndScan">
+<tt class="descname">EndScan</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#SKASubarray.SKASubarray.SKASubarray.EndScan" title="Permalink to this definition">¶</a></dt>
+<dd><p>Ends the scan</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="SKASubarray.SKASubarray.SKASubarray.GetMetrics">
+<tt class="descname">GetMetrics</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#SKASubarray.SKASubarray.SKASubarray.GetMetrics" title="Permalink to this definition">¶</a></dt>
+<dd><p>&#8216;GetMetrics&#8217; TANGO command</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">(not documented)</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">str</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="SKASubarray.SKASubarray.SKASubarray.GetVersionInfo">
+<tt class="descname">GetVersionInfo</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#SKASubarray.SKASubarray.SKASubarray.GetVersionInfo" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the version information of the device.
+:return: Version version details of the device.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="SKASubarray.SKASubarray.SKASubarray.GroupDefinitions">
+<tt class="descname">GroupDefinitions</tt><a class="headerlink" href="#SKASubarray.SKASubarray.SKASubarray.GroupDefinitions" title="Permalink to this definition">¶</a></dt>
+<dd><p>TANGO property</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="SKASubarray.SKASubarray.SKASubarray.MetricList">
+<tt class="descname">MetricList</tt><a class="headerlink" href="#SKASubarray.SKASubarray.SKASubarray.MetricList" title="Permalink to this definition">¶</a></dt>
+<dd><p>TANGO property</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="SKASubarray.SKASubarray.SKASubarray.Pause">
+<tt class="descname">Pause</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#SKASubarray.SKASubarray.SKASubarray.Pause" title="Permalink to this definition">¶</a></dt>
+<dd><p>Pauses the scan</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="SKASubarray.SKASubarray.SKASubarray.ReleaseAllResources">
+<tt class="descname">ReleaseAllResources</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#SKASubarray.SKASubarray.SKASubarray.ReleaseAllResources" title="Permalink to this definition">¶</a></dt>
+<dd><p>Remove all resources to tear down to an empty subarray.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="SKASubarray.SKASubarray.SKASubarray.ReleaseResources">
+<tt class="descname">ReleaseResources</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#SKASubarray.SKASubarray.SKASubarray.ReleaseResources" title="Permalink to this definition">¶</a></dt>
+<dd><p>Delta removal of assigned resources.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="SKASubarray.SKASubarray.SKASubarray.Reset">
+<tt class="descname">Reset</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#SKASubarray.SKASubarray.SKASubarray.Reset" title="Permalink to this definition">¶</a></dt>
+<dd><p>Reset device to its default state.
+:return: None</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="SKASubarray.SKASubarray.SKASubarray.Resume">
+<tt class="descname">Resume</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#SKASubarray.SKASubarray.SKASubarray.Resume" title="Permalink to this definition">¶</a></dt>
+<dd><p>Resumes the scan</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="SKASubarray.SKASubarray.SKASubarray.Scan">
+<tt class="descname">Scan</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#SKASubarray.SKASubarray.SKASubarray.Scan" title="Permalink to this definition">¶</a></dt>
+<dd><p>Starts the scan</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="SKASubarray.SKASubarray.SKASubarray.SkaLevel">
+<tt class="descname">SkaLevel</tt><a class="headerlink" href="#SKASubarray.SKASubarray.SKASubarray.SkaLevel" title="Permalink to this definition">¶</a></dt>
+<dd><p>TANGO property</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="SKASubarray.SKASubarray.SKASubarray.StorageLoggingTarget">
+<tt class="descname">StorageLoggingTarget</tt><a class="headerlink" href="#SKASubarray.SKASubarray.SKASubarray.StorageLoggingTarget" title="Permalink to this definition">¶</a></dt>
+<dd><p>TANGO property</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="SKASubarray.SKASubarray.SKASubarray.SubID">
+<tt class="descname">SubID</tt><a class="headerlink" href="#SKASubarray.SKASubarray.SKASubarray.SubID" title="Permalink to this definition">¶</a></dt>
+<dd><p>TANGO property</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="SKASubarray.SKASubarray.SKASubarray.ToJson">
+<tt class="descname">ToJson</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#SKASubarray.SKASubarray.SKASubarray.ToJson" title="Permalink to this definition">¶</a></dt>
+<dd><p>&#8216;ToJson&#8217; TANGO command</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>arg</strong> &#8211; Requests the JSON string representing this device, can be filtered</td>
+</tr>
+</tbody>
+</table>
+<p>by with_commands, with_metrics, with_attributes and 
+with_value. Defaults for empty string argin are:
+{<cite>with_value</cite>:false, <cite>with_commands</cite>:true, with_metrics`:true, <cite>with_attributes</cite>:false}
+:type arg: str</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">The JSON string representing this device,</td>
+</tr>
+</tbody>
+</table>
+<p>filtered as per the input argument flags.
+:rtype: str</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="SKASubarray.SKASubarray.SKASubarray.activationTime">
+<tt class="descname">activationTime</tt><a class="headerlink" href="#SKASubarray.SKASubarray.SKASubarray.activationTime" title="Permalink to this definition">¶</a></dt>
+<dd><p>Time of activation in seconds since Unix epoch.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="SKASubarray.SKASubarray.SKASubarray.adminMode">
+<tt class="descname">adminMode</tt><a class="headerlink" href="#SKASubarray.SKASubarray.SKASubarray.adminMode" title="Permalink to this definition">¶</a></dt>
+<dd><p>The admin mode reported for this device. It may interpret the current device condition and condition of all managed devices to set this. Most possibly an aggregate attribute.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="SKASubarray.SKASubarray.SKASubarray.assignedResources">
+<tt class="descname">assignedResources</tt><a class="headerlink" href="#SKASubarray.SKASubarray.SKASubarray.assignedResources" title="Permalink to this definition">¶</a></dt>
+<dd><p>The list of resources assigned to the subarray.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="SKASubarray.SKASubarray.SKASubarray.buildState">
+<tt class="descname">buildState</tt><a class="headerlink" href="#SKASubarray.SKASubarray.SKASubarray.buildState" title="Permalink to this definition">¶</a></dt>
+<dd><p>Build state of this device</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="SKASubarray.SKASubarray.SKASubarray.centralLoggingLevel">
+<tt class="descname">centralLoggingLevel</tt><a class="headerlink" href="#SKASubarray.SKASubarray.SKASubarray.centralLoggingLevel" title="Permalink to this definition">¶</a></dt>
+<dd><p>Current logging level to Central logging target for this device - 
+initialises to CentralLoggingLevelDefault on startup</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="SKASubarray.SKASubarray.SKASubarray.configurationDelayExpected">
+<tt class="descname">configurationDelayExpected</tt><a class="headerlink" href="#SKASubarray.SKASubarray.SKASubarray.configurationDelayExpected" title="Permalink to this definition">¶</a></dt>
+<dd><p>Configuration delay expected in seconds</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="SKASubarray.SKASubarray.SKASubarray.configurationProgress">
+<tt class="descname">configurationProgress</tt><a class="headerlink" href="#SKASubarray.SKASubarray.SKASubarray.configurationProgress" title="Permalink to this definition">¶</a></dt>
+<dd><p>Percentage configuration progress</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="SKASubarray.SKASubarray.SKASubarray.configuredCapabilities">
+<tt class="descname">configuredCapabilities</tt><a class="headerlink" href="#SKASubarray.SKASubarray.SKASubarray.configuredCapabilities" title="Permalink to this definition">¶</a></dt>
+<dd><p>A list of capability types with no. of instances in use on this subarray; e.g.
+Correlators:512, PssBeams:4, PstBeams:4, VlbiBeams:0.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="SKASubarray.SKASubarray.SKASubarray.controlMode">
+<tt class="descname">controlMode</tt><a class="headerlink" href="#SKASubarray.SKASubarray.SKASubarray.controlMode" title="Permalink to this definition">¶</a></dt>
+<dd><p>The control mode of the device. REMOTE, LOCAL
+TANGO Device accepts only from a ‘local’ client and ignores commands and queries received from TM or any other ‘remote’ clients. The Local clients has to release LOCAL control before REMOTE clients can take control again.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="SKASubarray.SKASubarray.SKASubarray.elementLoggingLevel">
+<tt class="descname">elementLoggingLevel</tt><a class="headerlink" href="#SKASubarray.SKASubarray.SKASubarray.elementLoggingLevel" title="Permalink to this definition">¶</a></dt>
+<dd><p>Current logging level to Element logging target for this device - 
+initialises to ElementLoggingLevelDefault on startup</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="SKASubarray.SKASubarray.SKASubarray.healthState">
+<tt class="descname">healthState</tt><a class="headerlink" href="#SKASubarray.SKASubarray.SKASubarray.healthState" title="Permalink to this definition">¶</a></dt>
+<dd><p>The health state reported for this device. It interprets the current device condition and condition of all managed devices to set this. Most possibly an aggregate attribute.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="SKASubarray.SKASubarray.SKASubarray.obsMode">
+<tt class="descname">obsMode</tt><a class="headerlink" href="#SKASubarray.SKASubarray.SKASubarray.obsMode" title="Permalink to this definition">¶</a></dt>
+<dd><p>Observing Mode</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="SKASubarray.SKASubarray.SKASubarray.obsState">
+<tt class="descname">obsState</tt><a class="headerlink" href="#SKASubarray.SKASubarray.SKASubarray.obsState" title="Permalink to this definition">¶</a></dt>
+<dd><p>Observing State</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="SKASubarray.SKASubarray.SKASubarray.read_activationTime">
+<tt class="descname">read_activationTime</tt><big>(</big><big>)</big><a class="headerlink" href="#SKASubarray.SKASubarray.SKASubarray.read_activationTime" title="Permalink to this definition">¶</a></dt>
+<dd><p>Reads the time since device is activated.
+:return: Time of activation in seconds since Unix epoch.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="SKASubarray.SKASubarray.SKASubarray.read_assignedResources">
+<tt class="descname">read_assignedResources</tt><big>(</big><big>)</big><a class="headerlink" href="#SKASubarray.SKASubarray.SKASubarray.read_assignedResources" title="Permalink to this definition">¶</a></dt>
+<dd><p>Reads the resources assigned to the device.
+:return: Resources assigned to the device.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="SKASubarray.SKASubarray.SKASubarray.read_configuredCapabilities">
+<tt class="descname">read_configuredCapabilities</tt><big>(</big><big>)</big><a class="headerlink" href="#SKASubarray.SKASubarray.SKASubarray.read_configuredCapabilities" title="Permalink to this definition">¶</a></dt>
+<dd><p>Reads capabilities configured in the Subarray.
+:return: A list of capability types with no. of instances
+used in the Subarray</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="SKASubarray.SKASubarray.SKASubarray.simulationMode">
+<tt class="descname">simulationMode</tt><a class="headerlink" href="#SKASubarray.SKASubarray.SKASubarray.simulationMode" title="Permalink to this definition">¶</a></dt>
+<dd><p>Reports the simulation mode of the device. 
+Some devices may implement both modes, while others will have simulators that set simulationMode to True while the real devices always set simulationMode to False.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="SKASubarray.SKASubarray.SKASubarray.storageLoggingLevel">
+<tt class="descname">storageLoggingLevel</tt><a class="headerlink" href="#SKASubarray.SKASubarray.SKASubarray.storageLoggingLevel" title="Permalink to this definition">¶</a></dt>
+<dd><p>Current logging level to Syslog for this device - initialises from  StorageLoggingLevelDefault on first execution of device.Needs to be READ_WRITE To make it memorized - but writing this attribute should do the same as command SetStorageLoggingLevel to ensure the targets and adjustmentsare made correctly</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="SKASubarray.SKASubarray.SKASubarray.testMode">
+<tt class="descname">testMode</tt><a class="headerlink" href="#SKASubarray.SKASubarray.SKASubarray.testMode" title="Permalink to this definition">¶</a></dt>
+<dd><p>The test mode of the device. 
+Either no test mode (empty string) or an indication of the test mode.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="SKASubarray.SKASubarray.SKASubarray.versionId">
+<tt class="descname">versionId</tt><a class="headerlink" href="#SKASubarray.SKASubarray.SKASubarray.versionId" title="Permalink to this definition">¶</a></dt>
+<dd><p>Version Id of this device</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="SKAObsDevice.html"
+                        title="previous chapter">SKA ObsDevice</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="SKATelState.html"
+                        title="next chapter">SKA TelState</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/SKASubarray.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="SKATelState.html" title="SKA TelState"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="SKAObsDevice.html" title="SKA ObsDevice"
+             >previous</a> |</li>
+        <li><a href="index.html">LMC Base Classes 1.0 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2019, NCRA India.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
+    </div>
+  </body>
+</html>

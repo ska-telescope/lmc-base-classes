@@ -1,0 +1,446 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>SKA BaseDevice &mdash; LMC Base Classes 1.0 documentation</title>
+    
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="LMC Base Classes 1.0 documentation" href="index.html" />
+    <link rel="next" title="SKA Capability" href="SKACapability.html" />
+    <link rel="prev" title="SKA AlarmHandler" href="SKAAlarmHandler.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="SKACapability.html" title="SKA Capability"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="SKAAlarmHandler.html" title="SKA AlarmHandler"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">LMC Base Classes 1.0 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="ska-basedevice">
+<h1>SKA BaseDevice<a class="headerlink" href="#ska-basedevice" title="Permalink to this headline">¶</a></h1>
+<div class="toctree-wrapper compound">
+<ul class="simple">
+</ul>
+</div>
+<span class="target" id="module-SKABaseDevice.SKABaseDevice"></span><p>SKABASE</p>
+<p>A generic base device for SKA. It exposes the generic attributes, properties and commands of an SKA device.</p>
+<dl class="class">
+<dt id="SKABaseDevice.SKABaseDevice.SKABaseDevice">
+<em class="property">class </em><tt class="descclassname">SKABaseDevice.SKABaseDevice.</tt><tt class="descname">SKABaseDevice</tt><big>(</big><em>cl</em>, <em>name</em><big>)</big><a class="headerlink" href="#SKABaseDevice.SKABaseDevice.SKABaseDevice" title="Permalink to this definition">¶</a></dt>
+<dd><p>A generic base device for SKA.</p>
+<dl class="attribute">
+<dt id="SKABaseDevice.SKABaseDevice.SKABaseDevice.CentralLoggingTarget">
+<tt class="descname">CentralLoggingTarget</tt><a class="headerlink" href="#SKABaseDevice.SKABaseDevice.SKABaseDevice.CentralLoggingTarget" title="Permalink to this definition">¶</a></dt>
+<dd><p>TANGO property</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="SKABaseDevice.SKABaseDevice.SKABaseDevice.ElementLoggingTarget">
+<tt class="descname">ElementLoggingTarget</tt><a class="headerlink" href="#SKABaseDevice.SKABaseDevice.SKABaseDevice.ElementLoggingTarget" title="Permalink to this definition">¶</a></dt>
+<dd><p>TANGO property</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="SKABaseDevice.SKABaseDevice.SKABaseDevice.GetMetrics">
+<tt class="descname">GetMetrics</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#SKABaseDevice.SKABaseDevice.SKABaseDevice.GetMetrics" title="Permalink to this definition">¶</a></dt>
+<dd><p>&#8216;GetMetrics&#8217; TANGO command</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">(not documented)</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">str</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="SKABaseDevice.SKABaseDevice.SKABaseDevice.GetVersionInfo">
+<tt class="descname">GetVersionInfo</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#SKABaseDevice.SKABaseDevice.SKABaseDevice.GetVersionInfo" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the version information of the device.
+:return: Version version details of the device.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="SKABaseDevice.SKABaseDevice.SKABaseDevice.GroupDefinitions">
+<tt class="descname">GroupDefinitions</tt><a class="headerlink" href="#SKABaseDevice.SKABaseDevice.SKABaseDevice.GroupDefinitions" title="Permalink to this definition">¶</a></dt>
+<dd><p>TANGO property</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="SKABaseDevice.SKABaseDevice.SKABaseDevice.MetricList">
+<tt class="descname">MetricList</tt><a class="headerlink" href="#SKABaseDevice.SKABaseDevice.SKABaseDevice.MetricList" title="Permalink to this definition">¶</a></dt>
+<dd><p>TANGO property</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="SKABaseDevice.SKABaseDevice.SKABaseDevice.Reset">
+<tt class="descname">Reset</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#SKABaseDevice.SKABaseDevice.SKABaseDevice.Reset" title="Permalink to this definition">¶</a></dt>
+<dd><p>Reset device to its default state.
+:return: None</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="SKABaseDevice.SKABaseDevice.SKABaseDevice.SkaLevel">
+<tt class="descname">SkaLevel</tt><a class="headerlink" href="#SKABaseDevice.SKABaseDevice.SKABaseDevice.SkaLevel" title="Permalink to this definition">¶</a></dt>
+<dd><p>TANGO property</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="SKABaseDevice.SKABaseDevice.SKABaseDevice.StorageLoggingTarget">
+<tt class="descname">StorageLoggingTarget</tt><a class="headerlink" href="#SKABaseDevice.SKABaseDevice.SKABaseDevice.StorageLoggingTarget" title="Permalink to this definition">¶</a></dt>
+<dd><p>TANGO property</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="SKABaseDevice.SKABaseDevice.SKABaseDevice.ToJson">
+<tt class="descname">ToJson</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#SKABaseDevice.SKABaseDevice.SKABaseDevice.ToJson" title="Permalink to this definition">¶</a></dt>
+<dd><p>&#8216;ToJson&#8217; TANGO command</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>arg</strong> &#8211; Requests the JSON string representing this device, can be filtered</td>
+</tr>
+</tbody>
+</table>
+<p>by with_commands, with_metrics, with_attributes and 
+with_value. Defaults for empty string argin are:
+{<cite>with_value</cite>:false, <cite>with_commands</cite>:true, with_metrics`:true, <cite>with_attributes</cite>:false}
+:type arg: str</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">The JSON string representing this device,</td>
+</tr>
+</tbody>
+</table>
+<p>filtered as per the input argument flags.
+:rtype: str</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="SKABaseDevice.SKABaseDevice.SKABaseDevice.adminMode">
+<tt class="descname">adminMode</tt><a class="headerlink" href="#SKABaseDevice.SKABaseDevice.SKABaseDevice.adminMode" title="Permalink to this definition">¶</a></dt>
+<dd><p>The admin mode reported for this device. It may interpret the current device condition and condition of all managed devices to set this. Most possibly an aggregate attribute.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="SKABaseDevice.SKABaseDevice.SKABaseDevice.always_executed_hook">
+<tt class="descname">always_executed_hook</tt><big>(</big><big>)</big><a class="headerlink" href="#SKABaseDevice.SKABaseDevice.SKABaseDevice.always_executed_hook" title="Permalink to this definition">¶</a></dt>
+<dd><p>Method that is always executed before any device command gets executed.
+:return: None</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="SKABaseDevice.SKABaseDevice.SKABaseDevice.buildState">
+<tt class="descname">buildState</tt><a class="headerlink" href="#SKABaseDevice.SKABaseDevice.SKABaseDevice.buildState" title="Permalink to this definition">¶</a></dt>
+<dd><p>Build state of this device</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="SKABaseDevice.SKABaseDevice.SKABaseDevice.centralLoggingLevel">
+<tt class="descname">centralLoggingLevel</tt><a class="headerlink" href="#SKABaseDevice.SKABaseDevice.SKABaseDevice.centralLoggingLevel" title="Permalink to this definition">¶</a></dt>
+<dd><p>Current logging level to Central logging target for this device - 
+initialises to CentralLoggingLevelDefault on startup</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="SKABaseDevice.SKABaseDevice.SKABaseDevice.controlMode">
+<tt class="descname">controlMode</tt><a class="headerlink" href="#SKABaseDevice.SKABaseDevice.SKABaseDevice.controlMode" title="Permalink to this definition">¶</a></dt>
+<dd><p>The control mode of the device. REMOTE, LOCAL
+TANGO Device accepts only from a ‘local’ client and ignores commands and queries received from TM or any other ‘remote’ clients. The Local clients has to release LOCAL control before REMOTE clients can take control again.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="SKABaseDevice.SKABaseDevice.SKABaseDevice.delete_device">
+<tt class="descname">delete_device</tt><big>(</big><big>)</big><a class="headerlink" href="#SKABaseDevice.SKABaseDevice.SKABaseDevice.delete_device" title="Permalink to this definition">¶</a></dt>
+<dd><p>Method to cleanup when device is stopped.
+:return: None</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="SKABaseDevice.SKABaseDevice.SKABaseDevice.elementLoggingLevel">
+<tt class="descname">elementLoggingLevel</tt><a class="headerlink" href="#SKABaseDevice.SKABaseDevice.SKABaseDevice.elementLoggingLevel" title="Permalink to this definition">¶</a></dt>
+<dd><p>Current logging level to Element logging target for this device - 
+initialises to ElementLoggingLevelDefault on startup</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="SKABaseDevice.SKABaseDevice.SKABaseDevice.get_device_attributes">
+<tt class="descname">get_device_attributes</tt><big>(</big><em>with_value=False</em>, <em>with_context=True</em>, <em>with_metrics=True</em>, <em>with_attributes=True</em>, <em>attribute_name=None</em><big>)</big><a class="headerlink" href="#SKABaseDevice.SKABaseDevice.SKABaseDevice.get_device_attributes" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get device attributes</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="SKABaseDevice.SKABaseDevice.SKABaseDevice.get_device_commands">
+<tt class="descname">get_device_commands</tt><big>(</big><em>with_context=True</em><big>)</big><a class="headerlink" href="#SKABaseDevice.SKABaseDevice.SKABaseDevice.get_device_commands" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get device proxy commands</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="SKABaseDevice.SKABaseDevice.SKABaseDevice.healthState">
+<tt class="descname">healthState</tt><a class="headerlink" href="#SKABaseDevice.SKABaseDevice.SKABaseDevice.healthState" title="Permalink to this definition">¶</a></dt>
+<dd><p>The health state reported for this device. It interprets the current device condition and condition of all managed devices to set this. Most possibly an aggregate attribute.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="SKABaseDevice.SKABaseDevice.SKABaseDevice.init_device">
+<tt class="descname">init_device</tt><big>(</big><big>)</big><a class="headerlink" href="#SKABaseDevice.SKABaseDevice.SKABaseDevice.init_device" title="Permalink to this definition">¶</a></dt>
+<dd><p>Method that initializes the tango device after startup.
+:return: None</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="SKABaseDevice.SKABaseDevice.SKABaseDevice.read_adminMode">
+<tt class="descname">read_adminMode</tt><big>(</big><big>)</big><a class="headerlink" href="#SKABaseDevice.SKABaseDevice.SKABaseDevice.read_adminMode" title="Permalink to this definition">¶</a></dt>
+<dd><p>Reads Admin Mode of the device.
+:return: Admin Mode of the device</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="SKABaseDevice.SKABaseDevice.SKABaseDevice.read_buildState">
+<tt class="descname">read_buildState</tt><big>(</big><big>)</big><a class="headerlink" href="#SKABaseDevice.SKABaseDevice.SKABaseDevice.read_buildState" title="Permalink to this definition">¶</a></dt>
+<dd><p>Reads the Build State of the device.
+:return: None</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="SKABaseDevice.SKABaseDevice.SKABaseDevice.read_centralLoggingLevel">
+<tt class="descname">read_centralLoggingLevel</tt><big>(</big><big>)</big><a class="headerlink" href="#SKABaseDevice.SKABaseDevice.SKABaseDevice.read_centralLoggingLevel" title="Permalink to this definition">¶</a></dt>
+<dd><p>Reads the central logging level of the device.
+:return: Central logging level of the device</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="SKABaseDevice.SKABaseDevice.SKABaseDevice.read_controlMode">
+<tt class="descname">read_controlMode</tt><big>(</big><big>)</big><a class="headerlink" href="#SKABaseDevice.SKABaseDevice.SKABaseDevice.read_controlMode" title="Permalink to this definition">¶</a></dt>
+<dd><p>Reads Control Mode of the device.
+:return: Control Mode of the device</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="SKABaseDevice.SKABaseDevice.SKABaseDevice.read_elementLoggingLevel">
+<tt class="descname">read_elementLoggingLevel</tt><big>(</big><big>)</big><a class="headerlink" href="#SKABaseDevice.SKABaseDevice.SKABaseDevice.read_elementLoggingLevel" title="Permalink to this definition">¶</a></dt>
+<dd><p>Reads element logging level of the device.
+:return: Element logging level of the device.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="SKABaseDevice.SKABaseDevice.SKABaseDevice.read_healthState">
+<tt class="descname">read_healthState</tt><big>(</big><big>)</big><a class="headerlink" href="#SKABaseDevice.SKABaseDevice.SKABaseDevice.read_healthState" title="Permalink to this definition">¶</a></dt>
+<dd><p>Reads Health State of the device.
+:return: Health State of the device</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="SKABaseDevice.SKABaseDevice.SKABaseDevice.read_simulationMode">
+<tt class="descname">read_simulationMode</tt><big>(</big><big>)</big><a class="headerlink" href="#SKABaseDevice.SKABaseDevice.SKABaseDevice.read_simulationMode" title="Permalink to this definition">¶</a></dt>
+<dd><p>Reads Simulation Mode of the device.
+:return: Simulation Mode of the device.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="SKABaseDevice.SKABaseDevice.SKABaseDevice.read_storageLoggingLevel">
+<tt class="descname">read_storageLoggingLevel</tt><big>(</big><big>)</big><a class="headerlink" href="#SKABaseDevice.SKABaseDevice.SKABaseDevice.read_storageLoggingLevel" title="Permalink to this definition">¶</a></dt>
+<dd><p>Reads storage logging level of the device.
+:return: Storage logging level of the device.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="SKABaseDevice.SKABaseDevice.SKABaseDevice.read_testMode">
+<tt class="descname">read_testMode</tt><big>(</big><big>)</big><a class="headerlink" href="#SKABaseDevice.SKABaseDevice.SKABaseDevice.read_testMode" title="Permalink to this definition">¶</a></dt>
+<dd><p>Reads Test Mode of the device.
+:return: Test Mode of the device</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="SKABaseDevice.SKABaseDevice.SKABaseDevice.read_versionId">
+<tt class="descname">read_versionId</tt><big>(</big><big>)</big><a class="headerlink" href="#SKABaseDevice.SKABaseDevice.SKABaseDevice.read_versionId" title="Permalink to this definition">¶</a></dt>
+<dd><p>Reads the Version Id of the device.
+:return: None</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="SKABaseDevice.SKABaseDevice.SKABaseDevice.simulationMode">
+<tt class="descname">simulationMode</tt><a class="headerlink" href="#SKABaseDevice.SKABaseDevice.SKABaseDevice.simulationMode" title="Permalink to this definition">¶</a></dt>
+<dd><p>Reports the simulation mode of the device. 
+Some devices may implement both modes, while others will have simulators that set simulationMode to True while the real devices always set simulationMode to False.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="SKABaseDevice.SKABaseDevice.SKABaseDevice.storageLoggingLevel">
+<tt class="descname">storageLoggingLevel</tt><a class="headerlink" href="#SKABaseDevice.SKABaseDevice.SKABaseDevice.storageLoggingLevel" title="Permalink to this definition">¶</a></dt>
+<dd><p>Current logging level to Syslog for this device - initialises from  StorageLoggingLevelDefault on first execution of device.Needs to be READ_WRITE To make it memorized - but writing this attribute should do the same as command SetStorageLoggingLevel to ensure the targets and adjustmentsare made correctly</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="SKABaseDevice.SKABaseDevice.SKABaseDevice.testMode">
+<tt class="descname">testMode</tt><a class="headerlink" href="#SKABaseDevice.SKABaseDevice.SKABaseDevice.testMode" title="Permalink to this definition">¶</a></dt>
+<dd><p>The test mode of the device. 
+Either no test mode (empty string) or an indication of the test mode.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="SKABaseDevice.SKABaseDevice.SKABaseDevice.versionId">
+<tt class="descname">versionId</tt><a class="headerlink" href="#SKABaseDevice.SKABaseDevice.SKABaseDevice.versionId" title="Permalink to this definition">¶</a></dt>
+<dd><p>Version Id of this device</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="SKABaseDevice.SKABaseDevice.SKABaseDevice.write_adminMode">
+<tt class="descname">write_adminMode</tt><big>(</big><em>value</em><big>)</big><a class="headerlink" href="#SKABaseDevice.SKABaseDevice.SKABaseDevice.write_adminMode" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sets Admin Mode of the device.
+:param value: Admin Mode of the device.
+:return: None</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="SKABaseDevice.SKABaseDevice.SKABaseDevice.write_centralLoggingLevel">
+<tt class="descname">write_centralLoggingLevel</tt><big>(</big><em>value</em><big>)</big><a class="headerlink" href="#SKABaseDevice.SKABaseDevice.SKABaseDevice.write_centralLoggingLevel" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sets central logging level of the device
+:param value: Logging level for Central Logger
+:return: None</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="SKABaseDevice.SKABaseDevice.SKABaseDevice.write_controlMode">
+<tt class="descname">write_controlMode</tt><big>(</big><em>value</em><big>)</big><a class="headerlink" href="#SKABaseDevice.SKABaseDevice.SKABaseDevice.write_controlMode" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sets Control Mode of the device.
+:param value: Control mode value
+:return: None</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="SKABaseDevice.SKABaseDevice.SKABaseDevice.write_elementLoggingLevel">
+<tt class="descname">write_elementLoggingLevel</tt><big>(</big><em>value</em><big>)</big><a class="headerlink" href="#SKABaseDevice.SKABaseDevice.SKABaseDevice.write_elementLoggingLevel" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sets element logging level of the device
+:param value: Logging Level for Element Logger
+:return: None</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="SKABaseDevice.SKABaseDevice.SKABaseDevice.write_simulationMode">
+<tt class="descname">write_simulationMode</tt><big>(</big><em>value</em><big>)</big><a class="headerlink" href="#SKABaseDevice.SKABaseDevice.SKABaseDevice.write_simulationMode" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sets Simulation Mode of the device
+:param value: SimulationMode
+:return: None</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="SKABaseDevice.SKABaseDevice.SKABaseDevice.write_storageLoggingLevel">
+<tt class="descname">write_storageLoggingLevel</tt><big>(</big><em>value</em><big>)</big><a class="headerlink" href="#SKABaseDevice.SKABaseDevice.SKABaseDevice.write_storageLoggingLevel" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sets logging level at storage.
+:param value: Logging Level for storage logger
+:return:</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="SKABaseDevice.SKABaseDevice.SKABaseDevice.write_testMode">
+<tt class="descname">write_testMode</tt><big>(</big><em>value</em><big>)</big><a class="headerlink" href="#SKABaseDevice.SKABaseDevice.SKABaseDevice.write_testMode" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sets Test Mode of the device.
+:param value: Test Mode
+:return: None</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="SKAAlarmHandler.html"
+                        title="previous chapter">SKA AlarmHandler</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="SKACapability.html"
+                        title="next chapter">SKA Capability</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/SKABaseDevice.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="SKACapability.html" title="SKA Capability"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="SKAAlarmHandler.html" title="SKA AlarmHandler"
+             >previous</a> |</li>
+        <li><a href="index.html">LMC Base Classes 1.0 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2019, NCRA India.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
+    </div>
+  </body>
+</html>

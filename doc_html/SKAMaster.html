@@ -1,0 +1,383 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>SKA Master &mdash; LMC Base Classes 1.0 documentation</title>
+    
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="LMC Base Classes 1.0 documentation" href="index.html" />
+    <link rel="next" title="SKA ObsDevice" href="SKAObsDevice.html" />
+    <link rel="prev" title="SKA Logger" href="SKALogger.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="SKAObsDevice.html" title="SKA ObsDevice"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="SKALogger.html" title="SKA Logger"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">LMC Base Classes 1.0 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="ska-master">
+<h1>SKA Master<a class="headerlink" href="#ska-master" title="Permalink to this headline">¶</a></h1>
+<div class="toctree-wrapper compound">
+<ul class="simple">
+</ul>
+</div>
+<span class="target" id="module-SKAMaster.SKAMaster"></span><p>SKAMaster</p>
+<p>A master test</p>
+<dl class="class">
+<dt id="SKAMaster.SKAMaster.SKAMaster">
+<em class="property">class </em><tt class="descclassname">SKAMaster.SKAMaster.</tt><tt class="descname">SKAMaster</tt><big>(</big><em>cl</em>, <em>name</em><big>)</big><a class="headerlink" href="#SKAMaster.SKAMaster.SKAMaster" title="Permalink to this definition">¶</a></dt>
+<dd><p>A master test</p>
+<dl class="attribute">
+<dt id="SKAMaster.SKAMaster.SKAMaster.CentralLoggingTarget">
+<tt class="descname">CentralLoggingTarget</tt><a class="headerlink" href="#SKAMaster.SKAMaster.SKAMaster.CentralLoggingTarget" title="Permalink to this definition">¶</a></dt>
+<dd><p>TANGO property</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="SKAMaster.SKAMaster.SKAMaster.ElementLoggingTarget">
+<tt class="descname">ElementLoggingTarget</tt><a class="headerlink" href="#SKAMaster.SKAMaster.SKAMaster.ElementLoggingTarget" title="Permalink to this definition">¶</a></dt>
+<dd><p>TANGO property</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="SKAMaster.SKAMaster.SKAMaster.GetMetrics">
+<tt class="descname">GetMetrics</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#SKAMaster.SKAMaster.SKAMaster.GetMetrics" title="Permalink to this definition">¶</a></dt>
+<dd><p>&#8216;GetMetrics&#8217; TANGO command</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">(not documented)</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">str</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="SKAMaster.SKAMaster.SKAMaster.GetVersionInfo">
+<tt class="descname">GetVersionInfo</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#SKAMaster.SKAMaster.SKAMaster.GetVersionInfo" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the version information of the device.
+:return: Version version details of the device.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="SKAMaster.SKAMaster.SKAMaster.GroupDefinitions">
+<tt class="descname">GroupDefinitions</tt><a class="headerlink" href="#SKAMaster.SKAMaster.SKAMaster.GroupDefinitions" title="Permalink to this definition">¶</a></dt>
+<dd><p>TANGO property</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="SKAMaster.SKAMaster.SKAMaster.MaxCapabilities">
+<tt class="descname">MaxCapabilities</tt><a class="headerlink" href="#SKAMaster.SKAMaster.SKAMaster.MaxCapabilities" title="Permalink to this definition">¶</a></dt>
+<dd><p>TANGO property</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="SKAMaster.SKAMaster.SKAMaster.MetricList">
+<tt class="descname">MetricList</tt><a class="headerlink" href="#SKAMaster.SKAMaster.SKAMaster.MetricList" title="Permalink to this definition">¶</a></dt>
+<dd><p>TANGO property</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="SKAMaster.SKAMaster.SKAMaster.Reset">
+<tt class="descname">Reset</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#SKAMaster.SKAMaster.SKAMaster.Reset" title="Permalink to this definition">¶</a></dt>
+<dd><p>Reset device to its default state.
+:return: None</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="SKAMaster.SKAMaster.SKAMaster.SkaLevel">
+<tt class="descname">SkaLevel</tt><a class="headerlink" href="#SKAMaster.SKAMaster.SKAMaster.SkaLevel" title="Permalink to this definition">¶</a></dt>
+<dd><p>TANGO property</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="SKAMaster.SKAMaster.SKAMaster.StorageLoggingTarget">
+<tt class="descname">StorageLoggingTarget</tt><a class="headerlink" href="#SKAMaster.SKAMaster.SKAMaster.StorageLoggingTarget" title="Permalink to this definition">¶</a></dt>
+<dd><p>TANGO property</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="SKAMaster.SKAMaster.SKAMaster.ToJson">
+<tt class="descname">ToJson</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#SKAMaster.SKAMaster.SKAMaster.ToJson" title="Permalink to this definition">¶</a></dt>
+<dd><p>&#8216;ToJson&#8217; TANGO command</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>arg</strong> &#8211; Requests the JSON string representing this device, can be filtered</td>
+</tr>
+</tbody>
+</table>
+<p>by with_commands, with_metrics, with_attributes and 
+with_value. Defaults for empty string argin are:
+{<cite>with_value</cite>:false, <cite>with_commands</cite>:true, with_metrics`:true, <cite>with_attributes</cite>:false}
+:type arg: str</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">The JSON string representing this device,</td>
+</tr>
+</tbody>
+</table>
+<p>filtered as per the input argument flags.
+:rtype: str</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="SKAMaster.SKAMaster.SKAMaster.adminMode">
+<tt class="descname">adminMode</tt><a class="headerlink" href="#SKAMaster.SKAMaster.SKAMaster.adminMode" title="Permalink to this definition">¶</a></dt>
+<dd><p>The admin mode reported for this device. It may interpret the current device condition and condition of all managed devices to set this. Most possibly an aggregate attribute.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="SKAMaster.SKAMaster.SKAMaster.availableCapabilities">
+<tt class="descname">availableCapabilities</tt><a class="headerlink" href="#SKAMaster.SKAMaster.SKAMaster.availableCapabilities" title="Permalink to this definition">¶</a></dt>
+<dd><p>A list of available number of instances of each capability type, e.g. &#8216;CORRELATOR:512&#8217;, &#8216;PSS-BEAMS:4&#8217;.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="SKAMaster.SKAMaster.SKAMaster.buildState">
+<tt class="descname">buildState</tt><a class="headerlink" href="#SKAMaster.SKAMaster.SKAMaster.buildState" title="Permalink to this definition">¶</a></dt>
+<dd><p>Build state of this device</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="SKAMaster.SKAMaster.SKAMaster.centralLoggingLevel">
+<tt class="descname">centralLoggingLevel</tt><a class="headerlink" href="#SKAMaster.SKAMaster.SKAMaster.centralLoggingLevel" title="Permalink to this definition">¶</a></dt>
+<dd><p>Current logging level to Central logging target for this device - 
+initialises to CentralLoggingLevelDefault on startup</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="SKAMaster.SKAMaster.SKAMaster.controlMode">
+<tt class="descname">controlMode</tt><a class="headerlink" href="#SKAMaster.SKAMaster.SKAMaster.controlMode" title="Permalink to this definition">¶</a></dt>
+<dd><p>The control mode of the device. REMOTE, LOCAL
+TANGO Device accepts only from a ‘local’ client and ignores commands and queries received from TM or any other ‘remote’ clients. The Local clients has to release LOCAL control before REMOTE clients can take control again.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="SKAMaster.SKAMaster.SKAMaster.elementAlarmAddress">
+<tt class="descname">elementAlarmAddress</tt><a class="headerlink" href="#SKAMaster.SKAMaster.SKAMaster.elementAlarmAddress" title="Permalink to this definition">¶</a></dt>
+<dd><p>FQDN of Element Alarm Handlers</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="SKAMaster.SKAMaster.SKAMaster.elementDatabaseAddress">
+<tt class="descname">elementDatabaseAddress</tt><a class="headerlink" href="#SKAMaster.SKAMaster.SKAMaster.elementDatabaseAddress" title="Permalink to this definition">¶</a></dt>
+<dd><p>FQDN of Element Database device</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="SKAMaster.SKAMaster.SKAMaster.elementLoggerAddress">
+<tt class="descname">elementLoggerAddress</tt><a class="headerlink" href="#SKAMaster.SKAMaster.SKAMaster.elementLoggerAddress" title="Permalink to this definition">¶</a></dt>
+<dd><p>FQDN of Element Logger</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="SKAMaster.SKAMaster.SKAMaster.elementLoggingLevel">
+<tt class="descname">elementLoggingLevel</tt><a class="headerlink" href="#SKAMaster.SKAMaster.SKAMaster.elementLoggingLevel" title="Permalink to this definition">¶</a></dt>
+<dd><p>Current logging level to Element logging target for this device - 
+initialises to ElementLoggingLevelDefault on startup</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="SKAMaster.SKAMaster.SKAMaster.elementTelStateAddress">
+<tt class="descname">elementTelStateAddress</tt><a class="headerlink" href="#SKAMaster.SKAMaster.SKAMaster.elementTelStateAddress" title="Permalink to this definition">¶</a></dt>
+<dd><p>FQDN of Element TelState device</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="SKAMaster.SKAMaster.SKAMaster.healthState">
+<tt class="descname">healthState</tt><a class="headerlink" href="#SKAMaster.SKAMaster.SKAMaster.healthState" title="Permalink to this definition">¶</a></dt>
+<dd><p>The health state reported for this device. It interprets the current device condition and condition of all managed devices to set this. Most possibly an aggregate attribute.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="SKAMaster.SKAMaster.SKAMaster.isCapabilityAchievable">
+<tt class="descname">isCapabilityAchievable</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#SKAMaster.SKAMaster.SKAMaster.isCapabilityAchievable" title="Permalink to this definition">¶</a></dt>
+<dd><p>&#8216;isCapabilityAchievable&#8217; TANGO command</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>arg</strong> (<em>DevVarLongStringArray</em>) &#8211; [nrInstances][Capability types]</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">(not documented)</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">bool</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="SKAMaster.SKAMaster.SKAMaster.maxCapabilities">
+<tt class="descname">maxCapabilities</tt><a class="headerlink" href="#SKAMaster.SKAMaster.SKAMaster.maxCapabilities" title="Permalink to this definition">¶</a></dt>
+<dd><p>Maximum number of instances of each capability type, e.g. &#8216;CORRELATOR:512&#8217;, &#8216;PSS-BEAMS:4&#8217;.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="SKAMaster.SKAMaster.SKAMaster.read_availableCapabilities">
+<tt class="descname">read_availableCapabilities</tt><big>(</big><big>)</big><a class="headerlink" href="#SKAMaster.SKAMaster.SKAMaster.read_availableCapabilities" title="Permalink to this definition">¶</a></dt>
+<dd><p>Reads list of available number of instances of each capability type</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="SKAMaster.SKAMaster.SKAMaster.read_elementAlarmAddress">
+<tt class="descname">read_elementAlarmAddress</tt><big>(</big><big>)</big><a class="headerlink" href="#SKAMaster.SKAMaster.SKAMaster.read_elementAlarmAddress" title="Permalink to this definition">¶</a></dt>
+<dd><p>Reads FQDN of Element Alarm device</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="SKAMaster.SKAMaster.SKAMaster.read_elementDatabaseAddress">
+<tt class="descname">read_elementDatabaseAddress</tt><big>(</big><big>)</big><a class="headerlink" href="#SKAMaster.SKAMaster.SKAMaster.read_elementDatabaseAddress" title="Permalink to this definition">¶</a></dt>
+<dd><p>Reads FQDN of Element Database device</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="SKAMaster.SKAMaster.SKAMaster.read_elementLoggerAddress">
+<tt class="descname">read_elementLoggerAddress</tt><big>(</big><big>)</big><a class="headerlink" href="#SKAMaster.SKAMaster.SKAMaster.read_elementLoggerAddress" title="Permalink to this definition">¶</a></dt>
+<dd><p>Reads FQDN of Element Logger device</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="SKAMaster.SKAMaster.SKAMaster.read_elementTelStateAddress">
+<tt class="descname">read_elementTelStateAddress</tt><big>(</big><big>)</big><a class="headerlink" href="#SKAMaster.SKAMaster.SKAMaster.read_elementTelStateAddress" title="Permalink to this definition">¶</a></dt>
+<dd><p>Reads FQDN of Element TelState device</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="SKAMaster.SKAMaster.SKAMaster.read_maxCapabilities">
+<tt class="descname">read_maxCapabilities</tt><big>(</big><big>)</big><a class="headerlink" href="#SKAMaster.SKAMaster.SKAMaster.read_maxCapabilities" title="Permalink to this definition">¶</a></dt>
+<dd><p>Reads maximum number of instances of each capability type</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="SKAMaster.SKAMaster.SKAMaster.simulationMode">
+<tt class="descname">simulationMode</tt><a class="headerlink" href="#SKAMaster.SKAMaster.SKAMaster.simulationMode" title="Permalink to this definition">¶</a></dt>
+<dd><p>Reports the simulation mode of the device. 
+Some devices may implement both modes, while others will have simulators that set simulationMode to True while the real devices always set simulationMode to False.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="SKAMaster.SKAMaster.SKAMaster.storageLoggingLevel">
+<tt class="descname">storageLoggingLevel</tt><a class="headerlink" href="#SKAMaster.SKAMaster.SKAMaster.storageLoggingLevel" title="Permalink to this definition">¶</a></dt>
+<dd><p>Current logging level to Syslog for this device - initialises from  StorageLoggingLevelDefault on first execution of device.Needs to be READ_WRITE To make it memorized - but writing this attribute should do the same as command SetStorageLoggingLevel to ensure the targets and adjustmentsare made correctly</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="SKAMaster.SKAMaster.SKAMaster.testMode">
+<tt class="descname">testMode</tt><a class="headerlink" href="#SKAMaster.SKAMaster.SKAMaster.testMode" title="Permalink to this definition">¶</a></dt>
+<dd><p>The test mode of the device. 
+Either no test mode (empty string) or an indication of the test mode.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="SKAMaster.SKAMaster.SKAMaster.versionId">
+<tt class="descname">versionId</tt><a class="headerlink" href="#SKAMaster.SKAMaster.SKAMaster.versionId" title="Permalink to this definition">¶</a></dt>
+<dd><p>Version Id of this device</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="SKALogger.html"
+                        title="previous chapter">SKA Logger</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="SKAObsDevice.html"
+                        title="next chapter">SKA ObsDevice</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/SKAMaster.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="SKAObsDevice.html" title="SKA ObsDevice"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="SKALogger.html" title="SKA Logger"
+             >previous</a> |</li>
+        <li><a href="index.html">LMC Base Classes 1.0 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2019, NCRA India.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
+    </div>
+  </body>
+</html>

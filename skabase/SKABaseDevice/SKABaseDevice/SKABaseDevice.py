@@ -548,9 +548,12 @@ class SKABaseDevice(Device):
 
     @command(
     dtype_in='str',
-    doc_in="Requests the JSON string representing this device, can be filtered \nby with_commands, with_metrics, with_attributes and \nwith_value. Defaults for empty string  argin are:\n{`with_value`:false, `with_commands`:true,\n  `with_metrics`:true, `with_attributes`:false}",
+    doc_in="Requests the JSON string representing this device, can be filtered "
+           "\nby with_commands, with_metrics, with_attributes and \nwith_value. Defaults for empty string "
+           "argin are:\n{`with_value`:false, `with_commands`:true, with_metrics`:true,"
+           " `with_attributes`:false}",
     dtype_out='str',
-    doc_out="The JSON string representing this device, \nfiltered as per the input argument flags",
+    doc_out="The JSON string representing this device, \nfiltered as per the input argument flags.",
     )
     @DebugIt()
     def ToJson(self, argin):

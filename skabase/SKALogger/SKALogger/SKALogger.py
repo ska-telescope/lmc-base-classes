@@ -9,7 +9,7 @@
 """ SKALogger
 
 A generic base device for Logging for SKA. It enables to view on-line logs through the TANGO Logging Services
- and to store logs using Python logging. It configures the log levels of remote logging for selected devices.
+and to store logs using Python logging. It configures the log levels of remote logging for selected devices.
 """
 
 # tango imports

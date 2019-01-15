@@ -13,7 +13,7 @@ from datetime import datetime
 import tango
 from tango import (DeviceProxy, DbDatum, DevState, DbDevInfo, AttrQuality,
                    AttrWriteType, Except, ErrSeverity)
-from tango._tango import DevState as _DevState
+from tango import DevState as _DevState
 from contextlib import contextmanager
 
 from .faults import GroupDefinitionsError

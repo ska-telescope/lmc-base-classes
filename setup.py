@@ -30,7 +30,8 @@ setup(name="lmc_base_classes",
       setup_requires=[] + pytest_runner,
       install_requires=[
           "enum34",
-          "argparse"
+          "argparse",
+          "PyTango"
       ],
       tests_require=[
           "coverage",

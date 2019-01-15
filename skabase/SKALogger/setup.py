@@ -21,6 +21,8 @@ with open(readme_filename) as file:
     long_description = file.read()
 
 release_filename = os.path.join(setup_dir, 'release.py')
+print "System path: ", sys.path
+
 exec(open(release_filename).read())
 
 pack = ['SKALogger']

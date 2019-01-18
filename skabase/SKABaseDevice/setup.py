@@ -19,7 +19,7 @@ readme_filename = os.path.join(setup_dir, 'README.rst')
 with open(readme_filename) as file:
     long_description = file.read()
 
-release_filename = os.path.join(setup_dir, 'release.py')
+release_filename = os.path.join(setup_dir, 'SKABaseDevice', 'release.py')
 exec(open(release_filename).read())
 
 pack = ['SKABaseDevice']

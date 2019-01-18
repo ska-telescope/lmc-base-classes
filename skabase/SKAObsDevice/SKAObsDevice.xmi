@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="ASCII"?>
 <pogoDsl:PogoSystem xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:pogoDsl="http://www.esrf.fr/tango/pogo/PogoDsl">
   <classes name="SKAObsDevice" pogoRevision="9.6">
-    <description description="A generic base device for Observations for SKA." title="SKAObsDevice" sourcePath="/home/pogo/src/lmc-base-classes/skabase/SKAObsDevice" language="PythonHL" filestogenerate="XMI   file,Code files,Python Package,Protected Regions" license="none" copyright="" hasMandatoryProperty="false" hasConcreteProperty="false" hasAbstractCommand="true" hasAbstractAttribute="false">
+    <description description="A generic base device for Observations for SKA." title="SKAObsDevice" sourcePath="/home/tango-cs/src/lmc-base-classes/skabase/SKAObsDevice" language="PythonHL" filestogenerate="XMI   file,Code files,Python Package,Protected Regions" license="none" copyright="" hasMandatoryProperty="false" hasConcreteProperty="false" hasAbstractCommand="true" hasAbstractAttribute="false">
       <inheritances classname="Device_Impl" sourcePath=""/>
       <inheritances classname="SKABaseDevice" sourcePath="../SKABaseDevice"/>
       <identification contact="at ska.ac.za - cam" author="cam" emailDomain="ska.ac.za" classFamily="OtherInstruments" siteSpecific="" platform="All Platforms" bus="Not Applicable" manufacturer="SKASA" reference="SKA-SKAObsDevice"/>
@@ -113,18 +113,19 @@
     </attributes>
     <attributes name="obsMode" attType="Scalar" rwType="READ" displayLevel="OPERATOR" polledPeriod="1000" maxX="" maxY="" allocReadMember="true" isDynamic="false">
       <dataType xsi:type="pogoDsl:EnumType"/>
+      <changeEvent fire="false" libCheckCriteria="false"/>
+      <archiveEvent fire="false" libCheckCriteria="false"/>
       <dataReadyEvent fire="false" libCheckCriteria="true"/>
       <status abstract="false" inherited="false" concrete="true" concreteHere="true"/>
       <properties description="Observing Mode" label="" unit="" standardUnit="" displayUnit="" format="" maxValue="" minValue="" maxAlarm="" minAlarm="" maxWarning="" minWarning="" deltaTime="" deltaValue=""/>
       <enumLabels>IDLE</enumLabels>
-      <enumLabels>IMG_CONTINUUM</enumLabels>
-      <enumLabels>IMG_SPECTRAL_LINE</enumLabels>
-      <enumLabels>IMG_ZOOM</enumLabels>
-      <enumLabels>PULSAR_SEARCH</enumLabels>
-      <enumLabels>TRANSIENT_SEARCH_FAST</enumLabels>
-      <enumLabels>TRANSIENT_SEARCH_SLOW</enumLabels>
-      <enumLabels>PULSAR_TIMING</enumLabels>
+      <enumLabels>IMAGING</enumLabels>
+      <enumLabels>PULSAR-SEARCH</enumLabels>
+      <enumLabels>PULSAR-TIMING</enumLabels>
+      <enumLabels>DYNAMIC-SPECTRUM</enumLabels>
+      <enumLabels>TRANSIENT-SEARCH</enumLabels>
       <enumLabels>VLBI</enumLabels>
+      <enumLabels>CALIBRATION</enumLabels>
     </attributes>
     <attributes name="configurationProgress" attType="Scalar" rwType="READ" displayLevel="OPERATOR" polledPeriod="1000" maxX="" maxY="" allocReadMember="true" isDynamic="false">
       <dataType xsi:type="pogoDsl:UShortType"/>

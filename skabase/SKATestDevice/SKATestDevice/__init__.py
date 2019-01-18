@@ -5,10 +5,9 @@
 #
 #
 
-
 """SKATestDevice
 
-A generic Test device for testing SKA base class functionalites.
+A generic Test device for testing SKA base class functionalities.
 """
 
 from . import release

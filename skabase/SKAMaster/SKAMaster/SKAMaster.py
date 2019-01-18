@@ -10,15 +10,9 @@
 A master test
 """
 
-# PyTango imports
-import PyTango
-from PyTango import DebugIt
-from PyTango.server import run
-from PyTango.server import Device, DeviceMeta
-from PyTango.server import attribute, command
-from PyTango.server import device_property
-from PyTango import AttrQuality, DispLevel, DevState
-from PyTango import AttrWriteType, PipeWriteType
+# tango imports
+from tango import DebugIt
+from tango.server import run, DeviceMeta, attribute, command, device_property
 from SKABaseDevice import SKABaseDevice
 # Additional import
 # PROTECTED REGION ID(SKAMaster.additionnal_import) ENABLED START #
@@ -42,14 +36,6 @@ class SKAMaster(SKABaseDevice):
     # -----------------
     # Device Properties
     # -----------------
-
-
-
-
-
-
-
-
 
     MaxCapabilities = device_property(
         dtype=('str',),
@@ -79,16 +65,6 @@ class SKAMaster(SKABaseDevice):
         doc="FQDN of Element Database device",
     )
 
-
-
-
-
-
-
-
-
-
-
     maxCapabilities = attribute(
         dtype=('str',),
         max_dim_x=20,
@@ -98,7 +74,8 @@ class SKAMaster(SKABaseDevice):
     availableCapabilities = attribute(
         dtype=('str',),
         max_dim_x=20,
-        doc="A list of available number of instances of each capability type, e.g. 'CORRELATOR:512', 'PSS-BEAMS:4'.",
+        doc="A list of available number of instances of each capability type, "
+            "e.g. 'CORRELATOR:512', 'PSS-BEAMS:4'.",
     )
 
     # ---------------
@@ -142,43 +119,48 @@ class SKAMaster(SKABaseDevice):
 
     def read_elementLoggerAddress(self):
         # PROTECTED REGION ID(SKAMaster.elementLoggerAddress_read) ENABLED START #
+        """Reads FQDN of Element Logger device"""
         return self._element_logger_address
         # PROTECTED REGION END #    //  SKAMaster.elementLoggerAddress_read
 
     def read_elementAlarmAddress(self):
         # PROTECTED REGION ID(SKAMaster.elementAlarmAddress_read) ENABLED START #
+        """Reads FQDN of Element Alarm device"""
         return self._element_alarm_address
         # PROTECTED REGION END #    //  SKAMaster.elementAlarmAddress_read
 
     def read_elementTelStateAddress(self):
         # PROTECTED REGION ID(SKAMaster.elementTelStateAddress_read) ENABLED START #
+        """Reads FQDN of Element TelState device"""
         return self._element_tel_state_address
         # PROTECTED REGION END #    //  SKAMaster.elementTelStateAddress_read
 
     def read_elementDatabaseAddress(self):
         # PROTECTED REGION ID(SKAMaster.elementDatabaseAddress_read) ENABLED START #
+        """Reads FQDN of Element Database device"""
         return self._element_database_address
         # PROTECTED REGION END #    //  SKAMaster.elementDatabaseAddress_read
 
     def read_maxCapabilities(self):
         # PROTECTED REGION ID(SKAMaster.maxCapabilities_read) ENABLED START #
+        """Reads maximum number of instances of each capability type"""
         return convert_dict_to_list(self._max_capabilities)
         # PROTECTED REGION END #    //  SKAMaster.maxCapabilities_read
 
     def read_availableCapabilities(self):
         # PROTECTED REGION ID(SKAMaster.availableCapabilities_read) ENABLED START #
+        """Reads list of available number of instances of each capability type"""
         return convert_dict_to_list(self._available_capabilities)
         # PROTECTED REGION END #    //  SKAMaster.availableCapabilities_read
-
 
     # --------
     # Commands
     # --------
 
     @command(
-    dtype_in='DevVarLongStringArray', 
-    doc_in="[nrInstances][Capability types]", 
-    dtype_out='bool', 
+    dtype_in='DevVarLongStringArray',
+    doc_in="[nrInstances][Capability types]",
+    dtype_out='bool',
     )
     @DebugIt()
     def isCapabilityAchievable(self, argin):
@@ -192,7 +174,7 @@ class SKAMaster(SKABaseDevice):
         for capability_type, capability_instances in izip(
                 capability_types, capabilities_instances):
             if not self._available_capabilities[capability_type] >= capability_instances:
-               return False
+                return False
 
         return True
         # PROTECTED REGION END #    //  SKAMaster.isCapabilityAchievable

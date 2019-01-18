@@ -7,17 +7,14 @@
 
 """ SKATestDevice
 
-A generic Test device for testing SKA base class functionalites.
+A generic Test device for testing SKA base class functionalities.
 """
 
-# PyTango imports
-import PyTango
-from PyTango import DebugIt, DeviceProxy
-from PyTango.server import run
-from PyTango.server import Device, DeviceMeta
-from PyTango.server import attribute, command
-from PyTango.server import device_property
+# tango imports
 import tango
+from tango import DebugIt
+from tango.server import run
+from tango.server import DeviceMeta, attribute, command
 from SKABaseDevice import SKABaseDevice
 import logging
 # Additional import
@@ -40,7 +37,7 @@ logger.addHandler(syslogs)
 
 class SKATestDevice(SKABaseDevice):
     """
-    A generic Test device for testing SKA base class functionalites.
+    A generic Test device for testing SKA base class functionalities.
     """
     __metaclass__ = DeviceMeta
     # PROTECTED REGION ID(SKATestDevice.class_variable) ENABLED START #
@@ -113,25 +110,30 @@ class SKATestDevice(SKABaseDevice):
 
     def read_obsState(self):
         # PROTECTED REGION ID(SKATestDevice.obsState_read) ENABLED START #
+        """Reads Observing State of the device"""
         return 0
         # PROTECTED REGION END #    //  SKATestDevice.obsState_read
 
     def read_obsMode(self):
         # PROTECTED REGION ID(SKATestDevice.obsMode_read) ENABLED START #
+        """Reads Observing Mode of the device"""
         return 0
         # PROTECTED REGION END #    //  SKATestDevice.obsMode_read
 
     def read_configurationProgress(self):
         # PROTECTED REGION ID(SKATestDevice.configurationProgress_read) ENABLED START #
+        """Reads percentage configuration progress"""
         return 0
         # PROTECTED REGION END #    //  SKATestDevice.configurationProgress_read
 
     def read_configurationDelayExpected(self):
         # PROTECTED REGION ID(SKATestDevice.configurationDelayExpected_read) ENABLED START #
+        """Reads configuration delay expected in seconds"""
         return 0
         # PROTECTED REGION END #    //  SKATestDevice.configurationDelayExpected_read
 
     def write_storageLoggingLevel(self, value):
+        """Sets the Storage Logging Level of the device"""
         self._storage_logging_level = value
         if self._storage_logging_level == int(tango.LogLevel.LOG_FATAL):
             logger.setLevel(logging.FATAL)
@@ -257,6 +259,7 @@ class SKATestDevice(SKABaseDevice):
     @DebugIt()
     def On(self):
         # PROTECTED REGION ID(SKATestDevice.On) ENABLED START #
+        """Starts the device"""
         self.dev_logging("TurnOn Sending DEBUG", int(tango.LogLevel.LOG_DEBUG))
         self.dev_logging("TurnOn Sending INFO", int(tango.LogLevel.LOG_INFO))
         self.dev_logging("TurnOn Sending WARNING", int(tango.LogLevel.LOG_WARN))
@@ -269,6 +272,7 @@ class SKATestDevice(SKABaseDevice):
     @DebugIt()
     def Stop(self):
         # PROTECTED REGION ID(SKATestDevice.Stop) ENABLED START #
+        """Stops the device"""
         self.dev_logging("TurnOFF Sending DEBUG", int(tango.LogLevel.LOG_DEBUG))
         self.dev_logging("TurnOFF Sending INFO", int(tango.LogLevel.LOG_INFO))
         self.dev_logging("TurnOFF Sending WARNING", int(tango.LogLevel.LOG_WARN))
@@ -276,16 +280,17 @@ class SKATestDevice(SKABaseDevice):
         self.dev_logging("TurnOFF Sending FATAL", int(tango.LogLevel.LOG_FATAL))
         # PROTECTED REGION END #    //  SKATestDevice.Stop
 
-
 # ----------
 # Run server
 # ----------
 
 def main(args=None, **kwargs):
     # PROTECTED REGION ID(SKATestDevice.main) ENABLED START #
+    """
+    Main entry point of the module.
+    """
     return run((SKATestDevice,), args=args, **kwargs)
     # PROTECTED REGION END #    //  SKATestDevice.main
-
 
 if __name__ == '__main__':
     main()

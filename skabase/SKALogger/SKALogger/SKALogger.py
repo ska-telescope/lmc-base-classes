@@ -8,17 +8,15 @@
 
 """ SKALogger
 
-A generic base device for Logging for SKA.
+A generic base device for Logging for SKA. It enables to view on-line logs through the TANGO Logging Services
+and to store logs using Python logging. It configures the log levels of remote logging for selected devices.
 """
 
-# PyTango imports
-import PyTango
-from PyTango import DebugIt, DeviceProxy
-from PyTango.server import run
-from PyTango.server import Device, DeviceMeta
-from PyTango.server import attribute, command
-from SKABaseDevice import SKABaseDevice
+# tango imports
 import tango
+from tango import DebugIt, DeviceProxy
+from tango.server import run, DeviceMeta, command
+from SKABaseDevice import SKABaseDevice
 # Additional import
 # PROTECTED REGION ID(SKALogger.additionnal_import) ENABLED START #
 import logging
@@ -30,7 +28,7 @@ logger_dict = {}
 logging.basicConfig()
 logger = logging.getLogger("SKALogger")
 logger.setLevel(logging.DEBUG)
-syslog = SysLogHandler(address='/dev/log', facility= 'syslog')
+syslog = SysLogHandler(address='/dev/log', facility='syslog')
 formatter = logging.Formatter('%(name)s: %(levelname)s %(module)s %(message)r')
 syslog.setFormatter(formatter)
 logger.addHandler(syslog)
@@ -43,6 +41,7 @@ __all__ = ["SKALogger", "main"]
 
 class SKALogger(SKABaseDevice):
     """
+
     A generic base device for Logging for SKA.
     """
     __metaclass__ = DeviceMeta
@@ -238,6 +237,9 @@ class SKALogger(SKABaseDevice):
 
 def main(args=None, **kwargs):
     # PROTECTED REGION ID(SKALogger.main) ENABLED START #
+    """
+    Main entry point of the module.
+    """
     return run((SKALogger,), args=args, **kwargs)
     # PROTECTED REGION END #    //  SKALogger.main
 

@@ -15,13 +15,13 @@ setup_dir = os.path.dirname(os.path.abspath(__file__))
 
 # make sure we use latest info from local code
 sys.path.insert(0, setup_dir)
-print "System path: ", sys.path
 
 readme_filename = os.path.join(setup_dir, 'README.rst')
 with open(readme_filename) as file:
     long_description = file.read()
 
-release_filename = os.path.join(setup_dir, 'SKALogger', 'release.py')
+release_filename = os.path.join(setup_dir, 'release.py')
+print "System path: ", sys.path
 
 exec(open(release_filename).read())
 

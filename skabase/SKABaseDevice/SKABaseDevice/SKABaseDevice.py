@@ -27,9 +27,9 @@ from utils import (get_dp_command, exception_manager,
                            tango_type_conversion, coerce_value,
                            get_groups_from_json, get_tango_device_type_id)
 
-from SKABaseDevice import release
+from skabase.SKABaseDevice import release
 
-from faults import GroupDefinitionsError
+from skabase.faults import GroupDefinitionsError
 
 MODULE_LOGGER = logging.getLogger(__name__)
 

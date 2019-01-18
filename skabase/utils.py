@@ -16,7 +16,7 @@ from tango import (DeviceProxy, DbDatum, DevState, DbDevInfo, AttrQuality,
 from tango import DevState as _DevState
 from contextlib import contextmanager
 
-from faults import GroupDefinitionsError
+from .faults import GroupDefinitionsError
 
 
 int_types = {tango._tango.CmdArgType.DevUShort,

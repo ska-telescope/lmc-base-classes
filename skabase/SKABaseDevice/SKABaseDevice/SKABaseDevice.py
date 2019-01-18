@@ -23,7 +23,7 @@ from tango import DeviceProxy, DevFailed
 import logging.handlers
 from logging.handlers import SysLogHandler
 
-from utils import (get_dp_command, exception_manager,
+from skabase.utils import (get_dp_command, exception_manager,
                            tango_type_conversion, coerce_value,
                            get_groups_from_json, get_tango_device_type_id)
 

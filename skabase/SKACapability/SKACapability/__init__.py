@@ -7,7 +7,7 @@
 
 """SKACapability
 
-Subarray handling device
+A Subarray handling device. It exposes the instances of configured capabilities.
 """
 
 from . import release

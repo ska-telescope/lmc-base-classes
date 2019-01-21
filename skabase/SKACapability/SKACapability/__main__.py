@@ -4,6 +4,6 @@
 #
 #
 #
-
+""" __main__ module of the SKACapability base class"""
 from SKACapability import main
 main()

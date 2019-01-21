@@ -6,6 +6,8 @@
 #
 #
 
+""" Setup file for SKAcapability base class"""
+
 import os
 import sys
 from setuptools import setup

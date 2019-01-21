@@ -5,7 +5,7 @@
 #
 #
 #
-
+"""Setup file for SKAAlarmHandler base class"""
 import os
 import sys
 from setuptools import setup

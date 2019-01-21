@@ -7,7 +7,7 @@
 
 """SKABASE
 
-A generic base device for SKA.
+A generic base device for SKA. It exposes the generic attributes, properties and commands of an SKA device.
 """
 
 from . import release

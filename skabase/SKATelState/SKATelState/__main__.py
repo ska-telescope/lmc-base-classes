@@ -5,5 +5,10 @@
 #
 #
 
+""" __main__
+
+Main module of SKATelState device class.
+"""
+
 from SKATelState import main
 main()

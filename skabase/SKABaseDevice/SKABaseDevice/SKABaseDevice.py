@@ -7,23 +7,19 @@
 
 """ SKABASE
 
-A generic base device for SKA.
+A generic base device for SKA. It exposes the generic attributes, properties and commands of an SKA device.
 """
 
-# PyTango imports
-import PyTango
-from PyTango import DebugIt
-from PyTango.server import run
-from PyTango.server import Device, DeviceMeta
-from PyTango.server import attribute, command
-from PyTango.server import device_property
-from PyTango import AttrQuality, DispLevel, DevState
-from PyTango import AttrWriteType, PipeWriteType
+# tango imports
+import tango
+from tango import DebugIt
+from tango.server import run, Device, DeviceMeta, attribute, command, device_property
+from tango import AttrQuality, AttrWriteType
 # Additional import
 # PROTECTED REGION ID(SKABaseDevice.additionnal_import) ENABLED START #
 import logging
 import json
-from PyTango import DeviceProxy, DevFailed
+from tango import DeviceProxy, DevFailed
 import logging.handlers
 from logging.handlers import SysLogHandler
 
@@ -49,6 +45,11 @@ class SKABaseDevice(Device):
     __metaclass__ = DeviceMeta
     # PROTECTED REGION ID(SKABaseDevice.class_variable) ENABLED START #
     def _get_device_json(self, args_dict):
+        """
+        Returns device configuration in JSON format.
+        :param args_dict:
+        :return:
+        """
         try:
 
             device_dict = {
@@ -66,16 +67,23 @@ class SKABaseDevice(Device):
             return device_dict
 
         except Exception as ex:
-            ### TBD - add logging
+            MODULE_LOGGER.fatal(str(ex), exc_info=True)
             raise
 
     def _parse_argin(self, argin, defaults=None, required=None):
+        """
+        Parses the argument passed to it and returns them in a dictionary form.
+        :param argin: The argument to parse
+        :param defaults:
+        :param required:
+        :return: Dictionary containing passed arguments.
+        """
         args_dict = defaults.copy() if defaults else {}
         try:
             if argin:
                 args_dict.update(json.loads(argin))
         except ValueError as ex:
-            ### TBD - add logging
+            MODULE_LOGGER.fatal(str(ex), exc_info=True)
             raise
 
         missing_args = []
@@ -220,31 +228,41 @@ class SKABaseDevice(Device):
 
     versionId = attribute(
         dtype='str',
-        doc="Build state of this device",
+        doc="Version Id of this device",
     )
 
     centralLoggingLevel = attribute(
         dtype='uint16',
         access=AttrWriteType.READ_WRITE,
-        doc="Current logging level to Central logging target for this device - \ninitialises to CentralLoggingLevelDefault on startup",
+        doc="Current logging level to Central logging target for this device - "
+            "\ninitialises to CentralLoggingLevelDefault on startup",
     )
 
     elementLoggingLevel = attribute(
         dtype='uint16',
         access=AttrWriteType.READ_WRITE,
-        doc="Current logging level to Element logging target for this device - \ninitialises to ElementLoggingLevelDefault on startup",
+        doc="Current logging level to Element logging target for this device - "
+            "\ninitialises to ElementLoggingLevelDefault on startup",
     )
 
     storageLoggingLevel = attribute(
         dtype='uint16',
         access=AttrWriteType.READ_WRITE,
         memorized=True,
-        doc="Current logging level to Syslog for this device - \ninitialises from  StorageLoggingLevelDefault on first execution of device.\nNeeds to be READ_WRITE To make it memorized - but writing this attribute should \ndo the same as command SetStorageLoggingLevel to ensure the targets and adjustments\nare made correctly",
+        doc="Current logging level to Syslog for this device - "
+            "initialises from  StorageLoggingLevelDefault on first "
+            "execution of device.Needs to be READ_WRITE To make it"
+            " memorized - but writing this attribute should do the "
+            "same as command SetStorageLoggingLevel to ensure the "
+            "targets and adjustmentsare made correctly",
     )
 
     healthState = attribute(
         dtype='DevEnum',
-        doc="The health state reported for this device. It interprets the current device condition \nand condition of all managed devices to set this. Most possibly an aggregate attribute.",
+        doc="The health state reported for this device. "
+            "It interprets the current device"
+            " condition and condition of all managed devices to set this. "
+            "Most possibly an aggregate attribute.",
         enum_labels=["OK", "DEGRADED", "FAILED", "UNKNOWN", ],
     )
 
@@ -252,7 +270,9 @@ class SKABaseDevice(Device):
         dtype='DevEnum',
         access=AttrWriteType.READ_WRITE,
         memorized=True,
-        doc="The admin mode reported for this device. It may interpret the current device condition \nand condition of all managed devices to set this. Most possibly an aggregate attribute.",
+        doc="The admin mode reported for this device. It may interpret the current "
+            "device condition and condition of all managed devices to set this. "
+            "Most possibly an aggregate attribute.",
         enum_labels=["ON-LINE", "OFF-LINE", "MAINTENANCE", "NOT-FITTED", "RESERVED", ],
     )
 
@@ -260,7 +280,10 @@ class SKABaseDevice(Device):
         dtype='DevEnum',
         access=AttrWriteType.READ_WRITE,
         memorized=True,
-        doc="The control mode of the device. REMOTE, LOCAL\nTANGO Device accepts only from a ‘local’ client and ignores commands and queries received from TM\nor any other ‘remote’ clients. The Local clients has to release LOCAL control before REMOTE clients\ncan take control again.",
+        doc="The control mode of the device. REMOTE, LOCAL"
+            "\nTANGO Device accepts only from a ‘local’ client and ignores commands and "
+            "queries received from TM or any other ‘remote’ clients. The Local clients"
+            " has to release LOCAL control before REMOTE clients can take control again.",
         enum_labels=["REMOTE", "LOCAL", ],
     )
 
@@ -268,14 +291,18 @@ class SKABaseDevice(Device):
         dtype='bool',
         access=AttrWriteType.READ_WRITE,
         memorized=True,
-        doc="Reports the simulation mode of the device. Some devices may implement both modes,\nwhile others will have simulators that set simulationMode to True while the real\ndevices always set simulationMode to False.",
+        doc="Reports the simulation mode of the device. \nSome devices may implement "
+            "both modes, while others will have simulators that set simulationMode "
+            "to True while the real devices always set simulationMode to False.",
     )
 
     testMode = attribute(
         dtype='str',
         access=AttrWriteType.READ_WRITE,
         memorized=True,
-        doc="The test mode of the device. \nEither no test mode (empty string) or an indication of the test mode.",
+        doc="The test mode of the device. \n"
+            "Either no test mode (empty string) or an "
+            "indication of the test mode.",
     )
 
     # ---------------
@@ -283,6 +310,10 @@ class SKABaseDevice(Device):
     # ---------------
 
     def init_device(self):
+        """
+        Method that initializes the tango device after startup.
+        :return: None
+        """
         Device.init_device(self)
         # PROTECTED REGION ID(SKABaseDevice.init_device) ENABLED START #
 
@@ -290,15 +321,14 @@ class SKABaseDevice(Device):
         self._build_state = '{}, {}, {}'.format(release.name, release.version,
                                                 release.description)
         self._version_id = release.version
-        self._central_logging_level = 0
-        self._element_logging_level = 0
-        self._storage_logging_level = 0
+        self._central_logging_level = int(tango.LogLevel.LOG_OFF)
+        self._element_logging_level = int(tango.LogLevel.LOG_OFF)
+        self._storage_logging_level = int(tango.LogLevel.LOG_OFF)
         self._health_state = 0
         self._admin_mode = 0
         self._control_mode = 0
         self._simulation_mode = False
         self._test_mode = ""
-        #logger.setLevel(logging.DEBUG)
 
         # create TANGO Groups objects dict, according to property
         self.debug_stream("Groups definitions: {}".format(self.GroupDefinitions))
@@ -314,11 +344,20 @@ class SKABaseDevice(Device):
 
     def always_executed_hook(self):
         # PROTECTED REGION ID(SKABaseDevice.always_executed_hook) ENABLED START #
+        """
+        Method that is always executed before any device command gets executed.
+        :return: None
+        """
         pass
         # PROTECTED REGION END #    //  SKABaseDevice.always_executed_hook
 
     def delete_device(self):
         # PROTECTED REGION ID(SKABaseDevice.delete_device) ENABLED START #
+        """
+        Method to cleanup when device is stopped.
+        :return: None
+        """
+
         pass
         # PROTECTED REGION END #    //  SKABaseDevice.delete_device
 
@@ -328,86 +367,161 @@ class SKABaseDevice(Device):
 
     def read_buildState(self):
         # PROTECTED REGION ID(SKABaseDevice.buildState_read) ENABLED START #
+        """
+        Reads the Build State of the device.
+        :return: None
+        """
         return self._build_state
         # PROTECTED REGION END #    //  SKABaseDevice.buildState_read
 
     def read_versionId(self):
         # PROTECTED REGION ID(SKABaseDevice.versionId_read) ENABLED START #
+        """
+        Reads the Version Id of the device.
+        :return: None
+        """
         return self._version_id
         # PROTECTED REGION END #    //  SKABaseDevice.versionId_read
 
     def read_centralLoggingLevel(self):
         # PROTECTED REGION ID(SKABaseDevice.centralLoggingLevel_read) ENABLED START #
+        """
+        Reads the central logging level of the device.
+        :return: Central logging level of the device
+        """
         return self._central_logging_level
         # PROTECTED REGION END #    //  SKABaseDevice.centralLoggingLevel_read
 
     def write_centralLoggingLevel(self, value):
         # PROTECTED REGION ID(SKABaseDevice.centralLoggingLevel_write) ENABLED START #
+        """
+        Sets central logging level of the device
+        :param value: Logging level for Central Logger
+        :return: None
+        """
         self._central_logging_level = value
         # PROTECTED REGION END #    //  SKABaseDevice.centralLoggingLevel_write
 
     def read_elementLoggingLevel(self):
         # PROTECTED REGION ID(SKABaseDevice.elementLoggingLevel_read) ENABLED START #
+        """
+        Reads element logging level of the device.
+        :return: Element logging level of the device.
+        """
         return self._element_logging_level
         # PROTECTED REGION END #    //  SKABaseDevice.elementLoggingLevel_read
 
     def write_elementLoggingLevel(self, value):
         # PROTECTED REGION ID(SKABaseDevice.elementLoggingLevel_write) ENABLED START #
+        """
+        Sets element logging level of the device
+        :param value: Logging Level for Element Logger
+        :return: None
+        """
         self._element_logging_level = value
         # PROTECTED REGION END #    //  SKABaseDevice.elementLoggingLevel_write
 
     def read_storageLoggingLevel(self):
         # PROTECTED REGION ID(SKABaseDevice.storageLoggingLevel_read) ENABLED START #
+        """
+        Reads storage logging level of the device.
+        :return: Storage logging level of the device.
+        """
         return self._storage_logging_level
         # PROTECTED REGION END #    //  SKABaseDevice.storageLoggingLevel_read
 
     def write_storageLoggingLevel(self, value):
         # PROTECTED REGION ID(SKABaseDevice.storageLoggingLevel_write) ENABLED START #
+        """
+        Sets logging level at storage.
+        :param value: Logging Level for storage logger
+        :return:
+        """
         self._storage_logging_level = value
         # PROTECTED REGION END #    //  SKABaseDevice.storageLoggingLevel_write
 
     def read_healthState(self):
         # PROTECTED REGION ID(SKABaseDevice.healthState_read) ENABLED START #
+        """
+        Reads Health State of the device.
+        :return: Health State of the device
+        """
         return self._health_state
         # PROTECTED REGION END #    //  SKABaseDevice.healthState_read
 
     def read_adminMode(self):
         # PROTECTED REGION ID(SKABaseDevice.adminMode_read) ENABLED START #
+        """
+        Reads Admin Mode of the device.
+        :return: Admin Mode of the device
+        """
         return self._admin_mode
         # PROTECTED REGION END #    //  SKABaseDevice.adminMode_read
 
     def write_adminMode(self, value):
         # PROTECTED REGION ID(SKABaseDevice.adminMode_write) ENABLED START #
+        """
+        Sets Admin Mode of the device.
+        :param value: Admin Mode of the device.
+        :return: None
+        """
         self._admin_mode = value
         # PROTECTED REGION END #    //  SKABaseDevice.adminMode_write
 
     def read_controlMode(self):
         # PROTECTED REGION ID(SKABaseDevice.controlMode_read) ENABLED START #
+        """
+        Reads Control Mode of the device.
+        :return: Control Mode of the device
+        """
         return self._control_mode
         # PROTECTED REGION END #    //  SKABaseDevice.controlMode_read
 
     def write_controlMode(self, value):
         # PROTECTED REGION ID(SKABaseDevice.controlMode_write) ENABLED START #
+        """
+        Sets Control Mode of the device.
+        :param value: Control mode value
+        :return: None
+        """
         self._control_mode = value
         # PROTECTED REGION END #    //  SKABaseDevice.controlMode_write
 
     def read_simulationMode(self):
         # PROTECTED REGION ID(SKABaseDevice.simulationMode_read) ENABLED START #
+        """
+        Reads Simulation Mode of the device.
+        :return: Simulation Mode of the device.
+        """
         return self._simulation_mode
         # PROTECTED REGION END #    //  SKABaseDevice.simulationMode_read
 
     def write_simulationMode(self, value):
         # PROTECTED REGION ID(SKABaseDevice.simulationMode_write) ENABLED START #
+        """
+        Sets Simulation Mode of the device
+        :param value: SimulationMode
+        :return: None
+        """
         self._simulation_mode = value
         # PROTECTED REGION END #    //  SKABaseDevice.simulationMode_write
 
     def read_testMode(self):
         # PROTECTED REGION ID(SKABaseDevice.testMode_read) ENABLED START #
+        """
+        Reads Test Mode of the device.
+        :return: Test Mode of the device
+        """
         return self._test_mode
         # PROTECTED REGION END #    //  SKABaseDevice.testMode_read
 
     def write_testMode(self, value):
         # PROTECTED REGION ID(SKABaseDevice.testMode_write) ENABLED START #
+        """
+        Sets Test Mode of the device.
+        :param value: Test Mode
+        :return: None
+        """
         self._test_mode = value
         # PROTECTED REGION END #    //  SKABaseDevice.testMode_write
 
@@ -417,7 +531,7 @@ class SKABaseDevice(Device):
     # --------
 
     @command(
-    dtype_out='str', 
+    dtype_out='str',
     )
     @DebugIt()
     def GetMetrics(self):
@@ -433,10 +547,13 @@ class SKABaseDevice(Device):
         # PROTECTED REGION END #    //  SKABaseDevice.GetMetrics
 
     @command(
-    dtype_in='str', 
-    doc_in="Requests the JSON string representing this device, can be filtered \nby with_commands, with_metrics, with_attributes and \nwith_value. Defaults for empty string  argin are:\n{`with_value`:false, `with_commands`:true,\n  `with_metrics`:true, `with_attributes`:false}", 
-    dtype_out='str', 
-    doc_out="The JSON string representing this device, \nfiltered as per the input argument flags", 
+    dtype_in='str',
+    doc_in="Requests the JSON string representing this device, can be filtered "
+           "\nby with_commands, with_metrics, with_attributes and \nwith_value. Defaults for empty string "
+           "argin are:\n{`with_value`:false, `with_commands`:true, with_metrics`:true,"
+           " `with_attributes`:false}",
+    dtype_out='str',
+    doc_out="The JSON string representing this device, \nfiltered as per the input argument flags.",
     )
     @DebugIt()
     def ToJson(self, argin):
@@ -453,12 +570,16 @@ class SKABaseDevice(Device):
         # PROTECTED REGION END #    //  SKABaseDevice.ToJson
 
     @command(
-    dtype_out=('str',), 
-    doc_out="[ name: EltTelState ]", 
+    dtype_out=('str',),
+    doc_out="[ name: EltTelState ]",
     )
     @DebugIt()
     def GetVersionInfo(self):
         # PROTECTED REGION ID(SKABaseDevice.GetVersionInfo) ENABLED START #
+        """
+        Returns the version information of the device.
+        :return: Version version details of the device.
+        """
         return ['{}, {}'.format(self.__class__.__name__, self.read_buildState())]
         # PROTECTED REGION END #    //  SKABaseDevice.GetVersionInfo
 
@@ -467,6 +588,10 @@ class SKABaseDevice(Device):
     @DebugIt()
     def Reset(self):
         # PROTECTED REGION ID(SKABaseDevice.Reset) ENABLED START #
+        """
+        Reset device to its default state.
+        :return: None
+        """
         pass
         # PROTECTED REGION END #    //  SKABaseDevice.Reset
 
@@ -477,6 +602,12 @@ class SKABaseDevice(Device):
 
 def main(args=None, **kwargs):
     # PROTECTED REGION ID(SKABaseDevice.main) ENABLED START #
+    """
+    Main function of the SKABaseDevice module.
+    :param args: None
+    :param kwargs:
+    :return:
+    """
     return run((SKABaseDevice,), args=args, **kwargs)
     # PROTECTED REGION END #    //  SKABaseDevice.main
 

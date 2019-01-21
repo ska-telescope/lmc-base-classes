@@ -411,6 +411,7 @@ class SKASubarray(SKAObsDevice):
     def EndSB(self):
         # PROTECTED REGION ID(SKASubarray.EndSB) ENABLED START #
         """Change obsState to IDLE."""
+        pass
         # PROTECTED REGION END #    //  SKASubarray.EndSB
 
     @command(

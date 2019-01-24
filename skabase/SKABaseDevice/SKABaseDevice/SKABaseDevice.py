@@ -31,7 +31,9 @@ from skabase.SKABaseDevice import release
 
 from skabase.faults import GroupDefinitionsError
 
-MODULE_LOGGER = logging.getLogger(__name__)
+# Initialize logging
+logging.basicConfig()
+# MODULE_LOGGER = logging.getLogger(__name__)
 
 # PROTECTED REGION END #    //  SKABaseDevice.additionnal_import
 
@@ -44,6 +46,14 @@ class SKABaseDevice(Device):
     """
     __metaclass__ = DeviceMeta
     # PROTECTED REGION ID(SKABaseDevice.class_variable) ENABLED START #
+
+    global logger
+    logger = logging.getLogger(__name__)
+    syslogs = SysLogHandler(address='/dev/log', facility='syslog')
+    formatter = logging.Formatter('%(name)s: %(levelname)s %(module)s %(message)r')
+    syslogs.setFormatter(formatter)
+    logger.addHandler(syslogs)
+
     def _get_device_json(self, args_dict):
         """
         Returns device configuration in JSON format.
@@ -67,7 +77,7 @@ class SKABaseDevice(Device):
             return device_dict
 
         except Exception as ex:
-            MODULE_LOGGER.fatal(str(ex), exc_info=True)
+            logger.fatal(str(ex), exc_info=True)
             raise
 
     def _parse_argin(self, argin, defaults=None, required=None):
@@ -83,7 +93,7 @@ class SKABaseDevice(Device):
             if argin:
                 args_dict.update(json.loads(argin))
         except ValueError as ex:
-            MODULE_LOGGER.fatal(str(ex), exc_info=True)
+            logger.fatal(str(ex), exc_info=True)
             raise
 
         missing_args = []
@@ -136,16 +146,16 @@ class SKABaseDevice(Device):
             try:
                 attr_dict['min_value'] = attrib.get_min_value()
             except AttributeError as attr_err:
-                MODULE_LOGGER.info(str(attr_err), exc_info=True)
+                logger.info(str(attr_err), exc_info=True)
             except DevFailed as derr:
-                MODULE_LOGGER.info(str(derr), exc_info=True)
+                logger.info(str(derr), exc_info=True)
 
             try:
                 attr_dict['max_value'] = attrib.get_max_value()
             except AttributeError as attr_err:
-                MODULE_LOGGER.info(str(attr_err), exc_info=True)
+                logger.info(str(attr_err), exc_info=True)
             except DevFailed as derr:
-                MODULE_LOGGER.info(str(derr), exc_info=True)
+                logger.info(str(derr), exc_info=True)
 
             attr_dict['readonly'] = (
                 attrib.get_writable() not in [AttrWriteType.READ_WRITE,
@@ -185,6 +195,60 @@ class SKABaseDevice(Device):
                 attributes[attr_name] = attr_dict
 
         return attributes
+
+    def dev_logging(self, dev_log_msg, dev_log_level):
+        # Element Level Logging
+        if self._element_logging_level >= int(tango.LogLevel.LOG_FATAL) and dev_log_level == int(
+                tango.LogLevel.LOG_FATAL):
+            self.fatal_stream(dev_log_msg)
+        elif self._element_logging_level >= int(tango.LogLevel.LOG_ERROR) and dev_log_level == int(
+                tango.LogLevel.LOG_ERROR):
+            self.error_stream(dev_log_msg)
+        elif self._element_logging_level >= int(tango.LogLevel.LOG_WARN) and dev_log_level == int(
+                tango.LogLevel.LOG_WARN):
+            self.warn_stream(dev_log_msg)
+        elif self._element_logging_level >= int(tango.LogLevel.LOG_INFO) and dev_log_level == int(
+                tango.LogLevel.LOG_INFO):
+            self.info_stream(dev_log_msg)
+        elif self._element_logging_level >= int(tango.LogLevel.LOG_DEBUG) and dev_log_level == int(
+                tango.LogLevel.LOG_DEBUG):
+            self.debug_stream(dev_log_msg)
+
+        # Central Level Logging
+        if self._central_logging_level >= int(tango.LogLevel.LOG_FATAL) and dev_log_level == int(
+                tango.LogLevel.LOG_FATAL):
+            self.fatal_stream(dev_log_msg)
+        elif self._central_logging_level >= int(tango.LogLevel.LOG_ERROR) and dev_log_level == int(
+                tango.LogLevel.LOG_ERROR):
+            self.error_stream(dev_log_msg)
+        elif self._central_logging_level >= int(tango.LogLevel.LOG_WARN) and dev_log_level == int(
+                tango.LogLevel.LOG_WARN):
+            self.warn_stream(dev_log_msg)
+        elif self._central_logging_level >= int(tango.LogLevel.LOG_INFO) and dev_log_level == int(
+                tango.LogLevel.LOG_INFO):
+            self.info_stream(dev_log_msg)
+        elif self._central_logging_level >= int(tango.LogLevel.LOG_DEBUG) and dev_log_level == int(
+                tango.LogLevel.LOG_DEBUG):
+            self.debug_stream(dev_log_msg)
+
+        # Storage Level Logging
+        if self._storage_logging_level >= int(tango.LogLevel.LOG_FATAL) and dev_log_level == int(
+                tango.LogLevel.LOG_FATAL):
+            logger.fatal(dev_log_msg)
+        elif self._storage_logging_level >= int(tango.LogLevel.LOG_ERROR) and dev_log_level == int(
+                tango.LogLevel.LOG_ERROR):
+            logger.error(dev_log_msg)
+        elif self._storage_logging_level >= int(tango.LogLevel.LOG_WARN) and dev_log_level == int(
+                tango.LogLevel.LOG_WARN):
+            logger.warn(dev_log_msg)
+        elif self._storage_logging_level >= int(tango.LogLevel.LOG_INFO) and dev_log_level == int(
+                tango.LogLevel.LOG_INFO):
+            logger.info(dev_log_msg)
+        elif self._storage_logging_level >= int(tango.LogLevel.LOG_DEBUG) and dev_log_level == int(
+                tango.LogLevel.LOG_DEBUG):
+            logger.debug(dev_log_msg)
+        else:
+            pass
 
 
     # PROTECTED REGION END #    //  SKABaseDevice.class_variable
@@ -438,6 +502,18 @@ class SKABaseDevice(Device):
         :return:
         """
         self._storage_logging_level = value
+        if self._storage_logging_level == int(tango.LogLevel.LOG_FATAL):
+            logger.setLevel(logging.FATAL)
+        elif self._storage_logging_level == int(tango.LogLevel.LOG_ERROR):
+            logger.setLevel(logging.ERROR)
+        elif self._storage_logging_level == int(tango.LogLevel.LOG_WARN):
+            logger.setLevel(logging.WARNING)
+        elif self._storage_logging_level == int(tango.LogLevel.LOG_INFO):
+            logger.setLevel(logging.INFO)
+        elif self._storage_logging_level == int(tango.LogLevel.LOG_DEBUG):
+            logger.setLevel(logging.DEBUG)
+        else:
+            logger.setLevel(logging.DEBUG)
         # PROTECTED REGION END #    //  SKABaseDevice.storageLoggingLevel_write
 
     def read_healthState(self):

@@ -145,20 +145,21 @@
       <enumLabels>ABORTED</enumLabels>
       <enumLabels>FAULT</enumLabels>
     </attributes>
-    <attributes name="obsMode" attType="Scalar" rwType="READ" displayLevel="OPERATOR" polledPeriod="0" maxX="" maxY="" allocReadMember="true" isDynamic="false">
+    <attributes name="obsMode" attType="Scalar" rwType="READ" displayLevel="OPERATOR" polledPeriod="1000" maxX="" maxY="" allocReadMember="true" isDynamic="false">
       <dataType xsi:type="pogoDsl:EnumType"/>
+      <changeEvent fire="false" libCheckCriteria="false"/>
+      <archiveEvent fire="false" libCheckCriteria="false"/>
       <dataReadyEvent fire="false" libCheckCriteria="true"/>
       <status abstract="false" inherited="false" concrete="true" concreteHere="true"/>
       <properties description="Observing Mode" label="" unit="" standardUnit="" displayUnit="" format="" maxValue="" minValue="" maxAlarm="" minAlarm="" maxWarning="" minWarning="" deltaTime="" deltaValue=""/>
       <enumLabels>IDLE</enumLabels>
-      <enumLabels>IMG_CONTINUUM</enumLabels>
-      <enumLabels>IMG_SPECTRAL_LINE</enumLabels>
-      <enumLabels>IMG_ZOOM</enumLabels>
-      <enumLabels>PULSAR_SEARCH</enumLabels>
-      <enumLabels>TRANSIENT_SEARCH_FAST</enumLabels>
-      <enumLabels>TRANSIENT_SEARCH_SLOW</enumLabels>
-      <enumLabels>PULSAR_TIMING</enumLabels>
+      <enumLabels>IMAGING</enumLabels>
+      <enumLabels>PULSAR-SEARCH</enumLabels>
+      <enumLabels>PULSAR-TIMING</enumLabels>
+      <enumLabels>DYNAMIC-SPECTRUM</enumLabels>
+      <enumLabels>TRANSIENT-SEARCH</enumLabels>
       <enumLabels>VLBI</enumLabels>
+      <enumLabels>CALIBRATION</enumLabels>
     </attributes>
     <attributes name="configurationProgress" attType="Scalar" rwType="READ" displayLevel="OPERATOR" polledPeriod="0" maxX="" maxY="" allocReadMember="true" isDynamic="false">
       <dataType xsi:type="pogoDsl:UShortType"/>

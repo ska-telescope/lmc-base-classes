@@ -9,6 +9,7 @@
 """Contain the tests for the SKAObsDevice."""
 
 # Path
+from builtins import object
 import sys
 import os
 path = os.path.join(os.path.dirname(__file__), os.pardir)
@@ -57,7 +58,7 @@ class TestSKAObsDevice(object):
     def test_ObsState(self, tango_context):
         """Test for ObsState"""
         # PROTECTED REGION ID(SKAObsDevice.test_ObsState) ENABLED START #
-        assert tango_context.device.ObsState() == ""
+        assert tango_context.device.ObsState == 0
         # PROTECTED REGION END #    //  SKAObsDevice.test_ObsState
 
     # PROTECTED REGION ID(SKAObsDevice.test_State_decorators) ENABLED START #

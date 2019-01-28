@@ -10,9 +10,9 @@
 name = """tangods-skalogger"""
 version = "1.0.0"
 version_info = version.split(".")
-description = """A generic logger device for SKA."""
-author = "cam"
-author_email = "cam at ska.ac.za"
+description = """A generic base device for Logging for SKA."""
+author = "lochanb.ska"
+author_email = "lochanb.ska at gmail.com"
 license = """BSD-3-Clause"""
 url = """www.tango-controls.org"""
 copyright = """"""

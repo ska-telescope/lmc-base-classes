@@ -9,6 +9,7 @@
 """Contain the tests for the SKALogger."""
 
 # Path
+from builtins import object
 import sys
 import os
 

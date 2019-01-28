@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# This file is part of the SKABaseDevice project
+# This file is part of the SKAAlarmHandler project
 #
 #
 #
@@ -10,9 +10,9 @@
 name = """tangods-skaalarmhandler"""
 version = "1.0.0"
 version_info = version.split(".")
-description = """A generic base device for SKA."""
+description = """A generic base device for Alarms for SKA."""
 author = "cam"
 author_email = "cam at ska.ac.za"
 license = """BSD-3-Clause"""
-url = """www.tango-controls.org"""
+url = """www.skatelescope.org"""
 copyright = """"""

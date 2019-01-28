@@ -10,7 +10,7 @@
 name = """tangods-skatestdevice"""
 version = "1.0.0"
 version_info = version.split(".")
-description = """A generic base device for Testing SKA base class features."""
+description = """A generic Test device for testing SKA base class functionalites."""
 author = "cam"
 author_email = "cam at ska.ac.za"
 license = """BSD-3-Clause"""

@@ -1,6 +1,7 @@
+from __future__ import absolute_import
 import tango
 from tango import DeviceProxy, AttrQuality, AttributeProxy
-from base import DeviceServerBaseTest
+from .base import DeviceServerBaseTest
 import json
 from time import sleep
 

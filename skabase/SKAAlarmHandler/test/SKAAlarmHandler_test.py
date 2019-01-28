@@ -9,6 +9,7 @@
 """Contain the tests for the SKAAlarmHandler."""
 
 # Path
+from builtins import object
 import sys
 import os
 path = os.path.join(os.path.dirname(__file__), os.pardir)
@@ -140,7 +141,8 @@ class TestSKAAlarmHandler(object):
     def test_GetVersionInfo(self, tango_context):
         """Test for GetVersionInfo"""
         # PROTECTED REGION ID(SKAAlarmHandler.test_GetVersionInfo) ENABLED START #
-        assert tango_context.device.GetVersionInfo() == [""]
+        assert tango_context.device.GetVersionInfo() == ['tangods-skaalarmhandler, 1.0.0,'
+                                                         ' A generic base device for Alarms for SKA.']
         # PROTECTED REGION END #    //  SKAAlarmHandler.test_GetVersionInfo
 
 
@@ -189,7 +191,8 @@ class TestSKAAlarmHandler(object):
     def test_buildState(self, tango_context):
         """Test for buildState"""
         # PROTECTED REGION ID(SKAAlarmHandler.test_buildState) ENABLED START #
-        assert tango_context.device.buildState == ''
+        assert tango_context.device.buildState == 'tangods-skaalarmhandler, 1.0.0,' \
+                                                  ' A generic base device for Alarms for SKA.'
         # PROTECTED REGION END #    //  SKAAlarmHandler.test_buildState
 
     # PROTECTED REGION ID(SKAAlarmHandler.test_versionId_decorators) ENABLED START #
@@ -197,7 +200,7 @@ class TestSKAAlarmHandler(object):
     def test_versionId(self, tango_context):
         """Test for versionId"""
         # PROTECTED REGION ID(SKAAlarmHandler.test_versionId) ENABLED START #
-        assert tango_context.device.versionId == ''
+        assert tango_context.device.versionId == '1.0.0'
         # PROTECTED REGION END #    //  SKAAlarmHandler.test_versionId
 
     # PROTECTED REGION ID(SKAAlarmHandler.test_centralLoggingLevel_decorators) ENABLED START #

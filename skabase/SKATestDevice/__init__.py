@@ -7,12 +7,12 @@
 
 """SKATestDevice
 
-A generic base device for Testing SKA base class features.
+A generic Test device for testing SKA base class functionalities.
 """
 
-from . import release
-from .SKATestDevice import SKATestDevice, main
-
-__version__ = release.version
-__version_info__ = release.version_info
-__author__ = release.author
+# import release
+# from .SKATestDevice import SKATestDevice, main
+#
+# __version__ = release.version
+# __version_info__ = release.version_info
+# __author__ = release.author

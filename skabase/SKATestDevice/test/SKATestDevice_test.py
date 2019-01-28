@@ -9,6 +9,7 @@
 """Contain the tests for the SKATestDevice."""
 
 # Path
+from builtins import object
 import sys
 import os
 path = os.path.join(os.path.dirname(__file__), os.pardir)
@@ -178,7 +179,7 @@ class TestSKATestDevice(object):
     def test_centralLoggingLevel(self, tango_context):
         """Test for centralLoggingLevel"""
         # PROTECTED REGION ID(SKATestDevice.test_centralLoggingLevel) ENABLED START #
-        assert tango_context.device.centralLoggingLevel == 0
+        assert tango_context.device.centralLoggingLevel == 5
         # PROTECTED REGION END #    //  SKATestDevice.test_centralLoggingLevel
 
     # PROTECTED REGION ID(SKATestDevice.test_elementLoggingLevel_decorators) ENABLED START #
@@ -186,7 +187,7 @@ class TestSKATestDevice(object):
     def test_elementLoggingLevel(self, tango_context):
         """Test for elementLoggingLevel"""
         # PROTECTED REGION ID(SKATestDevice.test_elementLoggingLevel) ENABLED START #
-        assert tango_context.device.elementLoggingLevel == 0
+        assert tango_context.device.elementLoggingLevel == 5
         # PROTECTED REGION END #    //  SKATestDevice.test_elementLoggingLevel
 
     # PROTECTED REGION ID(SKATestDevice.test_storageLoggingLevel_decorators) ENABLED START #
@@ -194,7 +195,7 @@ class TestSKATestDevice(object):
     def test_storageLoggingLevel(self, tango_context):
         """Test for storageLoggingLevel"""
         # PROTECTED REGION ID(SKATestDevice.test_storageLoggingLevel) ENABLED START #
-        assert tango_context.device.storageLoggingLevel == 0
+        assert tango_context.device.storageLoggingLevel == 5
         # PROTECTED REGION END #    //  SKATestDevice.test_storageLoggingLevel
 
     # PROTECTED REGION ID(SKATestDevice.test_healthState_decorators) ENABLED START #

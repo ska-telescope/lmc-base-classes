@@ -9,6 +9,7 @@
 """Contain the tests for the SKABASE."""
 
 # Path
+from builtins import object
 import sys
 import os
 path = os.path.join(os.path.dirname(__file__), os.pardir)

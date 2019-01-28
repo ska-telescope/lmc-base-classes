@@ -5,14 +5,18 @@
 #
 #
 
+
 """SKALogger
 
-A generic Logger device for SKA.
+A generic base device for Logging for SKA. It enables to view on-line logs through the TANGO Logging Services
+and to store logs using Python logging. It configures the log levels of remote logging for selected devices.
 """
 
-from . import release
-from .SKALogger import SKALogger, main
+__all__ = ["SKALogger", "main", "release"]
 
-__version__ = release.version
-__version_info__ = release.version_info
-__author__ = release.author
+# from . import release
+# from .SKALogger import SKALogger, main
+#
+# __version__ = release.version
+# __version_info__ = release.version_info
+# __author__ = release.author

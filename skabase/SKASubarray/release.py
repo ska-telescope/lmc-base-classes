@@ -10,7 +10,7 @@
 name = """tangods-skasubarray"""
 version = "1.0.0"
 version_info = version.split(".")
-description = """A generic subarray device for SKA."""
+description = """SubArray handling device"""
 author = "cam"
 author_email = "cam at ska.ac.za"
 license = """BSD-3-Clause"""

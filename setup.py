@@ -31,6 +31,7 @@ setup(name="lmc_base_classes",
       install_requires=[
           "enum34",
           "argparse"
+          "future"
       ],
       tests_require=[
           "coverage",

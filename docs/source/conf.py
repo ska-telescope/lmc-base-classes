@@ -15,6 +15,10 @@
 import sys
 import os
 
+# Mock tango modules
+MOCK_MODULES = ['PyTango', 'tango', 'run', 'DeviceMeta', 'command']
+sys.modules.update((mod_name, Mock()) for mod_name in MOCK_MODULES)
+
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.

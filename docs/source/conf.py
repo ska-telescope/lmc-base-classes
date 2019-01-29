@@ -17,7 +17,8 @@ import os
 from mock import Mock
 
 # Mock tango modules
-MOCK_MODULES = ['PyTango', 'tango', 'tango.server', 'run', 'DeviceMeta', 'command', 'future']
+MOCK_MODULES = ['PyTango', 'tango', 'tango.server', 'run', 'DeviceMeta', 'command',
+                'future', 'future.utils']
 sys.modules.update((mod_name, Mock()) for mod_name in MOCK_MODULES)
 
 # If extensions (or modules to document with autodoc) are in another directory,

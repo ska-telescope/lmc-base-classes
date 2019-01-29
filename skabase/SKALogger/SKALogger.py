@@ -11,7 +11,7 @@
 A generic base device for Logging for SKA. It enables to view on-line logs through the TANGO Logging Services
 and to store logs using Python logging. It configures the log levels of remote logging for selected devices.
 """
-
+from __future__ import absolute_import
 
 # tango imports
 import tango
@@ -20,7 +20,6 @@ from tango.server import run, DeviceMeta, command
 
 # Additional import
 # PROTECTED REGION ID(SKALogger.additionnal_import) ENABLED START #
-from __future__ import absolute_import
 from future.utils import with_metaclass
 from builtins import str
 

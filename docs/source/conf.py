@@ -14,6 +14,7 @@
 
 import sys
 import os
+from mock import Mock as MagicMock
 
 # Mock tango modules
 MOCK_MODULES = ['PyTango', 'tango', 'run', 'DeviceMeta', 'command']

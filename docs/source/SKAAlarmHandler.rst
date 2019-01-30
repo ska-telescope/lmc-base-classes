@@ -11,4 +11,3 @@ SKA AlarmHandler
 
 .. automodule:: SKAAlarmHandler.SKAAlarmHandler
    :members: SKAAlarmHandler
-

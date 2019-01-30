@@ -12,13 +12,6 @@ Contents:
    :maxdepth: 2
 
    SKA AlarmHandler<SKAAlarmHandler>
-   SKA BaseDevice<SKABaseDevice>
-   SKA Capability<SKACapability>
-   SKA Logger<SKALogger>
-   SKA Master<SKAMaster>
-   SKA ObsDevice<SKAObsDevice>
-   SKA Subarray<SKASubarray>
-   SKA TelState<SKATelState>
 
 Indices and tables
 ==================

@@ -33,9 +33,12 @@ from builtins import range
 
 # SKA specific imports
 file_path = os.path.dirname(os.path.abspath(__file__))
+sys.path.insert(0, os.path.abspath(os.path.join(file_path, os.curdir)))
+import release # DO NOT import after modifying system path
+
 auxiliary_path = os.path.abspath(os.path.join(file_path, os.pardir)) + "/auxiliary"
 sys.path.insert(0, auxiliary_path)
-import release # DO NOT import after modifying system path
+
 from utils import (get_dp_command, exception_manager,
                            tango_type_conversion, coerce_value,
                            get_groups_from_json, get_tango_device_type_id)

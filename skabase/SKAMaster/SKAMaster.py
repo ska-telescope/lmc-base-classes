@@ -20,10 +20,6 @@ file_path = os.path.dirname(os.path.abspath(__file__))
 basedevice_path = os.path.abspath(os.path.join(file_path, os.pardir)) + "/SKABaseDevice"
 sys.path.insert(0, basedevice_path)
 
-# basedevice_path = os.path.abspath("..") + "/SKABaseDevice"
-# sys.path.insert(0, basedevice_path)
-print(("From SKAMaster sys.path: ", sys.path))
-
 # tango imports
 from tango import DebugIt
 from tango.server import run, DeviceMeta, attribute, command, device_property

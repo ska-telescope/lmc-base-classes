@@ -19,7 +19,6 @@ from future.utils import with_metaclass
 file_path = os.path.dirname(os.path.abspath(__file__))
 basedevice_path = os.path.abspath(os.path.join(file_path, os.pardir)) + "/SKABaseDevice"
 sys.path.insert(0, basedevice_path)
-print(("From SKAObsDevice sys.path: ", sys.path))
 
 # tango imports
 from tango.server import run, DeviceMeta, attribute

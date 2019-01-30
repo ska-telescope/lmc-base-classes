@@ -23,12 +23,15 @@ import os
 import sys
 from future.utils import with_metaclass
 
-# SKA specific imports
+# SKA specific imports\
+file_path = os.path.dirname(os.path.abspath(__file__))
+# TODO: remove the release.py file
+sys.path.insert(0, os.path.abspath(os.path.join(file_path, os.curdir)))
 import release # DO NOT import after modifying system path
 
-file_path = os.path.dirname(os.path.abspath(__file__))
 basedevice_path = os.path.abspath(os.path.join(file_path, os.pardir)) + "/SKABaseDevice"
 sys.path.insert(0, basedevice_path)
+print ("SKAAlarmHandler sys.path: ", sys.path)
 from SKABaseDevice import SKABaseDevice
 # PROTECTED REGION END #    //  SKAAlarmHandler.additionnal_import
 
@@ -101,6 +104,7 @@ class SKAAlarmHandler(with_metaclass(DeviceMeta, SKABaseDevice)):
 
     def init_device(self):
         SKABaseDevice.init_device(self)
+        # TODO: maintain single version file.
         self._build_state = '{}, {}, {}'.format(release.name, release.version,
                                                 release.description)
         self._version_id = release.version

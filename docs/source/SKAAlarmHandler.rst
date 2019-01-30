@@ -10,4 +10,4 @@ SKA AlarmHandler
    :maxdepth: 2
 
 .. automodule:: SKAAlarmHandler
-   :members: SKAAlarmHandler
+   :members: SKAAlarmHandler.SKAAlarmHandler

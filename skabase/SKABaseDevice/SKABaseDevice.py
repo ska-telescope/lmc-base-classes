@@ -62,7 +62,6 @@ class SKABaseDevice(with_metaclass(DeviceMeta, Device)):
     """
     # PROTECTED REGION ID(SKABaseDevice.class_variable) ENABLED START #
 
-    global logger
     logger = logging.getLogger(__name__)
     syslogs = SysLogHandler(address='/dev/log', facility='syslog')
     formatter = logging.Formatter('%(name)s: %(levelname)s %(module)s %(message)r')

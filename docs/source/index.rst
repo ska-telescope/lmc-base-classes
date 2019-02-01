@@ -11,6 +11,7 @@ Welcome to LMC Base Classes documentation!
   :maxdepth: 2
 
 .. automodule:: SKABaseDevice.SKABaseDeviceModule
+   :members:
 
 .. autoclass:: SKABaseDevice.SKABaseDeviceModule.SKABaseDevice
    :members:

@@ -12,7 +12,7 @@ Welcome to LMC Base Classes documentation!
 
 .. automodule:: SKABaseDevice.SKABaseDeviceModule
 
-.. autoclass:: SKABaseDevice
+.. autoclass:: SKABaseDevice.SKABaseDeviceModule.SKABaseDevice
    :members:
 
 Indices and tables

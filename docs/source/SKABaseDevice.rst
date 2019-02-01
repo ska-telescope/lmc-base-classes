@@ -10,5 +10,5 @@ SKA BaseDevice
    :maxdepth: 2
 
 .. automodule:: SKABaseDevice.SKABaseDevice
-   :members: SKABaseDevice
+   :members: __all__
 

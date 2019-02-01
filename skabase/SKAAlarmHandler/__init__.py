@@ -12,11 +12,11 @@ SKA Alarms and SKA/Element Alerts are rules-based configurable conditions that c
 attribute values and quality factors, and are separate from the "built-in" TANGO attribute alarms.
 """
 
-__all__ = ["SKAAlarmHandler", "main", "release"]
+__all__ = ["SKAAlarmHandler", "main"]
 
-# from . import release
-# from .SKAAlarmHandler import SKAAlarmHandler, main
+from skabase import release
+from .SKAAlarmHandler import SKAAlarmHandler, main
 
-# __version__ = release.version
-# __version_info__ = release.version_info
-# __author__ = release.author
+__version__ = release.version
+__version_info__ = release.version_info
+__author__ = release.author

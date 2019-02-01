@@ -13,22 +13,26 @@ an obsMode will inherit from SKAObsDevice instead of just SKABaseDevice.
 from __future__ import print_function
 from __future__ import absolute_import
 
+# tango imports
+from tango.server import run, DeviceMeta, attribute
+
+# Additional import
+# PROTECTED REGION ID(SKAObsDevice.additionnal_import) ENABLED START #
+# standard imports
 import os
 import sys
 from future.utils import with_metaclass
+
+# SKA specific imports
+from skabase import release
+
 file_path = os.path.dirname(os.path.abspath(__file__))
 basedevice_path = os.path.abspath(os.path.join(file_path, os.pardir)) + "/SKABaseDevice"
 sys.path.insert(0, basedevice_path)
-
-# tango imports
-from tango.server import run, DeviceMeta, attribute
 from SKABaseDevice import SKABaseDevice
-# Additional import
-# PROTECTED REGION ID(SKAObsDevice.additionnal_import) ENABLED START #
-import release
 # PROTECTED REGION END #    //  SKAObsDevice.additionnal_import
 
-#__all__ = ["SKAObsDevice", "main"]
+__all__ = ["SKAObsDevice", "main"]
 
 
 class SKAObsDevice(with_metaclass(DeviceMeta, SKABaseDevice)):

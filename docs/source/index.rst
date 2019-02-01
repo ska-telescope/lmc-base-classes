@@ -6,12 +6,12 @@
 Welcome to LMC Base Classes documentation!
 ============================================
 
-Contents:
-
 .. toctree::
-   :maxdepth: 2
+  :caption: Table of Contents
+  :maxdepth: 2
 
-   SKA AlarmHandler<SKAAlarmHandler>
+.. automodule:: SKABaseDevice.SKABaseDevice
+   :members: SKABaseDevice
 
 Indices and tables
 ==================

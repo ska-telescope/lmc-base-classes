@@ -21,7 +21,7 @@ import sys
 from future.utils import with_metaclass
 
 # SKA specific imports
-import release # DO NOT import after modifying system path
+from skabase import release
 
 file_path = os.path.dirname(os.path.abspath(__file__))
 basedevice_path = os.path.abspath(os.path.join(file_path, os.pardir)) + "/SKABaseDevice"

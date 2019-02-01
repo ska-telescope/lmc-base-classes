@@ -18,20 +18,20 @@ from tango.server import DeviceMeta, attribute, command
 
 # Additional import
 # PROTECTED REGION ID(SKATestDevice.additionnal_import) ENABLED START #
+# standard imports
 import os
 import sys
-import logging
+from future.utils import with_metaclass
+import json
+
 # SKA specific imports
-import release # DO NOT import after modifying system path
+from skabase import release
 
 file_path = os.path.dirname(os.path.abspath(__file__))
 basedevice_path = os.path.abspath(os.path.join(file_path, os.pardir)) + "/SKABaseDevice"
 sys.path.insert(0, basedevice_path)
 from SKABaseDevice import SKABaseDevice
-import json
 from skabase.auxiliary.utils import (exception_manager, convert_api_value, coerce_value)
-from future.utils import with_metaclass
-
 # PROTECTED REGION END #    //  SKATestDevice.additionnal_import
 
 __all__ = ["SKATestDevice", "main"]

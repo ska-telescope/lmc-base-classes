@@ -20,6 +20,7 @@ import pytest
 from mock import MagicMock
 
 from tango import DevState
+import re
 
 # PROTECTED REGION ID(SKAMaster.test_additional_imports) ENABLED START #
 # PROTECTED REGION END #    //  SKAMaster.test_additional_imports
@@ -95,7 +96,11 @@ class TestSKAMaster(object):
     def test_GetVersionInfo(self, tango_context):
         """Test for GetVersionInfo"""
         # PROTECTED REGION ID(SKAMaster.test_GetVersionInfo) ENABLED START #
-        assert tango_context.device.GetVersionInfo() == [""]
+        versionPattern = re.compile(
+            r'SKAMaster, lmc-base-classes, [0-9].[0-9].[0-9], '
+            r'A set of generic base devices for SKA Telescope.')
+        versionInfo = tango_context.device.GetVersionInfo()
+        assert (re.match(versionPattern, versionInfo[0])) != None
         # PROTECTED REGION END #    //  SKAMaster.test_GetVersionInfo
 
     # PROTECTED REGION ID(SKAMaster.test_isCapabilityAchievable_decorators) ENABLED START #
@@ -152,7 +157,10 @@ class TestSKAMaster(object):
     def test_buildState(self, tango_context):
         """Test for buildState"""
         # PROTECTED REGION ID(SKAMaster.test_buildState) ENABLED START #
-        assert tango_context.device.buildState == ''
+        buildPattern = re.compile(
+            r'lmc-base-classes, [0-9].[0-9].[0-9], '
+            r'A set of generic base devices for SKA Telescope')
+        assert (re.match(buildPattern, tango_context.device.buildState)) != None
         # PROTECTED REGION END #    //  SKAMaster.test_buildState
 
     # PROTECTED REGION ID(SKAMaster.test_versionId_decorators) ENABLED START #
@@ -160,7 +168,8 @@ class TestSKAMaster(object):
     def test_versionId(self, tango_context):
         """Test for versionId"""
         # PROTECTED REGION ID(SKAMaster.test_versionId) ENABLED START #
-        assert tango_context.device.versionId == ''
+        versionIdPattern = re.compile(r'[0-9].[0-9].[0-9]')
+        assert (re.match(versionIdPattern, tango_context.device.versionId)) != None
         # PROTECTED REGION END #    //  SKAMaster.test_versionId
 
     # PROTECTED REGION ID(SKAMaster.test_centralLoggingLevel_decorators) ENABLED START #

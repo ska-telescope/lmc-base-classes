@@ -22,15 +22,17 @@ from tango.server import run, DeviceMeta, command
 # PROTECTED REGION ID(SKALogger.additionnal_import) ENABLED START #
 from future.utils import with_metaclass
 from builtins import str
-
-# SKA specific imports
+# standard imports
 import os
 import sys
+
+# SKA specific imports
+from skabase import release
 file_path = os.path.dirname(os.path.abspath(__file__))
 basedevice_path = os.path.abspath(os.path.join(file_path, os.pardir)) + "/SKABaseDevice"
 sys.path.insert(0, basedevice_path)
 from SKABaseDevice import SKABaseDevice
-import release
+
 
 # Log related imports
 import logging

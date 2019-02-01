@@ -22,17 +22,10 @@ def tango_context(request):
     """
     fq_test_class_name = request.cls.__module__
     fq_test_class_name_details = fq_test_class_name.split(".")
-    print(("fq_test_class_name_details are: ", fq_test_class_name_details))
     package_name = fq_test_class_name_details[0]
-    print(("package name:", package_name))
     class_name = module_name = fq_test_class_name_details[1]
-    #module = importlib.import_module("{}.{}".format(package_name, module_name))
-    #module = importlib.import_module("SKABaseDevice","SKABaseDevice")
     module = importlib.import_module(fq_test_class_name_details[1], fq_test_class_name_details[1])
-    print(("Module and class_name: ", module_name))
-    print(class_name)
     klass = getattr(module, class_name)
-    #klass = getattr("SKABaseDevice","SKABaseDevice")
 
     tango_context = DeviceTestContext(klass)
     tango_context.start()

@@ -15,6 +15,7 @@ Welcome to LMC Base Classes documentation!
 
 .. autoclass:: SKABaseDevice.SKABaseDeviceModule
    :members: SKABaseDevice
+   :noindex:
 
 Indices and tables
 ==================

@@ -85,7 +85,7 @@ class SKABaseDevice(with_metaclass(DeviceMeta, Device)):
             return device_dict
 
         except Exception as ex:
-            logger.fatal(str(ex), exc_info=True)
+            self.logger.fatal(str(ex), exc_info=True)
             raise
 
     def _parse_argin(self, argin, defaults=None, required=None):
@@ -101,7 +101,7 @@ class SKABaseDevice(with_metaclass(DeviceMeta, Device)):
             if argin:
                 args_dict.update(json.loads(argin))
         except ValueError as ex:
-            logger.fatal(str(ex), exc_info=True)
+            self.logger.fatal(str(ex), exc_info=True)
             raise
 
         missing_args = []
@@ -154,16 +154,16 @@ class SKABaseDevice(with_metaclass(DeviceMeta, Device)):
             try:
                 attr_dict['min_value'] = attrib.get_min_value()
             except AttributeError as attr_err:
-                logger.info(str(attr_err), exc_info=True)
+                self.logger.info(str(attr_err), exc_info=True)
             except DevFailed as derr:
-                logger.info(str(derr), exc_info=True)
+                self.logger.info(str(derr), exc_info=True)
 
             try:
                 attr_dict['max_value'] = attrib.get_max_value()
             except AttributeError as attr_err:
-                logger.info(str(attr_err), exc_info=True)
+                self.logger.info(str(attr_err), exc_info=True)
             except DevFailed as derr:
-                logger.info(str(derr), exc_info=True)
+                self.logger.info(str(derr), exc_info=True)
 
             attr_dict['readonly'] = (
                 attrib.get_writable() not in [AttrWriteType.READ_WRITE,
@@ -242,19 +242,19 @@ class SKABaseDevice(with_metaclass(DeviceMeta, Device)):
         # Storage Level Logging
         if self._storage_logging_level >= int(tango.LogLevel.LOG_FATAL) and dev_log_level == int(
                 tango.LogLevel.LOG_FATAL):
-            logger.fatal(dev_log_msg)
+            self.logger.fatal(dev_log_msg)
         elif self._storage_logging_level >= int(tango.LogLevel.LOG_ERROR) and dev_log_level == int(
                 tango.LogLevel.LOG_ERROR):
-            logger.error(dev_log_msg)
+            self.logger.error(dev_log_msg)
         elif self._storage_logging_level >= int(tango.LogLevel.LOG_WARN) and dev_log_level == int(
                 tango.LogLevel.LOG_WARN):
-            logger.warn(dev_log_msg)
+            self.logger.warn(dev_log_msg)
         elif self._storage_logging_level >= int(tango.LogLevel.LOG_INFO) and dev_log_level == int(
                 tango.LogLevel.LOG_INFO):
-            logger.info(dev_log_msg)
+            self.logger.info(dev_log_msg)
         elif self._storage_logging_level >= int(tango.LogLevel.LOG_DEBUG) and dev_log_level == int(
                 tango.LogLevel.LOG_DEBUG):
-            logger.debug(dev_log_msg)
+            self.logger.debug(dev_log_msg)
         else:
             pass
 
@@ -511,17 +511,17 @@ class SKABaseDevice(with_metaclass(DeviceMeta, Device)):
         """
         self._storage_logging_level = value
         if self._storage_logging_level == int(tango.LogLevel.LOG_FATAL):
-            logger.setLevel(logging.FATAL)
+            self.logger.setLevel(logging.FATAL)
         elif self._storage_logging_level == int(tango.LogLevel.LOG_ERROR):
-            logger.setLevel(logging.ERROR)
+            self.logger.setLevel(logging.ERROR)
         elif self._storage_logging_level == int(tango.LogLevel.LOG_WARN):
-            logger.setLevel(logging.WARNING)
+            self.logger.setLevel(logging.WARNING)
         elif self._storage_logging_level == int(tango.LogLevel.LOG_INFO):
-            logger.setLevel(logging.INFO)
+            self.logger.setLevel(logging.INFO)
         elif self._storage_logging_level == int(tango.LogLevel.LOG_DEBUG):
-            logger.setLevel(logging.DEBUG)
+            self.logger.setLevel(logging.DEBUG)
         else:
-            logger.setLevel(logging.DEBUG)
+            self.logger.setLevel(logging.DEBUG)
         # PROTECTED REGION END #    //  SKABaseDevice.storageLoggingLevel_write
 
     def read_healthState(self):

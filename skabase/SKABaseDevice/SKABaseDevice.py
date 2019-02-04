@@ -5,7 +5,7 @@
 #
 #
 
-"""skabasedevice.py: A generic base device for SKA. It exposes the generic attributes,
+"""A generic base device for SKA. It exposes the generic attributes,
 properties and commands of an SKA device.
 """
 from __future__ import print_function
@@ -642,6 +642,11 @@ class SKABaseDevice(with_metaclass(DeviceMeta, Device)):
     @DebugIt()
     def ToJson(self, argin):
         # PROTECTED REGION ID(SKABaseDevice.ToJson) ENABLED START #
+        """
+        ToJson method. Not used. To be deleted.
+        :param argin:
+        :return:
+        """
 
         # TBD - see how to use fandango's export_device_to_dict
         with exception_manager(self):

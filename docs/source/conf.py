@@ -12,20 +12,25 @@
 # All configuration values have a default; values that are commented out
 # serve to show the default.
 
+# import sys
+# import os
+# from mock import Mock as MagicMock
+#
+# class Mock(MagicMock):
+#     @classmethod
+#     def __getattr__(cls, name):
+#         return MagicMock()
+#
+# # Mock tango modules
+# MOCK_MODULES = ['PyTango', 'tango', 'tango.server', 'run', 'DeviceMeta', 'command',
+#                 'future', 'future.utils', 'logging', 'logging.handlers']
+# sys.modules.update((mod_name, Mock()) for mod_name in MOCK_MODULES)
+
+autodoc_mock_imports = ['PyTango', 'tango', 'tango.server', 'run', 'DeviceMeta', 'command',
+                        'future', 'future.utils', 'logging', 'logging.handlers']
+
 import sys
 import os
-from mock import Mock as MagicMock
-
-class Mock(MagicMock):
-    @classmethod
-    def __getattr__(cls, name):
-        return MagicMock()
-
-# Mock tango modules
-MOCK_MODULES = ['PyTango', 'tango', 'tango.server', 'run', 'DeviceMeta', 'command',
-                'future', 'future.utils', 'logging', 'logging.handlers']
-sys.modules.update((mod_name, Mock()) for mod_name in MOCK_MODULES)
-
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.

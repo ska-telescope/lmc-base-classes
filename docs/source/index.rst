@@ -10,10 +10,14 @@ Welcome to LMC Base Classes documentation!
   :caption: Table of Contents
   :maxdepth: 2
 
-.. automodule:: SKABaseDevice.SKABaseDeviceModule
-
-.. autoclass:: SKABaseDevice
-   :members:
+   SKA Alarm Handler<SKAAlarmHandler>
+   SKA Base Device<SKABaseDevice>
+   SKA Capability<SKACapability>
+   SKA Logger<SKALogger>
+   SKA Master<SKAMaster>
+   SKA ObsDevice<SKAObsDevice>
+   SKA Subarray<SKASubarray>
+   SKA TelState<SKATelState>
 
 Indices and tables
 ==================

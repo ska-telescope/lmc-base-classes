@@ -47,6 +47,7 @@ class SKATelState(with_metaclass(DeviceMeta, SKABaseDevice)):
         dtype='str',
     )
 
+
     # ----------
     # Attributes
     # ----------
@@ -56,6 +57,9 @@ class SKATelState(with_metaclass(DeviceMeta, SKABaseDevice)):
     # ---------------
 
     def init_device(self):
+        """init_device
+        Init device method of SKATelStateDevice
+        """
         SKABaseDevice.init_device(self)
         self._build_state = '{}, {}, {}'.format(release.name, release.version,
                                                 release.description)

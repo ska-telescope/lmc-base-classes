@@ -33,7 +33,6 @@ formatter = logging.Formatter('%(name)s: %(levelname)s %(module)s %(message)r')
 syslog.setFormatter(formatter)
 logger.addHandler(syslog)
 
-
 # PROTECTED REGION END #    //  SKALogger.additionnal_import
 
 __all__ = ["SKALogger", "main"]
@@ -41,7 +40,6 @@ __all__ = ["SKALogger", "main"]
 
 class SKALogger(SKABaseDevice):
     """
-
     A generic base device for Logging for SKA.
     """
     __metaclass__ = DeviceMeta
@@ -174,6 +172,8 @@ class SKALogger(SKABaseDevice):
         A method to set Central logging level of source device.
         """
         central_logging_level = argin[0][:]
+        #To convert the type of log level from numpy.ndarray to list. Needs to fix in PyTango.
+        central_logging_level = central_logging_level.tolist()
         central_logging_device = argin[1][:]
         i = 0
         while i < len(central_logging_level[:]):
@@ -196,6 +196,8 @@ class SKALogger(SKABaseDevice):
         A method to set Element logging level of source device.
         """
         element_logging_level = argin[0][:]
+        #To convert the type of log level from numpy.ndarray to list. Needs to fix in PyTango.
+        element_logging_level = element_logging_level.tolist()
         element_logging_device = argin[1][:]
         i = 0
         while i < len(element_logging_level[:]):
@@ -218,6 +220,8 @@ class SKALogger(SKABaseDevice):
         A method to set Storage logging level of source device.
         """
         storage_logging_level = argin[0][:]
+        #To convert the type of log level from numpy.ndarray to list. Needs to fix in PyTango.
+        storage_logging_level = storage_logging_level.tolist()
         storage_logging_device = argin[1][:]
         i = 0
         while i < len(storage_logging_level[:]):

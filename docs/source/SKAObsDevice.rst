@@ -10,5 +10,5 @@ SKA ObsDevice
    :maxdepth: 2
 
 .. automodule:: SKAObsDevice.SKAObsDevice
-   :members:
+   :members: SKAObsDevice
 

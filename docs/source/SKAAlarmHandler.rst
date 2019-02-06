@@ -9,6 +9,5 @@ SKA AlarmHandler
 .. toctree::
    :maxdepth: 2
 
-
 .. automodule:: SKAAlarmHandler.SKAAlarmHandler
-   :members:
+   :members: SKAAlarmHandler

@@ -6,5 +6,5 @@
 #
 
 from __future__ import absolute_import
-from .SKABaseDeviceModule import main
+from .SKABaseDevice import main
 main()

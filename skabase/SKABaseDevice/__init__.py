@@ -5,11 +5,14 @@
 #
 #
 
-"""SKABASE
-A generic base device for SKA. It exposes the generic attributes, properties and commands of an SKA device.
-"""
-__all__ = ["SKABaseDevice", "main"]
 
+"""SKABase
+
+A generic base device for SKA. It exposes the attributes, properties and commands of
+a device that are common for all the SKA devices.
+"""
+
+__all__ = ["SKABaseDevice", "main"]
 from skabase import release
 from .SKABaseDevice import SKABaseDevice, main
 

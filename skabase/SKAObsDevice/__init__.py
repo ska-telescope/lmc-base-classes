@@ -12,7 +12,6 @@ and obsMode will inherit from SKAObsDevice instead of just SKABaseDevice.
 """
 
 __all__ = ["SKAObsDevice", "main"]
-
 from skabase import release
 from .SKAObsDevice import SKAObsDevice, main
 

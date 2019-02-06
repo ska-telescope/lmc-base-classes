@@ -13,7 +13,6 @@ attribute values and quality factors, and are separate from the "built-in" TANGO
 """
 
 __all__ = ["SKAAlarmHandler", "main"]
-
 from skabase import release
 from .SKAAlarmHandler import SKAAlarmHandler, main
 

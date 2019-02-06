@@ -9,6 +9,5 @@
 Main module of SKAAlarmHandler base class.
 """
 from __future__ import absolute_import
-
 from .SKAAlarmHandler import main
 main()

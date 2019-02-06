@@ -1,4 +1,5 @@
 """Tests for skabase.utils."""
+from __future__ import print_function
 
 import json
 import pytest
@@ -172,14 +173,14 @@ def _validate_group(definition, group):
     expected_devices = definition.get('devices', [])  # key may exist
     expected_subgroups = definition.get('subgroups', [])  # key may exist
 
-    print "Checking group:", expected_group_name, group
+    print("Checking group:", expected_group_name, group)
     assert group is not None
     assert expected_group_name == group.get_name()
     device_list = group.get_device_list(forward=False)
     assert expected_devices == list(device_list)
 
     for expected_subgroup in expected_subgroups:
-        print "\tsubgroup def", expected_subgroup
+        print("\tsubgroup def", expected_subgroup)
         subgroup = group.get_group(expected_subgroup['group_name'])
         assert subgroup is not None
         # recurse the tree

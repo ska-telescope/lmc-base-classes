@@ -1,16 +1,24 @@
 #!/usr/bin/env python
 
+import os
 import sys
 
 from setuptools import setup, find_packages
+
+setup_dir = os.path.dirname(os.path.abspath(__file__))
+release_filename = os.path.join(setup_dir, 'skabase', 'release.py')
+exec(open(release_filename).read())
 
 # prevent unnecessary installation of pytest-runner
 needs_pytest = {'pytest', 'test', 'ptr'}.intersection(sys.argv)
 pytest_runner = ['pytest-runner'] if needs_pytest else []
 
-setup(name="lmc_base_classes",
-      description="Element Base Classes - Evolutionary Prototype",
-      author="SKA Team",
+setup(name=name,
+      description=description,
+      version=version,
+      author=author,
+      author_email=author_email,
+      license=license,
       packages=find_packages(),
       include_package_data=True,
       scripts=["scripts/gen_csv_info.py",
@@ -30,7 +38,8 @@ setup(name="lmc_base_classes",
       setup_requires=[] + pytest_runner,
       install_requires=[
           "enum34",
-          "argparse"
+          "argparse",
+          "future"
       ],
       tests_require=[
           "coverage",

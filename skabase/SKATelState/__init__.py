@@ -7,10 +7,11 @@
 
 """SKATelState
 
-A generic TelState device for SKA.
+A generic base device for Telescope State for SKA.
 """
+__all__ = ["SKATelState", "main"]
 
-from . import release
+from skabase import release
 from .SKATelState import SKATelState, main
 
 __version__ = release.version

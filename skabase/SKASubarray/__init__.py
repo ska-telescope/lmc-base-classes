@@ -7,10 +7,13 @@
 
 """SKASubarray
 
-A generic Subarray device for SKA.
+A SubArray handling device. It allows the assigning/releasing of resources into/from Subarray, configuring
+capabilities, and exposes the related information like assigned resources, configured capabilities, etc.
 """
 
-from . import release
+__all__ = ["SKASubarray", "main"]
+
+from skabase import release
 from .SKASubarray import SKASubarray, main
 
 __version__ = release.version

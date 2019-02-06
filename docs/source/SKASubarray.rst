@@ -9,6 +9,7 @@ SKA Subarray
 .. toctree::
    :maxdepth: 2
 
-.. automodule:: SKASubarray.SKASubarray
-   :members: SKASubarray
-
+.. automodule:: SKASubarray
+.. autoclass:: SKASubarray
+   :members:
+   :undoc-members:

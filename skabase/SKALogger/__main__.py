@@ -1,10 +1,11 @@
 # -*- coding: utf-8 -*-
 #
-# This file is part of the SKAObsDevice project
+# This file is part of the SKALogger project
 #
 #
 #
 
+
 from __future__ import absolute_import
-from .SKAObsDevice import main
+from .SKALogger import main
 main()

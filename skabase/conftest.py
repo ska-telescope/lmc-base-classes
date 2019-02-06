@@ -2,6 +2,7 @@
 A module defining a list of fixture functions that are shared across all the skabase
 tests.
 """
+from __future__ import print_function
 import mock
 import pytest
 import importlib
@@ -23,7 +24,7 @@ def tango_context(request):
     fq_test_class_name_details = fq_test_class_name.split(".")
     package_name = fq_test_class_name_details[0]
     class_name = module_name = fq_test_class_name_details[1]
-    module = importlib.import_module("{}.{}".format(package_name, module_name))
+    module = importlib.import_module(fq_test_class_name_details[1], fq_test_class_name_details[1])
     klass = getattr(module, class_name)
 
     tango_context = DeviceTestContext(klass)

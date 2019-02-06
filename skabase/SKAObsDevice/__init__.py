@@ -7,10 +7,12 @@
 
 """SKAObsDevice
 
-A generic base device for Observations for SKA.
+A generic base device for Observations for SKA. It inherits SKABaseDevice class. Any device implementing
+and obsMode will inherit from SKAObsDevice instead of just SKABaseDevice.
 """
 
-from . import release
+__all__ = ["SKAObsDevice", "main"]
+from skabase import release
 from .SKAObsDevice import SKAObsDevice, main
 
 __version__ = release.version

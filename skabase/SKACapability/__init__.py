@@ -7,10 +7,11 @@
 
 """SKACapability
 
-A generic Capability device for SKA.
+A Subarray handling device. It exposes the instances of configured capabilities.
 """
 
-from . import release
+__all__ = ["SKACapability", "main"]
+from skabase import release
 from .SKACapability import SKACapability, main
 
 __version__ = release.version

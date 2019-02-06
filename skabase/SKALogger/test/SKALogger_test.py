@@ -9,6 +9,7 @@
 """Contain the tests for the SKALogger."""
 
 # Path
+from builtins import object
 import sys
 import os
 
@@ -145,7 +146,8 @@ class TestSKALogger(object):
         """Test for GetVersionInfo"""
         # PROTECTED REGION ID(SKALogger.test_GetVersionInfo) ENABLED START #
         versionPattern = re.compile(
-            r'SKALogger, tangods-skalogger, [0-9].[0-9].[0-9], A generic logger device for SKA')
+            r'SKALogger, lmc-base-classes, [0-9].[0-9].[0-9], '
+            r'A set of generic base devices for SKA Telescope.')
         versionInfo = tango_context.device.GetVersionInfo()
         assert (re.match(versionPattern, versionInfo[0])) != None
         # PROTECTED REGION END #    //  SKALogger.test_GetVersionInfo
@@ -163,7 +165,10 @@ class TestSKALogger(object):
     def test_buildState(self, tango_context):
         """Test for buildState"""
         # PROTECTED REGION ID(SKALogger.test_buildState) ENABLED START #
-        assert tango_context.device.buildState == 'tangods-skalogger, 1.0.0, A generic logger device for SKA.'
+        buildPattern = re.compile(
+            r'lmc-base-classes, [0-9].[0-9].[0-9], '
+            r'A set of generic base devices for SKA Telescope')
+        assert (re.match(buildPattern, tango_context.device.buildState)) != None
         # PROTECTED REGION END #    //  SKALogger.test_buildState
 
     # PROTECTED REGION ID(SKALogger.test_versionId_decorators) ENABLED START #
@@ -171,7 +176,8 @@ class TestSKALogger(object):
     def test_versionId(self, tango_context):
         """Test for versionId"""
         # PROTECTED REGION ID(SKALogger.test_versionId) ENABLED START #
-        assert tango_context.device.versionId == '1.0.0'
+        versionIdPattern = re.compile(r'[0-9].[0-9].[0-9]')
+        assert (re.match(versionIdPattern, tango_context.device.versionId)) != None
         # PROTECTED REGION END #    //  SKALogger.test_versionId
 
     # PROTECTED REGION ID(SKALogger.test_centralLoggingLevel_decorators) ENABLED START #

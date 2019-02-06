@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 #
-# This file is part of the SKAObsDevice project
+# This file is part of the SKASubarray project
 #
 #
 #
 
 from __future__ import absolute_import
-from .SKAObsDevice import main
+from .SKASubarray import main
 main()

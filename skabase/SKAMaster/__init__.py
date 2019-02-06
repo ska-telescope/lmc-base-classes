@@ -5,12 +5,14 @@
 #
 #
 
+"""SKAMaster
+
+A generic master device for SKA Element Master.
 """
 
-A master test
-"""
+__all__ = ["SKAMaster", "main"]
 
-from . import release
+from skabase import release
 from .SKAMaster import SKAMaster, main
 
 __version__ = release.version

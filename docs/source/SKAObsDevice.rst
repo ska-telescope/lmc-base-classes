@@ -9,6 +9,7 @@ SKA ObsDevice
 .. toctree::
    :maxdepth: 2
 
-.. automodule:: SKAObsDevice.SKAObsDevice
-   :members: SKAObsDevice
-
+.. automodule:: SKAObsDevice
+.. autoclass:: SKAObsDevice
+   :members:
+   :undoc-members:

@@ -64,7 +64,7 @@ class DeviceServerBaseTest(TestCase):
 
     @classmethod
     def add_device_prop(cls,device_ref,properties):
-        for name,value in properties.iteritems():
+        for name,value in properties.items():
             db_datum = DbDatum()
             db_datum.name = name
             db_datum.value_string.append(value)

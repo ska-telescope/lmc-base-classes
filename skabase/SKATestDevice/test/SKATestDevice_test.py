@@ -9,6 +9,7 @@
 """Contain the tests for the SKATestDevice."""
 
 # Path
+from builtins import object
 import sys
 import os
 path = os.path.join(os.path.dirname(__file__), os.pardir)
@@ -17,7 +18,7 @@ sys.path.insert(0, os.path.abspath(path))
 # Imports
 import pytest
 from tango import DevFailed, DevState
-
+import re
 
 # PROTECTED REGION ID(SKATestDevice.test_additional_imports) ENABLED START #
 # PROTECTED REGION END #    //  SKATestDevice.test_additional_imports
@@ -78,7 +79,11 @@ class TestSKATestDevice(object):
     def test_GetVersionInfo(self, tango_context):
         """Test for GetVersionInfo"""
         # PROTECTED REGION ID(SKATestDevice.test_GetVersionInfo) ENABLED START #
-        assert tango_context.device.GetVersionInfo() == [""]
+        versionPattern = re.compile(
+            r'SKATestDevice, lmc-base-classes, [0-9].[0-9].[0-9], '
+            r'A set of generic base devices for SKA Telescope.')
+        versionInfo = tango_context.device.GetVersionInfo()
+        assert (re.match(versionPattern, versionInfo[0])) != None
         # PROTECTED REGION END #    //  SKATestDevice.test_GetVersionInfo
 
     # PROTECTED REGION ID(SKATestDevice.test_State_decorators) ENABLED START #
@@ -162,7 +167,10 @@ class TestSKATestDevice(object):
     def test_buildState(self, tango_context):
         """Test for buildState"""
         # PROTECTED REGION ID(SKATestDevice.test_buildState) ENABLED START #
-        assert tango_context.device.buildState == ''
+        buildPattern = re.compile(
+            r'lmc-base-classes, [0-9].[0-9].[0-9], '
+            r'A set of generic base devices for SKA Telescope')
+        assert (re.match(buildPattern, tango_context.device.buildState)) != None
         # PROTECTED REGION END #    //  SKATestDevice.test_buildState
 
     # PROTECTED REGION ID(SKATestDevice.test_versionId_decorators) ENABLED START #
@@ -170,7 +178,8 @@ class TestSKATestDevice(object):
     def test_versionId(self, tango_context):
         """Test for versionId"""
         # PROTECTED REGION ID(SKATestDevice.test_versionId) ENABLED START #
-        assert tango_context.device.versionId == ''
+        versionIdPattern = re.compile(r'[0-9].[0-9].[0-9]')
+        assert (re.match(versionIdPattern, tango_context.device.versionId)) != None
         # PROTECTED REGION END #    //  SKATestDevice.test_versionId
 
     # PROTECTED REGION ID(SKATestDevice.test_centralLoggingLevel_decorators) ENABLED START #
@@ -178,7 +187,7 @@ class TestSKATestDevice(object):
     def test_centralLoggingLevel(self, tango_context):
         """Test for centralLoggingLevel"""
         # PROTECTED REGION ID(SKATestDevice.test_centralLoggingLevel) ENABLED START #
-        assert tango_context.device.centralLoggingLevel == 0
+        assert tango_context.device.centralLoggingLevel == 5
         # PROTECTED REGION END #    //  SKATestDevice.test_centralLoggingLevel
 
     # PROTECTED REGION ID(SKATestDevice.test_elementLoggingLevel_decorators) ENABLED START #
@@ -186,7 +195,7 @@ class TestSKATestDevice(object):
     def test_elementLoggingLevel(self, tango_context):
         """Test for elementLoggingLevel"""
         # PROTECTED REGION ID(SKATestDevice.test_elementLoggingLevel) ENABLED START #
-        assert tango_context.device.elementLoggingLevel == 0
+        assert tango_context.device.elementLoggingLevel == 5
         # PROTECTED REGION END #    //  SKATestDevice.test_elementLoggingLevel
 
     # PROTECTED REGION ID(SKATestDevice.test_storageLoggingLevel_decorators) ENABLED START #
@@ -194,7 +203,7 @@ class TestSKATestDevice(object):
     def test_storageLoggingLevel(self, tango_context):
         """Test for storageLoggingLevel"""
         # PROTECTED REGION ID(SKATestDevice.test_storageLoggingLevel) ENABLED START #
-        assert tango_context.device.storageLoggingLevel == 0
+        assert tango_context.device.storageLoggingLevel == 5
         # PROTECTED REGION END #    //  SKATestDevice.test_storageLoggingLevel
 
     # PROTECTED REGION ID(SKATestDevice.test_healthState_decorators) ENABLED START #

@@ -9,6 +9,7 @@
 """Contain the tests for the SKATelState."""
 
 # Path
+from builtins import object
 import sys
 import os
 path = os.path.join(os.path.dirname(__file__), os.pardir)
@@ -19,6 +20,7 @@ import pytest
 from mock import MagicMock
 
 from PyTango import DevState
+import re
 
 # PROTECTED REGION ID(SKATelState.test_additional_imports) ENABLED START #
 # PROTECTED REGION END #    //  SKATelState.test_additional_imports
@@ -92,7 +94,11 @@ class TestSKATelState(object):
     def test_GetVersionInfo(self, tango_context):
         """Test for GetVersionInfo"""
         # PROTECTED REGION ID(SKATelState.test_GetVersionInfo) ENABLED START #
-        assert tango_context.device.GetVersionInfo() == [""]
+        versionPattern = re.compile(
+            r'SKATelState, lmc-base-classes, [0-9].[0-9].[0-9], '
+            r'A set of generic base devices for SKA Telescope.')
+        versionInfo = tango_context.device.GetVersionInfo()
+        assert (re.match(versionPattern, versionInfo[0])) != None
         # PROTECTED REGION END #    //  SKATelState.test_GetVersionInfo
 
     # PROTECTED REGION ID(SKATelState.test_Reset_decorators) ENABLED START #
@@ -109,7 +115,10 @@ class TestSKATelState(object):
     def test_buildState(self, tango_context):
         """Test for buildState"""
         # PROTECTED REGION ID(SKATelState.test_buildState) ENABLED START #
-        assert tango_context.device.buildState == ''
+        buildPattern = re.compile(
+            r'lmc-base-classes, [0-9].[0-9].[0-9], '
+            r'A set of generic base devices for SKA Telescope')
+        assert (re.match(buildPattern, tango_context.device.buildState)) != None
         # PROTECTED REGION END #    //  SKATelState.test_buildState
 
     # PROTECTED REGION ID(SKATelState.test_versionId_decorators) ENABLED START #
@@ -117,7 +126,8 @@ class TestSKATelState(object):
     def test_versionId(self, tango_context):
         """Test for versionId"""
         # PROTECTED REGION ID(SKATelState.test_versionId) ENABLED START #
-        assert tango_context.device.versionId == ''
+        versionIdPattern = re.compile(r'[0-9].[0-9].[0-9]')
+        assert (re.match(versionIdPattern, tango_context.device.versionId)) != None
         # PROTECTED REGION END #    //  SKATelState.test_versionId
 
     # PROTECTED REGION ID(SKATelState.test_centralLoggingLevel_decorators) ENABLED START #

@@ -12,3 +12,4 @@ SKA Logger
 .. automodule:: SKALogger
 .. autoclass:: SKALogger
    :members:
+   :undoc-members:

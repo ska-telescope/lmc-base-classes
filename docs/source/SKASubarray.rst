@@ -12,3 +12,4 @@ SKA Subarray
 .. automodule:: SKASubarray
 .. autoclass:: SKASubarray
    :members:
+   :undoc-members:

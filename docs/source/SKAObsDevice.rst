@@ -12,3 +12,4 @@ SKA ObsDevice
 .. automodule:: SKAObsDevice
 .. autoclass:: SKAObsDevice
    :members:
+   :undoc-members:

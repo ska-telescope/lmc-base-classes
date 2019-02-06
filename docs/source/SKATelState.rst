@@ -12,3 +12,4 @@ SKA TelState
 .. automodule:: SKATelState
 .. autoclass:: SKATelState
    :members:
+   :undoc-members:

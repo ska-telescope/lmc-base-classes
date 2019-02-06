@@ -12,3 +12,4 @@ SKA Capability
 .. automodule:: SKACapability
 .. autoclass:: SKACapability
    :members:
+   :undoc-members:

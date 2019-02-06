@@ -12,3 +12,4 @@ SKA AlarmHandler
 .. automodule:: SKAAlarmHandler
 .. autoclass:: SKAAlarmHandler
    :members:
+   :undoc-members:

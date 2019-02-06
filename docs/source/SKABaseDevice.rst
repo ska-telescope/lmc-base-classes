@@ -12,3 +12,4 @@ SKA BaseDevice
 .. automodule:: SKABaseDevice
 .. autoclass:: SKABaseDevice
    :members:
+   :undoc-members:

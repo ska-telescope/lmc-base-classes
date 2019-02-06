@@ -12,4 +12,4 @@ SKA Master
 .. automodule:: SKAMaster
 .. autoclass:: SKAMaster
    :members:
-
+   :undoc-members:

@@ -9,6 +9,6 @@ SKA Logger
 .. toctree::
    :maxdepth: 2
 
-.. automodule:: SKALogger.SKALogger
-   :members: SKALogger
-
+.. automodule:: SKALogger
+.. autoclass:: SKALogger
+   :members:

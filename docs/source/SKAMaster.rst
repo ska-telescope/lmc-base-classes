@@ -9,6 +9,7 @@ SKA Master
 .. toctree::
    :maxdepth: 2
 
-.. automodule:: SKAMaster.SKAMaster
-   :members: SKAMaster
+.. automodule:: SKAMaster
+.. autoclass:: SKAMaster
+   :members:
 

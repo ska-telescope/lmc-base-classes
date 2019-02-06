@@ -9,6 +9,6 @@ SKA TelState
 .. toctree::
    :maxdepth: 2
 
-.. automodule:: SKATelState.SKATelState
-   :members: SKATelState
-
+.. automodule:: SKATelState
+.. autoclass:: SKATelState
+   :members:

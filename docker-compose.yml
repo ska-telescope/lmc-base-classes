@@ -1,0 +1,70 @@
+#
+# Docker compose file for LMC Base classes.
+# Contains services for TANGO database, database device server.
+# Also uses rsyslog service
+#
+# Defines:
+#   - tangodb: MariaDB database with TANGO schema
+#   - databaseds: TANGO database device server
+#   - rsyslog-lmcbaseclasses:Container which provice rsyslog service for local logging
+#   - lmcbaseclasses: Container having lmc base classes
+#
+# Requires:
+#   - None
+#
+version: '2'
+volumes:
+  tangodb: {}
+
+services:
+  tangodb:
+    image: ska-registry.av.it.pt/ska-docker/tango-db:latest
+    depends_on:
+      - rsyslog-dishmaster
+    environment:
+      - MYSQL_ROOT_PASSWORD=secret
+      - MYSQL_DATABASE=tango
+      - MYSQL_USER=tango
+      - MYSQL_PASSWORD=tango
+    volumes:
+      - tangodb:/var/lib/mysql
+
+  databaseds:
+    image: ska-registry.av.it.pt/ska-docker/tango-cpp:latest
+    depends_on:
+      - tangodb
+    environment:
+      - MYSQL_HOST=tangodb:3306
+      - MYSQL_DATABASE=tango
+      - MYSQL_USER=tango
+      - MYSQL_PASSWORD=tango
+      - TANGO_HOST=databaseds:10000
+    entrypoint:
+      - /usr/local/bin/wait-for-it.sh
+      - tangodb:3306
+      - --timeout=30
+      - --strict
+      - --
+      - /usr/local/bin/DataBaseds
+      - "2"
+      - -ORBendPoint
+      - giop:tcp::10000
+
+  rsyslog-lmcbaseclasses:
+    container_name: rsyslog-lmcbaseclasses
+    image: jumanjiman/rsyslog
+
+  lmcbaseclasses:
+    image: ${DOCKER_REGISTRY_HOST}/${DOCKER_REGISTRY_USER}/lmcbaseclasses:latest
+    depends_on:
+      - databaseds
+      - rsyslog-lmcbaseclasses
+    environment:
+      - TANGO_HOST=databaseds:10000
+    command: >
+      sh -c "wait-for-it.sh databaseds:10000 --timeout=30 --strict --
+             tango_admin --add-server DishMaster/test DishMaster test/DishMaster/01 &&\
+             sudo ln -sf /var/run/rsyslog/dev/log /dev/log &&\
+             /venv/bin/python /app/DishMaster/DishMaster.py test"
+    volumes_from:
+      - rsyslog-dishmaster:rw

@@ -46,6 +46,7 @@ setup(name=name,
           "pytest",
           "pytest-cov",
           "pytest-xdist"
+          "mock"
       ],
       keywords="lmc base classes ska",
       zip_safe=False)

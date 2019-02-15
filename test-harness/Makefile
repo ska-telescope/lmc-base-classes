@@ -16,6 +16,9 @@ test:
         mv /app/setup_py_test.stdout /build/lmcbaseclasses_setup_py_test.stdout; \
 		mv /app/code_analysis.stdout /build/lmcbaseclasses_code_analysis.stdout; \
 		ls -l /app; \
+		if [ -d /lmc-base-classes ]; then \
+		    ls -l /lmc-base-classes; \
+		 fi; \
 		mv /app/htmlcov /build/lmcbaseclasses_htmlcov; \
 		mv /app/coverage.xml /build/lmcbaseclasses_coverage.xml; \
 	fi;

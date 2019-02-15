@@ -53,10 +53,8 @@ pages:
   script:
    - ls -la
    - mkdir .public
-   - cp build/dishmaster_coverage.xml .public
-   - cp -r build/dishmaster_htmlcov/* .public
-   - cp build/dishleafnode_coverage.xml .public
-   - cp -r build/dishleafnode_htmlcov/* .public
+   - cp build/lmcbaseclasses_coverage.xml .public
+   - cp -r build/lmcbaseclasses_htmlcov/* .public
    - mv .public public
   artifacts:
     paths:

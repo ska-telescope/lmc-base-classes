@@ -27,6 +27,8 @@ before_script:
 
 stages:
   - test
+  - pages
+
 
 
 test:
@@ -36,8 +38,27 @@ test:
   script:
     - make build
     - make test
-#    - mv build public
-#    - make push
-#  artifacts:
-#    paths:
-#      - public
+    - mv build public
+    - make push
+  artifacts:
+    paths:
+      - public
+
+
+pages:
+  tags:
+    - docker-executor
+  stage: pages
+
+  script:
+   - ls -la
+   - mkdir .public
+   - cp build/dishmaster_coverage.xml .public
+   - cp -r build/dishmaster_htmlcov/* .public
+   - cp build/dishleafnode_coverage.xml .public
+   - cp -r build/dishleafnode_htmlcov/* .public
+   - mv .public public
+  artifacts:
+    paths:
+      - public
+    expire_in: 30 days

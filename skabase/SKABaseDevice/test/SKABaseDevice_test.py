@@ -190,5 +190,3 @@ class TestSKABaseDevice(object):
         # PROTECTED REGION ID(SKABaseDevice.test_testMode) ENABLED START #
         assert tango_context.device.testMode == ''
         # PROTECTED REGION END #    //  SKABaseDevice.test_testMode
-
-

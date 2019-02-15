@@ -7,12 +7,12 @@ all: test
 test:
 	retry -- tango_admin --check-device ska/BaseDevice/01
 	cd /app && python setup.py test | tee setup_py_test.stdout
-#	cd /app && ./code-analysis.sh | tee code_analysis.stdout
-#	if [ -d /build ]; then \
-#		mv /app/setup_py_test.stdout /build; \
-#		mv /app/code_analysis.stdout /build; \
-#		mv /app/htmlcov /build; \
-#		mv /app/coverage.xml /build; \
-#	fi;
+	cd /app && ./code-analysis.sh | tee code_analysis.stdout
+	if [ -d /build ]; then \
+		mv /app/setup_py_test.stdout /build; \
+		mv /app/code_analysis.stdout /build; \
+		mv /app/htmlcov /build; \
+		mv /app/coverage.xml /build; \
+	fi;
 
 .PHONY: all test

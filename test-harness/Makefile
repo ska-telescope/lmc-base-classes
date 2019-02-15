@@ -15,6 +15,7 @@ test:
 #		mv /app/coverage.xml /build; \
         mv /app/setup_py_test.stdout /build/lmcbaseclasses_setup_py_test.stdout; \
 		mv /app/code_analysis.stdout /build/lmcbaseclasses_code_analysis.stdout; \
+		ls -l /app; \
 		mv /app/htmlcov /build/lmcbaseclasses_htmlcov; \
 		mv /app/coverage.xml /build/lmcbaseclasses_coverage.xml; \
 	fi;

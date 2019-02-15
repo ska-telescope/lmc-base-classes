@@ -5,7 +5,7 @@ echo
 
 echo "MODULE ANALYSIS"
 echo "---------------"
-pylint --rcfile=rcfile skabase/SKABaseDevice
+pylint skabase/SKABaseDevice
 
 echo "TESTS ANALYSIS"
 echo "--------------"

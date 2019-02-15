@@ -6,16 +6,16 @@ FROM ska-registry.av.it.pt/ska-docker/ska-python-runtime:latest AS runtime
 RUN ipython profile create
 
 # set working directory
-WORKDIR /app
+#WORKDIR /app
 
 #install lmc-base-classes
-USER root
-RUN buildDeps="ca-certificates git" \
-   && DEBIAN_FRONTEND=noninteractive apt-get update \
-   && DEBIAN_FRONTEND=noninteractive apt-get -y install --no-install-recommends $buildDeps \
+#USER root
+#RUN buildDeps="ca-certificates git" \
+#   && DEBIAN_FRONTEND=noninteractive apt-get update \
+#   && DEBIAN_FRONTEND=noninteractive apt-get -y install --no-install-recommends $buildDeps \
 #   && su tango -c "git clone https://github.com/ska-telescope/lmc-base-classes.git" \
-   && apt-get purge -y --auto-remove $buildDeps \
-   && rm -rf /var/lib/apt/lists/* /home/tango/.cache
+#   && apt-get purge -y --auto-remove $buildDeps \
+#   && rm -rf /var/lib/apt/lists/* /home/tango/.cache
 
 USER tango
 

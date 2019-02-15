@@ -9,16 +9,8 @@ test:
 	cd /app && python setup.py test | tee setup_py_test.stdout
 	cd /app && ./code-analysis.sh | tee code_analysis.stdout
 	if [ -d /build ]; then \
-#		mv /app/setup_py_test.stdout /build; \
-#        mv /app/code_analysis.stdout /build; \
-#		mv /app/htmlcov /build; \
-#		mv /app/coverage.xml /build; \
         mv /app/setup_py_test.stdout /build/lmcbaseclasses_setup_py_test.stdout; \
 		mv /app/code_analysis.stdout /build/lmcbaseclasses_code_analysis.stdout; \
-		ls -l /app; \
-		if [ -d /lmc-base-classes ]; then \
-		    ls -l /lmc-base-classes; \
-		 fi; \
 		mv /app/htmlcov /build/lmcbaseclasses_htmlcov; \
 		mv /app/coverage.xml /build/lmcbaseclasses_coverage.xml; \
 	fi;

@@ -36,9 +36,8 @@ test:
     - docker-executor
   stage: test
   script:
-#    - make build
-#    - make test
-    - make interactive
+    - make build
+    - make test
     - mv build public
     - make push
   artifacts:

@@ -5,6 +5,9 @@ FROM ska-registry.av.it.pt/ska-docker/ska-python-runtime:latest AS runtime
 # create ipython profile to so that itango doesn't fail if ipython hasn't run yet
 RUN ipython profile create
 
+# set working directory
+WORKDIR /app
+
 #install lmc-base-classes
 USER root
 RUN buildDeps="ca-certificates git" \
@@ -16,4 +19,4 @@ RUN buildDeps="ca-certificates git" \
 
 USER tango
 
-CMD ["/venv/bin/python", "/app/lmc-base-classes/skabase/SKABaseDevice/SKABaseDevice.py"]
+CMD ["/venv/bin/python", "/app/skabase/SKABaseDevice/SKABaseDevice.py"]

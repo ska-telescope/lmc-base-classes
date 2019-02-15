@@ -63,8 +63,8 @@ services:
       - TANGO_HOST=databaseds:10000
     command: >
       sh -c "wait-for-it.sh databaseds:10000 --timeout=30 --strict --
-             tango_admin --add-server SKABaseDevice/SKABaseDevice SKABaseDevice ska/basedevice/01 &&\
+             tango_admin --add-server SKABaseDevice/01 SKABaseDevice ska/basedevice/01 &&\
              sudo ln -sf /var/run/rsyslog/dev/log /dev/log &&\
-             /venv/bin/python /app/lmc-base-classes/skabase/SKABaseDevice.py test"
+             /venv/bin/python /app/skabase/SKABaseDevice.py 01"
     volumes_from:
       - rsyslog-lmcbaseclasses:rw

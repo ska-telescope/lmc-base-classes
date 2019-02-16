@@ -36,7 +36,6 @@ test:
     - docker-executor
   stage: test
   script:
-#    - make build
     - make test
     - mv build public
     - make push
@@ -45,18 +44,18 @@ test:
       - public
 
 
-pages:
-  tags:
-    - docker-executor
-  stage: pages
-
-  script:
-   - ls -la
-   - mkdir .public
-   - cp build/lmcbaseclasses_coverage.xml .public
-   - cp -r build/lmcbaseclasses_htmlcov/* .public
-   - mv .public public
-  artifacts:
-    paths:
-      - public
-    expire_in: 30 days
+#pages:
+#  tags:
+#    - docker-executor
+#  stage: pages
+#
+#  script:
+#   - ls -la
+#   - mkdir .public
+#   - cp build/lmcbaseclasses_coverage.xml .public
+#   - cp -r build/lmcbaseclasses_htmlcov/* .public
+#   - mv .public public
+#  artifacts:
+#    paths:
+#      - public
+#    expire_in: 30 days

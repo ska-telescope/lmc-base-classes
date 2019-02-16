@@ -5,14 +5,7 @@ echo
 
 echo "MODULE ANALYSIS"
 echo "---------------"
-pylint skabase/SKAAlarmHandler/SKAAlarmHandler
-pylint skabase/SKABaseDevice/SKABaseDevice
-pylint skabase/SKACapability/SKACapability
-pylint skabase/SKALogger/SKALogger
-pylint skabase/SKAMaster/SKAMaster
-pylint skabase/SKAObsDevice/SKAObsDevice
-pylint skabase/SKASubarray/SKASubarray
-pylint skabase/SKATelState/SKATelState
+pylint --rcfile=rcfile skabase
 
 echo "TESTS ANALYSIS"
 echo "--------------"

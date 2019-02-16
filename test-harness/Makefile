@@ -5,7 +5,15 @@ all: test
 # The following steps copy across useful output to this volume which can
 # then be extracted to form the CI summary for the test procedure.
 test:
-	retry -- tango_admin --check-device ska/BaseDevice/01
+	retry -- tango_admin --check-device ska/basedevice/01
+	retry -- tango_admin --check-device ska/alarmhandler/01
+	retry -- tango_admin --check-device ska/capability/01
+	retry -- tango_admin --check-device ska/logger/01
+	retry -- tango_admin --check-device ska/master/01
+	retry -- tango_admin --check-device ska/obsdevice/01
+	retry -- tango_admin --check-device ska/subarray/01
+	retry -- tango_admin --check-device ska/telstate/01
+
 	cd /app && python setup.py test | tee setup_py_test.stdout
 	cd /app && ./code-analysis.sh | tee code_analysis.stdout
 	if [ -d /build ]; then \

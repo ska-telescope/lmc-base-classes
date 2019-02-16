@@ -27,7 +27,7 @@ before_script:
 
 stages:
   - test
-  - pages
+ # - pages
 
 
 
@@ -36,7 +36,7 @@ test:
     - docker-executor
   stage: test
   script:
-    - make build
+#    - make build
     - make test
     - mv build public
     - make push

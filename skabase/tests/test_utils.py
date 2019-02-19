@@ -4,8 +4,8 @@ from __future__ import print_function
 import json
 import pytest
 
-from skabase.utils import get_groups_from_json
-from skabase.utils import GroupDefinitionsError
+from skabase.auxiliary.utils import get_groups_from_json
+from skabase.auxiliary.faults import GroupDefinitionsError
 
 
 TEST_GROUPS = {

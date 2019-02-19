@@ -29,7 +29,7 @@ stages:
   - pages
 
 
-test:
+pages:
   tags:
     - docker-executor
   stage: pages
@@ -37,7 +37,7 @@ test:
     - make test
     - ls -la
     - mv build public
-    - mv public/htmlcov/* public
+    - mv public/lmcbaseclasses_htmlcov/* public
     - make push
   artifacts:
     paths:

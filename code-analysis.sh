@@ -9,11 +9,11 @@ pylint --rcfile=rcfile skabase
 
 echo "TESTS ANALYSIS"
 echo "--------------"
-pylint skabase/SKAAlarmHandler/test
-pylint skabase/SKABaseDevice/test
-pylint skabase/SKACapability/test
-pylint skabase/SKALogger/test
-pylint skabase/SKAMaster/test
-pylint skabase/SKAObsDevice/test
-pylint skabase/SKASubarray/test
-pylint skabase/SKATelState/test
+pylint --rcfile=rcfile skabase/SKAAlarmHandler/test
+pylint --rcfile=rcfile skabase/SKABaseDevice/test
+pylint --rcfile=rcfile skabase/SKACapability/test
+pylint --rcfile=rcfile skabase/SKALogger/test
+pylint --rcfile=rcfile skabase/SKAMaster/test
+pylint --rcfile=rcfile skabase/SKAObsDevice/test
+pylint --rcfile=rcfile skabase/SKASubarray/test
+pylint --rcfile=rcfile skabase/SKATelState/test

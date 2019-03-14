@@ -41,7 +41,7 @@ DOCKER_RUN_ARGS =
 #
 .DEFAULT_GOAL := help
 
-DOCKER_NETWORK := $(shell echo "$(notdir $(CURDIR))"_default | tr A-Z a-z)
+DOCKER_NETWORK := lmcbaseclasses_default
 
 #
 # defines a function to copy the ./test-harness directory into the container

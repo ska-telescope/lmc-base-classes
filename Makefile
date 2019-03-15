@@ -30,7 +30,7 @@ IMAGE_TO_TEST = $(DOCKER_REGISTRY_HOST)/$(DOCKER_REGISTRY_USER)/$(PROJECT):lates
 # used during the test procedure. The volume is not used during the build
 # procedure
 #
-CACHE_VOLUME = $(PROJECT)-test-cache
+CACHE_VOLUME = lmcbaseclasses-test-cache
 
 # optional docker run-time arguments
 DOCKER_RUN_ARGS =

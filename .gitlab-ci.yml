@@ -41,7 +41,7 @@ pages:
     - mv build public
     - mv public/lmcbaseclasses_htmlcov/* public
     - make push
-    - twine upload --repository-url $PYPI_REPOSITORY_URL dist/*
+    - twine upload --repository-url $PYPI_REPOSITORY_URL dist_test/*
   artifacts:
     paths:
       - public

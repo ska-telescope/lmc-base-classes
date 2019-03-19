@@ -1,7 +1,7 @@
 # GitLab CI in conjunction with GitLab Runner can use Docker Engine to test and build any application.
 # Docker, when used with GitLab CI, runs each job in a separate and isolated container using the predefined image that is set up in .gitlab-ci.yml.
 # In this case we use the latest python docker image to build and test this project.
-image: ska-registry.av.it.pt/ska-docker/tango-builder:latest
+image: nexus.engageska-portugal.pt/ska-docker/tango-builder:latest
 
 variables:
   DOCKER_DRIVER: overlay2
@@ -17,8 +17,8 @@ cache:
 # before_script is used to define the command that should be run before all jobs, including deploy jobs, but after the restoration of artifacts.
 # This can be an array or a multi-line string.
 before_script:
-  - docker login -u $DOCKER_REGISTRY_USER_LOGIN -p $CI_REGISTRY_PASS_LOGIN $CI_REGISTRY
-
+  - docker login -u $DOCKER_REGISTRY_USER_LOGIN -p $CI_REGISTRY_PASS_LOGIN $CI_NX_REGISTRY
+  - pip install twine
 
 # The YAML file defines a set of jobs with constraints stating when they should be run.
 # You can specify an unlimited number of jobs which are defined as top-level elements with an arbitrary name and always have to contain at least the script clause.
@@ -28,17 +28,20 @@ before_script:
 stages:
   - pages
 
-
 pages:
   tags:
     - docker-executor
   stage: pages
+  variables:
+    TWINE_USERNAME: $TWINE_USERNAME
+    TWINE_PASSWORD: $TWINE_PASSWORD
   script:
     - make test
     - ls -la
     - mv build public
     - mv public/lmcbaseclasses_htmlcov/* public
     - make push
+    - twine upload --repository-url $PYPI_REPOSITORY_URL dist_test/*
   artifacts:
     paths:
       - public

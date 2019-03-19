@@ -6,9 +6,9 @@
 #
 # DOCKER_REGISTRY_HOST, DOCKER_REGISTRY_USER and PROJECT are combined to define
 # the Docker tag for this project. The definition below inherits the standard
-# value for DOCKER_REGISTRY_HOST (=rska-registry.av.it.pt) and overwrites
+# value for DOCKER_REGISTRY_HOST (=rnexus.engageska-portugal.pt) and overwrites
 # DOCKER_REGISTRY_USER and PROJECT to give a final Docker tag of
-# ska-registry.av.it.pt/dishmaster/dishmaster
+# nexus.engageska-portugal.pt/dishmaster/dishmaster
 #
 DOCKER_REGISTRY_USER:=tango-example
 PROJECT = lmcbaseclasses

@@ -13,6 +13,7 @@ services:
 # If cache is defined outside the scope of jobs, it means it is set globally and all jobs will use that definition
 cache:
   paths:
+    - dist
 
 # before_script is used to define the command that should be run before all jobs, including deploy jobs, but after the restoration of artifacts.
 # This can be an array or a multi-line string.
@@ -27,9 +28,28 @@ before_script:
 # It is also specified that only the master branch will be subject of this job.
 
 stages:
-  # - pages
   - build
-  - publish
+  - deploy
+  # - pages
+
+build wheel:
+  stage: build
+  tags:
+    - docker-executor
+  script:
+    - python setup.py sdist bdist_wheel
+
+publish to nexus:
+  stage: deploy
+  tags:
+    - docker-executor
+  variables:
+    TWINE_USERNAME: $TWINE_USERNAME
+    TWINE_PASSWORD: $TWINE_PASSWORD
+  script:
+    - twine upload --repository-url $PYPI_REPOSITORY_URL dist/*
+  only:
+    - tags
 
 # pages:
 #   tags:
@@ -44,22 +64,3 @@ stages:
 #   artifacts:
 #     paths:
 #       - public
-
-build:
-  tags:
-    - docker-executor
-  stage: build
-  script:
-    - python setup.py sdist bdist_wheel
-
-publish:
-  tags:
-    - docker-executor
-  stage: publish
-  variables:
-    TWINE_USERNAME: $TWINE_USERNAME
-    TWINE_PASSWORD: $TWINE_PASSWORD
-  script:
-    - twine upload --repository-url $PYPI_REPOSITORY_URL dist/*
-  only:
-    - tags

@@ -5,6 +5,5 @@
 #
 #
 """ __main__ module of the SKACapability base class"""
-from __future__ import absolute_import
 from .SKACapability import main
 main()

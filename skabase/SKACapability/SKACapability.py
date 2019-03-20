@@ -9,9 +9,6 @@
 
 Capability handling device
 """
-from __future__ import print_function
-from __future__ import absolute_import
-
 # tango imports
 from tango import DebugIt
 from tango.server import run, DeviceMeta, attribute, command, device_property

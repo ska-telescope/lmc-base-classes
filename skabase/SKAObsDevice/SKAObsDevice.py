@@ -10,9 +10,6 @@
 A generic base device for Observations for SKA. It inherits SKABaseDevice class. Any device implementing
 an obsMode will inherit from SKAObsDevice instead of just SKABaseDevice.
 """
-from __future__ import print_function
-from __future__ import absolute_import
-
 # tango imports
 from tango.server import run, DeviceMeta, attribute
 

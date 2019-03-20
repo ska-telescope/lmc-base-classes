@@ -1,4 +1,3 @@
-from __future__ import absolute_import
 import tango
 from tango import DeviceProxy, AttrQuality, AttributeProxy
 from .base import DeviceServerBaseTest

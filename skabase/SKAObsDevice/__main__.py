@@ -5,6 +5,5 @@
 #
 #
 
-from __future__ import absolute_import
 from .SKAObsDevice import main
 main()

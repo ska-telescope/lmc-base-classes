@@ -8,9 +8,6 @@
 """A generic base device for SKA. It exposes the generic attributes,
 properties and commands of an SKA device.
 """
-from __future__ import print_function
-from __future__ import absolute_import
-
 # tango imports
 import tango
 from tango import DebugIt

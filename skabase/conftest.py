@@ -2,7 +2,6 @@
 A module defining a list of fixture functions that are shared across all the skabase
 tests.
 """
-from __future__ import print_function
 import mock
 import pytest
 import importlib

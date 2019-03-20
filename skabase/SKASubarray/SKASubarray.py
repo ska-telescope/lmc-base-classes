@@ -10,9 +10,6 @@
 A SubArray handling device. It allows the assigning/releasing of resources into/from Subarray, configuring
 capabilities, and exposes the related information like assigned resources, configured capabilities, etc.
 """
-from __future__ import print_function
-from __future__ import absolute_import
-
 # tango imports
 from tango import DebugIt
 from tango.server import run, DeviceMeta, attribute, command

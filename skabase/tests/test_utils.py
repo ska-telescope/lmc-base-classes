@@ -1,6 +1,4 @@
 """Tests for skabase.utils."""
-from __future__ import print_function
-
 import json
 import pytest
 

@@ -26,22 +26,22 @@ before_script:
 # It is also specified that only the master branch will be subject of this job.
 
 stages:
-  - pages
+  # - pages
   - build_and_publish
 
-pages:
-  tags:
-    - docker-executor
-  stage: pages
-  script:
-    - make test
-    - ls -la
-    - mv build public
-    - mv public/lmcbaseclasses_htmlcov/* public
-    - make push
-  artifacts:
-    paths:
-      - public
+# pages:
+#   tags:
+#     - docker-executor
+#   stage: pages
+#   script:
+#     - make test
+#     - ls -la
+#     - mv build public
+#     - mv public/lmcbaseclasses_htmlcov/* public
+#     - make push
+#   artifacts:
+#     paths:
+#       - public
 
 build:
   tags:

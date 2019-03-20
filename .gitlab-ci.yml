@@ -48,8 +48,8 @@ publish to nexus:
     TWINE_PASSWORD: $TWINE_PASSWORD
   script:
     - twine upload --repository-url $PYPI_REPOSITORY_URL dist/*
-  only:
-    - tags
+  # only:
+  #   - tags
 
 # pages:
 #   tags:

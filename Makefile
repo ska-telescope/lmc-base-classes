@@ -30,8 +30,10 @@ IMAGE_TO_TEST = $(DOCKER_REGISTRY_HOST)/$(DOCKER_REGISTRY_USER)/$(PROJECT):lates
 # used during the test procedure. The volume is not used during the build
 # procedure
 #
-# CACHE_VOLUME = lmcbaseclasses-test-cache	# TODO: WORKS LOCALLY
-CACHE_VOLUME = $(PROJECT)-test-cache	# TODO: WORKS CI/CD
+# TODO: WORKS LOCALLY
+CACHE_VOLUME = lmcbaseclasses-test-cache
+# TODO: WORKS CI/CD
+# CACHE_VOLUME = $(PROJECT)-test-cache
 
 # optional docker run-time arguments
 DOCKER_RUN_ARGS =
@@ -42,8 +44,11 @@ DOCKER_RUN_ARGS =
 #
 .DEFAULT_GOAL := help
 
-# DOCKER_NETWORK := lmcbaseclasses_default	# TODO: WORKS LOCALLY
-DOCKER_NETWORK := $(shell echo "$(notdir $(CURDIR))"_default | tr A-Z a-z)	# TODO: WORKS CI/CD
+# TODO: WORKS LOCALLY
+# DOCKER_NETWORK := lmcbaseclasses_default
+# TODO: WORKS CI/CD
+# DOCKER_NETWORK := $(shell echo "$(notdir $(CURDIR))"_default | tr A-Z a-z)
+DOCKER_NETWORK := $(shell echo "$(notdir $(CURDIR))"_default | tr -d "-" | tr A-Z a-z)
 
 #
 # defines a function to copy the ./test-harness directory into the container

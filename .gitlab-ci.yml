@@ -28,7 +28,8 @@ before_script:
 
 stages:
   # - pages
-  - build_and_publish
+  - build
+  - publish
 
 # pages:
 #   tags:
@@ -47,14 +48,14 @@ stages:
 build:
   tags:
     - docker-executor
-  stage: build_and_publish
+  stage: build
   script:
     - python setup.py sdist bdist_wheel
 
 publish:
   tags:
     - docker-executor
-  stage: build_and_publish
+  stage: publish
   variables:
     TWINE_USERNAME: $TWINE_USERNAME
     TWINE_PASSWORD: $TWINE_PASSWORD

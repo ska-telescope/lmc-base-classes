@@ -27,21 +27,30 @@ before_script:
 
 stages:
   - pages
+  - deploy
 
 pages:
   tags:
     - docker-executor
   stage: pages
-  variables:
-    TWINE_USERNAME: $TWINE_USERNAME
-    TWINE_PASSWORD: $TWINE_PASSWORD
   script:
     - make test
     - ls -la
     - mv build public
     - mv public/lmcbaseclasses_htmlcov/* public
     - make push
-    - twine upload --repository-url $PYPI_REPOSITORY_URL dist_test/*
   artifacts:
     paths:
       - public
+
+registry_deploy:
+  tags:
+    - docker-executor
+  stage: deploy
+  variables:
+    TWINE_USERNAME: $TWINE_USERNAME
+    TWINE_PASSWORD: $TWINE_PASSWORD
+  script:
+    - twine upload --repository-url $PYPI_REPOSITORY_URL dist_test/*
+  only:
+    - tags

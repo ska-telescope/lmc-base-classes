@@ -3,7 +3,7 @@
 import os
 import sys
 
-from setuptools import setup, find_packages
+import setuptools
 
 setup_dir = os.path.dirname(os.path.abspath(__file__))
 release_filename = os.path.join(setup_dir, 'skabase', 'release.py')
@@ -13,13 +13,13 @@ exec(open(release_filename).read())
 needs_pytest = {'pytest', 'test', 'ptr'}.intersection(sys.argv)
 pytest_runner = ['pytest-runner'] if needs_pytest else []
 
-setup(name=name,
+setuptools.setup(name=name,
       description=description,
       version=version,
       author=author,
       author_email=author_email,
       license=license,
-      packages=find_packages(),
+      packages=setuptools.find_packages(),
       include_package_data=True,
       scripts=["scripts/gen_csv_info.py",
                "scripts/purge_xmi_tree.py",

@@ -18,8 +18,8 @@ cache:
 # This can be an array or a multi-line string.
 before_script:
   - docker login -u $DOCKER_REGISTRY_USER_LOGIN -p $CI_REGISTRY_PASS_LOGIN $CI_NX_REGISTRY
-  - pip3 install twine
-  - pip3 install setuptools
+  - pip install twine
+  - pip install setuptools
 
 # The YAML file defines a set of jobs with constraints stating when they should be run.
 # You can specify an unlimited number of jobs which are defined as top-level elements with an arbitrary name and always have to contain at least the script clause.
@@ -49,7 +49,7 @@ build:
     - docker-executor
   stage: build_and_publish
   script:
-    - python3 setup.py sdist bdist_wheel
+    - python setup.py sdist bdist_wheel
 
 publish:
   tags:

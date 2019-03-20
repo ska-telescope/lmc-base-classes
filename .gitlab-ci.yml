@@ -27,7 +27,7 @@ before_script:
 
 stages:
   - pages
-  - deploy
+  - build_and_publish
 
 pages:
   tags:
@@ -43,14 +43,21 @@ pages:
     paths:
       - public
 
-registry_deploy:
+build:
   tags:
     - docker-executor
-  stage: deploy
+  stage: build_and_publish
+  script:
+    - python3 setup.py sdist bdist_wheel
+
+publish:
+  tags:
+    - docker-executor
+  stage: build_and_publish
   variables:
     TWINE_USERNAME: $TWINE_USERNAME
     TWINE_PASSWORD: $TWINE_PASSWORD
   script:
-    - twine upload --repository-url $PYPI_REPOSITORY_URL dist_test/*
+    - twine upload --repository-url $PYPI_REPOSITORY_URL dist/*
   only:
     - tags

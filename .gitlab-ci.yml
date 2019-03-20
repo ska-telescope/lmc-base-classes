@@ -30,7 +30,7 @@ before_script:
 stages:
   - build
   - deploy
-  # - pages
+  - pages
 
 build wheel:
   stage: build
@@ -49,18 +49,18 @@ publish to nexus:
   script:
     - twine upload --repository-url $PYPI_REPOSITORY_URL dist/*
   # only:
-  #   - tags
+  #   - tags # tags not yet implemented in packaging
 
-# pages:
-#   tags:
-#     - docker-executor
-#   stage: pages
-#   script:
-#     - make test
-#     - ls -la
-#     - mv build public
-#     - mv public/lmcbaseclasses_htmlcov/* public
-#     - make push
-#   artifacts:
-#     paths:
-#       - public
+pages:
+  tags:
+    - docker-executor
+  stage: pages
+  script:
+    - make test
+    - ls -la
+    - mv build public
+    - mv public/lmcbaseclasses_htmlcov/* public
+    - make push
+  artifacts:
+    paths:
+      - public

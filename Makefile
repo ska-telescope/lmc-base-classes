@@ -45,10 +45,10 @@ DOCKER_RUN_ARGS =
 .DEFAULT_GOAL := help
 
 # TODO: WORKS LOCALLY
-# DOCKER_NETWORK := lmcbaseclasses_default
+# DOCKER_NETWORK := $(shell echo "$(notdir $(CURDIR))"_default | tr -d "-" | tr A-Z a-z)
 # TODO: WORKS CI/CD
 # DOCKER_NETWORK := $(shell echo "$(notdir $(CURDIR))"_default | tr A-Z a-z)
-DOCKER_NETWORK := $(shell echo "$(notdir $(CURDIR))"_default | tr -d "-" | tr A-Z a-z)
+DOCKER_NETWORK := $(shell echo "$(notdir $(CURDIR))"_default | tr A-Z a-z)
 
 #
 # defines a function to copy the ./test-harness directory into the container

@@ -14,13 +14,11 @@ services:
 cache:
   paths:
     - dist
+    - build
 
 # before_script is used to define the command that should be run before all jobs, including deploy jobs, but after the restoration of artifacts.
 # This can be an array or a multi-line string.
 before_script:
-  - docker login -u $DOCKER_REGISTRY_USER_LOGIN -p $CI_REGISTRY_PASS_LOGIN $CI_NX_REGISTRY
-  - pip install twine
-  - pip install setuptools
 
 # The YAML file defines a set of jobs with constraints stating when they should be run.
 # You can specify an unlimited number of jobs which are defined as top-level elements with an arbitrary name and always have to contain at least the script clause.
@@ -29,6 +27,7 @@ before_script:
 
 stages:
   - build
+  - test
   - deploy
   - pages
 
@@ -37,7 +36,15 @@ build wheel:
   tags:
     - docker-executor
   script:
+    - pip install setuptools
     - python setup.py sdist bdist_wheel
+
+run tests:
+  stage: test
+  tags:
+    - docker-executor
+  script:
+    - make test
 
 publish to nexus:
   stage: deploy
@@ -47,6 +54,8 @@ publish to nexus:
     TWINE_USERNAME: $TWINE_USERNAME
     TWINE_PASSWORD: $TWINE_PASSWORD
   script:
+    - docker login -u $DOCKER_REGISTRY_USER_LOGIN -p $CI_REGISTRY_PASS_LOGIN $CI_NX_REGISTRY
+    - pip install twine
     - twine upload --repository-url $PYPI_REPOSITORY_URL dist/*
   # only:
   #   - tags # tags not yet implemented in packaging
@@ -56,8 +65,6 @@ pages:
     - docker-executor
   stage: pages
   script:
-    - make test
-    - ls -la
     - mv build public
     - mv public/lmcbaseclasses_htmlcov/* public
     - make push

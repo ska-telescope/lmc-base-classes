@@ -47,7 +47,6 @@ DOCKER_RUN_ARGS =
 # TODO: WORKS LOCALLY
 # DOCKER_NETWORK := $(shell echo "$(notdir $(CURDIR))"_default | tr -d "-" | tr A-Z a-z)
 # TODO: WORKS CI/CD
-# DOCKER_NETWORK := $(shell echo "$(notdir $(CURDIR))"_default | tr A-Z a-z)
 DOCKER_NETWORK := $(shell echo "$(notdir $(CURDIR))"_default | tr A-Z a-z)
 
 #

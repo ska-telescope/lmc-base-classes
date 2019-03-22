@@ -9,7 +9,5 @@
 
 Main module of SKATelState device class.
 """
-from __future__ import absolute_import
-
 from .SKATelState import main
 main()

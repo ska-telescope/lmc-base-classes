@@ -13,12 +13,13 @@ services:
 # If cache is defined outside the scope of jobs, it means it is set globally and all jobs will use that definition
 cache:
   paths:
+    - dist
+    - build
 
 # before_script is used to define the command that should be run before all jobs, including deploy jobs, but after the restoration of artifacts.
 # This can be an array or a multi-line string.
 before_script:
   - docker login -u $DOCKER_REGISTRY_USER_LOGIN -p $CI_REGISTRY_PASS_LOGIN $CI_NX_REGISTRY
-  - pip install twine
 
 # The YAML file defines a set of jobs with constraints stating when they should be run.
 # You can specify an unlimited number of jobs which are defined as top-level elements with an arbitrary name and always have to contain at least the script clause.
@@ -26,22 +27,47 @@ before_script:
 # It is also specified that only the master branch will be subject of this job.
 
 stages:
+  - build
+  - test
+  - deploy
   - pages
+
+build wheel:
+  stage: build
+  tags:
+    - docker-executor
+  script:
+    - pip install setuptools
+    - python setup.py sdist bdist_wheel
+
+run tests:
+  stage: test
+  tags:
+    - docker-executor
+  script:
+    - make test
+
+publish to nexus:
+  stage: deploy
+  tags:
+    - docker-executor
+  variables:
+    TWINE_USERNAME: $TWINE_USERNAME
+    TWINE_PASSWORD: $TWINE_PASSWORD
+  script:
+    - pip install twine
+    - twine upload --repository-url $PYPI_REPOSITORY_URL dist/*
+  # only:
+  #   - tags # tags not yet implemented in packaging
 
 pages:
   tags:
     - docker-executor
   stage: pages
-  variables:
-    TWINE_USERNAME: $TWINE_USERNAME
-    TWINE_PASSWORD: $TWINE_PASSWORD
   script:
-    - make test
-    - ls -la
     - mv build public
     - mv public/lmcbaseclasses_htmlcov/* public
     - make push
-    - twine upload --repository-url $PYPI_REPOSITORY_URL dist_test/*
   artifacts:
     paths:
       - public

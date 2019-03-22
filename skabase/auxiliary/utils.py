@@ -1,6 +1,4 @@
 """General utilities that may be useful to SKA devices and clients."""
-from __future__ import absolute_import
-
 from builtins import str
 import ast
 import inspect

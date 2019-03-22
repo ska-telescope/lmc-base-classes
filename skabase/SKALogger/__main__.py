@@ -5,7 +5,5 @@
 #
 #
 
-
-from __future__ import absolute_import
 from .SKALogger import main
 main()

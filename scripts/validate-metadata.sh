@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+# PACKAGE METADATA
+# ----------------
 if [[ $(python setup.py --name) == "UNKNOWN" ]] ; then
     echo "[err] metadata: name missing"
     exit 2
@@ -36,5 +38,4 @@ if ! [[ $(python setup.py --classifiers) ]] ; then
     exit 2
 fi
 
-echo "[info] all required metadata tags present"
-
+echo "[info] metadata: all required tags present"

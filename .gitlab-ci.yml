@@ -29,7 +29,7 @@ before_script:
 stages:
   - build
   - test
-  - deploy
+  - publish
   - pages
 
 build wheel:
@@ -48,7 +48,7 @@ run tests:
     - make test
 
 publish to nexus:
-  stage: deploy
+  stage: publish
   tags:
     - docker-executor
   variables:
@@ -59,6 +59,8 @@ publish to nexus:
     - scripts/validate-metadata.sh
     - pip install twine
     - twine upload --repository-url $PYPI_REPOSITORY_URL dist/*
+  only:
+    tags
   # only:
   #   variables:
   #     - $CI_COMMIT_MESSAGE =~ /^.+$/ # (Make sure the message exists)

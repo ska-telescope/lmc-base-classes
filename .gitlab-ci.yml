@@ -60,7 +60,7 @@ publish to nexus:
     - pip install twine
     - twine upload --repository-url $PYPI_REPOSITORY_URL dist/*
   only:
-    tags
+    - tags
   # only:
   #   variables:
   #     - $CI_COMMIT_MESSAGE =~ /^.+$/ # (Make sure the message exists)

@@ -39,3 +39,10 @@ if ! [[ $(python setup.py --classifiers) ]] ; then
 fi
 
 echo "[info] metadata: all required tags present"
+
+# CONFIRM TAG VERSION
+# -------------------
+if [[ $(python setup.py --version) != $CI_COMMIT_TAG ]] ; then
+    echo "[err] metadata: python package version differs from git tag version"
+    exit 2
+fi

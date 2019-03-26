@@ -20,7 +20,6 @@ if ! python setup.py --version | grep -q -E '^((([0-9]+)\.([0-9]+)\.([0-9]+)(?:-
     # exit 2
 fi
 
-
 if [[ $(python setup.py --url) == "UNKNOWN" ]] ; then
     echo "[error] metadata: url missing"
     exit 2

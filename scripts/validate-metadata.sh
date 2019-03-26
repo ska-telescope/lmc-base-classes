@@ -42,7 +42,10 @@ echo "[info] metadata: all required tags present"
 
 # CONFIRM TAG VERSION
 # -------------------
-if [[ $(python setup.py --version) != $CI_COMMIT_TAG ]] ; then
-    echo "[err] metadata: python package version differs from git tag version"
-    exit 2
-fi
+# TODO: This presently breaks due to setuptools normalizing the package version to something that may not conform to semantic versioning in some cases.
+#       On future versions of setuptools this issue should be solved (a patch was jsut merged) so we can get back to this.
+#       See: https://github.com/pypa/setuptools/issues/308
+#if [[ $(python setup.py --version) != $CI_COMMIT_TAG ]] ; then
+#    echo "[err] metadata: python package version differs from git tag version"
+#    exit 2
+#fi

@@ -63,7 +63,7 @@ run tests:
   tags:
     - docker-executor
   script:
-    - pip install ./dist/*.whl
+    - pip install -U ./dist/*.whl
     - make test
 
 publish to nexus:

@@ -63,7 +63,8 @@ run tests:
   tags:
     - docker-executor
   script:
-    - pip install -U ./dist/*.whl
+    - echo $(ls -d ./dist/*.whl | grep $CI_COMMIT_SHORT_SHA)
+    - pip install -U $(ls -d ./dist/*.whl | grep $CI_COMMIT_SHORT_SHA)
     - make test
 
 publish to nexus:

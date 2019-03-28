@@ -19,6 +19,10 @@ cache:
 # This can be an array or a multi-line string.
 before_script:
   - apt-get update
+  - apt-get install -y apt-transport-https ca-certificates curl gnupg2 software-properties-common
+  - curl -fsSL https://download.docker.com/linux/debian/gpg | apt-key add -
+  - add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/debian $(lsb_release -cs) stable"
+  - apt-get update
   - apt-get install -y docker-ce docker-ce-cli containerd.io
   - docker login -u $DOCKER_REGISTRY_USER_LOGIN -p $CI_REGISTRY_PASS_LOGIN $CI_NX_REGISTRY
 

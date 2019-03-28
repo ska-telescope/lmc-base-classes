@@ -1,7 +1,7 @@
 # GitLab CI in conjunction with GitLab Runner can use Docker Engine to test and build any application.
 # Docker, when used with GitLab CI, runs each job in a separate and isolated container using the predefined image that is set up in .gitlab-ci.yml.
 # In this case we use the latest python docker image to build and test this project.
-image: nexus.engageska-portugal.pt/ska-docker/ska-python-buildenv:latest
+image: nexus.engageska-portugal.pt/ska-docker/tango-builder:latest
 
 variables:
   DOCKER_DRIVER: overlay2
@@ -18,12 +18,6 @@ cache:
 # before_script is used to define the command that should be run before all jobs, including deploy jobs, but after the restoration of artifacts.
 # This can be an array or a multi-line string.
 before_script:
-  - apt-get update
-  - apt-get install -y apt-transport-https ca-certificates curl gnupg2 software-properties-common
-  - curl -fsSL https://download.docker.com/linux/debian/gpg | apt-key add -
-  - add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/debian $(lsb_release -cs) stable"
-  - apt-get update
-  - apt-get install -y docker-ce docker-ce-cli containerd.io docker-compose
   - docker login -u $DOCKER_REGISTRY_USER_LOGIN -p $CI_REGISTRY_PASS_LOGIN $CI_NX_REGISTRY
 
 # The YAML file defines a set of jobs with constraints stating when they should be run.
@@ -42,7 +36,9 @@ build wheel for publication: # Executed on a tag
   tags:
     - docker-executor
   script:
-    - python setup.py egg_info -b+$CI_COMMIT_SHORT_SHA sdist bdist_wheel
+    - apt install -y python3-pip
+    - pip3 install setuptools
+    - python3 setup.py egg_info -b+$CI_COMMIT_SHORT_SHA sdist bdist_wheel
   only:
     - tags
   artifacts:
@@ -54,7 +50,9 @@ build wheel for development: # Executed on a commit
   tags:
     - docker-executor
   script:
-    - python setup.py egg_info -b+dev.$CI_COMMIT_SHORT_SHA sdist bdist_wheel
+    - apt install -y python3-pip
+    - pip3 install setuptools
+    - python3 setup.py egg_info -b+dev.$CI_COMMIT_SHORT_SHA sdist bdist_wheel
   except:
     - tags
   artifacts:
@@ -66,6 +64,7 @@ run tests:
   tags:
     - docker-executor
   script:
+    - apt install -y python3-pip
     - echo $(ls -d ./dist/*.whl | grep $CI_COMMIT_SHORT_SHA)
     - pip3 install -U $(ls -d ./dist/*.whl | grep $CI_COMMIT_SHORT_SHA)
     - make test
@@ -79,6 +78,7 @@ publish to nexus:
     TWINE_PASSWORD: $TWINE_PASSWORD
   script:
     # check metadata requirements
+    - apt install -y python3-pip
     - scripts/validate-metadata.sh
     - pip3 install twine
     - twine upload --repository-url $PYPI_REPOSITORY_URL dist/*

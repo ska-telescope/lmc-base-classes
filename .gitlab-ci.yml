@@ -23,7 +23,7 @@ before_script:
   - curl -fsSL https://download.docker.com/linux/debian/gpg | apt-key add -
   - add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/debian $(lsb_release -cs) stable"
   - apt-get update
-  - apt-get install -y docker-ce docker-ce-cli containerd.io
+  - apt-get install -y docker-ce docker-ce-cli containerd.io docker-compose
   - docker login -u $DOCKER_REGISTRY_USER_LOGIN -p $CI_REGISTRY_PASS_LOGIN $CI_NX_REGISTRY
 
 # The YAML file defines a set of jobs with constraints stating when they should be run.

@@ -9,13 +9,6 @@ variables:
 services:
   - docker:dind
 
-# cache is used to specify a list of files and directories which should be cached between jobs. You can only use paths that are within the project workspace.
-# If cache is defined outside the scope of jobs, it means it is set globally and all jobs will use that definition
-cache:
-  paths:
-    - dist
-    - build
-
 # before_script is used to define the command that should be run before all jobs, including deploy jobs, but after the restoration of artifacts.
 # This can be an array or a multi-line string.
 before_script:
@@ -37,8 +30,8 @@ build wheel for publication: # Executed on a tag
   tags:
     - docker-executor
   script:
-    - pip install setuptools
-    - python setup.py egg_info -b+$CI_COMMIT_SHORT_SHA sdist bdist_wheel
+    - pip3 install setuptools
+    - python3 setup.py egg_info -b+$CI_COMMIT_SHORT_SHA sdist bdist_wheel
   only:
     - tags
   artifacts:
@@ -50,8 +43,8 @@ build wheel for development: # Executed on a commit
   tags:
     - docker-executor
   script:
-    - pip install setuptools
-    - python setup.py egg_info -b+dev.$CI_COMMIT_SHORT_SHA sdist bdist_wheel
+    - pip3 install setuptools
+    - python3 setup.py egg_info -b+dev.$CI_COMMIT_SHORT_SHA sdist bdist_wheel
   except:
     - tags
   artifacts:
@@ -64,7 +57,7 @@ run tests:
     - docker-executor
   script:
     - echo $(ls -d ./dist/*.whl | grep $CI_COMMIT_SHORT_SHA)
-    - pip install -U $(ls -d ./dist/*.whl | grep $CI_COMMIT_SHORT_SHA)
+    - pip3 install -U $(ls -d ./dist/*.whl | grep $CI_COMMIT_SHORT_SHA)
     - make test
 
 publish to nexus:
@@ -77,7 +70,7 @@ publish to nexus:
   script:
     # check metadata requirements
     - scripts/validate-metadata.sh
-    - pip install twine
+    - pip3 install twine
     - twine upload --repository-url $PYPI_REPOSITORY_URL dist/*
   only:
     variables:

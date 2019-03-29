@@ -35,7 +35,6 @@ class TestSKAAlarmHandler(object):
         'SubAlarmHandlers': '',
         'AlarmConfigFile': '',
         'SkaLevel': '4',
-        'MetricList': 'healthState',
         'GroupDefinitions': '',
         'CentralLoggingTarget': '',
         'ElementLoggingTarget': '',
@@ -120,22 +119,6 @@ class TestSKAAlarmHandler(object):
         # PROTECTED REGION ID(SKAAlarmHandler.test_Reset) ENABLED START #
         assert tango_context.device.Reset() == None
         # PROTECTED REGION END #    //  SKAAlarmHandler.test_Reset
-
-    # PROTECTED REGION ID(SKAAlarmHandler.test_GetMetrics_decorators) ENABLED START #
-    # PROTECTED REGION END #    //  SKAAlarmHandler.test_GetMetrics_decorators
-    def test_GetMetrics(self, tango_context):
-        """Test for GetMetrics"""
-        # PROTECTED REGION ID(SKAAlarmHandler.test_GetMetrics) ENABLED START #
-        assert tango_context.device.GetMetrics() == ""
-        # PROTECTED REGION END #    //  SKAAlarmHandler.test_GetMetrics
-
-    # PROTECTED REGION ID(SKAAlarmHandler.test_ToJson_decorators) ENABLED START #
-    # PROTECTED REGION END #    //  SKAAlarmHandler.test_ToJson_decorators
-    def test_ToJson(self, tango_context):
-        """Test for ToJson"""
-        # PROTECTED REGION ID(SKAAlarmHandler.test_ToJson) ENABLED START #
-        assert tango_context.device.ToJson("") == ""
-        # PROTECTED REGION END #    //  SKAAlarmHandler.test_ToJson
 
     # PROTECTED REGION ID(SKAAlarmHandler.test_GetVersionInfo_decorators) ENABLED START #
     # PROTECTED REGION END #    //  SKAAlarmHandler.test_GetVersionInfo_decorators

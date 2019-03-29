@@ -36,7 +36,6 @@ class TestSKASubarray(object):
         'CentralLoggingTarget': '',
         'ElementLoggingTarget': '',
         'GroupDefinitions': '',
-        'MetricList': 'healthState',
         'SkaLevel': '4',
         'StorageLoggingTarget': 'localhost',
         'SubID': '',
@@ -87,14 +86,6 @@ class TestSKASubarray(object):
         # PROTECTED REGION ID(SKASubarray.test_DeconfigureCapability) ENABLED START #
         assert tango_context.device.DeconfigureCapability([[0], [""]]) == None
         # PROTECTED REGION END #    //  SKASubarray.test_DeconfigureCapability
-
-    # PROTECTED REGION ID(SKASubarray.test_GetMetrics_decorators) ENABLED START #
-    # PROTECTED REGION END #    //  SKASubarray.test_GetMetrics_decorators
-    def test_GetMetrics(self, tango_context):
-        """Test for GetMetrics"""
-        # PROTECTED REGION ID(SKASubarray.test_GetMetrics) ENABLED START #
-        assert tango_context.device.GetMetrics() == ""
-        # PROTECTED REGION END #    //  SKASubarray.test_GetMetrics
 
     # PROTECTED REGION ID(SKASubarray.test_GetVersionInfo_decorators) ENABLED START #
     # PROTECTED REGION END #    //  SKASubarray.test_GetVersionInfo_decorators
@@ -203,14 +194,6 @@ class TestSKASubarray(object):
         # PROTECTED REGION ID(SKASubarray.test_Scan) ENABLED START #
         assert tango_context.device.Scan([""]) == None
         # PROTECTED REGION END #    //  SKASubarray.test_Scan
-
-    # PROTECTED REGION ID(SKASubarray.test_ToJson_decorators) ENABLED START #
-    # PROTECTED REGION END #    //  SKASubarray.test_ToJson_decorators
-    def test_ToJson(self, tango_context):
-        """Test for ToJson"""
-        # PROTECTED REGION ID(SKASubarray.test_ToJson) ENABLED START #
-        assert tango_context.device.ToJson("") == ""
-        # PROTECTED REGION END #    //  SKASubarray.test_ToJson
 
     # PROTECTED REGION ID(SKASubarray.test_activationTime_decorators) ENABLED START #
     # PROTECTED REGION END #    //  SKASubarray.test_activationTime_decorators

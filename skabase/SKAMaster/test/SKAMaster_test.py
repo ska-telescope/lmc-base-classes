@@ -38,7 +38,6 @@ class TestSKAMaster(object):
         'CentralLoggingTarget': '',
         'ElementLoggingTarget': '',
         'StorageLoggingTarget': 'localhost',
-        'MetricList': 'healthState',
         'GroupDefinitions': '',
         'NrSubarrays': '16',
         'CapabilityTypes': '',
@@ -74,22 +73,6 @@ class TestSKAMaster(object):
         # PROTECTED REGION ID(SKAMaster.test_Status) ENABLED START #
         assert tango_context.device.Status() == "The device is in UNKNOWN state."
         # PROTECTED REGION END #    //  SKAMaster.test_Status
-
-    # PROTECTED REGION ID(SKAMaster.test_GetMetrics_decorators) ENABLED START #
-    # PROTECTED REGION END #    //  SKAMaster.test_GetMetrics_decorators
-    def test_GetMetrics(self, tango_context):
-        """Test for GetMetrics"""
-        # PROTECTED REGION ID(SKAMaster.test_GetMetrics) ENABLED START #
-        assert tango_context.device.GetMetrics() == ""
-        # PROTECTED REGION END #    //  SKAMaster.test_GetMetrics
-
-    # PROTECTED REGION ID(SKAMaster.test_ToJson_decorators) ENABLED START #
-    # PROTECTED REGION END #    //  SKAMaster.test_ToJson_decorators
-    def test_ToJson(self, tango_context):
-        """Test for ToJson"""
-        # PROTECTED REGION ID(SKAMaster.test_ToJson) ENABLED START #
-        assert tango_context.device.ToJson("") == ""
-        # PROTECTED REGION END #    //  SKAMaster.test_ToJson
 
     # PROTECTED REGION ID(SKAMaster.test_GetVersionInfo_decorators) ENABLED START #
     # PROTECTED REGION END #    //  SKAMaster.test_GetVersionInfo_decorators

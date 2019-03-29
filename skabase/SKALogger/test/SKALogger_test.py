@@ -33,7 +33,6 @@ import tango
 class TestSKALogger(object):
     """Test case for packet generation."""
     properties = {'SkaLevel': '1',
-                  'MetricList': 'healthState',
                   'GroupDefinitions': '',
                   'CentralLoggingTarget': '',
                   'ElementLoggingTarget': '',

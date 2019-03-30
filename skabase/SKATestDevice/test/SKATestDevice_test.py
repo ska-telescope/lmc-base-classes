@@ -63,7 +63,7 @@ class TestSKATestDevice(object):
         """Test for GetVersionInfo"""
         # PROTECTED REGION ID(SKATestDevice.test_GetVersionInfo) ENABLED START #
         versionPattern = re.compile(
-            r'SKATestDevice, lmc-base-classes, [0-9].[0-9].[0-9], '
+            r'SKATestDevice, lmcbaseclasses, [0-9].[0-9].[0-9], '
             r'A set of generic base devices for SKA Telescope.')
         versionInfo = tango_context.device.GetVersionInfo()
         assert (re.match(versionPattern, versionInfo[0])) != None
@@ -101,16 +101,18 @@ class TestSKATestDevice(object):
         assert tango_context.device.Reset() == None
         # PROTECTED REGION END #    //  SKATestDevice.test_Reset
 
-    def test_On(self):
+    def test_On(self, tango_context):
         """Test for On"""
         # PROTECTED REGION ID(SKATestDevice.test_On) ENABLED START #
-        self.device.On()
+        tango_context.device.On()
+        #TODO: Add assert condition
         # PROTECTED REGION END #    //  SKATestDevice.test_On
 
-    def test_Stop(self):
+    def test_Stop(self, tango_context):
         """Test for Stop"""
         # PROTECTED REGION ID(SKATestDevice.test_Stop) ENABLED START #
-        self.device.Stop()
+        tango_context.device.Stop()
+        # TODO: Add assert condition
         # PROTECTED REGION END #    //  SKATestDevice.test_Stop
 
     # PROTECTED REGION ID(SKATestDevice.test_obsState_decorators) ENABLED START #
@@ -151,7 +153,7 @@ class TestSKATestDevice(object):
         """Test for buildState"""
         # PROTECTED REGION ID(SKATestDevice.test_buildState) ENABLED START #
         buildPattern = re.compile(
-            r'lmc-base-classes, [0-9].[0-9].[0-9], '
+            r'lmcbaseclasses, [0-9].[0-9].[0-9], '
             r'A set of generic base devices for SKA Telescope')
         assert (re.match(buildPattern, tango_context.device.buildState)) != None
         # PROTECTED REGION END #    //  SKATestDevice.test_buildState

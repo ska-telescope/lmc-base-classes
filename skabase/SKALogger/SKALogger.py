@@ -136,10 +136,9 @@ class SKALogger(with_metaclass(DeviceMeta, SKABaseDevice)):
                            "DEBUG": int(tango.LogLevel.LOG_DEBUG)}
         level_number = tango_log_level[log_level]
         device = DeviceProxy(log_source)
-
+        device_log_level = -1
         if self.SkaLevel == 1:
             device_log_level = device.centralLoggingLevel
-
         elif self.SkaLevel == 2:
             device_log_level = device.elementLoggingLevel
 

@@ -12,6 +12,7 @@
 from builtins import object
 import sys
 import os
+import time
 
 path = os.path.join(os.path.dirname(__file__), os.pardir)
 sys.path.insert(0, os.path.abspath(path))
@@ -28,7 +29,7 @@ import tango
 
 # Device test case
 # PROTECTED REGION ID(SKALogger.test_SKALogger_decorators) ENABLED START #
-@pytest.mark.usefixtures("tango_context", "initialize_device")
+@pytest.mark.usefixtures("tango_context", "initialize_device", "setup_log_test_device")
 # PROTECTED REGION END #    //  SKALogger.test_SKALogger_decorators
 class TestSKALogger(object):
     """Test case for packet generation."""
@@ -96,8 +97,10 @@ class TestSKALogger(object):
         device_details = []
         device_details.append(levels)
         device_details.append(targets)
+        print("device_details: ", device_details)
         tango_context.device.SetCentralLoggingLevel(device_details)
         dev_proxy = DeviceProxy(logging_target)
+        print("dev_proxy: ", dev_proxy)
         assert dev_proxy.centralLoggingLevel == logging_level
         # PROTECTED REGION END #    //  SKALogger.test_SetCentralLoggingLevel
 
@@ -145,7 +148,7 @@ class TestSKALogger(object):
         """Test for GetVersionInfo"""
         # PROTECTED REGION ID(SKALogger.test_GetVersionInfo) ENABLED START #
         versionPattern = re.compile(
-            r'SKALogger, lmc-base-classes, [0-9].[0-9].[0-9], '
+            r'SKALogger, lmcbaseclasses, [0-9].[0-9].[0-9], '
             r'A set of generic base devices for SKA Telescope.')
         versionInfo = tango_context.device.GetVersionInfo()
         assert (re.match(versionPattern, versionInfo[0])) != None
@@ -165,7 +168,7 @@ class TestSKALogger(object):
         """Test for buildState"""
         # PROTECTED REGION ID(SKALogger.test_buildState) ENABLED START #
         buildPattern = re.compile(
-            r'lmc-base-classes, [0-9].[0-9].[0-9], '
+            r'lmcbaseclasses, [0-9].[0-9].[0-9], '
             r'A set of generic base devices for SKA Telescope')
         assert (re.match(buildPattern, tango_context.device.buildState)) != None
         # PROTECTED REGION END #    //  SKALogger.test_buildState

@@ -75,7 +75,7 @@ class TestSKABaseDevice(object):
         """Test for GetVersionInfo"""
         # PROTECTED REGION ID(SKABaseDevice.test_GetVersionInfo) ENABLED START #
         versionPattern = re.compile(
-            r'SKABaseDevice, lmc-base-classes, [0-9].[0-9].[0-9], '
+            r'SKABaseDevice, lmcbaseclasses, [0-9].[0-9].[0-9], '
             r'A set of generic base devices for SKA Telescope.')
         versionInfo = tango_context.device.GetVersionInfo()
         assert (re.match(versionPattern, versionInfo[0])) != None
@@ -96,7 +96,7 @@ class TestSKABaseDevice(object):
         """Test for buildState"""
         # PROTECTED REGION ID(SKABaseDevice.test_buildState) ENABLED START #
         buildPattern = re.compile(
-            r'lmc-base-classes, [0-9].[0-9].[0-9], '
+            r'lmcbaseclasses, [0-9].[0-9].[0-9], '
             r'A set of generic base devices for SKA Telescope')
         assert (re.match(buildPattern, tango_context.device.buildState)) != None
         # PROTECTED REGION END #    //  SKABaseDevice.test_buildState

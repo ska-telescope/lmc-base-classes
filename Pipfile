@@ -12,6 +12,7 @@ pytango = "==9.2.5"
 # but it's not mandatory. If you remove itango, you should also remove the
 # 'RUN ipython profile create' line from Dockerfile.
 itango = "*"
+future = "*"
 
 [dev-packages]
 docutils = "*"

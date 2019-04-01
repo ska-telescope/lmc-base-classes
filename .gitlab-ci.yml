@@ -65,6 +65,9 @@ run tests:
 
 publish to nexus:
   stage: publish
+  image: nexus.engageska-portugal.pt/ska-docker/tango-builder:latest
+  before_script:
+  - docker login -u $DOCKER_REGISTRY_USER_LOGIN -p $CI_REGISTRY_PASS_LOGIN $CI_NX_REGISTRY
   tags:
     - docker-executor
   variables:

@@ -44,8 +44,9 @@ echo "[info] metadata: all required tags present"
 
 # CONFIRM TAG VERSION
 # -------------------
-# TODO: To implement when setuptools issue is fixed upstream
-#if [[ $(python setup.py --version) != $CI_COMMIT_TAG ]] ; then
-#    echo "[error] metadata: python package version differs from git tag version"
-#    exit 2
-#fi
+if [ -n "$CI_COMMIT_TAG" ]; then
+    if [[ $(python setup.py --version) != $CI_COMMIT_TAG ]] ; then
+       echo "[error] metadata: python package version [$(python setup.py --version)] differs from git tag version [$CI_COMMIT_TAG]"
+       exit 2
+    fi
+fi

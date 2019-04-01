@@ -13,7 +13,8 @@ exec(open(release_filename).read())
 needs_pytest = {'pytest', 'test', 'ptr'}.intersection(sys.argv)
 pytest_runner = ['pytest-runner'] if needs_pytest else []
 
-setuptools.setup(name=name,
+setuptools.setup(
+      name=name,
       description=description,
       version=version,
       author=author,

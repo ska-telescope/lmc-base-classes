@@ -19,7 +19,7 @@ class FileLogger(Device):
 
     def __init__(self, cl, name):
         super(FileLogger, self).__init__(cl, name)
-        print self.log_path
+        print(self.log_path)
 
 
 

@@ -85,6 +85,9 @@ publish to nexus:
       - $CI_COMMIT_TAG =~ /^((([0-9]+)\.([0-9]+)\.([0-9]+)(?:-([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?)(?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?)$/ # Confirm semantic versioning of tag
 
 pages:
+  image: nexus.engageska-portugal.pt/ska-docker/tango-builder:latest
+  before_script:
+  - docker login -u $DOCKER_REGISTRY_USER_LOGIN -p $CI_REGISTRY_PASS_LOGIN $CI_NX_REGISTRY
   tags:
     - docker-executor
   stage: pages

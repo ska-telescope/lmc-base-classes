@@ -77,21 +77,17 @@ def initialize_device(tango_context):
 def setup_log_test_device():
     """
     Executes the SKA test device to test the logger class.
-    :return:
+    :return: None
     """
     #TODO: Check if test device is registered in tango db. Register if required. Also check how to execute in docker environment.
     # run test device
     file_path = os.path.dirname(os.path.abspath(__file__))
     testdevice_path = os.path.abspath(os.path.join(file_path, os.curdir)) + "/SKATestDevice/SKATestDevice.py"
     cmdline = 'python3 ' + testdevice_path + ' ' + '1 &'
-    print("cmdline:", cmdline)
-    # retVal = subprocess.call(cmdline)
     os.system(cmdline)
-    # print("retVal:", retVal)
-    time.sleep(5)
+    time.sleep(3)
     yield setup_log_test_device
 
     #tear down
-    print("tearing down")
-    #TODO: Kill the test device process
-    setup_log_test_device.close()
+    cmdline = 'pkill -9 -f .' + testdevice_path + ' &'
+    os.system(cmdline)

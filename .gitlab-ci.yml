@@ -33,7 +33,7 @@ stages:
 
 build wheel for publication: # Executed on a tag
   image: nexus.engageska-portugal.pt/ska-docker/ska-python-buildenv:latest
-  before-script:
+  before_script:
     - ''
   stage: build
   tags:
@@ -51,7 +51,7 @@ build wheel for publication: # Executed on a tag
 
 build wheel for development: # Executed on a commit
   image: nexus.engageska-portugal.pt/ska-docker/ska-python-buildenv:latest
-  before-script:
+  before_script:
     - ''
   stage: build
   tags:

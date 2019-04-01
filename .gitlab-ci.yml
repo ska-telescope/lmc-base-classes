@@ -32,6 +32,7 @@ stages:
   - pages
 
 build wheel for publication: # Executed on a tag
+  image: nexus.engageska-portugal.pt/ska-docker/ska-python-buildenv:latest
   stage: build
   tags:
     - docker-executor
@@ -46,6 +47,7 @@ build wheel for publication: # Executed on a tag
       - ./dist/
 
 build wheel for development: # Executed on a commit
+  image: nexus.engageska-portugal.pt/ska-docker/ska-python-buildenv:latest
   stage: build
   tags:
     - docker-executor

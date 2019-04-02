@@ -173,3 +173,18 @@ services:
             /venv/bin/python /app/skabase/SKATelState/SKATelState.py 01"
     volumes_from:
       - rsyslog-lmcbaseclasses:rw
+
+  testdevice:
+      image: ${DOCKER_REGISTRY_HOST}/${DOCKER_REGISTRY_USER}/lmcbaseclasses:latest
+      depends_on:
+        - databaseds
+        - rsyslog-lmcbaseclasses
+      environment:
+        - TANGO_HOST=databaseds:10000
+      command: >
+        sh -c "wait-for-it.sh databaseds:10000 --timeout=30 --strict --
+               tango_admin --add-server SKATestDevice/01 SKATestDevice logger/test/1 &&\
+               sudo ln -sf /var/run/rsyslog/dev/log /dev/log &&\
+               /venv/bin/python /app/skabase/SKATestDevice/SKATestDevice.py 01"
+      volumes_from:
+        - rsyslog-lmcbaseclasses:rw

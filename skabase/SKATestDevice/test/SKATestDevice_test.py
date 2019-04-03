@@ -16,9 +16,10 @@ path = os.path.join(os.path.dirname(__file__), os.pardir)
 sys.path.insert(0, os.path.abspath(path))
 
 # Imports
+import re
 import pytest
 from tango import DevFailed, DevState
-import re
+
 
 # PROTECTED REGION ID(SKATestDevice.test_additional_imports) ENABLED START #
 # PROTECTED REGION END #    //  SKATestDevice.test_additional_imports

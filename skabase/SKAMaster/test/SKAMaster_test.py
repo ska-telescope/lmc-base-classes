@@ -16,11 +16,9 @@ path = os.path.join(os.path.dirname(__file__), os.pardir)
 sys.path.insert(0, os.path.abspath(path))
 
 # Imports
-import pytest
-from mock import MagicMock
-
-from tango import DevState
 import re
+import pytest
+from tango import DevState
 
 # PROTECTED REGION ID(SKAMaster.test_additional_imports) ENABLED START #
 # PROTECTED REGION END #    //  SKAMaster.test_additional_imports

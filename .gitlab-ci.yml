@@ -1,7 +1,7 @@
 # GitLab CI in conjunction with GitLab Runner can use Docker Engine to test and build any application.
 # Docker, when used with GitLab CI, runs each job in a separate and isolated container using the predefined image that is set up in .gitlab-ci.yml.
 # In this case we use the latest python docker image to build and test this project.
-image: nexus.engageska-portugal.pt/ska-docker/tango-builder:latest
+image: nexus.engageska-portugal.pt/ska-docker/ska-python-buildenv:latest
 
 variables:
   DOCKER_DRIVER: overlay2
@@ -13,13 +13,7 @@ services:
 # If cache is defined outside the scope of jobs, it means it is set globally and all jobs will use that definition
 cache:
   paths:
-    - dist
     - build
-
-# before_script is used to define the command that should be run before all jobs, including deploy jobs, but after the restoration of artifacts.
-# This can be an array or a multi-line string.
-before_script:
-  - docker login -u $DOCKER_REGISTRY_USER_LOGIN -p $CI_REGISTRY_PASS_LOGIN $CI_NX_REGISTRY
 
 # The YAML file defines a set of jobs with constraints stating when they should be run.
 # You can specify an unlimited number of jobs which are defined as top-level elements with an arbitrary name and always have to contain at least the script clause.
@@ -29,38 +23,71 @@ before_script:
 stages:
   - build
   - test
-  - deploy
+  - publish
   - pages
 
-build wheel:
+build wheel for publication: # Executed on a tag
   stage: build
   tags:
     - docker-executor
   script:
-    - pip install setuptools
-    - python setup.py sdist bdist_wheel
+    - python setup.py egg_info -b+$CI_COMMIT_SHORT_SHA sdist bdist_wheel
+  only:
+    - tags
+  artifacts:
+    paths:
+      - ./dist/
 
-run tests:
-  stage: test
+build wheel for development: # Executed on a commit
+  stage: build
   tags:
     - docker-executor
   script:
+    - python setup.py egg_info -b+dev.$CI_COMMIT_SHORT_SHA sdist bdist_wheel
+  except:
+    - tags
+  artifacts:
+    paths:
+      - ./dist/
+
+run tests:
+  stage: test
+  image: nexus.engageska-portugal.pt/ska-docker/tango-builder:latest
+  before_script:
+  - docker login -u $DOCKER_REGISTRY_USER_LOGIN -p $CI_REGISTRY_PASS_LOGIN $CI_NX_REGISTRY
+  tags:
+    - docker-executor
+  script:
+    - apt install -y python3-pip
+    - echo $(ls -d ./dist/*.whl | grep $CI_COMMIT_SHORT_SHA)
+    - pip3 install -U $(ls -d ./dist/*.whl | grep $CI_COMMIT_SHORT_SHA)
     - make test
 
 publish to nexus:
-  stage: deploy
+  stage: publish
+  image: nexus.engageska-portugal.pt/ska-docker/tango-builder:latest
+  before_script:
+  - docker login -u $DOCKER_REGISTRY_USER_LOGIN -p $CI_REGISTRY_PASS_LOGIN $CI_NX_REGISTRY
   tags:
     - docker-executor
   variables:
     TWINE_USERNAME: $TWINE_USERNAME
     TWINE_PASSWORD: $TWINE_PASSWORD
   script:
-    - pip install twine
+    # check metadata requirements
+    - which pip3
+    - scripts/validate-metadata.sh
+    - pip3 install twine
     - twine upload --repository-url $PYPI_REPOSITORY_URL dist/*
-  # only:
-  #   - tags # tags not yet implemented in packaging
+  only:
+    variables:
+      - $CI_COMMIT_MESSAGE =~ /^.+$/ # Confirm tag message exists
+      - $CI_COMMIT_TAG =~ /^((([0-9]+)\.([0-9]+)\.([0-9]+)(?:-([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?)(?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?)$/ # Confirm semantic versioning of tag
 
 pages:
+  image: nexus.engageska-portugal.pt/ska-docker/tango-builder:latest
+  before_script:
+  - docker login -u $DOCKER_REGISTRY_USER_LOGIN -p $CI_REGISTRY_PASS_LOGIN $CI_NX_REGISTRY
   tags:
     - docker-executor
   stage: pages

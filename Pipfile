@@ -28,6 +28,9 @@ Sphinx = "*"
 sphinx_rtd_theme = "*"
 sphinx-autobuild = "*"
 sphinxcontrib-websupport = "*"
+coverage  = "*"
+pytest-xdist = "*"
+mock = "*"
 
 [requires]
 python_version = "3"

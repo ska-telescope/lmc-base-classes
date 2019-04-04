@@ -5,7 +5,9 @@ tests.
 import mock
 import pytest
 import importlib
-
+import subprocess
+import os
+import time
 
 from tango.test_context import DeviceTestContext
 
@@ -19,6 +21,27 @@ def tango_context(request):
     request: _pytest.fixtures.SubRequest
         A request object gives access to the requesting test context.
     """
+    ska_master_properties = {
+        'SkaLevel': '4',
+        'CentralLoggingTarget': '',
+        'ElementLoggingTarget': '',
+        'StorageLoggingTarget': 'localhost',
+        'GroupDefinitions': '',
+        'NrSubarrays': '16',
+        'CapabilityTypes': '',
+        'MaxCapabilities': ['BAND1:1', 'BAND2:1']
+        }
+
+    ska_subarray_properties = {
+        'CapabilityTypes': 'BAND1',
+        'CentralLoggingTarget': '',
+        'ElementLoggingTarget': '',
+        'GroupDefinitions': '',
+        'SkaLevel': '4',
+        'StorageLoggingTarget': 'localhost',
+        'SubID': '1',
+    }
+
     fq_test_class_name = request.cls.__module__
     fq_test_class_name_details = fq_test_class_name.split(".")
     package_name = fq_test_class_name_details[0]
@@ -26,7 +49,13 @@ def tango_context(request):
     module = importlib.import_module(fq_test_class_name_details[1], fq_test_class_name_details[1])
     klass = getattr(module, class_name)
 
-    tango_context = DeviceTestContext(klass)
+    if (class_name == 'SKAMaster'):
+        tango_context = DeviceTestContext(klass, properties=ska_master_properties)
+    elif (class_name == 'SKASubarray'):
+        tango_context = DeviceTestContext(klass, properties=ska_subarray_properties)
+    else:
+        tango_context = DeviceTestContext(klass)
+
     tango_context.start()
     klass.get_name = mock.Mock(side_effect=tango_context.get_device_access)
 
@@ -43,3 +72,22 @@ def initialize_device(tango_context):
         Context to run a device without a database.
     """
     yield tango_context.device.Init()
+
+@pytest.fixture(scope="class")
+def setup_log_test_device():
+    """
+    Executes the SKA test device to test the logger class.
+    :return: None
+    """
+    #TODO: Check if test device is registered in tango db. Register if required. Also check how to execute in docker environment.
+    # run test device
+    file_path = os.path.dirname(os.path.abspath(__file__))
+    testdevice_path = os.path.abspath(os.path.join(file_path, os.curdir)) + "/SKATestDevice/SKATestDevice.py"
+    cmdline = 'python3 ' + testdevice_path + ' ' + '1 &'
+    os.system(cmdline)
+    time.sleep(3)
+    yield setup_log_test_device
+
+    #tear down
+    cmdline = 'pkill -9 -f .' + testdevice_path + ' &'
+    os.system(cmdline)

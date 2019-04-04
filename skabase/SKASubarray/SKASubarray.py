@@ -228,6 +228,7 @@ class SKASubarray(with_metaclass(DeviceMeta, SKAObsDevice)):
         # Initialize attribute values.
         self._activation_time = 0.0
         self._assigned_resources = [""]
+        self._assigned_resources.clear()
         # self._configured_capabilities is gonna be kept as a dictionary internally. The
         # keys and value will represent the capability type name and the number of
         # instances, respectively.
@@ -394,6 +395,8 @@ class SKASubarray(with_metaclass(DeviceMeta, SKAObsDevice)):
             if resource not in resources:
                 self._assigned_resources.append(resource)
             argout.append(resource)
+
+        self.set_state(DevState.ON)
         return argout
 
     @command(

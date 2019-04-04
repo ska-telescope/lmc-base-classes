@@ -16,33 +16,33 @@ path = os.path.join(os.path.dirname(__file__), os.pardir)
 sys.path.insert(0, os.path.abspath(path))
 
 # Imports
-import pytest
-from mock import MagicMock
-
-from tango import DevState
 import re
+import pytest
+from tango import DevState
 
 # PROTECTED REGION ID(SKAMaster.test_additional_imports) ENABLED START #
 # PROTECTED REGION END #    //  SKAMaster.test_additional_imports
 
 
 # Device test case
-@pytest.mark.usefixtures("tango_context", "initialize_device")
 # PROTECTED REGION ID(SKAMaster.test_SKAMaster_decorators) ENABLED START #
+# TODO: Remove commented line after checking initialize_device is not required.
+# @pytest.mark.usefixtures("tango_context", "initialize_device")
+@pytest.mark.usefixtures("tango_context")
 # PROTECTED REGION END #    //  SKAMaster.test_SKAMaster_decorators
 class TestSKAMaster(object):
     """Test case for packet generation."""
 
+    capabilities = ['BAND1:1', 'BAND2:1', 'BAND3:0', 'BAND4:0', 'BAND5:0']
     properties = {
         'SkaLevel': '4',
         'CentralLoggingTarget': '',
         'ElementLoggingTarget': '',
         'StorageLoggingTarget': 'localhost',
-        'MetricList': 'healthState',
         'GroupDefinitions': '',
         'NrSubarrays': '16',
         'CapabilityTypes': '',
-        'MaxCapabilities': '',
+        'MaxCapabilities': 'BAND1:1'
         }
 
     @classmethod
@@ -75,41 +75,33 @@ class TestSKAMaster(object):
         assert tango_context.device.Status() == "The device is in UNKNOWN state."
         # PROTECTED REGION END #    //  SKAMaster.test_Status
 
-    # PROTECTED REGION ID(SKAMaster.test_GetMetrics_decorators) ENABLED START #
-    # PROTECTED REGION END #    //  SKAMaster.test_GetMetrics_decorators
-    def test_GetMetrics(self, tango_context):
-        """Test for GetMetrics"""
-        # PROTECTED REGION ID(SKAMaster.test_GetMetrics) ENABLED START #
-        assert tango_context.device.GetMetrics() == ""
-        # PROTECTED REGION END #    //  SKAMaster.test_GetMetrics
-
-    # PROTECTED REGION ID(SKAMaster.test_ToJson_decorators) ENABLED START #
-    # PROTECTED REGION END #    //  SKAMaster.test_ToJson_decorators
-    def test_ToJson(self, tango_context):
-        """Test for ToJson"""
-        # PROTECTED REGION ID(SKAMaster.test_ToJson) ENABLED START #
-        assert tango_context.device.ToJson("") == ""
-        # PROTECTED REGION END #    //  SKAMaster.test_ToJson
-
     # PROTECTED REGION ID(SKAMaster.test_GetVersionInfo_decorators) ENABLED START #
     # PROTECTED REGION END #    //  SKAMaster.test_GetVersionInfo_decorators
     def test_GetVersionInfo(self, tango_context):
         """Test for GetVersionInfo"""
         # PROTECTED REGION ID(SKAMaster.test_GetVersionInfo) ENABLED START #
         versionPattern = re.compile(
-            r'SKAMaster, lmc-base-classes, [0-9].[0-9].[0-9], '
+            r'SKAMaster, lmcbaseclasses, [0-9].[0-9].[0-9], '
             r'A set of generic base devices for SKA Telescope.')
         versionInfo = tango_context.device.GetVersionInfo()
         assert (re.match(versionPattern, versionInfo[0])) != None
         # PROTECTED REGION END #    //  SKAMaster.test_GetVersionInfo
 
-    # PROTECTED REGION ID(SKAMaster.test_isCapabilityAchievable_decorators) ENABLED START #
-    # PROTECTED REGION END #    //  SKAMaster.test_isCapabilityAchievable_decorators
-    def test_isCapabilityAchievable(self, tango_context):
-        """Test for isCapabilityAchievable"""
-        # PROTECTED REGION ID(SKAMaster.test_isCapabilityAchievable) ENABLED START #
-        assert tango_context.device.isCapabilityAchievable([[0], [""]]) == False
-        # PROTECTED REGION END #    //  SKAMaster.test_isCapabilityAchievable
+    # PROTECTED REGION ID(SKAMaster.test_isCapabilityAchievable_failure_decorators) ENABLED START #
+    # PROTECTED REGION END #    //  SKAMaster.test_isCapabilityAchievable_failure_decorators
+    def test_isCapabilityAchievable_failure(self, tango_context):
+        """Test for isCapabilityAchievable to test failure condition"""
+        # PROTECTED REGION ID(SKAMaster.test_isCapabilityAchievable_failure) ENABLED START #
+        assert tango_context.device.isCapabilityAchievable([[2], ['BAND1']]) == False
+        # PROTECTED REGION END #    //  SKAMaster.test_isCapabilityAchievable_failure
+
+        # PROTECTED REGION ID(SKAMaster.test_isCapabilityAchievable_success_decorators) ENABLED START #
+        # PROTECTED REGION END #    //  SKAMaster.test_isCapabilityAchievable_success_decorators
+    def test_isCapabilityAchievable_success(self, tango_context):
+        """Test for isCapabilityAchievable to test success condition"""
+        # PROTECTED REGION ID(SKAMaster.test_isCapabilityAchievable_success) ENABLED START #
+        assert tango_context.device.isCapabilityAchievable([[1], ['BAND1']]) == True
+        # PROTECTED REGION END #    //  SKAMaster.test_isCapabilityAchievable_success
 
     # PROTECTED REGION ID(SKAMaster.test_Reset_decorators) ENABLED START #
     # PROTECTED REGION END #    //  SKAMaster.test_Reset_decorators
@@ -158,7 +150,7 @@ class TestSKAMaster(object):
         """Test for buildState"""
         # PROTECTED REGION ID(SKAMaster.test_buildState) ENABLED START #
         buildPattern = re.compile(
-            r'lmc-base-classes, [0-9].[0-9].[0-9], '
+            r'lmcbaseclasses, [0-9].[0-9].[0-9], '
             r'A set of generic base devices for SKA Telescope')
         assert (re.match(buildPattern, tango_context.device.buildState)) != None
         # PROTECTED REGION END #    //  SKAMaster.test_buildState
@@ -241,7 +233,7 @@ class TestSKAMaster(object):
     def test_maxCapabilities(self, tango_context):
         """Test for maxCapabilities"""
         # PROTECTED REGION ID(SKAMaster.test_maxCapabilities) ENABLED START #
-        assert tango_context.device.maxCapabilities == ('',)
+        assert tango_context.device.maxCapabilities == ('BAND1:1', 'BAND2:1')
         # PROTECTED REGION END #    //  SKAMaster.test_maxCapabilities
 
     # PROTECTED REGION ID(SKAMaster.test_availableCapabilities_decorators) ENABLED START #
@@ -249,7 +241,7 @@ class TestSKAMaster(object):
     def test_availableCapabilities(self, tango_context):
         """Test for availableCapabilities"""
         # PROTECTED REGION ID(SKAMaster.test_availableCapabilities) ENABLED START #
-        assert tango_context.device.availableCapabilities == ('',)
+        assert tango_context.device.availableCapabilities == ('BAND1:1', 'BAND2:1')
         # PROTECTED REGION END #    //  SKAMaster.test_availableCapabilities
 
 

@@ -12,6 +12,7 @@
 from builtins import object
 import sys
 import os
+import time
 
 path = os.path.join(os.path.dirname(__file__), os.pardir)
 sys.path.insert(0, os.path.abspath(path))
@@ -33,7 +34,6 @@ import tango
 class TestSKALogger(object):
     """Test case for packet generation."""
     properties = {'SkaLevel': '1',
-                  'MetricList': 'healthState',
                   'GroupDefinitions': '',
                   'CentralLoggingTarget': '',
                   'ElementLoggingTarget': '',
@@ -87,7 +87,8 @@ class TestSKALogger(object):
     @pytest.mark.parametrize("logging_level", [int(tango.LogLevel.LOG_INFO)])
     @pytest.mark.parametrize("logging_target", ["logger/test/1"])
     # PROTECTED REGION END #    //  SKALogger.test_SetCentralLoggingLevel_decorators
-    def test_SetCentralLoggingLevel(self, tango_context, logging_level, logging_target):
+    def test_SetCentralLoggingLevel(self, tango_context, setup_log_test_device,
+                                    logging_level, logging_target):
         """Test for SetCentralLoggingLevel"""
         # PROTECTED REGION ID(SKALogger.test_SetCentralLoggingLevel) ENABLED START #
         levels = []
@@ -97,8 +98,10 @@ class TestSKALogger(object):
         device_details = []
         device_details.append(levels)
         device_details.append(targets)
+        print("device_details: ", device_details)
         tango_context.device.SetCentralLoggingLevel(device_details)
         dev_proxy = DeviceProxy(logging_target)
+        print("dev_proxy: ", dev_proxy)
         assert dev_proxy.centralLoggingLevel == logging_level
         # PROTECTED REGION END #    //  SKALogger.test_SetCentralLoggingLevel
 
@@ -106,7 +109,8 @@ class TestSKALogger(object):
     @pytest.mark.parametrize("logging_level", [int(tango.LogLevel.LOG_ERROR)])
     @pytest.mark.parametrize("logging_target", ["logger/test/1"])
     # PROTECTED REGION END #    //  SKALogger.test_SetElementLoggingLevel_decorators
-    def test_SetElementLoggingLevel(self, tango_context, logging_level, logging_target):
+    def test_SetElementLoggingLevel(self, tango_context, setup_log_test_device,
+                                    logging_level, logging_target):
         """Test for SetElementLoggingLevel"""
         # PROTECTED REGION ID(SKALogger.test_SetElementLoggingLevel) ENABLED START #
         levels = []
@@ -125,7 +129,8 @@ class TestSKALogger(object):
     @pytest.mark.parametrize("logging_level", [int(tango.LogLevel.LOG_WARN)])
     @pytest.mark.parametrize("logging_target", ["logger/test/1"])
     # PROTECTED REGION END #    //  SKALogger.test_SetStorageLoggingLevel_decorators
-    def test_SetStorageLoggingLevel(self, tango_context, logging_level, logging_target):
+    def test_SetStorageLoggingLevel(self, tango_context, setup_log_test_device,
+                                    logging_level, logging_target):
         """Test for SetStorageLoggingLevel"""
         # PROTECTED REGION ID(SKALogger.test_SetStorageLoggingLevel) ENABLED START #
         levels = []
@@ -146,7 +151,7 @@ class TestSKALogger(object):
         """Test for GetVersionInfo"""
         # PROTECTED REGION ID(SKALogger.test_GetVersionInfo) ENABLED START #
         versionPattern = re.compile(
-            r'SKALogger, lmc-base-classes, [0-9].[0-9].[0-9], '
+            r'SKALogger, lmcbaseclasses, [0-9].[0-9].[0-9], '
             r'A set of generic base devices for SKA Telescope.')
         versionInfo = tango_context.device.GetVersionInfo()
         assert (re.match(versionPattern, versionInfo[0])) != None
@@ -166,7 +171,7 @@ class TestSKALogger(object):
         """Test for buildState"""
         # PROTECTED REGION ID(SKALogger.test_buildState) ENABLED START #
         buildPattern = re.compile(
-            r'lmc-base-classes, [0-9].[0-9].[0-9], '
+            r'lmcbaseclasses, [0-9].[0-9].[0-9], '
             r'A set of generic base devices for SKA Telescope')
         assert (re.match(buildPattern, tango_context.device.buildState)) != None
         # PROTECTED REGION END #    //  SKALogger.test_buildState

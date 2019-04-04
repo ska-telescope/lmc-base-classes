@@ -7,7 +7,15 @@
 #   - tangodb: MariaDB database with TANGO schema
 #   - databaseds: TANGO database device server
 #   - rsyslog-lmcbaseclasses:Container which provice rsyslog service for local logging
-#   - lmcbaseclasses: Container having lmc base classes
+#   - basedevice: Container having SKABaseDevice class
+#   - alarmhandler: Container having SKAAlarmHandler class
+#   - capability: Container having SKACapability class
+#   - logger: Container having SKALogger class
+#   - master: Container having SKAMaster class
+#   - obsdevice: Container having SKAObsDevice class
+#   - subarray: Container having SKASubarray class
+#   - telstate: Container having SKATelState class
+#   - testdevice: Container having SKATestDevice class
 #
 # Requires:
 #   - None
@@ -19,6 +27,8 @@ volumes:
 services:
   tangodb:
     image: nexus.engageska-portugal.pt/ska-docker/tango-db:latest
+    network_mode: ${NETWORK_MODE}
+    container_name: ${CONTAINER_NAME_PREFIX}tangodb
     depends_on:
       - rsyslog-lmcbaseclasses
     environment:
@@ -33,15 +43,17 @@ services:
     image: nexus.engageska-portugal.pt/ska-docker/tango-cpp:latest
     depends_on:
       - tangodb
+    network_mode: ${NETWORK_MODE}
+    container_name: ${CONTAINER_NAME_PREFIX}databaseds
     environment:
-      - MYSQL_HOST=tangodb:3306
+      - MYSQL_HOST=${MYSQL_HOST}
       - MYSQL_DATABASE=tango
       - MYSQL_USER=tango
       - MYSQL_PASSWORD=tango
-      - TANGO_HOST=databaseds:10000
+      - TANGO_HOST=${TANGO_HOST}
     entrypoint:
       - /usr/local/bin/wait-for-it.sh
-      - tangodb:3306
+      - ${MYSQL_HOST}
       - --timeout=30
       - --strict
       - --
@@ -51,18 +63,21 @@ services:
       - giop:tcp::10000
 
   rsyslog-lmcbaseclasses:
-    container_name: rsyslog-lmcbaseclasses
     image: jumanjiman/rsyslog
+    container_name: ${CONTAINER_NAME_PREFIX}rsyslog-lmcbaseclasses
+    network_mode: ${NETWORK_MODE}
 
   basedevice:
     image: ${DOCKER_REGISTRY_HOST}/${DOCKER_REGISTRY_USER}/lmcbaseclasses:latest
     depends_on:
       - databaseds
       - rsyslog-lmcbaseclasses
+    network_mode: ${NETWORK_MODE}
+    container_name: ${CONTAINER_NAME_PREFIX}basedevice
     environment:
-      - TANGO_HOST=databaseds:10000
+      - TANGO_HOST=${TANGO_HOST}
     command: >
-      sh -c "wait-for-it.sh databaseds:10000 --timeout=30 --strict --
+      sh -c "wait-for-it.sh ${TANGO_HOST} --timeout=30 --strict --
              tango_admin --add-server SKABaseDevice/01 SKABaseDevice ska/basedevice/01 &&\
              sudo ln -sf /var/run/rsyslog/dev/log /dev/log &&\
              /venv/bin/python /app/skabase/SKABaseDevice/SKABaseDevice.py 01"
@@ -74,10 +89,12 @@ services:
     depends_on:
       - databaseds
       - rsyslog-lmcbaseclasses
+    network_mode: ${NETWORK_MODE}
+    container_name: ${CONTAINER_NAME_PREFIX}alarmhandler
     environment:
-      - TANGO_HOST=databaseds:10000
+      - TANGO_HOST=${TANGO_HOST}
     command: >
-      sh -c "wait-for-it.sh databaseds:10000 --timeout=30 --strict --
+      sh -c "wait-for-it.sh ${TANGO_HOST} --timeout=30 --strict --
              tango_admin --add-server SKAAlarmHandler/01 SKAAlarmhandler ska/alarmhandler/01 &&\
              sudo ln -sf /var/run/rsyslog/dev/log /dev/log &&\
              /venv/bin/python /app/skabase/SKAAlarmHandler/SKAAlarmHandler.py 01"
@@ -89,10 +106,12 @@ services:
     depends_on:
       - databaseds
       - rsyslog-lmcbaseclasses
+    network_mode: ${NETWORK_MODE}
+    container_name: ${CONTAINER_NAME_PREFIX}capability
     environment:
-      - TANGO_HOST=databaseds:10000
+      - TANGO_HOST=${TANGO_HOST}
     command: >
-      sh -c "wait-for-it.sh databaseds:10000 --timeout=30 --strict --
+      sh -c "wait-for-it.sh ${TANGO_HOST} --timeout=30 --strict --
              tango_admin --add-server SKACapability/01 SKACapability ska/capability/01 &&\
              sudo ln -sf /var/run/rsyslog/dev/log /dev/log &&\
              /venv/bin/python /app/skabase/SKACapability/SKACapability.py 01"
@@ -104,10 +123,12 @@ services:
     depends_on:
       - databaseds
       - rsyslog-lmcbaseclasses
+    network_mode: ${NETWORK_MODE}
+    container_name: ${CONTAINER_NAME_PREFIX}logger
     environment:
-      - TANGO_HOST=databaseds:10000
+      - TANGO_HOST=${TANGO_HOST}
     command: >
-      sh -c "wait-for-it.sh databaseds:10000 --timeout=30 --strict --
+      sh -c "wait-for-it.sh ${TANGO_HOST} --timeout=30 --strict --
              tango_admin --add-server SKALogger/01 SKALogger ska/logger/01 &&\
              sudo ln -sf /var/run/rsyslog/dev/log /dev/log &&\
              /venv/bin/python /app/skabase/SKALogger/SKALogger.py 01"
@@ -119,10 +140,12 @@ services:
     depends_on:
       - databaseds
       - rsyslog-lmcbaseclasses
+    network_mode: ${NETWORK_MODE}
+    container_name: ${CONTAINER_NAME_PREFIX}master
     environment:
-      - TANGO_HOST=databaseds:10000
+      - TANGO_HOST=${TANGO_HOST}
     command: >
-      sh -c "wait-for-it.sh databaseds:10000 --timeout=30 --strict --
+      sh -c "wait-for-it.sh ${TANGO_HOST} --timeout=30 --strict --
              tango_admin --add-server SKAMaster/01 SKAMaster ska/master/01 &&\
              sudo ln -sf /var/run/rsyslog/dev/log /dev/log &&\
              /venv/bin/python /app/skabase/SKAMaster/SKAMaster.py 01"
@@ -134,10 +157,12 @@ services:
     depends_on:
       - databaseds
       - rsyslog-lmcbaseclasses
+    network_mode: ${NETWORK_MODE}
+    container_name: ${CONTAINER_NAME_PREFIX}obsdevice
     environment:
-      - TANGO_HOST=databaseds:10000
+      - TANGO_HOST=${TANGO_HOST}
     command: >
-      sh -c "wait-for-it.sh databaseds:10000 --timeout=30 --strict --
+      sh -c "wait-for-it.sh ${TANGO_HOST} --timeout=30 --strict --
              tango_admin --add-server SKAObsDevice/01 SKAObsDevice ska/obsdevice/01 &&\
              sudo ln -sf /var/run/rsyslog/dev/log /dev/log &&\
              /venv/bin/python /app/skabase/SKAObsDevice/SKAObsDevice.py 01"
@@ -149,10 +174,12 @@ services:
     depends_on:
       - databaseds
       - rsyslog-lmcbaseclasses
+    network_mode: ${NETWORK_MODE}
+    container_name: ${CONTAINER_NAME_PREFIX}subarray
     environment:
-      - TANGO_HOST=databaseds:10000
+      - TANGO_HOST=${TANGO_HOST}
     command: >
-      sh -c "wait-for-it.sh databaseds:10000 --timeout=30 --strict --
+      sh -c "wait-for-it.sh ${TANGO_HOST} --timeout=30 --strict --
              tango_admin --add-server SKASubarray/01 SKASubarray ska/subarray/01 &&\
              sudo ln -sf /var/run/rsyslog/dev/log /dev/log &&\
              /venv/bin/python /app/skabase/SKASubarray/SKASubarray.py 01"
@@ -164,12 +191,31 @@ services:
     depends_on:
       - databaseds
       - rsyslog-lmcbaseclasses
+    network_mode: ${NETWORK_MODE}
+    container_name: ${CONTAINER_NAME_PREFIX}telstate
     environment:
-      - TANGO_HOST=databaseds:10000
+      - TANGO_HOST=${TANGO_HOST}
     command: >
-      sh -c "wait-for-it.sh databaseds:10000 --timeout=30 --strict --
+      sh -c "wait-for-it.sh ${TANGO_HOST} --timeout=30 --strict --
              tango_admin --add-server SKATelState/01 SKATelState ska/telstate/01 &&\
              sudo ln -sf /var/run/rsyslog/dev/log /dev/log &&\
             /venv/bin/python /app/skabase/SKATelState/SKATelState.py 01"
+    volumes_from:
+      - rsyslog-lmcbaseclasses:rw
+
+  testdevice:
+    image: ${DOCKER_REGISTRY_HOST}/${DOCKER_REGISTRY_USER}/lmcbaseclasses:latest
+    depends_on:
+      - databaseds
+      - rsyslog-lmcbaseclasses
+    network_mode: ${NETWORK_MODE}
+    container_name: ${CONTAINER_NAME_PREFIX}testdevice
+    environment:
+      - TANGO_HOST=${TANGO_HOST}
+    command: >
+      sh -c "wait-for-it.sh ${TANGO_HOST} --timeout=30 --strict --
+             tango_admin --add-server SKATestDevice/01 SKATestDevice logger/test/1 &&\
+             sudo ln -sf /var/run/rsyslog/dev/log /dev/log &&\
+             /venv/bin/python /app/skabase/SKATestDevice/SKATestDevice.py 01"
     volumes_from:
       - rsyslog-lmcbaseclasses:rw

@@ -35,7 +35,6 @@ class TestSKAAlarmHandler(object):
         'SubAlarmHandlers': '',
         'AlarmConfigFile': '',
         'SkaLevel': '4',
-        'MetricList': 'healthState',
         'GroupDefinitions': '',
         'CentralLoggingTarget': '',
         'ElementLoggingTarget': '',
@@ -121,29 +120,13 @@ class TestSKAAlarmHandler(object):
         assert tango_context.device.Reset() == None
         # PROTECTED REGION END #    //  SKAAlarmHandler.test_Reset
 
-    # PROTECTED REGION ID(SKAAlarmHandler.test_GetMetrics_decorators) ENABLED START #
-    # PROTECTED REGION END #    //  SKAAlarmHandler.test_GetMetrics_decorators
-    def test_GetMetrics(self, tango_context):
-        """Test for GetMetrics"""
-        # PROTECTED REGION ID(SKAAlarmHandler.test_GetMetrics) ENABLED START #
-        assert tango_context.device.GetMetrics() == ""
-        # PROTECTED REGION END #    //  SKAAlarmHandler.test_GetMetrics
-
-    # PROTECTED REGION ID(SKAAlarmHandler.test_ToJson_decorators) ENABLED START #
-    # PROTECTED REGION END #    //  SKAAlarmHandler.test_ToJson_decorators
-    def test_ToJson(self, tango_context):
-        """Test for ToJson"""
-        # PROTECTED REGION ID(SKAAlarmHandler.test_ToJson) ENABLED START #
-        assert tango_context.device.ToJson("") == ""
-        # PROTECTED REGION END #    //  SKAAlarmHandler.test_ToJson
-
     # PROTECTED REGION ID(SKAAlarmHandler.test_GetVersionInfo_decorators) ENABLED START #
     # PROTECTED REGION END #    //  SKAAlarmHandler.test_GetVersionInfo_decorators
     def test_GetVersionInfo(self, tango_context):
         """Test for GetVersionInfo"""
         # PROTECTED REGION ID(SKAAlarmHandler.test_GetVersionInfo) ENABLED START #
         versionPattern = re.compile(
-            r'SKAAlarmHandler, lmc-base-classes, [0-9].[0-9].[0-9], '
+            r'SKAAlarmHandler, lmcbaseclasses, [0-9].[0-9].[0-9], '
             r'A set of generic base devices for SKA Telescope.')
         versionInfo = tango_context.device.GetVersionInfo()
         assert (re.match(versionPattern, versionInfo[0])) != None
@@ -196,7 +179,7 @@ class TestSKAAlarmHandler(object):
         """Test for buildState"""
         # PROTECTED REGION ID(SKAAlarmHandler.test_buildState) ENABLED START #
         buildPattern = re.compile(
-            r'lmc-base-classes, [0-9].[0-9].[0-9], '
+            r'lmcbaseclasses, [0-9].[0-9].[0-9], '
             r'A set of generic base devices for SKA Telescope')
         assert (re.match(buildPattern, tango_context.device.buildState)) != None
         # PROTECTED REGION END #    //  SKAAlarmHandler.test_buildState

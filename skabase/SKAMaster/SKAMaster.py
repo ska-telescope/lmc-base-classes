@@ -48,6 +48,9 @@ class SKAMaster(with_metaclass(DeviceMeta, SKABaseDevice)):
     # Device Properties
     # -----------------
 
+    # List of maximum number of instances per capability type provided by this Element;
+    # CORRELATOR=512, PSS-BEAMS=4, PST-BEAMS=6, VLBI-BEAMS=4  or for DSH it can be:
+    # BAND-1=1, BAND-2=1, BAND3=0, BAND-4=0, BAND-5=0 (if only bands 1&amp;2 is installed)
     MaxCapabilities = device_property(
         dtype=('str',),
     )
@@ -107,7 +110,6 @@ class SKAMaster(with_metaclass(DeviceMeta, SKABaseDevice)):
         self._element_alarm_device = ""
         self._element_tel_state_device = ""
         self._element_database_device = ""
-
         self._max_capabilities = {}
         if self.MaxCapabilities:
             for max_capability in self.MaxCapabilities:
@@ -178,6 +180,16 @@ class SKAMaster(with_metaclass(DeviceMeta, SKABaseDevice)):
     @DebugIt()
     def isCapabilityAchievable(self, argin):
         # PROTECTED REGION ID(SKAMaster.isCapabilityAchievable) ENABLED START #
+        """
+        Checks of provided capabilities can be achieved by the resource(s).
+        :param argin: DevVarLongStringArray. An array consisting pair of DevLong and
+        DevString. A single entry consists of\n
+            [nrInstances]: DevLong. Number of instances of the capability
+            [Capability types]: DevString. Type of capability
+        :return: DevBoolean
+            True if capability can be achieved.
+            False if cannot.
+        """
         command_name = 'isCapabilityAchievable'
         capabilities_instances, capability_types = argin
         validate_input_sizes(command_name, argin)

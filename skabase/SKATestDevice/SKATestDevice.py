@@ -196,6 +196,7 @@ class SKATestDevice(with_metaclass(DeviceMeta, SKABaseDevice)):
         self.dev_logging("TurnOn Sending WARNING", int(tango.LogLevel.LOG_WARN))
         self.dev_logging("TurnOn Sending ERROR", int(tango.LogLevel.LOG_ERROR))
         self.dev_logging("TurnOn Sending FATAL", int(tango.LogLevel.LOG_FATAL))
+        #TODO: Set state to ON
         # PROTECTED REGION END #    //  SKATestDevice.On
 
     @command(
@@ -209,6 +210,7 @@ class SKATestDevice(with_metaclass(DeviceMeta, SKABaseDevice)):
         self.dev_logging("TurnOFF Sending WARNING", int(tango.LogLevel.LOG_WARN))
         self.dev_logging("TurnOFF Sending ERROR", int(tango.LogLevel.LOG_ERROR))
         self.dev_logging("TurnOFF Sending FATAL", int(tango.LogLevel.LOG_FATAL))
+        # TODO: Set state to OFF
         # PROTECTED REGION END #    //  SKATestDevice.Stop
 
 # ----------

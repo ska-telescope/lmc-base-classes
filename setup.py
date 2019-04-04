@@ -42,7 +42,5 @@ setuptools.setup(
           "argparse",
           "future"
       ],
-      tests_require=[
-      ],
       keywords="lmc base classes ska",
       zip_safe=False)

@@ -8,7 +8,7 @@
 """Release information for lmc-base-classes Python Package"""
 
 name = """lmcbaseclasses"""
-version = "0.1.1"
+version = "0.1.2"
 version_info = version.split(".")
 description = """A set of generic base devices for SKA Telescope."""
 author = "SKA India"

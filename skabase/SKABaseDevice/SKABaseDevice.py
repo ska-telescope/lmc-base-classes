@@ -62,7 +62,7 @@ class SKABaseDevice(with_metaclass(DeviceMeta, Device)):
             self.syslogs.setFormatter(self.formatter)
             self.logger.addHandler(self.syslogs)
         except Exception as ex:
-            print("Exception occurred while initialising Syslog :-> ", ex)
+            print("Exception occurred while initialising Syslog :-> \n", ex)
 
     def _get_device_json(self, args_dict):
         """
@@ -407,12 +407,13 @@ class SKABaseDevice(with_metaclass(DeviceMeta, Device)):
             self.debug_stream("Groups definitions: {}".format(self.GroupDefinitions))
             self.groups = get_groups_from_json(self.GroupDefinitions)
             self.info_stream("Groups loaded: {}".format(sorted(self.groups.keys())))
+
+        # TODO: For future reference.
         # except GroupDefinitionsError:
         #     self.info_stream("No Groups loaded for device: {}".format(
         #                          self.get_name()))
         except Exception as except_occured:
-            print("exception: ", except_occured)
-
+            print("Exception occurred while initialising SKABaseDevice :-> \n", except_occured)
 
         # PROTECTED REGION END #    //  SKABaseDevice.init_device
 

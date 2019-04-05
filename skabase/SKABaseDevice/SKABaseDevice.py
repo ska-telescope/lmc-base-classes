@@ -53,11 +53,16 @@ class SKABaseDevice(with_metaclass(DeviceMeta, Device)):
     """
     # PROTECTED REGION ID(SKABaseDevice.class_variable) ENABLED START #
 
-    logger = logging.getLogger(__name__)
-    syslogs = SysLogHandler(address='/dev/log', facility='syslog')
-    formatter = logging.Formatter('%(name)s: %(levelname)s %(module)s %(message)r')
-    syslogs.setFormatter(formatter)
-    logger.addHandler(syslogs)
+    def _init_syslog(self):
+        try:
+            self.logger = logging.getLogger(__name__)
+            #self.syslogs = SysLogHandler(address='/dev/log', facility='syslog')
+            self.syslogs = SysLogHandler(address='/var/run/rsyslog/dev/log', facility='syslog')
+            self.formatter = logging.Formatter('%(name)s: %(levelname)s %(module)s %(message)r')
+            self.syslogs.setFormatter(self.formatter)
+            self.logger.addHandler(self.syslogs)
+        except Exception as ex:
+            print("Exception occurred while initialising Syslog :-> ", ex)
 
     def _get_device_json(self, args_dict):
         """
@@ -381,28 +386,32 @@ class SKABaseDevice(with_metaclass(DeviceMeta, Device)):
         """
         Device.init_device(self)
         # PROTECTED REGION ID(SKABaseDevice.init_device) ENABLED START #
-
-        # Initialize attribute values.
-        self._build_state = '{}, {}, {}'.format(release.name, release.version,
-                                                release.description)
-        self._version_id = release.version
-        self._central_logging_level = int(tango.LogLevel.LOG_OFF)
-        self._element_logging_level = int(tango.LogLevel.LOG_OFF)
-        self._storage_logging_level = int(tango.LogLevel.LOG_OFF)
-        self._health_state = 0
-        self._admin_mode = 0
-        self._control_mode = 0
-        self._simulation_mode = False
-        self._test_mode = ""
-
-        # create TANGO Groups objects dict, according to property
-        self.debug_stream("Groups definitions: {}".format(self.GroupDefinitions))
         try:
+            # Start sysLogHandler
+            self._init_syslog()
+
+            # Initialize attribute values.
+            self._build_state = '{}, {}, {}'.format(release.name, release.version,
+                                                    release.description)
+            self._version_id = release.version
+            self._central_logging_level = int(tango.LogLevel.LOG_OFF)
+            self._element_logging_level = int(tango.LogLevel.LOG_OFF)
+            self._storage_logging_level = int(tango.LogLevel.LOG_OFF)
+            self._health_state = 0
+            self._admin_mode = 0
+            self._control_mode = 0
+            self._simulation_mode = False
+            self._test_mode = ""
+
+            # create TANGO Groups objects dict, according to property
+            self.debug_stream("Groups definitions: {}".format(self.GroupDefinitions))
             self.groups = get_groups_from_json(self.GroupDefinitions)
             self.info_stream("Groups loaded: {}".format(sorted(self.groups.keys())))
-        except GroupDefinitionsError:
-            self.info_stream("No Groups loaded for device: {}".format(
-                                 self.get_name()))
+        # except GroupDefinitionsError:
+        #     self.info_stream("No Groups loaded for device: {}".format(
+        #                          self.get_name()))
+        except Exception as except_occured:
+            print("exception: ", except_occured)
 
 
         # PROTECTED REGION END #    //  SKABaseDevice.init_device

@@ -22,11 +22,6 @@ import sys
 from future.utils import with_metaclass
 import json
 
-from future import standard_library
-standard_library.install_aliases()
-from builtins import str
-from builtins import range
-
 # SKA specific imports
 file_path = os.path.dirname(os.path.abspath(__file__))
 auxiliary_path = os.path.abspath(os.path.join(file_path, os.pardir)) + "/auxiliary"

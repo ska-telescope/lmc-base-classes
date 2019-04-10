@@ -9,7 +9,6 @@
 """Contain the tests for the SKATestDevice."""
 
 # Path
-from builtins import object
 import sys
 import os
 path = os.path.join(os.path.dirname(__file__), os.pardir)
@@ -18,7 +17,7 @@ sys.path.insert(0, os.path.abspath(path))
 # Imports
 import re
 import pytest
-from tango import DevFailed, DevState
+from tango import DevState
 
 
 # PROTECTED REGION ID(SKATestDevice.test_additional_imports) ENABLED START #

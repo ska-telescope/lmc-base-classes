@@ -5,7 +5,9 @@
 
 # Python code to execute, usually for sys.path manipulation such as
 # pygtk.require().
-init-hook='sys.path.append("./skabase/SKABaseDevice");sys.path.append("./skabase/auxiliary");sys.path.append("./skabase/SKAObsDevice")'
+init-hook='sys.path.append("./skabase/SKABaseDevice");
+	sys.path.append("./skabase/auxiliary");
+	sys.path.append("./skabase/SKAObsDevice")'
 
 # Profiled execution.
 profile=no
@@ -38,7 +40,8 @@ load-plugins=
 # --enable=similarities". If you want to run only the classes checker, but have
 # no Warning level messages displayed, use"--disable=all --enable=classes
 # --disable=W"
-disable=attribute-defined-outside-init,invalid-name,no-init,no-member,no-self-use,no-name-in-module
+disable=C,R,attribute-defined-outside-init,invalid-name,no-init,no-member,no-self-use,
+	no-name-in-module,unused-argument,fixme,broad-except
 
 
 [REPORTS]

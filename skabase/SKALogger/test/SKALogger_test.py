@@ -9,10 +9,8 @@
 """Contain the tests for the SKALogger."""
 
 # Path
-from builtins import object
 import sys
 import os
-import time
 
 path = os.path.join(os.path.dirname(__file__), os.pardir)
 sys.path.insert(0, os.path.abspath(path))

@@ -22,19 +22,21 @@ import sys
 from future.utils import with_metaclass
 import json
 
-from future import standard_library
-standard_library.install_aliases()
-from builtins import str
-from builtins import range
+# from future import standard_library
+# standard_library.install_aliases()
+# from builtins import str
+# from builtins import range
 
 # SKA specific imports
 file_path = os.path.dirname(os.path.abspath(__file__))
 auxiliary_path = os.path.abspath(os.path.join(file_path, os.pardir)) + "/auxiliary"
 sys.path.insert(0, auxiliary_path)
 from skabase import release
-from utils import (get_dp_command, exception_manager,
-                           tango_type_conversion, coerce_value,
-                           get_groups_from_json, get_tango_device_type_id)
+from utils import (get_dp_command,
+#                   exception_manager,
+#                   tango_type_conversion,
+                    coerce_value,
+                    get_groups_from_json, get_tango_device_type_id)
 
 from faults import GroupDefinitionsError
 import logging
@@ -61,8 +63,9 @@ class SKABaseDevice(with_metaclass(DeviceMeta, Device)):
             self.formatter = logging.Formatter('%(name)s: %(levelname)s %(module)s %(message)r')
             self.syslogs.setFormatter(self.formatter)
             self.logger.addHandler(self.syslogs)
-        except Exception as ex:
-            print("Exception occurred while initialising Syslog :-> \n", ex)
+        except Exception:
+            self.error_stream("Syslog cannot be initialized: {}".format(
+                self.get_name()))
 
     def _get_device_json(self, args_dict):
         """
@@ -386,35 +389,31 @@ class SKABaseDevice(with_metaclass(DeviceMeta, Device)):
         """
         Device.init_device(self)
         # PROTECTED REGION ID(SKABaseDevice.init_device) ENABLED START #
+
+        # Start sysLogHandler
+        self._init_syslog()
+
+        # Initialize attribute values.
+        self._build_state = '{}, {}, {}'.format(release.name, release.version,
+                                                release.description)
+        self._version_id = release.version
+        self._central_logging_level = int(tango.LogLevel.LOG_OFF)
+        self._element_logging_level = int(tango.LogLevel.LOG_OFF)
+        self._storage_logging_level = int(tango.LogLevel.LOG_OFF)
+        self._health_state = 0
+        self._admin_mode = 0
+        self._control_mode = 0
+        self._simulation_mode = False
+        self._test_mode = ""
+
         try:
-            # Start sysLogHandler
-            self._init_syslog()
-
-            # Initialize attribute values.
-            self._build_state = '{}, {}, {}'.format(release.name, release.version,
-                                                    release.description)
-            self._version_id = release.version
-            self._central_logging_level = int(tango.LogLevel.LOG_OFF)
-            self._element_logging_level = int(tango.LogLevel.LOG_OFF)
-            self._storage_logging_level = int(tango.LogLevel.LOG_OFF)
-            self._health_state = 0
-            self._admin_mode = 0
-            self._control_mode = 0
-            self._simulation_mode = False
-            self._test_mode = ""
-
             # create TANGO Groups objects dict, according to property
             self.debug_stream("Groups definitions: {}".format(self.GroupDefinitions))
             self.groups = get_groups_from_json(self.GroupDefinitions)
             self.info_stream("Groups loaded: {}".format(sorted(self.groups.keys())))
-
-        # TODO: For future reference.
-        # except GroupDefinitionsError:
-        #     self.info_stream("No Groups loaded for device: {}".format(
-        #                          self.get_name()))
-        except Exception as except_occured:
-            print("Exception occurred while initialising SKABaseDevice :-> \n", except_occured)
-
+        except GroupDefinitionsError:
+            self.info_stream("No Groups loaded for device: {}".format(
+                                 self.get_name()))
         # PROTECTED REGION END #    //  SKABaseDevice.init_device
 
     def always_executed_hook(self):

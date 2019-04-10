@@ -19,11 +19,9 @@ from tango import DeviceProxy, Except, ErrSeverity, DevState
 # Additional import
 # PROTECTED REGION ID(SKASubarray.additionnal_import) ENABLED START #
 # standard imports
-from builtins import zip
 import os
 import sys
 from future.utils import with_metaclass
-from itertools import zip_longest as zip
 
 # SKA specific imports
 from skabase import release

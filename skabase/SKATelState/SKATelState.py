@@ -16,6 +16,7 @@ from tango.server import run, DeviceMeta, device_property
 # Additional import
 # PROTECTED REGION ID(SKATelState.additionnal_import) ENABLED START #
 #standard import
+
 import os
 import sys
 from future.utils import with_metaclass

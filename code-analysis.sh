@@ -5,15 +5,15 @@ echo
 
 echo "MODULE ANALYSIS"
 echo "---------------"
-pylint --rcfile=rcfile skabase
+pylint --rcfile=.pylintrc skabase
 
 echo "TESTS ANALYSIS"
 echo "--------------"
-pylint --rcfile=rcfile skabase/SKAAlarmHandler/test
-pylint --rcfile=rcfile skabase/SKABaseDevice/test
-pylint --rcfile=rcfile skabase/SKACapability/test
-pylint --rcfile=rcfile skabase/SKALogger/test
-pylint --rcfile=rcfile skabase/SKAMaster/test
-pylint --rcfile=rcfile skabase/SKAObsDevice/test
-pylint --rcfile=rcfile skabase/SKASubarray/test
-pylint --rcfile=rcfile skabase/SKATelState/test
+pylint --rcfile=.pylintrc skabase/SKAAlarmHandler/test
+pylint --rcfile=.pylintrc skabase/SKABaseDevice/test
+pylint --rcfile=.pylintrc skabase/SKACapability/test
+pylint --rcfile=.pylintrc skabase/SKALogger/test
+pylint --rcfile=.pylintrc skabase/SKAMaster/test
+pylint --rcfile=.pylintrc skabase/SKAObsDevice/test
+pylint --rcfile=.pylintrc skabase/SKASubarray/test
+pylint --rcfile=.pylintrc skabase/SKATelState/test

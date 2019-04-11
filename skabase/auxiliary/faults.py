@@ -7,4 +7,3 @@ class SKABaseError(Exception):
 
 class GroupDefinitionsError(SKABaseError):
     """Raise if error parsing or creating groups from GroupDefinitions."""
-    pass

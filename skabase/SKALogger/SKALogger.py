@@ -19,7 +19,6 @@ from tango.server import run, DeviceMeta, command
 # Additional import
 # PROTECTED REGION ID(SKALogger.additionnal_import) ENABLED START #
 from future.utils import with_metaclass
-# from builtins import str
 # standard imports
 import os
 import sys

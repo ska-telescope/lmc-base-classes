@@ -96,10 +96,8 @@ class TestSKALogger(object):
         device_details = []
         device_details.append(levels)
         device_details.append(targets)
-        print("device_details: ", device_details)
         tango_context.device.SetCentralLoggingLevel(device_details)
         dev_proxy = DeviceProxy(logging_target)
-        print("dev_proxy: ", dev_proxy)
         assert dev_proxy.centralLoggingLevel == logging_level
         # PROTECTED REGION END #    //  SKALogger.test_SetCentralLoggingLevel
 

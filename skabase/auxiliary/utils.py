@@ -7,7 +7,6 @@ import pydoc
 import traceback
 import sys
 
-from collections import OrderedDict, Counter
 from datetime import datetime
 
 import tango

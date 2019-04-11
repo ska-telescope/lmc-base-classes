@@ -22,21 +22,15 @@ import sys
 from future.utils import with_metaclass
 import json
 
-# from future import standard_library
-# standard_library.install_aliases()
-# from builtins import str
-# from builtins import range
-
 # SKA specific imports
 file_path = os.path.dirname(os.path.abspath(__file__))
 auxiliary_path = os.path.abspath(os.path.join(file_path, os.pardir)) + "/auxiliary"
 sys.path.insert(0, auxiliary_path)
 from skabase import release
 from utils import (get_dp_command,
-#                   exception_manager,
-#                   tango_type_conversion,
-                    coerce_value,
-                    get_groups_from_json, get_tango_device_type_id)
+                   coerce_value,
+                   get_groups_from_json,
+                   get_tango_device_type_id)
 
 from faults import GroupDefinitionsError
 import logging
@@ -64,14 +58,15 @@ class SKABaseDevice(with_metaclass(DeviceMeta, Device)):
             self.syslogs.setFormatter(self.formatter)
             self.logger.addHandler(self.syslogs)
         except Exception:
-            self.error_stream("Syslog cannot be initialized: {}".format(
-                self.get_name()))
+            self.error_stream("Syslog cannot be initialized:")
 
     def _get_device_json(self, args_dict):
         """
         Returns device configuration in JSON format.
+
         :param args_dict:
-        :return:
+
+        :return: Device configuration parameters in JSON form
         """
         try:
 
@@ -253,7 +248,7 @@ class SKABaseDevice(with_metaclass(DeviceMeta, Device)):
             self.logger.error(dev_log_msg)
         elif self._storage_logging_level >= int(tango.LogLevel.LOG_WARN) and dev_log_level == int(
                 tango.LogLevel.LOG_WARN):
-            self.logger.warn(dev_log_msg)
+            self.logger.warning(dev_log_msg)
         elif self._storage_logging_level >= int(tango.LogLevel.LOG_INFO) and dev_log_level == int(
                 tango.LogLevel.LOG_INFO):
             self.logger.info(dev_log_msg)
@@ -411,9 +406,11 @@ class SKABaseDevice(with_metaclass(DeviceMeta, Device)):
             self.debug_stream("Groups definitions: {}".format(self.GroupDefinitions))
             self.groups = get_groups_from_json(self.GroupDefinitions)
             self.info_stream("Groups loaded: {}".format(sorted(self.groups.keys())))
+
         except GroupDefinitionsError:
             self.info_stream("No Groups loaded for device: {}".format(
                                  self.get_name()))
+
         # PROTECTED REGION END #    //  SKABaseDevice.init_device
 
     def always_executed_hook(self):
@@ -422,7 +419,6 @@ class SKABaseDevice(with_metaclass(DeviceMeta, Device)):
         Method that is always executed before any device command gets executed.
         :return: None
         """
-        pass
         # PROTECTED REGION END #    //  SKABaseDevice.always_executed_hook
 
     def delete_device(self):
@@ -431,8 +427,6 @@ class SKABaseDevice(with_metaclass(DeviceMeta, Device)):
         Method to cleanup when device is stopped.
         :return: None
         """
-
-        pass
         # PROTECTED REGION END #    //  SKABaseDevice.delete_device
 
     # ------------------
@@ -639,7 +633,6 @@ class SKABaseDevice(with_metaclass(DeviceMeta, Device)):
         Reset device to its default state.
         :return: None
         """
-        pass
         # PROTECTED REGION END #    //  SKABaseDevice.Reset
 
 # ----------

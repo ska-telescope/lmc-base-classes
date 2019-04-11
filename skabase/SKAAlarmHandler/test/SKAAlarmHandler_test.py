@@ -53,7 +53,6 @@ class TestSKAAlarmHandler(object):
         # Test the properties
         # PROTECTED REGION ID(SKAAlarmHandler.test_properties) ENABLED START #
         # PROTECTED REGION END #    //  SKAAlarmHandler.test_properties
-        pass
 
     # PROTECTED REGION ID(SKAAlarmHandler.test_State_decorators) ENABLED START #
     # PROTECTED REGION END #    //  SKAAlarmHandler.test_State_decorators

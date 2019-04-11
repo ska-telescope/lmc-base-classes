@@ -298,7 +298,6 @@ class SKASubarray(with_metaclass(DeviceMeta, SKAObsDevice)):
     def Abort(self):
         # PROTECTED REGION ID(SKASubarray.Abort) ENABLED START #
         """Change obsState to ABORTED."""
-        pass
         # PROTECTED REGION END #    //  SKASubarray.Abort
 
     @command(
@@ -423,7 +422,6 @@ class SKASubarray(with_metaclass(DeviceMeta, SKAObsDevice)):
     def EndSB(self):
         # PROTECTED REGION ID(SKASubarray.EndSB) ENABLED START #
         """Change obsState to IDLE."""
-        pass
         # PROTECTED REGION END #    //  SKASubarray.EndSB
 
     @command(
@@ -432,7 +430,6 @@ class SKASubarray(with_metaclass(DeviceMeta, SKAObsDevice)):
     def EndScan(self):
         # PROTECTED REGION ID(SKASubarray.EndScan) ENABLED START #
         """Ends the scan"""
-        pass
         # PROTECTED REGION END #    //  SKASubarray.EndScan
 
     @command(
@@ -441,7 +438,6 @@ class SKASubarray(with_metaclass(DeviceMeta, SKAObsDevice)):
     def Pause(self):
         # PROTECTED REGION ID(SKASubarray.Pause) ENABLED START #
         """Pauses the scan"""
-        pass
         # PROTECTED REGION END #    //  SKASubarray.Pause
 
     @command(
@@ -463,7 +459,6 @@ class SKASubarray(with_metaclass(DeviceMeta, SKAObsDevice)):
     def Resume(self):
         # PROTECTED REGION ID(SKASubarray.Resume) ENABLED START #
         """Resumes the scan"""
-        pass
         # PROTECTED REGION END #    //  SKASubarray.Resume
 
     @command(
@@ -473,7 +468,6 @@ class SKASubarray(with_metaclass(DeviceMeta, SKAObsDevice)):
     def Scan(self, argin):
         # PROTECTED REGION ID(SKASubarray.Scan) ENABLED START #
         """Starts the scan"""
-        pass
         # PROTECTED REGION END #    //  SKASubarray.Scan
 
 # ----------

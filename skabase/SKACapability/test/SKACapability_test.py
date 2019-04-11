@@ -54,7 +54,6 @@ class TestSKACapability(object):
         # Test the properties
         # PROTECTED REGION ID(SKACapability.test_properties) ENABLED START #
         # PROTECTED REGION END #    //  SKACapability.test_properties
-        pass
 
     # PROTECTED REGION ID(SKACapability.test_ObsState_decorators) ENABLED START #
     # PROTECTED REGION END #    //  SKACapability.test_ObsState_decorators

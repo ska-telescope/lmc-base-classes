@@ -1,9 +1,11 @@
 """Tests for skabase.utils."""
-import json
-import pytest
+# TODO: for future use
+# import json
+# import pytest
 
 from skabase.auxiliary.utils import get_groups_from_json
-from skabase.auxiliary.faults import GroupDefinitionsError
+# TODO: for future use
+# from skabase.auxiliary.faults import GroupDefinitionsError
 
 
 TEST_GROUPS = {

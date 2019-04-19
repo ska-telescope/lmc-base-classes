@@ -32,18 +32,19 @@ from SKABaseDevice import SKABaseDevice
 
 
 # Log related imports
-import logging
-import logging.handlers
-from logging.handlers import SysLogHandler
+# import logging
+# import logging.handlers
+# from logging.handlers import SysLogHandler
 
-logger_dict = {}
-logging.basicConfig()
-logger = logging.getLogger("SKALogger")
-logger.setLevel(logging.DEBUG)
-syslog = SysLogHandler(address='/var/run/rsyslog/dev/log', facility='syslog')
-formatter = logging.Formatter('%(name)s: %(levelname)s %(module)s %(message)r')
-syslog.setFormatter(formatter)
-logger.addHandler(syslog)
+# logger_dict = {}
+# logging.basicConfig()
+# logger = logging.getLogger("SKALogger")
+# logger.setLevel(logging.DEBUG)
+# #syslog = SysLogHandler(address='/var/run/rsyslog/dev/log', facility='syslog')
+# syslog = SysLogHandler(address='/dev/log', facility='syslog')
+# formatter = logging.Formatter('%(name)s: %(levelname)s %(module)s %(message)r')
+# syslog.setFormatter(formatter)
+# logger.addHandler(syslog)
 # PROTECTED REGION END #    //  SKALogger.additionnal_import
 
 __all__ = ["SKALogger", "main"]
@@ -80,18 +81,18 @@ class SKALogger(with_metaclass(DeviceMeta, SKABaseDevice)):
 
     def write_storageLoggingLevel(self, value):
         self._storage_logging_level = value
-        if self._storage_logging_level == int(tango.LogLevel.LOG_FATAL):
-            logger.setLevel(logging.FATAL)
-        elif self._storage_logging_level == int(tango.LogLevel.LOG_ERROR):
-            logger.setLevel(logging.ERROR)
-        elif self._storage_logging_level == int(tango.LogLevel.LOG_WARNING):
-            logger.setLevel(logging.WARNING)
-        elif self._storage_logging_level == int(tango.LogLevel.LOG_INFO):
-            logger.setLevel(logging.INFO)
-        elif self._storage_logging_level == int(tango.LogLevel.LOG_DEBUG):
-            logger.setLevel(logging.DEBUG)
-        else:
-            logger.setLevel(logging.DEBUG)
+        # if self._storage_logging_level == int(tango.LogLevel.LOG_FATAL):
+        #     logger.setLevel(logging.FATAL)
+        # elif self._storage_logging_level == int(tango.LogLevel.LOG_ERROR):
+        #     logger.setLevel(logging.ERROR)
+        # elif self._storage_logging_level == int(tango.LogLevel.LOG_WARNING):
+        #     logger.setLevel(logging.WARNING)
+        # elif self._storage_logging_level == int(tango.LogLevel.LOG_INFO):
+        #     logger.setLevel(logging.INFO)
+        # elif self._storage_logging_level == int(tango.LogLevel.LOG_DEBUG):
+        #     logger.setLevel(logging.DEBUG)
+        # else:
+        #     logger.setLevel(logging.DEBUG)
 
         # PROTECTED REGION END #    //  SKALogger.init_device
 

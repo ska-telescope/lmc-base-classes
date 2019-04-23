@@ -1,8 +1,8 @@
-import tango
-from tango import DeviceProxy, AttrQuality, AttributeProxy
-from .base import DeviceServerBaseTest
-import json
-from time import sleep
+# import tango
+# from tango import DeviceProxy, AttrQuality, AttributeProxy
+# from .base import DeviceServerBaseTest
+# import json
+# from time import sleep
 
 # class TestGroup(DeviceServerBaseTest):
     # REQUIRED_DEVICE_SERVERS = ['Subarray_DS', 'Capability_DS']

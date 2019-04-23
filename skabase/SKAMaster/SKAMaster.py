@@ -18,7 +18,6 @@ from tango.server import run, DeviceMeta, attribute, command, device_property
 import os
 import sys
 from future.utils import with_metaclass
-from itertools import zip_longest as zip
 
 # SKA specific imports
 from skabase import release

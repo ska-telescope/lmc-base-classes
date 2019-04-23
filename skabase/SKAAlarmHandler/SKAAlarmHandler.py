@@ -101,7 +101,6 @@ class SKAAlarmHandler(with_metaclass(DeviceMeta, SKABaseDevice)):
 
     def init_device(self):
         SKABaseDevice.init_device(self)
-        # TODO: maintain single version file.
         self._build_state = '{}, {}, {}'.format(release.name, release.version,
                                                 release.description)
         self._version_id = release.version

@@ -17,7 +17,7 @@ sys.path.insert(0, os.path.abspath(path))
 # Imports
 import re
 import pytest
-from tango import DevFailed, DevState
+from tango import DevState
 
 
 # PROTECTED REGION ID(SKATestDevice.test_additional_imports) ENABLED START #

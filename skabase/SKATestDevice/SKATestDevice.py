@@ -162,14 +162,14 @@ class SKATestDevice(with_metaclass(DeviceMeta, SKABaseDevice)):
             group_name = args['group']
             group = self.groups.get(group_name)
             if group:
-                command = args['command']
+                group_command = args['command']
                 forward = args['forward']
                 if args['arg_type']:
                     _, param = convert_api_value({'type': args['arg_type'],
                                                   'value': args['arg_value']})
-                    replies = group.command_inout(command, param, forward=forward)
+                    replies = group.command_inout(group_command, param, forward=forward)
                 else:
-                    replies = group.command_inout(command, forward=forward)
+                    replies = group.command_inout(group_command, forward=forward)
                 results = []
                 for reply in replies:
                     result = {

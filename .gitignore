@@ -27,6 +27,7 @@ pip-log.txt
 nosetests.xml
 results.xml
 htmlcov
+coverage.xml
 
 # Developer tools
 *~

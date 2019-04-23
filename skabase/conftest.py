@@ -5,7 +5,6 @@ tests.
 import mock
 import pytest
 import importlib
-import subprocess
 import os
 import time
 
@@ -44,8 +43,10 @@ def tango_context(request):
 
     fq_test_class_name = request.cls.__module__
     fq_test_class_name_details = fq_test_class_name.split(".")
-    package_name = fq_test_class_name_details[0]
-    class_name = module_name = fq_test_class_name_details[1]
+    # For future use
+    # package_name = fq_test_class_name_details[0]
+    # class_name = module_name = fq_test_class_name_details[1]
+    class_name = fq_test_class_name_details[1]
     module = importlib.import_module(fq_test_class_name_details[1], fq_test_class_name_details[1])
     klass = getattr(module, class_name)
 

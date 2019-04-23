@@ -25,8 +25,6 @@ from tango import DevState
 
 # Device test case
 # PROTECTED REGION ID(SKAMaster.test_SKAMaster_decorators) ENABLED START #
-# TODO: Remove commented line after checking initialize_device is not required.
-# @pytest.mark.usefixtures("tango_context", "initialize_device")
 @pytest.mark.usefixtures("tango_context")
 # PROTECTED REGION END #    //  SKAMaster.test_SKAMaster_decorators
 class TestSKAMaster(object):

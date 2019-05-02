@@ -8,18 +8,20 @@
 #########################################################################################
 """Contain the tests for the SKAAlarmHandler."""
 
-# Path
+
+# standard imports
 import sys
 import os
-path = os.path.join(os.path.dirname(__file__), os.pardir)
-sys.path.insert(0, os.path.abspath(path))
 
 # Imports
+import re
 import pytest
 from tango import DevState
-import re
 
 # PROTECTED REGION ID(SKAAlarmHandler.test_additional_imports) ENABLED START #
+# Path
+path = os.path.join(os.path.dirname(__file__), os.pardir)
+sys.path.insert(0, os.path.abspath(path))
 # PROTECTED REGION END #    //  SKAAlarmHandler.test_additional_imports
 
 
@@ -115,7 +117,7 @@ class TestSKAAlarmHandler(object):
     def test_Reset(self, tango_context):
         """Test for Reset"""
         # PROTECTED REGION ID(SKAAlarmHandler.test_Reset) ENABLED START #
-        assert tango_context.device.Reset() == None
+        assert tango_context.device.Reset() is None
         # PROTECTED REGION END #    //  SKAAlarmHandler.test_Reset
 
     # PROTECTED REGION ID(SKAAlarmHandler.test_GetVersionInfo_decorators) ENABLED START #
@@ -127,7 +129,7 @@ class TestSKAAlarmHandler(object):
             r'SKAAlarmHandler, lmcbaseclasses, [0-9].[0-9].[0-9], '
             r'A set of generic base devices for SKA Telescope.')
         versionInfo = tango_context.device.GetVersionInfo()
-        assert (re.match(versionPattern, versionInfo[0])) != None
+        assert (re.match(versionPattern, versionInfo[0])) is not None
         # PROTECTED REGION END #    //  SKAAlarmHandler.test_GetVersionInfo
 
 
@@ -179,7 +181,7 @@ class TestSKAAlarmHandler(object):
         buildPattern = re.compile(
             r'lmcbaseclasses, [0-9].[0-9].[0-9], '
             r'A set of generic base devices for SKA Telescope')
-        assert (re.match(buildPattern, tango_context.device.buildState)) != None
+        assert (re.match(buildPattern, tango_context.device.buildState)) is not None
         # PROTECTED REGION END #    //  SKAAlarmHandler.test_buildState
 
     # PROTECTED REGION ID(SKAAlarmHandler.test_versionId_decorators) ENABLED START #
@@ -188,7 +190,7 @@ class TestSKAAlarmHandler(object):
         """Test for versionId"""
         # PROTECTED REGION ID(SKAAlarmHandler.test_versionId) ENABLED START #
         versionIdPattern = re.compile(r'[0-9].[0-9].[0-9]')
-        assert (re.match(versionIdPattern, tango_context.device.versionId)) != None
+        assert (re.match(versionIdPattern, tango_context.device.versionId)) is not None
         # PROTECTED REGION END #    //  SKAAlarmHandler.test_versionId
 
     # PROTECTED REGION ID(SKAAlarmHandler.test_centralLoggingLevel_decorators) ENABLED START #
@@ -244,7 +246,7 @@ class TestSKAAlarmHandler(object):
     def test_simulationMode(self, tango_context):
         """Test for simulationMode"""
         # PROTECTED REGION ID(SKAAlarmHandler.test_simulationMode) ENABLED START #
-        assert tango_context.device.simulationMode == False
+        assert tango_context.device.simulationMode is False
         # PROTECTED REGION END #    //  SKAAlarmHandler.test_simulationMode
 
     # PROTECTED REGION ID(SKAAlarmHandler.test_testMode_decorators) ENABLED START #
@@ -270,5 +272,3 @@ class TestSKAAlarmHandler(object):
         # PROTECTED REGION ID(SKAAlarmHandler.test_activeAlarms) ENABLED START #
         assert tango_context.device.activeAlarms == ('',)
         # PROTECTED REGION END #    //  SKAAlarmHandler.test_activeAlarms
-
-

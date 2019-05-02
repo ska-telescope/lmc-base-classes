@@ -11,17 +11,15 @@ A generic base device for Alarms for SKA. It exposes SKA alarms and SKA alerts a
 SKA Alarms and SKA/Element Alerts are rules-based configurable conditions that can be defined over multiple
 attribute values and quality factors, and are separate from the "built-in" TANGO attribute alarms.
 """
-
-# tango imports
-from tango import DebugIt
-from tango.server import run, DeviceMeta, attribute, command, device_property
-
-# Additional import
 # PROTECTED REGION ID(SKAAlarmHandler.additionnal_import) ENABLED START #
 #standard import
 import os
 import sys
 from future.utils import with_metaclass
+
+# tango imports
+from tango import DebugIt
+from tango.server import run, DeviceMeta, attribute, command, device_property
 
 # SKA specific imports\
 from skabase import release
@@ -188,12 +186,7 @@ class SKAAlarmHandler(with_metaclass(DeviceMeta, SKABaseDevice)):
     # Commands
     # --------
 
-    @command(
-    dtype_in='str',
-    doc_in="Alarm name",
-    dtype_out='str',
-    doc_out="JSON string",
-    )
+    @command(dtype_in='str', doc_in="Alarm name", dtype_out='str', doc_out="JSON string",)
     @DebugIt()
     def GetAlarmRule(self, argin):
         # PROTECTED REGION ID(SKAAlarmHandler.GetAlarmRule) ENABLED START #
@@ -205,12 +198,7 @@ class SKAAlarmHandler(with_metaclass(DeviceMeta, SKABaseDevice)):
         return ""
         # PROTECTED REGION END #    //  SKAAlarmHandler.GetAlarmRule
 
-    @command(
-    dtype_in='str',
-    doc_in="Alarm name",
-    dtype_out='str',
-    doc_out="JSON string",
-    )
+    @command(dtype_in='str', doc_in="Alarm name", dtype_out='str', doc_out="JSON string",)
     @DebugIt()
     def GetAlarmData(self, argin):
         # PROTECTED REGION ID(SKAAlarmHandler.GetAlarmData) ENABLED START #
@@ -223,12 +211,7 @@ class SKAAlarmHandler(with_metaclass(DeviceMeta, SKABaseDevice)):
         return ""
         # PROTECTED REGION END #    //  SKAAlarmHandler.GetAlarmData
 
-    @command(
-    dtype_in='str',
-    doc_in="Alarm name",
-    dtype_out='str',
-    doc_out="JSON string",
-    )
+    @command(dtype_in='str', doc_in="Alarm name", dtype_out='str', doc_out="JSON string", )
     @DebugIt()
     def GetAlarmAdditionalInfo(self, argin):
         # PROTECTED REGION ID(SKAAlarmHandler.GetAlarmAdditionalInfo) ENABLED START #
@@ -240,10 +223,7 @@ class SKAAlarmHandler(with_metaclass(DeviceMeta, SKABaseDevice)):
         return ""
         # PROTECTED REGION END #    //  SKAAlarmHandler.GetAlarmAdditionalInfo
 
-    @command(
-    dtype_out='str',
-    doc_out="JSON string",
-    )
+    @command(dtype_out='str', doc_out="JSON string",)
     @DebugIt()
     def GetAlarmStats(self):
         # PROTECTED REGION ID(SKAAlarmHandler.GetAlarmStats) ENABLED START #
@@ -254,10 +234,7 @@ class SKAAlarmHandler(with_metaclass(DeviceMeta, SKABaseDevice)):
         return ""
         # PROTECTED REGION END #    //  SKAAlarmHandler.GetAlarmStats
 
-    @command(
-    dtype_out='str',
-    doc_out="JSON string",
-    )
+    @command(dtype_out='str', doc_out="JSON string",)
     @DebugIt()
     def GetAlertStats(self):
         # PROTECTED REGION ID(SKAAlarmHandler.GetAlertStats) ENABLED START #

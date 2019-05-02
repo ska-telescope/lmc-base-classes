@@ -5,5 +5,9 @@
 #
 #
 
+"""
+Main module of SKABaseDevice
+"""
+
 from .SKABaseDevice import main
 main()

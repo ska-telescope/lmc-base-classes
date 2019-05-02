@@ -8,16 +8,18 @@
 #########################################################################################
 """Contain the tests for the SKASubarray."""
 
-# Path
+# Standard imports
 import sys
 import os
-path = os.path.join(os.path.dirname(__file__), os.pardir)
-sys.path.insert(0, os.path.abspath(path))
 
 # Imports
+import re
 import pytest
 from tango import DevState
-import re
+
+# Path
+path = os.path.join(os.path.dirname(__file__), os.pardir)
+sys.path.insert(0, os.path.abspath(path))
 
 # PROTECTED REGION ID(SKASubarray.test_additional_imports) ENABLED START #
 # PROTECTED REGION END #    //  SKASubarray.test_additional_imports
@@ -59,7 +61,7 @@ class TestSKASubarray(object):
     def test_Abort(self, tango_context):
         """Test for Abort"""
         # PROTECTED REGION ID(SKASubarray.test_Abort) ENABLED START #
-        assert tango_context.device.Abort() == None
+        assert tango_context.device.Abort() is None
         # PROTECTED REGION END #    //  SKASubarray.test_Abort
 
     # TODO: Fix the test case.
@@ -107,7 +109,7 @@ class TestSKASubarray(object):
             r'SKASubarray, lmcbaseclasses, [0-9].[0-9].[0-9], '
             r'A set of generic base devices for SKA Telescope.')
         versionInfo = tango_context.device.GetVersionInfo()
-        assert (re.match(versionPattern, versionInfo[0])) != None
+        assert (re.match(versionPattern, versionInfo[0])) is not None
         # PROTECTED REGION END #    //  SKASubarray.test_GetVersionInfo
 
     # PROTECTED REGION ID(SKASubarray.test_Status_decorators) ENABLED START #
@@ -142,7 +144,7 @@ class TestSKASubarray(object):
     def test_EndSB(self, tango_context):
         """Test for EndSB"""
         # PROTECTED REGION ID(SKASubarray.test_EndSB) ENABLED START #
-        assert tango_context.device.EndSB() == None
+        assert tango_context.device.EndSB() is None
         # PROTECTED REGION END #    //  SKASubarray.test_EndSB
 
     # PROTECTED REGION ID(SKASubarray.test_EndScan_decorators) ENABLED START #
@@ -150,7 +152,7 @@ class TestSKASubarray(object):
     def test_EndScan(self, tango_context):
         """Test for EndScan"""
         # PROTECTED REGION ID(SKASubarray.test_EndScan) ENABLED START #
-        assert tango_context.device.EndScan() == None
+        assert tango_context.device.EndScan() is None
         # PROTECTED REGION END #    //  SKASubarray.test_EndScan
 
     # PROTECTED REGION ID(SKASubarray.test_ObsState_decorators) ENABLED START #
@@ -166,7 +168,7 @@ class TestSKASubarray(object):
     def test_Pause(self, tango_context):
         """Test for Pause"""
         # PROTECTED REGION ID(SKASubarray.test_Pause) ENABLED START #
-        assert tango_context.device.Pause() == None
+        assert tango_context.device.Pause() is None
         # PROTECTED REGION END #    //  SKASubarray.test_Pause
 
     # PROTECTED REGION ID(SKASubarray.test_ReleaseAllResources_decorators) ENABLED START #
@@ -177,7 +179,7 @@ class TestSKASubarray(object):
         # assert tango_context.device.ReleaseAllResources() == [""]
         tango_context.device.AssignResources(['BAND1', 'BAND2'])
         tango_context.device.ReleaseAllResources()
-        assert tango_context.device.assignedResources == None
+        assert tango_context.device.assignedResources is None
         # PROTECTED REGION END #    //  SKASubarray.test_ReleaseAllResources
 
     # PROTECTED REGION ID(SKASubarray.test_ReleaseResources_decorators) ENABLED START #
@@ -198,7 +200,7 @@ class TestSKASubarray(object):
     def test_Reset(self, tango_context):
         """Test for Reset"""
         # PROTECTED REGION ID(SKASubarray.test_Reset) ENABLED START #
-        assert tango_context.device.Reset() == None
+        assert tango_context.device.Reset() is None
         # PROTECTED REGION END #    //  SKASubarray.test_Reset
 
     # PROTECTED REGION ID(SKASubarray.test_Resume_decorators) ENABLED START #
@@ -206,7 +208,7 @@ class TestSKASubarray(object):
     def test_Resume(self, tango_context):
         """Test for Resume"""
         # PROTECTED REGION ID(SKASubarray.test_Resume) ENABLED START #
-        assert tango_context.device.Resume() == None
+        assert tango_context.device.Resume() is None
         # PROTECTED REGION END #    //  SKASubarray.test_Resume
 
     # PROTECTED REGION ID(SKASubarray.test_Scan_decorators) ENABLED START #
@@ -214,7 +216,7 @@ class TestSKASubarray(object):
     def test_Scan(self, tango_context):
         """Test for Scan"""
         # PROTECTED REGION ID(SKASubarray.test_Scan) ENABLED START #
-        assert tango_context.device.Scan([""]) == None
+        assert tango_context.device.Scan([""]) is None
         # PROTECTED REGION END #    //  SKASubarray.test_Scan
 
     # PROTECTED REGION ID(SKASubarray.test_activationTime_decorators) ENABLED START #
@@ -241,7 +243,7 @@ class TestSKASubarray(object):
         buildPattern = re.compile(
             r'lmcbaseclasses, [0-9].[0-9].[0-9], '
             r'A set of generic base devices for SKA Telescope')
-        assert (re.match(buildPattern, tango_context.device.buildState)) != None
+        assert (re.match(buildPattern, tango_context.device.buildState)) is not None
         # PROTECTED REGION END #    //  SKASubarray.test_buildState
 
     # PROTECTED REGION ID(SKASubarray.test_centralLoggingLevel_decorators) ENABLED START #
@@ -313,7 +315,7 @@ class TestSKASubarray(object):
     def test_simulationMode(self, tango_context):
         """Test for simulationMode"""
         # PROTECTED REGION ID(SKASubarray.test_simulationMode) ENABLED START #
-        assert tango_context.device.simulationMode == False
+        assert tango_context.device.simulationMode is False
         # PROTECTED REGION END #    //  SKASubarray.test_simulationMode
 
     # PROTECTED REGION ID(SKASubarray.test_storageLoggingLevel_decorators) ENABLED START #
@@ -321,7 +323,7 @@ class TestSKASubarray(object):
     def test_storageLoggingLevel(self, tango_context):
         """Test for storageLoggingLevel"""
         # PROTECTED REGION ID(SKASubarray.test_storageLoggingLevel) ENABLED START #
-        assert tango_context.device.storageLoggingLevel == 0
+        assert tango_context.device.storageLoggingLevel is 0
         # PROTECTED REGION END #    //  SKASubarray.test_storageLoggingLevel
 
     # PROTECTED REGION ID(SKASubarray.test_testMode_decorators) ENABLED START #
@@ -329,7 +331,7 @@ class TestSKASubarray(object):
     def test_testMode(self, tango_context):
         """Test for testMode"""
         # PROTECTED REGION ID(SKASubarray.test_testMode) ENABLED START #
-        assert tango_context.device.testMode == ''
+        assert tango_context.device.testMode is ''
         # PROTECTED REGION END #    //  SKASubarray.test_testMode
 
     # PROTECTED REGION ID(SKASubarray.test_versionId_decorators) ENABLED START #
@@ -338,7 +340,7 @@ class TestSKASubarray(object):
         """Test for versionId"""
         # PROTECTED REGION ID(SKASubarray.test_versionId) ENABLED START #
         versionIdPattern = re.compile(r'[0-9].[0-9].[0-9]')
-        assert (re.match(versionIdPattern, tango_context.device.versionId)) != None
+        assert (re.match(versionIdPattern, tango_context.device.versionId)) is not None
         # PROTECTED REGION END #    //  SKASubarray.test_versionId
 
     # PROTECTED REGION ID(SKASubarray.test_assignedResources_decorators) ENABLED START #
@@ -354,7 +356,5 @@ class TestSKASubarray(object):
     def test_configuredCapabilities(self, tango_context):
         """Test for configuredCapabilities"""
         # PROTECTED REGION ID(SKASubarray.test_configuredCapabilities) ENABLED START #
-        assert tango_context.device.configuredCapabilities == None
+        assert tango_context.device.configuredCapabilities is None
         # PROTECTED REGION END #    //  SKASubarray.test_configuredCapabilities
-
-

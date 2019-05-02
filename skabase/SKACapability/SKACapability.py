@@ -9,16 +9,15 @@
 
 Capability handling device
 """
-# tango imports
-from tango import DebugIt
-from tango.server import run, DeviceMeta, attribute, command, device_property
-
-# Additional import
 # PROTECTED REGION ID(SKACapability.additionnal_import) ENABLED START #
 # standard import
 import os
 import sys
 from future.utils import with_metaclass
+
+# tango imports
+from tango import DebugIt
+from tango.server import run, DeviceMeta, attribute, command, device_property
 
 # SKA specific imports
 from skabase import release
@@ -139,10 +138,7 @@ class SKACapability(with_metaclass(DeviceMeta, SKAObsDevice)):
     # Commands
     # --------
 
-    @command(
-    dtype_in='uint16',
-    doc_in="The number of instances to configure for this Capability.",
-    )
+    @command(dtype_in='uint16', doc_in="The number of instances to configure for this Capability.",)
     @DebugIt()
     def ConfigureInstances(self, argin):
         # PROTECTED REGION ID(SKACapability.ConfigureInstances) ENABLED START #

@@ -8,16 +8,18 @@
 #########################################################################################
 """Contain the tests for the SKAObsDevice."""
 
-# Path
+# standard imports
 import sys
 import os
-path = os.path.join(os.path.dirname(__file__), os.pardir)
-sys.path.insert(0, os.path.abspath(path))
 
 # Imports
+import re
 import pytest
 from tango import DevState
-import re
+
+# Path
+path = os.path.join(os.path.dirname(__file__), os.pardir)
+sys.path.insert(0, os.path.abspath(path))
 
 # PROTECTED REGION ID(SKAObsDevice.test_additional_imports) ENABLED START #
 # PROTECTED REGION END #    //  SKAObsDevice.test_additional_imports
@@ -85,7 +87,7 @@ class TestSKAObsDevice(object):
             r'SKAObsDevice, lmcbaseclasses, [0-9].[0-9].[0-9], '
             r'A set of generic base devices for SKA Telescope.')
         versionInfo = tango_context.device.GetVersionInfo()
-        assert (re.match(versionPattern, versionInfo[0])) != None
+        assert (re.match(versionPattern, versionInfo[0])) is not None
         # PROTECTED REGION END #    //  SKAObsDevice.test_GetVersionInfo
 
     # PROTECTED REGION ID(SKAObsDevice.test_Reset_decorators) ENABLED START #
@@ -93,7 +95,7 @@ class TestSKAObsDevice(object):
     def test_Reset(self, tango_context):
         """Test for Reset"""
         # PROTECTED REGION ID(SKAObsDevice.test_Reset) ENABLED START #
-        assert tango_context.device.Reset() == None
+        assert tango_context.device.Reset() is None
         # PROTECTED REGION END #    //  SKAObsDevice.test_Reset
 
     # PROTECTED REGION ID(SKAObsDevice.test_obsState_decorators) ENABLED START #
@@ -201,7 +203,7 @@ class TestSKAObsDevice(object):
     def test_simulationMode(self, tango_context):
         """Test for simulationMode"""
         # PROTECTED REGION ID(SKAObsDevice.test_simulationMode) ENABLED START #
-        assert tango_context.device.simulationMode == False
+        assert tango_context.device.simulationMode is False
         # PROTECTED REGION END #    //  SKAObsDevice.test_simulationMode
 
     # PROTECTED REGION ID(SKAObsDevice.test_testMode_decorators) ENABLED START #
@@ -211,5 +213,3 @@ class TestSKAObsDevice(object):
         # PROTECTED REGION ID(SKAObsDevice.test_testMode) ENABLED START #
         assert tango_context.device.testMode == ''
         # PROTECTED REGION END #    //  SKAObsDevice.test_testMode
-
-

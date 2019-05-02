@@ -72,10 +72,9 @@ tango_type_conversion = {tango.CmdArgType.DevUShort.real: 'int',
 
 
 @contextmanager
-def exception_manager(cls, arguments="", callback=None):
+def exception_manager(cls, callback=None):
     try:
         yield
-
     except tango.DevFailed as df:
         # Find caller from the relative point of this executing handler
         curframe = inspect.currentframe()
@@ -94,7 +93,6 @@ def exception_manager(cls, arguments="", callback=None):
         # cls.exception(command_name=class_name + "::" + calframe[2][3],
         #               command_inputs=str(arguments),
         #               message=message)
-
         if callback:
             callback()
 

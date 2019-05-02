@@ -8,17 +8,18 @@
 #########################################################################################
 """Contain the tests for the SKATelState."""
 
-# Path
+# Standard imports
 import sys
 import os
-path = os.path.join(os.path.dirname(__file__), os.pardir)
-sys.path.insert(0, os.path.abspath(path))
 
 # Imports
 import re
 import pytest
 from tango import DevState
 
+# Path
+path = os.path.join(os.path.dirname(__file__), os.pardir)
+sys.path.insert(0, os.path.abspath(path))
 
 # PROTECTED REGION ID(SKATelState.test_additional_imports) ENABLED START #
 # PROTECTED REGION END #    //  SKATelState.test_additional_imports
@@ -79,7 +80,7 @@ class TestSKATelState(object):
             r'SKATelState, lmcbaseclasses, [0-9].[0-9].[0-9], '
             r'A set of generic base devices for SKA Telescope.')
         versionInfo = tango_context.device.GetVersionInfo()
-        assert (re.match(versionPattern, versionInfo[0])) != None
+        assert (re.match(versionPattern, versionInfo[0])) is not None
         # PROTECTED REGION END #    //  SKATelState.test_GetVersionInfo
 
     # PROTECTED REGION ID(SKATelState.test_Reset_decorators) ENABLED START #
@@ -87,7 +88,7 @@ class TestSKATelState(object):
     def test_Reset(self, tango_context):
         """Test for Reset"""
         # PROTECTED REGION ID(SKATelState.test_Reset) ENABLED START #
-        assert tango_context.device.Reset() == None
+        assert tango_context.device.Reset() is None
         # PROTECTED REGION END #    //  SKATelState.test_Reset
 
 
@@ -99,7 +100,7 @@ class TestSKATelState(object):
         buildPattern = re.compile(
             r'lmcbaseclasses, [0-9].[0-9].[0-9], '
             r'A set of generic base devices for SKA Telescope')
-        assert (re.match(buildPattern, tango_context.device.buildState)) != None
+        assert (re.match(buildPattern, tango_context.device.buildState)) is not None
         # PROTECTED REGION END #    //  SKATelState.test_buildState
 
     # PROTECTED REGION ID(SKATelState.test_versionId_decorators) ENABLED START #
@@ -108,7 +109,7 @@ class TestSKATelState(object):
         """Test for versionId"""
         # PROTECTED REGION ID(SKATelState.test_versionId) ENABLED START #
         versionIdPattern = re.compile(r'[0-9].[0-9].[0-9]')
-        assert (re.match(versionIdPattern, tango_context.device.versionId)) != None
+        assert (re.match(versionIdPattern, tango_context.device.versionId)) is not None
         # PROTECTED REGION END #    //  SKATelState.test_versionId
 
     # PROTECTED REGION ID(SKATelState.test_centralLoggingLevel_decorators) ENABLED START #
@@ -164,7 +165,7 @@ class TestSKATelState(object):
     def test_simulationMode(self, tango_context):
         """Test for simulationMode"""
         # PROTECTED REGION ID(SKATelState.test_simulationMode) ENABLED START #
-        assert tango_context.device.simulationMode == False
+        assert tango_context.device.simulationMode is False
         # PROTECTED REGION END #    //  SKATelState.test_simulationMode
 
     # PROTECTED REGION ID(SKATelState.test_testMode_decorators) ENABLED START #
@@ -174,5 +175,3 @@ class TestSKATelState(object):
         # PROTECTED REGION ID(SKATelState.test_testMode) ENABLED START #
         assert tango_context.device.testMode == ''
         # PROTECTED REGION END #    //  SKATelState.test_testMode
-
-

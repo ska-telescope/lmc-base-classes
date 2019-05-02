@@ -98,13 +98,20 @@ class SKALogger(with_metaclass(DeviceMeta, SKABaseDevice)):
         # PROTECTED REGION ID(SKALogger.Log) ENABLED START #
         """
         A method of LogConsumer Interface, to enable log messages appear in Tango log viewer.
+
         :parameter: argin: DevVarStringArray
             Consists a list of strings. The individual items in the list are as follows:
+
             argin[0] : the timestamp in millisecond since epoch (01.01.1970)
+
             argin[1] : the log level
+
             argin[2] : the log source (i.e. device name)
+
             argin[3] : the log message
+
             argin[4] : the log NDC (contextual info) - Not used but reserved
+
             argin[5] : the thread identifier (i.e. the thread from which the log request comes from)
 
         :returns: DevString.
@@ -174,7 +181,9 @@ class SKALogger(with_metaclass(DeviceMeta, SKABaseDevice)):
 
         :parameter: argin: DevVarLogStringArray
             Array consisting of
+
             argin[0]: DevLong. Desired logging level
+
             argin[1]: DevString. Desired tango device
 
         :returns: None.
@@ -205,7 +214,9 @@ class SKALogger(with_metaclass(DeviceMeta, SKABaseDevice)):
 
         :parameter: argin: DevVarLogStringArray
             Array consisting of
+
             argin[0]: DevLong. Desired logging level
+
             argin[1]: DevString. Desired tango device
 
         :returns: None.
@@ -236,7 +247,9 @@ class SKALogger(with_metaclass(DeviceMeta, SKABaseDevice)):
 
         :parameter: argin: DevVarLogStringArray
             Array consisting of
+
             argin[0]: DevLong. Desired logging level
+            
             argin[1]: DevString. Desired tango device
 
         :returns: None.

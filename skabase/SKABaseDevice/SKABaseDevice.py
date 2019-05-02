@@ -36,9 +36,7 @@ from faults import GroupDefinitionsError
 import logging
 import logging.handlers
 from logging.handlers import SysLogHandler
-
-# Initialize logging
-logging.basicConfig()
+from logging.handlers import WatchedFileHandler
 # PROTECTED REGION END #    //  SKABaseDevice.additionnal_import
 
 __all__ = ["SKABaseDevice", "main"]
@@ -50,15 +48,18 @@ class SKABaseDevice(with_metaclass(DeviceMeta, Device)):
     # PROTECTED REGION ID(SKABaseDevice.class_variable) ENABLED START #
 
     def _init_syslog(self):
+        self.formatter = logging.Formatter('%(name)s: %(levelname)s %(module)s %(message)r')
         try:
             self.logger = logging.getLogger(__name__)
-            #self.syslogs = SysLogHandler(address='/dev/log', facility='syslog')
+            # self.syslogs = SysLogHandler(address='/dev/log', facility='syslog')
             self.syslogs = SysLogHandler(address='/var/run/rsyslog/dev/log', facility='syslog')
-            self.formatter = logging.Formatter('%(name)s: %(levelname)s %(module)s %(message)r')
             self.syslogs.setFormatter(self.formatter)
             self.logger.addHandler(self.syslogs)
-        except Exception:
-            self.error_stream("Syslog cannot be initialized:")
+        except EnvironmentError as ex:
+            log_file_name = self.__class__.__name__
+            log_file_name += ".log"
+            self.filehandler = WatchedFileHandler(log_file_name, 'a', None, False)
+            self.logger.addHandler(self.filehandler)
 
     def _get_device_json(self, args_dict):
         """
@@ -385,6 +386,8 @@ class SKABaseDevice(with_metaclass(DeviceMeta, Device)):
         Device.init_device(self)
         # PROTECTED REGION ID(SKABaseDevice.init_device) ENABLED START #
 
+        # Initialize logging
+        logging.basicConfig()
         # Start sysLogHandler
         self._init_syslog()
 

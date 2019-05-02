@@ -62,6 +62,7 @@ run tests:
     - echo $(ls -d ./dist/*.whl | grep $CI_COMMIT_SHORT_SHA)
     - pip3 install -U $(ls -d ./dist/*.whl | grep $CI_COMMIT_SHORT_SHA)
     - make test
+    - scripts/validate-metadata.sh
 
 publish to nexus:
   stage: publish

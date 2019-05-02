@@ -80,7 +80,7 @@ services:
       sh -c "wait-for-it.sh ${TANGO_HOST} --timeout=30 --strict --
              tango_admin --add-server SKABaseDevice/01 SKABaseDevice ska/basedevice/01 &&\
              sudo ln -sf /var/run/rsyslog/dev/log /dev/log &&\
-             /venv/bin/python /app/skabase/SKABaseDevice/SKABaseDevice.py 01"
+             /venv/bin/python -u /app/skabase/SKABaseDevice/SKABaseDevice.py 01"
     volumes_from:
       - rsyslog-lmcbaseclasses:rw
 
@@ -97,7 +97,7 @@ services:
       sh -c "wait-for-it.sh ${TANGO_HOST} --timeout=30 --strict --
              tango_admin --add-server SKAAlarmHandler/01 SKAAlarmhandler ska/alarmhandler/01 &&\
              sudo ln -sf /var/run/rsyslog/dev/log /dev/log &&\
-             /venv/bin/python /app/skabase/SKAAlarmHandler/SKAAlarmHandler.py 01"
+             /venv/bin/python -u /app/skabase/SKAAlarmHandler/SKAAlarmHandler.py 01"
     volumes_from:
       - rsyslog-lmcbaseclasses:rw
 
@@ -114,7 +114,7 @@ services:
       sh -c "wait-for-it.sh ${TANGO_HOST} --timeout=30 --strict --
              tango_admin --add-server SKACapability/01 SKACapability ska/capability/01 &&\
              sudo ln -sf /var/run/rsyslog/dev/log /dev/log &&\
-             /venv/bin/python /app/skabase/SKACapability/SKACapability.py 01"
+             /venv/bin/python -u /app/skabase/SKACapability/SKACapability.py 01"
     volumes_from:
       - rsyslog-lmcbaseclasses:rw
 
@@ -131,7 +131,7 @@ services:
       sh -c "wait-for-it.sh ${TANGO_HOST} --timeout=30 --strict --
              tango_admin --add-server SKALogger/01 SKALogger ska/logger/01 &&\
              sudo ln -sf /var/run/rsyslog/dev/log /dev/log &&\
-             /venv/bin/python /app/skabase/SKALogger/SKALogger.py 01"
+             /venv/bin/python -u /app/skabase/SKALogger/SKALogger.py 01"
     volumes_from:
       - rsyslog-lmcbaseclasses:rw
 
@@ -148,7 +148,7 @@ services:
       sh -c "wait-for-it.sh ${TANGO_HOST} --timeout=30 --strict --
              tango_admin --add-server SKAMaster/01 SKAMaster ska/master/01 &&\
              sudo ln -sf /var/run/rsyslog/dev/log /dev/log &&\
-             /venv/bin/python /app/skabase/SKAMaster/SKAMaster.py 01"
+             /venv/bin/python -u /app/skabase/SKAMaster/SKAMaster.py 01"
     volumes_from:
       - rsyslog-lmcbaseclasses:rw
 
@@ -165,7 +165,7 @@ services:
       sh -c "wait-for-it.sh ${TANGO_HOST} --timeout=30 --strict --
              tango_admin --add-server SKAObsDevice/01 SKAObsDevice ska/obsdevice/01 &&\
              sudo ln -sf /var/run/rsyslog/dev/log /dev/log &&\
-             /venv/bin/python /app/skabase/SKAObsDevice/SKAObsDevice.py 01"
+             /venv/bin/python -u /app/skabase/SKAObsDevice/SKAObsDevice.py 01"
     volumes_from:
       - rsyslog-lmcbaseclasses:rw
 
@@ -182,7 +182,7 @@ services:
       sh -c "wait-for-it.sh ${TANGO_HOST} --timeout=30 --strict --
              tango_admin --add-server SKASubarray/01 SKASubarray ska/subarray/01 &&\
              sudo ln -sf /var/run/rsyslog/dev/log /dev/log &&\
-             /venv/bin/python /app/skabase/SKASubarray/SKASubarray.py 01"
+             /venv/bin/python -u /app/skabase/SKASubarray/SKASubarray.py 01"
     volumes_from:
       - rsyslog-lmcbaseclasses:rw
 
@@ -199,7 +199,7 @@ services:
       sh -c "wait-for-it.sh ${TANGO_HOST} --timeout=30 --strict --
              tango_admin --add-server SKATelState/01 SKATelState ska/telstate/01 &&\
              sudo ln -sf /var/run/rsyslog/dev/log /dev/log &&\
-            /venv/bin/python /app/skabase/SKATelState/SKATelState.py 01"
+            /venv/bin/python -u /app/skabase/SKATelState/SKATelState.py 01"
     volumes_from:
       - rsyslog-lmcbaseclasses:rw
 
@@ -216,6 +216,6 @@ services:
       sh -c "wait-for-it.sh ${TANGO_HOST} --timeout=30 --strict --
              tango_admin --add-server SKATestDevice/01 SKATestDevice logger/test/1 &&\
              sudo ln -sf /var/run/rsyslog/dev/log /dev/log &&\
-             /venv/bin/python /app/skabase/SKATestDevice/SKATestDevice.py 01"
+             /venv/bin/python -u /app/skabase/SKATestDevice/SKATestDevice.py 01"
     volumes_from:
       - rsyslog-lmcbaseclasses:rw

@@ -115,7 +115,7 @@ class SKALogger(with_metaclass(DeviceMeta, SKABaseDevice)):
             argin[5] : the thread identifier (i.e. the thread from which the log request comes from)
 
         :returns: DevString.
-            Returns the log message when successful. None if fail.
+            Returns the log message when successful. Empty string if fail.
         """
         log_level = argin[1]
         log_source = argin[2]

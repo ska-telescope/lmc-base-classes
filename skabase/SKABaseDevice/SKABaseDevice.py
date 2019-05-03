@@ -43,6 +43,7 @@ logging.basicConfig()
 
 __all__ = ["SKABaseDevice", "main"]
 
+
 class SKABaseDevice(with_metaclass(DeviceMeta, Device)):
     """
     A generic base device for SKA.
@@ -52,13 +53,13 @@ class SKABaseDevice(with_metaclass(DeviceMeta, Device)):
     def _init_syslog(self):
         try:
             self.logger = logging.getLogger(__name__)
-            #self.syslogs = SysLogHandler(address='/dev/log', facility='syslog')
-            self.syslogs = SysLogHandler(address='/var/run/rsyslog/dev/log', facility='syslog')
+            self.syslogs = SysLogHandler(address='/dev/log', facility='syslog')
+            #self.syslogs = SysLogHandler(address='/var/run/rsyslog/dev/log', facility='syslog')
             self.formatter = logging.Formatter('%(name)s: %(levelname)s %(module)s %(message)r')
             self.syslogs.setFormatter(self.formatter)
             self.logger.addHandler(self.syslogs)
         except Exception:
-            self.error_stream("Syslog cannot be initialized:")
+            self.error_stream("Syslog cannot be initialized")
 
     def _get_device_json(self, args_dict):
         """
@@ -119,6 +120,7 @@ class SKABaseDevice(with_metaclass(DeviceMeta, Device)):
         ### Can this not be known through self which is a Device
         commands = []
         device_proxy = DeviceProxy(self.get_name())
+        print("Device Proxy is:", device_proxy)
         cmd_config_list = device_proxy.command_list_query()
         for device_cmd_config in cmd_config_list:
             commands.append(get_dp_command(
@@ -206,6 +208,7 @@ class SKABaseDevice(with_metaclass(DeviceMeta, Device)):
 
     def dev_logging(self, dev_log_msg, dev_log_level):
         # Element Level Logging
+        print("devLogMsg is: ", dev_log_msg)
         if self._element_logging_level >= int(tango.LogLevel.LOG_FATAL) and dev_log_level == int(
                 tango.LogLevel.LOG_FATAL):
             self.fatal_stream(dev_log_msg)

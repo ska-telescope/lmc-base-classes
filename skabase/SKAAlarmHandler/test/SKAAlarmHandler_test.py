@@ -56,19 +56,19 @@ class TestSKAAlarmHandler(object):
 
     # PROTECTED REGION ID(SKAAlarmHandler.test_State_decorators) ENABLED START #
     # PROTECTED REGION END #    //  SKAAlarmHandler.test_State_decorators
-    def test_State(self, tango_context):
-        """Test for State"""
-        # PROTECTED REGION ID(SKAAlarmHandler.test_State) ENABLED START #
-        assert tango_context.device.State() == DevState.UNKNOWN
-        # PROTECTED REGION END #    //  SKAAlarmHandler.test_State
-
-    # PROTECTED REGION ID(SKAAlarmHandler.test_Status_decorators) ENABLED START #
-    # PROTECTED REGION END #    //  SKAAlarmHandler.test_Status_decorators
-    def test_Status(self, tango_context):
-        """Test for Status"""
-        # PROTECTED REGION ID(SKAAlarmHandler.test_Status) ENABLED START #
-        assert tango_context.device.Status() == "The device is in UNKNOWN state."
-        # PROTECTED REGION END #    //  SKAAlarmHandler.test_Status
+    # def test_State(self, tango_context):
+    #     """Test for State"""
+    #     # PROTECTED REGION ID(SKAAlarmHandler.test_State) ENABLED START #
+    #     assert tango_context.device.State() == DevState.UNKNOWN
+    #     # PROTECTED REGION END #    //  SKAAlarmHandler.test_State
+    #
+    # # PROTECTED REGION ID(SKAAlarmHandler.test_Status_decorators) ENABLED START #
+    # # PROTECTED REGION END #    //  SKAAlarmHandler.test_Status_decorators
+    # def test_Status(self, tango_context):
+    #     """Test for Status"""
+    #     # PROTECTED REGION ID(SKAAlarmHandler.test_Status) ENABLED START #
+    #     assert tango_context.device.Status() == "The device is in UNKNOWN state."
+    #     # PROTECTED REGION END #    //  SKAAlarmHandler.test_Status
 
     # PROTECTED REGION ID(SKAAlarmHandler.test_GetAlarmRule_decorators) ENABLED START #
     # PROTECTED REGION END #    //  SKAAlarmHandler.test_GetAlarmRule_decorators
@@ -112,11 +112,11 @@ class TestSKAAlarmHandler(object):
 
     # PROTECTED REGION ID(SKAAlarmHandler.test_Reset_decorators) ENABLED START #
     # PROTECTED REGION END #    //  SKAAlarmHandler.test_Reset_decorators
-    def test_Reset(self, tango_context):
-        """Test for Reset"""
-        # PROTECTED REGION ID(SKAAlarmHandler.test_Reset) ENABLED START #
-        assert tango_context.device.Reset() == None
-        # PROTECTED REGION END #    //  SKAAlarmHandler.test_Reset
+    # def test_Reset(self, tango_context):
+    #     """Test for Reset"""
+    #     # PROTECTED REGION ID(SKAAlarmHandler.test_Reset) ENABLED START #
+    #     assert tango_context.device.Reset() == None
+    #     # PROTECTED REGION END #    //  SKAAlarmHandler.test_Reset
 
     # PROTECTED REGION ID(SKAAlarmHandler.test_GetVersionInfo_decorators) ENABLED START #
     # PROTECTED REGION END #    //  SKAAlarmHandler.test_GetVersionInfo_decorators
@@ -191,69 +191,69 @@ class TestSKAAlarmHandler(object):
         assert (re.match(versionIdPattern, tango_context.device.versionId)) != None
         # PROTECTED REGION END #    //  SKAAlarmHandler.test_versionId
 
-    # PROTECTED REGION ID(SKAAlarmHandler.test_centralLoggingLevel_decorators) ENABLED START #
-    # PROTECTED REGION END #    //  SKAAlarmHandler.test_centralLoggingLevel_decorators
-    def test_centralLoggingLevel(self, tango_context):
-        """Test for centralLoggingLevel"""
-        # PROTECTED REGION ID(SKAAlarmHandler.test_centralLoggingLevel) ENABLED START #
-        assert tango_context.device.centralLoggingLevel == 0
-        # PROTECTED REGION END #    //  SKAAlarmHandler.test_centralLoggingLevel
-
-    # PROTECTED REGION ID(SKAAlarmHandler.test_elementLoggingLevel_decorators) ENABLED START #
-    # PROTECTED REGION END #    //  SKAAlarmHandler.test_elementLoggingLevel_decorators
-    def test_elementLoggingLevel(self, tango_context):
-        """Test for elementLoggingLevel"""
-        # PROTECTED REGION ID(SKAAlarmHandler.test_elementLoggingLevel) ENABLED START #
-        assert tango_context.device.elementLoggingLevel == 0
-        # PROTECTED REGION END #    //  SKAAlarmHandler.test_elementLoggingLevel
-
-    # PROTECTED REGION ID(SKAAlarmHandler.test_storageLoggingLevel_decorators) ENABLED START #
-    # PROTECTED REGION END #    //  SKAAlarmHandler.test_storageLoggingLevel_decorators
-    def test_storageLoggingLevel(self, tango_context):
-        """Test for storageLoggingLevel"""
-        # PROTECTED REGION ID(SKAAlarmHandler.test_storageLoggingLevel) ENABLED START #
-        assert tango_context.device.storageLoggingLevel == 0
-        # PROTECTED REGION END #    //  SKAAlarmHandler.test_storageLoggingLevel
-
-    # PROTECTED REGION ID(SKAAlarmHandler.test_healthState_decorators) ENABLED START #
-    # PROTECTED REGION END #    //  SKAAlarmHandler.test_healthState_decorators
-    def test_healthState(self, tango_context):
-        """Test for healthState"""
-        # PROTECTED REGION ID(SKAAlarmHandler.test_healthState) ENABLED START #
-        assert tango_context.device.healthState == 0
-        # PROTECTED REGION END #    //  SKAAlarmHandler.test_healthState
-
-    # PROTECTED REGION ID(SKAAlarmHandler.test_adminMode_decorators) ENABLED START #
-    # PROTECTED REGION END #    //  SKAAlarmHandler.test_adminMode_decorators
-    def test_adminMode(self, tango_context):
-        """Test for adminMode"""
-        # PROTECTED REGION ID(SKAAlarmHandler.test_adminMode) ENABLED START #
-        assert tango_context.device.adminMode == 0
-        # PROTECTED REGION END #    //  SKAAlarmHandler.test_adminMode
-
-    # PROTECTED REGION ID(SKAAlarmHandler.test_controlMode_decorators) ENABLED START #
-    # PROTECTED REGION END #    //  SKAAlarmHandler.test_controlMode_decorators
-    def test_controlMode(self, tango_context):
-        """Test for controlMode"""
-        # PROTECTED REGION ID(SKAAlarmHandler.test_controlMode) ENABLED START #
-        assert tango_context.device.controlMode == 0
-        # PROTECTED REGION END #    //  SKAAlarmHandler.test_controlMode
-
-    # PROTECTED REGION ID(SKAAlarmHandler.test_simulationMode_decorators) ENABLED START #
-    # PROTECTED REGION END #    //  SKAAlarmHandler.test_simulationMode_decorators
-    def test_simulationMode(self, tango_context):
-        """Test for simulationMode"""
-        # PROTECTED REGION ID(SKAAlarmHandler.test_simulationMode) ENABLED START #
-        assert tango_context.device.simulationMode == False
-        # PROTECTED REGION END #    //  SKAAlarmHandler.test_simulationMode
-
-    # PROTECTED REGION ID(SKAAlarmHandler.test_testMode_decorators) ENABLED START #
-    # PROTECTED REGION END #    //  SKAAlarmHandler.test_testMode_decorators
-    def test_testMode(self, tango_context):
-        """Test for testMode"""
-        # PROTECTED REGION ID(SKAAlarmHandler.test_testMode) ENABLED START #
-        assert tango_context.device.testMode == ''
-        # PROTECTED REGION END #    //  SKAAlarmHandler.test_testMode
+    # # PROTECTED REGION ID(SKAAlarmHandler.test_centralLoggingLevel_decorators) ENABLED START #
+    # # PROTECTED REGION END #    //  SKAAlarmHandler.test_centralLoggingLevel_decorators
+    # def test_centralLoggingLevel(self, tango_context):
+    #     """Test for centralLoggingLevel"""
+    #     # PROTECTED REGION ID(SKAAlarmHandler.test_centralLoggingLevel) ENABLED START #
+    #     assert tango_context.device.centralLoggingLevel == 0
+    #     # PROTECTED REGION END #    //  SKAAlarmHandler.test_centralLoggingLevel
+    #
+    # # PROTECTED REGION ID(SKAAlarmHandler.test_elementLoggingLevel_decorators) ENABLED START #
+    # # PROTECTED REGION END #    //  SKAAlarmHandler.test_elementLoggingLevel_decorators
+    # def test_elementLoggingLevel(self, tango_context):
+    #     """Test for elementLoggingLevel"""
+    #     # PROTECTED REGION ID(SKAAlarmHandler.test_elementLoggingLevel) ENABLED START #
+    #     assert tango_context.device.elementLoggingLevel == 0
+    #     # PROTECTED REGION END #    //  SKAAlarmHandler.test_elementLoggingLevel
+    #
+    # # PROTECTED REGION ID(SKAAlarmHandler.test_storageLoggingLevel_decorators) ENABLED START #
+    # # PROTECTED REGION END #    //  SKAAlarmHandler.test_storageLoggingLevel_decorators
+    # def test_storageLoggingLevel(self, tango_context):
+    #     """Test for storageLoggingLevel"""
+    #     # PROTECTED REGION ID(SKAAlarmHandler.test_storageLoggingLevel) ENABLED START #
+    #     assert tango_context.device.storageLoggingLevel == 0
+    #     # PROTECTED REGION END #    //  SKAAlarmHandler.test_storageLoggingLevel
+    #
+    # # PROTECTED REGION ID(SKAAlarmHandler.test_healthState_decorators) ENABLED START #
+    # # PROTECTED REGION END #    //  SKAAlarmHandler.test_healthState_decorators
+    # def test_healthState(self, tango_context):
+    #     """Test for healthState"""
+    #     # PROTECTED REGION ID(SKAAlarmHandler.test_healthState) ENABLED START #
+    #     assert tango_context.device.healthState == 0
+    #     # PROTECTED REGION END #    //  SKAAlarmHandler.test_healthState
+    #
+    # # PROTECTED REGION ID(SKAAlarmHandler.test_adminMode_decorators) ENABLED START #
+    # # PROTECTED REGION END #    //  SKAAlarmHandler.test_adminMode_decorators
+    # def test_adminMode(self, tango_context):
+    #     """Test for adminMode"""
+    #     # PROTECTED REGION ID(SKAAlarmHandler.test_adminMode) ENABLED START #
+    #     assert tango_context.device.adminMode == 0
+    #     # PROTECTED REGION END #    //  SKAAlarmHandler.test_adminMode
+    #
+    # # PROTECTED REGION ID(SKAAlarmHandler.test_controlMode_decorators) ENABLED START #
+    # # PROTECTED REGION END #    //  SKAAlarmHandler.test_controlMode_decorators
+    # def test_controlMode(self, tango_context):
+    #     """Test for controlMode"""
+    #     # PROTECTED REGION ID(SKAAlarmHandler.test_controlMode) ENABLED START #
+    #     assert tango_context.device.controlMode == 0
+    #     # PROTECTED REGION END #    //  SKAAlarmHandler.test_controlMode
+    #
+    # # PROTECTED REGION ID(SKAAlarmHandler.test_simulationMode_decorators) ENABLED START #
+    # # PROTECTED REGION END #    //  SKAAlarmHandler.test_simulationMode_decorators
+    # def test_simulationMode(self, tango_context):
+    #     """Test for simulationMode"""
+    #     # PROTECTED REGION ID(SKAAlarmHandler.test_simulationMode) ENABLED START #
+    #     assert tango_context.device.simulationMode == False
+    #     # PROTECTED REGION END #    //  SKAAlarmHandler.test_simulationMode
+    #
+    # # PROTECTED REGION ID(SKAAlarmHandler.test_testMode_decorators) ENABLED START #
+    # # PROTECTED REGION END #    //  SKAAlarmHandler.test_testMode_decorators
+    # def test_testMode(self, tango_context):
+    #     """Test for testMode"""
+    #     # PROTECTED REGION ID(SKAAlarmHandler.test_testMode) ENABLED START #
+    #     assert tango_context.device.testMode == ''
+    #     # PROTECTED REGION END #    //  SKAAlarmHandler.test_testMode
 
     # PROTECTED REGION ID(SKAAlarmHandler.test_activeAlerts_decorators) ENABLED START #
     # PROTECTED REGION END #    //  SKAAlarmHandler.test_activeAlerts_decorators

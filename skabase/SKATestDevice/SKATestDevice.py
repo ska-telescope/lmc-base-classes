@@ -4,7 +4,6 @@
 #
 #
 #
-
 """ SKATestDevice
 
 A generic Test device for testing SKA base class functionalities.
@@ -15,7 +14,6 @@ import os
 import sys
 import json
 from future.utils import with_metaclass
-
 
 # Tango imports
 import tango
@@ -28,12 +26,11 @@ from skabase import release
 from skabase.auxiliary.utils import (exception_manager, convert_api_value, coerce_value)
 from SKABaseDevice import SKABaseDevice
 
-
 file_path = os.path.dirname(os.path.abspath(__file__))
 basedevice_path = os.path.abspath(os.path.join(file_path, os.pardir)) + "/SKABaseDevice"
 sys.path.insert(0, basedevice_path)
 
-# PROTECTED REGION END #    //  SKATestDevice.additionnal_import
+# PROTECTED REGION END #    //  SKATestDevice.additionnal_imports
 
 __all__ = ["SKATestDevice", "main"]
 

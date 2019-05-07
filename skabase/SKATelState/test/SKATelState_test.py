@@ -24,7 +24,6 @@ sys.path.insert(0, os.path.abspath(path))
 # PROTECTED REGION ID(SKATelState.test_additional_imports) ENABLED START #
 # PROTECTED REGION END #    //  SKATelState.test_additional_imports
 
-
 # Device test case
 @pytest.mark.usefixtures("tango_context", "initialize_device")
 # PROTECTED REGION ID(SKATelState.test_SKATelState_decorators) ENABLED START #

@@ -4,18 +4,17 @@
 #
 #
 #
-
 """ SKACapability
 
 Capability handling device
 """
 # PROTECTED REGION ID(SKACapability.additionnal_import) ENABLED START #
-# standard import
+# Standard import
 import os
 import sys
 from future.utils import with_metaclass
 
-# tango imports
+# Tango imports
 from tango import DebugIt
 from tango.server import run, DeviceMeta, attribute, command, device_property
 
@@ -26,7 +25,7 @@ file_path = os.path.dirname(os.path.abspath(__file__))
 obs_device_path = os.path.abspath(os.path.join(file_path, os.pardir)) + "/SKAObsDevice"
 sys.path.insert(0, obs_device_path)
 from SKAObsDevice import SKAObsDevice
-# PROTECTED REGION END #    //  SKACapability.additionnal_import
+# PROTECTED REGION END #    //  SKACapability.additionnal_imports
 
 __all__ = ["SKACapability", "main"]
 

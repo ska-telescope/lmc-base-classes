@@ -8,8 +8,7 @@
 #########################################################################################
 """Contain the tests for the SKALogger."""
 
-
-# standard imports
+# Standard imports
 import sys
 import os
 

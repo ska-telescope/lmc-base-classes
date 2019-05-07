@@ -8,18 +8,17 @@
 """A generic base device for SKA. It exposes the generic attributes,
 properties and commands of an SKA device.
 """
-
 # PROTECTED REGION ID(SKABaseDevice.additionnal_import) ENABLED START #
-# standard imports
+# Standard imports
 import os
 import sys
+import json
 import logging
 import logging.handlers
 from logging.handlers import SysLogHandler
-import json
 from future.utils import with_metaclass
 
-# tango imports
+# Tango imports
 import tango
 from tango import DebugIt
 from tango.server import run, Device, DeviceMeta, attribute, command, device_property
@@ -28,7 +27,6 @@ from tango import DeviceProxy, DevFailed
 
 # SKA specific imports
 from skabase import release
-
 file_path = os.path.dirname(os.path.abspath(__file__))
 auxiliary_path = os.path.abspath(os.path.join(file_path, os.pardir)) + "/auxiliary"
 sys.path.insert(0, auxiliary_path)
@@ -42,7 +40,7 @@ from faults import GroupDefinitionsError
 
 # Initialize logging
 logging.basicConfig()
-# PROTECTED REGION END #    //  SKABaseDevice.additionnal_import
+# PROTECTED REGION END #    //  SKABaseDevice.additionnal_imports
 
 __all__ = ["SKABaseDevice", "main"]
 
@@ -107,7 +105,7 @@ class SKABaseDevice(with_metaclass(DeviceMeta, Device)):
         :param required:
         :return: Dictionary containing passed arguments.
         """
-        args_dict = defaults.copy() if defaults else {}
+        args_dict = defaults.copy() if defaults else {}configurepoll
         try:
             if argin:
                 args_dict.update(json.loads(argin))
@@ -149,10 +147,9 @@ class SKABaseDevice(with_metaclass(DeviceMeta, Device)):
         # Cannot loop over the attr_list object (not python-wrapped): raises TypeError:
         # No to_python (by-value) converter found for C++ type: Tango::Attribute*
         # for index in range(len(attr_list)):
-        for index in enumerate(attr_list):
+        for index in range(len(attr_list)):
             attrib = attr_list[index]
             attr_name = attrib.get_name()
-
             if attribute_name is not None:
                 if attr_name != attribute_name:
                     continue

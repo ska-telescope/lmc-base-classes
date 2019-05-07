@@ -8,7 +8,7 @@
 #########################################################################################
 """Contain the tests for the SKAMaster."""
 
-# standard imports
+# Standard imports
 import sys
 import os
 

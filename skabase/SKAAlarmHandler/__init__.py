@@ -4,7 +4,6 @@
 #
 #
 #
-
 """SKAAlarmHandler
 
 A generic base device for Alarms for SKA. It exposes SKA alarms and SKA alerts as TANGO attributes.

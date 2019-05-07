@@ -10,11 +10,12 @@
 A master test
 """
 # PROTECTED REGION ID(SKAMaster.additionnal_import) ENABLED START #
+# Standard imports
 import os
 import sys
 from future.utils import with_metaclass
 
-# tango imports
+# Tango imports
 from tango import DebugIt
 from tango.server import run, DeviceMeta, attribute, command, device_property
 
@@ -27,7 +28,7 @@ basedevice_path = os.path.abspath(os.path.join(file_path, os.pardir)) + "/SKABas
 sys.path.insert(0, basedevice_path)
 from SKABaseDevice import SKABaseDevice
 
-# PROTECTED REGION END #    //  SKAMaster.additionnal_import
+# PROTECTED REGION END #    //  SKAMaster.additionnal_imports
 
 __all__ = ["SKAMaster", "main"]
 

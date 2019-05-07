@@ -4,7 +4,6 @@
 #
 #
 #
-
 """SKABaseDevice
 
 A generic base device for SKA. It exposes the attributes, properties and commands of

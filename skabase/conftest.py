@@ -8,11 +8,7 @@ import importlib
 import mock
 import pytest
 
-
-
-
 from tango.test_context import DeviceTestContext
-
 
 @pytest.fixture(scope="class")
 def tango_context(request):

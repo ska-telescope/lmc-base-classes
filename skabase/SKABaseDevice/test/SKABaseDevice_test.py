@@ -9,23 +9,20 @@
 """Contain the tests for the SKABASE."""
 
 # PROTECTED REGION ID(SKABaseDevice.test_additional_imports) ENABLED START #
-
+# Standard imports
 import sys
 import os
 import re
 import pytest
 from tango import DevState
 
+# Imports
+
 # Path
 path = os.path.join(os.path.dirname(__file__), os.pardir)
 sys.path.insert(0, os.path.abspath(path))
 
-# Imports
-
-
 # PROTECTED REGION END #    //  SKABaseDevice.test_additional_imports
-
-
 # Device test case
 @pytest.mark.usefixtures("tango_context", "initialize_device")
 # PROTECTED REGION ID(SKABaseDevice.test_SKABaseDevice_decorators) ENABLED START #

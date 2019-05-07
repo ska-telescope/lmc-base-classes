@@ -4,7 +4,6 @@
 #
 #
 #
-
 """
 Main module of SKABaseDevice
 """

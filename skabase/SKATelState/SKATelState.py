@@ -4,7 +4,6 @@
 #
 #
 #
-
 """ SKATelState
 
 A generic base device for Telescope State for SKA.
@@ -25,7 +24,7 @@ from SKABaseDevice import SKABaseDevice
 file_path = os.path.dirname(os.path.abspath(__file__))
 basedevice_path = os.path.abspath(os.path.join(file_path, os.pardir)) + "/SKABaseDevice"
 sys.path.insert(0, basedevice_path)
-# PROTECTED REGION END #    //  SKATelState.additionnal_import
+# PROTECTED REGION END #    //  SKATelState.additionnal_imports
 
 __all__ = ["SKATelState", "main"]
 

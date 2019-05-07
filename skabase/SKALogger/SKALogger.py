@@ -4,19 +4,18 @@
 #
 #
 #
-
-
 """ SKALogger
 
 A generic base device for Logging for SKA. It enables to view on-line logs through the TANGO Logging Services
 and to store logs using Python logging. It configures the log levels of remote logging for selected devices.
 """
 # PROTECTED REGION ID(SKALogger.additionnal_import) ENABLED START #
-# standard imports
+# Standard imports
 import os
 import sys
 from future.utils import with_metaclass
-# tango imports
+
+# Tango imports
 import tango
 from tango import DebugIt, DeviceProxy
 from tango.server import run, DeviceMeta, command
@@ -28,15 +27,15 @@ basedevice_path = os.path.abspath(os.path.join(file_path, os.pardir)) + "/SKABas
 sys.path.insert(0, basedevice_path)
 from SKABaseDevice import SKABaseDevice
 
-# logger_dict = {}
-# logging.basicConfig()
-# logger = logging.getLogger("SKALogger")
-# logger.setLevel(logging.DEBUG)
-# syslog = SysLogHandler(address='/var/run/rsyslog/dev/log', facility='syslog')
-# formatter = logging.Formatter('%(name)s: %(levelname)s %(module)s %(message)r')
-# syslog.setFormatter(formatter)
-# logger.addHandler(syslog)
-# PROTECTED REGION END #    //  SKALogger.additionnal_import
+logger_dict = {}
+logging.basicConfig()
+logger = logging.getLogger("SKALogger")
+logger.setLevel(logging.DEBUG)
+syslog = SysLogHandler(address='/var/run/rsyslog/dev/log', facility='syslog')
+formatter = logging.Formatter('%(name)s: %(levelname)s %(module)s %(message)r')
+syslog.setFormatter(formatter)
+logger.addHandler(syslog)
+# PROTECTED REGION END #    //  SKALogger.additionnal_imports
 
 __all__ = ["SKALogger", "main"]
 
@@ -72,18 +71,18 @@ class SKALogger(with_metaclass(DeviceMeta, SKABaseDevice)):
 
     def write_storageLoggingLevel(self, value):
         self._storage_logging_level = value
-        # if self._storage_logging_level == int(tango.LogLevel.LOG_FATAL):
-        #     logger.setLevel(logging.FATAL)
-        # elif self._storage_logging_level == int(tango.LogLevel.LOG_ERROR):
-        #     logger.setLevel(logging.ERROR)
-        # elif self._storage_logging_level == int(tango.LogLevel.LOG_WARNING):
-        #     logger.setLevel(logging.WARNING)
-        # elif self._storage_logging_level == int(tango.LogLevel.LOG_INFO):
-        #     logger.setLevel(logging.INFO)
-        # elif self._storage_logging_level == int(tango.LogLevel.LOG_DEBUG):
-        #     logger.setLevel(logging.DEBUG)
-        # else:
-        #     logger.setLevel(logging.DEBUG)
+        if self._storage_logging_level == int(tango.LogLevel.LOG_FATAL):
+            logger.setLevel(logging.FATAL)
+        elif self._storage_logging_level == int(tango.LogLevel.LOG_ERROR):
+            logger.setLevel(logging.ERROR)
+        elif self._storage_logging_level == int(tango.LogLevel.LOG_WARNING):
+            logger.setLevel(logging.WARNING)
+        elif self._storage_logging_level == int(tango.LogLevel.LOG_INFO):
+            logger.setLevel(logging.INFO)
+        elif self._storage_logging_level == int(tango.LogLevel.LOG_DEBUG):
+            logger.setLevel(logging.DEBUG)
+        else:
+            logger.setLevel(logging.DEBUG)
 
         # PROTECTED REGION END #    //  SKALogger.init_device
 

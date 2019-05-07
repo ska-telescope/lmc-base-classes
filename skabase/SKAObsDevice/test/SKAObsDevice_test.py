@@ -8,7 +8,7 @@
 #########################################################################################
 """Contain the tests for the SKAObsDevice."""
 
-# standard imports
+# Standard imports
 import sys
 import os
 
@@ -23,7 +23,6 @@ sys.path.insert(0, os.path.abspath(path))
 
 # PROTECTED REGION ID(SKAObsDevice.test_additional_imports) ENABLED START #
 # PROTECTED REGION END #    //  SKAObsDevice.test_additional_imports
-
 
 # Device test case
 @pytest.mark.usefixtures("tango_context", "initialize_device")

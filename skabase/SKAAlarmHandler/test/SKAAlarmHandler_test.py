@@ -9,7 +9,7 @@
 """Contain the tests for the SKAAlarmHandler."""
 
 
-# standard imports
+# Standard imports
 import sys
 import os
 

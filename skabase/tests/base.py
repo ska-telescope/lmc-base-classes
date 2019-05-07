@@ -5,7 +5,6 @@ from tango import Database, DbDevInfo, DbDatum
 from os.path import join, dirname, realpath
 import sys
 
-
 class DeviceServerBaseTest(TestCase):
     DOMAIN_NAME = 'test'
     REQUIRED_DEVICE_SERVERS = []

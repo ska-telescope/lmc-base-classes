@@ -18,7 +18,6 @@ from contextlib import contextmanager
 from faults import GroupDefinitionsError
 from faults import SKABaseError
 
-
 int_types = {tango._tango.CmdArgType.DevUShort,
              tango._tango.CmdArgType.DevLong,
              tango._tango.CmdArgType.DevInt,

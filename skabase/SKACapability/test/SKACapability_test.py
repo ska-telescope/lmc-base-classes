@@ -8,8 +8,7 @@
 #########################################################################################
 """Contain the tests for the SKACapability."""
 
-
-# standard imports
+# Standard imports
 import sys
 import os
 
@@ -21,9 +20,6 @@ from tango import DevState
 # Path
 path = os.path.join(os.path.dirname(__file__), os.pardir)
 sys.path.insert(0, os.path.abspath(path))
-
-
-
 
 # PROTECTED REGION ID(SKACapability.test_additional_imports) ENABLED START #
 # PROTECTED REGION END #    //  SKACapability.test_additional_imports

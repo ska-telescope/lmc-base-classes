@@ -105,7 +105,7 @@ class SKABaseDevice(with_metaclass(DeviceMeta, Device)):
         :param required:
         :return: Dictionary containing passed arguments.
         """
-        args_dict = defaults.copy() if defaults else {}configurepoll
+        args_dict = defaults.copy() if defaults else {}
         try:
             if argin:
                 args_dict.update(json.loads(argin))

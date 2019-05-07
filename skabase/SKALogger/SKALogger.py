@@ -13,10 +13,13 @@ and to store logs using Python logging. It configures the log levels of remote l
 # Standard imports
 import os
 import sys
+import logging
+from logging.handlers import SysLogHandler
 from future.utils import with_metaclass
 
 # Tango imports
 import tango
+
 from tango import DebugIt, DeviceProxy
 from tango.server import run, DeviceMeta, command
 
@@ -31,7 +34,8 @@ logger_dict = {}
 logging.basicConfig()
 logger = logging.getLogger("SKALogger")
 logger.setLevel(logging.DEBUG)
-syslog = SysLogHandler(address='/var/run/rsyslog/dev/log', facility='syslog')
+# syslog = SysLogHandler(address='/var/run/rsyslog/dev/log', facility='syslog')
+syslog = SysLogHandler(address='/dev/log', facility='syslog')
 formatter = logging.Formatter('%(name)s: %(levelname)s %(module)s %(message)r')
 syslog.setFormatter(formatter)
 logger.addHandler(syslog)

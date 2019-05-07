@@ -10,7 +10,7 @@ import sys
 from datetime import datetime
 
 import tango
-from tango import (DeviceProxy, DbDatum, DevState, DbDevInfo, AttrQuality,
+from tango import (DeviceProxy, DbDatum, DbDevInfo, AttrQuality,
                    AttrWriteType, Except, ErrSeverity)
 from tango import DevState as _DevState
 from contextlib import contextmanager

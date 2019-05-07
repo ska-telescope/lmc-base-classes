@@ -84,7 +84,7 @@ def setup_log_test_device():
     # run test device
     file_path = os.path.dirname(os.path.abspath(__file__))
     testdevice_path = os.path.abspath(os.path.join(file_path, os.curdir)) + "/SKATestDevice/SKATestDevice.py"
-    cmdline = 'python3 ' + testdevice_path + ' ' + '1 &'
+    cmdline = 'python3 ' + testdevice_path + ' ' + '01 &'
     os.system(cmdline)
     time.sleep(3)
     yield setup_log_test_device

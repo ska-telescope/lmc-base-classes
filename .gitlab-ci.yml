@@ -58,6 +58,7 @@ run tests:
   tags:
     - docker-executor
   script:
+    - apt-get -y update
     - apt install -y python3-pip
     - echo $(ls -d ./dist/*.whl | grep $CI_COMMIT_SHORT_SHA)
     - pip3 install -U $(ls -d ./dist/*.whl | grep $CI_COMMIT_SHORT_SHA)

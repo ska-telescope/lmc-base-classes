@@ -81,6 +81,7 @@ class TestSKALogger(object):
         assert tango_context.device.Status() == "The device is in UNKNOWN state."
         # PROTECTED REGION END #    //  SKALogger.test_Status
 
+    #TODO: Commented these test cases for pipeline testing.
     # # PROTECTED REGION ID(SKALogger.test_SetCentralLoggingLevel_decorators) ENABLED START #
     # @pytest.mark.parametrize("logging_level", [int(tango.LogLevel.LOG_INFO)])
     # @pytest.mark.parametrize("logging_target", ["logger/test/1"])

@@ -26,7 +26,7 @@ file_path = os.path.dirname(os.path.abspath(__file__))
 basedevice_path = os.path.abspath(os.path.join(file_path, os.pardir)) + "/SKABaseDevice"
 sys.path.insert(0, basedevice_path)
 from SKABaseDevice import SKABaseDevice
-# PROTECTED REGION END #    //  SKAAlarmHandler.additionnal_imports
+# PROTECTED REGION END #    //  SKAAlarmHandler.additionnal_import
 
 __all__ = ["SKAAlarmHandler", "main"]
 

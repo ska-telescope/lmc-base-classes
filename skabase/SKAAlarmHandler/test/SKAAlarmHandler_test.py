@@ -8,7 +8,6 @@
 #########################################################################################
 """Contain the tests for the SKAAlarmHandler."""
 
-
 # Standard imports
 import sys
 import os
@@ -18,16 +17,15 @@ import re
 import pytest
 from tango import DevState
 
-# PROTECTED REGION ID(SKAAlarmHandler.test_additional_imports) ENABLED START #
 # Path
 path = os.path.join(os.path.dirname(__file__), os.pardir)
 sys.path.insert(0, os.path.abspath(path))
+
+# PROTECTED REGION ID(SKAAlarmHandler.test_additional_imports) ENABLED START #
 # PROTECTED REGION END #    //  SKAAlarmHandler.test_additional_imports
-
-
 # Device test case
-@pytest.mark.usefixtures("tango_context", "initialize_device")
 # PROTECTED REGION ID(SKAAlarmHandler.test_SKAAlarmHandler_decorators) ENABLED START #
+@pytest.mark.usefixtures("tango_context", "initialize_device")
 # PROTECTED REGION END #    //  SKAAlarmHandler.test_SKAAlarmHandler_decorators
 class TestSKAAlarmHandler(object):
     """Test case for packet generation."""

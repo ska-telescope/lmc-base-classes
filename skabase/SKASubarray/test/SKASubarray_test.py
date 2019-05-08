@@ -23,10 +23,9 @@ sys.path.insert(0, os.path.abspath(path))
 
 # PROTECTED REGION ID(SKASubarray.test_additional_imports) ENABLED START #
 # PROTECTED REGION END #    //  SKASubarray.test_additional_imports
-
 # Device test case
-@pytest.mark.usefixtures("tango_context", "initialize_device")
 # PROTECTED REGION ID(SKASubarray.test_SKASubarray_decorators) ENABLED START #
+@pytest.mark.usefixtures("tango_context", "initialize_device")
 # PROTECTED REGION END #    //  SKASubarray.test_SKASubarray_decorators
 class TestSKASubarray(object):
     """Test case for packet generation."""

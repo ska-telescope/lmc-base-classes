@@ -198,7 +198,7 @@ class TestSKABaseDevice(object):
     #     assert attributes == 1
 
     def test__parse_argin(self, tango_context):
-        SKABaseDevice._init_syslog(SKABaseDevice)
+        SKABaseDevice._init_logging(SKABaseDevice)
         result = SKABaseDevice._parse_argin(SKABaseDevice,'{"class":"SKABaseDevice"}')
         assert result == {'class': 'SKABaseDevice'}
 

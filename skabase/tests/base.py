@@ -5,7 +5,6 @@ from tango import Database, DbDevInfo, DbDatum
 from os.path import join, dirname, realpath
 import sys
 
-
 class DeviceServerBaseTest(TestCase):
     DOMAIN_NAME = 'test'
     REQUIRED_DEVICE_SERVERS = []
@@ -63,8 +62,8 @@ class DeviceServerBaseTest(TestCase):
         cls.db = None
 
     @classmethod
-    def add_device_prop(cls,device_ref,properties):
-        for name,value in properties.items():
+    def add_device_prop(cls, device_ref, properties):
+        for name, value in properties.items():
             db_datum = DbDatum()
             db_datum.name = name
             db_datum.value_string.append(value)

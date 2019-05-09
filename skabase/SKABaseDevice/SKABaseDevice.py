@@ -8,35 +8,36 @@
 """A generic base device for SKA. It exposes the generic attributes,
 properties and commands of an SKA device.
 """
-# tango imports
+# PROTECTED REGION ID(SKABaseDevice.additionnal_import) ENABLED START #
+# Standard imports
+import os
+import sys
+import json
+import logging
+import logging.handlers
+from logging.handlers import SysLogHandler
+from logging.handlers import RotatingFileHandler
+from future.utils import with_metaclass
+
+# Tango imports
 import tango
 from tango import DebugIt
 from tango.server import run, Device, DeviceMeta, attribute, command, device_property
 from tango import AttrQuality, AttrWriteType
 from tango import DeviceProxy, DevFailed
-# Additional import
-# PROTECTED REGION ID(SKABaseDevice.additionnal_import) ENABLED START #
-# standard imports
-import os
-import sys
-from future.utils import with_metaclass
-import json
 
 # SKA specific imports
+from skabase import release
 file_path = os.path.dirname(os.path.abspath(__file__))
 auxiliary_path = os.path.abspath(os.path.join(file_path, os.pardir)) + "/auxiliary"
 sys.path.insert(0, auxiliary_path)
-from skabase import release
+
 from utils import (get_dp_command,
                    coerce_value,
                    get_groups_from_json,
                    get_tango_device_type_id)
 
 from faults import GroupDefinitionsError
-import logging
-import logging.handlers
-from logging.handlers import SysLogHandler
-from logging.handlers import RotatingFileHandler
 
 LOG_FILE_SIZE = 1024 * 1024 #Log file size 1MB.
 # PROTECTED REGION END #    //  SKABaseDevice.additionnal_import
@@ -163,10 +164,8 @@ class SKABaseDevice(with_metaclass(DeviceMeta, Device)):
         # Cannot loop over the attr_list object (not python-wrapped): raises TypeError:
         # No to_python (by-value) converter found for C++ type: Tango::Attribute*
         for index in range(len(attr_list)):
-
             attrib = attr_list[index]
             attr_name = attrib.get_name()
-
             if attribute_name is not None:
                 if attr_name != attribute_name:
                     continue
@@ -224,12 +223,30 @@ class SKABaseDevice(with_metaclass(DeviceMeta, Device)):
 
             # Add to return attribute dict
             if (with_metrics and attr_dict['attribute_type'] == 'metric' or
-                  with_attributes and attr_dict['attribute_type'] == 'attribute'):
+                    with_attributes and attr_dict['attribute_type'] == 'attribute'):
                 attributes[attr_name] = attr_dict
 
         return attributes
 
     def dev_logging(self, dev_log_msg, dev_log_level):
+        """
+        This method logs the message to SKA Element Logger, Central Logger and Storage
+        Logger.
+
+        :param dev_log_msg: DevString
+            Message to log
+
+        :param dev_log_level: DevEnum
+            Logging level of the message. The message can have one of the following
+            logging level.
+                LOG_FATAL
+                LOG_ERROR
+                LOG_WARN
+                LOG_INFO
+                LOG_DEBUG
+
+        :return: None
+        """
         # Element Level Logging
         if self._element_logging_level >= int(tango.LogLevel.LOG_FATAL) and dev_log_level == int(
                 tango.LogLevel.LOG_FATAL):
@@ -433,8 +450,7 @@ class SKABaseDevice(with_metaclass(DeviceMeta, Device)):
             self.info_stream("Groups loaded: {}".format(sorted(self.groups.keys())))
 
         except GroupDefinitionsError:
-            self.info_stream("No Groups loaded for device: {}".format(
-                                 self.get_name()))
+            self.info_stream("No Groups loaded for device: {}".format(self.get_name()))
 
         # PROTECTED REGION END #    //  SKABaseDevice.init_device
 
@@ -635,10 +651,7 @@ class SKABaseDevice(with_metaclass(DeviceMeta, Device)):
     # Commands
     # --------
 
-    @command(
-    dtype_out=('str',),
-    doc_out="[ name: EltTelState ]",
-    )
+    @command(dtype_out=('str',), doc_out="[ name: EltTelState ]",)
     @DebugIt()
     def GetVersionInfo(self):
         # PROTECTED REGION ID(SKABaseDevice.GetVersionInfo) ENABLED START #

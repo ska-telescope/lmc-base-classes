@@ -4,7 +4,6 @@
 #
 #
 #
-
 """SKAObsDevice
 
 A generic base device for Observations for SKA. It inherits SKABaseDevice class. Any device implementing

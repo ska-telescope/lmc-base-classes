@@ -4,7 +4,6 @@
 #
 #
 #
-
 """ __main__
 
 Main module of SKATelState device class.

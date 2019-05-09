@@ -4,6 +4,5 @@
 #
 #
 #
-
 from .SKAObsDevice import main
 main()

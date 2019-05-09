@@ -4,12 +4,10 @@
 #
 #
 #
-
 """SKACapability
 
 A Subarray handling device. It exposes the instances of configured capabilities.
 """
-
 __all__ = ["SKACapability", "main"]
 from skabase import release
 from .SKACapability import SKACapability, main

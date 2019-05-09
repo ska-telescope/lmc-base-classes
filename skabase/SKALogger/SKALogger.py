@@ -4,24 +4,22 @@
 #
 #
 #
-
-
 """ SKALogger
 
 A generic base device for Logging for SKA. It enables to view on-line logs through the TANGO Logging Services
 and to store logs using Python logging. It configures the log levels of remote logging for selected devices.
 """
-# tango imports
-import tango
-from tango import DebugIt, DeviceProxy, DevFailed
-from tango.server import run, DeviceMeta, command
-
-# Additional import
 # PROTECTED REGION ID(SKALogger.additionnal_import) ENABLED START #
-from future.utils import with_metaclass
-# standard imports
+# Standard imports
 import os
 import sys
+from future.utils import with_metaclass
+
+# Tango imports
+import tango
+
+from tango import DebugIt, DeviceProxy, DevFailed
+from tango.server import run, DeviceMeta, command
 
 # SKA specific imports
 from skabase import release
@@ -87,12 +85,8 @@ class SKALogger(with_metaclass(DeviceMeta, SKABaseDevice)):
     # Commands
     # --------
 
-    @command(
-    dtype_in=('str',),
-    doc_in="Details of timestamp, logging level, source device and message.",
-    dtype_out='str',
-    doc_out="Returns the logging message."
-    )
+    @command(dtype_in=('str',), doc_in="Details of timestamp, logging level, source device and message.",
+             dtype_out='str', doc_out="Returns the logging message.")
     @DebugIt()
     def Log(self, argin):
         # PROTECTED REGION ID(SKALogger.Log) ENABLED START #
@@ -169,10 +163,7 @@ class SKALogger(with_metaclass(DeviceMeta, SKABaseDevice)):
 
         # PROTECTED REGION END #    //  SKALogger.Log
 
-    @command(
-    dtype_in='DevVarLongStringArray',
-    doc_in="Central logging level for selected devices",
-    )
+    @command(dtype_in='DevVarLongStringArray', doc_in="Central logging level for selected devices",)
     @DebugIt()
     def SetCentralLoggingLevel(self, argin):
         # PROTECTED REGION ID(SKALogger.SetCentralLoggingLevel) ENABLED START #
@@ -190,7 +181,7 @@ class SKALogger(with_metaclass(DeviceMeta, SKABaseDevice)):
         """
         central_logging_level = argin[0][:]
         #To convert the type of log level from numpy.ndarray to list. Needs to fix in PyTango.
-        central_logging_level = central_logging_level.tolist()
+        # central_logging_level = central_logging_level.tolist()
         central_logging_device = argin[1][:]
         i = 0
         while i < len(central_logging_level[:]):
@@ -202,10 +193,7 @@ class SKALogger(with_metaclass(DeviceMeta, SKABaseDevice)):
             i += 1
         # PROTECTED REGION END #    //  SKALogger.SetCentralLoggingLevel
 
-    @command(
-    dtype_in='DevVarLongStringArray',
-    doc_in="Element logging level for selected devices",
-    )
+    @command(dtype_in='DevVarLongStringArray', doc_in="Element logging level for selected devices",)
     @DebugIt()
     def SetElementLoggingLevel(self, argin):
         # PROTECTED REGION ID(SKALogger.SetElementLoggingLevel) ENABLED START #
@@ -223,7 +211,7 @@ class SKALogger(with_metaclass(DeviceMeta, SKABaseDevice)):
         """
         element_logging_level = argin[0][:]
         #To convert the type of log level from numpy.ndarray to list. Needs to fix in PyTango.
-        element_logging_level = element_logging_level.tolist()
+        # element_logging_level = element_logging_level.tolist()
         element_logging_device = argin[1][:]
         i = 0
         while i < len(element_logging_level[:]):
@@ -235,10 +223,7 @@ class SKALogger(with_metaclass(DeviceMeta, SKABaseDevice)):
             i += 1
         # PROTECTED REGION END #    //  SKALogger.SetElementLoggingLevel
 
-    @command(
-    dtype_in='DevVarLongStringArray',
-    doc_in="Storage logging level for selected devices",
-    )
+    @command(dtype_in='DevVarLongStringArray', doc_in="Storage logging level for selected devices",)
     @DebugIt()
     def SetStorageLoggingLevel(self, argin):
         # PROTECTED REGION ID(SKALogger.SetStorageLoggingLevel) ENABLED START #
@@ -256,7 +241,7 @@ class SKALogger(with_metaclass(DeviceMeta, SKABaseDevice)):
         """
         storage_logging_level = argin[0][:]
         #To convert the type of log level from numpy.ndarray to list. Needs to fix in PyTango.
-        storage_logging_level = storage_logging_level.tolist()
+        # storage_logging_level = storage_logging_level.tolist()
         storage_logging_device = argin[1][:]
         i = 0
         while i < len(storage_logging_level[:]):

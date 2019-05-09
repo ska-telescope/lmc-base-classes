@@ -4,8 +4,6 @@
 #
 #
 #
-
-
 """SKALogger
 
 A generic base device for Logging for SKA. It enables to view on-line logs through the TANGO Logging Services

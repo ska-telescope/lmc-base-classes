@@ -10,14 +10,13 @@ import sys
 from datetime import datetime
 
 import tango
-from tango import (DeviceProxy, DbDatum, DevState, DbDevInfo, AttrQuality,
+from tango import (DeviceProxy, DbDatum, DbDevInfo, AttrQuality,
                    AttrWriteType, Except, ErrSeverity)
 from tango import DevState as _DevState
 from contextlib import contextmanager
 
 from faults import GroupDefinitionsError
 from faults import SKABaseError
-
 
 int_types = {tango._tango.CmdArgType.DevUShort,
              tango._tango.CmdArgType.DevLong,
@@ -72,10 +71,9 @@ tango_type_conversion = {tango.CmdArgType.DevUShort.real: 'int',
 
 
 @contextmanager
-def exception_manager(cls, arguments="", callback=None):
+def exception_manager(cls, callback=None):
     try:
         yield
-
     except tango.DevFailed as df:
         # Find caller from the relative point of this executing handler
         curframe = inspect.currentframe()
@@ -94,7 +92,6 @@ def exception_manager(cls, arguments="", callback=None):
         # cls.exception(command_name=class_name + "::" + calframe[2][3],
         #               command_inputs=str(arguments),
         #               message=message)
-
         if callback:
             callback()
 

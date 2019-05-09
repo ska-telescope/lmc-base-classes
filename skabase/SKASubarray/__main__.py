@@ -4,6 +4,5 @@
 #
 #
 #
-
 from .SKASubarray import main
 main()

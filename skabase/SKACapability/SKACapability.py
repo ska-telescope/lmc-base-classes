@@ -4,21 +4,19 @@
 #
 #
 #
-
 """ SKACapability
 
 Capability handling device
 """
-# tango imports
-from tango import DebugIt
-from tango.server import run, DeviceMeta, attribute, command, device_property
-
-# Additional import
 # PROTECTED REGION ID(SKACapability.additionnal_import) ENABLED START #
-# standard import
+# Standard import
 import os
 import sys
 from future.utils import with_metaclass
+
+# Tango imports
+from tango import DebugIt
+from tango.server import run, DeviceMeta, attribute, command, device_property
 
 # SKA specific imports
 from skabase import release
@@ -27,7 +25,7 @@ file_path = os.path.dirname(os.path.abspath(__file__))
 obs_device_path = os.path.abspath(os.path.join(file_path, os.pardir)) + "/SKAObsDevice"
 sys.path.insert(0, obs_device_path)
 from SKAObsDevice import SKAObsDevice
-# PROTECTED REGION END #    //  SKACapability.additionnal_import
+# PROTECTED REGION END #    //  SKACapability.additionnal_imports
 
 __all__ = ["SKACapability", "main"]
 
@@ -139,10 +137,7 @@ class SKACapability(with_metaclass(DeviceMeta, SKAObsDevice)):
     # Commands
     # --------
 
-    @command(
-    dtype_in='uint16',
-    doc_in="The number of instances to configure for this Capability.",
-    )
+    @command(dtype_in='uint16', doc_in="The number of instances to configure for this Capability.",)
     @DebugIt()
     def ConfigureInstances(self, argin):
         # PROTECTED REGION ID(SKACapability.ConfigureInstances) ENABLED START #

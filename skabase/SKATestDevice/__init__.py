@@ -4,12 +4,10 @@
 #
 #
 #
-
 """SKATestDevice
 
 A generic Test device for testing SKA base class functionalities.
 """
-
 from skabase import release
 from .SKATestDevice import SKATestDevice, main
 

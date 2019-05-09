@@ -4,7 +4,6 @@
 #
 #
 #
-
 """SKATelState
 
 A generic base device for Telescope State for SKA.

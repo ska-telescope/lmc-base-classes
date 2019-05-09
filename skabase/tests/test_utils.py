@@ -7,7 +7,6 @@ from skabase.auxiliary.utils import get_groups_from_json
 # TODO: for future use
 # from skabase.auxiliary.faults import GroupDefinitionsError
 
-
 TEST_GROUPS = {
     # Valid groups
     'basic_no_subgroups': {

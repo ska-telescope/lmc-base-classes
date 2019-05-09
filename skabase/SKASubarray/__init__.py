@@ -4,7 +4,6 @@
 #
 #
 #
-
 """SKASubarray
 
 A SubArray handling device. It allows the assigning/releasing of resources into/from Subarray, configuring

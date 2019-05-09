@@ -2,14 +2,13 @@
 A module defining a list of fixture functions that are shared across all the skabase
 tests.
 """
-import mock
-import pytest
-import importlib
 import os
 import time
+import importlib
+import mock
+import pytest
 
 from tango.test_context import DeviceTestContext
-
 
 @pytest.fixture(scope="class")
 def tango_context(request):

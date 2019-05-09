@@ -4,7 +4,6 @@
 #
 #
 #
-
 """SKAMaster
 
 A generic master device for SKA Element Master.

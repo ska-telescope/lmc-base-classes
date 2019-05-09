@@ -36,12 +36,13 @@ from faults import GroupDefinitionsError
 import logging
 import logging.handlers
 from logging.handlers import SysLogHandler
+from logging.handlers import RotatingFileHandler
 
-# Initialize logging
-logging.basicConfig()
+LOG_FILE_SIZE = 1024 * 1024 #Log file size 1MB.
 # PROTECTED REGION END #    //  SKABaseDevice.additionnal_import
 
 __all__ = ["SKABaseDevice", "main"]
+
 
 class SKABaseDevice(with_metaclass(DeviceMeta, Device)):
     """
@@ -49,16 +50,36 @@ class SKABaseDevice(with_metaclass(DeviceMeta, Device)):
     """
     # PROTECTED REGION ID(SKABaseDevice.class_variable) ENABLED START #
 
-    def _init_syslog(self):
+    def _init_logging(self):
+        """
+        This method initializes the logging mechanism. It first tries to create a syslog handler.
+        If syslog is not available then the logs are written to a file.
+
+        :parameter: None.
+
+        :return: None.
+        """
         try:
+            # Initialize logging
+            logging.basicConfig()
             self.logger = logging.getLogger(__name__)
-            #self.syslogs = SysLogHandler(address='/dev/log', facility='syslog')
-            self.syslogs = SysLogHandler(address='/var/run/rsyslog/dev/log', facility='syslog')
-            self.formatter = logging.Formatter('%(name)s: %(levelname)s %(module)s %(message)r')
-            self.syslogs.setFormatter(self.formatter)
-            self.logger.addHandler(self.syslogs)
-        except Exception:
-            self.error_stream("Syslog cannot be initialized:")
+
+            formatter = logging.Formatter(fmt='%(module)s - [%(levelname)-8s] - %(message)s',
+                                          datefmt='%Y-%m-%d %H:%M:%S')
+            # Add syslog handler
+            syslog_handler = SysLogHandler(address='/var/run/rsyslog/dev/log', facility='syslog')
+            syslog_handler.setFormatter(formatter)
+            self.logger.addHandler(syslog_handler)
+        except EnvironmentError:
+            # Add rotaling file handler
+            log_file_name = self.get_name()
+            log_file_name = log_file_name.replace("/", "_")
+            log_file_name += ".log"
+            formatter = logging.Formatter(fmt='%(asctime)s - %(module)s - [%(levelname)-8s] - %(message)s',
+                                          datefmt='%Y-%m-%d %H:%M:%S')
+            filehandler = RotatingFileHandler(log_file_name, 'a', LOG_FILE_SIZE, 2, None, False)
+            filehandler.setFormatter(formatter)
+            self.logger.addHandler(filehandler)
 
     def _get_device_json(self, args_dict):
         """
@@ -91,9 +112,13 @@ class SKABaseDevice(with_metaclass(DeviceMeta, Device)):
     def _parse_argin(self, argin, defaults=None, required=None):
         """
         Parses the argument passed to it and returns them in a dictionary form.
+
         :param argin: The argument to parse
+
         :param defaults:
+
         :param required:
+
         :return: Dictionary containing passed arguments.
         """
         args_dict = defaults.copy() if defaults else {}
@@ -386,7 +411,7 @@ class SKABaseDevice(with_metaclass(DeviceMeta, Device)):
         # PROTECTED REGION ID(SKABaseDevice.init_device) ENABLED START #
 
         # Start sysLogHandler
-        self._init_syslog()
+        self._init_logging()
 
         # Initialize attribute values.
         self._build_state = '{}, {}, {}'.format(release.name, release.version,

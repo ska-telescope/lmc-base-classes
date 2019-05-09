@@ -4,28 +4,24 @@
 #
 #
 #
-
 """ SKAAlarmHandler
 
 A generic base device for Alarms for SKA. It exposes SKA alarms and SKA alerts as TANGO attributes.
 SKA Alarms and SKA/Element Alerts are rules-based configurable conditions that can be defined over multiple
 attribute values and quality factors, and are separate from the "built-in" TANGO attribute alarms.
 """
-
-# tango imports
-from tango import DebugIt
-from tango.server import run, DeviceMeta, attribute, command, device_property
-
-# Additional import
 # PROTECTED REGION ID(SKAAlarmHandler.additionnal_import) ENABLED START #
-#standard import
+# Standard imports
 import os
 import sys
 from future.utils import with_metaclass
 
-# SKA specific imports\
-from skabase import release
+# Tango imports
+from tango import DebugIt
+from tango.server import run, DeviceMeta, attribute, command, device_property
 
+# SKA specific imports
+from skabase import release
 file_path = os.path.dirname(os.path.abspath(__file__))
 basedevice_path = os.path.abspath(os.path.join(file_path, os.pardir)) + "/SKABaseDevice"
 sys.path.insert(0, basedevice_path)
@@ -188,12 +184,7 @@ class SKAAlarmHandler(with_metaclass(DeviceMeta, SKABaseDevice)):
     # Commands
     # --------
 
-    @command(
-    dtype_in='str',
-    doc_in="Alarm name",
-    dtype_out='str',
-    doc_out="JSON string",
-    )
+    @command(dtype_in='str', doc_in="Alarm name", dtype_out='str', doc_out="JSON string",)
     @DebugIt()
     def GetAlarmRule(self, argin):
         # PROTECTED REGION ID(SKAAlarmHandler.GetAlarmRule) ENABLED START #
@@ -205,12 +196,7 @@ class SKAAlarmHandler(with_metaclass(DeviceMeta, SKABaseDevice)):
         return ""
         # PROTECTED REGION END #    //  SKAAlarmHandler.GetAlarmRule
 
-    @command(
-    dtype_in='str',
-    doc_in="Alarm name",
-    dtype_out='str',
-    doc_out="JSON string",
-    )
+    @command(dtype_in='str', doc_in="Alarm name", dtype_out='str', doc_out="JSON string",)
     @DebugIt()
     def GetAlarmData(self, argin):
         # PROTECTED REGION ID(SKAAlarmHandler.GetAlarmData) ENABLED START #
@@ -223,12 +209,7 @@ class SKAAlarmHandler(with_metaclass(DeviceMeta, SKABaseDevice)):
         return ""
         # PROTECTED REGION END #    //  SKAAlarmHandler.GetAlarmData
 
-    @command(
-    dtype_in='str',
-    doc_in="Alarm name",
-    dtype_out='str',
-    doc_out="JSON string",
-    )
+    @command(dtype_in='str', doc_in="Alarm name", dtype_out='str', doc_out="JSON string", )
     @DebugIt()
     def GetAlarmAdditionalInfo(self, argin):
         # PROTECTED REGION ID(SKAAlarmHandler.GetAlarmAdditionalInfo) ENABLED START #
@@ -240,10 +221,7 @@ class SKAAlarmHandler(with_metaclass(DeviceMeta, SKABaseDevice)):
         return ""
         # PROTECTED REGION END #    //  SKAAlarmHandler.GetAlarmAdditionalInfo
 
-    @command(
-    dtype_out='str',
-    doc_out="JSON string",
-    )
+    @command(dtype_out='str', doc_out="JSON string",)
     @DebugIt()
     def GetAlarmStats(self):
         # PROTECTED REGION ID(SKAAlarmHandler.GetAlarmStats) ENABLED START #
@@ -254,10 +232,7 @@ class SKAAlarmHandler(with_metaclass(DeviceMeta, SKABaseDevice)):
         return ""
         # PROTECTED REGION END #    //  SKAAlarmHandler.GetAlarmStats
 
-    @command(
-    dtype_out='str',
-    doc_out="JSON string",
-    )
+    @command(dtype_out='str', doc_out="JSON string",)
     @DebugIt()
     def GetAlertStats(self):
         # PROTECTED REGION ID(SKAAlarmHandler.GetAlertStats) ENABLED START #

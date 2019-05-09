@@ -2,14 +2,13 @@
 A module defining a list of fixture functions that are shared across all the skabase
 tests.
 """
-import mock
-import pytest
-import importlib
 import os
 import time
+import importlib
+import mock
+import pytest
 
 from tango.test_context import DeviceTestContext
-
 
 @pytest.fixture(scope="class")
 def tango_context(request):
@@ -84,7 +83,7 @@ def setup_log_test_device():
     # run test device
     file_path = os.path.dirname(os.path.abspath(__file__))
     testdevice_path = os.path.abspath(os.path.join(file_path, os.curdir)) + "/SKATestDevice/SKATestDevice.py"
-    cmdline = 'python3 ' + testdevice_path + ' ' + '1 &'
+    cmdline = 'python3 ' + testdevice_path + ' ' + '01 &'
     os.system(cmdline)
     time.sleep(3)
     yield setup_log_test_device

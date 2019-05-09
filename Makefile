@@ -2,7 +2,6 @@
 # Project makefile for a LMC Base Classes project. You should normally only need to modify
 # DOCKER_REGISTRY_USER and PROJECT below.
 #
-
 #
 # DOCKER_REGISTRY_HOST, DOCKER_REGISTRY_USER and PROJECT are combined to define
 # the Docker tag for this project. The definition below inherits the standard

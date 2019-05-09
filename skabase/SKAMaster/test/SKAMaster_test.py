@@ -8,21 +8,21 @@
 #########################################################################################
 """Contain the tests for the SKAMaster."""
 
-# Path
+# Standard imports
 import sys
 import os
-path = os.path.join(os.path.dirname(__file__), os.pardir)
-sys.path.insert(0, os.path.abspath(path))
 
 # Imports
 import re
 import pytest
 from tango import DevState
 
+# Path
+path = os.path.join(os.path.dirname(__file__), os.pardir)
+sys.path.insert(0, os.path.abspath(path))
+
 # PROTECTED REGION ID(SKAMaster.test_additional_imports) ENABLED START #
 # PROTECTED REGION END #    //  SKAMaster.test_additional_imports
-
-
 # Device test case
 # PROTECTED REGION ID(SKAMaster.test_SKAMaster_decorators) ENABLED START #
 @pytest.mark.usefixtures("tango_context")
@@ -89,7 +89,7 @@ class TestSKAMaster(object):
     def test_isCapabilityAchievable_failure(self, tango_context):
         """Test for isCapabilityAchievable to test failure condition"""
         # PROTECTED REGION ID(SKAMaster.test_isCapabilityAchievable_failure) ENABLED START #
-        assert tango_context.device.isCapabilityAchievable([[2], ['BAND1']]) == False
+        assert tango_context.device.isCapabilityAchievable([[2], ['BAND1']]) is False
         # PROTECTED REGION END #    //  SKAMaster.test_isCapabilityAchievable_failure
 
         # PROTECTED REGION ID(SKAMaster.test_isCapabilityAchievable_success_decorators) ENABLED START #
@@ -97,7 +97,7 @@ class TestSKAMaster(object):
     def test_isCapabilityAchievable_success(self, tango_context):
         """Test for isCapabilityAchievable to test success condition"""
         # PROTECTED REGION ID(SKAMaster.test_isCapabilityAchievable_success) ENABLED START #
-        assert tango_context.device.isCapabilityAchievable([[1], ['BAND1']]) == True
+        assert tango_context.device.isCapabilityAchievable([[1], ['BAND1']]) is True
         # PROTECTED REGION END #    //  SKAMaster.test_isCapabilityAchievable_success
 
     # PROTECTED REGION ID(SKAMaster.test_Reset_decorators) ENABLED START #
@@ -105,7 +105,7 @@ class TestSKAMaster(object):
     def test_Reset(self, tango_context):
         """Test for Reset"""
         # PROTECTED REGION ID(SKAMaster.test_Reset) ENABLED START #
-        assert tango_context.device.Reset() == None
+        assert tango_context.device.Reset() is None
         # PROTECTED REGION END #    //  SKAMaster.test_Reset
 
 
@@ -214,7 +214,7 @@ class TestSKAMaster(object):
     def test_simulationMode(self, tango_context):
         """Test for simulationMode"""
         # PROTECTED REGION ID(SKAMaster.test_simulationMode) ENABLED START #
-        assert tango_context.device.simulationMode == False
+        assert tango_context.device.simulationMode is False
         # PROTECTED REGION END #    //  SKAMaster.test_simulationMode
 
     # PROTECTED REGION ID(SKAMaster.test_testMode_decorators) ENABLED START #
@@ -240,5 +240,3 @@ class TestSKAMaster(object):
         # PROTECTED REGION ID(SKAMaster.test_availableCapabilities) ENABLED START #
         assert tango_context.device.availableCapabilities == ('BAND1:1', 'BAND2:1')
         # PROTECTED REGION END #    //  SKAMaster.test_availableCapabilities
-
-

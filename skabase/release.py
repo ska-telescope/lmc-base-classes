@@ -4,7 +4,6 @@
 #
 #
 #
-
 """Release information for lmc-base-classes Python Package"""
 
 name = """lmcbaseclasses"""

@@ -8,37 +8,38 @@
 """A generic base device for SKA. It exposes the generic attributes,
 properties and commands of an SKA device.
 """
-# tango imports
+# PROTECTED REGION ID(SKABaseDevice.additionnal_import) ENABLED START #
+# Standard imports
+import os
+import sys
+import json
+import logging
+import logging.handlers
+from logging.handlers import SysLogHandler
+from logging.handlers import RotatingFileHandler
+from future.utils import with_metaclass
+
+# Tango imports
 import tango
 from tango import DebugIt
 from tango.server import run, Device, DeviceMeta, attribute, command, device_property
 from tango import AttrQuality, AttrWriteType
 from tango import DeviceProxy, DevFailed
-# Additional import
-# PROTECTED REGION ID(SKABaseDevice.additionnal_import) ENABLED START #
-# standard imports
-import os
-import sys
-from future.utils import with_metaclass
-import json
 
 # SKA specific imports
+from skabase import release
 file_path = os.path.dirname(os.path.abspath(__file__))
 auxiliary_path = os.path.abspath(os.path.join(file_path, os.pardir)) + "/auxiliary"
 sys.path.insert(0, auxiliary_path)
-from skabase import release
+
 from utils import (get_dp_command,
                    coerce_value,
                    get_groups_from_json,
                    get_tango_device_type_id)
 
 from faults import GroupDefinitionsError
-import logging
-import logging.handlers
-from logging.handlers import SysLogHandler
 
-# Initialize logging
-logging.basicConfig()
+LOG_FILE_SIZE = 1024 * 1024 #Log file size 1MB.
 # PROTECTED REGION END #    //  SKABaseDevice.additionnal_import
 
 __all__ = ["SKABaseDevice", "main"]
@@ -50,16 +51,36 @@ class SKABaseDevice(with_metaclass(DeviceMeta, Device)):
     """
     # PROTECTED REGION ID(SKABaseDevice.class_variable) ENABLED START #
 
-    def _init_syslog(self):
+    def _init_logging(self):
+        """
+        This method initializes the logging mechanism. It first tries to create a syslog handler.
+        If syslog is not available then the logs are written to a file.
+
+        :parameter: None.
+
+        :return: None.
+        """
         try:
+            # Initialize logging
+            logging.basicConfig()
             self.logger = logging.getLogger(__name__)
-            self.syslogs = SysLogHandler(address='/dev/log', facility='syslog')
-            #self.syslogs = SysLogHandler(address='/var/run/rsyslog/dev/log', facility='syslog')
-            self.formatter = logging.Formatter('%(name)s: %(levelname)s %(module)s %(message)r')
-            self.syslogs.setFormatter(self.formatter)
-            self.logger.addHandler(self.syslogs)
-        except Exception:
-            self.error_stream("Syslog cannot be initialized")
+
+            formatter = logging.Formatter(fmt='%(module)s - [%(levelname)-8s] - %(message)s',
+                                          datefmt='%Y-%m-%d %H:%M:%S')
+            # Add syslog handler
+            syslog_handler = SysLogHandler(address='/var/run/rsyslog/dev/log', facility='syslog')
+            syslog_handler.setFormatter(formatter)
+            self.logger.addHandler(syslog_handler)
+        except EnvironmentError:
+            # Add rotaling file handler
+            log_file_name = self.get_name()
+            log_file_name = log_file_name.replace("/", "_")
+            log_file_name += ".log"
+            formatter = logging.Formatter(fmt='%(asctime)s - %(module)s - [%(levelname)-8s] - %(message)s',
+                                          datefmt='%Y-%m-%d %H:%M:%S')
+            filehandler = RotatingFileHandler(log_file_name, 'a', LOG_FILE_SIZE, 2, None, False)
+            filehandler.setFormatter(formatter)
+            self.logger.addHandler(filehandler)
 
     def _get_device_json(self, args_dict):
         """
@@ -92,9 +113,13 @@ class SKABaseDevice(with_metaclass(DeviceMeta, Device)):
     def _parse_argin(self, argin, defaults=None, required=None):
         """
         Parses the argument passed to it and returns them in a dictionary form.
+
         :param argin: The argument to parse
+
         :param defaults:
+
         :param required:
+
         :return: Dictionary containing passed arguments.
         """
         args_dict = defaults.copy() if defaults else {}
@@ -140,10 +165,8 @@ class SKABaseDevice(with_metaclass(DeviceMeta, Device)):
         # Cannot loop over the attr_list object (not python-wrapped): raises TypeError:
         # No to_python (by-value) converter found for C++ type: Tango::Attribute*
         for index in range(len(attr_list)):
-
             attrib = attr_list[index]
             attr_name = attrib.get_name()
-
             if attribute_name is not None:
                 if attr_name != attribute_name:
                     continue
@@ -201,12 +224,30 @@ class SKABaseDevice(with_metaclass(DeviceMeta, Device)):
 
             # Add to return attribute dict
             if (with_metrics and attr_dict['attribute_type'] == 'metric' or
-                  with_attributes and attr_dict['attribute_type'] == 'attribute'):
+                    with_attributes and attr_dict['attribute_type'] == 'attribute'):
                 attributes[attr_name] = attr_dict
 
         return attributes
 
     def dev_logging(self, dev_log_msg, dev_log_level):
+        """
+        This method logs the message to SKA Element Logger, Central Logger and Storage
+        Logger.
+
+        :param dev_log_msg: DevString
+            Message to log
+
+        :param dev_log_level: DevEnum
+            Logging level of the message. The message can have one of the following
+            logging level.
+                LOG_FATAL
+                LOG_ERROR
+                LOG_WARN
+                LOG_INFO
+                LOG_DEBUG
+
+        :return: None
+        """
         # Element Level Logging
         print("devLogMsg is: ", dev_log_msg)
         if self._element_logging_level >= int(tango.LogLevel.LOG_FATAL) and dev_log_level == int(
@@ -389,7 +430,7 @@ class SKABaseDevice(with_metaclass(DeviceMeta, Device)):
         # PROTECTED REGION ID(SKABaseDevice.init_device) ENABLED START #
 
         # Start sysLogHandler
-        self._init_syslog()
+        self._init_logging()
 
         # Initialize attribute values.
         self._build_state = '{}, {}, {}'.format(release.name, release.version,
@@ -411,8 +452,7 @@ class SKABaseDevice(with_metaclass(DeviceMeta, Device)):
             self.info_stream("Groups loaded: {}".format(sorted(self.groups.keys())))
 
         except GroupDefinitionsError:
-            self.info_stream("No Groups loaded for device: {}".format(
-                                 self.get_name()))
+            self.info_stream("No Groups loaded for device: {}".format(self.get_name()))
 
         # PROTECTED REGION END #    //  SKABaseDevice.init_device
 
@@ -613,10 +653,7 @@ class SKABaseDevice(with_metaclass(DeviceMeta, Device)):
     # Commands
     # --------
 
-    @command(
-    dtype_out=('str',),
-    doc_out="[ name: EltTelState ]",
-    )
+    @command(dtype_out=('str',), doc_out="[ name: EltTelState ]",)
     @DebugIt()
     def GetVersionInfo(self):
         # PROTECTED REGION ID(SKABaseDevice.GetVersionInfo) ENABLED START #

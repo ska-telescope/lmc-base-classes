@@ -8,23 +8,23 @@
 #########################################################################################
 """Contain the tests for the SKALogger."""
 
-# Path
+# Standard imports
 import sys
 import os
 
+# Imports
+import re
+import pytest
+from tango import DevState, DeviceProxy
+
+import tango
+
+# Path
 path = os.path.join(os.path.dirname(__file__), os.pardir)
 sys.path.insert(0, os.path.abspath(path))
 
-# Imports
-from tango import DevState, DeviceProxy
-import pytest
-import re
-
-
 # PROTECTED REGION ID(SKALogger.test_additional_imports) ENABLED START #
-import tango
 # PROTECTED REGION END #    //  SKALogger.test_additional_imports
-
 # Device test case
 # PROTECTED REGION ID(SKALogger.test_SKALogger_decorators) ENABLED START #
 @pytest.mark.usefixtures("tango_context", "initialize_device")
@@ -150,7 +150,7 @@ class TestSKALogger(object):
             r'SKALogger, lmcbaseclasses, [0-9].[0-9].[0-9], '
             r'A set of generic base devices for SKA Telescope.')
         versionInfo = tango_context.device.GetVersionInfo()
-        assert (re.match(versionPattern, versionInfo[0])) != None
+        assert (re.match(versionPattern, versionInfo[0])) is not None
         # PROTECTED REGION END #    //  SKALogger.test_GetVersionInfo
 
     # PROTECTED REGION ID(SKALogger.test_Reset_decorators) ENABLED START #
@@ -158,7 +158,7 @@ class TestSKALogger(object):
     def test_Reset(self, tango_context):
         """Test for Reset"""
         # PROTECTED REGION ID(SKALogger.test_Reset) ENABLED START #
-        assert tango_context.device.Reset() == None
+        assert tango_context.device.Reset() is None
         # PROTECTED REGION END #    //  SKALogger.test_Reset
 
     # PROTECTED REGION ID(SKALogger.test_buildState_decorators) ENABLED START #
@@ -169,7 +169,7 @@ class TestSKALogger(object):
         buildPattern = re.compile(
             r'lmcbaseclasses, [0-9].[0-9].[0-9], '
             r'A set of generic base devices for SKA Telescope')
-        assert (re.match(buildPattern, tango_context.device.buildState)) != None
+        assert (re.match(buildPattern, tango_context.device.buildState)) is not None
         # PROTECTED REGION END #    //  SKALogger.test_buildState
 
     # PROTECTED REGION ID(SKALogger.test_versionId_decorators) ENABLED START #
@@ -178,7 +178,7 @@ class TestSKALogger(object):
         """Test for versionId"""
         # PROTECTED REGION ID(SKALogger.test_versionId) ENABLED START #
         versionIdPattern = re.compile(r'[0-9].[0-9].[0-9]')
-        assert (re.match(versionIdPattern, tango_context.device.versionId)) != None
+        assert (re.match(versionIdPattern, tango_context.device.versionId)) is not None
         # PROTECTED REGION END #    //  SKALogger.test_versionId
 
     # PROTECTED REGION ID(SKALogger.test_centralLoggingLevel_decorators) ENABLED START #
@@ -234,7 +234,7 @@ class TestSKALogger(object):
     def test_simulationMode(self, tango_context):
         """Test for simulationMode"""
         # PROTECTED REGION ID(SKALogger.test_simulationMode) ENABLED START #
-        assert tango_context.device.simulationMode == False
+        assert tango_context.device.simulationMode is False
         # PROTECTED REGION END #    //  SKALogger.test_simulationMode
 
     # PROTECTED REGION ID(SKALogger.test_testMode_decorators) ENABLED START #

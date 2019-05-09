@@ -4,24 +4,22 @@
 #
 #
 #
-
 """ SKASubarray
 
 A SubArray handling device. It allows the assigning/releasing of resources into/from Subarray, configuring
 capabilities, and exposes the related information like assigned resources, configured capabilities, etc.
 """
-# tango imports
+# PROTECTED REGION ID(SKASubarray.additionnal_import) ENABLED START #
+# Standard imports
+import os
+import sys
+from future.utils import with_metaclass
+
+# Tango imports
 from tango import DebugIt
 from tango.server import run, DeviceMeta, attribute, command
 from tango.server import device_property
 from tango import DeviceProxy, Except, ErrSeverity, DevState
-
-# Additional import
-# PROTECTED REGION ID(SKASubarray.additionnal_import) ENABLED START #
-# standard imports
-import os
-import sys
-from future.utils import with_metaclass
 
 # SKA specific imports
 from skabase import release
@@ -30,7 +28,7 @@ file_path = os.path.dirname(os.path.abspath(__file__))
 obs_device_path = os.path.abspath(os.path.join(file_path, os.pardir)) + "/SKAObsDevice"
 sys.path.insert(0, obs_device_path)
 from SKAObsDevice import SKAObsDevice
-# PROTECTED REGION END #    //  SKASubarray.additionnal_import
+# PROTECTED REGION END #    //  SKASubarray.additionnal_imports
 
 __all__ = ["SKASubarray", "main"]
 
@@ -300,10 +298,7 @@ class SKASubarray(with_metaclass(DeviceMeta, SKAObsDevice)):
         """Change obsState to ABORTED."""
         # PROTECTED REGION END #    //  SKASubarray.Abort
 
-    @command(
-    dtype_in='DevVarLongStringArray',
-    doc_in="[Number of instances to add][Capability types]",
-    )
+    @command(dtype_in='DevVarLongStringArray', doc_in="[Number of instances to add][Capability types]",)
     @DebugIt()
     def ConfigureCapability(self, argin):
         # PROTECTED REGION ID(SKASubarray.ConfigureCapability) ENABLED START #
@@ -333,10 +328,7 @@ class SKASubarray(with_metaclass(DeviceMeta, SKAObsDevice)):
         self._obs_state = obs_ready
         # PROTECTED REGION END #    //  SKASubarray.ConfigureCapability
 
-    @command(
-    dtype_in='str',
-    doc_in="Capability type",
-    )
+    @command(dtype_in='str', doc_in="Capability type",)
     @DebugIt()
     def DeconfigureAllCapabilities(self, argin):
         # PROTECTED REGION ID(SKASubarray.DeconfigureAllCapabilities) ENABLED START #i
@@ -347,10 +339,7 @@ class SKASubarray(with_metaclass(DeviceMeta, SKAObsDevice)):
         self._configured_capabilities[argin] = 0
         # PROTECTED REGION END #    //  SKASubarray.DeconfigureAllCapabilities
 
-    @command(
-    dtype_in='DevVarLongStringArray',
-    doc_in="[Number of instances to remove][Capability types]",
-    )
+    @command(dtype_in='DevVarLongStringArray', doc_in="[Number of instances to remove][Capability types]",)
     @DebugIt()
     def DeconfigureCapability(self, argin):
         # PROTECTED REGION ID(SKASubarray.DeconfigureCapability) ENABLED START #
@@ -376,12 +365,8 @@ class SKASubarray(with_metaclass(DeviceMeta, SKAObsDevice)):
                     int(capability_instances))
         # PROTECTED REGION END #    //  SKASubarray.DeconfigureCapability
 
-    @command(
-    dtype_in=('str',),
-    doc_in="List of Resources to add to subarray.",
-    dtype_out=('str',),
-    doc_out="A list of Resources added to the subarray.",
-    )
+    @command(dtype_in=('str',), doc_in="List of Resources to add to subarray.", dtype_out=('str',),
+             doc_out="A list of Resources added to the subarray.",)
     @DebugIt()
     def AssignResources(self, argin):
         # PROTECTED REGION ID(SKASubarray.AssignResources) ENABLED START #
@@ -396,12 +381,8 @@ class SKASubarray(with_metaclass(DeviceMeta, SKAObsDevice)):
         self.set_state(DevState.ON)
         return argout
 
-    @command(
-    dtype_in=('str',),
-    doc_in="List of resources to remove from the subarray.",
-    dtype_out=('str',),
-    doc_out="List of resources removed from the subarray.",
-    )
+    @command(dtype_in=('str',), doc_in="List of resources to remove from the subarray.", dtype_out=('str',),
+             doc_out="List of resources removed from the subarray.",)
     @DebugIt()
     def ReleaseResources(self, argin):
         # PROTECTED REGION ID(SKASubarray.ReleaseResources) ENABLED START #
@@ -440,10 +421,7 @@ class SKASubarray(with_metaclass(DeviceMeta, SKAObsDevice)):
         """Pauses the scan"""
         # PROTECTED REGION END #    //  SKASubarray.Pause
 
-    @command(
-    dtype_out=('str',),
-    doc_out="List of resources removed from the subarray.",
-    )
+    @command(dtype_out=('str',), doc_out="List of resources removed from the subarray.",)
     @DebugIt()
     def ReleaseAllResources(self):
         # PROTECTED REGION ID(SKASubarray.ReleaseAllResources) ENABLED START #
@@ -461,9 +439,7 @@ class SKASubarray(with_metaclass(DeviceMeta, SKAObsDevice)):
         """Resumes the scan"""
         # PROTECTED REGION END #    //  SKASubarray.Resume
 
-    @command(
-    dtype_in=('str',),
-    )
+    @command(dtype_in=('str',),)
     @DebugIt()
     def Scan(self, argin):
         # PROTECTED REGION ID(SKASubarray.Scan) ENABLED START #

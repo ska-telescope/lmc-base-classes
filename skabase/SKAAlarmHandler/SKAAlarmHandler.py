@@ -121,7 +121,7 @@ class SKAAlarmHandler(with_metaclass(DeviceMeta, SKABaseDevice)):
         # PROTECTED REGION ID(SKAAlarmHandler.statsNrAlerts_read) ENABLED START #
         """
         Reads number of active alerts.
-        :return:state Number of active alerts
+        :return: Number of active alerts
         """
         return 0
         # PROTECTED REGION END #    //  SKAAlarmHandler.statsNrAlerts_read

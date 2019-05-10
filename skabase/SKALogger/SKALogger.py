@@ -252,9 +252,9 @@ class SKALogger(with_metaclass(DeviceMeta, SKABaseDevice)):
         #To convert the type of log level from numpy.ndarray to list. Needs to fix in PyTango.
         if type(storage_logging_level) is numpy.ndarray:
             storage_logging_level = storage_logging_level.tolist()
-        else
+        else:
             pass
-        
+
         storage_logging_device = argin[1][:]
         i = 0
         while i < len(storage_logging_level[:]):

@@ -16,6 +16,9 @@ import pytest
 from tango import DevState
 
 # Imports
+from skabase.SKABaseDevice import SKABaseDevice
+# PROTECTED REGION ID(SKABaseDevice.test_additional_imports) ENABLED START #
+# PROTECTED REGION END #    //  SKABaseDevice.test_additional_imports
 
 # Path
 path = os.path.join(os.path.dirname(__file__), os.pardir)
@@ -180,3 +183,30 @@ class TestSKABaseDevice(object):
         # PROTECTED REGION ID(SKABaseDevice.test_testMode) ENABLED START #
         assert tango_context.device.testMode == ''
         # PROTECTED REGION END #    //  SKABaseDevice.test_testMode
+
+    # TODO: Fix this test case when "Error in get_name() of tango.DeviceImpl while using pytest" is resolved.
+    # def test_get_device_commands(self, tango_context):
+        # Test the get_device_commands method
+        # commands = SKABaseDevice.get_device_commands(SKABaseDevice)
+        #assert commands == [{'parameters': [], 'name': 'GetVersionInfo', 'component_type': 'nodb', 'component_id': 'skabasedevice'}, {'parameters': [], 'name': 'Init', 'component_type': 'nodb', 'component_id': 'skabasedevice'}, {'parameters': [], 'name': 'Reset', 'component_type': 'nodb', 'component_id': 'skabasedevice'}, {'parameters': [], 'name': 'State', 'component_type': 'nodb', 'component_id': 'skabasedevice'}, {'parameters': [], 'name': 'Status', 'component_type': 'nodb', 'component_id': 'skabasedevice'}]
+
+    # TODO: Fix this test case when "Error in get_name() of tango.DeviceImpl while using pytest" is resolved.
+    # def test_get_device_attributes(self, tango_context):
+    #     # Test the get_device_attributes method
+    #     attributes = SKABaseDevice.get_device_attributes(SKABaseDevice)
+    #     assert attributes == 1
+
+    def test__parse_argin(self, tango_context):
+        SKABaseDevice._init_logging(SKABaseDevice)
+        result = SKABaseDevice._parse_argin(SKABaseDevice,'{"class":"SKABaseDevice"}')
+        assert result == {'class': 'SKABaseDevice'}
+
+    # TODO: Fix this test case when "__DeviceImpl__debug_stream() missing 'msg' argument" is resolved.
+    # def test_dev_logging(self, tango_context):
+    #     SKABaseDevice._central_logging_level = int(tango.LogLevel.LOG_DEBUG)
+    #     SKABaseDevice._element_logging_level = int(tango.LogLevel.LOG_DEBUG)
+    #     SKABaseDevice._storage_logging_level = int(tango.LogLevel.LOG_DEBUG)
+    #     result = SKABaseDevice.dev_logging(SKABaseDevice, "test message", int(tango.LogLevel.LOG_DEBUG))
+    #     result = []
+    #     SKABaseDevice.error_stream(SKABaseDevice, "Syslog cannot be initialized")
+    #     assert result == None

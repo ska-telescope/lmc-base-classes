@@ -13,6 +13,7 @@ and to store logs using Python logging. It configures the log levels of remote l
 # Standard imports
 import os
 import sys
+import numpy
 from future.utils import with_metaclass
 
 # Tango imports
@@ -181,7 +182,11 @@ class SKALogger(with_metaclass(DeviceMeta, SKABaseDevice)):
         """
         central_logging_level = argin[0][:]
         #To convert the type of log level from numpy.ndarray to list. Needs to fix in PyTango.
-        # central_logging_level = central_logging_level.tolist()
+        if type(central_logging_level) is numpy.ndarray:
+            central_logging_level = central_logging_level.tolist()
+        else:
+            pass
+
         central_logging_device = argin[1][:]
         i = 0
         while i < len(central_logging_level[:]):
@@ -211,7 +216,11 @@ class SKALogger(with_metaclass(DeviceMeta, SKABaseDevice)):
         """
         element_logging_level = argin[0][:]
         #To convert the type of log level from numpy.ndarray to list. Needs to fix in PyTango.
-        # element_logging_level = element_logging_level.tolist()
+        if type(element_logging_level) is numpy.ndarray:
+            element_logging_level = element_logging_level.tolist()
+        else:
+            pass
+
         element_logging_device = argin[1][:]
         i = 0
         while i < len(element_logging_level[:]):
@@ -241,7 +250,11 @@ class SKALogger(with_metaclass(DeviceMeta, SKABaseDevice)):
         """
         storage_logging_level = argin[0][:]
         #To convert the type of log level from numpy.ndarray to list. Needs to fix in PyTango.
-        # storage_logging_level = storage_logging_level.tolist()
+        if type(storage_logging_level) is numpy.ndarray:
+            storage_logging_level = storage_logging_level.tolist()
+        else:
+            pass
+
         storage_logging_device = argin[1][:]
         i = 0
         while i < len(storage_logging_level[:]):

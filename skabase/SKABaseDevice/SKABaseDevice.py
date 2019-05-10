@@ -145,6 +145,7 @@ class SKABaseDevice(with_metaclass(DeviceMeta, Device)):
         ### Can this not be known through self which is a Device
         commands = []
         device_proxy = DeviceProxy(self.get_name())
+        print("Device Proxy is:", device_proxy)
         cmd_config_list = device_proxy.command_list_query()
         for device_cmd_config in cmd_config_list:
             commands.append(get_dp_command(
@@ -248,6 +249,7 @@ class SKABaseDevice(with_metaclass(DeviceMeta, Device)):
         :return: None
         """
         # Element Level Logging
+        print("devLogMsg is: ", dev_log_msg)
         if self._element_logging_level >= int(tango.LogLevel.LOG_FATAL) and dev_log_level == int(
                 tango.LogLevel.LOG_FATAL):
             self.fatal_stream(dev_log_msg)

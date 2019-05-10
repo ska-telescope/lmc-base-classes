@@ -180,8 +180,14 @@ class SKALogger(with_metaclass(DeviceMeta, SKABaseDevice)):
         :returns: None.
         """
         central_logging_level = argin[0][:]
-        #To convert the type of log level from numpy.ndarray to list. Needs to fix in PyTango.
-        # central_logging_level = central_logging_level.tolist()
+        # The try-except block is added as a temp fix due to a bug in PyTango.
+        # The CI pieline fails if .tolist is added. But local dev environment in
+        # NCRA fails if .tolist is removed.
+        try:
+            #To convert the type of log level from numpy.ndarray to list. Needs to fix in PyTango.
+            central_logging_level = central_logging_level.tolist()
+        except:
+            pass
         central_logging_device = argin[1][:]
         i = 0
         while i < len(central_logging_level[:]):
@@ -210,8 +216,14 @@ class SKALogger(with_metaclass(DeviceMeta, SKABaseDevice)):
         :returns: None.
         """
         element_logging_level = argin[0][:]
-        #To convert the type of log level from numpy.ndarray to list. Needs to fix in PyTango.
-        # element_logging_level = element_logging_level.tolist()
+        # The try-except block is added as a temp fix due to a bug in PyTango.
+        # The CI pieline fails if .tolist is added. But local dev environment in
+        # NCRA fails if .tolist is removed.
+        try:
+            #To convert the type of log level from numpy.ndarray to list. Needs to fix in PyTango.
+            element_logging_level = element_logging_level.tolist()
+        except DevFailed:
+            pass
         element_logging_device = argin[1][:]
         i = 0
         while i < len(element_logging_level[:]):
@@ -240,8 +252,14 @@ class SKALogger(with_metaclass(DeviceMeta, SKABaseDevice)):
         :returns: None.
         """
         storage_logging_level = argin[0][:]
-        #To convert the type of log level from numpy.ndarray to list. Needs to fix in PyTango.
-        # storage_logging_level = storage_logging_level.tolist()
+        # The try-except block is added as a temp fix due to a bug in PyTango.
+        # The CI pieline fails if .tolist is added. But local dev environment in
+        # NCRA fails if .tolist is removed.
+        try:
+            #To convert the type of log level from numpy.ndarray to list. Needs to fix in PyTango.
+            storage_logging_level = storage_logging_level.tolist()
+        except DevFailed:
+            pass
         storage_logging_device = argin[1][:]
         i = 0
         while i < len(storage_logging_level[:]):

@@ -42,7 +42,7 @@ load-plugins=
 # --disable=W"
 disable=C,R,attribute-defined-outside-init,no-member,c-extension-no-member,protected-access,
         fixme,broad-except,unused-argument,redefined-builtin,invalid-name,bare-except,
-        anomalous-backslash-in-string,redefined-outer-name,undefined-variable
+        anomalous-backslash-in-string,redefined-outer-name,undefined-variable,relative-import
 
 [REPORTS]
 

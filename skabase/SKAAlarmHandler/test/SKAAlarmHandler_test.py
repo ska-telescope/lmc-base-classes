@@ -15,7 +15,6 @@ import os
 # Imports
 import re
 import pytest
-from tango import DevState
 
 # Path
 path = os.path.join(os.path.dirname(__file__), os.pardir)

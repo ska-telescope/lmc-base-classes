@@ -15,7 +15,6 @@ import os
 # Imports
 import re
 import pytest
-from tango import DevState
 
 # Path
 path = os.path.join(os.path.dirname(__file__), os.pardir)
@@ -54,9 +53,6 @@ class TestSKACapability(object):
         # Test the properties
         # PROTECTED REGION ID(SKACapability.test_properties) ENABLED START #
         # PROTECTED REGION END #    //  SKACapability.test_properties
-
-    # PROTECTED REGION ID(SKACapability.test_ObsState_decorators) ENABLED START #
-    # PROTECTED REGION END #    //  SKACapability.test_ObsState_decorators
 
     def test_ConfigureInstances(self, tango_context):
         """Test for ConfigureInstances"""

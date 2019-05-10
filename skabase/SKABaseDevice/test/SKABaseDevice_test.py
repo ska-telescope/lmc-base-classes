@@ -13,11 +13,9 @@ import sys
 import os
 import re
 import pytest
-import tango
 from tango import DevState
 
 # Imports
-import re
 from skabase.SKABaseDevice import SKABaseDevice
 # PROTECTED REGION ID(SKABaseDevice.test_additional_imports) ENABLED START #
 # PROTECTED REGION END #    //  SKABaseDevice.test_additional_imports

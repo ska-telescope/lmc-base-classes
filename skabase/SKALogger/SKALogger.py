@@ -13,6 +13,7 @@ and to store logs using Python logging. It configures the log levels of remote l
 # Standard imports
 import os
 import sys
+import numpy
 from future.utils import with_metaclass
 
 # Tango imports
@@ -180,14 +181,13 @@ class SKALogger(with_metaclass(DeviceMeta, SKABaseDevice)):
         :returns: None.
         """
         central_logging_level = argin[0][:]
-        # The try-except block is added as a temp fix due to a bug in PyTango.
-        # The CI pieline fails if .tolist is added. But local dev environment in
-        # NCRA fails if .tolist is removed.
-        try:
-            #To convert the type of log level from numpy.ndarray to list. Needs to fix in PyTango.
+        #To convert the type of log level from numpy.ndarray to list. Needs to fix in PyTango.
+        print("type: ", type(central_logging_level))
+        if type(central_logging_level) is numpy.ndarray:
+            sys.stdout.write("\nNumpy ndarray type. Converting to list")
             central_logging_level = central_logging_level.tolist()
-        except:
-            pass
+        else:
+            sys.stdout.write("\nStandard python list. Skip conversion.")
         central_logging_device = argin[1][:]
         i = 0
         while i < len(central_logging_level[:]):

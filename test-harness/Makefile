@@ -26,8 +26,11 @@ test:
 	if [ -d /build ]; then \
 		mv /app/setup_py_test.stdout /build/lmcbaseclasses_setup_py_test.stdout; \
 		mv /app/code_analysis.stdout /build/lmcbaseclasses_code_analysis.stdout; \
-		mv /app/htmlcov /build/lmcbaseclasses_htmlcov; \
+		mv /app/htmlcoverage /build/lmcbaseclasses_htmlcoverage; \
 		mv /app/coverage.xml /build/lmcbaseclasses_coverage.xml; \
+		mv /app/report.json /build/lmcbaseclasses_report.json; \
+		mv /app/report.html /build/lmcbaseclasses_report.html; \
+		mv /app/assets /build/assets; \
 	fi;
 
 .PHONY: all test

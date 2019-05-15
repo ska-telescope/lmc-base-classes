@@ -64,6 +64,12 @@ run tests:
     - pip3 install -U $(ls -d ./dist/*.whl | grep $CI_COMMIT_SHORT_SHA)
     - make test
     - scripts/validate-metadata.sh
+  artifacts:
+    paths:
+      - build/junit.xml
+    reports:
+      junit: junit.xml
+
 
 publish to nexus:
   stage: publish

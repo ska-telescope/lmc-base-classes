@@ -97,7 +97,6 @@ pages:
   stage: pages
   script:
     - mv build public
-    - mv public/lmcbaseclasses_htmlcov/* public
     - make push
   artifacts:
     paths:

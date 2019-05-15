@@ -66,7 +66,7 @@ run tests:
     - scripts/validate-metadata.sh
   artifacts:
     paths:
-      - build/junit.xml
+      - build/lmcbaseclasses_htmlcov/junit.xml
     reports:
       junit: junit.xml
 

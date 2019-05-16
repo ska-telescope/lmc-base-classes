@@ -66,9 +66,9 @@ run tests:
     - scripts/validate-metadata.sh
   artifacts:
     paths:
-      - build/lmcbaseclasses_htmlcov/junit.xml
+      - build/lmcbaseclasses_pytest_junit.xml
     reports:
-      junit: build/lmcbaseclasses_htmlcov/junit.xml
+      junit: build/lmcbaseclasses_pytest_junit.xml
 
 
 publish to nexus:

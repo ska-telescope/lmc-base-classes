@@ -190,12 +190,16 @@ class SKALogger(with_metaclass(DeviceMeta, SKABaseDevice)):
         central_logging_device = argin[1][:]
         i = 0
         while i < len(central_logging_level[:]):
-            self.info_stream("Central Logging level : %s, Device : %s",
-                             central_logging_level[i],
-                             central_logging_level[i])
-            dev_proxy = DeviceProxy(central_logging_device[i])
-            dev_proxy.centralLoggingLevel = central_logging_level[i]
-            i += 1
+            try:
+                self.info_stream("Central Logging level : %s, Device : %s",
+                                 central_logging_level[i],
+                                 central_logging_level[i])
+                dev_proxy = DeviceProxy(central_logging_device[i])
+                dev_proxy.centralLoggingLevel = central_logging_level[i]
+                i += 1
+            except DevFailed:
+                self.error_stream("Failed to set Central Logging level for [%s]", central_logging_device[i])
+
         # PROTECTED REGION END #    //  SKALogger.SetCentralLoggingLevel
 
     @command(dtype_in='DevVarLongStringArray', doc_in="Element logging level for selected devices",)
@@ -224,12 +228,15 @@ class SKALogger(with_metaclass(DeviceMeta, SKABaseDevice)):
         element_logging_device = argin[1][:]
         i = 0
         while i < len(element_logging_level[:]):
-            self.info_stream("Element Logging level : %s, Device : %s",
-                             element_logging_level[i],
-                             element_logging_device[i])
-            dev_proxy = DeviceProxy(element_logging_device[i])
-            dev_proxy.elementLoggingLevel = element_logging_level[i]
-            i += 1
+            try:
+                self.info_stream("Element Logging level : %s, Device : %s",
+                                 element_logging_level[i],
+                                 element_logging_device[i])
+                dev_proxy = DeviceProxy(element_logging_device[i])
+                dev_proxy.elementLoggingLevel = element_logging_level[i]
+                i += 1
+            except DevFailed:
+                self.error_stream("Failed to set Element Logging level for [%s]", element_logging_device[i])
         # PROTECTED REGION END #    //  SKALogger.SetElementLoggingLevel
 
     @command(dtype_in='DevVarLongStringArray', doc_in="Storage logging level for selected devices",)
@@ -258,12 +265,15 @@ class SKALogger(with_metaclass(DeviceMeta, SKABaseDevice)):
         storage_logging_device = argin[1][:]
         i = 0
         while i < len(storage_logging_level[:]):
-            self.info_stream("Storage logging level : %s, Device : %s",
-                             storage_logging_level[i],
-                             storage_logging_device[i])
-            dev_proxy = DeviceProxy(storage_logging_device[i])
-            dev_proxy.storageLoggingLevel = storage_logging_level[i]
-            i += 1
+            try:
+                self.info_stream("Storage logging level : %s, Device : %s",
+                                 storage_logging_level[i],
+                                 storage_logging_device[i])
+                dev_proxy = DeviceProxy(storage_logging_device[i])
+                dev_proxy.storageLoggingLevel = storage_logging_level[i]
+                i += 1
+            except DevFailed:
+                self.error_stream("Failed to set Storage Logging level for [%s]", storage_logging_device[i])
         # PROTECTED REGION END #    //  SKALogger.SetStorageLoggingLevel
 
 # ----------

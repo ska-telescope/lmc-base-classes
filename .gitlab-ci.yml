@@ -88,6 +88,45 @@ publish to nexus:
       - $CI_COMMIT_MESSAGE =~ /^.+$/ # Confirm tag message exists
       - $CI_COMMIT_TAG =~ /^((([0-9]+)\.([0-9]+)\.([0-9]+)(?:-([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?)(?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?)$/ # Confirm semantic versioning of tag
 
+.generate_index_html: &generate_index_html |
+  cat >build/index.html <<EOL
+    <!doctype html>
+    <html lang=en>
+      <head>
+          <meta charset=utf-8>
+          <title>${CI_PROJECT_NAME}, pipeline: ${CI_PIPELINE_ID}</title>
+      </head>
+      <body>
+          <p>
+              <h4>Project links</h4>
+              Github Project: <a href="https://github.com/ska-telescope/lmc-base-classes">${CI_PROJECT_NAME}</a><br/>
+              Gitlab Project: <a href="https://gitlab.com/ska-telescope/lmc-base-classes/">${CI_PROJECT_NAME}</a><br/>
+          </p>
+          <p>
+              <h4>Pipeline details</h4>
+              Pipeline URL: <a href="${CI_PIPELINE_URL}"></a>Pipeline<br/>
+              <h5>Commit details:</h5>
+              Commit: ${CI_COMMIT_SHA}<br/>
+              Branch/tag: ${CI_COMMIT_REF_NAME}<br/>
+              ${CI_COMMIT_TITLE}<br/>
+              ${CI_COMMIT_MESSAGE}<br/>
+          </p>
+          <p>
+              <h4>Build resources:</h4>
+              <p>
+                  <a href="./lmcbaseclasses_pytest_report.html">pytest results report</a><br/>
+                  <a href="./lmcbaseclasses_pytest_junit.xml">pytest results JUnit</a><br/>
+                  <a href="./lmcbaseclasses_pytest_report.json">pytest results JSON</a><br/>
+                  <a href="./lmcbaseclasses_htmlcoverage/index.html">Coverage report</a><br/>
+                  <a href="./lmcbaseclasses_coverage.xml">Coverage XML</a><br/>
+                  <a href="./lmcbaseclasses_setup_py_test.stdout">lmcbaseclasses_setup_py_test.stdout</a><br/>
+                  <a href="./lmcbaseclasses_code_analysis.stdout">lmcbaseclasses_code_analysis.stdout</a><br/>
+              </p>
+          </p>
+      </body>
+    </html>
+  EOL
+
 pages:
   image: nexus.engageska-portugal.pt/ska-docker/tango-builder:latest
   before_script:
@@ -96,6 +135,7 @@ pages:
     - docker-executor
   stage: pages
   script:
+    - *generate_index_html
     - mv build public
     - make push
   artifacts:

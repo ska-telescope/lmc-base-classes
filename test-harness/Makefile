@@ -26,6 +26,7 @@ test:
 	if [ -d /build ]; then \
 		mv /app/setup_py_test.stdout /build/lmcbaseclasses_setup_py_test.stdout; \
 		mv /app/code_analysis.stdout /build/lmcbaseclasses_code_analysis.stdout; \
+		cp /app/htmlcoverage/status.json /build/status.json; \
 		mv /app/htmlcoverage /build/lmcbaseclasses_htmlcoverage; \
 		mv /app/coverage.xml /build/lmcbaseclasses_coverage.xml; \
 		mv /app/pytest_report.json /build/lmcbaseclasses_pytest_report.json; \

@@ -104,11 +104,11 @@ publish to nexus:
           </p>
           <p>
               <h4>Pipeline details</h4>
-              Pipeline URL: <a href="${CI_PIPELINE_URL}"></a>Pipeline<br/>
+              Pipeline URL: <a href="${CI_PIPELINE_URL}">Pipeline</a><br/>
               <h5>Commit details:</h5>
-              Commit: ${CI_COMMIT_SHA}<br/>
-              Branch/tag: ${CI_COMMIT_REF_NAME}<br/>
-              ${CI_COMMIT_TITLE}<br/>
+              Commit: ${CI_COMMIT_SHA}<br/><br/>
+              Branch/tag: ${CI_COMMIT_REF_NAME}<br/><br/>
+              ${CI_COMMIT_TITLE}<br/><br/>
               ${CI_COMMIT_MESSAGE}<br/>
           </p>
           <p>

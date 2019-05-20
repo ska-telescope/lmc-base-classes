@@ -196,9 +196,11 @@ class SKALogger(with_metaclass(DeviceMeta, SKABaseDevice)):
                                  central_logging_level[i])
                 dev_proxy = DeviceProxy(central_logging_device[i])
                 dev_proxy.centralLoggingLevel = central_logging_level[i]
-                i += 1
-            except DevFailed:
-                self.error_stream("Failed to set Central Logging level for [%s]", central_logging_device[i])
+            except DevFailed as dev_failed:
+                self.error_stream("Failed to set Central Logging level for [%s]", central_logging_level[i])
+                str_exception = "Exception: " + str(dev_failed)
+                self.error_stream(str_exception)
+            i += 1
 
         # PROTECTED REGION END #    //  SKALogger.SetCentralLoggingLevel
 
@@ -235,8 +237,11 @@ class SKALogger(with_metaclass(DeviceMeta, SKABaseDevice)):
                 dev_proxy = DeviceProxy(element_logging_device[i])
                 dev_proxy.elementLoggingLevel = element_logging_level[i]
                 i += 1
-            except DevFailed:
+            except DevFailed as dev_failed:
                 self.error_stream("Failed to set Element Logging level for [%s]", element_logging_device[i])
+                str_exception = "Exception: " + str(dev_failed)
+                self.error_stream(str_exception)
+            i += 1
         # PROTECTED REGION END #    //  SKALogger.SetElementLoggingLevel
 
     @command(dtype_in='DevVarLongStringArray', doc_in="Storage logging level for selected devices",)
@@ -272,8 +277,11 @@ class SKALogger(with_metaclass(DeviceMeta, SKABaseDevice)):
                 dev_proxy = DeviceProxy(storage_logging_device[i])
                 dev_proxy.storageLoggingLevel = storage_logging_level[i]
                 i += 1
-            except DevFailed:
+            except DevFailed as dev_failed:
                 self.error_stream("Failed to set Storage Logging level for [%s]", storage_logging_device[i])
+                str_exception = "Exception: " + str(dev_failed)
+                self.error_stream(str_exception)
+            i += 1
         # PROTECTED REGION END #    //  SKALogger.SetStorageLoggingLevel
 
 # ----------

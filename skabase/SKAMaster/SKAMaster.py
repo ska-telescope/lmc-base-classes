@@ -179,12 +179,17 @@ class SKAMaster(with_metaclass(DeviceMeta, SKABaseDevice)):
         """
         Checks of provided capabilities can be achieved by the resource(s).
 
-        :param: argin: DevVarLongStringArray. An array consisting pair of
-                    [nrInstances]: DevLong. Number of instances of the capability
-                    [Capability types]: DevString. Type of capability
+        :param argin: DevVarLongStringArray.
+
+            An array consisting pair of
+                    [nrInstances]: DevLong. Number of instances of the capability.
+
+                    [Capability types]: DevString. Type of capability.
 
         :return: DevBoolean
+
             True if capability can be achieved.
+
             False if cannot.
         """
         command_name = 'isCapabilityAchievable'

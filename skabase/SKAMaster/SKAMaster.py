@@ -179,7 +179,7 @@ class SKAMaster(with_metaclass(DeviceMeta, SKABaseDevice)):
         """
         Checks of provided capabilities can be achieved by the resource(s).
 
-        :parameter argin: DevVarLongStringArray. An array consisting pair of
+        :param: argin: DevVarLongStringArray. An array consisting pair of
                     [nrInstances]: DevLong. Number of instances of the capability
                     [Capability types]: DevString. Type of capability
 

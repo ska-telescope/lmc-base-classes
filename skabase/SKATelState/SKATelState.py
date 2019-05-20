@@ -93,7 +93,7 @@ def main(args=None, **kwargs):
     """
     Main function of the module
 
-    :param args: None
+    :param args: None by default.
 
     :param kwargs:
 

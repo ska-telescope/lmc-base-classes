@@ -92,8 +92,11 @@ def main(args=None, **kwargs):
     # PROTECTED REGION ID(SKATelState.main) ENABLED START #
     """
     Main function of the module
-    :param args: None
+
+    :param args: None by default.
+
     :param kwargs:
+
     :return:
     """
     return run((SKATelState,), args=args, **kwargs)

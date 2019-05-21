@@ -145,7 +145,6 @@ class SKABaseDevice(with_metaclass(DeviceMeta, Device)):
         ### Can this not be known through self which is a Device
         commands = []
         device_proxy = DeviceProxy(self.get_name())
-        print("Device Proxy is:", device_proxy)
         cmd_config_list = device_proxy.command_list_query()
         for device_cmd_config in cmd_config_list:
             commands.append(get_dp_command(
@@ -234,22 +233,27 @@ class SKABaseDevice(with_metaclass(DeviceMeta, Device)):
         This method logs the message to SKA Element Logger, Central Logger and Storage
         Logger.
 
-        :param dev_log_msg: DevString
-            Message to log
+        :param dev_log_msg: DevString.
+
+        Message to log
 
         :param dev_log_level: DevEnum
+
             Logging level of the message. The message can have one of the following
-            logging level.
+            logging level:
                 LOG_FATAL
+
                 LOG_ERROR
+
                 LOG_WARN
+
                 LOG_INFO
+
                 LOG_DEBUG
 
         :return: None
         """
         # Element Level Logging
-        print("devLogMsg is: ", dev_log_msg)
         if self._element_logging_level >= int(tango.LogLevel.LOG_FATAL) and dev_log_level == int(
                 tango.LogLevel.LOG_FATAL):
             self.fatal_stream(dev_log_msg)
@@ -460,6 +464,7 @@ class SKABaseDevice(with_metaclass(DeviceMeta, Device)):
         # PROTECTED REGION ID(SKABaseDevice.always_executed_hook) ENABLED START #
         """
         Method that is always executed before any device command gets executed.
+
         :return: None
         """
         # PROTECTED REGION END #    //  SKABaseDevice.always_executed_hook
@@ -468,6 +473,7 @@ class SKABaseDevice(with_metaclass(DeviceMeta, Device)):
         # PROTECTED REGION ID(SKABaseDevice.delete_device) ENABLED START #
         """
         Method to cleanup when device is stopped.
+
         :return: None
         """
         # PROTECTED REGION END #    //  SKABaseDevice.delete_device
@@ -480,6 +486,7 @@ class SKABaseDevice(with_metaclass(DeviceMeta, Device)):
         # PROTECTED REGION ID(SKABaseDevice.buildState_read) ENABLED START #
         """
         Reads the Build State of the device.
+
         :return: None
         """
         return self._build_state
@@ -489,6 +496,7 @@ class SKABaseDevice(with_metaclass(DeviceMeta, Device)):
         # PROTECTED REGION ID(SKABaseDevice.versionId_read) ENABLED START #
         """
         Reads the Version Id of the device.
+
         :return: None
         """
         return self._version_id
@@ -498,6 +506,7 @@ class SKABaseDevice(with_metaclass(DeviceMeta, Device)):
         # PROTECTED REGION ID(SKABaseDevice.centralLoggingLevel_read) ENABLED START #
         """
         Reads the central logging level of the device.
+
         :return: Central logging level of the device
         """
         return self._central_logging_level
@@ -507,7 +516,9 @@ class SKABaseDevice(with_metaclass(DeviceMeta, Device)):
         # PROTECTED REGION ID(SKABaseDevice.centralLoggingLevel_write) ENABLED START #
         """
         Sets central logging level of the device
+
         :param value: Logging level for Central Logger
+
         :return: None
         """
         self._central_logging_level = value
@@ -517,6 +528,7 @@ class SKABaseDevice(with_metaclass(DeviceMeta, Device)):
         # PROTECTED REGION ID(SKABaseDevice.elementLoggingLevel_read) ENABLED START #
         """
         Reads element logging level of the device.
+
         :return: Element logging level of the device.
         """
         return self._element_logging_level
@@ -526,7 +538,9 @@ class SKABaseDevice(with_metaclass(DeviceMeta, Device)):
         # PROTECTED REGION ID(SKABaseDevice.elementLoggingLevel_write) ENABLED START #
         """
         Sets element logging level of the device
+
         :param value: Logging Level for Element Logger
+
         :return: None
         """
         self._element_logging_level = value
@@ -536,6 +550,7 @@ class SKABaseDevice(with_metaclass(DeviceMeta, Device)):
         # PROTECTED REGION ID(SKABaseDevice.storageLoggingLevel_read) ENABLED START #
         """
         Reads storage logging level of the device.
+
         :return: Storage logging level of the device.
         """
         return self._storage_logging_level
@@ -545,8 +560,10 @@ class SKABaseDevice(with_metaclass(DeviceMeta, Device)):
         # PROTECTED REGION ID(SKABaseDevice.storageLoggingLevel_write) ENABLED START #
         """
         Sets logging level at storage.
+
         :param value: Logging Level for storage logger
-        :return:
+
+        :return: None.
         """
         self._storage_logging_level = value
         if self._storage_logging_level == int(tango.LogLevel.LOG_FATAL):
@@ -567,6 +584,7 @@ class SKABaseDevice(with_metaclass(DeviceMeta, Device)):
         # PROTECTED REGION ID(SKABaseDevice.healthState_read) ENABLED START #
         """
         Reads Health State of the device.
+
         :return: Health State of the device
         """
         return self._health_state
@@ -576,6 +594,7 @@ class SKABaseDevice(with_metaclass(DeviceMeta, Device)):
         # PROTECTED REGION ID(SKABaseDevice.adminMode_read) ENABLED START #
         """
         Reads Admin Mode of the device.
+
         :return: Admin Mode of the device
         """
         return self._admin_mode
@@ -585,7 +604,9 @@ class SKABaseDevice(with_metaclass(DeviceMeta, Device)):
         # PROTECTED REGION ID(SKABaseDevice.adminMode_write) ENABLED START #
         """
         Sets Admin Mode of the device.
+
         :param value: Admin Mode of the device.
+
         :return: None
         """
         self._admin_mode = value
@@ -595,6 +616,7 @@ class SKABaseDevice(with_metaclass(DeviceMeta, Device)):
         # PROTECTED REGION ID(SKABaseDevice.controlMode_read) ENABLED START #
         """
         Reads Control Mode of the device.
+
         :return: Control Mode of the device
         """
         return self._control_mode
@@ -604,7 +626,9 @@ class SKABaseDevice(with_metaclass(DeviceMeta, Device)):
         # PROTECTED REGION ID(SKABaseDevice.controlMode_write) ENABLED START #
         """
         Sets Control Mode of the device.
+
         :param value: Control mode value
+
         :return: None
         """
         self._control_mode = value
@@ -614,6 +638,7 @@ class SKABaseDevice(with_metaclass(DeviceMeta, Device)):
         # PROTECTED REGION ID(SKABaseDevice.simulationMode_read) ENABLED START #
         """
         Reads Simulation Mode of the device.
+
         :return: Simulation Mode of the device.
         """
         return self._simulation_mode
@@ -623,7 +648,9 @@ class SKABaseDevice(with_metaclass(DeviceMeta, Device)):
         # PROTECTED REGION ID(SKABaseDevice.simulationMode_write) ENABLED START #
         """
         Sets Simulation Mode of the device
+
         :param value: SimulationMode
+
         :return: None
         """
         self._simulation_mode = value
@@ -633,6 +660,7 @@ class SKABaseDevice(with_metaclass(DeviceMeta, Device)):
         # PROTECTED REGION ID(SKABaseDevice.testMode_read) ENABLED START #
         """
         Reads Test Mode of the device.
+
         :return: Test Mode of the device
         """
         return self._test_mode
@@ -642,7 +670,9 @@ class SKABaseDevice(with_metaclass(DeviceMeta, Device)):
         # PROTECTED REGION ID(SKABaseDevice.testMode_write) ENABLED START #
         """
         Sets Test Mode of the device.
+
         :param value: Test Mode
+
         :return: None
         """
         self._test_mode = value
@@ -659,6 +689,7 @@ class SKABaseDevice(with_metaclass(DeviceMeta, Device)):
         # PROTECTED REGION ID(SKABaseDevice.GetVersionInfo) ENABLED START #
         """
         Returns the version information of the device.
+
         :return: Version version details of the device.
         """
         return ['{}, {}'.format(self.__class__.__name__, self.read_buildState())]
@@ -671,6 +702,7 @@ class SKABaseDevice(with_metaclass(DeviceMeta, Device)):
         # PROTECTED REGION ID(SKABaseDevice.Reset) ENABLED START #
         """
         Reset device to its default state.
+
         :return: None
         """
         # PROTECTED REGION END #    //  SKABaseDevice.Reset
@@ -684,8 +716,11 @@ def main(args=None, **kwargs):
     # PROTECTED REGION ID(SKABaseDevice.main) ENABLED START #
     """
     Main function of the SKABaseDevice module.
+
     :param args: None
+
     :param kwargs:
+
     :return:
     """
     return run((SKABaseDevice,), args=args, **kwargs)

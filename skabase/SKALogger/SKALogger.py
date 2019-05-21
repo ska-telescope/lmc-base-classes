@@ -236,7 +236,6 @@ class SKALogger(with_metaclass(DeviceMeta, SKABaseDevice)):
                                  element_logging_device[i])
                 dev_proxy = DeviceProxy(element_logging_device[i])
                 dev_proxy.elementLoggingLevel = element_logging_level[i]
-                i += 1
             except DevFailed as dev_failed:
                 self.error_stream("Failed to set Element Logging level for [%s]", element_logging_device[i])
                 str_exception = "Exception: " + str(dev_failed)
@@ -276,7 +275,6 @@ class SKALogger(with_metaclass(DeviceMeta, SKABaseDevice)):
                                  storage_logging_device[i])
                 dev_proxy = DeviceProxy(storage_logging_device[i])
                 dev_proxy.storageLoggingLevel = storage_logging_level[i]
-                i += 1
             except DevFailed as dev_failed:
                 self.error_stream("Failed to set Storage Logging level for [%s]", storage_logging_device[i])
                 str_exception = "Exception: " + str(dev_failed)

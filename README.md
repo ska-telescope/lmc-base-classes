@@ -23,6 +23,22 @@ The lmc-base-classe repository contains set of eight classes as mentioned in SKA
 - SKASubarray: This is the generic base class which provides common functionality required in a subarray device.
 - SKATelState: This is the generic base class to provide common functionality of a TelState device of any SKA Element.
 
+## Version History
+####0.1.3
+- Storage logs are written to a file if Syslog service is not available.
+- Added exception handling
+- Improved code coverage
+- Improved compliance to coding standards
+- Improvement in documentation
+- Other minor improvements
+####0.1.2
+ - Internal release
+####0.1.1
+- Logging functionality
+- Python3 migration
+- Repackaging of all the classes into a single Python package
+- Changes to folder structure,
+- Integration in CI environment
 
 ## Installation
 ### Requirements

@@ -23,6 +23,7 @@ cache:
 stages:
   - build
   - test
+  - linting
   - publish
   - pages
 
@@ -49,6 +50,20 @@ build wheel for development: # Executed on a commit
   artifacts:
     paths:
       - ./dist/
+
+linting:
+  stage: linting
+  image: nexus.engageska-portugal.pt/ska-docker/tango-builder:latest
+  before_script:
+  - docker login -u $DOCKER_REGISTRY_USERNAME -p $DOCKER_REGISTRY_PASSWORD $DOCKER_REGISTRY_HOST
+  tags:
+    - docker-executor
+  script:
+    - apt-get -y update
+    - apt install -y python3-pip
+    - echo $(ls -d ./dist/*.whl | grep $CI_COMMIT_SHORT_SHA)
+    - pip3 install -U $(ls -d ./dist/*.whl | grep $CI_COMMIT_SHORT_SHA)
+    - make lint
 
 run tests:
   stage: test

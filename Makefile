@@ -138,6 +138,19 @@ test: build up ## test the application
 	  $(MAKE) down; \
 	  exit $$status
 
+lint: DOCKER_RUN_ARGS = --volumes-from=$(BUILD)
+lint: build up ## lint the application (static code analysis)
+	$(INIT_CACHE)
+	$(call make,lint); \
+	  status=$$?; \
+	  rm -fr build; \
+	  docker cp $(BUILD):/build .; \
+	  docker rm -f -v $(BUILD); \
+#	  docker logs $(CACHE_VOLUME); \
+#	  docker logs $(CACHE_VOLUME) > build/container.log 2>&1; \
+	  $(MAKE) down; \
+	  exit $$status
+
 pull:  ## download the application image
 	docker pull $(IMAGE_TO_TEST)
 

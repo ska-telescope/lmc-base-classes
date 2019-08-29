@@ -130,7 +130,6 @@ test: build up ## test the application
 	$(INIT_CACHE)
 	$(call make,test); \
 	  status=$$?; \
-	#   rm -fr build; \
 	  docker cp $(BUILD):/build .; \
 	  docker rm -f -v $(BUILD); \
 	  $(MAKE) down; \
@@ -141,7 +140,6 @@ lint: build up ## lint the application (static code analysis)
 	$(INIT_CACHE)
 	$(call make,lint); \
 	  status=$$?; \
-	#   rm -fr build; \
 	  docker cp $(BUILD):/build .; \
 	  docker rm -f -v $(BUILD); \
 	  $(MAKE) down; \

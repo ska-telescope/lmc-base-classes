@@ -21,7 +21,7 @@ test:
 	retry --max=10 -- tango_admin --ping-device ska/subarray/01
 	retry --max=10 -- tango_admin --ping-device ska/telstate/01
 
-	cd /app && python setup.py test | tee setup_py_test.stdout
+	cd /app && python setup.py test | tee setup_py_test.stdout; \
 	if [ -d /build ]; then \
 		mv /app/setup_py_test.stdout /build/lmcbaseclasses_setup_py_test.stdout; \
 		mv /app/htmlcov /build/lmcbaseclasses_htmlcov; \

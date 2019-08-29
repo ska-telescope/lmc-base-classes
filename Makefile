@@ -133,8 +133,6 @@ test: build up ## test the application
 	  rm -fr build; \
 	  docker cp $(BUILD):/build .; \
 	  docker rm -f -v $(BUILD); \
-#	  docker logs $(CACHE_VOLUME); \
-#	  docker logs $(CACHE_VOLUME) > build/container.log 2>&1; \
 	  $(MAKE) down; \
 	  exit $$status
 
@@ -146,8 +144,6 @@ lint: build up ## lint the application (static code analysis)
 	  rm -fr build; \
 	  docker cp $(BUILD):/build .; \
 	  docker rm -f -v $(BUILD); \
-#	  docker logs $(CACHE_VOLUME); \
-#	  docker logs $(CACHE_VOLUME) > build/container.log 2>&1; \
 	  $(MAKE) down; \
 	  exit $$status
 

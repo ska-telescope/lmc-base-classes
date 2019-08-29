@@ -42,10 +42,11 @@ lint:
 	retry --max=10 -- tango_admin --ping-device ska/subarray/01
 	retry --max=10 -- tango_admin --ping-device ska/telstate/01
 
-	cd /app && ./code-analysis.sh | tee code_analysis.stdout
+	# FIXME pylint needs to run twice since there is no way go gather the text and junit xml output at the same time
+	cd /app && pylint -f colorized skabase | tee code_analysis.stdout; \
+	cd /app && pylint skabase > lint_output.xml; \
 	if [ -d /build ]; then \
 		mv /app/code_analysis.stdout /build/lmcbaseclasses_code_analysis.stdout; \
-		mv /app/htmlcov /build/lmcbaseclasses_htmlcov; \
 		mv /app/lint_output.xml /build/lint_output.xml; \
 	fi;
 

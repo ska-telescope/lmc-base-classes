@@ -105,6 +105,8 @@ pages:
     - docker-executor
   stage: pages
   script:
+    - ls
+    - ls build
     - mv build public
     - mv public/lmcbaseclasses_htmlcov/* public
     - make push

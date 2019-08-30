@@ -131,7 +131,7 @@ test: build up ## test the application
 	$(call make,test); \
 	  status=$$?; \
 	  docker cp $(BUILD):/build .; \
-	  docker rm -f -v $(BUILD); \
+	#   docker rm -f -v $(BUILD); \
 	  $(MAKE) down; \
 	  exit $$status
 
@@ -141,7 +141,7 @@ lint: build up ## lint the application (static code analysis)
 	$(call make,lint); \
 	  status=$$?; \
 	  docker cp $(BUILD):/build .; \
-	  docker rm -f -v $(BUILD); \
+	#   docker rm -f -v $(BUILD); \
 	  $(MAKE) down; \
 	  exit $$status
 

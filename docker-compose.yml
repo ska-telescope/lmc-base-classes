@@ -27,6 +27,7 @@ volumes:
 services:
   tangodb:
     image: nexus.engageska-portugal.pt/ska-docker/tango-db:latest
+    restart: unless-stopped
     network_mode: ${NETWORK_MODE}
     container_name: ${CONTAINER_NAME_PREFIX}tangodb
     depends_on:
@@ -41,6 +42,7 @@ services:
 
   databaseds:
     image: nexus.engageska-portugal.pt/ska-docker/tango-cpp:latest
+    restart: unless-stopped
     depends_on:
       - tangodb
     network_mode: ${NETWORK_MODE}
@@ -64,11 +66,13 @@ services:
 
   rsyslog-lmcbaseclasses:
     image: jumanjiman/rsyslog
+    restart: unless-stopped
     container_name: ${CONTAINER_NAME_PREFIX}rsyslog-lmcbaseclasses
     network_mode: ${NETWORK_MODE}
 
   basedevice:
     image: ${DOCKER_REGISTRY_HOST}/${DOCKER_REGISTRY_USER}/lmcbaseclasses:latest
+    restart: unless-stopped
     depends_on:
       - databaseds
       - rsyslog-lmcbaseclasses
@@ -86,6 +90,7 @@ services:
 
   alarmhandler:
     image: ${DOCKER_REGISTRY_HOST}/${DOCKER_REGISTRY_USER}/lmcbaseclasses:latest
+    restart: unless-stopped
     depends_on:
       - databaseds
       - rsyslog-lmcbaseclasses
@@ -103,6 +108,7 @@ services:
 
   capability:
     image: ${DOCKER_REGISTRY_HOST}/${DOCKER_REGISTRY_USER}/lmcbaseclasses:latest
+    restart: unless-stopped
     depends_on:
       - databaseds
       - rsyslog-lmcbaseclasses
@@ -120,6 +126,7 @@ services:
 
   logger:
     image: ${DOCKER_REGISTRY_HOST}/${DOCKER_REGISTRY_USER}/lmcbaseclasses:latest
+    restart: unless-stopped
     depends_on:
       - databaseds
       - rsyslog-lmcbaseclasses
@@ -137,6 +144,7 @@ services:
 
   master:
     image: ${DOCKER_REGISTRY_HOST}/${DOCKER_REGISTRY_USER}/lmcbaseclasses:latest
+    restart: unless-stopped
     depends_on:
       - databaseds
       - rsyslog-lmcbaseclasses
@@ -154,6 +162,7 @@ services:
 
   obsdevice:
     image: ${DOCKER_REGISTRY_HOST}/${DOCKER_REGISTRY_USER}/lmcbaseclasses:latest
+    restart: unless-stopped
     depends_on:
       - databaseds
       - rsyslog-lmcbaseclasses
@@ -171,6 +180,7 @@ services:
 
   subarray:
     image: ${DOCKER_REGISTRY_HOST}/${DOCKER_REGISTRY_USER}/lmcbaseclasses:latest
+    restart: unless-stopped
     depends_on:
       - databaseds
       - rsyslog-lmcbaseclasses
@@ -188,6 +198,7 @@ services:
 
   telstate:
     image: ${DOCKER_REGISTRY_HOST}/${DOCKER_REGISTRY_USER}/lmcbaseclasses:latest
+    restart: unless-stopped
     depends_on:
       - databaseds
       - rsyslog-lmcbaseclasses
@@ -205,6 +216,7 @@ services:
 
   testdevice:
     image: ${DOCKER_REGISTRY_HOST}/${DOCKER_REGISTRY_USER}/lmcbaseclasses:latest
+    restart: unless-stopped
     depends_on:
       - databaseds
       - rsyslog-lmcbaseclasses

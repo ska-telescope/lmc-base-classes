@@ -53,7 +53,7 @@ unsafe-load-any-extension=no
 
 # Only show warnings with the listed confidence levels. Leave empty to show
 # all. Valid levels: HIGH, INFERENCE, INFERENCE_FAILURE, UNDEFINED.
-confidence=HIGH, INFERENCE, INFERENCE_FAILURE
+confidence=
 
 # Disable the message, report, category or checker with the given id(s). You
 # can either give multiple identifiers separated by comma (,) or put this
@@ -66,7 +66,8 @@ confidence=HIGH, INFERENCE, INFERENCE_FAILURE
 # --disable=W".
 disable=C,
         R,
-        W
+        W,
+        I
 
 # Enable the message, report, category or checker with the given id(s). You can
 # either give multiple identifier separated by comma (,) or put this option

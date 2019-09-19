@@ -18,5 +18,4 @@ last_build_s_m = data["build-status"]["latest"]["status"]
 last_build_s_b = anybadge.Badge('last build', last_build_s_m, thresholds=build_s_t)
 
 # Write badge
-last_build_s_b.write_badge('public/badges/last_build_s.svg')
-
+last_build_s_b.write_badge('build/badges/last_build_s.svg')

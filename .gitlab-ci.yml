@@ -108,6 +108,7 @@ pages:
     - docker-executor
   stage: pages
   script:
+    - mkdir build/badges
     - apt-get -y update
     - apt install -y python3-pip
     - pip3 install -U anybadge

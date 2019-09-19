@@ -112,7 +112,6 @@ pages:
     - apt-get -y update
     - apt install -y python3-pip
     - pip3 install -U anybadge
-    - ls
     - python3 scripts/createBadges.py
     - mv build public
     - mv public/lmcbaseclasses_htmlcov/* public

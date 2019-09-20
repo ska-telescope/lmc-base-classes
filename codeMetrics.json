@@ -1,6 +1,6 @@
 {
     "build-status": {
-        "latest": {
+        "last": {
             "status": 0,
             "link": "https://gitlab.com/ska-telescope/lmc-base-classes/pipelines/82661239",
             "timestamp": 1568202193.0
@@ -20,7 +20,7 @@
         "failed": 3,
         "total": 170
     },
-    "linting": {
+    "lint": {
         "link": "https://link-to-lint_output.xml",
         "errors": 4,
         "failures": 0,

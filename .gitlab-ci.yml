@@ -119,5 +119,3 @@ pages:
   artifacts:
     paths:
       - public
-      - public/badges/build_last_status.svg
-      - public/badges/lint_errors.svg

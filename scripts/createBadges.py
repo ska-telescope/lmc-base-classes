@@ -5,9 +5,6 @@ import json
 from datetime import datetime
 
 
-# Set Anybadge Deafaults
-anybadge.NUM_PADDING_CHARS = 2
-
 with open("codeMetrics.json", "r") as json_file:
     data = json.load(json_file)
 
@@ -34,10 +31,12 @@ else:
     sys.exit()
 
 # Create badge
-badge = anybadge.Badge(label=label, value=value, default_color=color)
+badge = anybadge.Badge(
+    label=label, value=value, default_color=color, num_padding_chars=1
+)
 
 # Write badge
-badge.write_badge('build/badges/build_last_status.svg', overwrite=True)
+badge.write_badge("build/badges/build_last_status.svg", overwrite=True)
 
 ## LAST BUILD DATE ===========================================================
 # Extract metric
@@ -49,10 +48,12 @@ value = timestamp.strftime("%Y/%m/%d %H:%M:%S")
 color = "lightgrey"
 
 # Create badge
-badge = anybadge.Badge(label=label, value=value, default_color=color)
+badge = anybadge.Badge(
+    label=label, value=value, default_color=color, num_padding_chars=1
+)
 
 # Write badge
-badge.write_badge('build/badges/build_last_date.svg', overwrite=True)
+badge.write_badge("build/badges/build_last_date.svg", overwrite=True)
 
 ## GREEN BUILD DATE ===========================================================
 # Extract metric
@@ -64,10 +65,12 @@ value = timestamp.strftime("%Y/%m/%d %H:%M:%S")
 color = "lightgrey"
 
 # Create badge
-badge = anybadge.Badge(label=label, value=value, default_color=color)
+badge = anybadge.Badge(
+    label=label, value=value, default_color=color, num_padding_chars=1
+)
 
 # Write badge
-badge.write_badge('build/badges/build_green_date.svg', overwrite=True)
+badge.write_badge("build/badges/build_green_date.svg", overwrite=True)
 
 ###############################################################################
 # LINTING
@@ -85,10 +88,12 @@ elif metric > 0:
     color = "yellow"
 
 # Create badge
-badge = anybadge.Badge(label=label, value=value, default_color=color)
+badge = anybadge.Badge(
+    label=label, value=value, default_color=color, num_padding_chars=1
+)
 
 # Write badge
-badge.write_badge('build/badges/lint_errors.svg', overwrite=True)
+badge.write_badge("build/badges/lint_errors.svg", overwrite=True)
 
 ## FAILURES ===================================================================
 # Extract metric
@@ -104,10 +109,12 @@ elif metric > 0:
     color = "red"
 
 # Create badge
-badge = anybadge.Badge(label=label, value=value, default_color=color)
+badge = anybadge.Badge(
+    label=label, value=value, default_color=color, num_padding_chars=1
+)
 
 # Write badge
-badge.write_badge('build/badges/lint_failures.svg', overwrite=True)
+badge.write_badge("build/badges/lint_failures.svg", overwrite=True)
 
 ###############################################################################
 # COVERAGE
@@ -118,13 +125,16 @@ metric = data["coverage"]["percentage"]
 value = metric
 
 # Define thresholds
-thresholds = {50: 'red',
-              60: 'orange',
-              80: 'yellow',
-              100: 'green'}
+thresholds = {50: "red", 60: "orange", 80: "yellow", 100: "green"}
 
 # Create badge
-badge = anybadge.Badge(label=label, value=value, thresholds=thresholds, value_suffix="%")
+badge = anybadge.Badge(
+    label=label,
+    value=value,
+    thresholds=thresholds,
+    value_suffix="%",
+    num_padding_chars=1,
+)
 
 # Write badge
-badge.write_badge('build/badges/coverage.svg', overwrite=True)
+badge.write_badge("build/badges/coverage.svg", overwrite=True)

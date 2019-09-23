@@ -6,7 +6,7 @@ from datetime import datetime
 
 
 # Set Anybadge Deafaults
-anybadge.NUM_PADDING_CHARS = 1
+anybadge.NUM_PADDING_CHARS = 2
 
 with open("codeMetrics.json", "r") as json_file:
     data = json.load(json_file)

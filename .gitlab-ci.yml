@@ -108,11 +108,13 @@ pages:
     - docker-executor
   stage: pages
   script:
+    # START: Gitlab CI badges creation
     - mkdir build/badges
     - apt-get -y update
     - apt install -y python3-pip
     - pip3 install -U anybadge
     - python3 scripts/createBadges.py
+    # END: Gitlab CI badges creation
     - mv build public
     - mv public/lmcbaseclasses_htmlcov/* public
     - make push

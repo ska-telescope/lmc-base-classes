@@ -17,7 +17,7 @@ metric = data["build-status"]["green"]["timestamp"]
 
 timestamp = datetime.fromtimestamp(metric)
 value = timestamp.strftime("%Y/%m/%d %H:%M:%S")
-color = "grey"
+color = "gray"
 
 # Create badge
 badge = anybadge.Badge(
@@ -59,7 +59,7 @@ metric = data["build-status"]["last"]["timestamp"]
 
 timestamp = datetime.fromtimestamp(metric)
 value = timestamp.strftime("%Y/%m/%d %H:%M:%S")
-color = "grey"
+color = "gray"
 
 # Create badge
 badge = anybadge.Badge(
@@ -98,7 +98,7 @@ metric = data["tests"]["total"]
 value = metric
 
 # set colour
-color = "grey"
+color = "gray"
 
 # Create badge
 badge = anybadge.Badge(
@@ -181,7 +181,7 @@ metric = data["lint"]["tests"]
 value = metric
 
 # set colour
-color = "grey"
+color = "gray"
 
 # Create badge
 badge = anybadge.Badge(

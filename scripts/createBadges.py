@@ -12,28 +12,23 @@ with open("codeMetrics.json", "r") as json_file:
 # BUILD STATUS
 ## LAST BUILD STATUS ==========================================================
 # Extract metric
-## 0 for fail, 1 for pass
 label = "last build"
 metric = data["build-status"]["last"]["status"]
+value = metric
 
-if metric == 0:
-    # set text
-    value = "failed"
+if metric == "failed":
     # set colour
     color = "red"
-elif metric == 1:
-    # set text
-    value = "passed"
+elif metric == "passed":
     # set colour
     color = "green"
 else:
     print("ERROR: wrong metric value")
-    sys.exit()
+    # set colour
+    color = "yellow"
 
 # Create badge
-badge = anybadge.Badge(
-    label=label, value=value, default_color=color, num_padding_chars=1
-)
+badge = anybadge.Badge(label=label, value=value, default_color=color)
 
 # Write badge
 badge.write_badge("build/badges/build_last_status.svg", overwrite=True)
@@ -48,9 +43,7 @@ value = timestamp.strftime("%Y/%m/%d %H:%M:%S")
 color = "lightgrey"
 
 # Create badge
-badge = anybadge.Badge(
-    label=label, value=value, default_color=color, num_padding_chars=1
-)
+badge = anybadge.Badge(label=label, value=value, default_color=color)
 
 # Write badge
 badge.write_badge("build/badges/build_last_date.svg", overwrite=True)
@@ -65,18 +58,15 @@ value = timestamp.strftime("%Y/%m/%d %H:%M:%S")
 color = "lightgrey"
 
 # Create badge
-badge = anybadge.Badge(
-    label=label, value=value, default_color=color, num_padding_chars=1
-)
+badge = anybadge.Badge(label=label, value=value, default_color=color)
 
 # Write badge
 badge.write_badge("build/badges/build_green_date.svg", overwrite=True)
 
 ###############################################################################
-# LINTING
+# LINT
 ## ERRORS ======================================================================
 # Extract metric
-## 0 for fail, 1 for pass
 label = "lint errors"
 metric = data["lint"]["errors"]
 value = metric
@@ -88,16 +78,13 @@ elif metric > 0:
     color = "yellow"
 
 # Create badge
-badge = anybadge.Badge(
-    label=label, value=value, default_color=color, num_padding_chars=1
-)
+badge = anybadge.Badge(label=label, value=value, default_color=color)
 
 # Write badge
 badge.write_badge("build/badges/lint_errors.svg", overwrite=True)
 
 ## FAILURES ===================================================================
 # Extract metric
-## 0 for fail, 1 for pass
 label = "lint failures"
 metric = data["lint"]["failures"]
 value = metric
@@ -109,12 +96,60 @@ elif metric > 0:
     color = "red"
 
 # Create badge
-badge = anybadge.Badge(
-    label=label, value=value, default_color=color, num_padding_chars=1
-)
+badge = anybadge.Badge(label=label, value=value, default_color=color)
 
 # Write badge
 badge.write_badge("build/badges/lint_failures.svg", overwrite=True)
+
+## TESTS ===================================================================
+# Extract metric
+label = "lint tests"
+metric = data["lint"]["tests"]
+value = metric
+
+# set colour
+color = "lightgrey"
+
+# Create badge
+badge = anybadge.Badge(label=label, value=value, default_color=color)
+
+# Write badge
+badge.write_badge("build/badges/lint_tests.svg", overwrite=True)
+
+###############################################################################
+# TESTS
+## FAILED ======================================================================
+# Extract metric
+label = "tests failed"
+metric = data["tests"]["failed"]
+value = metric
+
+# set colour
+if metric == 0:
+    color = "green"
+elif metric > 0:
+    color = "red"
+
+# Create badge
+badge = anybadge.Badge(label=label, value=value, default_color=color)
+
+# Write badge
+badge.write_badge("build/badges/tests_failed.svg", overwrite=True)
+
+## TOTAL ===================================================================
+# Extract metric
+label = "tests total"
+metric = data["tests"]["total"]
+value = metric
+
+# set colour
+color = "lightgrey"
+
+# Create badge
+badge = anybadge.Badge(label=label, value=value, default_color=color)
+
+# Write badge
+badge.write_badge("build/badges/tests_total.svg", overwrite=True)
 
 ###############################################################################
 # COVERAGE
@@ -129,11 +164,7 @@ thresholds = {50: "red", 60: "orange", 80: "yellow", 100: "green"}
 
 # Create badge
 badge = anybadge.Badge(
-    label=label,
-    value=value,
-    thresholds=thresholds,
-    value_suffix="%",
-    num_padding_chars=1,
+    label=label, value=value, thresholds=thresholds, value_suffix="%"
 )
 
 # Write badge

@@ -1,7 +1,7 @@
 {
     "build-status": {
         "last": {
-            "status": 0,
+            "status": "failed",
             "link": "https://gitlab.com/ska-telescope/lmc-base-classes/pipelines/82661239",
             "timestamp": 1568202193.0
         },
@@ -12,7 +12,7 @@
     },
     "coverage": {
         "link": "https://ska-telescope.gitlab.io/lmc-base-classes/",
-        "percentage": 60
+        "percentage": 60.00
         },
     "tests": {
         "link": "https://link-to-report.json",

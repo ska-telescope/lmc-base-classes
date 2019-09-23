@@ -17,12 +17,10 @@ metric = data["build-status"]["green"]["timestamp"]
 
 timestamp = datetime.fromtimestamp(metric)
 value = timestamp.strftime("%Y/%m/%d %H:%M:%S")
-color = "gray"
+color = "lightgrey"
 
 # Create badge
-badge = anybadge.Badge(
-    label=label, value=value, default_color=color, value_prefix=" ", value_suffix=" "
-)
+badge = anybadge.Badge(label=label, value=value, default_color=color, value_prefix=' ', value_suffix=' ')
 
 # Write badge
 badge.write_badge("build/badges/build_green_date.svg", overwrite=True)
@@ -45,9 +43,7 @@ else:
     color = "yellow"
 
 # Create badge
-badge = anybadge.Badge(
-    label=label, value=value, default_color=color, value_prefix=" ", value_suffix=" "
-)
+badge = anybadge.Badge(label=label, value=value, default_color=color, value_prefix=' ', value_suffix=' ')
 
 # Write badge
 badge.write_badge("build/badges/build_last_status.svg", overwrite=True)
@@ -59,12 +55,10 @@ metric = data["build-status"]["last"]["timestamp"]
 
 timestamp = datetime.fromtimestamp(metric)
 value = timestamp.strftime("%Y/%m/%d %H:%M:%S")
-color = "gray"
+color = "lightgrey"
 
 # Create badge
-badge = anybadge.Badge(
-    label=label, value=value, default_color=color, value_prefix=" ", value_suffix=" "
-)
+badge = anybadge.Badge(label=label, value=value, default_color=color, value_prefix=' ', value_suffix=' ')
 
 # Write badge
 badge.write_badge("build/badges/build_last_date.svg", overwrite=True)
@@ -84,9 +78,7 @@ elif metric > 0:
     color = "red"
 
 # Create badge
-badge = anybadge.Badge(
-    label=label, value=value, default_color=color, value_prefix=" ", value_suffix=" "
-)
+badge = anybadge.Badge(label=label, value=value, default_color=color, value_prefix=' ', value_suffix=' ')
 
 # Write badge
 badge.write_badge("build/badges/tests_failed.svg", overwrite=True)
@@ -98,12 +90,10 @@ metric = data["tests"]["total"]
 value = metric
 
 # set colour
-color = "gray"
+color = "lightgrey"
 
 # Create badge
-badge = anybadge.Badge(
-    label=label, value=value, default_color=color, value_prefix=" ", value_suffix=" "
-)
+badge = anybadge.Badge(label=label, value=value, default_color=color, value_prefix=' ', value_suffix=' ')
 
 # Write badge
 badge.write_badge("build/badges/tests_total.svg", overwrite=True)
@@ -121,12 +111,7 @@ thresholds = {50: "red", 60: "orange", 80: "yellow", 100: "green"}
 
 # Create badge
 badge = anybadge.Badge(
-    label=label,
-    value=value,
-    thresholds=thresholds,
-    value_format="%.2f",
-    value_prefix=" ",
-    value_suffix="% ",
+    label=label, value=value, thresholds=thresholds, value_format="%.2f", value_prefix=' ', value_suffix="% "
 )
 
 # Write badge
@@ -147,9 +132,7 @@ elif metric > 0:
     color = "yellow"
 
 # Create badge
-badge = anybadge.Badge(
-    label=label, value=value, default_color=color, value_prefix=" ", value_suffix=" "
-)
+badge = anybadge.Badge(label=label, value=value, default_color=color, value_prefix=' ', value_suffix=' ')
 
 # Write badge
 badge.write_badge("build/badges/lint_errors.svg", overwrite=True)
@@ -167,9 +150,7 @@ elif metric > 0:
     color = "red"
 
 # Create badge
-badge = anybadge.Badge(
-    label=label, value=value, default_color=color, value_prefix=" ", value_suffix=" "
-)
+badge = anybadge.Badge(label=label, value=value, default_color=color, value_prefix=' ', value_suffix=' ')
 
 # Write badge
 badge.write_badge("build/badges/lint_failures.svg", overwrite=True)
@@ -181,12 +162,10 @@ metric = data["lint"]["tests"]
 value = metric
 
 # set colour
-color = "gray"
+color = "lightgrey"
 
 # Create badge
-badge = anybadge.Badge(
-    label=label, value=value, default_color=color, value_prefix=" ", value_suffix=" "
-)
+badge = anybadge.Badge(label=label, value=value, default_color=color, value_prefix=' ', value_suffix=' ')
 
 # Write badge
 badge.write_badge("build/badges/lint_tests.svg", overwrite=True)

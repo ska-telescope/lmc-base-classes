@@ -56,6 +56,7 @@ run tests:
   image: nexus.engageska-portugal.pt/ska-docker/tango-builder:latest
   before_script:
   - docker login -u $DOCKER_REGISTRY_USERNAME -p $DOCKER_REGISTRY_PASSWORD $DOCKER_REGISTRY_HOST
+  # - docker login -u ci-cd -p ci-cd-pipeline-8237 nexus.engageska-portugal.pt
   tags:
     - docker-executor
   script:
@@ -71,6 +72,7 @@ linting:
   image: nexus.engageska-portugal.pt/ska-docker/tango-builder:latest
   before_script:
   - docker login -u $DOCKER_REGISTRY_USERNAME -p $DOCKER_REGISTRY_PASSWORD $DOCKER_REGISTRY_HOST
+  # - docker login -u ci-cd -p ci-cd-pipeline-8237 nexus.engageska-portugal.pt
   tags:
     - docker-executor
   script:
@@ -101,10 +103,16 @@ pages:
   image: nexus.engageska-portugal.pt/ska-docker/tango-builder:latest
   before_script:
   - docker login -u $DOCKER_REGISTRY_USERNAME -p $DOCKER_REGISTRY_PASSWORD $DOCKER_REGISTRY_HOST
+  # - docker login -u ci-cd -p ci-cd-pipeline-8237 nexus.engageska-portugal.pt
   tags:
     - docker-executor
   stage: pages
   script:
+    - mkdir build/badges
+    - apt-get -y update
+    - apt install -y python3-pip
+    - pip3 install -U anybadge
+    - python3 scripts/createBadges.py
     - mv build public
     - mv public/lmcbaseclasses_htmlcov/* public
     - make push

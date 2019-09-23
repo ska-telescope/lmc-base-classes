@@ -1,0 +1,29 @@
+{
+    "build-status": {
+        "last": {
+            "status": "failed",
+            "link": "https://gitlab.com/ska-telescope/lmc-base-classes/pipelines/82661239",
+            "timestamp": 1568202193.0
+        },
+        "green": {
+            "link": "https://gitlab.com/ska-telescope/cdm-shared-library/pipelines/82743528",
+            "timestamp": 1568112133.0
+        }
+    },
+    "coverage": {
+        "link": "https://ska-telescope.gitlab.io/lmc-base-classes/",
+        "percentage": 60.00
+        },
+    "tests": {
+        "link": "https://link-to-report.json",
+        "passed": 167,
+        "failed": 3,
+        "total": 170
+    },
+    "lint": {
+        "link": "https://link-to-lint_output.xml",
+        "errors": 4,
+        "failures": 0,
+        "tests": 7
+    }
+}

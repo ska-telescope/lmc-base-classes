@@ -3,6 +3,9 @@
         "last": {
             "status": "failed",
             "timestamp": 1568202193.0
+        },
+        "green": {
+            "timestamp": 1568112133.0
         }
     },
     "coverage": {

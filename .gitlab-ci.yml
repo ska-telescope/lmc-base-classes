@@ -108,6 +108,8 @@ pages:
     - docker-executor
   stage: pages
   script:
+    # Create the ci-metrics.json file (as an example we are just copying from the ci-metrics-mock.json to be deleted in a future commit)
+    - cp ci-metrics-mock.json to ci-metrics.json
     # START: Gitlab CI badges creation
     - mkdir build/badges
     - apt-get -y update

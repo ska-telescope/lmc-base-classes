@@ -5,11 +5,26 @@ import json
 from datetime import datetime
 
 
-with open("codeMetrics.json", "r") as json_file:
+with open("ci-metrics.json", "r") as json_file:
     data = json.load(json_file)
 
 ###############################################################################
 # BUILD STATUS
+## GREEN BUILD DATE ===========================================================
+# Extract metric
+label = "green build"
+metric = data["build-status"]["green"]["timestamp"]
+
+timestamp = datetime.fromtimestamp(metric)
+value = timestamp.strftime("%Y/%m/%d %H:%M:%S")
+color = "lightgrey"
+
+# Create badge
+badge = anybadge.Badge(label=label, value=value, default_color=color, value_prefix=' ', value_suffix=' ')
+
+# Write badge
+badge.write_badge("build/badges/build_green_date.svg", overwrite=True)
+
 ## LAST BUILD STATUS ==========================================================
 # Extract metric
 label = "last build"

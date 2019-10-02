@@ -121,11 +121,14 @@ pages:
     - echo $CI_PROJECT_DIR
     - echo $CI_PROJECT_NAME
     - echo $CI_PROJECT_PATH
-    - echo git rev-parse --abbrev-ref HEAD
     - echo $CI_COMMIT_REF_NAME
     - echo $CI_COMMIT_SHA
-    - curl -v --user $RAW_USER:$RAW_PASS --upload-file build/badges/build_last_status.svg $RAW_HOST/repository/raw/gitlab-ci-metrics/$CI_PROJECT_PATH/$CI_COMMIT_REF_NAME/badges/
-    - curl -v --user $RAW_USER:$RAW_PASS --upload-file build/badges/tests_failed.svg $RAW_HOST/repository/raw/gitlab-ci-metrics/$CI_PROJECT_PATH/$CI_COMMIT_REF_NAME/badges/tests_failed.svg
+    - echo $RAW_HOST
+    - echo $RAW_USER
+    - echo $RAW_PASS
+    # - curl -v --user $RAW_USER:$RAW_PASS --upload-file build/badges/build_last_status.svg $RAW_HOST/repository/raw/gitlab-ci-metrics/$CI_PROJECT_PATH/$CI_COMMIT_REF_NAME/badges/
+    # - curl -v --user $RAW_USER:$RAW_PASS --upload-file build/badges/tests_failed.svg $RAW_HOST/repository/raw/gitlab-ci-metrics/$CI_PROJECT_PATH/$CI_COMMIT_REF_NAME/badges/
+    - find build/badges -type f -exec curl --user $RAW_USER:$RAW_PASS --upload-file {} $RAW_HOST/repository/raw/gitlab-ci-metrics/$CI_PROJECT_PATH/$CI_COMMIT_REF_NAME/badges/ \;
     # END: Gitlab CI badges creation
     - mv build public
     - mv public/lmcbaseclasses_htmlcov/* public

@@ -124,8 +124,8 @@ pages:
     - echo git rev-parse --abbrev-ref HEAD
     - echo $CI_COMMIT_REF_NAME
     - echo $CI_COMMIT_SHA
-    # - curl -v --user '$RAW_USER:$RAW_PASS' --upload-file build/badges/build_last_status.svg $RAW_HOST/gitlab-ci-metrics/$CI_PROJECT_PATH/$BRANCH_NAME/$CI_COMMIT_SHA/badges
-    # - curl -v --user '$RAW_USER:$RAW_PASS' --upload-file build/badges/tests_failed.svg $RAW_HOST/gitlab-ci-metrics/$CI_PROJECT_PATH/$BRANCH_NAME//$CI_COMMIT_SHA/badges
+    - curl -v --user '$RAW_USER:$RAW_PASS' --upload-file build/badges/build_last_status.svg $RAW_HOST/gitlab-ci-metrics/$CI_PROJECT_PATH/$BRANCH_NAME/badges
+    - curl -v --user '$RAW_USER:$RAW_PASS' --upload-file build/badges/tests_failed.svg $RAW_HOST/gitlab-ci-metrics/$CI_PROJECT_PATH/$BRANCH_NAME/badges
     # END: Gitlab CI badges creation
     - mv build public
     - mv public/lmcbaseclasses_htmlcov/* public

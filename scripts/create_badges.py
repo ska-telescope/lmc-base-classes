@@ -3,7 +3,14 @@ import os
 import sys
 import json
 from datetime import datetime
+import argparse
 
+parser = argparse.ArgumentParser()
+parser.add_argument("--failed", help="create badges for when the CI pipeline fails")
+args = parser.parse_args()
+
+if args.failed:
+    print "TODO: add badges when failed"
 
 with open("ci-metrics.json", "r") as json_file:
     data = json.load(json_file)

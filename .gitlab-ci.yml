@@ -26,6 +26,7 @@ stages:
   - linting
   - publish
   - pages
+  - pages_on_failure
 
 build wheel for publication: # Executed on a tag
   stage: build
@@ -102,9 +103,9 @@ publish to nexus:
       - $CI_COMMIT_TAG =~ /^((([0-9]+)\.([0-9]+)\.([0-9]+)(?:-([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?)(?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?)$/
 
 pages:
-  image: nexus.engageska-portugal.pt/ska-docker/tango-builder:latest
-  before_script:
-  - docker login -u $DOCKER_REGISTRY_USERNAME -p $DOCKER_REGISTRY_PASSWORD $DOCKER_REGISTRY_HOST
+  # image: nexus.engageska-portugal.pt/ska-docker/tango-builder:latest
+  # before_script:
+  # - docker login -u $DOCKER_REGISTRY_USERNAME -p $DOCKER_REGISTRY_PASSWORD $DOCKER_REGISTRY_HOST
   # - docker login -u ci-cd -p ci-cd-pipeline-8237 nexus.engageska-portugal.pt
   tags:
     - docker-executor
@@ -117,17 +118,7 @@ pages:
     - apt-get -y update
     - apt install -y python3-pip
     - pip3 install -U anybadge
-    - python3 scripts/createBadges.py
-    - echo $CI_PROJECT_DIR
-    - echo $CI_PROJECT_NAME
-    - echo $CI_PROJECT_PATH
-    - echo $CI_COMMIT_REF_NAME
-    - echo $CI_COMMIT_SHA
-    - echo $RAW_HOST
-    - echo $RAW_USER
-    - echo $RAW_PASS
-    # - curl -v --user $RAW_USER:$RAW_PASS --upload-file build/badges/build_last_status.svg $RAW_HOST/repository/raw/gitlab-ci-metrics/$CI_PROJECT_PATH/$CI_COMMIT_REF_NAME/badges/
-    # - curl -v --user $RAW_USER:$RAW_PASS --upload-file build/badges/tests_failed.svg $RAW_HOST/repository/raw/gitlab-ci-metrics/$CI_PROJECT_PATH/$CI_COMMIT_REF_NAME/badges/
+    - python3 scripts/create_badges.py
     - find build/badges -type f -exec curl --user $RAW_USER:$RAW_PASS --upload-file {} $RAW_HOST/repository/raw/gitlab-ci-metrics/$CI_PROJECT_PATH/$CI_COMMIT_REF_NAME/badges/ \;
     # END: Gitlab CI badges creation
     - mv build public
@@ -136,3 +127,9 @@ pages:
   artifacts:
     paths:
       - public
+
+pages_on_failure:
+  stage: pages_on_failure
+  script:
+    - python3 scripts/create_badges.py --failed
+  when: on_failure

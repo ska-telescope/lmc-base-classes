@@ -1,11 +1,11 @@
 {
     "build-status": {
         "last": {
-            "status": "failed",
+            "status": "passed",
             "timestamp": 1568202193.0
         },
         "green": {
-            "timestamp": 1568112133.0
+            "timestamp": 1568202193.0
         }
     },
     "coverage": {

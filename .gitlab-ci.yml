@@ -103,13 +103,13 @@ publish to nexus:
       - $CI_COMMIT_TAG =~ /^((([0-9]+)\.([0-9]+)\.([0-9]+)(?:-([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?)(?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?)$/
 
 pages:
+  stage: pages
   # image: nexus.engageska-portugal.pt/ska-docker/tango-builder:latest
   # before_script:
   # - docker login -u $DOCKER_REGISTRY_USERNAME -p $DOCKER_REGISTRY_PASSWORD $DOCKER_REGISTRY_HOST
   # - docker login -u ci-cd -p ci-cd-pipeline-8237 nexus.engageska-portugal.pt
   tags:
     - docker-executor
-  stage: pages
   script:
     # Create the ci-metrics.json file (as an example we are just copying from the ci-metrics-mock.json to be deleted in a future commit)
     - cp ci-metrics-mock.json ci-metrics.json
@@ -128,8 +128,14 @@ pages:
     paths:
       - public
 
-pages_on_failure:
+build pages on failure:
   stage: pages_on_failure
+  tags:
+    - docker-executor
   script:
+    - mkdir build/badges
+    - apt-get -y update
+    - apt install -y python3-pip
+    - pip3 install -U anybadge
     - python3 scripts/create_badges.py --failed
   when: on_failure

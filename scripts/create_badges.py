@@ -10,7 +10,8 @@ parser.add_argument("--failed", help="create badges for when the CI pipeline fai
 args = parser.parse_args()
 
 if args.failed:
-    print "TODO: add badges when failed"
+    print("TODO: add badges when failed")
+    sys.exit(0)
 
 with open("ci-metrics.json", "r") as json_file:
     data = json.load(json_file)

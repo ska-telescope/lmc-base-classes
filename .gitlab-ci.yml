@@ -111,7 +111,7 @@ pages:
   tags:
     - docker-executor
   script:
-    # Create the ci-metrics.json file (as an example we are just copying from the ci-metrics-mock.json to be deleted in a future commit)
+    # Create the ci-metrics.json file (as an example we are just copying from a mock file to be deleted in a future commit)
     - cp ci-metrics-mock.json ci-metrics.json
     # START: Gitlab CI badges creation
     - mkdir build/badges
@@ -137,9 +137,14 @@ build pages on failure:
   tags:
     - docker-executor
   script:
+    # Create the ci-metrics.json file (as an example we are just copying from a mock file to be deleted in a future commit)
+    - cp ci-metrics-failed-mock.json ci-metrics.json
+    # START: Gitlab CI badges creation
     - mkdir build/badges
     - apt-get -y update
     - apt install -y python3-pip
     - pip3 install -U anybadge
-    - python3 scripts/create_badges.py --failed
+    - python3 scripts/create_badges.py
+    - find build/badges -type f -exec curl --user $RAW_USER:$RAW_PASS --upload-file {} $RAW_HOST/repository/raw/gitlab-ci-metrics/$CI_PROJECT_PATH/$CI_COMMIT_REF_NAME/badges/ \;
+    # END: Gitlab CI badges creation
   when: on_failure

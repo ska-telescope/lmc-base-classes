@@ -112,7 +112,7 @@ pages:
     - docker-executor
   script:
     # Create the ci-metrics.json file (as an example we are just copying from a mock file to be deleted in a future commit)
-    - cp ci-metrics-mock.json ci-metrics.json
+    - cp temp/ci-metrics-mock.json ci-metrics.json
     # START: Gitlab CI badges creation
     - mkdir build/badges
     - apt-get -y update
@@ -138,7 +138,7 @@ build pages on failure:
     - docker-executor
   script:
     # Create the ci-metrics.json file (as an example we are just copying from a mock file to be deleted in a future commit)
-    - cp ci-metrics-failed-mock.json ci-metrics.json
+    - cp temp/ci-metrics-failed-mock.json ci-metrics.json
     # START: Gitlab CI badges creation
     - mkdir build/badges
     - apt-get -y update

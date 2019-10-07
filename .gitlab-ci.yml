@@ -117,10 +117,7 @@ pages:
     - cp temp/ci-metrics-mock.json ci-metrics.json
     # Copy metrics reports to respective locations (this needs to be automated by the team for their specific purposes)
     - mkdir -p build/reports
-    - ls 
-    - ls public
-    - ls build
-    - cp build/test.xml build/reports/test.xml
+    - cp public/test.xml build/reports/test.xml
     - cp public/lint_output.xml build/reports/lint.xml
     - cp public/lmcbaseclasses_coverage.xml build/reports/coverage.xml
     # START: Gitlab CI badges creation

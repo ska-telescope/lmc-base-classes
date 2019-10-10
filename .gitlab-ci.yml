@@ -61,7 +61,7 @@ run tests:
   tags:
     - docker-executor
   script:
-    - apt-get -y update
+    - apt -y update
     - apt install -y python3-pip
     - echo $(ls -d ./dist/*.whl | grep $CI_COMMIT_SHORT_SHA)
     - pip3 install -U $(ls -d ./dist/*.whl | grep $CI_COMMIT_SHORT_SHA)
@@ -77,7 +77,7 @@ linting:
   tags:
     - docker-executor
   script:
-    - apt-get -y update
+    - apt -y update
     - apt install -y python3-pip
     - echo $(ls -d ./dist/*.whl | grep $CI_COMMIT_SHORT_SHA)
     - pip3 install -U $(ls -d ./dist/*.whl | grep $CI_COMMIT_SHORT_SHA)
@@ -123,7 +123,7 @@ pages:
     # START: Gitlab CI badges creation
     - cp ci-metrics.json build/reports
     - mkdir -p build/badges
-    - apt-get -y update
+    - apt -y update
     - apt install -y python3-pip
     - pip3 install -U anybadge
     - python3 scripts/create_badges.py
@@ -148,7 +148,7 @@ build pages on failure:
     - cp temp/ci-metrics-failed-mock.json ci-metrics.json
     # START: Gitlab CI badges creation
     - mkdir -p build/badges
-    - apt-get -y update
+    - apt -y update
     - apt install -y python3-pip
     - pip3 install -U anybadge
     - python3 scripts/create_badges.py

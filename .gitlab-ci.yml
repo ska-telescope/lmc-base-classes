@@ -117,10 +117,11 @@ pages:
     - cp temp/ci-metrics-mock.json ci-metrics.json
     # Copy metrics reports to respective locations (this needs to be automated by the team for their specific purposes)
     - mkdir -p build/reports
-    - cp public/test.xml build/reports/test.xml
-    - cp public/lint_output.xml build/reports/lint.xml
-    - cp public/lmcbaseclasses_coverage.xml build/reports/coverage.xml
+    - cp public/unit-tests.xml build/reports/unit-tests.xml
+    - cp public/lint_output.xml build/reports/linting.xml
+    - cp public/lmcbaseclasses_coverage.xml build/reports/code-coverage.xml
     # START: Gitlab CI badges creation
+    - cp ci-metrics.json build/reports
     - mkdir -p build/badges
     - apt-get -y update
     - apt install -y python3-pip

@@ -61,8 +61,8 @@ run tests:
   tags:
     - docker-executor
   script:
-    - apt -y update
-    - apt install -y python3-pip
+    - apt-get -y update
+    - apt-get install -y python3-pip
     - echo $(ls -d ./dist/*.whl | grep $CI_COMMIT_SHORT_SHA)
     - pip3 install -U $(ls -d ./dist/*.whl | grep $CI_COMMIT_SHORT_SHA)
     - make test
@@ -77,8 +77,8 @@ linting:
   tags:
     - docker-executor
   script:
-    - apt -y update
-    - apt install -y python3-pip
+    - apt-get -y update
+    - apt-get install -y python3-pip
     - echo $(ls -d ./dist/*.whl | grep $CI_COMMIT_SHORT_SHA)
     - pip3 install -U $(ls -d ./dist/*.whl | grep $CI_COMMIT_SHORT_SHA)
     - make lint
@@ -123,8 +123,8 @@ pages:
     # START: Gitlab CI badges creation
     - cp ci-metrics.json build/reports
     - mkdir -p build/badges
-    - apt -y update
-    - apt install -y python3-pip
+    - apt-get -y update
+    - apt-get install -y python3-pip
     - pip3 install -U anybadge
     - python3 scripts/create_badges.py
     - find build/badges -type f -exec curl --user $RAW_USER:$RAW_PASS --upload-file {} $RAW_HOST/repository/raw/gitlab-ci-metrics/$CI_PROJECT_PATH/$CI_COMMIT_REF_NAME/badges/ \;
@@ -148,8 +148,8 @@ build pages on failure:
     - cp temp/ci-metrics-failed-mock.json ci-metrics.json
     # START: Gitlab CI badges creation
     - mkdir -p build/badges
-    - apt -y update
-    - apt install -y python3-pip
+    - apt-get -y update
+    - apt-get install -y python3-pip
     - pip3 install -U anybadge
     - python3 scripts/create_badges.py
     - find build/badges -type f -exec curl --user $RAW_USER:$RAW_PASS --upload-file {} $RAW_HOST/repository/raw/gitlab-ci-metrics/$CI_PROJECT_PATH/$CI_COMMIT_REF_NAME/badges/ \;

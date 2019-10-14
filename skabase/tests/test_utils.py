@@ -75,7 +75,7 @@ TEST_GROUPS = {
     # Invalid groups (bad values)
     'bv1_bad_device_names': {
         'group_name': 'bv1',
-        'devices': ['my\dev-11']
+        'devices': ['my\\dev-11']
     },
     'bv2_bad_device_names': {
         'group_name': 'bv2',
@@ -93,7 +93,7 @@ TEST_GROUPS = {
         'group_name': 'bv5',
         'subgroups': [
             {'group_name': 'bv5-1',
-             'devices': ['my\dev-11']}
+             'devices': ['my\\dev-11']}
         ]
     },
 }

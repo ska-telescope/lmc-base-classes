@@ -12,7 +12,7 @@ from datetime import datetime
 import tango
 from tango import (DeviceProxy, DbDatum, DbDevInfo, AttrQuality,
                    AttrWriteType, Except, ErrSeverity)
-from tango import DevState as _DevState
+from tango import DevState 
 from contextlib import contextmanager
 
 from faults import GroupDefinitionsError
@@ -74,13 +74,13 @@ tango_type_conversion = {tango.CmdArgType.DevUShort.real: 'int',
 def exception_manager(cls, callback=None):
     try:
         yield
-    except tango.DevFailed as df:
+    except tango.DevFailed:
         # Find caller from the relative point of this executing handler
         curframe = inspect.currentframe()
         calframe = inspect.getouterframes(curframe, 2)
 
         # Form exception message
-        message = "{}: {}".format(type(df).__name__, df.message)
+        message = "{}: {}".format(type(tango.DevFailed).__name__, tango.DevFailed.message)
 
         # Retrieve class
         class_name = str(cls.__class__.__name__)
@@ -95,15 +95,15 @@ def exception_manager(cls, callback=None):
         if callback:
             callback()
 
-        tango.Except.re_throw_exception(df, "SKA_CommandFailed", message,
+        tango.Except.re_throw_exception(tango.DevFailed, "SKA_CommandFailed", message,
                                         class_name + "::" + calframe[2][3])
-    except Exception as df:
+    except Exception as anything:
         # Find caller from the relative point of this executing handler
         curframe = inspect.currentframe()
         calframe = inspect.getouterframes(curframe, 2)
 
         # Form exception message
-        message = "{}: {}".format(type(df).__name__, df.message)
+        message = "{}: {}".format(type(anything).__name__, tango.DevFailed.message)
 
         # Retrieve class
         class_name = str(cls.__class__.__name__)
@@ -175,7 +175,7 @@ def coerce_value(value):
     # Enum is not serialised correctly as json
     # _DevState  is tango._tango.DevState
     # because DevState  is tango._tango.DevState != tango.DevState
-    if type(value) in [DevState, _DevState]:
+    if type(value) in [DevState, tango._tango.DevState]:
         return str(value)
     return value
 

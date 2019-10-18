@@ -107,7 +107,7 @@ pages:
   image: nexus.engageska-portugal.pt/ska-docker/tango-builder:latest
   before_script:
   - docker login -u $DOCKER_REGISTRY_USERNAME -p $DOCKER_REGISTRY_PASSWORD $DOCKER_REGISTRY_HOST
-  - docker login -u ci-cd -p ci-cd-pipeline-8237 nexus.engageska-portugal.pt
+  # - docker login -u ci-cd -p ci-cd-pipeline-8237 nexus.engageska-portugal.pt
   tags:
     - docker-executor
   script:

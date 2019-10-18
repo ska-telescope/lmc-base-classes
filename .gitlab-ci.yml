@@ -118,15 +118,7 @@ pages:
     - cp public/lint_output.xml build/reports/linting.xml
     - cp public/lmcbaseclasses_coverage.xml build/reports/code-coverage.xml
     # START: Gitlab CI badges creation
-    - ./scripts/temp_badge.sh
-    # - cp ci-metrics.json build/reports
-    # - mkdir -p build/badges
-    # - apt-get -y update
-    # - apt-get install -y python3-pip
-    # - pip3 install -U anybadge
-    # - curl https://gitlab.com/ska-telescope/ci-metrics-utilities/raw/master/scripts/create_badges.py | python3
-    # - find build/badges -type f -exec curl --user $RAW_USER:$RAW_PASS --upload-file {} $RAW_HOST/repository/raw/gitlab-ci-metrics/$CI_PROJECT_PATH/$CI_COMMIT_REF_NAME/badges/ \;
-    # - find build/reports -type f -exec curl --user $RAW_USER:$RAW_PASS --upload-file {} $RAW_HOST/repository/raw/gitlab-ci-metrics/$CI_PROJECT_PATH/$CI_COMMIT_REF_NAME/reports/ \;
+    - curl -s https://gitlab.com/ska-telescope/ci-metrics-utilities/raw/master/scripts/ci-badges-func.sh | sh
     # END: Gitlab CI badges creation
     - make push
   artifacts:
@@ -144,11 +136,6 @@ build pages on failure:
     # Create the ci-metrics.json file (as an example we are just copying from a mock file to be deleted in a future commit)
     - cp temp/ci-metrics-failed-mock.json ci-metrics.json
     # START: Gitlab CI badges creation
-    - mkdir -p build/badges
-    - apt-get -y update
-    - apt-get install -y python3-pip
-    - pip3 install -U anybadge
-    - curl https://gitlab.com/ska-telescope/ci-metrics-utilities/raw/master/scripts/create_badges.py | python3
-    - find build/badges -type f -exec curl --user $RAW_USER:$RAW_PASS --upload-file {} $RAW_HOST/repository/raw/gitlab-ci-metrics/$CI_PROJECT_PATH/$CI_COMMIT_REF_NAME/badges/ \;
+    - curl -s https://gitlab.com/ska-telescope/ci-metrics-utilities/raw/master/scripts/ci-badges-func.sh | sh
     # END: Gitlab CI badges creation
   when: on_failure

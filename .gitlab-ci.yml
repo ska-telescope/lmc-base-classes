@@ -118,7 +118,7 @@ pages:
     - cp public/lint_output.xml build/reports/linting.xml
     - cp public/lmcbaseclasses_coverage.xml build/reports/code-coverage.xml
     # START: Gitlab CI badges creation
-    - ./temp/temp_badge.sh
+    - ./scripts/temp_badge.sh
     # - cp ci-metrics.json build/reports
     # - mkdir -p build/badges
     # - apt-get -y update

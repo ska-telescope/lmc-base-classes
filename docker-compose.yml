@@ -65,7 +65,7 @@ services:
       - giop:tcp::10000
 
   rsyslog-lmcbaseclasses:
-    image: jumanjiman/rsyslog
+    image: ${DOCKER_REGISTRY_HOST}/${DOCKER_REGISTRY_USER}/rsyslog:latest
     restart: unless-stopped
     container_name: ${CONTAINER_NAME_PREFIX}rsyslog-lmcbaseclasses
     network_mode: ${NETWORK_MODE}

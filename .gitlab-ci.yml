@@ -136,7 +136,7 @@ pages:
 #     # START: Gitlab CI badges creation
 #     - curl -s https://gitlab.com/ska-telescope/ci-metrics-utilities/raw/master/scripts/ci-badges-func.sh | sh
 #     # END: Gitlab CI badges creation
-  when: on_failure
+#  when: on_failure
 
 create ci metrics:
   stage: .post

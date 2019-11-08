@@ -44,9 +44,10 @@ lint:
 
 	# FIXME pylint needs to run twice since there is no way go gather the text and junit xml output at the same time
 	cd /app && pylint -f colorized skabase | tee code_analysis.stdout; \
-	cd /app && pylint skabase > /build/reports/linting.xml; \
+	cd /app && pylint skabase > lint_output.xml; \
 	if [ -d /build ]; then \
 		mv /app/code_analysis.stdout /build/lmcbaseclasses_code_analysis.stdout; \
+		mv /app/lint_output.xml /build/reports/linting.xml; \
 	fi;
 
 .PHONY: all test lint

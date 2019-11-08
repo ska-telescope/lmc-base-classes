@@ -38,5 +38,11 @@ coverage.xml
 # Ansible
 *.retry
 
+# Metrics
+ci-metrics.json
+code-coverage.xml
+linting.xml
+unit-tests.xml
+
 # Miscellaneous
 .DS_Store

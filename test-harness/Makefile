@@ -25,7 +25,7 @@ test:
 	if [ -d /build ]; then \
 		mv /app/setup_py_test.stdout /build/lmcbaseclasses_setup_py_test.stdout; \
 		mv /app/htmlcov /build/lmcbaseclasses_htmlcov; \
-		mv /app/coverage.xml /build/lmcbaseclasses_coverage.xml; \
+		mv /app/coverage.xml /build/reports/code-coverage.xml; \
 	fi;
 
 # wait for the device to be available before beginning the test
@@ -44,10 +44,9 @@ lint:
 
 	# FIXME pylint needs to run twice since there is no way go gather the text and junit xml output at the same time
 	cd /app && pylint -f colorized skabase | tee code_analysis.stdout; \
-	cd /app && pylint skabase > lint_output.xml; \
+	cd /app && pylint skabase > /build/reports/linting.xml; \
 	if [ -d /build ]; then \
 		mv /app/code_analysis.stdout /build/lmcbaseclasses_code_analysis.stdout; \
-		mv /app/lint_output.xml /build/lint_output.xml; \
 	fi;
 
 .PHONY: all test lint

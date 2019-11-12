@@ -22,11 +22,10 @@ test:
 	retry --max=10 -- tango_admin --ping-device ska/telstate/01
 
 	cd /app && python setup.py test | tee setup_py_test.stdout; \
-	if [ -d /build ]; then \
-		mv /app/setup_py_test.stdout /build/lmcbaseclasses_setup_py_test.stdout; \
-		mv /app/htmlcov /build/lmcbaseclasses_htmlcov; \
-		mv /app/coverage.xml /build/reports/code-coverage.xml; \
-	fi;
+	mkdir -p /build/reports; \
+	mv /app/setup_py_test.stdout /build/lmcbaseclasses_setup_py_test.stdout; \
+	mv /app/htmlcov /build/lmcbaseclasses_htmlcov; \
+	mv /app/coverage.xml /build/reports/code-coverage.xml;
 
 # wait for the device to be available before beginning the test
 # A temporary volume is mounted at /build when 'make test' is executing.
@@ -45,10 +44,8 @@ lint:
 	# FIXME pylint needs to run twice since there is no way go gather the text and junit xml output at the same time
 	cd /app && pylint -f colorized skabase | tee code_analysis.stdout; \
 	cd /app && pylint skabase > lint_output.xml; \
-	cat /app/lint_output.xml; \
-	if [ -d /build ]; then \
-		mv /app/code_analysis.stdout /build/lmcbaseclasses_code_analysis.stdout; \
-		mv /app/lint_output.xml /build/reports/linting.xml; \
-	fi;
+	mkdir -p /build/reports; \
+	mv /app/code_analysis.stdout /build/lmcbaseclasses_code_analysis.stdout; \
+	mv /app/lint_output.xml /build/reports/linting.xml;
 
 .PHONY: all test lint

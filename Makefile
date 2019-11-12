@@ -130,7 +130,7 @@ test: build up ## test the application
 	$(INIT_CACHE)
 	$(call make,test); \
 	  status=$$?; \
-	  mkdir /build/reports; \
+	  mkdir -p /build/reports; \
 	  docker cp $(BUILD):/build .; \
 	  $(MAKE) down; \
 	  exit $$status
@@ -140,7 +140,7 @@ lint: build up ## lint the application (static code analysis)
 	$(INIT_CACHE)
 	$(call make,lint); \
 	  status=$$?; \
-	  mkdir /build/reports; \
+	  mkdir -p /build/reports; \
 	  docker cp $(BUILD):/build .; \
 	  $(MAKE) down; \
 	  exit $$status

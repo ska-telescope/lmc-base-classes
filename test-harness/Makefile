@@ -32,19 +32,9 @@ test:
 # The following steps copy across useful output to this volume which can
 # then be extracted to form the CI summary for the test procedure.
 lint:
-	retry --max=10 -- tango_admin --ping-device ska/basedevice/01
-	retry --max=10 -- tango_admin --ping-device ska/alarmhandler/01
-	retry --max=10 -- tango_admin --ping-device ska/capability/01
-	retry --max=10 -- tango_admin --ping-device ska/logger/01
-	retry --max=10 -- tango_admin --ping-device ska/master/01
-	retry --max=10 -- tango_admin --ping-device ska/obsdevice/01
-	retry --max=10 -- tango_admin --ping-device ska/subarray/01
-	retry --max=10 -- tango_admin --ping-device ska/telstate/01
-
-	# FIXME pylint needs to run twice since there is no way go gather the text and junit xml output at the same time
-	mkdir -p /build/reports; \
-	ls /app; \
-	cd /app && pylint --exit-zero --reports=y skabase | tee /build/reports/linting.xml;
-	cd /app && pylint -f parseable skabase | tee code_analysis.stdout; \
+	ls /
+	# mkdir -p /build/reports
+	# cd /app && pylint --exit-zero --reports=y skabase > /build/reports/linting.xml
+	# cd /app && pylint -f parseable skabase | tee code_analysis.stdout
 
 .PHONY: all test lint

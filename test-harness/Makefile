@@ -32,9 +32,10 @@ test:
 # The following steps copy across useful output to this volume which can
 # then be extracted to form the CI summary for the test procedure.
 lint:
-	ls /
-	# mkdir -p /build/reports
-	# cd /app && pylint --exit-zero --reports=y skabase > /build/reports/linting.xml
-	# cd /app && pylint -f parseable skabase | tee code_analysis.stdout
+	# FIXME: At the present there is no way to extract both human readable output and JUnit XML output from pylint, as such it needs to run twice
+	mkdir -p /build/reports;
+	cd /app;
+	pylint --rcfile=/app/.pylintrc --exit-zero --reports=y skabase > /build/reports/linting.xml;
+	pylint --rcfile=/app/.pylintrc -f parseable skabase | tee /build/code_analysis.stdout
 
 .PHONY: all test lint

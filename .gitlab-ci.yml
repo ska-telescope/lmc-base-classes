@@ -80,10 +80,6 @@ linting:
     - echo $(ls -d ./dist/*.whl | grep $CI_COMMIT_SHORT_SHA)
     - pip3 install -U $(ls -d ./dist/*.whl | grep $CI_COMMIT_SHORT_SHA)
     - make lint
-    - ls /
-    - mkdir -p /build/reports
-    - cd /app && pylint --exit-zero --reports=y skabase > /build/reports/linting.xml
-    - cd /app && pylint -f parseable skabase | tee code_analysis.stdout
 
 publish to nexus:
   stage: publish

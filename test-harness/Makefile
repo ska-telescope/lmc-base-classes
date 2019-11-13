@@ -34,8 +34,7 @@ test:
 lint:
 	# FIXME: At the present there is no way to extract both human readable output and JUnit XML output from pylint, as such it needs to run twice
 	mkdir -p /build/reports;
-	cd /app;
-	pylint --rcfile=/app/.pylintrc --exit-zero --reports=y skabase > /build/reports/linting.xml;
-	pylint --rcfile=/app/.pylintrc -f parseable skabase | tee /build/code_analysis.stdout
+	cd /app && pylint --rcfile=/app/.pylintrc --exit-zero --reports=y skabase > /build/reports/linting.xml;
+	cd /app && pylint --rcfile=/app/.pylintrc -f parseable skabase | tee /build/code_analysis.stdout
 
 .PHONY: all test lint

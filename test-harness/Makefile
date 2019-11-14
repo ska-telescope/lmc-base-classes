@@ -32,9 +32,11 @@ test:
 # The following steps copy across useful output to this volume which can
 # then be extracted to form the CI summary for the test procedure.
 lint:
-	# FIXME: At the present there is no way to extract both human readable output and JUnit XML output from pylint, as such it needs to run twice
 	mkdir -p /build/reports;
-	cd /app && pylint --rcfile=/app/.pylintrc --exit-zero --reports=y skabase > /build/reports/linting.xml;
-	cd /app && pylint --rcfile=/app/.pylintrc -f parseable skabase | tee /build/code_analysis.stdout
+	# FIXME: Add pylint2junit to the tango-builder:latest image so that we don't need to install it here.
+	pip3 install pylint2junit;
+	cd /app && pylint --output-format=parseable skabase | tee /build/code_analysis.stdout;
+	# FIXME: Missing functionality in pylint2junit prevents converting from parseable to xml. Once it's implemented there is no need to run linting twice.
+	cd /app && pylint --output-format=pylint2junit.JunitReporter skabase > /build/reports/linting.xml;
 
 .PHONY: all test lint

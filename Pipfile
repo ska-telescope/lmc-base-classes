@@ -31,7 +31,7 @@ sphinxcontrib-websupport = "*"
 coverage  = "*"
 pytest-xdist = "*"
 mock = "*"
-pylint-junit = "*"
+pylint2junit = "*"
 
 [requires]
 python_version = "3"

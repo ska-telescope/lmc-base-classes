@@ -32,7 +32,7 @@ limit-inference-results=100
 
 # List of plugins (as comma separated values of python modules names) to load,
 # usually to register additional checkers.
-load-plugins=pylint_junit
+# load-plugins=
 
 # Pickle collected data for later comparisons.
 persistent=yes
@@ -100,7 +100,7 @@ evaluation=10.0 - ((float(5 * error + warning + refactor + convention) / stateme
 # Set the output format. Available formats are text, parseable, colorized, json
 # and msvs (visual studio). You can also give a reporter class, e.g.
 # mypackage.mymodule.MyReporterClass.
-output-format=junit
+output-format=parseable
 
 # Tells whether to display a full report or only the messages.
 reports=yes

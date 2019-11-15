@@ -4,7 +4,7 @@ import os
 import fnmatch
 import argparse
 
-from tango_simlib import sim_xmi_parser
+from tango_simlib.utilities import sim_xmi_parser
 from lxml import etree
 
 ET = sim_xmi_parser.ET
@@ -14,14 +14,16 @@ def is_quality_untraceable(quality, quality_type, parent_class_psrs, property_ty
     if parent_class_psrs == []:
         return False
     if quality['inherited'] == 'true':
-        if property_type != None:
-            parent_qualities = getattr(
-                parent_class_psrs[0],
-                'get_reformatted_{}_metadata'.format(quality_type))(property_type)
+        quality_method_map = {
+            'device_attr': 'get_device_attribute_metadata',
+            'properties': 'get_device_properties_metadata',
+            'cmd': 'get_device_command_metadata',
+            }
+        get_metadata = getattr(parent_class_psrs[0], quality_method_map[quality_type])
+        if property_type is not None:
+            parent_qualities = get_metadata(property_type)
         else:
-            parent_qualities = getattr(
-                parent_class_psrs[0],
-                'get_reformatted_{}_metadata'.format(quality_type))()
+            parent_qualities = get_metadata()
         keys = parent_qualities.keys()
         if quality['name'] in keys:
             p_quality = parent_qualities[quality['name']]
@@ -109,13 +111,13 @@ if __name__ == '__main__':
         psr.parse(filepath)
 
         # Get all the features of the TANGO class
-        attr_qualities = psr.get_reformatted_device_attr_metadata()
-        cmd_qualities = psr.get_reformatted_cmd_metadata()
-        devprop_qualities = psr.get_reformatted_properties_metadata('deviceProperties')
-        clsprop_qualities = psr.get_reformatted_properties_metadata('classProperties')
+        attr_qualities = psr.get_device_attribute_metadata()
+        cmd_qualities = psr.get_device_command_metadata()
+        devprop_qualities = psr.get_device_properties_metadata('deviceProperties')
+        clsprop_qualities = psr.get_device_properties_metadata('classProperties')
 
         # Get the closest parent class.
-        cls_descr = psr.class_description
+        cls_descr = psr.get_device_class_description_metadata()
         super_classes = cls_descr.values()[0]
         # Remove the 'Device_Impl' class information
         super_class_info = [item for item in super_classes

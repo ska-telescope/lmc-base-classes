@@ -38,5 +38,6 @@ lint:
 	cd /app && pylint --output-format=parseable skabase | tee /build/code_analysis.stdout;
 	# FIXME: Missing functionality in pylint2junit prevents converting from parseable to xml. Once it's implemented there is no need to run linting twice.
 	cd /app && pylint --output-format=pylint2junit.JunitReporter skabase > /build/reports/linting.xml;
+	cat /build/reports/linting.xml
 
 .PHONY: all test lint

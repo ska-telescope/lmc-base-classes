@@ -28,7 +28,7 @@ stages:
   - pages
   - pages_on_failure
 
-clean pipeline:
+clean shell runner:
   stage: .pre
   image: nexus.engageska-portugal.pt/ska-docker/tango-builder:latest
   before_script:
@@ -38,9 +38,6 @@ clean pipeline:
   script:
     # Gitlab CI badges creation
     - rm -rf build/*
-  artifacts:
-    paths:
-      - public
 
 build wheel for publication: # Executed on a tag
   stage: build
@@ -94,6 +91,7 @@ linting:
     - echo $(ls -d ./dist/*.whl | grep $CI_COMMIT_SHORT_SHA)
     - pip3 install -U $(ls -d ./dist/*.whl | grep $CI_COMMIT_SHORT_SHA)
     - make lint
+    - cat /build/reports/linting.xml
 
 publish to nexus:
   stage: publish
@@ -133,6 +131,7 @@ pages:
     # - curl -s https://gitlab.com/ska-telescope/ci-metrics-utilities/raw/master/scripts/ci-badges-func.sh | sh
     # END: Gitlab CI badges creation
     - make push
+    - cat /build/reports/linting.xml
   artifacts:
     paths:
       - public

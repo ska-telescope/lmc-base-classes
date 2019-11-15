@@ -69,7 +69,7 @@ unit tests:
     - docker-executor
   script:
     - apt-get -y update
-    - apt-get install -y python3-pip
+    - apt-get install -y python3-pip --no-install-recommends
     - echo $(ls -d ./dist/*.whl | grep $CI_COMMIT_SHORT_SHA)
     - pip3 install -U $(ls -d ./dist/*.whl | grep $CI_COMMIT_SHORT_SHA)
     - make test
@@ -84,12 +84,13 @@ linting:
     - docker-executor
   script:
     - apt-get -y update
-    - apt-get install -y python3-pip
+    - apt-get install -y python3-pip --no-install-recommends
     - echo $(ls -d ./dist/*.whl | grep $CI_COMMIT_SHORT_SHA)
     - pip3 install -U $(ls -d ./dist/*.whl | grep $CI_COMMIT_SHORT_SHA)
     - make lint
     - pwd
     - ls -la
+    - ls -la build/reports
     - ls -la /build/reports
     - cat /build/reports/linting.xml
 

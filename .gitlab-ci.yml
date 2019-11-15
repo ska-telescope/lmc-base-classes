@@ -159,6 +159,8 @@ create ci metrics:
     - docker-executor
   script:
     # Gitlab CI badges creation
+    - apt-get -y update
+    - apt-get install -y curl --no-install-recommends
     - curl -s https://gitlab.com/ska-telescope/ci-metrics-utilities/raw/master/scripts/ci-badges-func.sh | sh
   artifacts:
     paths:

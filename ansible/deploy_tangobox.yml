@@ -1,8 +1,0 @@
----
-
-- name: deploy_tangobox
-  hosts: operational
-  roles:
-    - {role: 'deploy_tangobox', tags: ['deploy-tangobox'], become: yes}
-
-

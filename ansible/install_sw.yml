@@ -1,7 +1,0 @@
-
-- name: install_sw
-  hosts: operational
-  roles:
-    - {role: 'install_sw', tags: ['install-sw']}
-
-

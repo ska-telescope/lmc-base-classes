@@ -1,7 +1,0 @@
-ansible_ssh_host: lmc.dev4.domain
-
-special_params:
-    - name: spec1
-      detail: specdet1
-    - name: spec2
-      detail: specdet2

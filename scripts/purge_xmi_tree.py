@@ -1,4 +1,19 @@
 #!/usr/bin/env python
+"""
+Utility to purge orphaned elements from the XMI file tree.
+
+The base classes have a hierarchy.  If the API in a parent device
+is changed (e.g., removing a command from SKABaseDevice), child classes,
+e.g., SKAMaster, need to change too.  However, after regenerating the
+Pogo XMI file for SKAMaster, it will still have the old command in its
+XMI file, even though it no longer exists in the parent.  This tool runs
+through all the XMI files and find elements that are marked as "inherited",
+but no longer exist higher up in the hierarchy.
+
+Requirements:
+ - Python 2.7
+ - Dependencies:  tango-simlib and lxml
+"""
 
 import os
 import fnmatch
@@ -9,8 +24,9 @@ from lxml import etree
 
 ET = sim_xmi_parser.ET
 
-def is_quality_untraceable(quality, quality_type, parent_class_psrs, property_type=None):
 
+def is_quality_untraceable(quality, quality_type, parent_class_psrs, property_type=None):
+    """Recursive check if specified quality has no parent."""
     if parent_class_psrs == []:
         return False
     if quality['inherited'] == 'true':
@@ -37,7 +53,7 @@ def is_quality_untraceable(quality, quality_type, parent_class_psrs, property_ty
 
 def gather_items_to_delete(quality_list, quality_type, parent_class_psrs,
                            property_type=None, purge_all=False):
-
+    """Return the list of qualities that need to be deleted."""
     items = []
     for quality in quality_list:
         if purge_all:
@@ -46,8 +62,8 @@ def gather_items_to_delete(quality_list, quality_type, parent_class_psrs,
                 items.append(quality)
         else:
             untraceable = is_quality_untraceable(quality_list[quality],
-                                             quality_type,
-                                             parent_class_psrs, property_type)
+                                                 quality_type,
+                                                 parent_class_psrs, property_type)
             # Add the quality to be deleted in the appropriate list
             if untraceable:
                 items.append(quality)
@@ -55,16 +71,16 @@ def gather_items_to_delete(quality_list, quality_type, parent_class_psrs,
 
 
 def prune_xmi_tree(xmi_tree, qualities):
-
+    """Prune the specified qualities from the parsed XMI tree (in place)."""
     cls = xmi_tree.find('classes')
     for quality_type in qualities:
         if args.verbose:
-            print "            Pruning quality_type", \
-                   quality_type, qualities[quality_type]
+            print("            Pruning quality_type",
+                  quality_type, qualities[quality_type])
         xmi_elements = cls.findall(quality_type)
         if args.verbose:
-            print "                from xmi_elements", \
-                   [elt.attrib['name'] for elt in xmi_elements]
+            print("                from xmi_elements",
+                  [elt.attrib['name'] for elt in xmi_elements])
         for xmi_element in xmi_elements:
             if xmi_element.attrib['name'] in qualities[quality_type]:
                 if args.verbose:
@@ -72,9 +88,9 @@ def prune_xmi_tree(xmi_tree, qualities):
                 cls.remove(xmi_element)
 
 
-parser = argparse.ArgumentParser(description=
-    "Purge inherited items that no longer have ancestors from files in tree,"
-    "and when '--purge-all' is requested it will remove all inherited items")
+parser = argparse.ArgumentParser(
+    description="Purge inherited items that no longer have ancestors from files in tree,"
+                "and when '--purge-all' is requested it will remove all inherited items")
 parser.add_argument('--path', dest="path",
                     action="store",
                     required=True,
@@ -139,7 +155,6 @@ if __name__ == '__main__':
             sup_psr.parse(sup_file)
             super_class_psrs.append(sup_psr)
 
-
         # Make use of the recursive function.
         # Create lists of features that need to be removed.
         # Gather items to delete in the attributes.
@@ -185,7 +200,8 @@ if __name__ == '__main__':
             prune_xmi_tree(tree, qualities)
 
             # This you need to write the 'new' xmi file
-            # Define the default namespace(s) before parsing the file to avoid "<ns0:PogoSystem "
+            # Define the default namespace(s) before parsing the file to avoid
+            # "<ns0:PogoSystem "
             etree.register_namespace('pogoDsl', "http://www.esrf.fr/tango/pogo/PogoDsl")
             etree.register_namespace('xmi', "http://www.omg.org/XMI")
             # To write a file with the xml declaration at the top.

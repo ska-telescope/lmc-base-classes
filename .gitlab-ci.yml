@@ -28,6 +28,20 @@ stages:
   - pages
   - pages_on_failure
 
+clean pipeline:
+  stage: .pre
+  image: nexus.engageska-portugal.pt/ska-docker/tango-builder:latest
+  before_script:
+  - docker login -u $DOCKER_REGISTRY_USERNAME -p $DOCKER_REGISTRY_PASSWORD $DOCKER_REGISTRY_HOST
+  tags:
+    - docker-executor
+  script:
+    # Gitlab CI badges creation
+    - rm -rf build/*
+  artifacts:
+    paths:
+      - public
+
 build wheel for publication: # Executed on a tag
   stage: build
   tags:

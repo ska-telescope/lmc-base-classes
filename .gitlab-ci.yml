@@ -30,9 +30,6 @@ stages:
 
 clean shell runner:
   stage: .pre
-  image: nexus.engageska-portugal.pt/ska-docker/tango-builder:latest
-  before_script:
-  - docker login -u $DOCKER_REGISTRY_USERNAME -p $DOCKER_REGISTRY_PASSWORD $DOCKER_REGISTRY_HOST
   tags:
     - docker-executor
   script:
@@ -63,7 +60,7 @@ build wheel for development: # Executed on a commit
     paths:
       - ./dist/
 
-run tests:
+unit tests:
   stage: test
   image: nexus.engageska-portugal.pt/ska-docker/tango-builder:latest
   before_script:
@@ -91,6 +88,9 @@ linting:
     - echo $(ls -d ./dist/*.whl | grep $CI_COMMIT_SHORT_SHA)
     - pip3 install -U $(ls -d ./dist/*.whl | grep $CI_COMMIT_SHORT_SHA)
     - make lint
+    - pwd
+    - ls -la
+    - ls -la /build/reports
     - cat /build/reports/linting.xml
 
 publish to nexus:
@@ -154,9 +154,6 @@ pages:
 create ci metrics:
   stage: .post
   when: always
-  image: nexus.engageska-portugal.pt/ska-docker/tango-builder:latest
-  before_script:
-  - docker login -u $DOCKER_REGISTRY_USERNAME -p $DOCKER_REGISTRY_PASSWORD $DOCKER_REGISTRY_HOST
   tags:
     - docker-executor
   script:

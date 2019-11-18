@@ -88,12 +88,6 @@ linting:
     - echo $(ls -d ./dist/*.whl | grep $CI_COMMIT_SHORT_SHA)
     - pip3 install -U $(ls -d ./dist/*.whl | grep $CI_COMMIT_SHORT_SHA)
     - make lint
-    - pwd
-    - ls -la
-    - ls -la build/reports
-    - ls -la /build
-    - ls -la /build/reports
-    - cat /build/reports/linting.xml
 
 publish to nexus:
   stage: publish
@@ -132,8 +126,14 @@ pages:
     # START: Gitlab CI badges creation
     # - curl -s https://gitlab.com/ska-telescope/ci-metrics-utilities/raw/master/scripts/ci-badges-func.sh | sh
     # END: Gitlab CI badges creation
-    - make push
+    - pwd
+    - ls -la
+    - ls -la build/reports
+    - ls -la /build
+    - ls -la /build/reports
+    - cat build/reports/linting.xml
     - cat /build/reports/linting.xml
+    - make push
   artifacts:
     paths:
       - public

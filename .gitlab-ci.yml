@@ -3,12 +3,6 @@
 # In this case we use the latest python docker image to build and test this project.
 image: nexus.engageska-portugal.pt/ska-docker/ska-python-buildenv:latest
 
-variables:
-  DOCKER_DRIVER: overlay2
-
-services:
-  - docker:dind
-
 # cache is used to specify a list of files and directories which should be cached between jobs. You can only use paths that are within the project workspace.
 # If cache is defined outside the scope of jobs, it means it is set globally and all jobs will use that definition
 cache:

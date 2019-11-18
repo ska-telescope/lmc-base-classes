@@ -125,7 +125,7 @@ pages:
 
 create ci metrics:
   stage: .post
-  image: debian:buster
+  image: nexus.engageska-portugal.pt/ska-docker/ska-python-buildenv:latest
   when: always
   tags:
     - docker-executor

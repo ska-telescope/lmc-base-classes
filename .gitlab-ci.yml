@@ -129,10 +129,7 @@ pages:
     - pwd
     - ls -la
     - ls -la build/reports
-    - ls -la /build
-    - ls -la /build/reports
     - cat build/reports/linting.xml
-    - cat /build/reports/linting.xml
     - make push
   artifacts:
     paths:

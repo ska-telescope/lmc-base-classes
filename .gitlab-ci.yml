@@ -7,7 +7,7 @@ variables:
   DOCKER_DRIVER: overlay2
 
 services:
-  - docker:dind
+  - docker:18.09.7-dind
 
 # cache is used to specify a list of files and directories which should be cached between jobs. You can only use paths that are within the project workspace.
 # If cache is defined outside the scope of jobs, it means it is set globally and all jobs will use that definition

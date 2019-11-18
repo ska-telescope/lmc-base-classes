@@ -31,13 +31,13 @@ test:
 # A temporary volume is mounted at /build when 'make test' is executing.
 # The following steps copy across useful output to this volume which can
 # then be extracted to form the CI summary for the test procedure.
+# FIXME: Add pylint2junit to the tango-builder:latest image so that we don't need to install it here.
+# FIXME: Missing functionality in pylint2junit prevents converting from parseable to xml. Once it's implemented there is no need to run linting twice.
 lint:
-	mkdir -p /build/reports;
-	# FIXME: Add pylint2junit to the tango-builder:latest image so that we don't need to install it here.
-	pip3 install pylint2junit;
-	cd /app && pylint --output-format=parseable skabase | tee /build/code_analysis.stdout;
-	# FIXME: Missing functionality in pylint2junit prevents converting from parseable to xml. Once it's implemented there is no need to run linting twice.
-	cd /app && pylint --output-format=pylint2junit.JunitReporter skabase > /build/reports/linting.xml;
-	cat /build/reports/linting.xml
+	mkdir -p /build/reports; \
+	pip3 install pylint2junit; \
+	cd /app && pylint --output-format=parseable skabase | tee /build/code_analysis.stdout; \
+	cd /app && pylint --output-format=pylint2junit.JunitReporter skabase > /build/reports/linting.xml; \
+	cat /build/reports/linting.xml;
 
 .PHONY: all test lint

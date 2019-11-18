@@ -130,10 +130,10 @@ pages:
   artifacts:
     paths:
       - public
-      - ./build
 
 create ci metrics:
   stage: .post
+  image: debian:buster-slim
   when: always
   tags:
     - docker-executor
@@ -145,5 +145,4 @@ create ci metrics:
     # Gitlab CI badges creation: END
   artifacts:
     paths:
-      - public
       - ./build

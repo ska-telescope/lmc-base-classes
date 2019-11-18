@@ -118,37 +118,10 @@ pages:
   script:
     - cp -R build public
     - mv public/lmcbaseclasses_htmlcov/* public
-    # Copy metrics reports to respective locations (this needs to be automated by the team for their specific purposes)
-    # - mkdir -p build/reports
-    # - cp public/unit-tests.xml build/reports/unit-tests.xml
-    # - cp public/lint_output.xml build/reports/linting.xml
-    # - cp public/lmcbaseclasses_coverage.xml build/reports/code-coverage.xml
-    # START: Gitlab CI badges creation
-    # - curl -s https://gitlab.com/ska-telescope/ci-metrics-utilities/raw/master/scripts/ci-badges-func.sh | sh
-    # END: Gitlab CI badges creation
-    - pwd
-    - ls -la
-    - ls -la build/reports
-    - cat build/reports/linting.xml
     - make push
   artifacts:
     paths:
       - public
-
-# build pages on failure:
-#   stage: pages_on_failure
-#   image: nexus.engageska-portugal.pt/ska-docker/tango-builder:latest
-#   before_script:
-#   - docker login -u $DOCKER_REGISTRY_USERNAME -p $DOCKER_REGISTRY_PASSWORD $DOCKER_REGISTRY_HOST
-#   tags:
-#     - docker-executor
-#   script:
-#     # Create the ci-metrics.json file (as an example we are just copying from a mock file to be deleted in a future commit)
-#     - cp temp/ci-metrics-failed-mock.json ci-metrics.json
-#     # START: Gitlab CI badges creation
-#     - curl -s https://gitlab.com/ska-telescope/ci-metrics-utilities/raw/master/scripts/ci-badges-func.sh | sh
-#     # END: Gitlab CI badges creation
-#  when: on_failure
 
 create ci metrics:
   stage: .post
@@ -156,10 +129,11 @@ create ci metrics:
   tags:
     - docker-executor
   script:
-    # Gitlab CI badges creation
+    # Gitlab CI badges creation: START
     - apt-get -y update
     - apt-get install -y curl --no-install-recommends
     - curl -s https://gitlab.com/ska-telescope/ci-metrics-utilities/raw/master/scripts/ci-badges-func.sh | sh
+    # Gitlab CI badges creation: END
   artifacts:
     paths:
       - public

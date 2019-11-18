@@ -70,7 +70,6 @@ unit tests:
     - scripts/validate-metadata.sh
   artifacts:
     paths:
-      - public
       - ./build
 
 linting:
@@ -88,7 +87,6 @@ linting:
     - make lint
   artifacts:
     paths:
-      - public
       - ./build
 
 publish to nexus:
@@ -127,7 +125,7 @@ pages:
 
 create ci metrics:
   stage: .post
-  image: debian:buster-slim
+  image: debian:buster
   when: always
   tags:
     - docker-executor

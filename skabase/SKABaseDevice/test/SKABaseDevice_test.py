@@ -201,6 +201,11 @@ class TestSKABaseDevice(object):
         result = SKABaseDevice._parse_argin(SKABaseDevice,'{"class":"SKABaseDevice"}')
         assert result == {'class': 'SKABaseDevice'}
 
+    def test__parse_argin_with_required(self, tango_context):
+        SKABaseDevice._init_logging(SKABaseDevice)
+        with pytest.raises(Exception):
+             SKABaseDevice._parse_argin(SKABaseDevice,'{"class":"SKABaseDevice"}', required='class')
+
     # TODO: Fix this test case when "__DeviceImpl__debug_stream() missing 'msg' argument" is resolved.
     # def test_dev_logging(self, tango_context):
     #     SKABaseDevice._central_logging_level = int(tango.LogLevel.LOG_DEBUG)

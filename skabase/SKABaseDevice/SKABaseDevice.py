@@ -82,34 +82,6 @@ class SKABaseDevice(with_metaclass(DeviceMeta, Device)):
             filehandler.setFormatter(formatter)
             self.logger.addHandler(filehandler)
 
-    def _get_device_json(self, args_dict):
-        """
-        Returns device configuration in JSON format.
-
-        :param args_dict:
-
-        :return: Device configuration parameters in JSON form
-        """
-        try:
-
-            device_dict = {
-                'component': self.get_name(),
-            }
-            if args_dict.get('with_metrics') or args_dict.get('with_attributes'):
-                device_dict['attributes'] = self.get_device_attributes(
-                    with_value=args_dict.get('with_value'),
-                    with_metrics=args_dict.get('with_metrics'),
-                    with_attributes=args_dict.get('with_attributes'),
-                    with_context=False
-                ),
-            if args_dict.get('with_commands') is True:
-                device_dict['commands'] = self.get_device_commands(with_context=False)
-            return device_dict
-
-        except Exception as ex:
-            self.logger.fatal(str(ex), exc_info=True)
-            raise
-
     def _parse_argin(self, argin, defaults=None, required=None):
         """
         Parses the argument passed to it and returns them in a dictionary form.
@@ -138,95 +110,6 @@ class SKABaseDevice(with_metaclass(DeviceMeta, Device)):
                    .format(', '.join([str(m_arg) for m_arg in missing_args])))
             raise Exception(msg)
         return args_dict
-
-    def get_device_commands(self, with_context=True):
-        """ Get device proxy commands"""
-        ### TBD - Why use DeviceProxy?
-        ### Can this not be known through self which is a Device
-        commands = []
-        device_proxy = DeviceProxy(self.get_name())
-        cmd_config_list = device_proxy.command_list_query()
-        for device_cmd_config in cmd_config_list:
-            commands.append(get_dp_command(
-                device_proxy.dev_name(), device_cmd_config, with_context))
-        return commands
-
-    def get_device_attributes(self, with_value=False,
-                              with_context=True, with_metrics=True,
-                              with_attributes=True, attribute_name=None):
-        """ Get device attributes"""
-
-        multi_attribute = self.get_device_attr()
-        attr_list = multi_attribute.get_attribute_list()
-
-        attributes = {}
-
-        # Cannot loop over the attr_list object (not python-wrapped): raises TypeError:
-        # No to_python (by-value) converter found for C++ type: Tango::Attribute*
-        for index in range(len(attr_list)):
-            attrib = attr_list[index]
-            attr_name = attrib.get_name()
-            if attribute_name is not None:
-                if attr_name != attribute_name:
-                    continue
-
-            attr_dict = {
-                'name': attr_name,
-                'polling_frequency': attrib.get_polling_period()
-            }
-
-            try:
-                attr_dict['min_value'] = attrib.get_min_value()
-            except AttributeError as attr_err:
-                self.logger.info(str(attr_err), exc_info=True)
-            except DevFailed as derr:
-                self.logger.info(str(derr), exc_info=True)
-
-            try:
-                attr_dict['max_value'] = attrib.get_max_value()
-            except AttributeError as attr_err:
-                self.logger.info(str(attr_err), exc_info=True)
-            except DevFailed as derr:
-                self.logger.info(str(derr), exc_info=True)
-
-            attr_dict['readonly'] = (
-                attrib.get_writable() not in [AttrWriteType.READ_WRITE,
-                                              AttrWriteType.WRITE,
-                                              AttrWriteType.READ_WITH_WRITE])
-
-            # TODO (KM 2017-10-30): Add the data type of the attribute in the dict.
-
-            if with_context:
-                device_type, device_id = get_tango_device_type_id(self.get_name())
-                attr_dict['component_type'] = device_type
-                attr_dict['component_id'] = device_id
-
-
-            if with_value:
-                # To get the values for the State and Status attributes, we need to call
-                # their get methods, respectively. The device does not implement the
-                # read_<attribute_name> methods for them.
-                if attr_name in ['State', 'Status']:
-                    attr_dict['value'] = coerce_value(
-                        getattr(self, 'get_{}'.format(attr_name.lower()))())
-                else:
-                    attr_dict['value'] = coerce_value(
-                        getattr(self, 'read_{}'.format(attr_name))())
-
-                attr_dict['is_alarm'] = attrib.get_quality == AttrQuality.ATTR_ALARM
-
-            # Define attribute type
-            if attr_name in self.MetricList:
-                attr_dict['attribute_type'] = 'metric'
-            else:
-                attr_dict['attribute_type'] = 'attribute'
-
-            # Add to return attribute dict
-            if (with_metrics and attr_dict['attribute_type'] == 'metric' or
-                    with_attributes and attr_dict['attribute_type'] == 'attribute'):
-                attributes[attr_name] = attr_dict
-
-        return attributes
 
     def dev_logging(self, dev_log_msg, dev_log_level):
         """
@@ -305,8 +188,6 @@ class SKABaseDevice(with_metaclass(DeviceMeta, Device)):
             self.logger.debug(dev_log_msg)
         else:
             pass
-
-
     # PROTECTED REGION END #    //  SKABaseDevice.class_variable
 
     # -----------------

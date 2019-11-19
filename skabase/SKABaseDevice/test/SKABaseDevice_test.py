@@ -17,14 +17,14 @@ from tango import DevState
 
 # Imports
 from skabase.SKABaseDevice import SKABaseDevice
-# PROTECTED REGION ID(SKABaseDevice.test_additional_imports) ENABLED START #
-# PROTECTED REGION END #    //  SKABaseDevice.test_additional_imports
 
 # Path
 path = os.path.join(os.path.dirname(__file__), os.pardir)
 sys.path.insert(0, os.path.abspath(path))
 
 # PROTECTED REGION ID(SKABaseDevice.test_additional_imports) ENABLED START #
+from tango import DevFailed
+from skabase.SKABaseDevice import TangoLoggingLevel
 # PROTECTED REGION END #    //  SKABaseDevice.test_additional_imports
 # Device test case
 # PROTECTED REGION ID(SKABaseDevice.test_SKABaseDevice_decorators) ENABLED START #
@@ -99,7 +99,6 @@ class TestSKABaseDevice(object):
         assert tango_context.device.Reset() is None
         # PROTECTED REGION END #    //  SKABaseDevice.test_Reset
 
-
     # PROTECTED REGION ID(SKABaseDevice.test_buildState_decorators) ENABLED START #
     # PROTECTED REGION END #    //  SKABaseDevice.test_buildState_decorators
     def test_buildState(self, tango_context):
@@ -120,29 +119,45 @@ class TestSKABaseDevice(object):
         assert (re.match(versionIdPattern, tango_context.device.versionId)) is not None
         # PROTECTED REGION END #    //  SKABaseDevice.test_versionId
 
-    # PROTECTED REGION ID(SKABaseDevice.test_centralLoggingLevel_decorators) ENABLED START #
-    # PROTECTED REGION END #    //  SKABaseDevice.test_centralLoggingLevel_decorators
-    def test_centralLoggingLevel(self, tango_context):
-        """Test for centralLoggingLevel"""
-        # PROTECTED REGION ID(SKABaseDevice.test_centralLoggingLevel) ENABLED START #
-        assert tango_context.device.centralLoggingLevel == 0
-        # PROTECTED REGION END #    //  SKABaseDevice.test_centralLoggingLevel
+    # PROTECTED REGION ID(SKABaseDevice.test_loggingLevel_decorators) ENABLED START #
+    # PROTECTED REGION END #    //  SKABaseDevice.test_loggingLevel_decorators
+    def test_loggingLevel(self, tango_context):
+        """Test for loggingLevel"""
+        # PROTECTED REGION ID(SKABaseDevice.test_loggingLevel) ENABLED START #
+        assert tango_context.device.loggingLevel == TangoLoggingLevel.INFO
 
-    # PROTECTED REGION ID(SKABaseDevice.test_elementLoggingLevel_decorators) ENABLED START #
-    # PROTECTED REGION END #    //  SKABaseDevice.test_elementLoggingLevel_decorators
-    def test_elementLoggingLevel(self, tango_context):
-        """Test for elementLoggingLevel"""
-        # PROTECTED REGION ID(SKABaseDevice.test_elementLoggingLevel) ENABLED START #
-        assert tango_context.device.elementLoggingLevel == 0
-        # PROTECTED REGION END #    //  SKABaseDevice.test_elementLoggingLevel
+        for level in TangoLoggingLevel:
+            tango_context.device.loggingLevel = level
+            assert tango_context.device.loggingLevel == level
 
-    # PROTECTED REGION ID(SKABaseDevice.test_storageLoggingLevel_decorators) ENABLED START #
-    # PROTECTED REGION END #    //  SKABaseDevice.test_storageLoggingLevel_decorators
-    def test_storageLoggingLevel(self, tango_context):
-        """Test for storageLoggingLevel"""
-        # PROTECTED REGION ID(SKABaseDevice.test_storageLoggingLevel) ENABLED START #
-        assert tango_context.device.storageLoggingLevel == 0
-        # PROTECTED REGION END #    //  SKABaseDevice.test_storageLoggingLevel
+        with pytest.raises(DevFailed):
+            tango_context.device.loggingLevel = TangoLoggingLevel.FATAL + 100
+        # PROTECTED REGION END #    //  SKABaseDevice.test_loggingLevel
+
+    # PROTECTED REGION ID(SKABaseDevice.test_loggingTargets_decorators) ENABLED START #
+    # PROTECTED REGION END #    //  SKABaseDevice.test_loggingTargets_decorators
+    def test_loggingTargets(self, tango_context):
+        """Test for loggingTargets"""
+        # PROTECTED REGION ID(SKABaseDevice.test_loggingTargets) ENABLED START #
+        assert tango_context.device.loggingTargets == ("console::cout",)
+
+        tango_context.device.loggingTargets = ["console::cout", "file::/tmp/dummy"]
+        assert tango_context.device.loggingTargets == ("console::cout", "file::/tmp/dummy")
+        # test console still works without name, defaulting to "cout"
+        tango_context.device.loggingTargets = ["console"]
+        assert tango_context.device.loggingTargets == ("console::cout", )
+
+        with pytest.raises(DevFailed):
+            tango_context.device.loggingTargets = ["invalid::type"]
+        # test missing target name for file fails
+        with pytest.raises(DevFailed):
+            tango_context.device.loggingTargets = ["file"]
+        with pytest.raises(DevFailed):
+            tango_context.device.loggingTargets = ["file::"]
+        # test missing target name for syslog fails
+        with pytest.raises(DevFailed):
+            tango_context.device.loggingTargets = ["syslog"]
+        # PROTECTED REGION END #    //  SKABaseDevice.test_loggingTargets
 
     # PROTECTED REGION ID(SKABaseDevice.test_healthState_decorators) ENABLED START #
     # PROTECTED REGION END #    //  SKABaseDevice.test_healthState_decorators

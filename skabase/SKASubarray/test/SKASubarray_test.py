@@ -346,7 +346,8 @@ class TestSKASubarray(object):
     def test_assignedResources(self, tango_context):
         """Test for assignedResources"""
         # PROTECTED REGION ID(SKASubarray.test_assignedResources) ENABLED START #
-        assert tango_context.device.assignedResources == None
+        tango_context.device.AssignResources(['BAND1', 'BAND2'])
+        assert tango_context.device.assignedResources == ('BAND1', 'BAND2')
         # PROTECTED REGION END #    //  SKASubarray.test_assignedResources
 
     # PROTECTED REGION ID(SKASubarray.test_configuredCapabilities_decorators) ENABLED START #

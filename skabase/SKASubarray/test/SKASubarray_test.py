@@ -356,10 +356,14 @@ class TestSKASubarray(object):
         assert tango_context.device.assignedResources == ('BAND1', 'BAND2')
         # PROTECTED REGION END #    //  SKASubarray.test_assignedResources
 
+    #TODO: The test case fails as the size of configuredCapabilities is 0.
+    # It relates to the issue logged at https://github.com/tango-controls/pytango/issues/271
+    # Commented for future use.
     # PROTECTED REGION ID(SKASubarray.test_configuredCapabilities_decorators) ENABLED START #
     # PROTECTED REGION END #    //  SKASubarray.test_configuredCapabilities_decorators
-    #def test_configuredCapabilities(self, tango_context):
-        #"""Test for configuredCapabilities"""
-        # PROTECTED REGION ID(SKASubarray.test_configuredCapabilities) ENABLED START #
-        #assert tango_context.device.configuredCapabilities is None
-        # PROTECTED REGION END #    //  SKASubarray.test_configuredCapabilities
+    # def test_configuredCapabilities(self, tango_context):
+    #     """Test for configuredCapabilities"""
+    #     # PROTECTED REGION ID(SKASubarray.test_configuredCapabilities) ENABLED START #
+    #     print("cap: ", tango_context.device.configuredCapabilities)
+    #     assert tango_context.device.configuredCapabilities == None
+    #     # PROTECTED REGION END #    //  SKASubarray.test_configuredCapabilities

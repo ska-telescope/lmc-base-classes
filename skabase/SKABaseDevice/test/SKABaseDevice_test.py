@@ -23,6 +23,8 @@ path = os.path.join(os.path.dirname(__file__), os.pardir)
 sys.path.insert(0, os.path.abspath(path))
 
 # PROTECTED REGION ID(SKABaseDevice.test_additional_imports) ENABLED START #
+import logging
+import mock
 from tango import DevFailed
 from skabase.SKABaseDevice import TangoLoggingLevel
 # PROTECTED REGION END #    //  SKABaseDevice.test_additional_imports
@@ -132,6 +134,7 @@ class TestSKABaseDevice(object):
 
         with pytest.raises(DevFailed):
             tango_context.device.loggingLevel = TangoLoggingLevel.FATAL + 100
+        assert 0
         # PROTECTED REGION END #    //  SKABaseDevice.test_loggingLevel
 
     # PROTECTED REGION ID(SKABaseDevice.test_loggingTargets_decorators) ENABLED START #
@@ -141,22 +144,42 @@ class TestSKABaseDevice(object):
         # PROTECTED REGION ID(SKABaseDevice.test_loggingTargets) ENABLED START #
         assert tango_context.device.loggingTargets == ("console::cout",)
 
-        tango_context.device.loggingTargets = ["console::cout", "file::/tmp/dummy"]
-        assert tango_context.device.loggingTargets == ("console::cout", "file::/tmp/dummy")
-        # test console still works without name, defaulting to "cout"
-        tango_context.device.loggingTargets = ["console"]
-        assert tango_context.device.loggingTargets == ("console::cout", )
+        with mock.patch("SKABaseDevice._create_logging_handler") as mocked_creator:
+            mocked_creator.return_value = logging.NullHandler()
+            device_fqdn = tango_context.get_device_access()
+            tango_context.device.loggingTargets = [
+                "console::cout", "file::/tmp/dummy", "syslog::some/address"]
+            assert tango_context.device.loggingTargets == (
+                "console::cout", "file::/tmp/dummy", "syslog::some/address")
+            # the console handler was already present, so only the new targets
+            # are expected
+            mocked_creator.call_count == 2
+            mocked_creator.assert_has_calls(
+                [mock.call("file::/tmp/dummy", device_fqdn),
+                 mock.call("syslog::some/address", device_fqdn)],
+                any_order=True)
 
-        with pytest.raises(DevFailed):
-            tango_context.device.loggingTargets = ["invalid::type"]
-        # test missing target name for file fails
-        with pytest.raises(DevFailed):
+            # test console still works without name, defaulting to "cout"
+            mocked_creator.reset_mock()
+            tango_context.device.loggingTargets = ["console"]
+            assert tango_context.device.loggingTargets == ("console::cout", )
+            mocked_creator.assert_not_called()
+
+            # test file still works without name, defaulting to <device name>.log
+            mocked_creator.reset_mock()
             tango_context.device.loggingTargets = ["file"]
-        with pytest.raises(DevFailed):
-            tango_context.device.loggingTargets = ["file::"]
-        # test missing target name for syslog fails
-        with pytest.raises(DevFailed):
-            tango_context.device.loggingTargets = ["syslog"]
+            expected_file = "file::{}.log".format(device_fqdn.replace('/', '_'))
+            assert tango_context.device.loggingTargets == (expected_file, )
+            mocked_creator.assert_called_with(expected_file, device_fqdn)
+
+            mocked_creator.reset_mock()
+            with pytest.raises(DevFailed):
+                tango_context.device.loggingTargets = ["invalid::type"]
+            mocked_creator.assert_not_called()
+            # test missing target name for syslog fails
+            with pytest.raises(DevFailed):
+                tango_context.device.loggingTargets = ["syslog"]
+            mocked_creator.assert_not_called()
         # PROTECTED REGION END #    //  SKABaseDevice.test_loggingTargets
 
     # PROTECTED REGION ID(SKABaseDevice.test_healthState_decorators) ENABLED START #
@@ -212,8 +235,8 @@ class TestSKABaseDevice(object):
     #     assert attributes == 1
 
     def test__parse_argin(self, tango_context):
-        SKABaseDevice._init_logging(SKABaseDevice)
-        result = SKABaseDevice._parse_argin(SKABaseDevice,'{"class":"SKABaseDevice"}')
+        SKABaseDevice.logger = mock.Mock()
+        result = SKABaseDevice._parse_argin(SKABaseDevice, '{"class": "SKABaseDevice"}')
         assert result == {'class': 'SKABaseDevice'}
 
     # TODO: Fix this test case when "__DeviceImpl__debug_stream() missing 'msg' argument" is resolved.

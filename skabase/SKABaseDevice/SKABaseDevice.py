@@ -11,15 +11,17 @@ properties and commands of an SKA device.
 # PROTECTED REGION ID(SKABaseDevice.additionnal_import) ENABLED START #
 # Standard imports
 import enum
-import os
-import sys
 import json
 import logging
 import logging.handlers
+import os
+import sys
+import time
+
+from future.utils import with_metaclass
 from logging import StreamHandler
 from logging.handlers import SysLogHandler
 from logging.handlers import RotatingFileHandler
-from future.utils import with_metaclass
 
 # Tango imports
 import tango
@@ -58,31 +60,43 @@ class TangoLoggingLevel(enum.IntEnum):
     DEBUG = int(tango.LogLevel.LOG_DEBUG)
 
 
-def _create_logging_handler(target):
-    """Create a python log handler based on the target type (console, file, syslog)
+def _create_logging_handler(target, device_name):
+    """Create a Python log handler based on the target type (console, file, syslog)
 
-    :param target: Logging target for logger
+    :param target: Logging target for logger, <type>::<name>
 
-    :return: StremHandler, RotatingFileHandler, SysLogHandler
+    :param device_name: TANGO device name
+
+    :return: StreamHandler, RotatingFileHandler, or SysLogHandler
     """
-    target_type, target_name = target.split("::")
-    formatter = logging.Formatter(fmt='%(asctime)s - %(module)s - [%(levelname)-8s] - %(message)s',
-                                  datefmt='%Y-%m-%d %H:%M:%S')
+    target_type, target_name = target.split("::", 1)
+
+    class UTCFormatter(logging.Formatter):
+        converter = time.gmtime
+
+    # Format defined here:
+    #   https://developer.skatelescope.org/en/latest/development/logging-format.html
+    # VERSION "|" TIMESTAMP "|" SEVERITY "|" [THREAD-ID] "|" [FUNCTION] "|" [LINE-LOC] "|"
+    #   [TAGS] "|" MESSAGE LF
+    formatter = UTCFormatter(
+        fmt="1|%(asctime)s.%(msecs)03dZ|"
+            "%(levelname)s|%(threadName)s|"
+            "%(module)s.%(funcName)s|"
+            "%(filename)s#%(lineno)d|tango-device:{}|"
+            "%(message)s".format(device_name),
+        datefmt='%Y-%m-%dT%H:%M:%S')
 
     if target_type == "console":
-        handler = StreamHandler()
+        handler = StreamHandler(sys.stdout)
         handler.setFormatter(formatter)
     elif target_type == "file":
         log_file_name = target_name
         handler = RotatingFileHandler(log_file_name, 'a', LOG_FILE_SIZE, 2, None, False)
         handler.setFormatter(formatter)
     elif target_type == "syslog":
-        formatter = logging.Formatter(fmt='%(module)s - [%(levelname)-8s] - %(message)s',
-                                      datefmt='%Y-%m-%d %H:%M:%S')
-        handler = SysLogHandler(address='/var/run/rsyslog/dev/log', facility='syslog')
+        handler = SysLogHandler(address=target_name, facility='syslog')
         handler.setFormatter(formatter)
     return handler
-
 
 
 # PROTECTED REGION END #    //  SKABaseDevice.additionnal_import
@@ -99,35 +113,31 @@ class SKABaseDevice(with_metaclass(DeviceMeta, Device)):
 
     def _init_logging(self):
         """
-        This method initializes the logging mechanism. It first tries to create a syslog handler.
-        If syslog is not available then the logs are written to a file.
+        This method initializes the logging mechanism, based on default properties.
 
-        :parameter: None.
+        :param: None.
 
         :return: None.
         """
-        try:
-            self._log_handlers = {}
-            # Initialize logging
-            logging.basicConfig()
-            self.logger = logging.getLogger(__name__)
+        self.logger = logging.getLogger(__name__)
+        # device may be reinitialised, so remove existing handlers
+        if hasattr(self, '_logging_handlers'):
+            for handler in self._logging_handlers:
+                self.logger.removeHandler(handler)
+        # initialise using defaults in device properties
+        self._logging_level = None
+        self._logging_targets = []
+        self._logging_handlers = {}
+        self.write_loggingLevel(self.LoggingLevelDefault)
+        self.write_loggingTargets(self.LoggingTargetsDefault)
 
-            formatter = logging.Formatter(fmt='%(module)s - [%(levelname)-8s] - %(message)s',
-                                          datefmt='%Y-%m-%d %H:%M:%S')
-            # Add syslog handler
-            syslog_handler = SysLogHandler(address='/var/run/rsyslog/dev/log', facility='syslog')
-            syslog_handler.setFormatter(formatter)
-            self.logger.addHandler(syslog_handler)
-        except EnvironmentError:
-            # Add rotaling file handler
-            log_file_name = self.get_name()
-            log_file_name = log_file_name.replace("/", "_")
-            log_file_name += ".log"
-            formatter = logging.Formatter(fmt='%(asctime)s - %(module)s - [%(levelname)-8s] - %(message)s',
-                                          datefmt='%Y-%m-%d %H:%M:%S')
-            filehandler = RotatingFileHandler(log_file_name, 'a', LOG_FILE_SIZE, 2, None, False)
-            filehandler.setFormatter(formatter)
-            self.logger.addHandler(filehandler)
+        # Monkey patch TANGO Logging System streams so they go to the Python
+        # logger instead
+        self.debug_stream = self.logger.debug
+        self.info_stream = self.logger.info
+        self.warn_stream = self.logger.warning
+        self.error_stream = self.logger.error
+        self.fatal_stream = self.logger.critical
 
     def _get_device_json(self, args_dict):
         """
@@ -462,18 +472,16 @@ class SKABaseDevice(with_metaclass(DeviceMeta, Device)):
         Method that initializes the tango device after startup.
         :return: None
         """
+        print("***INIT DEVICE***")
         Device.init_device(self)
         # PROTECTED REGION ID(SKABaseDevice.init_device) ENABLED START #
 
-        # Start sysLogHandler
         self._init_logging()
 
         # Initialize attribute values.
         self._build_state = '{}, {}, {}'.format(release.name, release.version,
                                                 release.description)
         self._version_id = release.version
-        self._logging_level = TangoLoggingLevel(self.LoggingLevelDefault)
-        self._logging_targets = self.LoggingTargetsDefault
         self._health_state = 0
         self._admin_mode = 0
         self._control_mode = 0
@@ -489,6 +497,7 @@ class SKABaseDevice(with_metaclass(DeviceMeta, Device)):
         except GroupDefinitionsError:
             self.info_stream("No Groups loaded for device: {}".format(self.get_name()))
 
+        self.logger.info("Completed init_device")
         # PROTECTED REGION END #    //  SKABaseDevice.init_device
 
     def always_executed_hook(self):
@@ -562,6 +571,7 @@ class SKABaseDevice(with_metaclass(DeviceMeta, Device)):
         elif self._logging_level == tango.LogLevel.LOG_WARN:
             self.logger.setLevel(logging.WARNING)
         elif self._logging_level == tango.LogLevel.LOG_INFO:
+            print("set logging level to INFO")
             self.logger.setLevel(logging.INFO)
         elif self._logging_level == tango.LogLevel.LOG_DEBUG:
             self.logger.setLevel(logging.DEBUG)
@@ -592,7 +602,10 @@ class SKABaseDevice(with_metaclass(DeviceMeta, Device)):
         """
         new_targets = value
         # validate types
-        default_target_names = {"console": "cout", "file": None, "syslog": None}
+        default_target_names = {
+            "console": "cout",
+            "file": "{}.log".format(self.get_name().replace("/", "_")),
+            "syslog": None}
         for index, target in enumerate(new_targets):
             if "::" in target:
                 target_type, target_name = target.split("::", 1)
@@ -612,13 +625,14 @@ class SKABaseDevice(with_metaclass(DeviceMeta, Device)):
         old_targets = self._logging_targets
         added_targets = set(new_targets) - set(old_targets)
         removed_targets = set(old_targets) - set(new_targets)
+
         for target in removed_targets:
-            handler = self._log_handlers.pop(target)
+            handler = self._logging_handlers.pop(target)
             self.logger.removeHandler(handler)
         for target in added_targets:
-            handler = _create_logging_handler(target)
+            handler = _create_logging_handler(target, self.get_name())
             self.logger.addHandler(handler)
-            self._log_handlers[target] = handler
+            self._logging_handlers[target] = handler
 
         self._logging_targets = new_targets
         # PROTECTED REGION END #    //  SKABaseDevice.loggingTargets_write
@@ -766,6 +780,8 @@ def main(args=None, **kwargs):
 
     :return:
     """
+    # Do basic logging config before starting any threads
+    logging.basicConfig()
     return run((SKABaseDevice,), args=args, **kwargs)
     # PROTECTED REGION END #    //  SKABaseDevice.main
 

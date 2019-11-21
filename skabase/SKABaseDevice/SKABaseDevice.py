@@ -60,6 +60,41 @@ class TangoLoggingLevel(enum.IntEnum):
     DEBUG = int(tango.LogLevel.LOG_DEBUG)
 
 
+def _sanitise_logging_target(target, device_name=None):
+    """Validate and return logging target <type>::<name> string.
+
+    :param target:
+        Candidate logging target string, like '<type>[::<name>]'
+
+    :param device_name:
+        TANGO device name, like 'domain/family/member', used
+        for the default file name
+
+    :return: <type>::<name> string, with default name, if applicable
+
+    :raises: ValueError for invalid target string that cannot be corrected
+    """
+    default_target_names = {
+        "console": "cout",
+        "file": "{}.log".format(device_name.replace("/", "_")),
+        "syslog": None}
+    if "::" in target:
+        target_type, target_name = target.split("::", 1)
+    else:
+        target_type = target
+        target_name = None
+    if target_type not in default_target_names:
+        raise ValueError(
+            "Invalid target type: {} - options are {}".format(
+                target_type, list(default_target_names.keys())))
+    if not target_name:
+        target_name = default_target_names[target_type]
+    if not target_name:
+        raise ValueError(
+            "Target name required for type {}".format(target_type))
+    return "{}::{}".format(target_type, target_name)
+
+
 def _create_logging_handler(target, device_name):
     """Create a Python log handler based on the target type (console, file, syslog)
 
@@ -79,10 +114,13 @@ def _create_logging_handler(target, device_name):
     # VERSION "|" TIMESTAMP "|" SEVERITY "|" [THREAD-ID] "|" [FUNCTION] "|" [LINE-LOC] "|"
     #   [TAGS] "|" MESSAGE LF
     formatter = UTCFormatter(
-        fmt="1|%(asctime)s.%(msecs)03dZ|"
-            "%(levelname)s|%(threadName)s|"
+        fmt="1|"
+            "%(asctime)s.%(msecs)03dZ|"
+            "%(levelname)s|"
+            "%(threadName)s|"
             "%(module)s.%(funcName)s|"
-            "%(filename)s#%(lineno)d|tango-device:{}|"
+            "%(filename)s#%(lineno)d|"
+            "tango-device:{}|"
             "%(message)s".format(device_name),
         datefmt='%Y-%m-%dT%H:%M:%S')
 
@@ -425,7 +463,6 @@ class SKABaseDevice(with_metaclass(DeviceMeta, Device)):
         Method that initializes the tango device after startup.
         :return: None
         """
-        print("***INIT DEVICE***")
         Device.init_device(self)
         # PROTECTED REGION ID(SKABaseDevice.init_device) ENABLED START #
 
@@ -552,26 +589,12 @@ class SKABaseDevice(with_metaclass(DeviceMeta, Device)):
 
         :return: None.
         """
-        new_targets = value
-        # validate types
-        default_target_names = {
-            "console": "cout",
-            "file": "{}.log".format(self.get_name().replace("/", "_")),
-            "syslog": None}
-        for index, target in enumerate(new_targets):
-            if "::" in target:
-                target_type, target_name = target.split("::", 1)
-            else:
-                target_type = target
-                target_name = default_target_names.get(target_type, None)
-                new_targets[index] = "{}::{}".format(target_type, target_name)
-            if target_type not in default_target_names:
-                raise ValueError(
-                    "Invalid target type: {} - options are {}".format(
-                        target_type, list(default_target_names.keys())))
-            if not target_name:
-                raise ValueError(
-                    "Target name required for type {}".format(target_type))
+        # ensure all target strings are valid (exception raised if not)
+        new_targets = []
+        device_name = self.get_name()
+        for target in value:
+            valid_target = _sanitise_logging_target(target, device_name)
+            new_targets.append(valid_target)
 
         # update logging targets / handlers
         old_targets = self._logging_targets
@@ -582,7 +605,7 @@ class SKABaseDevice(with_metaclass(DeviceMeta, Device)):
             handler = self._logging_handlers.pop(target)
             self.logger.removeHandler(handler)
         for target in added_targets:
-            handler = _create_logging_handler(target, self.get_name())
+            handler = _create_logging_handler(target, device_name)
             self.logger.addHandler(handler)
             self._logging_handlers[target] = handler
 

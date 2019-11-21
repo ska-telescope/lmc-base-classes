@@ -27,9 +27,48 @@ import logging
 import mock
 from tango import DevFailed
 from skabase.SKABaseDevice import TangoLoggingLevel
+from skabase.SKABaseDevice.SKABaseDevice import _sanitise_logging_target
+
 # PROTECTED REGION END #    //  SKABaseDevice.test_additional_imports
 # Device test case
 # PROTECTED REGION ID(SKABaseDevice.test_SKABaseDevice_decorators) ENABLED START #
+
+
+@pytest.fixture(params=[
+        ("console", "console::cout"),
+        ("console::", "console::cout"),
+        ("console::cout", "console::cout"),
+        ("console::anything", "console::anything"),
+        ("file", "file::my_dev_name.log"),
+        ("file::", "file::my_dev_name.log"),
+        ("file::/tmp/dummy", "file::/tmp/dummy"),
+        ("syslog::some/address", "syslog::some/address"),
+    ])
+def good_logging_target(request):
+    target_in, expected = request.param
+    dev_name = "my/dev/name"
+    return target_in, dev_name, expected
+
+
+@pytest.fixture(params=["invalid", "invalid::type", ""])
+def bad_logging_target(request):
+    target_in = request.param
+    dev_name = "my/dev/name"
+    return target_in, dev_name
+
+
+def test_sanitise_logging_target_success(good_logging_target):
+    target_in, dev_name, expected = good_logging_target
+    actual = _sanitise_logging_target(target_in, dev_name)
+    assert actual == expected
+
+
+def test_sanitise_logging_target_fail(bad_logging_target):
+    target_in, dev_name = bad_logging_target
+    with pytest.raises(ValueError):
+        _sanitise_logging_target(target_in, dev_name)
+
+
 @pytest.mark.usefixtures("tango_context", "initialize_device")
 # PROTECTED REGION END #    //  SKABaseDevice.test_SKABaseDevice_decorators
 class TestSKABaseDevice(object):

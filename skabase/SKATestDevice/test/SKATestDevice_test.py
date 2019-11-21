@@ -34,7 +34,7 @@ class TestSKATestDevice(object):
     properties = {
         'SkaLevel': '4',
         'LoggingTargetsDefault': ['console::cout'],
-        'LoggingLevelDefault': '4'
+        'LoggingLevelDefault': '4',
         'GroupDefinitions': ''
         }
 

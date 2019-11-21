@@ -287,82 +287,35 @@ class SKABaseDevice(with_metaclass(DeviceMeta, Device)):
 
     def dev_logging(self, dev_log_msg, dev_log_level):
         """
-        This method logs the message to SKA Element Logger, Central Logger and Storage
-        Logger.
+        DEPRECATED:  Log the message to the Python logger.
+
+        DEPRECATED - Use ``self.logger`` directly instead.  For example,
+        ``self.logger.info("My message")`` for something at LOG_INFO level.
 
         :param dev_log_msg: DevString.
-
-        Message to log
+            Message to log
 
         :param dev_log_level: DevEnum
-
             Logging level of the message. The message can have one of the following
-            logging level:
+            logging levels:
                 LOG_FATAL
-
                 LOG_ERROR
-
                 LOG_WARN
-
                 LOG_INFO
-
                 LOG_DEBUG
 
         :return: None
         """
-        # Element Level Logging
-        if self._element_logging_level >= int(tango.LogLevel.LOG_FATAL) and dev_log_level == int(
-                tango.LogLevel.LOG_FATAL):
-            self.fatal_stream(dev_log_msg)
-        elif self._element_logging_level >= int(tango.LogLevel.LOG_ERROR) and dev_log_level == int(
-                tango.LogLevel.LOG_ERROR):
-            self.error_stream(dev_log_msg)
-        elif self._element_logging_level >= int(tango.LogLevel.LOG_WARN) and dev_log_level == int(
-                tango.LogLevel.LOG_WARN):
-            self.warn_stream(dev_log_msg)
-        elif self._element_logging_level >= int(tango.LogLevel.LOG_INFO) and dev_log_level == int(
-                tango.LogLevel.LOG_INFO):
-            self.info_stream(dev_log_msg)
-        elif self._element_logging_level >= int(tango.LogLevel.LOG_DEBUG) and dev_log_level == int(
-                tango.LogLevel.LOG_DEBUG):
-            self.debug_stream(dev_log_msg)
-
-        # Central Level Logging
-        if self._central_logging_level >= int(tango.LogLevel.LOG_FATAL) and dev_log_level == int(
-                tango.LogLevel.LOG_FATAL):
-            self.fatal_stream(dev_log_msg)
-        elif self._central_logging_level >= int(tango.LogLevel.LOG_ERROR) and dev_log_level == int(
-                tango.LogLevel.LOG_ERROR):
-            self.error_stream(dev_log_msg)
-        elif self._central_logging_level >= int(tango.LogLevel.LOG_WARN) and dev_log_level == int(
-                tango.LogLevel.LOG_WARN):
-            self.warn_stream(dev_log_msg)
-        elif self._central_logging_level >= int(tango.LogLevel.LOG_INFO) and dev_log_level == int(
-                tango.LogLevel.LOG_INFO):
-            self.info_stream(dev_log_msg)
-        elif self._central_logging_level >= int(tango.LogLevel.LOG_DEBUG) and dev_log_level == int(
-                tango.LogLevel.LOG_DEBUG):
-            self.debug_stream(dev_log_msg)
-
-        # Storage Level Logging
-        if self._storage_logging_level >= int(tango.LogLevel.LOG_FATAL) and dev_log_level == int(
-                tango.LogLevel.LOG_FATAL):
+        if dev_log_level == TangoLoggingLevel.FATAL:
             self.logger.fatal(dev_log_msg)
-        elif self._storage_logging_level >= int(tango.LogLevel.LOG_ERROR) and dev_log_level == int(
-                tango.LogLevel.LOG_ERROR):
+        elif dev_log_level == TangoLoggingLevel.ERROR:
             self.logger.error(dev_log_msg)
-        elif self._storage_logging_level >= int(tango.LogLevel.LOG_WARN) and dev_log_level == int(
-                tango.LogLevel.LOG_WARN):
+        elif dev_log_level == TangoLoggingLevel.WARNING:
             self.logger.warning(dev_log_msg)
-        elif self._storage_logging_level >= int(tango.LogLevel.LOG_INFO) and dev_log_level == int(
-                tango.LogLevel.LOG_INFO):
+        elif dev_log_level == TangoLoggingLevel.INFO:
             self.logger.info(dev_log_msg)
-        elif self._storage_logging_level >= int(tango.LogLevel.LOG_DEBUG) and dev_log_level == int(
-                tango.LogLevel.LOG_DEBUG):
+        elif dev_log_level == TangoLoggingLevel.DEBUG:
             self.logger.debug(dev_log_msg)
-        else:
-            pass
-
 
     # PROTECTED REGION END #    //  SKABaseDevice.class_variable
 
@@ -562,18 +515,17 @@ class SKABaseDevice(with_metaclass(DeviceMeta, Device)):
         :return: None.
         """
         self._logging_level = TangoLoggingLevel(value)
-        if self._logging_level == tango.LogLevel.LOG_OFF:
+        if self._logging_level == TangoLoggingLevel.OFF:
             self.logger.setLevel(logging.CRITICAL)  # not allowed to be "off"
-        elif self._logging_level == tango.LogLevel.LOG_FATAL:
+        elif self._logging_level == TangoLoggingLevel.FATAL:
             self.logger.setLevel(logging.CRITICAL)
-        elif self._logging_level == tango.LogLevel.LOG_ERROR:
+        elif self._logging_level == TangoLoggingLevel.ERROR:
             self.logger.setLevel(logging.ERROR)
-        elif self._logging_level == tango.LogLevel.LOG_WARN:
+        elif self._logging_level == TangoLoggingLevel.WARNING:
             self.logger.setLevel(logging.WARNING)
-        elif self._logging_level == tango.LogLevel.LOG_INFO:
-            print("set logging level to INFO")
+        elif self._logging_level == TangoLoggingLevel.INFO:
             self.logger.setLevel(logging.INFO)
-        elif self._logging_level == tango.LogLevel.LOG_DEBUG:
+        elif self._logging_level == TangoLoggingLevel.DEBUG:
             self.logger.setLevel(logging.DEBUG)
         else:
             raise ValueError(

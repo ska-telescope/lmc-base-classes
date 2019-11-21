@@ -38,9 +38,7 @@ class TestSKABaseDevice(object):
     properties = {
         'SkaLevel': '4',
         'GroupDefinitions': '',
-        'CentralLoggingTarget': '',
-        'ElementLoggingTarget': '',
-        'StorageLoggingTarget': 'localhost',
+        'LoggingTargetsDefault': ['console::cout']
         }
 
     @classmethod
@@ -134,7 +132,6 @@ class TestSKABaseDevice(object):
 
         with pytest.raises(DevFailed):
             tango_context.device.loggingLevel = TangoLoggingLevel.FATAL + 100
-        assert 0
         # PROTECTED REGION END #    //  SKABaseDevice.test_loggingLevel
 
     # PROTECTED REGION ID(SKABaseDevice.test_loggingTargets_decorators) ENABLED START #

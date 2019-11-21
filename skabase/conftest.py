@@ -21,9 +21,7 @@ def tango_context(request):
     """
     ska_master_properties = {
         'SkaLevel': '4',
-        'CentralLoggingTarget': '',
-        'ElementLoggingTarget': '',
-        'StorageLoggingTarget': 'localhost',
+        'LoggingTargetsDefault': ['console::cout'],
         'GroupDefinitions': '',
         'NrSubarrays': '16',
         'CapabilityTypes': '',
@@ -32,11 +30,9 @@ def tango_context(request):
 
     ska_subarray_properties = {
         'CapabilityTypes': 'BAND1',
-        'CentralLoggingTarget': '',
-        'ElementLoggingTarget': '',
+        'LoggingTargetsDefault': ['console::cout'],
         'GroupDefinitions': '',
         'SkaLevel': '4',
-        'StorageLoggingTarget': 'localhost',
         'SubID': '1',
     }
 

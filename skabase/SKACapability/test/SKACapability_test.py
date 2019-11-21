@@ -31,9 +31,7 @@ class TestSKACapability(object):
 
     properties = {
         'SkaLevel': '4',
-        'CentralLoggingTarget': '',
-        'ElementLoggingTarget': '',
-        'StorageLoggingTarget': 'localhost',
+        'LoggingTargetsDefault': 'console::cout',
         'GroupDefinitions': '',
         'CapType': '',
         'CapID': '',

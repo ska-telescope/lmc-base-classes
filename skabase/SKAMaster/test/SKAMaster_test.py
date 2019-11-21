@@ -33,9 +33,7 @@ class TestSKAMaster(object):
     capabilities = ['BAND1:1', 'BAND2:1', 'BAND3:0', 'BAND4:0', 'BAND5:0']
     properties = {
         'SkaLevel': '4',
-        'CentralLoggingTarget': '',
-        'ElementLoggingTarget': '',
-        'StorageLoggingTarget': 'localhost',
+        'LoggingTargetsDefault': ['console::cout'],
         'GroupDefinitions': '',
         'NrSubarrays': '16',
         'CapabilityTypes': '',
@@ -161,29 +159,65 @@ class TestSKAMaster(object):
         assert (re.match(versionIdPattern, tango_context.device.versionId)) != None
         # PROTECTED REGION END #    //  SKAMaster.test_versionId
 
-    # PROTECTED REGION ID(SKAMaster.test_centralLoggingLevel_decorators) ENABLED START #
-    # PROTECTED REGION END #    //  SKAMaster.test_centralLoggingLevel_decorators
-    def test_centralLoggingLevel(self, tango_context):
-        """Test for centralLoggingLevel"""
-        # PROTECTED REGION ID(SKAMaster.test_centralLoggingLevel) ENABLED START #
-        assert tango_context.device.centralLoggingLevel == 0
-        # PROTECTED REGION END #    //  SKAMaster.test_centralLoggingLevel
+    # PROTECTED REGION ID(SKABaseDevice.test_loggingLevel_decorators) ENABLED START #
+    # PROTECTED REGION END #    //  SKABaseDevice.test_loggingLevel_decorators
+    def test_loggingLevel(self, tango_context):
+        """Test for loggingLevel"""
+        # PROTECTED REGION ID(SKABaseDevice.test_loggingLevel) ENABLED START #
+        assert tango_context.device.loggingLevel == TangoLoggingLevel.INFO
 
-    # PROTECTED REGION ID(SKAMaster.test_elementLoggingLevel_decorators) ENABLED START #
-    # PROTECTED REGION END #    //  SKAMaster.test_elementLoggingLevel_decorators
-    def test_elementLoggingLevel(self, tango_context):
-        """Test for elementLoggingLevel"""
-        # PROTECTED REGION ID(SKAMaster.test_elementLoggingLevel) ENABLED START #
-        assert tango_context.device.elementLoggingLevel == 0
-        # PROTECTED REGION END #    //  SKAMaster.test_elementLoggingLevel
+        for level in TangoLoggingLevel:
+            tango_context.device.loggingLevel = level
+            assert tango_context.device.loggingLevel == level
 
-    # PROTECTED REGION ID(SKAMaster.test_storageLoggingLevel_decorators) ENABLED START #
-    # PROTECTED REGION END #    //  SKAMaster.test_storageLoggingLevel_decorators
-    def test_storageLoggingLevel(self, tango_context):
-        """Test for storageLoggingLevel"""
-        # PROTECTED REGION ID(SKAMaster.test_storageLoggingLevel) ENABLED START #
-        assert tango_context.device.storageLoggingLevel == 0
-        # PROTECTED REGION END #    //  SKAMaster.test_storageLoggingLevel
+        with pytest.raises(DevFailed):
+            tango_context.device.loggingLevel = TangoLoggingLevel.FATAL + 100
+        # PROTECTED REGION END #    //  SKABaseDevice.test_loggingLevel
+
+    # PROTECTED REGION ID(SKABaseDevice.test_loggingTargets_decorators) ENABLED START #
+    # PROTECTED REGION END #    //  SKABaseDevice.test_loggingTargets_decorators
+    def test_loggingTargets(self, tango_context):
+        """Test for loggingTargets"""
+        # PROTECTED REGION ID(SKABaseDevice.test_loggingTargets) ENABLED START #
+        assert tango_context.device.loggingTargets == ("console::cout",)
+
+        with mock.patch("SKABaseDevice._create_logging_handler") as mocked_creator:
+            mocked_creator.return_value = logging.NullHandler()
+            device_fqdn = tango_context.get_device_access()
+            tango_context.device.loggingTargets = [
+                "console::cout", "file::/tmp/dummy", "syslog::some/address"]
+            assert tango_context.device.loggingTargets == (
+                "console::cout", "file::/tmp/dummy", "syslog::some/address")
+            # the console handler was already present, so only the new targets
+            # are expected
+            mocked_creator.call_count == 2
+            mocked_creator.assert_has_calls(
+                [mock.call("file::/tmp/dummy", device_fqdn),
+                 mock.call("syslog::some/address", device_fqdn)],
+                any_order=True)
+
+            # test console still works without name, defaulting to "cout"
+            mocked_creator.reset_mock()
+            tango_context.device.loggingTargets = ["console"]
+            assert tango_context.device.loggingTargets == ("console::cout", )
+            mocked_creator.assert_not_called()
+
+            # test file still works without name, defaulting to <device name>.log
+            mocked_creator.reset_mock()
+            tango_context.device.loggingTargets = ["file"]
+            expected_file = "file::{}.log".format(device_fqdn.replace('/', '_'))
+            assert tango_context.device.loggingTargets == (expected_file, )
+            mocked_creator.assert_called_with(expected_file, device_fqdn)
+
+            mocked_creator.reset_mock()
+            with pytest.raises(DevFailed):
+                tango_context.device.loggingTargets = ["invalid::type"]
+            mocked_creator.assert_not_called()
+            # test missing target name for syslog fails
+            with pytest.raises(DevFailed):
+                tango_context.device.loggingTargets = ["syslog"]
+            mocked_creator.assert_not_called()
+        # PROTECTED REGION END #    //  SKABaseDevice.test_loggingTargets
 
     # PROTECTED REGION ID(SKAMaster.test_healthState_decorators) ENABLED START #
     # PROTECTED REGION END #    //  SKAMaster.test_healthState_decorators

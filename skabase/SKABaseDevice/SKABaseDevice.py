@@ -389,7 +389,7 @@ class SKABaseDevice(with_metaclass(DeviceMeta, Device)):
     )
 
     LoggingLevelDefault = device_property(
-        dtype='uint16', default_value=int(TangoLoggingLevel.INFO)
+        dtype='uint16', default_value=4
     )
 
     LoggingTargetsDefault = device_property(

@@ -40,8 +40,9 @@ from utils import (get_dp_command,
                    coerce_value,
                    get_groups_from_json,
                    get_tango_device_type_id)
-
-from faults import GroupDefinitionsError
+from faults import (GroupDefinitionsError,
+                    LoggingTargetError,
+                    LoggingLevelError)
 
 LOG_FILE_SIZE = 1024 * 1024  # Log file size 1MB.
 
@@ -60,39 +61,45 @@ class TangoLoggingLevel(enum.IntEnum):
     DEBUG = int(tango.LogLevel.LOG_DEBUG)
 
 
-def _sanitise_logging_target(target, device_name=None):
-    """Validate and return logging target <type>::<name> string.
+def _sanitise_logging_targets(targets, device_name):
+    """Validate and return logging targets '<type>::<name>' strings.
 
     :param target:
-        Candidate logging target string, like '<type>[::<name>]'
+        List of candidate logging target strings, like '<type>[::<name>]'
 
     :param device_name:
         TANGO device name, like 'domain/family/member', used
         for the default file name
 
-    :return: <type>::<name> string, with default name, if applicable
+    :return: list of '<type>::<name>' strings, with default name, if applicable
 
-    :raises: ValueError for invalid target string that cannot be corrected
+    :raises: LoggingTargetError for invalid target string that cannot be corrected
     """
     default_target_names = {
         "console": "cout",
         "file": "{}.log".format(device_name.replace("/", "_")),
         "syslog": None}
-    if "::" in target:
-        target_type, target_name = target.split("::", 1)
-    else:
-        target_type = target
-        target_name = None
-    if target_type not in default_target_names:
-        raise ValueError(
-            "Invalid target type: {} - options are {}".format(
-                target_type, list(default_target_names.keys())))
-    if not target_name:
-        target_name = default_target_names[target_type]
-    if not target_name:
-        raise ValueError(
-            "Target name required for type {}".format(target_type))
-    return "{}::{}".format(target_type, target_name)
+
+    valid_targets = []
+    for target in targets:
+        if "::" in target:
+            target_type, target_name = target.split("::", 1)
+        else:
+            target_type = target
+            target_name = None
+        if target_type not in default_target_names:
+            raise LoggingTargetError(
+                "Invalid target type: {} - options are {}".format(
+                    target_type, list(default_target_names.keys())))
+        if not target_name:
+            target_name = default_target_names[target_type]
+        if not target_name:
+            raise LoggingTargetError(
+                "Target name required for type {}".format(target_type))
+        valid_target = "{}::{}".format(target_type, target_name)
+        valid_targets.append(valid_target)
+
+    return valid_targets
 
 
 def _create_logging_handler(target, device_name):
@@ -134,8 +141,24 @@ def _create_logging_handler(target, device_name):
     elif target_type == "syslog":
         handler = SysLogHandler(address=target_name, facility='syslog')
         handler.setFormatter(formatter)
+    handler.name = target
     return handler
 
+
+def _update_logging_handlers(targets, logger, device_name):
+    old_targets = [handler.name for handler in logger.handlers]
+    added_targets = set(targets) - set(old_targets)
+    removed_targets = set(old_targets) - set(targets)
+
+    for handler in list(logger.handlers):
+        if handler.name in removed_targets:
+            logger.removeHandler(handler)
+    for target in targets:
+        if target in added_targets:
+            handler = _create_logging_handler(target, device_name)
+            logger.addHandler(handler)
+
+    logger.info('Logging targets set to %s', targets)
 
 # PROTECTED REGION END #    //  SKABaseDevice.additionnal_import
 
@@ -159,15 +182,13 @@ class SKABaseDevice(with_metaclass(DeviceMeta, Device)):
         """
         self.logger = logging.getLogger(__name__)
         # device may be reinitialised, so remove existing handlers
-        if hasattr(self, '_logging_handlers'):
-            for handler in self._logging_handlers:
-                self.logger.removeHandler(handler)
+        for handler in list(self.logger.handlers):
+            self.logger.removeHandler(handler)
         # initialise using defaults in device properties
         self._logging_level = None
-        self._logging_targets = []
-        self._logging_handlers = {}
         self.write_loggingLevel(self.LoggingLevelDefault)
         self.write_loggingTargets(self.LoggingTargetsDefault)
+        self.logger.debug('Logger initialised')
 
         # Monkey patch TANGO Logging System streams so they go to the Python
         # logger instead
@@ -487,7 +508,7 @@ class SKABaseDevice(with_metaclass(DeviceMeta, Device)):
         except GroupDefinitionsError:
             self.info_stream("No Groups loaded for device: {}".format(self.get_name()))
 
-        self.logger.info("Completed init_device")
+        self.logger.info("Completed SKABaseDevice.init_device")
         # PROTECTED REGION END #    //  SKABaseDevice.init_device
 
     def always_executed_hook(self):
@@ -565,9 +586,10 @@ class SKABaseDevice(with_metaclass(DeviceMeta, Device)):
         elif self._logging_level == TangoLoggingLevel.DEBUG:
             self.logger.setLevel(logging.DEBUG)
         else:
-            raise ValueError(
+            raise LoggingLevelError(
                 "Invalid level - {} - must be between {} and {}".format(
                     TangoLoggingLevel.OFF, TangoLoggingLevel.DEBUG))
+        self.logger.info('Logging level set to %s', self._logging_level)
         # PROTECTED REGION END #    //  SKABaseDevice.loggingLevel_write
 
     def read_loggingTargets(self):
@@ -577,7 +599,7 @@ class SKABaseDevice(with_metaclass(DeviceMeta, Device)):
 
         :return:  Logging level of the device.
         """
-        return self._logging_targets
+        return [str(handler.name) for handler in self.logger.handlers]
         # PROTECTED REGION END #    //  SKABaseDevice.loggingTargets_read
 
     def write_loggingTargets(self, value):
@@ -589,27 +611,9 @@ class SKABaseDevice(with_metaclass(DeviceMeta, Device)):
 
         :return: None.
         """
-        # ensure all target strings are valid (exception raised if not)
-        new_targets = []
         device_name = self.get_name()
-        for target in value:
-            valid_target = _sanitise_logging_target(target, device_name)
-            new_targets.append(valid_target)
-
-        # update logging targets / handlers
-        old_targets = self._logging_targets
-        added_targets = set(new_targets) - set(old_targets)
-        removed_targets = set(old_targets) - set(new_targets)
-
-        for target in removed_targets:
-            handler = self._logging_handlers.pop(target)
-            self.logger.removeHandler(handler)
-        for target in added_targets:
-            handler = _create_logging_handler(target, device_name)
-            self.logger.addHandler(handler)
-            self._logging_handlers[target] = handler
-
-        self._logging_targets = new_targets
+        valid_targets = _sanitise_logging_targets(value, device_name)
+        _update_logging_handlers(valid_targets, self.logger, device_name)
         # PROTECTED REGION END #    //  SKABaseDevice.loggingTargets_write
 
     def read_healthState(self):

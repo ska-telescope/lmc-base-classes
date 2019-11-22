@@ -133,14 +133,12 @@ def _create_logging_handler(target, device_name):
 
     if target_type == "console":
         handler = StreamHandler(sys.stdout)
-        handler.setFormatter(formatter)
     elif target_type == "file":
         log_file_name = target_name
         handler = RotatingFileHandler(log_file_name, 'a', LOG_FILE_SIZE, 2, None, False)
-        handler.setFormatter(formatter)
     elif target_type == "syslog":
         handler = SysLogHandler(address=target_name, facility='syslog')
-        handler.setFormatter(formatter)
+    handler.setFormatter(formatter)
     handler.name = target
     return handler
 

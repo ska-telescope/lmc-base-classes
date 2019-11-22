@@ -3,12 +3,6 @@
 # In this case we use the latest python docker image to build and test this project.
 image: nexus.engageska-portugal.pt/ska-docker/ska-python-buildenv:latest
 
-variables:
-  DOCKER_DRIVER: overlay2
-
-services:
-  - docker:dind
-
 # cache is used to specify a list of files and directories which should be cached between jobs. You can only use paths that are within the project workspace.
 # If cache is defined outside the scope of jobs, it means it is set globally and all jobs will use that definition
 cache:
@@ -27,6 +21,14 @@ stages:
   - publish
   - pages
   - pages_on_failure
+
+clean shell runner:
+  stage: .pre
+  tags:
+    - docker-executor
+  script:
+    # Gitlab CI badges creation
+    - rm -rf build/*
 
 build wheel for publication: # Executed on a tag
   stage: build
@@ -52,7 +54,7 @@ build wheel for development: # Executed on a commit
     paths:
       - ./dist/
 
-run tests:
+unit tests:
   stage: test
   image: nexus.engageska-portugal.pt/ska-docker/tango-builder:latest
   before_script:
@@ -61,11 +63,14 @@ run tests:
     - docker-executor
   script:
     - apt-get -y update
-    - apt-get install -y python3-pip
+    - apt-get install -y python3-pip python3-setuptools python3-wheel --no-install-recommends
     - echo $(ls -d ./dist/*.whl | grep $CI_COMMIT_SHORT_SHA)
     - pip3 install -U $(ls -d ./dist/*.whl | grep $CI_COMMIT_SHORT_SHA)
     - make test
     - scripts/validate-metadata.sh
+  artifacts:
+    paths:
+      - ./build
 
 linting:
   stage: linting
@@ -76,10 +81,13 @@ linting:
     - docker-executor
   script:
     - apt-get -y update
-    - apt-get install -y python3-pip
+    - apt-get install -y python3-pip python3-setuptools python3-wheel --no-install-recommends
     - echo $(ls -d ./dist/*.whl | grep $CI_COMMIT_SHORT_SHA)
     - pip3 install -U $(ls -d ./dist/*.whl | grep $CI_COMMIT_SHORT_SHA)
     - make lint
+  artifacts:
+    paths:
+      - ./build
 
 publish to nexus:
   stage: publish
@@ -110,45 +118,23 @@ pages:
   script:
     - cp -R build public
     - mv public/lmcbaseclasses_htmlcov/* public
-    # Copy metrics reports to respective locations (this needs to be automated by the team for their specific purposes)
-    # - mkdir -p build/reports
-    # - cp public/unit-tests.xml build/reports/unit-tests.xml
-    # - cp public/lint_output.xml build/reports/linting.xml
-    # - cp public/lmcbaseclasses_coverage.xml build/reports/code-coverage.xml
-    # START: Gitlab CI badges creation
-    # - curl -s https://gitlab.com/ska-telescope/ci-metrics-utilities/raw/master/scripts/ci-badges-func.sh | sh
-    # END: Gitlab CI badges creation
     - make push
   artifacts:
     paths:
       - public
 
-# build pages on failure:
-#   stage: pages_on_failure
-#   image: nexus.engageska-portugal.pt/ska-docker/tango-builder:latest
-#   before_script:
-#   - docker login -u $DOCKER_REGISTRY_USERNAME -p $DOCKER_REGISTRY_PASSWORD $DOCKER_REGISTRY_HOST
-#   tags:
-#     - docker-executor
-#   script:
-#     # Create the ci-metrics.json file (as an example we are just copying from a mock file to be deleted in a future commit)
-#     - cp temp/ci-metrics-failed-mock.json ci-metrics.json
-#     # START: Gitlab CI badges creation
-#     - curl -s https://gitlab.com/ska-telescope/ci-metrics-utilities/raw/master/scripts/ci-badges-func.sh | sh
-#     # END: Gitlab CI badges creation
-#  when: on_failure
-
 create ci metrics:
   stage: .post
+  image: nexus.engageska-portugal.pt/ska-docker/ska-python-buildenv:latest
   when: always
-  image: nexus.engageska-portugal.pt/ska-docker/tango-builder:latest
-  before_script:
-  - docker login -u $DOCKER_REGISTRY_USERNAME -p $DOCKER_REGISTRY_PASSWORD $DOCKER_REGISTRY_HOST
   tags:
     - docker-executor
   script:
-    # Gitlab CI badges creation
+    # Gitlab CI badges creation: START
+    - apt-get -y update
+    - apt-get install -y curl --no-install-recommends
     - curl -s https://gitlab.com/ska-telescope/ci-metrics-utilities/raw/master/scripts/ci-badges-func.sh | sh
+    # Gitlab CI badges creation: END
   artifacts:
     paths:
-      - public
+      - ./build

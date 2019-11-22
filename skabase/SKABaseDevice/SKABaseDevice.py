@@ -588,7 +588,7 @@ class SKABaseDevice(with_metaclass(DeviceMeta, Device)):
         else:
             raise LoggingLevelError(
                 "Invalid level - {} - must be between {} and {}".format(
-                    TangoLoggingLevel.OFF, TangoLoggingLevel.DEBUG))
+                    self._logging_level, TangoLoggingLevel.OFF, TangoLoggingLevel.DEBUG))
         self.logger.info('Logging level set to %s', self._logging_level)
         # PROTECTED REGION END #    //  SKABaseDevice.loggingLevel_write
 

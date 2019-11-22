@@ -125,7 +125,7 @@ def _create_logging_handler(target, device_name):
             "%(asctime)s.%(msecs)03dZ|"
             "%(levelname)s|"
             "%(threadName)s|"
-            "%(module)s.%(funcName)s|"
+            "%(funcName)s|"
             "%(filename)s#%(lineno)d|"
             "tango-device:{}|"
             "%(message)s".format(device_name),

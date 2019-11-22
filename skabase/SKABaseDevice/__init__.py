@@ -10,9 +10,9 @@ A generic base device for SKA. It exposes the attributes, properties and command
 a device that are common for all the SKA devices.
 """
 
-__all__ = ["SKABaseDevice", "main"]
+__all__ = ["SKABaseDevice", "TangoLoggingLevel", "main"]
 from skabase import release
-from .SKABaseDevice import SKABaseDevice, main
+from .SKABaseDevice import SKABaseDevice, main, TangoLoggingLevel
 
 __version__ = release.version
 __version_info__ = release.version_info

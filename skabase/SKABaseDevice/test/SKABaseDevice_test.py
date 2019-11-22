@@ -17,17 +17,106 @@ from tango import DevState
 
 # Imports
 from skabase.SKABaseDevice import SKABaseDevice
-# PROTECTED REGION ID(SKABaseDevice.test_additional_imports) ENABLED START #
-# PROTECTED REGION END #    //  SKABaseDevice.test_additional_imports
 
 # Path
 path = os.path.join(os.path.dirname(__file__), os.pardir)
 sys.path.insert(0, os.path.abspath(path))
 
 # PROTECTED REGION ID(SKABaseDevice.test_additional_imports) ENABLED START #
+import logging
+import mock
+from tango import DevFailed
+from skabase.SKABaseDevice import TangoLoggingLevel
+from skabase.SKABaseDevice.SKABaseDevice import (
+    _create_logging_handler,
+    _sanitise_logging_targets,
+    _update_logging_handlers,
+    LoggingTargetError,
+)
 # PROTECTED REGION END #    //  SKABaseDevice.test_additional_imports
 # Device test case
 # PROTECTED REGION ID(SKABaseDevice.test_SKABaseDevice_decorators) ENABLED START #
+
+
+@pytest.fixture(params=[
+        (["console"], ["console::cout"]),
+        (["console::"], ["console::cout"]),
+        (["console::cout"], ["console::cout"]),
+        (["console::anything"], ["console::anything"]),
+        (["file"], ["file::my_dev_name.log"]),
+        (["file::"], ["file::my_dev_name.log"]),
+        (["file::/tmp/dummy"], ["file::/tmp/dummy"]),
+        (["syslog::some/address"], ["syslog::some/address"]),
+        (["console", "file"], ["console::cout", "file::my_dev_name.log"]),
+    ])
+def good_logging_targets(request):
+    targets_in, expected = request.param
+    dev_name = "my/dev/name"
+    return targets_in, dev_name, expected
+
+
+@pytest.fixture(params=[
+        [""],
+        ["invalid"],
+        ["invalid", "console"],
+        ["invalid::type"],
+        ["syslog"],
+    ])
+def bad_logging_targets(request):
+    targets_in = request.param
+    dev_name = "my/dev/name"
+    return targets_in, dev_name
+
+
+def test_sanitise_logging_targets_success(good_logging_targets):
+    targets_in, dev_name, expected = good_logging_targets
+    actual = _sanitise_logging_targets(targets_in, dev_name)
+    assert actual == expected
+
+
+def test_sanitise_logging_targets_fail(bad_logging_targets):
+    targets_in, dev_name = bad_logging_targets
+    with pytest.raises(LoggingTargetError):
+        _sanitise_logging_targets(targets_in, dev_name)
+
+
+def test_update_logging_handlers():
+    logger = logging.Logger('testing')
+    dev_name = "my/dev/name"
+
+    new_targets = ["console::cout"]
+    _update_logging_handlers(new_targets, logger, dev_name)
+    assert len(logger.handlers) == 1
+    assert isinstance(logger.handlers[0], logging.StreamHandler)
+
+    # test same handler is retained for same request
+    old_handler = logger.handlers[0]
+    new_targets = ["console::cout"]
+    _update_logging_handlers(new_targets, logger, dev_name)
+    assert len(logger.handlers) == 1
+    assert logger.handlers[0] is old_handler
+
+    # test other valid target types
+    new_targets = ["console::cout", "file::/tmp/dummy", "syslog::some/address"]
+    _update_logging_handlers(new_targets, logger, dev_name)
+    assert len(logger.handlers) == 3
+    assert isinstance(logger.handlers[0], logging.StreamHandler)
+    assert isinstance(logger.handlers[1], logging.handlers.RotatingFileHandler)
+    assert isinstance(logger.handlers[2], logging.handlers.SysLogHandler)
+
+    # test clearing of 1 handler
+    new_targets = ["console::cout", "syslog::some/address"]
+    _update_logging_handlers(new_targets, logger, dev_name)
+    assert len(logger.handlers) == 2
+    assert isinstance(logger.handlers[0], logging.StreamHandler)
+    assert isinstance(logger.handlers[1], logging.handlers.SysLogHandler)
+
+    # test clearing all handlers
+    new_targets = []
+    _update_logging_handlers(new_targets, logger, dev_name)
+    assert len(logger.handlers) == 0
+
+
 @pytest.mark.usefixtures("tango_context", "initialize_device")
 # PROTECTED REGION END #    //  SKABaseDevice.test_SKABaseDevice_decorators
 class TestSKABaseDevice(object):
@@ -36,9 +125,7 @@ class TestSKABaseDevice(object):
     properties = {
         'SkaLevel': '4',
         'GroupDefinitions': '',
-        'CentralLoggingTarget': '',
-        'ElementLoggingTarget': '',
-        'StorageLoggingTarget': 'localhost',
+        'LoggingTargetsDefault': ['console::cout']
         }
 
     @classmethod
@@ -99,7 +186,6 @@ class TestSKABaseDevice(object):
         assert tango_context.device.Reset() is None
         # PROTECTED REGION END #    //  SKABaseDevice.test_Reset
 
-
     # PROTECTED REGION ID(SKABaseDevice.test_buildState_decorators) ENABLED START #
     # PROTECTED REGION END #    //  SKABaseDevice.test_buildState_decorators
     def test_buildState(self, tango_context):
@@ -120,29 +206,54 @@ class TestSKABaseDevice(object):
         assert (re.match(versionIdPattern, tango_context.device.versionId)) is not None
         # PROTECTED REGION END #    //  SKABaseDevice.test_versionId
 
-    # PROTECTED REGION ID(SKABaseDevice.test_centralLoggingLevel_decorators) ENABLED START #
-    # PROTECTED REGION END #    //  SKABaseDevice.test_centralLoggingLevel_decorators
-    def test_centralLoggingLevel(self, tango_context):
-        """Test for centralLoggingLevel"""
-        # PROTECTED REGION ID(SKABaseDevice.test_centralLoggingLevel) ENABLED START #
-        assert tango_context.device.centralLoggingLevel == 0
-        # PROTECTED REGION END #    //  SKABaseDevice.test_centralLoggingLevel
+    # PROTECTED REGION ID(SKABaseDevice.test_loggingLevel_decorators) ENABLED START #
+    # PROTECTED REGION END #    //  SKABaseDevice.test_loggingLevel_decorators
+    def test_loggingLevel(self, tango_context):
+        """Test for loggingLevel"""
+        # PROTECTED REGION ID(SKABaseDevice.test_loggingLevel) ENABLED START #
+        assert tango_context.device.loggingLevel == TangoLoggingLevel.INFO
 
-    # PROTECTED REGION ID(SKABaseDevice.test_elementLoggingLevel_decorators) ENABLED START #
-    # PROTECTED REGION END #    //  SKABaseDevice.test_elementLoggingLevel_decorators
-    def test_elementLoggingLevel(self, tango_context):
-        """Test for elementLoggingLevel"""
-        # PROTECTED REGION ID(SKABaseDevice.test_elementLoggingLevel) ENABLED START #
-        assert tango_context.device.elementLoggingLevel == 0
-        # PROTECTED REGION END #    //  SKABaseDevice.test_elementLoggingLevel
+        for level in TangoLoggingLevel:
+            tango_context.device.loggingLevel = level
+            assert tango_context.device.loggingLevel == level
 
-    # PROTECTED REGION ID(SKABaseDevice.test_storageLoggingLevel_decorators) ENABLED START #
-    # PROTECTED REGION END #    //  SKABaseDevice.test_storageLoggingLevel_decorators
-    def test_storageLoggingLevel(self, tango_context):
-        """Test for storageLoggingLevel"""
-        # PROTECTED REGION ID(SKABaseDevice.test_storageLoggingLevel) ENABLED START #
-        assert tango_context.device.storageLoggingLevel == 0
-        # PROTECTED REGION END #    //  SKABaseDevice.test_storageLoggingLevel
+        with pytest.raises(DevFailed):
+            tango_context.device.loggingLevel = TangoLoggingLevel.FATAL + 100
+        # PROTECTED REGION END #    //  SKABaseDevice.test_loggingLevel
+
+    # PROTECTED REGION ID(SKABaseDevice.test_loggingTargets_decorators) ENABLED START #
+    # PROTECTED REGION END #    //  SKABaseDevice.test_loggingTargets_decorators
+    def test_loggingTargets(self, tango_context):
+        """Test for loggingTargets"""
+        # PROTECTED REGION ID(SKABaseDevice.test_loggingTargets) ENABLED START #
+        assert tango_context.device.loggingTargets == ("console::cout",)
+
+        with mock.patch("SKABaseDevice._create_logging_handler") as mocked_creator:
+
+            def null_creator(target, device_name):
+                handler = logging.NullHandler()
+                handler.name = target
+                return handler
+
+            mocked_creator.side_effect = null_creator
+            device_fqdn = tango_context.get_device_access()
+
+            # test adding file and syslog targets (already have console)
+            tango_context.device.loggingTargets = [
+                "console::cout", "file::/tmp/dummy", "syslog::some/address"]
+            assert tango_context.device.loggingTargets == (
+                "console::cout", "file::/tmp/dummy", "syslog::some/address")
+            mocked_creator.call_count == 2
+            mocked_creator.assert_has_calls(
+                [mock.call("file::/tmp/dummy", device_fqdn),
+                 mock.call("syslog::some/address", device_fqdn)],
+                any_order=True)
+
+            mocked_creator.reset_mock()
+            with pytest.raises(DevFailed):
+                tango_context.device.loggingTargets = ["invalid::type"]
+            mocked_creator.assert_not_called()
+        # PROTECTED REGION END #    //  SKABaseDevice.test_loggingTargets
 
     # PROTECTED REGION ID(SKABaseDevice.test_healthState_decorators) ENABLED START #
     # PROTECTED REGION END #    //  SKABaseDevice.test_healthState_decorators
@@ -197,8 +308,8 @@ class TestSKABaseDevice(object):
     #     assert attributes == 1
 
     def test__parse_argin(self, tango_context):
-        SKABaseDevice._init_logging(SKABaseDevice)
-        result = SKABaseDevice._parse_argin(SKABaseDevice,'{"class":"SKABaseDevice"}')
+        SKABaseDevice.logger = mock.Mock()
+        result = SKABaseDevice._parse_argin(SKABaseDevice, '{"class": "SKABaseDevice"}')
         assert result == {'class': 'SKABaseDevice'}
 
     # TODO: Fix this test case when "__DeviceImpl__debug_stream() missing 'msg' argument" is resolved.

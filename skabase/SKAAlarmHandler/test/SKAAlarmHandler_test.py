@@ -34,9 +34,7 @@ class TestSKAAlarmHandler(object):
         'AlarmConfigFile': '',
         'SkaLevel': '4',
         'GroupDefinitions': '',
-        'CentralLoggingTarget': '',
-        'ElementLoggingTarget': '',
-        'StorageLoggingTarget': 'localhost',
+        'LoggingTargetsDefault': ['console::cout']
         }
 
     @classmethod

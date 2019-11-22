@@ -38,9 +38,7 @@ setuptools.setup(
       platforms=["OS Independent"],
       setup_requires=[] + pytest_runner,
       install_requires=[
-          "enum34",
-          "argparse",
-          "future"
+          "future",
       ],
       keywords="lmc base classes ska",
       zip_safe=False)

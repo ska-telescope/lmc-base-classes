@@ -5,7 +5,7 @@ import pytest
 
 from skabase.auxiliary.utils import get_groups_from_json, get_tango_device_type_id
 # TODO: for future use
-# from skabase.auxiliary.faults import GroupDefinitionsError
+from skabase.auxiliary.utils import GroupDefinitionsError
 
 TEST_GROUPS = {
     # Valid groups
@@ -150,10 +150,10 @@ def valid_group_configs(request):
     return _get_group_configs_from_keys(request.param)
 
 
-# @pytest.fixture(scope="module", params=BAD_GROUP_KEYS, ids=_group_id_name)
-# def bad_group_configs(request):
-#     """Provides bad lists of groups configs, one at a time."""
-#     return _get_group_configs_from_keys(request.param)
+@pytest.fixture(scope="module", params=BAD_GROUP_KEYS, ids=_group_id_name)
+def bad_group_configs(request):
+    """Provides bad lists of groups configs, one at a time."""
+    return _get_group_configs_from_keys(request.param)
 
 
 def test_get_groups_from_json_empty_list():
@@ -198,10 +198,10 @@ def test_get_groups_from_json_valid(valid_group_configs):
         _validate_group(group_config, group)
 
 
-# def test_get_groups_from_json_invalid(bad_group_configs):
-#     json_definitions = _jsonify_group_configs(bad_group_configs)
-#     with pytest.raises(GroupDefinitionsError):
-#         get_groups_from_json(json_definitions)
+def test_get_groups_from_json_invalid(bad_group_configs):
+    json_definitions = _jsonify_group_configs(bad_group_configs)
+    with pytest.raises(GroupDefinitionsError):
+        get_groups_from_json(json_definitions)
 
 def test_get_tango_device_type_id():
     device_name = "domain/family/member"

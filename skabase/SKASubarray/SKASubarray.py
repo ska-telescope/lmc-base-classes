@@ -85,7 +85,6 @@ class SKASubarray(with_metaclass(DeviceMeta, SKAObsDevice)):
                     Except.throw_exception("Command failed!", "Subarray adminMode not"
                                            "'ON-LINE' or not in 'MAINTENANCE'.",
                                            command_name, ErrSeverity.ERR)
-
             else:
                 Except.throw_exception("Command failed!", "Subarray obsState not 'IDLE'.",
                                        command_name, ErrSeverity.ERR)
@@ -300,7 +299,7 @@ class SKASubarray(with_metaclass(DeviceMeta, SKAObsDevice)):
 
     @command(dtype_in='DevVarLongStringArray', doc_in="[Number of instances to add][Capability types]",)
     @DebugIt()
-    def ConfigureCapability(self, argin):
+    def ConfigureCapability(self, argin)                    :
         # PROTECTED REGION ID(SKASubarray.ConfigureCapability) ENABLED START #
         """Configures number of instances for each capability. If the capability exists,
         it increments the configured instances by the number of instances requested,

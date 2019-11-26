@@ -1,10 +1,8 @@
 """Tests for skabase.utils."""
-# TODO: for future use
 import json
 import pytest
 
 from skabase.auxiliary.utils import get_groups_from_json, get_tango_device_type_id
-# TODO: for future use
 from skabase.auxiliary.utils import GroupDefinitionsError
 
 TEST_GROUPS = {
@@ -121,7 +119,6 @@ BAD_GROUP_KEYS = [
     ('basic_no_subgroups', 'bk1_bad_keys', ),
 ]
 
-# TODO: Fix the commented test cases. Currently these are not used so commented out to make the CI pipeline run successfully.
 def _jsonify_group_configs(group_configs):
     """Returns list of JSON definitions for groups."""
     definitions = []

@@ -78,7 +78,7 @@ class TestSKASubarray(object):
     #
     #     tango_context.device.ConfigureCapability([[1], ['BAND1'])
     #     assert tango_context.device.obsState == "READY"
-    # PROTECTED REGION END #    //  SKASubarray.test_ConfigureCapability
+    #     # PROTECTED REGION END #    //  SKASubarray.test_ConfigureCapability
 
     # PROTECTED REGION ID(SKASubarray.test_DeconfigureAllCapabilities_decorators) ENABLED START #
     # PROTECTED REGION END #    //  SKASubarray.test_DeconfigureAllCapabilities_decorators

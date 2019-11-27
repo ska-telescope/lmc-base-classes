@@ -85,7 +85,6 @@ class SKASubarray(with_metaclass(DeviceMeta, SKAObsDevice)):
                     Except.throw_exception("Command failed!", "Subarray adminMode not"
                                            "'ON-LINE' or not in 'MAINTENANCE'.",
                                            command_name, ErrSeverity.ERR)
-
             else:
                 Except.throw_exception("Command failed!", "Subarray obsState not 'IDLE'.",
                                        command_name, ErrSeverity.ERR)

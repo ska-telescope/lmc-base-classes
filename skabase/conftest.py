@@ -87,3 +87,4 @@ def setup_log_test_device():
     #tear down
     cmdline = 'pkill -9 -f .' + testdevice_path + ' &'
     os.system(cmdline)
+

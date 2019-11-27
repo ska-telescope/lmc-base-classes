@@ -1,7 +1,0 @@
-
-- name: deploy_sw
-  hosts: operational
-  roles:
-    - {role: 'deploy_sw', tags: ['deploy-sw']}
-
-

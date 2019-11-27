@@ -1,9 +1,0 @@
-[dev4]
-dev4lmc
-
-[local]
-localhost ansible_connection=local
-
-[operational]
-dev4lmc
-localhost

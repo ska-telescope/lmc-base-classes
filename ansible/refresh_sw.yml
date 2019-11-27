@@ -1,7 +1,0 @@
-
-- name: refresh_sw
-  hosts: operational
-  roles:
-    - {role: 'refresh_sw', tags: ['refresh-sw']}
-
-

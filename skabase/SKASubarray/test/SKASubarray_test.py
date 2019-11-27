@@ -60,9 +60,9 @@ class TestSKASubarray(object):
         assert tango_context.device.Abort() is None
         # PROTECTED REGION END #    //  SKASubarray.test_Abort
 
-    # TODO: Fix the test case.
-    # PROTECTED REGION ID(SKASubarray.test_ConfigureCapability_decorators) ENABLED START #
-    # PROTECTED REGION END #    //  SKASubarray.test_ConfigureCapability_decorators
+    # # TODO: Fix the test case.
+    # # PROTECTED REGION ID(SKASubarray.test_ConfigureCapability_decorators) ENABLED START #
+    # # PROTECTED REGION END #    //  SKASubarray.test_ConfigureCapability_decorators
     # def test_ConfigureCapability(self, tango_context):
     #     """Test for ConfigureCapability"""
     #     # PROTECTED REGION ID(SKASubarray.test_ConfigureCapability) ENABLED START #
@@ -76,25 +76,25 @@ class TestSKASubarray(object):
     #
     #     tango_context.device.ConfigureCapability([[1], ["BAND1"]])
     #     assert tango_context.device.obsState == "READY"
-        # PROTECTED REGION END #    //  SKASubarray.test_ConfigureCapability
+    #     # PROTECTED REGION END #    //  SKASubarray.test_ConfigureCapability
 
-    # TODO: Fix the test case.
-    # PROTECTED REGION ID(SKASubarray.test_DeconfigureAllCapabilities_decorators) ENABLED START #
-    # PROTECTED REGION END #    //  SKASubarray.test_DeconfigureAllCapabilities_decorators
+    # # TODO: Fix the test case.
+    # # PROTECTED REGION ID(SKASubarray.test_DeconfigureAllCapabilities_decorators) ENABLED START #
+    # # PROTECTED REGION END #    //  SKASubarray.test_DeconfigureAllCapabilities_decorators
     # def test_DeconfigureAllCapabilities(self, tango_context):
     #     """Test for DeconfigureAllCapabilities"""
     #     # PROTECTED REGION ID(SKASubarray.test_DeconfigureAllCapabilities) ENABLED START #
     #     assert tango_context.device.DeconfigureAllCapabilities("") == None
-        # PROTECTED REGION END #    //  SKASubarray.test_DeconfigureAllCapabilities
+    #     # PROTECTED REGION END #    //  SKASubarray.test_DeconfigureAllCapabilities
 
-    # TODO: Fix the test case.
-    # PROTECTED REGION ID(SKASubarray.test_DeconfigureCapability_decorators) ENABLED START #
-    # PROTECTED REGION END #    //  SKASubarray.test_DeconfigureCapability_decorators
+    # # TODO: Fix the test case.
+    # # PROTECTED REGION ID(SKASubarray.test_DeconfigureCapability_decorators) ENABLED START #
+    # # PROTECTED REGION END #    //  SKASubarray.test_DeconfigureCapability_decorators
     # def test_DeconfigureCapability(self, tango_context):
     #     """Test for DeconfigureCapability"""
     #     # PROTECTED REGION ID(SKASubarray.test_DeconfigureCapability) ENABLED START #
     #     assert tango_context.device.DeconfigureCapability([[0], [""]]) == None
-        # PROTECTED REGION END #    //  SKASubarray.test_DeconfigureCapability
+    #     # PROTECTED REGION END #    //  SKASubarray.test_DeconfigureCapability
 
     # PROTECTED REGION ID(SKASubarray.test_GetVersionInfo_decorators) ENABLED START #
     # PROTECTED REGION END #    //  SKASubarray.test_GetVersionInfo_decorators

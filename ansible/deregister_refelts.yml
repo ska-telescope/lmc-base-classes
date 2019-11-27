@@ -1,7 +1,0 @@
-
-- name: deregister_refelts
-  hosts: operational
-  roles:
-    - {role: 'deregister_refelts', tags: ['deregister-refelts']}
-
-

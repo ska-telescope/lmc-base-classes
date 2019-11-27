@@ -2,8 +2,11 @@
 import json
 import pytest
 
-from skabase.auxiliary.utils import get_groups_from_json, get_tango_device_type_id
-from skabase.auxiliary.utils import GroupDefinitionsError
+from skabase.auxiliary.utils import (
+    get_groups_from_json,
+    get_tango_device_type_id,
+    GroupDefinitionsError,
+)
 
 TEST_GROUPS = {
     # Valid groups
@@ -199,6 +202,7 @@ def test_get_groups_from_json_invalid(bad_group_configs):
     json_definitions = _jsonify_group_configs(bad_group_configs)
     with pytest.raises(GroupDefinitionsError):
         get_groups_from_json(json_definitions)
+
 
 def test_get_tango_device_type_id():
     device_name = "domain/family/member"

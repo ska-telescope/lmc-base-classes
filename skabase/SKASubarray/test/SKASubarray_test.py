@@ -32,11 +32,9 @@ class TestSKASubarray(object):
 
     properties = {
         'CapabilityTypes': '',
-        'CentralLoggingTarget': '',
-        'ElementLoggingTarget': '',
         'GroupDefinitions': '',
         'SkaLevel': '4',
-        'StorageLoggingTarget': 'localhost',
+        'LoggingTargetsDefault': ['console::cout'],
         'SubID': '',
         }
 
@@ -244,14 +242,6 @@ class TestSKASubarray(object):
         assert (re.match(buildPattern, tango_context.device.buildState)) is not None
         # PROTECTED REGION END #    //  SKASubarray.test_buildState
 
-    # PROTECTED REGION ID(SKASubarray.test_centralLoggingLevel_decorators) ENABLED START #
-    # PROTECTED REGION END #    //  SKASubarray.test_centralLoggingLevel_decorators
-    def test_centralLoggingLevel(self, tango_context):
-        """Test for centralLoggingLevel"""
-        # PROTECTED REGION ID(SKASubarray.test_centralLoggingLevel) ENABLED START #
-        assert tango_context.device.centralLoggingLevel == 0
-        # PROTECTED REGION END #    //  SKASubarray.test_centralLoggingLevel
-
     # PROTECTED REGION ID(SKASubarray.test_configurationDelayExpected_decorators) ENABLED START #
     # PROTECTED REGION END #    //  SKASubarray.test_configurationDelayExpected_decorators
     def test_configurationDelayExpected(self, tango_context):
@@ -275,14 +265,6 @@ class TestSKASubarray(object):
         # PROTECTED REGION ID(SKASubarray.test_controlMode) ENABLED START #
         assert tango_context.device.controlMode == 0
         # PROTECTED REGION END #    //  SKASubarray.test_controlMode
-
-    # PROTECTED REGION ID(SKASubarray.test_elementLoggingLevel_decorators) ENABLED START #
-    # PROTECTED REGION END #    //  SKASubarray.test_elementLoggingLevel_decorators
-    def test_elementLoggingLevel(self, tango_context):
-        """Test for elementLoggingLevel"""
-        # PROTECTED REGION ID(SKASubarray.test_elementLoggingLevel) ENABLED START #
-        assert tango_context.device.elementLoggingLevel == 0
-        # PROTECTED REGION END #    //  SKASubarray.test_elementLoggingLevel
 
     # PROTECTED REGION ID(SKASubarray.test_healthState_decorators) ENABLED START #
     # PROTECTED REGION END #    //  SKASubarray.test_healthState_decorators
@@ -315,14 +297,6 @@ class TestSKASubarray(object):
         # PROTECTED REGION ID(SKASubarray.test_simulationMode) ENABLED START #
         assert tango_context.device.simulationMode is False
         # PROTECTED REGION END #    //  SKASubarray.test_simulationMode
-
-    # PROTECTED REGION ID(SKASubarray.test_storageLoggingLevel_decorators) ENABLED START #
-    # PROTECTED REGION END #    //  SKASubarray.test_storageLoggingLevel_decorators
-    def test_storageLoggingLevel(self, tango_context):
-        """Test for storageLoggingLevel"""
-        # PROTECTED REGION ID(SKASubarray.test_storageLoggingLevel) ENABLED START #
-        assert tango_context.device.storageLoggingLevel is 0
-        # PROTECTED REGION END #    //  SKASubarray.test_storageLoggingLevel
 
     # PROTECTED REGION ID(SKASubarray.test_testMode_decorators) ENABLED START #
     # PROTECTED REGION END #    //  SKASubarray.test_testMode_decorators

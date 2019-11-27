@@ -89,9 +89,6 @@ class SKATestDevice(with_metaclass(DeviceMeta, SKABaseDevice)):
         self._build_state = '{}, {}, {}'.format(release.name, release.version,
                                                 release.description)
         self._version_id = release.version
-        self._storage_logging_level = int(tango.LogLevel.LOG_DEBUG)
-        self._element_logging_level = int(tango.LogLevel.LOG_DEBUG)
-        self._central_logging_level = int(tango.LogLevel.LOG_DEBUG)
         # PROTECTED REGION END #    //  SKATestDevice.init_device
 
     def always_executed_hook(self):

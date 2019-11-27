@@ -15,43 +15,16 @@
       <type xsi:type="pogoDsl:StringVectorType"/>
       <status abstract="false" inherited="true" concrete="true"/>
     </deviceProperties>
-    <deviceProperties name="CentralLoggingTarget" description="Pre-configured logging target CentralLogger DS">
-      <type xsi:type="pogoDsl:StringType"/>
-      <status abstract="false" inherited="true" concrete="true"/>
-    </deviceProperties>
-    <deviceProperties name="ElementLoggingTarget" description="Pre-configured logging target ElementLogger DS">
-      <type xsi:type="pogoDsl:StringType"/>
-      <status abstract="false" inherited="true" concrete="true"/>
-    </deviceProperties>
-    <deviceProperties name="StorageLoggingTarget" description="Pre-configured logging target for syslog">
-      <type xsi:type="pogoDsl:StringType"/>
-      <status abstract="false" inherited="true" concrete="true"/>
-      <DefaultPropValue>localhost</DefaultPropValue>
-    </deviceProperties>
-    <deviceProperties name="CentralLoggingLevelDefault" description="Default logging level to Central logging target, populated from Global property&#xA;(0=OFF, 1=FATAL, 2=ERROR, 3=WARNING, 4=INFO, 5=DEBUG)&#xA;&#xA;Default: 2">
+    <deviceProperties name="LoggingLevelDefault" description="Default logging level at device startup.&#xA;(0=OFF, 1=FATAL, 2=ERROR, 3=WARNING, 4=INFO, 5=DEBUG)">
       <type xsi:type="pogoDsl:UShortType"/>
-      <status abstract="false" inherited="false" concrete="true"/>
-      <DefaultPropValue>2</DefaultPropValue>
-    </deviceProperties>
-    <deviceProperties name="ElementLoggingLevelDefault" description="Default logging level to Element logging target, populated from Global property&#xA;(0=OFF, 1=FATAL, 2=ERROR, 3=WARNING, 4=INFO, 5=DEBUG)&#xA;&#xA;Default: 3">
-      <type xsi:type="pogoDsl:UShortType"/>
-      <status abstract="false" inherited="false" concrete="true"/>
-      <DefaultPropValue>3</DefaultPropValue>
-    </deviceProperties>
-    <deviceProperties name="StorageLoggingLevelDefault" description="Default logging level to Syslog logging target, poulated from Global property&#xA;(0=OFF, 1=FATAL, 2=ERROR, 3=WARNING, 4=INFO, 5=DEBUG)&#xA;&#xA;Default: 4">
-      <type xsi:type="pogoDsl:UShortType"/>
-      <status abstract="false" inherited="false" concrete="true"/>
+      <status abstract="false" inherited="true" concrete="true"/>
       <DefaultPropValue>4</DefaultPropValue>
     </deviceProperties>
-    <commands name="Log" description="LogConsumer interface" execMethod="log" displayLevel="OPERATOR" polledPeriod="0" isDynamic="false">
-      <argin description="Details of timestamp, logging level, source device and message.">
-        <type xsi:type="pogoDsl:StringArrayType"/>
-      </argin>
-      <argout description="Returns the logging message.">
-        <type xsi:type="pogoDsl:StringType"/>
-      </argout>
-      <status abstract="false" inherited="false" concrete="true" concreteHere="true"/>
-    </commands>
+    <deviceProperties name="LoggingTargetsDefault" description="Default logging targets at device startup.&#xA;Each item has the format:  target_type::target_name.&#xA;To log to stdout, use 'console::cout'.&#xA;To log to syslog, use 'syslog::&#x3c;address&#x3e;',&#xA;  where &#x3c;address&#x3e; is a file path,&#xA;  for example 'syslog::/var/run/rsyslog/dev/log'.&#xA;To log to a file, use 'file::&#x3c;path&#x3e;',&#xA;  where &#x3c;path&#x3e; is a file path,&#xA;  for example 'file::/tmp/my_dev.log'.">
+      <type xsi:type="pogoDsl:StringVectorType"/>
+      <status abstract="false" inherited="true" concrete="true"/>
+      <DefaultPropValue>console::cout</DefaultPropValue>
+    </deviceProperties>
     <commands name="State" description="This command gets the device state (stored in its device_state data member) and returns it to the caller." execMethod="dev_state" displayLevel="OPERATOR" polledPeriod="0">
       <argin description="none">
         <type xsi:type="pogoDsl:VoidType"/>
@@ -70,26 +43,8 @@
       </argout>
       <status abstract="true" inherited="true" concrete="true"/>
     </commands>
-    <commands name="SetCentralLoggingLevel" description="Logging level to Central logging target:&#xA;(0=OFF, 1=FATAL, 2=ERROR, 3=WARNING, 4=INFO, 5=DEBUG)" execMethod="set_central_logging_level" displayLevel="OPERATOR" polledPeriod="0" isDynamic="false">
-      <argin description="Central logging level for selected devices">
-        <type xsi:type="pogoDsl:LongStringArrayType"/>
-      </argin>
-      <argout description="No output arguments">
-        <type xsi:type="pogoDsl:VoidType"/>
-      </argout>
-      <status abstract="false" inherited="false" concrete="true" concreteHere="true"/>
-    </commands>
-    <commands name="SetElementLoggingLevel" description="Logging level to Element logging target:&#xA;(0=OFF, 1=FATAL, 2=ERROR, 3=WARNING, 4=INFO, 5=DEBUG)" execMethod="set_element_logging_level" displayLevel="OPERATOR" polledPeriod="0" isDynamic="false">
-      <argin description="Element logging level for selected devices">
-        <type xsi:type="pogoDsl:LongStringArrayType"/>
-      </argin>
-      <argout description="No output arguments">
-        <type xsi:type="pogoDsl:VoidType"/>
-      </argout>
-      <status abstract="false" inherited="false" concrete="true" concreteHere="true"/>
-    </commands>
-    <commands name="SetStorageLoggingLevel" description="Logging level to Syslog storage logging target:&#xA;(0=OFF, 1=FATAL, 2=ERROR, 3=WARNING, 4=INFO, 5=DEBUG)" execMethod="set_storage_logging_level" displayLevel="OPERATOR" polledPeriod="0" isDynamic="false">
-      <argin description="Storage logging level for selected devices">
+    <commands name="SetLoggingLevel" description="Adjust logging level for multiple devices" execMethod="set_logging_level" displayLevel="OPERATOR" polledPeriod="0" isDynamic="false">
+      <argin description="Logging level for selected devices:&#xA;(0=OFF, 1=FATAL, 2=ERROR, 3=WARNING, 4=INFO, 5=DEBUG).&#xA;Example: [[4, 5], ['my/dev/1', 'my/dev/2']].">
         <type xsi:type="pogoDsl:LongStringArrayType"/>
       </argin>
       <argout description="No output arguments">
@@ -125,20 +80,12 @@
       <status abstract="false" inherited="true" concrete="true"/>
       <properties description="Build state of this device" label="" unit="" standardUnit="" displayUnit="" format="" maxValue="" minValue="" maxAlarm="" minAlarm="" maxWarning="" minWarning="" deltaTime="" deltaValue=""/>
     </attributes>
-    <attributes name="centralLoggingLevel" attType="Scalar" rwType="READ_WRITE" displayLevel="OPERATOR" polledPeriod="1000" maxX="" maxY="" allocReadMember="true">
-      <dataType xsi:type="pogoDsl:UShortType"/>
+    <attributes name="loggingLevel" attType="Scalar" rwType="READ_WRITE" displayLevel="OPERATOR" polledPeriod="1000" maxX="" maxY="" allocReadMember="true">
+      <dataType xsi:type="pogoDsl:EnumType"/>
+      <changeEvent fire="false" libCheckCriteria="false"/>
+      <archiveEvent fire="false" libCheckCriteria="false"/>
       <status abstract="false" inherited="true" concrete="true"/>
-      <properties description="Current logging level to Central logging target for this device - &#xA;initialises to CentralLoggingLevelDefault on startup" label="" unit="" standardUnit="" displayUnit="" format="" maxValue="" minValue="" maxAlarm="" minAlarm="" maxWarning="" minWarning="" deltaTime="" deltaValue=""/>
-    </attributes>
-    <attributes name="elementLoggingLevel" attType="Scalar" rwType="READ_WRITE" displayLevel="OPERATOR" polledPeriod="1000" maxX="" maxY="" allocReadMember="true">
-      <dataType xsi:type="pogoDsl:UShortType"/>
-      <status abstract="false" inherited="true" concrete="true"/>
-      <properties description="Current logging level to Element logging target for this device - &#xA;initialises to ElementLoggingLevelDefault on startup" label="" unit="" standardUnit="" displayUnit="" format="" maxValue="" minValue="" maxAlarm="" minAlarm="" maxWarning="" minWarning="" deltaTime="" deltaValue=""/>
-    </attributes>
-    <attributes name="storageLoggingLevel" attType="Scalar" rwType="READ_WRITE" displayLevel="OPERATOR" polledPeriod="1000" maxX="" maxY="" memorized="true" allocReadMember="true">
-      <dataType xsi:type="pogoDsl:UShortType"/>
-      <status abstract="false" inherited="true" concrete="true"/>
-      <properties description="Current logging level to Syslog for this device - &#xA;initialises from  StorageLoggingLevelDefault on first execution of device.&#xA;Needs to be READ_WRITE To make it memorized - but writing this attribute should &#xA;do the same as command SetStorageLoggingLevel to ensure the targets and adjustments&#xA;are made correctly" label="" unit="" standardUnit="" displayUnit="" format="" maxValue="" minValue="" maxAlarm="" minAlarm="" maxWarning="" minWarning="" deltaTime="" deltaValue=""/>
+      <properties description="Current logging level for this device - initialises to LoggingLevelDefault on startup" label="" unit="" standardUnit="" displayUnit="" format="" maxValue="" minValue="" maxAlarm="" minAlarm="" maxWarning="" minWarning="" deltaTime="" deltaValue=""/>
     </attributes>
     <attributes name="healthState" attType="Scalar" rwType="READ" displayLevel="OPERATOR" polledPeriod="1000" maxX="" maxY="" allocReadMember="true">
       <dataType xsi:type="pogoDsl:EnumType"/>
@@ -164,6 +111,14 @@
       <dataType xsi:type="pogoDsl:StringType"/>
       <status abstract="false" inherited="true" concrete="true"/>
       <properties description="The test mode of the device. &#xA;Either no test mode (empty string) or an indication of the test mode." label="" unit="" standardUnit="" displayUnit="" format="" maxValue="" minValue="" maxAlarm="" minAlarm="" maxWarning="" minWarning="" deltaTime="" deltaValue=""/>
+    </attributes>
+    <attributes name="loggingTargets" attType="Spectrum" rwType="READ_WRITE" displayLevel="OPERATOR" polledPeriod="0" maxX="3" maxY="" allocReadMember="true" isDynamic="false">
+      <dataType xsi:type="pogoDsl:StringType"/>
+      <changeEvent fire="false" libCheckCriteria="false"/>
+      <archiveEvent fire="false" libCheckCriteria="false"/>
+      <dataReadyEvent fire="false" libCheckCriteria="true"/>
+      <status abstract="false" inherited="true" concrete="true"/>
+      <properties description="Current logging targets for this device - &#xA;initialises to LoggingTargetsDefault on startup" label="" unit="" standardUnit="" displayUnit="" format="" maxValue="" minValue="" maxAlarm="" minAlarm="" maxWarning="" minWarning="" deltaTime="" deltaValue=""/>
     </attributes>
     <states name="ON" description="This state could have been called OK or OPERATIONAL. It means that the device is in its operational state. (E.g. the power supply is giving its nominal current, th motor is ON and ready to move, the instrument is operating). This state is modified by the Attribute alarm checking of the DeviceImpl:dev_state method. i.e. if the State is ON and one attribute has its quality factor to ATTR_WARNING or ATTR_ALARM, then the State is modified to ALARM.">
       <status abstract="false" inherited="true" concrete="true"/>

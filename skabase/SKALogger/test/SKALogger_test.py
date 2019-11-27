@@ -33,12 +33,6 @@ class TestSKALogger(object):
     """Test case for packet generation."""
     properties = {'SkaLevel': '1',
                   'GroupDefinitions': '',
-                  'CentralLoggingTarget': '',
-                  'ElementLoggingTarget': '',
-                  'StorageLoggingTarget': 'localhost',
-                  'CentralLoggingLevelDefault': int(tango.LogLevel.LOG_ERROR),
-                  'ElementLoggingLevelDefault': int(tango.LogLevel.LOG_WARN),
-                  'StorageLoggingLevelDefault': int(tango.LogLevel.LOG_INFO),
                   }
 
     @classmethod
@@ -54,16 +48,6 @@ class TestSKALogger(object):
         # PROTECTED REGION ID(SKALogger.test_properties) ENABLED START #
         # PROTECTED REGION END #    //  SKALogger.test_properties
         pass
-
-    # PROTECTED REGION ID(SKALogger.test_Log_decorators) ENABLED START #
-    # PROTECTED REGION END #    //  SKALogger.test_Log_decorators
-    def test_Log(self, tango_context):
-        """Test for Log"""
-        # PROTECTED REGION ID(SKALogger.test_Log) ENABLED START #
-        log_details = ["123456789", "ERROR", "logger/test/1",
-                       "Error message", "0", "0"]
-        assert tango_context.device.Log(log_details) == "Error message"
-        # PROTECTED REGION END #    //  SKALogger.test_Log
 
     # PROTECTED REGION ID(SKALogger.test_State_decorators) ENABLED START #
     # PROTECTED REGION END #    //  SKALogger.test_State_decorators
@@ -81,54 +65,19 @@ class TestSKALogger(object):
         assert tango_context.device.Status() == "The device is in UNKNOWN state."
         # PROTECTED REGION END #    //  SKALogger.test_Status
 
-    # PROTECTED REGION ID(SKALogger.test_SetCentralLoggingLevel_decorators) ENABLED START #
-    @pytest.mark.parametrize("logging_level", [int(tango.LogLevel.LOG_INFO)])
-    @pytest.mark.parametrize("logging_target", ["logger/test/1"])
-    # PROTECTED REGION END #    //  SKALogger.test_SetCentralLoggingLevel_decorators
-    def test_SetCentralLoggingLevel(self, tango_context, setup_log_test_device,
-                                    logging_level, logging_target):
-        """Test for SetCentralLoggingLevel"""
-        # PROTECTED REGION ID(SKALogger.test_SetCentralLoggingLevel) ENABLED START #
-        levels = []
-        levels.append(logging_level)
-        targets = []
-        targets.append(logging_target)
-        device_details = []
-        device_details.append(levels)
-        device_details.append(targets)
-        tango_context.device.SetCentralLoggingLevel(device_details)
-        dev_proxy = DeviceProxy(logging_target)
-        assert dev_proxy.centralLoggingLevel == logging_level
-        # PROTECTED REGION END #    //  SKALogger.test_SetCentralLoggingLevel
-
-    # PROTECTED REGION ID(SKALogger.test_SetElementLoggingLevel_decorators) ENABLED START #
+    # PROTECTED REGION ID(SKALogger.test_SetLoggingLevel_decorators) ENABLED START #
     @pytest.mark.parametrize("logging_level", [int(tango.LogLevel.LOG_ERROR)])
     @pytest.mark.parametrize("logging_target", ["logger/test/1"])
-    # PROTECTED REGION END #    //  SKALogger.test_SetElementLoggingLevel_decorators
-    def test_SetElementLoggingLevel(self, tango_context, setup_log_test_device,
-                                    logging_level, logging_target):
-        """Test for SetElementLoggingLevel"""
-        # PROTECTED REGION ID(SKALogger.test_SetElementLoggingLevel) ENABLED START #
-        levels = []
-        levels.append(logging_level)
-        targets = []
-        targets.append(logging_target)
-        device_details = []
-        device_details.append(levels)
-        device_details.append(targets)
-        tango_context.device.SetElementLoggingLevel(device_details)
+    # PROTECTED REGION END #    //  SKALogger.test_SetLoggingLevel_decorators
+    def test_SetLoggingLevel(self, tango_context, setup_log_test_device,
+                             logging_level, logging_target):
+        """Test for SetLoggingLevel"""
+        # PROTECTED REGION ID(SKALogger.test_SetLoggingLevel) ENABLED START #
+        # initial setting must not be same as what it will be set to
         dev_proxy = DeviceProxy(logging_target)
-        assert dev_proxy.elementLoggingLevel == logging_level
-        # PROTECTED REGION END #    //  SKALogger.test_SetElementLoggingLevel
+        dev_proxy.loggingLevel = int(tango.LogLevel.LOG_FATAL)
+        assert dev_proxy.loggingLevel != logging_level
 
-    # PROTECTED REGION ID(SKALogger.test_SetStorageLoggingLevel_decorators) ENABLED START #
-    @pytest.mark.parametrize("logging_level", [int(tango.LogLevel.LOG_WARN)])
-    @pytest.mark.parametrize("logging_target", ["logger/test/1"])
-    # PROTECTED REGION END #    //  SKALogger.test_SetStorageLoggingLevel_decorators
-    def test_SetStorageLoggingLevel(self, tango_context, setup_log_test_device,
-                                    logging_level, logging_target):
-        """Test for SetStorageLoggingLevel"""
-        # PROTECTED REGION ID(SKALogger.test_SetStorageLoggingLevel) ENABLED START #
         levels = []
         levels.append(logging_level)
         targets = []
@@ -136,10 +85,9 @@ class TestSKALogger(object):
         device_details = []
         device_details.append(levels)
         device_details.append(targets)
-        tango_context.device.SetStorageLoggingLevel(device_details)
-        dev_proxy = DeviceProxy(logging_target)
-        assert dev_proxy.storageLoggingLevel == logging_level
-        # PROTECTED REGION END #    //  SKALogger.test_SetStorageLoggingLevel
+        tango_context.device.SetLoggingLevel(device_details)
+        assert dev_proxy.loggingLevel == logging_level
+        # PROTECTED REGION END #    //  SKALogger.test_SetLoggingLevel
 
     # PROTECTED REGION ID(SKALogger.test_GetVersionInfo_decorators) ENABLED START #
     # PROTECTED REGION END #    //  SKALogger.test_GetVersionInfo_decorators
@@ -181,29 +129,13 @@ class TestSKALogger(object):
         assert (re.match(versionIdPattern, tango_context.device.versionId)) is not None
         # PROTECTED REGION END #    //  SKALogger.test_versionId
 
-    # PROTECTED REGION ID(SKALogger.test_centralLoggingLevel_decorators) ENABLED START #
-    # PROTECTED REGION END #    //  SKALogger.test_centralLoggingLevel_decorators
-    def test_centralLoggingLevel(self, tango_context):
-        """Test for centralLoggingLevel"""
-        # PROTECTED REGION ID(SKALogger.test_centralLoggingLevel) ENABLED START #
-        assert tango_context.device.centralLoggingLevel == int(tango.LogLevel.LOG_DEBUG)
-        # PROTECTED REGION END #    //  SKALogger.test_centralLoggingLevel
-
-    # PROTECTED REGION ID(SKALogger.test_elementLoggingLevel_decorators) ENABLED START #
-    # PROTECTED REGION END #    //  SKALogger.test_elementLoggingLevel_decorators
-    def test_elementLoggingLevel(self, tango_context):
-        """Test for elementLoggingLevel"""
-        # PROTECTED REGION ID(SKALogger.test_elementLoggingLevel) ENABLED START #
-        assert tango_context.device.elementLoggingLevel == int(tango.LogLevel.LOG_DEBUG)
-        # PROTECTED REGION END #    //  SKALogger.test_elementLoggingLevel
-
-    # PROTECTED REGION ID(SKALogger.test_storageLoggingLevel_decorators) ENABLED START #
-    # PROTECTED REGION END #    //  SKALogger.test_storageLoggingLevel_decorators
-    def test_storageLoggingLevel(self, tango_context):
-        """Test for storageLoggingLevel"""
-        # PROTECTED REGION ID(SKALogger.test_storageLoggingLevel) ENABLED START #
-        assert tango_context.device.storageLoggingLevel == int(tango.LogLevel.LOG_DEBUG)
-        # PROTECTED REGION END #    //  SKALogger.test_storageLoggingLevel
+    # PROTECTED REGION ID(SKALogger.test_loggingLevel_decorators) ENABLED START #
+    # PROTECTED REGION END #    //  SKALogger.test_loggingLevel_decorators
+    def test_loggingLevel(self, tango_context):
+        """Test for loggingLevel"""
+        # PROTECTED REGION ID(SKALogger.test_loggingLevel) ENABLED START #
+        assert tango_context.device.loggingLevel == tango.LogLevel.LOG_INFO
+        # PROTECTED REGION END #    //  SKALogger.test_loggingLevel
 
     # PROTECTED REGION ID(SKALogger.test_healthState_decorators) ENABLED START #
     # PROTECTED REGION END #    //  SKALogger.test_healthState_decorators

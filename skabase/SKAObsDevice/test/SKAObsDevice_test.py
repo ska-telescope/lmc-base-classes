@@ -32,9 +32,7 @@ class TestSKAObsDevice(object):
 
     properties = {
         'SkaLevel': '4',
-        'CentralLoggingTarget': '',
-        'ElementLoggingTarget': '',
-        'StorageLoggingTarget': 'localhost',
+        'LoggingTargetsDefault': ['console::cout'],
         'GroupDefinitions': '',
         }
 
@@ -147,30 +145,6 @@ class TestSKAObsDevice(object):
         versionIdPattern = re.compile(r'[0-9].[0-9].[0-9]')
         assert (re.match(versionIdPattern, tango_context.device.versionId)) != None
         # PROTECTED REGION END #    //  SKAObsDevice.test_versionId
-
-    # PROTECTED REGION ID(SKAObsDevice.test_centralLoggingLevel_decorators) ENABLED START #
-    # PROTECTED REGION END #    //  SKAObsDevice.test_centralLoggingLevel_decorators
-    def test_centralLoggingLevel(self, tango_context):
-        """Test for centralLoggingLevel"""
-        # PROTECTED REGION ID(SKAObsDevice.test_centralLoggingLevel) ENABLED START #
-        assert tango_context.device.centralLoggingLevel == 0
-        # PROTECTED REGION END #    //  SKAObsDevice.test_centralLoggingLevel
-
-    # PROTECTED REGION ID(SKAObsDevice.test_elementLoggingLevel_decorators) ENABLED START #
-    # PROTECTED REGION END #    //  SKAObsDevice.test_elementLoggingLevel_decorators
-    def test_elementLoggingLevel(self, tango_context):
-        """Test for elementLoggingLevel"""
-        # PROTECTED REGION ID(SKAObsDevice.test_elementLoggingLevel) ENABLED START #
-        assert tango_context.device.elementLoggingLevel == 0
-        # PROTECTED REGION END #    //  SKAObsDevice.test_elementLoggingLevel
-
-    # PROTECTED REGION ID(SKAObsDevice.test_storageLoggingLevel_decorators) ENABLED START #
-    # PROTECTED REGION END #    //  SKAObsDevice.test_storageLoggingLevel_decorators
-    def test_storageLoggingLevel(self, tango_context):
-        """Test for storageLoggingLevel"""
-        # PROTECTED REGION ID(SKAObsDevice.test_storageLoggingLevel) ENABLED START #
-        assert tango_context.device.storageLoggingLevel == 0
-        # PROTECTED REGION END #    //  SKAObsDevice.test_storageLoggingLevel
 
     # PROTECTED REGION ID(SKAObsDevice.test_healthState_decorators) ENABLED START #
     # PROTECTED REGION END #    //  SKAObsDevice.test_healthState_decorators

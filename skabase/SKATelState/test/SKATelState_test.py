@@ -34,9 +34,7 @@ class TestSKATelState(object):
         'TelStateConfigFile': '',
         'SkaLevel': '4',
         'GroupDefinitions': '',
-        'CentralLoggingTarget': '',
-        'ElementLoggingTarget': '',
-        'StorageLoggingTarget': 'localhost',
+        'LoggingTargetsDefault': ['console::cout'],
         }
 
     @classmethod
@@ -109,30 +107,6 @@ class TestSKATelState(object):
         versionIdPattern = re.compile(r'[0-9].[0-9].[0-9]')
         assert (re.match(versionIdPattern, tango_context.device.versionId)) is not None
         # PROTECTED REGION END #    //  SKATelState.test_versionId
-
-    # PROTECTED REGION ID(SKATelState.test_centralLoggingLevel_decorators) ENABLED START #
-    # PROTECTED REGION END #    //  SKATelState.test_centralLoggingLevel_decorators
-    def test_centralLoggingLevel(self, tango_context):
-        """Test for centralLoggingLevel"""
-        # PROTECTED REGION ID(SKATelState.test_centralLoggingLevel) ENABLED START #
-        assert tango_context.device.centralLoggingLevel == 0
-        # PROTECTED REGION END #    //  SKATelState.test_centralLoggingLevel
-
-    # PROTECTED REGION ID(SKATelState.test_elementLoggingLevel_decorators) ENABLED START #
-    # PROTECTED REGION END #    //  SKATelState.test_elementLoggingLevel_decorators
-    def test_elementLoggingLevel(self, tango_context):
-        """Test for elementLoggingLevel"""
-        # PROTECTED REGION ID(SKATelState.test_elementLoggingLevel) ENABLED START #
-        assert tango_context.device.elementLoggingLevel == 0
-        # PROTECTED REGION END #    //  SKATelState.test_elementLoggingLevel
-
-    # PROTECTED REGION ID(SKATelState.test_storageLoggingLevel_decorators) ENABLED START #
-    # PROTECTED REGION END #    //  SKATelState.test_storageLoggingLevel_decorators
-    def test_storageLoggingLevel(self, tango_context):
-        """Test for storageLoggingLevel"""
-        # PROTECTED REGION ID(SKATelState.test_storageLoggingLevel) ENABLED START #
-        assert tango_context.device.storageLoggingLevel == 0
-        # PROTECTED REGION END #    //  SKATelState.test_storageLoggingLevel
 
     # PROTECTED REGION ID(SKATelState.test_healthState_decorators) ENABLED START #
     # PROTECTED REGION END #    //  SKATelState.test_healthState_decorators

@@ -10,14 +10,18 @@ properties and commands of an SKA device.
 """
 # PROTECTED REGION ID(SKABaseDevice.additionnal_import) ENABLED START #
 # Standard imports
-import os
-import sys
+import enum
 import json
 import logging
 import logging.handlers
+import os
+import sys
+import time
+
+from future.utils import with_metaclass
+from logging import StreamHandler
 from logging.handlers import SysLogHandler
 from logging.handlers import RotatingFileHandler
-from future.utils import with_metaclass
 
 # Tango imports
 import tango
@@ -36,13 +40,128 @@ from utils import (get_dp_command,
                    coerce_value,
                    get_groups_from_json,
                    get_tango_device_type_id)
+from faults import (GroupDefinitionsError,
+                    LoggingTargetError,
+                    LoggingLevelError)
 
-from faults import GroupDefinitionsError
+LOG_FILE_SIZE = 1024 * 1024  # Log file size 1MB.
 
-LOG_FILE_SIZE = 1024 * 1024 #Log file size 1MB.
+
+class TangoLoggingLevel(enum.IntEnum):
+    """Python enumerated type for TANGO logging levels.
+
+    There is a tango.LogLevel type already, but this is a wrapper around
+    a C++ enum.  The Python IntEnum type is more convenient.
+    """
+    OFF = int(tango.LogLevel.LOG_OFF)
+    FATAL = int(tango.LogLevel.LOG_FATAL)
+    ERROR = int(tango.LogLevel.LOG_ERROR)
+    WARNING = int(tango.LogLevel.LOG_WARN)
+    INFO = int(tango.LogLevel.LOG_INFO)
+    DEBUG = int(tango.LogLevel.LOG_DEBUG)
+
+
+def _sanitise_logging_targets(targets, device_name):
+    """Validate and return logging targets '<type>::<name>' strings.
+
+    :param target:
+        List of candidate logging target strings, like '<type>[::<name>]'
+
+    :param device_name:
+        TANGO device name, like 'domain/family/member', used
+        for the default file name
+
+    :return: list of '<type>::<name>' strings, with default name, if applicable
+
+    :raises: LoggingTargetError for invalid target string that cannot be corrected
+    """
+    default_target_names = {
+        "console": "cout",
+        "file": "{}.log".format(device_name.replace("/", "_")),
+        "syslog": None}
+
+    valid_targets = []
+    for target in targets:
+        if "::" in target:
+            target_type, target_name = target.split("::", 1)
+        else:
+            target_type = target
+            target_name = None
+        if target_type not in default_target_names:
+            raise LoggingTargetError(
+                "Invalid target type: {} - options are {}".format(
+                    target_type, list(default_target_names.keys())))
+        if not target_name:
+            target_name = default_target_names[target_type]
+        if not target_name:
+            raise LoggingTargetError(
+                "Target name required for type {}".format(target_type))
+        valid_target = "{}::{}".format(target_type, target_name)
+        valid_targets.append(valid_target)
+
+    return valid_targets
+
+
+def _create_logging_handler(target, device_name):
+    """Create a Python log handler based on the target type (console, file, syslog)
+
+    :param target: Logging target for logger, <type>::<name>
+
+    :param device_name: TANGO device name
+
+    :return: StreamHandler, RotatingFileHandler, or SysLogHandler
+    """
+    target_type, target_name = target.split("::", 1)
+
+    class UTCFormatter(logging.Formatter):
+        converter = time.gmtime
+
+    # Format defined here:
+    #   https://developer.skatelescope.org/en/latest/development/logging-format.html
+    # VERSION "|" TIMESTAMP "|" SEVERITY "|" [THREAD-ID] "|" [FUNCTION] "|" [LINE-LOC] "|"
+    #   [TAGS] "|" MESSAGE LF
+    formatter = UTCFormatter(
+        fmt="1|"
+            "%(asctime)s.%(msecs)03dZ|"
+            "%(levelname)s|"
+            "%(threadName)s|"
+            "%(funcName)s|"
+            "%(filename)s#%(lineno)d|"
+            "tango-device:{}|"
+            "%(message)s".format(device_name),
+        datefmt='%Y-%m-%dT%H:%M:%S')
+
+    if target_type == "console":
+        handler = StreamHandler(sys.stdout)
+    elif target_type == "file":
+        log_file_name = target_name
+        handler = RotatingFileHandler(log_file_name, 'a', LOG_FILE_SIZE, 2, None, False)
+    elif target_type == "syslog":
+        handler = SysLogHandler(address=target_name, facility='syslog')
+    handler.setFormatter(formatter)
+    handler.name = target
+    return handler
+
+
+def _update_logging_handlers(targets, logger, device_name):
+    old_targets = [handler.name for handler in logger.handlers]
+    added_targets = set(targets) - set(old_targets)
+    removed_targets = set(old_targets) - set(targets)
+
+    for handler in list(logger.handlers):
+        if handler.name in removed_targets:
+            logger.removeHandler(handler)
+    for target in targets:
+        if target in added_targets:
+            handler = _create_logging_handler(target, device_name)
+            logger.addHandler(handler)
+
+    logger.info('Logging targets set to %s', targets)
+
 # PROTECTED REGION END #    //  SKABaseDevice.additionnal_import
 
-__all__ = ["SKABaseDevice", "main"]
+
+__all__ = ["SKABaseDevice", "TangoLoggingLevel", "main"]
 
 
 class SKABaseDevice(with_metaclass(DeviceMeta, Device)):
@@ -53,34 +172,29 @@ class SKABaseDevice(with_metaclass(DeviceMeta, Device)):
 
     def _init_logging(self):
         """
-        This method initializes the logging mechanism. It first tries to create a syslog handler.
-        If syslog is not available then the logs are written to a file.
+        This method initializes the logging mechanism, based on default properties.
 
-        :parameter: None.
+        :param: None.
 
         :return: None.
         """
-        try:
-            # Initialize logging
-            logging.basicConfig()
-            self.logger = logging.getLogger(__name__)
+        self.logger = logging.getLogger(__name__)
+        # device may be reinitialised, so remove existing handlers
+        for handler in list(self.logger.handlers):
+            self.logger.removeHandler(handler)
+        # initialise using defaults in device properties
+        self._logging_level = None
+        self.write_loggingLevel(self.LoggingLevelDefault)
+        self.write_loggingTargets(self.LoggingTargetsDefault)
+        self.logger.debug('Logger initialised')
 
-            formatter = logging.Formatter(fmt='%(module)s - [%(levelname)-8s] - %(message)s',
-                                          datefmt='%Y-%m-%d %H:%M:%S')
-            # Add syslog handler
-            syslog_handler = SysLogHandler(address='/var/run/rsyslog/dev/log', facility='syslog')
-            syslog_handler.setFormatter(formatter)
-            self.logger.addHandler(syslog_handler)
-        except EnvironmentError:
-            # Add rotaling file handler
-            log_file_name = self.get_name()
-            log_file_name = log_file_name.replace("/", "_")
-            log_file_name += ".log"
-            formatter = logging.Formatter(fmt='%(asctime)s - %(module)s - [%(levelname)-8s] - %(message)s',
-                                          datefmt='%Y-%m-%d %H:%M:%S')
-            filehandler = RotatingFileHandler(log_file_name, 'a', LOG_FILE_SIZE, 2, None, False)
-            filehandler.setFormatter(formatter)
-            self.logger.addHandler(filehandler)
+        # Monkey patch TANGO Logging System streams so they go to the Python
+        # logger instead
+        self.debug_stream = self.logger.debug
+        self.info_stream = self.logger.info
+        self.warn_stream = self.logger.warning
+        self.error_stream = self.logger.error
+        self.fatal_stream = self.logger.critical
 
     def _parse_argin(self, argin, defaults=None, required=None):
         """
@@ -113,81 +227,36 @@ class SKABaseDevice(with_metaclass(DeviceMeta, Device)):
 
     def dev_logging(self, dev_log_msg, dev_log_level):
         """
-        This method logs the message to SKA Element Logger, Central Logger and Storage
-        Logger.
+        DEPRECATED:  Log the message to the Python logger.
+
+        DEPRECATED - Use ``self.logger`` directly instead.  For example,
+        ``self.logger.info("My message")`` for something at LOG_INFO level.
 
         :param dev_log_msg: DevString.
-
-        Message to log
+            Message to log
 
         :param dev_log_level: DevEnum
-
             Logging level of the message. The message can have one of the following
-            logging level:
+            logging levels:
                 LOG_FATAL
-
                 LOG_ERROR
-
                 LOG_WARN
-
                 LOG_INFO
-
                 LOG_DEBUG
 
         :return: None
         """
-        # Element Level Logging
-        if self._element_logging_level >= int(tango.LogLevel.LOG_FATAL) and dev_log_level == int(
-                tango.LogLevel.LOG_FATAL):
-            self.fatal_stream(dev_log_msg)
-        elif self._element_logging_level >= int(tango.LogLevel.LOG_ERROR) and dev_log_level == int(
-                tango.LogLevel.LOG_ERROR):
-            self.error_stream(dev_log_msg)
-        elif self._element_logging_level >= int(tango.LogLevel.LOG_WARN) and dev_log_level == int(
-                tango.LogLevel.LOG_WARN):
-            self.warn_stream(dev_log_msg)
-        elif self._element_logging_level >= int(tango.LogLevel.LOG_INFO) and dev_log_level == int(
-                tango.LogLevel.LOG_INFO):
-            self.info_stream(dev_log_msg)
-        elif self._element_logging_level >= int(tango.LogLevel.LOG_DEBUG) and dev_log_level == int(
-                tango.LogLevel.LOG_DEBUG):
-            self.debug_stream(dev_log_msg)
-
-        # Central Level Logging
-        if self._central_logging_level >= int(tango.LogLevel.LOG_FATAL) and dev_log_level == int(
-                tango.LogLevel.LOG_FATAL):
-            self.fatal_stream(dev_log_msg)
-        elif self._central_logging_level >= int(tango.LogLevel.LOG_ERROR) and dev_log_level == int(
-                tango.LogLevel.LOG_ERROR):
-            self.error_stream(dev_log_msg)
-        elif self._central_logging_level >= int(tango.LogLevel.LOG_WARN) and dev_log_level == int(
-                tango.LogLevel.LOG_WARN):
-            self.warn_stream(dev_log_msg)
-        elif self._central_logging_level >= int(tango.LogLevel.LOG_INFO) and dev_log_level == int(
-                tango.LogLevel.LOG_INFO):
-            self.info_stream(dev_log_msg)
-        elif self._central_logging_level >= int(tango.LogLevel.LOG_DEBUG) and dev_log_level == int(
-                tango.LogLevel.LOG_DEBUG):
-            self.debug_stream(dev_log_msg)
-
-        # Storage Level Logging
-        if self._storage_logging_level >= int(tango.LogLevel.LOG_FATAL) and dev_log_level == int(
-                tango.LogLevel.LOG_FATAL):
+        if dev_log_level == TangoLoggingLevel.FATAL:
             self.logger.fatal(dev_log_msg)
-        elif self._storage_logging_level >= int(tango.LogLevel.LOG_ERROR) and dev_log_level == int(
-                tango.LogLevel.LOG_ERROR):
+        elif dev_log_level == TangoLoggingLevel.ERROR:
             self.logger.error(dev_log_msg)
-        elif self._storage_logging_level >= int(tango.LogLevel.LOG_WARN) and dev_log_level == int(
-                tango.LogLevel.LOG_WARN):
+        elif dev_log_level == TangoLoggingLevel.WARNING:
             self.logger.warning(dev_log_msg)
-        elif self._storage_logging_level >= int(tango.LogLevel.LOG_INFO) and dev_log_level == int(
-                tango.LogLevel.LOG_INFO):
+        elif dev_log_level == TangoLoggingLevel.INFO:
             self.logger.info(dev_log_msg)
-        elif self._storage_logging_level >= int(tango.LogLevel.LOG_DEBUG) and dev_log_level == int(
-                tango.LogLevel.LOG_DEBUG):
+        elif dev_log_level == TangoLoggingLevel.DEBUG:
             self.logger.debug(dev_log_msg)
-        else:
-            pass
+
     # PROTECTED REGION END #    //  SKABaseDevice.class_variable
 
     # -----------------
@@ -202,16 +271,12 @@ class SKABaseDevice(with_metaclass(DeviceMeta, Device)):
         dtype=('str',),
     )
 
-    CentralLoggingTarget = device_property(
-        dtype='str',
+    LoggingLevelDefault = device_property(
+        dtype='uint16', default_value=4
     )
 
-    ElementLoggingTarget = device_property(
-        dtype='str',
-    )
-
-    StorageLoggingTarget = device_property(
-        dtype='str', default_value="localhost"
+    LoggingTargetsDefault = device_property(
+        dtype='DevVarStringArray', default_value=["console::cout"]
     )
 
     # ----------
@@ -228,30 +293,19 @@ class SKABaseDevice(with_metaclass(DeviceMeta, Device)):
         doc="Version Id of this device",
     )
 
-    centralLoggingLevel = attribute(
-        dtype='uint16',
+    loggingLevel = attribute(
+        dtype=TangoLoggingLevel,
         access=AttrWriteType.READ_WRITE,
-        doc="Current logging level to Central logging target for this device - "
-            "\ninitialises to CentralLoggingLevelDefault on startup",
+        doc="Current logging level for this device - "
+            "initialises to LoggingLevelDefault on startup",
     )
 
-    elementLoggingLevel = attribute(
-        dtype='uint16',
+    loggingTargets = attribute(
+        dtype=('str',),
         access=AttrWriteType.READ_WRITE,
-        doc="Current logging level to Element logging target for this device - "
-            "\ninitialises to ElementLoggingLevelDefault on startup",
-    )
-
-    storageLoggingLevel = attribute(
-        dtype='uint16',
-        access=AttrWriteType.READ_WRITE,
-        memorized=True,
-        doc="Current logging level to Syslog for this device - "
-            "initialises from  StorageLoggingLevelDefault on first "
-            "execution of device.Needs to be READ_WRITE To make it"
-            " memorized - but writing this attribute should do the "
-            "same as command SetStorageLoggingLevel to ensure the "
-            "targets and adjustmentsare made correctly",
+        max_dim_x=3,
+        doc="Current logging targets for this device"
+            " - initialises to LoggingTargetsDefault on startup",
     )
 
     healthState = attribute(
@@ -314,16 +368,12 @@ class SKABaseDevice(with_metaclass(DeviceMeta, Device)):
         Device.init_device(self)
         # PROTECTED REGION ID(SKABaseDevice.init_device) ENABLED START #
 
-        # Start sysLogHandler
         self._init_logging()
 
         # Initialize attribute values.
         self._build_state = '{}, {}, {}'.format(release.name, release.version,
                                                 release.description)
         self._version_id = release.version
-        self._central_logging_level = int(tango.LogLevel.LOG_OFF)
-        self._element_logging_level = int(tango.LogLevel.LOG_OFF)
-        self._storage_logging_level = int(tango.LogLevel.LOG_OFF)
         self._health_state = 0
         self._admin_mode = 0
         self._control_mode = 0
@@ -339,6 +389,7 @@ class SKABaseDevice(with_metaclass(DeviceMeta, Device)):
         except GroupDefinitionsError:
             self.info_stream("No Groups loaded for device: {}".format(self.get_name()))
 
+        self.logger.info("Completed SKABaseDevice.init_device")
         # PROTECTED REGION END #    //  SKABaseDevice.init_device
 
     def always_executed_hook(self):
@@ -383,83 +434,68 @@ class SKABaseDevice(with_metaclass(DeviceMeta, Device)):
         return self._version_id
         # PROTECTED REGION END #    //  SKABaseDevice.versionId_read
 
-    def read_centralLoggingLevel(self):
-        # PROTECTED REGION ID(SKABaseDevice.centralLoggingLevel_read) ENABLED START #
+    def read_loggingLevel(self):
+        # PROTECTED REGION ID(SKABaseDevice.loggingLevel_read) ENABLED START #
         """
-        Reads the central logging level of the device.
+        Reads logging level of the device.
 
-        :return: Central logging level of the device
+        :return:  Logging level of the device.
         """
-        return self._central_logging_level
-        # PROTECTED REGION END #    //  SKABaseDevice.centralLoggingLevel_read
+        return self._logging_level
+        # PROTECTED REGION END #    //  SKABaseDevice.loggingLevel_read
 
-    def write_centralLoggingLevel(self, value):
-        # PROTECTED REGION ID(SKABaseDevice.centralLoggingLevel_write) ENABLED START #
+    def write_loggingLevel(self, value):
+        # PROTECTED REGION ID(SKABaseDevice.loggingLevel_write) ENABLED START #
         """
-        Sets central logging level of the device
+        Sets logging level for the device.
 
-        :param value: Logging level for Central Logger
-
-        :return: None
-        """
-        self._central_logging_level = value
-        # PROTECTED REGION END #    //  SKABaseDevice.centralLoggingLevel_write
-
-    def read_elementLoggingLevel(self):
-        # PROTECTED REGION ID(SKABaseDevice.elementLoggingLevel_read) ENABLED START #
-        """
-        Reads element logging level of the device.
-
-        :return: Element logging level of the device.
-        """
-        return self._element_logging_level
-        # PROTECTED REGION END #    //  SKABaseDevice.elementLoggingLevel_read
-
-    def write_elementLoggingLevel(self, value):
-        # PROTECTED REGION ID(SKABaseDevice.elementLoggingLevel_write) ENABLED START #
-        """
-        Sets element logging level of the device
-
-        :param value: Logging Level for Element Logger
-
-        :return: None
-        """
-        self._element_logging_level = value
-        # PROTECTED REGION END #    //  SKABaseDevice.elementLoggingLevel_write
-
-    def read_storageLoggingLevel(self):
-        # PROTECTED REGION ID(SKABaseDevice.storageLoggingLevel_read) ENABLED START #
-        """
-        Reads storage logging level of the device.
-
-        :return: Storage logging level of the device.
-        """
-        return self._storage_logging_level
-        # PROTECTED REGION END #    //  SKABaseDevice.storageLoggingLevel_read
-
-    def write_storageLoggingLevel(self, value):
-        # PROTECTED REGION ID(SKABaseDevice.storageLoggingLevel_write) ENABLED START #
-        """
-        Sets logging level at storage.
-
-        :param value: Logging Level for storage logger
+        :param value: Logging level for logger
 
         :return: None.
         """
-        self._storage_logging_level = value
-        if self._storage_logging_level == int(tango.LogLevel.LOG_FATAL):
-            self.logger.setLevel(logging.FATAL)
-        elif self._storage_logging_level == int(tango.LogLevel.LOG_ERROR):
+        self._logging_level = TangoLoggingLevel(value)
+        if self._logging_level == TangoLoggingLevel.OFF:
+            self.logger.setLevel(logging.CRITICAL)  # not allowed to be "off"
+        elif self._logging_level == TangoLoggingLevel.FATAL:
+            self.logger.setLevel(logging.CRITICAL)
+        elif self._logging_level == TangoLoggingLevel.ERROR:
             self.logger.setLevel(logging.ERROR)
-        elif self._storage_logging_level == int(tango.LogLevel.LOG_WARN):
+        elif self._logging_level == TangoLoggingLevel.WARNING:
             self.logger.setLevel(logging.WARNING)
-        elif self._storage_logging_level == int(tango.LogLevel.LOG_INFO):
+        elif self._logging_level == TangoLoggingLevel.INFO:
             self.logger.setLevel(logging.INFO)
-        elif self._storage_logging_level == int(tango.LogLevel.LOG_DEBUG):
+        elif self._logging_level == TangoLoggingLevel.DEBUG:
             self.logger.setLevel(logging.DEBUG)
         else:
-            self.logger.setLevel(logging.DEBUG)
-        # PROTECTED REGION END #    //  SKABaseDevice.storageLoggingLevel_write
+            raise LoggingLevelError(
+                "Invalid level - {} - must be between {} and {}".format(
+                    self._logging_level, TangoLoggingLevel.OFF, TangoLoggingLevel.DEBUG))
+        self.logger.info('Logging level set to %s', self._logging_level)
+        # PROTECTED REGION END #    //  SKABaseDevice.loggingLevel_write
+
+    def read_loggingTargets(self):
+        # PROTECTED REGION ID(SKABaseDevice.loggingTargets_read) ENABLED START #
+        """
+        Reads logging level of the device.
+
+        :return:  Logging level of the device.
+        """
+        return [str(handler.name) for handler in self.logger.handlers]
+        # PROTECTED REGION END #    //  SKABaseDevice.loggingTargets_read
+
+    def write_loggingTargets(self, value):
+        # PROTECTED REGION ID(SKABaseDevice.loggingTargets_write) ENABLED START #
+        """
+        Sets logging level for the device.
+
+        :param value: Logging targets for logger
+
+        :return: None.
+        """
+        device_name = self.get_name()
+        valid_targets = _sanitise_logging_targets(value, device_name)
+        _update_logging_handlers(valid_targets, self.logger, device_name)
+        # PROTECTED REGION END #    //  SKABaseDevice.loggingTargets_write
 
     def read_healthState(self):
         # PROTECTED REGION ID(SKABaseDevice.healthState_read) ENABLED START #
@@ -604,6 +640,8 @@ def main(args=None, **kwargs):
 
     :return:
     """
+    # Do basic logging config before starting any threads
+    logging.basicConfig()
     return run((SKABaseDevice,), args=args, **kwargs)
     # PROTECTED REGION END #    //  SKABaseDevice.main
 

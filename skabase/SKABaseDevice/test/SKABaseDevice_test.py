@@ -308,14 +308,15 @@ class TestSKABaseDevice(object):
     #     assert attributes == 1
 
     def test__parse_argin(self, tango_context):
-        SKABaseDevice.logger = mock.Mock()
         result = SKABaseDevice._parse_argin(SKABaseDevice, '{"class": "SKABaseDevice"}')
         assert result == {'class': 'SKABaseDevice'}
 
     def test__parse_argin_with_required(self, tango_context):
-        SKABaseDevice._init_logging(SKABaseDevice)
+        SKABaseDevice._parse_argin(
+            SKABaseDevice, '{"class":"SKABaseDevice"}', required=['class'])
         with pytest.raises(Exception):
-             SKABaseDevice._parse_argin(SKABaseDevice,'{"class":"SKABaseDevice"}', required='class')
+            SKABaseDevice._parse_argin(
+                SKABaseDevice, '{"class":"SKABaseDevice"}', required=['missing'])
 
     # TODO: Fix this test case when "__DeviceImpl__debug_stream() missing 'msg' argument" is resolved.
     # def test_dev_logging(self, tango_context):

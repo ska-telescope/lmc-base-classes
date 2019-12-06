@@ -21,11 +21,11 @@ test:
 	retry --max=10 -- tango_admin --ping-device ska/subarray/01
 	retry --max=10 -- tango_admin --ping-device ska/telstate/01
 
-	cd /app && python setup.py test | tee setup_py_test.stdout; \
-	mkdir -p /build/reports; \
-	mv /app/setup_py_test.stdout /build/lmcbaseclasses_setup_py_test.stdout; \
-	mv /app/htmlcov /build/lmcbaseclasses_htmlcov; \
-	mv /app/coverage.xml /build/reports/code-coverage.xml;
+	cd /app && python setup.py test | tee setup_py_test.stdout && \
+	mkdir -p /build/reports && \
+	mv /app/setup_py_test.stdout /build/lmcbaseclasses_setup_py_test.stdout && \
+	mv /app/htmlcov /build/lmcbaseclasses_htmlcov && \
+	mv /app/coverage.xml /build/reports/code-coverage.xml
 
 # wait for the device to be available before beginning the test
 # A temporary volume is mounted at /build when 'make test' is executing.

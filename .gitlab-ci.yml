@@ -4,7 +4,7 @@
 image: nexus.engageska-portugal.pt/ska-docker/ska-python-buildenv:latest
 
 include:
-  - template: post_step.yml
+  - remote: 'https://gitlab.com/ska-telescope/templates-repository/blob/master/gitlab-ci/includes/post_step.yml'
 
 # cache is used to specify a list of files and directories which should be cached between jobs. You can only use paths that are within the project workspace.
 # If cache is defined outside the scope of jobs, it means it is set globally and all jobs will use that definition

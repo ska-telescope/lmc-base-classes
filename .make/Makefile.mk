@@ -75,7 +75,7 @@ release: check-status check-release build push
 push: pre-push do-push post-push  ## push the image to the Docker registry
 
 do-push:
-#	docker push $(IMAGE):$(VERSION)
+	docker push $(IMAGE):$(VERSION)
 	docker push $(IMAGE):latest
 
 snapshot: build push

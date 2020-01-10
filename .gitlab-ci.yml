@@ -24,6 +24,12 @@ stages:
   - linting
   - publish
   - pages
+  - release
+
+
+.install_pip: &install_pip |-
+  apt-get -y update && apt-get install -yq curl python3-distutils
+  curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py && python3 get-pip.py
 
 clean shell runner:
   stage: .pre
@@ -62,13 +68,12 @@ unit tests:
   image: nexus.engageska-portugal.pt/ska-docker/tango-builder:latest
   before_script:
   - docker login -u $DOCKER_REGISTRY_USERNAME -p $DOCKER_REGISTRY_PASSWORD $DOCKER_REGISTRY_HOST
+  - *install_pip
   tags:
     - docker-executor
   script:
-    - apt-get -y update
-    - apt-get install -y python3-pip python3-setuptools python3-wheel --no-install-recommends
     - echo $(ls -d ./dist/*.whl | grep $CI_COMMIT_SHORT_SHA)
-    - pip3 install -U $(ls -d ./dist/*.whl | grep $CI_COMMIT_SHORT_SHA)
+    - pip3 install -U $(ls -d ./dist/*.whl | grep $CI_COMMIT_SHORT_SHA) --extra-index-url https://nexus.engageska-portugal.pt/repository/pypi/simple
     - make test
     - scripts/validate-metadata.sh
   artifacts:
@@ -80,13 +85,12 @@ linting:
   image: nexus.engageska-portugal.pt/ska-docker/tango-builder:latest
   before_script:
   - docker login -u $DOCKER_REGISTRY_USERNAME -p $DOCKER_REGISTRY_PASSWORD $DOCKER_REGISTRY_HOST
+  - *install_pip
   tags:
     - docker-executor
   script:
-    - apt-get -y update
-    - apt-get install -y python3-pip python3-setuptools python3-wheel --no-install-recommends
     - echo $(ls -d ./dist/*.whl | grep $CI_COMMIT_SHORT_SHA)
-    - pip3 install -U $(ls -d ./dist/*.whl | grep $CI_COMMIT_SHORT_SHA)
+    - pip3 install -U $(ls -d ./dist/*.whl | grep $CI_COMMIT_SHORT_SHA) --extra-index-url https://nexus.engageska-portugal.pt/repository/pypi/simple
     - make lint
   artifacts:
     paths:
@@ -111,6 +115,22 @@ publish to nexus:
       # Confirm semantic versioning of tag
       - $CI_COMMIT_TAG =~ /^((([0-9]+)\.([0-9]+)\.([0-9]+)(?:-([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?)(?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?)$/
 
+release docker image:
+  stage: release
+  image: nexus.engageska-portugal.pt/ska-docker/tango-builder:latest
+  before_script:
+  - docker login -u $DOCKER_REGISTRY_USERNAME -p $DOCKER_REGISTRY_PASSWORD $DOCKER_REGISTRY_HOST
+  tags:
+    - docker-executor
+  script:
+    - make build
+    - make push
+  when: manual
+  only:
+    refs:
+      - master
+
+
 pages:
   stage: pages
   image: nexus.engageska-portugal.pt/ska-docker/tango-builder:latest
@@ -121,7 +141,6 @@ pages:
   script:
     - cp -R build public
     - mv public/lmcbaseclasses_htmlcov/* public
-    - make push
   artifacts:
     paths:
       - public

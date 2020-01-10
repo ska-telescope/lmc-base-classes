@@ -6,6 +6,5 @@ FROM nexus.engageska-portugal.pt/ska-docker/ska-python-runtime:latest AS runtime
 RUN ipython profile create
 
 # A temporary workaround until system team can investigate why 'pipenv install -e .' doesn't work
-RUN python setup.py install
-
+RUN pip install -e . --extra-index-url https://nexus.engageska-portugal.pt/repository/pypi/simple
 CMD ["/venv/bin/python", "/app/skabase/SKABaseDevice/SKABaseDevice.py"]

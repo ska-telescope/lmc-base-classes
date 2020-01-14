@@ -13,7 +13,6 @@ import sys
 import os
 import re
 import pytest
-from tango import DevState
 
 # Imports
 from skabase.SKABaseDevice import SKABaseDevice
@@ -24,11 +23,10 @@ sys.path.insert(0, os.path.abspath(path))
 
 # PROTECTED REGION ID(SKABaseDevice.test_additional_imports) ENABLED START #
 import logging
-import mock
-from tango import DevFailed
+from unittest import mock
+from tango import DevFailed, DevState
 from skabase.SKABaseDevice import TangoLoggingLevel
 from skabase.SKABaseDevice.SKABaseDevice import (
-    _create_logging_handler,
     _sanitise_logging_targets,
     _update_logging_handlers,
     LoggingTargetError,

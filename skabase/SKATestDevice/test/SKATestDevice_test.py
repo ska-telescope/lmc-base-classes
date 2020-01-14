@@ -33,7 +33,7 @@ class TestSKATestDevice(object):
 
     properties = {
         'SkaLevel': '4',
-        'LoggingTargetsDefault': [],
+        'LoggingTargetsDefault': '',
         'LoggingLevelDefault': '4',
         'GroupDefinitions': ''
         }

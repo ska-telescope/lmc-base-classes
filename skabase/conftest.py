@@ -23,7 +23,7 @@ def tango_context(request):
     """
     ska_master_properties = {
         'SkaLevel': '4',
-        'LoggingTargetsDefault': [],
+        'LoggingTargetsDefault': '',
         'GroupDefinitions': '',
         'NrSubarrays': '16',
         'CapabilityTypes': '',
@@ -32,7 +32,7 @@ def tango_context(request):
 
     ska_subarray_properties = {
         'CapabilityTypes': 'BAND1',
-        'LoggingTargetsDefault': [],
+        'LoggingTargetsDefault': '',
         'GroupDefinitions': '',
         'SkaLevel': '4',
         'SubID': '1',

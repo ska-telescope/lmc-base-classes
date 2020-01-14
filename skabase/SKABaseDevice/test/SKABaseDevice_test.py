@@ -37,6 +37,8 @@ from skabase.SKABaseDevice.SKABaseDevice import (
 
 class TestLoggingUtils:
     @pytest.fixture(params=[
+            ([""], []),
+            ([" \n\t "], []),
             (["console"], ["console::cout"]),
             (["console::"], ["console::cout"]),
             (["console::cout"], ["console::cout"]),
@@ -54,7 +56,6 @@ class TestLoggingUtils:
 
 
     @pytest.fixture(params=[
-            [""],
             ["invalid"],
             ["invalid", "console"],
             ["invalid::type"],
@@ -182,7 +183,7 @@ class TestSKABaseDevice(object):
     properties = {
         'SkaLevel': '4',
         'GroupDefinitions': '',
-        'LoggingTargetsDefault': []
+        'LoggingTargetsDefault': ''
         }
 
     @classmethod

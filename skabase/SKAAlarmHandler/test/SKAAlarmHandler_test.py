@@ -34,7 +34,7 @@ class TestSKAAlarmHandler(object):
         'AlarmConfigFile': '',
         'SkaLevel': '4',
         'GroupDefinitions': '',
-        'LoggingTargetsDefault': []
+        'LoggingTargetsDefault': ''
         }
 
     @classmethod

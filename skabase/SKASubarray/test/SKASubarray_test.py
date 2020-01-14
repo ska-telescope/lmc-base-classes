@@ -34,7 +34,7 @@ class TestSKASubarray(object):
         'CapabilityTypes': '',
         'GroupDefinitions': '',
         'SkaLevel': '4',
-        'LoggingTargetsDefault': [],
+        'LoggingTargetsDefault': '',
         'SubID': '',
         }
 

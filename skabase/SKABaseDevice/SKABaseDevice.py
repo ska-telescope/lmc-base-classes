@@ -72,6 +72,7 @@ class LoggingUtils:
 
         :param target:
             List of candidate logging target strings, like '<type>[::<name>]'
+            Empty and whitespace-only strings are ignored.
 
         :param device_name:
             TANGO device name, like 'domain/family/member', used
@@ -88,6 +89,9 @@ class LoggingUtils:
 
         valid_targets = []
         for target in targets:
+            target = target.strip()
+            if not target:
+                continue
             if "::" in target:
                 target_type, target_name = target.split("::", 1)
             else:

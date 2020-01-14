@@ -33,7 +33,7 @@ class TestSKAMaster(object):
     capabilities = ['BAND1:1', 'BAND2:1', 'BAND3:0', 'BAND4:0', 'BAND5:0']
     properties = {
         'SkaLevel': '4',
-        'LoggingTargetsDefault': [],
+        'LoggingTargetsDefault': '',
         'GroupDefinitions': '',
         'NrSubarrays': '16',
         'CapabilityTypes': '',

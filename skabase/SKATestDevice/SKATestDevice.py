@@ -187,11 +187,11 @@ class SKATestDevice(with_metaclass(DeviceMeta, SKABaseDevice)):
     def On(self):
         # PROTECTED REGION ID(SKATestDevice.On) ENABLED START #
         """Starts the device"""
-        self.dev_logging("TurnOn Sending DEBUG", int(tango.LogLevel.LOG_DEBUG))
-        self.dev_logging("TurnOn Sending INFO", int(tango.LogLevel.LOG_INFO))
-        self.dev_logging("TurnOn Sending WARNING", int(tango.LogLevel.LOG_WARN))
-        self.dev_logging("TurnOn Sending ERROR", int(tango.LogLevel.LOG_ERROR))
-        self.dev_logging("TurnOn Sending FATAL", int(tango.LogLevel.LOG_FATAL))
+        self.logger.debug("TurnOn Sending DEBUG")
+        self.logger.info("TurnOn Sending INFO")
+        self.logger.warning("TurnOn Sending WARNING")
+        self.logger.error("TurnOn Sending ERROR")
+        self.logger.critical("TurnOn Sending CRITICAL")
         #TODO: Set state to ON
         # PROTECTED REGION END #    //  SKATestDevice.On
 
@@ -201,11 +201,11 @@ class SKATestDevice(with_metaclass(DeviceMeta, SKABaseDevice)):
     def Stop(self):
         # PROTECTED REGION ID(SKATestDevice.Stop) ENABLED START #
         """Stops the device"""
-        self.dev_logging("TurnOFF Sending DEBUG", int(tango.LogLevel.LOG_DEBUG))
-        self.dev_logging("TurnOFF Sending INFO", int(tango.LogLevel.LOG_INFO))
-        self.dev_logging("TurnOFF Sending WARNING", int(tango.LogLevel.LOG_WARN))
-        self.dev_logging("TurnOFF Sending ERROR", int(tango.LogLevel.LOG_ERROR))
-        self.dev_logging("TurnOFF Sending FATAL", int(tango.LogLevel.LOG_FATAL))
+        self.logger.debug("TurnOFF Sending DEBUG")
+        self.logger.info("TurnOFF Sending INFO")
+        self.logger.warning("TurnOFF Sending WARNING")
+        self.logger.error("TurnOFF Sending ERROR")
+        self.logger.critical("TurnOFF Sending CRITICAL")
         # TODO: Set state to OFF
         # PROTECTED REGION END #    //  SKATestDevice.Stop
 

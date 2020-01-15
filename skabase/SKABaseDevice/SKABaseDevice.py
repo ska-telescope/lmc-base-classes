@@ -16,12 +16,9 @@ import logging
 import logging.handlers
 import os
 import sys
-import time
+import threading
 
 from future.utils import with_metaclass
-from logging import StreamHandler
-from logging.handlers import SysLogHandler
-from logging.handlers import RotatingFileHandler
 
 # Tango imports
 import tango
@@ -31,6 +28,7 @@ from tango import AttrQuality, AttrWriteType
 from tango import DeviceProxy, DevFailed
 
 # SKA specific imports
+import ska_logging
 from skabase import release
 file_path = os.path.dirname(os.path.abspath(__file__))
 auxiliary_path = os.path.abspath(os.path.join(file_path, os.pardir)) + "/auxiliary"
@@ -61,102 +59,126 @@ class TangoLoggingLevel(enum.IntEnum):
     DEBUG = int(tango.LogLevel.LOG_DEBUG)
 
 
-def _sanitise_logging_targets(targets, device_name):
-    """Validate and return logging targets '<type>::<name>' strings.
+class _Log4TangoLoggingLevel(enum.IntEnum):
+    """Python enumerated type for TANGO log4tango logging levels.
 
-    :param target:
-        List of candidate logging target strings, like '<type>[::<name>]'
+    This is different to tango.LogLevel, and is required if using
+    a device's set_log_level() method.  It is not currently exported
+    via PyTango, so we hard code it here in the interim.
 
-    :param device_name:
-        TANGO device name, like 'domain/family/member', used
-        for the default file name
-
-    :return: list of '<type>::<name>' strings, with default name, if applicable
-
-    :raises: LoggingTargetError for invalid target string that cannot be corrected
+    Source:
+       https://github.com/tango-controls/cppTango/blob/
+       4feffd7c8e24b51c9597a40b9ef9982dd6e99cdf/log4tango/include/log4tango/Level.hh#L86-L93
     """
-    default_target_names = {
-        "console": "cout",
-        "file": "{}.log".format(device_name.replace("/", "_")),
-        "syslog": None}
+    OFF = 100
+    FATAL = 200
+    ERROR = 300
+    WARN = 400
+    INFO = 500
+    DEBUG = 600
 
-    valid_targets = []
-    for target in targets:
+
+class LoggingUtils:
+    """Utility functions to aid logger configuration.
+
+    These functions are encapsulated in class to aid testing - it
+    allows dependent functions to be mocked.
+    """
+
+    @staticmethod
+    def sanitise_logging_targets(targets, device_name):
+        """Validate and return logging targets '<type>::<name>' strings.
+
+        :param target:
+            List of candidate logging target strings, like '<type>[::<name>]'
+            Empty and whitespace-only strings are ignored.
+
+        :param device_name:
+            TANGO device name, like 'domain/family/member', used
+            for the default file name
+
+        :return: list of '<type>::<name>' strings, with default name, if applicable
+
+        :raises: LoggingTargetError for invalid target string that cannot be corrected
+        """
+        default_target_names = {
+            "console": "cout",
+            "file": "{}.log".format(device_name.replace("/", "_")),
+            "syslog": None}
+
+        valid_targets = []
+        for target in targets:
+            target = target.strip()
+            if not target:
+                continue
+            if "::" in target:
+                target_type, target_name = target.split("::", 1)
+            else:
+                target_type = target
+                target_name = None
+            if target_type not in default_target_names:
+                raise LoggingTargetError(
+                    "Invalid target type: {} - options are {}".format(
+                        target_type, list(default_target_names.keys())))
+            if not target_name:
+                target_name = default_target_names[target_type]
+            if not target_name:
+                raise LoggingTargetError(
+                    "Target name required for type {}".format(target_type))
+            valid_target = "{}::{}".format(target_type, target_name)
+            valid_targets.append(valid_target)
+
+        return valid_targets
+
+    @staticmethod
+    def create_logging_handler(target):
+        """Create a Python log handler based on the target type (console, file, syslog)
+
+        :param target: Logging target for logger, <type>::<name>
+
+        :return: StreamHandler, RotatingFileHandler, or SysLogHandler
+
+        :raises: LoggingTargetError for invalid target string
+        """
         if "::" in target:
             target_type, target_name = target.split("::", 1)
         else:
-            target_type = target
-            target_name = None
-        if target_type not in default_target_names:
             raise LoggingTargetError(
-                "Invalid target type: {} - options are {}".format(
-                    target_type, list(default_target_names.keys())))
-        if not target_name:
-            target_name = default_target_names[target_type]
-        if not target_name:
+                "Invalid target requested - missing '::' separator: {}".format(target))
+        if target_type == "console":
+            handler = logging.StreamHandler(sys.stdout)
+        elif target_type == "file":
+            log_file_name = target_name
+            handler = logging.handlers.RotatingFileHandler(
+                log_file_name, 'a', LOG_FILE_SIZE, 2, None, False)
+        elif target_type == "syslog":
+            handler = logging.handlers.SysLogHandler(
+                    address=target_name, facility=logging.handlers.SysLogHandler.LOG_SYSLOG)
+        else:
             raise LoggingTargetError(
-                "Target name required for type {}".format(target_type))
-        valid_target = "{}::{}".format(target_type, target_name)
-        valid_targets.append(valid_target)
+                "Invalid target type requested: '{}' in '{}'".format(target_type, target))
+        formatter = ska_logging.get_default_formatter(tags=True)
+        handler.setFormatter(formatter)
+        handler.name = target
+        return handler
 
-    return valid_targets
+    @staticmethod
+    def update_logging_handlers(targets, logger):
+        old_targets = [handler.name for handler in logger.handlers]
+        added_targets = set(targets) - set(old_targets)
+        removed_targets = set(old_targets) - set(targets)
 
+        for handler in list(logger.handlers):
+            if handler.name in removed_targets:
+                logger.removeHandler(handler)
+        for target in targets:
+            if target in added_targets:
+                handler = LoggingUtils.create_logging_handler(target)
+                logger.addHandler(handler)
 
-def _create_logging_handler(target, device_name):
-    """Create a Python log handler based on the target type (console, file, syslog)
-
-    :param target: Logging target for logger, <type>::<name>
-
-    :param device_name: TANGO device name
-
-    :return: StreamHandler, RotatingFileHandler, or SysLogHandler
-    """
-    target_type, target_name = target.split("::", 1)
-
-    class UTCFormatter(logging.Formatter):
-        converter = time.gmtime
-
-    # Format defined here:
-    #   https://developer.skatelescope.org/en/latest/development/logging-format.html
-    # VERSION "|" TIMESTAMP "|" SEVERITY "|" [THREAD-ID] "|" [FUNCTION] "|" [LINE-LOC] "|"
-    #   [TAGS] "|" MESSAGE LF
-    formatter = UTCFormatter(
-        fmt="1|"
-            "%(asctime)s.%(msecs)03dZ|"
-            "%(levelname)s|"
-            "%(threadName)s|"
-            "%(funcName)s|"
-            "%(filename)s#%(lineno)d|"
-            "tango-device:{}|"
-            "%(message)s".format(device_name),
-        datefmt='%Y-%m-%dT%H:%M:%S')
-
-    if target_type == "console":
-        handler = StreamHandler(sys.stdout)
-    elif target_type == "file":
-        log_file_name = target_name
-        handler = RotatingFileHandler(log_file_name, 'a', LOG_FILE_SIZE, 2, None, False)
-    elif target_type == "syslog":
-        handler = SysLogHandler(address=target_name, facility='syslog')
-    handler.setFormatter(formatter)
-    handler.name = target
-    return handler
+        logger.info('Logging targets set to %s', targets)
 
 
-def _update_logging_handlers(targets, logger, device_name):
-    old_targets = [handler.name for handler in logger.handlers]
-    added_targets = set(targets) - set(old_targets)
-    removed_targets = set(old_targets) - set(targets)
-
-    for handler in list(logger.handlers):
-        if handler.name in removed_targets:
-            logger.removeHandler(handler)
-    for target in targets:
-        if target in added_targets:
-            handler = _create_logging_handler(target, device_name)
-            logger.addHandler(handler)
-
-    logger.info('Logging targets set to %s', targets)
 
 # PROTECTED REGION END #    //  SKABaseDevice.additionnal_import
 
@@ -170,6 +192,9 @@ class SKABaseDevice(with_metaclass(DeviceMeta, Device)):
     """
     # PROTECTED REGION ID(SKABaseDevice.class_variable) ENABLED START #
 
+    _logging_config_lock = threading.Lock()
+    _logging_configured = False
+
     def _init_logging(self):
         """
         This method initializes the logging mechanism, based on default properties.
@@ -178,10 +203,40 @@ class SKABaseDevice(with_metaclass(DeviceMeta, Device)):
 
         :return: None.
         """
-        self.logger = logging.getLogger(__name__)
-        # device may be reinitialised, so remove existing handlers
+
+        class EnsureTagsFilter(logging.Filter):
+            """Ensure all records have a "tags" field - empty string, if not provided."""
+            def filter(self, record):
+                if not hasattr(record, "tags"):
+                    record.tags = ""
+                return True
+
+        # There may be multiple devices in a single device server - these will all be
+        # starting at the same time, so use a lock to prevent race conditions, and
+        # a flag to ensure the SKA standard logging configuration is only applied once.
+        with SKABaseDevice._logging_config_lock:
+            if not SKABaseDevice._logging_configured:
+                ska_logging.configure_logging(tags_filter=EnsureTagsFilter)
+                SKABaseDevice._logging_configured = True
+
+        device_name = self.get_name()
+        self.logger = logging.getLogger(device_name)
+        # device may be reinitialised, so remove existing handlers and filters
         for handler in list(self.logger.handlers):
             self.logger.removeHandler(handler)
+        for filt in list(self.logger.filters):
+            self.logger.removeFilter(filt)
+
+        # add a filter with this device's name
+        device_name_tag = "tango-device:{}".format(device_name)
+
+        class TangoDeviceTagsFilter(logging.Filter):
+            def filter(self, record):
+                record.tags = device_name_tag
+                return True
+
+        self.logger.addFilter(TangoDeviceTagsFilter())
+
         # initialise using defaults in device properties
         self._logging_level = None
         self.write_loggingLevel(self.LoggingLevelDefault)
@@ -225,38 +280,6 @@ class SKABaseDevice(with_metaclass(DeviceMeta, Device)):
             raise Exception(msg)
         return args_dict
 
-    def dev_logging(self, dev_log_msg, dev_log_level):
-        """
-        DEPRECATED:  Log the message to the Python logger.
-
-        DEPRECATED - Use ``self.logger`` directly instead.  For example,
-        ``self.logger.info("My message")`` for something at LOG_INFO level.
-
-        :param dev_log_msg: DevString.
-            Message to log
-
-        :param dev_log_level: DevEnum
-            Logging level of the message. The message can have one of the following
-            logging levels:
-                LOG_FATAL
-                LOG_ERROR
-                LOG_WARN
-                LOG_INFO
-                LOG_DEBUG
-
-        :return: None
-        """
-        if dev_log_level == TangoLoggingLevel.FATAL:
-            self.logger.fatal(dev_log_msg)
-        elif dev_log_level == TangoLoggingLevel.ERROR:
-            self.logger.error(dev_log_msg)
-        elif dev_log_level == TangoLoggingLevel.WARNING:
-            self.logger.warning(dev_log_msg)
-        elif dev_log_level == TangoLoggingLevel.INFO:
-            self.logger.info(dev_log_msg)
-        elif dev_log_level == TangoLoggingLevel.DEBUG:
-            self.logger.debug(dev_log_msg)
-
     # PROTECTED REGION END #    //  SKABaseDevice.class_variable
 
     # -----------------
@@ -276,7 +299,7 @@ class SKABaseDevice(with_metaclass(DeviceMeta, Device)):
     )
 
     LoggingTargetsDefault = device_property(
-        dtype='DevVarStringArray', default_value=["console::cout"]
+        dtype='DevVarStringArray', default_value=[]
     )
 
     # ----------
@@ -304,7 +327,7 @@ class SKABaseDevice(with_metaclass(DeviceMeta, Device)):
         dtype=('str',),
         access=AttrWriteType.READ_WRITE,
         max_dim_x=3,
-        doc="Current logging targets for this device"
+        doc="Logging targets for this device, excluding ska_logging defaults"
             " - initialises to LoggingTargetsDefault on startup",
     )
 
@@ -447,30 +470,38 @@ class SKABaseDevice(with_metaclass(DeviceMeta, Device)):
     def write_loggingLevel(self, value):
         # PROTECTED REGION ID(SKABaseDevice.loggingLevel_write) ENABLED START #
         """
-        Sets logging level for the device.
+        Sets logging level for the device.  Both the Python logger and the
+        Tango logger are updated.
 
         :param value: Logging level for logger
 
         :return: None.
         """
         self._logging_level = TangoLoggingLevel(value)
+        tango_logger = self.get_logger()
         if self._logging_level == TangoLoggingLevel.OFF:
             self.logger.setLevel(logging.CRITICAL)  # not allowed to be "off"
+            tango_logger.set_level(_Log4TangoLoggingLevel.OFF)
         elif self._logging_level == TangoLoggingLevel.FATAL:
             self.logger.setLevel(logging.CRITICAL)
+            tango_logger.set_level(_Log4TangoLoggingLevel.FATAL)
         elif self._logging_level == TangoLoggingLevel.ERROR:
             self.logger.setLevel(logging.ERROR)
+            tango_logger.set_level(_Log4TangoLoggingLevel.ERROR)
         elif self._logging_level == TangoLoggingLevel.WARNING:
             self.logger.setLevel(logging.WARNING)
+            tango_logger.set_level(_Log4TangoLoggingLevel.WARN)
         elif self._logging_level == TangoLoggingLevel.INFO:
             self.logger.setLevel(logging.INFO)
+            tango_logger.set_level(_Log4TangoLoggingLevel.INFO)
         elif self._logging_level == TangoLoggingLevel.DEBUG:
             self.logger.setLevel(logging.DEBUG)
+            tango_logger.set_level(_Log4TangoLoggingLevel.DEBUG)
         else:
             raise LoggingLevelError(
                 "Invalid level - {} - must be between {} and {}".format(
                     self._logging_level, TangoLoggingLevel.OFF, TangoLoggingLevel.DEBUG))
-        self.logger.info('Logging level set to %s', self._logging_level)
+        self.logger.info('Logging level set to %s on Python and Tango loggers', self._logging_level)
         # PROTECTED REGION END #    //  SKABaseDevice.loggingLevel_write
 
     def read_loggingTargets(self):
@@ -493,8 +524,8 @@ class SKABaseDevice(with_metaclass(DeviceMeta, Device)):
         :return: None.
         """
         device_name = self.get_name()
-        valid_targets = _sanitise_logging_targets(value, device_name)
-        _update_logging_handlers(valid_targets, self.logger, device_name)
+        valid_targets = LoggingUtils.sanitise_logging_targets(value, device_name)
+        LoggingUtils.update_logging_handlers(valid_targets, self.logger)
         # PROTECTED REGION END #    //  SKABaseDevice.loggingTargets_write
 
     def read_healthState(self):
@@ -640,8 +671,6 @@ def main(args=None, **kwargs):
 
     :return:
     """
-    # Do basic logging config before starting any threads
-    logging.basicConfig()
     return run((SKABaseDevice,), args=args, **kwargs)
     # PROTECTED REGION END #    //  SKABaseDevice.main
 

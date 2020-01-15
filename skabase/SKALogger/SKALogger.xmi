@@ -23,7 +23,6 @@
     <deviceProperties name="LoggingTargetsDefault" description="Default logging targets at device startup.&#xA;Each item has the format:  target_type::target_name.&#xA;To log to stdout, use 'console::cout'.&#xA;To log to syslog, use 'syslog::&#x3c;address&#x3e;',&#xA;  where &#x3c;address&#x3e; is a file path,&#xA;  for example 'syslog::/var/run/rsyslog/dev/log'.&#xA;To log to a file, use 'file::&#x3c;path&#x3e;',&#xA;  where &#x3c;path&#x3e; is a file path,&#xA;  for example 'file::/tmp/my_dev.log'.">
       <type xsi:type="pogoDsl:StringVectorType"/>
       <status abstract="false" inherited="true" concrete="true"/>
-      <DefaultPropValue>console::cout</DefaultPropValue>
     </deviceProperties>
     <commands name="State" description="This command gets the device state (stored in its device_state data member) and returns it to the caller." execMethod="dev_state" displayLevel="OPERATOR" polledPeriod="0">
       <argin description="none">
@@ -118,7 +117,7 @@
       <archiveEvent fire="false" libCheckCriteria="false"/>
       <dataReadyEvent fire="false" libCheckCriteria="true"/>
       <status abstract="false" inherited="true" concrete="true"/>
-      <properties description="Current logging targets for this device - &#xA;initialises to LoggingTargetsDefault on startup" label="" unit="" standardUnit="" displayUnit="" format="" maxValue="" minValue="" maxAlarm="" minAlarm="" maxWarning="" minWarning="" deltaTime="" deltaValue=""/>
+      <properties description="Logging targets for this device, excluding ska_logging defaults - &#xA;initialises to LoggingTargetsDefault on startup" label="" unit="" standardUnit="" displayUnit="" format="" maxValue="" minValue="" maxAlarm="" minAlarm="" maxWarning="" minWarning="" deltaTime="" deltaValue=""/>
     </attributes>
     <states name="ON" description="This state could have been called OK or OPERATIONAL. It means that the device is in its operational state. (E.g. the power supply is giving its nominal current, th motor is ON and ready to move, the instrument is operating). This state is modified by the Attribute alarm checking of the DeviceImpl:dev_state method. i.e. if the State is ON and one attribute has its quality factor to ATTR_WARNING or ATTR_ALARM, then the State is modified to ALARM.">
       <status abstract="false" inherited="true" concrete="true"/>

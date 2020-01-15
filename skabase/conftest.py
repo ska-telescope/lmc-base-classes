@@ -5,10 +5,12 @@ tests.
 import os
 import time
 import importlib
-import mock
 import pytest
 
+from unittest import mock
+
 from tango.test_context import DeviceTestContext
+
 
 @pytest.fixture(scope="class")
 def tango_context(request):
@@ -21,7 +23,7 @@ def tango_context(request):
     """
     ska_master_properties = {
         'SkaLevel': '4',
-        'LoggingTargetsDefault': ['console::cout'],
+        'LoggingTargetsDefault': '',
         'GroupDefinitions': '',
         'NrSubarrays': '16',
         'CapabilityTypes': '',
@@ -30,7 +32,7 @@ def tango_context(request):
 
     ska_subarray_properties = {
         'CapabilityTypes': 'BAND1',
-        'LoggingTargetsDefault': ['console::cout'],
+        'LoggingTargetsDefault': '',
         'GroupDefinitions': '',
         'SkaLevel': '4',
         'SubID': '1',

@@ -3,6 +3,11 @@ url = "https://pypi.org/simple"
 verify_ssl = true
 name = "pypi"
 
+[[source]]
+url = "https://nexus.engageska-portugal.pt/repository/pypi/simple"
+verify_ssl = true
+name = "nexus-hosted"
+
 [packages]
 # numpy and pytango versions must match those in the ska-python-builder image,
 # otherwise pytango will be recompiled.
@@ -13,6 +18,7 @@ pytango = "==9.3.1"
 # 'RUN ipython profile create' line from Dockerfile.
 itango = "*"
 future = "*"
+ska_logging = ">=0.2.0"
 
 [dev-packages]
 docutils = "*"
@@ -30,7 +36,6 @@ sphinx-autobuild = "*"
 sphinxcontrib-websupport = "*"
 coverage  = "*"
 pytest-xdist = "*"
-mock = "*"
 pylint2junit = "*"
 
 [requires]

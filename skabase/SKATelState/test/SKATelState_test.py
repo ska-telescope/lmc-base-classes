@@ -34,7 +34,7 @@ class TestSKATelState(object):
         'TelStateConfigFile': '',
         'SkaLevel': '4',
         'GroupDefinitions': '',
-        'LoggingTargetsDefault': ['console::cout'],
+        'LoggingTargetsDefault': '',
         }
 
     @classmethod

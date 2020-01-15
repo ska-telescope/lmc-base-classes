@@ -32,7 +32,7 @@ class TestSKAObsDevice(object):
 
     properties = {
         'SkaLevel': '4',
-        'LoggingTargetsDefault': ['console::cout'],
+        'LoggingTargetsDefault': '',
         'GroupDefinitions': '',
         }
 

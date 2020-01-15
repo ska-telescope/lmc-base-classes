@@ -14,7 +14,7 @@
 
 # import sys
 # import os
-# from mock import Mock as MagicMock
+# from unittest.mock import Mock as MagicMock
 #
 # class Mock(MagicMock):
 #     @classmethod
@@ -32,7 +32,7 @@ autodoc_mock_imports = ['PyTango', 'tango', 'tango.server', 'run', 'DeviceMeta',
 import sys
 import os
 
-from mock import Mock as MagicMock
+from unittest.mock import Mock as MagicMock
 
 class Mock(MagicMock):
     @classmethod

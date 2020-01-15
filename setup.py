@@ -39,7 +39,7 @@ setuptools.setup(
       setup_requires=[] + pytest_runner,
       install_requires=[
           "future",
-          "ska_logging"
+          "ska_logging >= 0.2.0"
       ],
       keywords="lmc base classes ska",
       zip_safe=False)

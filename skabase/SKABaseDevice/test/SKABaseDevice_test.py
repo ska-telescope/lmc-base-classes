@@ -274,6 +274,7 @@ class TestSKABaseDevice(object):
         for level in TangoLoggingLevel:
             tango_context.device.loggingLevel = level
             assert tango_context.device.loggingLevel == level
+            assert tango_context.device.get_logging_level() == level
 
         with pytest.raises(DevFailed):
             tango_context.device.loggingLevel = TangoLoggingLevel.FATAL + 100

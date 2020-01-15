@@ -59,6 +59,25 @@ class TangoLoggingLevel(enum.IntEnum):
     DEBUG = int(tango.LogLevel.LOG_DEBUG)
 
 
+class _Log4TangoLoggingLevel(enum.IntEnum):
+    """Python enumerated type for TANGO log4tango logging levels.
+
+    This is different to tango.LogLevel, and is required if using
+    a device's set_log_level() method.  It is not currently exported
+    via PyTango, so we hard code it here in the interim.
+
+    Source:
+       https://github.com/tango-controls/cppTango/blob/
+       4feffd7c8e24b51c9597a40b9ef9982dd6e99cdf/log4tango/include/log4tango/Level.hh#L86-L93
+    """
+    OFF = 100
+    FATAL = 200
+    ERROR = 300
+    WARN = 400
+    INFO = 500
+    DEBUG = 600
+
+
 class LoggingUtils:
     """Utility functions to aid logger configuration.
 
@@ -483,30 +502,38 @@ class SKABaseDevice(with_metaclass(DeviceMeta, Device)):
     def write_loggingLevel(self, value):
         # PROTECTED REGION ID(SKABaseDevice.loggingLevel_write) ENABLED START #
         """
-        Sets logging level for the device.
+        Sets logging level for the device.  Both the Python logger and the
+        Tango logger are updated.
 
         :param value: Logging level for logger
 
         :return: None.
         """
         self._logging_level = TangoLoggingLevel(value)
+        tango_logger = self.get_logger()
         if self._logging_level == TangoLoggingLevel.OFF:
             self.logger.setLevel(logging.CRITICAL)  # not allowed to be "off"
+            tango_logger.set_level(_Log4TangoLoggingLevel.OFF)
         elif self._logging_level == TangoLoggingLevel.FATAL:
             self.logger.setLevel(logging.CRITICAL)
+            tango_logger.set_level(_Log4TangoLoggingLevel.FATAL)
         elif self._logging_level == TangoLoggingLevel.ERROR:
             self.logger.setLevel(logging.ERROR)
+            tango_logger.set_level(_Log4TangoLoggingLevel.ERROR)
         elif self._logging_level == TangoLoggingLevel.WARNING:
             self.logger.setLevel(logging.WARNING)
+            tango_logger.set_level(_Log4TangoLoggingLevel.WARN)
         elif self._logging_level == TangoLoggingLevel.INFO:
             self.logger.setLevel(logging.INFO)
+            tango_logger.set_level(_Log4TangoLoggingLevel.INFO)
         elif self._logging_level == TangoLoggingLevel.DEBUG:
             self.logger.setLevel(logging.DEBUG)
+            tango_logger.set_level(_Log4TangoLoggingLevel.DEBUG)
         else:
             raise LoggingLevelError(
                 "Invalid level - {} - must be between {} and {}".format(
                     self._logging_level, TangoLoggingLevel.OFF, TangoLoggingLevel.DEBUG))
-        self.logger.info('Logging level set to %s', self._logging_level)
+        self.logger.info('Logging level set to %s on Python and Tango loggers', self._logging_level)
         # PROTECTED REGION END #    //  SKABaseDevice.loggingLevel_write
 
     def read_loggingTargets(self):

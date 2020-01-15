@@ -381,13 +381,3 @@ class TestSKABaseDevice(object):
         with pytest.raises(Exception):
             SKABaseDevice._parse_argin(
                 SKABaseDevice, '{"class":"SKABaseDevice"}', required=['missing'])
-
-    # TODO: Fix this test case when "__DeviceImpl__debug_stream() missing 'msg' argument" is resolved.
-    # def test_dev_logging(self, tango_context):
-    #     SKABaseDevice._central_logging_level = int(tango.LogLevel.LOG_DEBUG)
-    #     SKABaseDevice._element_logging_level = int(tango.LogLevel.LOG_DEBUG)
-    #     SKABaseDevice._storage_logging_level = int(tango.LogLevel.LOG_DEBUG)
-    #     result = SKABaseDevice.dev_logging(SKABaseDevice, "test message", int(tango.LogLevel.LOG_DEBUG))
-    #     result = []
-    #     SKABaseDevice.error_stream(SKABaseDevice, "Syslog cannot be initialized")
-    #     assert result == None

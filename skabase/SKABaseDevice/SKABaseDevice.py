@@ -280,38 +280,6 @@ class SKABaseDevice(with_metaclass(DeviceMeta, Device)):
             raise Exception(msg)
         return args_dict
 
-    def dev_logging(self, dev_log_msg, dev_log_level):
-        """
-        DEPRECATED:  Log the message to the Python logger.
-
-        DEPRECATED - Use ``self.logger`` directly instead.  For example,
-        ``self.logger.info("My message")`` for something at LOG_INFO level.
-
-        :param dev_log_msg: DevString.
-            Message to log
-
-        :param dev_log_level: DevEnum
-            Logging level of the message. The message can have one of the following
-            logging levels:
-                LOG_FATAL
-                LOG_ERROR
-                LOG_WARN
-                LOG_INFO
-                LOG_DEBUG
-
-        :return: None
-        """
-        if dev_log_level == TangoLoggingLevel.FATAL:
-            self.logger.fatal(dev_log_msg)
-        elif dev_log_level == TangoLoggingLevel.ERROR:
-            self.logger.error(dev_log_msg)
-        elif dev_log_level == TangoLoggingLevel.WARNING:
-            self.logger.warning(dev_log_msg)
-        elif dev_log_level == TangoLoggingLevel.INFO:
-            self.logger.info(dev_log_msg)
-        elif dev_log_level == TangoLoggingLevel.DEBUG:
-            self.logger.debug(dev_log_msg)
-
     # PROTECTED REGION END #    //  SKABaseDevice.class_variable
 
     # -----------------

@@ -61,15 +61,15 @@ The requirements for testing are:
 ### Installation steps
 1. Clone the repository on local machine.
 2. Navigate to the root directory of the repository from terminal
-3. Run 'sudo pip3 install .'
+3. Run 'pip3 install . --extra-index-url https://nexus.engageska-portugal.pt/repository/pypi/simple'
 
 ## Testing
-The LMC base classes can be tested locally my invoking *make CI_JOB_ID=some_id test* command. 
+The LMC base classes can be tested locally my invoking *make CI_JOB_ID=some_id test* command.
 This invokes a chain of commands from the makefile which builds the lmc base classes
-python package, creates a docker image with lmc base classes, instantiates separate 
+python package, creates a docker image with lmc base classes, instantiates separate
 container for each of the base class and runs unit test cases of each class. Additionally,
 code analysis is also done and code coverage report is prepared.
-After testing is done, the containers are taken down.    
+After testing is done, the containers are taken down.
 
 ## Usage
 The base classes are installed as python package in the system. The intended usage of the base classes is to inherit the class according to the requirement. The class needs to be imported in the module. e.g.

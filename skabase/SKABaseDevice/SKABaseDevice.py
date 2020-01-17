@@ -507,7 +507,9 @@ class SKABaseDevice(with_metaclass(DeviceMeta, Device)):
     def read_loggingTargets(self):
         # PROTECTED REGION ID(SKABaseDevice.loggingTargets_read) ENABLED START #
         """
-        Reads logging level of the device.
+        Reads the additional logging targets of the device.
+        Note that this excludes the handlers provided by the ska_logging
+        library defaults.
 
         :return:  Logging level of the device.
         """
@@ -517,7 +519,9 @@ class SKABaseDevice(with_metaclass(DeviceMeta, Device)):
     def write_loggingTargets(self, value):
         # PROTECTED REGION ID(SKABaseDevice.loggingTargets_write) ENABLED START #
         """
-        Sets logging level for the device.
+        Sets the additional logging targets for the device.
+        Note that this excludes the handlers provided by the ska_logging
+        library defaults.
 
         :param value: Logging targets for logger
 

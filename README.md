@@ -61,7 +61,7 @@ The requirements for testing are:
 ### Installation steps
 1. Clone the repository on local machine.
 2. Navigate to the root directory of the repository from terminal
-3. Run 'sudo pip3 install . --extra-index-url https://nexus.engageska-portugal.pt/repository/pypi/simple'
+3. Run 'pip3 install . --extra-index-url https://nexus.engageska-portugal.pt/repository/pypi/simple'
 
 ## Testing
 The LMC base classes can be tested locally my invoking *make CI_JOB_ID=some_id test* command.

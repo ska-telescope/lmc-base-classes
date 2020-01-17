@@ -508,6 +508,7 @@ class SKABaseDevice(with_metaclass(DeviceMeta, Device)):
         # PROTECTED REGION ID(SKABaseDevice.loggingTargets_read) ENABLED START #
         """
         Reads the additional logging targets of the device.
+
         Note that this excludes the handlers provided by the ska_logging
         library defaults.
 
@@ -520,6 +521,7 @@ class SKABaseDevice(with_metaclass(DeviceMeta, Device)):
         # PROTECTED REGION ID(SKABaseDevice.loggingTargets_write) ENABLED START #
         """
         Sets the additional logging targets for the device.
+
         Note that this excludes the handlers provided by the ska_logging
         library defaults.
 

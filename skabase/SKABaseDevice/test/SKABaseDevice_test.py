@@ -25,7 +25,9 @@ sys.path.insert(0, os.path.abspath(path))
 import logging
 from unittest import mock
 from tango import DevFailed, DevState
-from skabase.control_model import AdminMode, ControlMode, HealthState, LoggingLevel
+from skabase.control_model import (
+    AdminMode, ControlMode, HealthState, LoggingLevel, SimulationMode, TestMode
+)
 from skabase.SKABaseDevice.SKABaseDevice import (
     LoggingUtils,
     LoggingTargetError,
@@ -348,7 +350,7 @@ class TestSKABaseDevice(object):
     def test_simulationMode(self, tango_context):
         """Test for simulationMode"""
         # PROTECTED REGION ID(SKABaseDevice.test_simulationMode) ENABLED START #
-        assert tango_context.device.simulationMode is False
+        assert tango_context.device.simulationMode == SimulationMode.FALSE
         # PROTECTED REGION END #    //  SKABaseDevice.test_simulationMode
 
     # PROTECTED REGION ID(SKABaseDevice.test_testMode_decorators) ENABLED START #
@@ -356,7 +358,7 @@ class TestSKABaseDevice(object):
     def test_testMode(self, tango_context):
         """Test for testMode"""
         # PROTECTED REGION ID(SKABaseDevice.test_testMode) ENABLED START #
-        assert tango_context.device.testMode == ''
+        assert tango_context.device.testMode == TestMode.NONE
         # PROTECTED REGION END #    //  SKABaseDevice.test_testMode
 
     # TODO: Fix this test case when "Error in get_name() of tango.DeviceImpl while using pytest" is resolved.

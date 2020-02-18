@@ -73,6 +73,26 @@ class ControlMode(enum.IntEnum):
     LOCAL = 1
 
 
+class SimulationMode(enum.IntEnum):
+    """Python enumerated type for ``simulationMode`` attribute."""
+
+    FALSE = 0
+    TRUE = 1
+
+
+class TestMode(enum.IntEnum):
+    """Python enumerated type for ``testMode`` attribute.
+
+    This enumeration may be replaced and extended in derived classes.
+    That would require overriding the base class ``testMode`` attribute
+    definition.
+    """
+    __test__ = False  # disable pytest discovery for this class
+
+    NONE = 0
+    TEST = 1
+
+
 # -------------
 # Miscellaneous
 # -------------

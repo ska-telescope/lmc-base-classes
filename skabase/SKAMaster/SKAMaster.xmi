@@ -157,14 +157,14 @@
       <properties description="The control mode of the device. REMOTE, LOCAL&#xA;TANGO Device accepts only from a &#x2018;local&#x2019; client and ignores commands and queries received from TM&#xA;or any other &#x2018;remote&#x2019; clients. The Local clients has to release LOCAL control before REMOTE clients&#xA;can take control again." label="" unit="" standardUnit="" displayUnit="" format="" maxValue="" minValue="" maxAlarm="" minAlarm="" maxWarning="" minWarning="" deltaTime="" deltaValue=""/>
     </attributes>
     <attributes name="simulationMode" attType="Scalar" rwType="READ_WRITE" displayLevel="OPERATOR" polledPeriod="1000" maxX="" maxY="" memorized="true" allocReadMember="true">
-      <dataType xsi:type="pogoDsl:BooleanType"/>
+      <dataType xsi:type="pogoDsl:EnumType"/>
       <changeEvent fire="false" libCheckCriteria="false"/>
       <archiveEvent fire="false" libCheckCriteria="false"/>
       <status abstract="false" inherited="true" concrete="true" concreteHere="false"/>
       <properties description="Reports the simulation mode of the device. Some devices may implement both modes,&#xA;while others will have simulators that set simulationMode to True while the real&#xA;devices always set simulationMode to False." label="" unit="" standardUnit="" displayUnit="" format="" maxValue="" minValue="" maxAlarm="" minAlarm="" maxWarning="" minWarning="" deltaTime="" deltaValue=""/>
     </attributes>
     <attributes name="testMode" attType="Scalar" rwType="READ_WRITE" displayLevel="OPERATOR" polledPeriod="1000" maxX="" maxY="" memorized="true" allocReadMember="true">
-      <dataType xsi:type="pogoDsl:StringType"/>
+      <dataType xsi:type="pogoDsl:EnumType"/>
       <changeEvent fire="false" libCheckCriteria="false"/>
       <archiveEvent fire="false" libCheckCriteria="false"/>
       <status abstract="false" inherited="true" concrete="true" concreteHere="false"/>

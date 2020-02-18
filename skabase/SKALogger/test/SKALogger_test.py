@@ -24,7 +24,9 @@ path = os.path.join(os.path.dirname(__file__), os.pardir)
 sys.path.insert(0, os.path.abspath(path))
 
 # PROTECTED REGION ID(SKALogger.test_additional_imports) ENABLED START #
-from skabase.control_model import AdminMode, ControlMode, HealthState, LoggingLevel
+from skabase.control_model import (
+    AdminMode, ControlMode, HealthState, LoggingLevel, SimulationMode, TestMode
+)
 # PROTECTED REGION END #    //  SKALogger.test_additional_imports
 # Device test case
 # PROTECTED REGION ID(SKALogger.test_SKALogger_decorators) ENABLED START #
@@ -167,7 +169,7 @@ class TestSKALogger(object):
     def test_simulationMode(self, tango_context):
         """Test for simulationMode"""
         # PROTECTED REGION ID(SKALogger.test_simulationMode) ENABLED START #
-        assert tango_context.device.simulationMode is False
+        assert tango_context.device.simulationMode == SimulationMode.FALSE
         # PROTECTED REGION END #    //  SKALogger.test_simulationMode
 
     # PROTECTED REGION ID(SKALogger.test_testMode_decorators) ENABLED START #
@@ -175,5 +177,5 @@ class TestSKALogger(object):
     def test_testMode(self, tango_context):
         """Test for testMode"""
         # PROTECTED REGION ID(SKALogger.test_testMode) ENABLED START #
-        assert tango_context.device.testMode == ''
+        assert tango_context.device.testMode == TestMode.NONE
         # PROTECTED REGION END #    //  SKALogger.test_testMode

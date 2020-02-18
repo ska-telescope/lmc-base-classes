@@ -24,16 +24,48 @@ The lmc-base-classe repository contains set of eight classes as mentioned in SKA
 - SKATelState: This is the generic base class to provide common functionality of a TelState device of any SKA Element.
 
 ## Version History
-####0.1.3
+
+#### 0.4.0 (unreleased)
+- Changed all `DevEnum` attributes to use Python `enum.IntEnum` classes.  These can be imported from the
+  new `control_model` namespace, e.g., `skabase.control_model import AdminMode`.
+- The names of some of the enumeration labels were changed to better match the Control Systems Guidelines.
+  - `ON-LINE` changed to `ONLINE`.
+  - `OFF-LINE` changed to `OFFLINE`.
+  - All dashes were changed to underscores to allow usage as Python variables.
+- Changed `simulationMode` attribute from `bool` to enumerated type: `SimulationMode`.
+- Changed `testMode` attribute from `str` to enumerated type: `TestMode`.
+- Deprecated `TangoLoggingLevel`.  Will be removed in version 0.5.0.  Use `skabase.control_model.LoggingLevel`
+  instead.
+
+#### 0.3.1
+- Used `ska_logging` library instead of defining logging format and handlers locally.
+- `LoggingTargetDefault` property is now empty instead of `"console::cout"`, since the
+  the `ska_logging` library will automatically output to stdout.
+- Fixed device name field in log message if a device server includes multiple devices.
+- Removed a number of unused files in the `ansible` and `refelt` folders.
+
+#### 0.3.0
+- Not released
+
+#### 0.2.0
+- Changed logging to use SKA format
+- Simplified element, storage and central logging to just a single target.  Default writes to stdout.
+  This is in line with the move to Elastic for all logs instead of using the Tango Logging System
+  for some cases.
+- Deprecated `dev_logging` method.  Will be removed in 0.3.0.  Use direct calls the `self.logger` instead.
+
+#### 0.1.3
 - Storage logs are written to a file if Syslog service is not available.
 - Added exception handling
 - Improved code coverage
 - Improved compliance to coding standards
 - Improvement in documentation
 - Other minor improvements
-####0.1.2
+
+#### 0.1.2
  - Internal release
-####0.1.1
+
+#### 0.1.1
 - Logging functionality
 - Python3 migration
 - Repackaging of all the classes into a single Python package

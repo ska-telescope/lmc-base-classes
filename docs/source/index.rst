@@ -10,14 +10,17 @@ Welcome to LMC Base Classes documentation!
   :caption: Table of Contents
   :maxdepth: 2
 
-   SKA Alarm Handler<SKAAlarmHandler>
-   SKA Base Device<SKABaseDevice>
-   SKA Capability<SKACapability>
-   SKA Logger<SKALogger>
-   SKA Master<SKAMaster>
-   SKA ObsDevice<SKAObsDevice>
-   SKA Subarray<SKASubarray>
-   SKA TelState<SKATelState>
+   Device:  SKA Base Device<SKABaseDevice>
+   Device:  SKA Alarm Handler<SKAAlarmHandler>
+   Device:  SKA Logger<SKALogger>
+   Device:  SKA Master<SKAMaster>
+   Device:  SKA TelState<SKATelState>
+
+   Device:  SKA ObsDevice<SKAObsDevice>
+   Device:  SKA Capability<SKACapability>
+   Device:  SKA Subarray<SKASubarray>
+
+   SKA Control Model<Control_Model>
 
 Indices and tables
 ==================

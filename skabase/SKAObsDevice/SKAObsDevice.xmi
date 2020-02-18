@@ -91,10 +91,10 @@
       <properties description="Observing Mode" label="" unit="" standardUnit="" displayUnit="" format="" maxValue="" minValue="" maxAlarm="" minAlarm="" maxWarning="" minWarning="" deltaTime="" deltaValue=""/>
       <enumLabels>IDLE</enumLabels>
       <enumLabels>IMAGING</enumLabels>
-      <enumLabels>PULSAR-SEARCH</enumLabels>
-      <enumLabels>PULSAR-TIMING</enumLabels>
-      <enumLabels>DYNAMIC-SPECTRUM</enumLabels>
-      <enumLabels>TRANSIENT-SEARCH</enumLabels>
+      <enumLabels>PULSAR_SEARCH</enumLabels>
+      <enumLabels>PULSAR_TIMING</enumLabels>
+      <enumLabels>DYNAMIC_SPECTRUM</enumLabels>
+      <enumLabels>TRANSIENT_SEARCH</enumLabels>
       <enumLabels>VLBI</enumLabels>
       <enumLabels>CALIBRATION</enumLabels>
     </attributes>

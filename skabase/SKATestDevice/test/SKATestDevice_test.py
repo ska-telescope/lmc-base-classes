@@ -22,7 +22,7 @@ path = os.path.join(os.path.dirname(__file__), os.pardir)
 sys.path.insert(0, os.path.abspath(path))
 
 # PROTECTED REGION ID(SKATestDevice.test_additional_imports) ENABLED START #
-from skabase.SKABaseDevice import TangoLoggingLevel
+from skabase.control_model import AdminMode, ControlMode, HealthState, ObsMode, ObsState
 # PROTECTED REGION END #    //  SKATestDevice.test_additional_imports
 # Device test case
 # PROTECTED REGION ID(SKATestDevice.test_SKATestDevice_decorators) ENABLED START #
@@ -116,7 +116,7 @@ class TestSKATestDevice(object):
     def test_obsState(self, tango_context):
         """Test for obsState"""
         # PROTECTED REGION ID(SKATestDevice.test_obsState) ENABLED START #
-        assert tango_context.device.obsState == 0
+        assert tango_context.device.obsState == ObsState.IDLE
         # PROTECTED REGION END #    //  SKATestDevice.test_obsState
 
     # PROTECTED REGION ID(SKATestDevice.test_obsMode_decorators) ENABLED START #
@@ -124,7 +124,7 @@ class TestSKATestDevice(object):
     def test_obsMode(self, tango_context):
         """Test for obsMode"""
         # PROTECTED REGION ID(SKATestDevice.test_obsMode) ENABLED START #
-        assert tango_context.device.obsMode == 0
+        assert tango_context.device.obsMode == ObsMode.IDLE
         # PROTECTED REGION END #    //  SKATestDevice.test_obsMode
 
     # PROTECTED REGION ID(SKATestDevice.test_configurationProgress_decorators) ENABLED START #
@@ -168,7 +168,7 @@ class TestSKATestDevice(object):
     def test_healthState(self, tango_context):
         """Test for healthState"""
         # PROTECTED REGION ID(SKATestDevice.test_healthState) ENABLED START #
-        assert tango_context.device.healthState == 0
+        assert tango_context.device.healthState == HealthState.OK
         # PROTECTED REGION END #    //  SKATestDevice.test_healthState
 
     # PROTECTED REGION ID(SKATestDevice.test_adminMode_decorators) ENABLED START #
@@ -176,7 +176,7 @@ class TestSKATestDevice(object):
     def test_adminMode(self, tango_context):
         """Test for adminMode"""
         # PROTECTED REGION ID(SKATestDevice.test_adminMode) ENABLED START #
-        assert tango_context.device.adminMode == 0
+        assert tango_context.device.adminMode == AdminMode.ONLINE
         # PROTECTED REGION END #    //  SKATestDevice.test_adminMode
 
     # PROTECTED REGION ID(SKATestDevice.test_controlMode_decorators) ENABLED START #
@@ -184,7 +184,7 @@ class TestSKATestDevice(object):
     def test_controlMode(self, tango_context):
         """Test for controlMode"""
         # PROTECTED REGION ID(SKATestDevice.test_controlMode) ENABLED START #
-        assert tango_context.device.controlMode == 0
+        assert tango_context.device.controlMode == ControlMode.REMOTE
         # PROTECTED REGION END #    //  SKATestDevice.test_controlMode
 
     # PROTECTED REGION ID(SKATestDevice.test_simulationMode_decorators) ENABLED START #

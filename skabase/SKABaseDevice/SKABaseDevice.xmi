@@ -100,10 +100,10 @@
       <dataReadyEvent fire="false" libCheckCriteria="true"/>
       <status abstract="false" inherited="false" concrete="true" concreteHere="true"/>
       <properties description="The admin mode reported for this device. It may interpret the current device condition &#xA;and condition of all managed devices to set this. Most possibly an aggregate attribute." label="" unit="" standardUnit="" displayUnit="" format="" maxValue="" minValue="" maxAlarm="" minAlarm="" maxWarning="" minWarning="" deltaTime="" deltaValue=""/>
-      <enumLabels>ON-LINE</enumLabels>
-      <enumLabels>OFF-LINE</enumLabels>
+      <enumLabels>ONLINE</enumLabels>
+      <enumLabels>OFFLINE</enumLabels>
       <enumLabels>MAINTENANCE</enumLabels>
-      <enumLabels>NOT-FITTED</enumLabels>
+      <enumLabels>NOT_FITTED</enumLabels>
       <enumLabels>RESERVED</enumLabels>
     </attributes>
     <attributes name="controlMode" attType="Scalar" rwType="READ_WRITE" displayLevel="OPERATOR" polledPeriod="1000" maxX="" maxY="" memorized="true" allocReadMember="true" isDynamic="false">

@@ -19,10 +19,11 @@ from future.utils import with_metaclass
 from tango import DebugIt
 from tango.server import run, DeviceMeta, attribute, command
 from tango.server import device_property
-from tango import DeviceProxy, Except, ErrSeverity, DevState
+from tango import Except, ErrSeverity, DevState
 
 # SKA specific imports
 from skabase import release
+from skabase.control_model import AdminMode, ObsState
 
 file_path = os.path.dirname(os.path.abspath(__file__))
 obs_device_path = os.path.abspath(os.path.join(file_path, os.pardir)) + "/SKAObsDevice"
@@ -59,31 +60,20 @@ class SKASubarray(with_metaclass(DeviceMeta, SKAObsDevice)):
         tango.DevFailed: If the device is not in the allowed states and/modes to
             execute the command.
         """
-        dp = DeviceProxy(self.get_name())
-
-        obstate_labels = list(dp.attribute_query('obsState').enum_labels)
-        obs_idle = obstate_labels.index('IDLE')
-        obs_ready = obstate_labels.index('READY')
-
-        admin_labels = list(dp.attribute_query('adminMode').enum_labels)
-        admin_online = admin_labels.index('ON-LINE')
-        admin_maintenance = admin_labels.index('MAINTENANCE')
-        admin_offline = admin_labels.index('OFF-LINE')
-        admin_not_fitted = admin_labels.index('NOT-FITTED')
-        current_admin_mode = self.read_adminMode()
-
+        admin_mode = self.read_adminMode()
+        obs_state = self.read_obsState()
         if command_name in ["ReleaseResources", "AssignResources"]:
-            if current_admin_mode in [admin_offline, admin_not_fitted]:
+            if admin_mode in [AdminMode.OFFLINE, AdminMode.NOT_FITTED]:
                 Except.throw_exception("Command failed!", "Subarray adminMode is"
-                                       " 'OFF-LINE' or 'NOT-FITTED'.",
+                                       " 'OFFLINE' or 'NOT_FITTED'.",
                                        command_name, ErrSeverity.ERR)
 
-            if self.read_obsState() == obs_idle:
-                if current_admin_mode in [admin_online, admin_maintenance]:
+            if obs_state == ObsState.IDLE:
+                if admin_mode in [AdminMode.ONLINE, AdminMode.MAINTENANCE]:
                     return True
                 else:
                     Except.throw_exception("Command failed!", "Subarray adminMode not"
-                                           "'ON-LINE' or not in 'MAINTENANCE'.",
+                                           "'ONLINE' or not in 'MAINTENANCE'.",
                                            command_name, ErrSeverity.ERR)
             else:
                 Except.throw_exception("Command failed!", "Subarray obsState not 'IDLE'.",
@@ -91,8 +81,8 @@ class SKASubarray(with_metaclass(DeviceMeta, SKAObsDevice)):
 
         elif command_name in ['ConfigureCapability', 'DeconfigureCapability',
                               'DeconfigureAllCapabilities']:
-            if self.get_state() == DevState.ON and self.read_adminMode() == admin_online:
-                if self.read_obsState() in [obs_idle, obs_ready]:
+            if self.get_state() == DevState.ON and admin_mode == AdminMode.ONLINE:
+                if obs_state in [ObsState.IDLE, ObsState.READY]:
                     return True
                 else:
                     Except.throw_exception(
@@ -101,7 +91,7 @@ class SKASubarray(with_metaclass(DeviceMeta, SKAObsDevice)):
             else:
                 Except.throw_exception(
                     "Command failed!", "Subarray State not 'ON' and/or adminMode not"
-                    " 'ON-LINE'.", command_name, ErrSeverity.ERR)
+                    " 'ONLINE'.", command_name, ErrSeverity.ERR)
 
         return False
 
@@ -306,16 +296,13 @@ class SKASubarray(with_metaclass(DeviceMeta, SKAObsDevice)):
         otherwise an exception will be raised.
         Note: The two lists arguments must be of equal length or an exception will be raised."""
         command_name = 'ConfigureCapability'
-        dp = DeviceProxy(self.get_name())
-        obstate_labels = list(dp.attribute_query('obsState').enum_labels)
-        obs_configuring = obstate_labels.index('CONFIGURING')
 
         capabilities_instances, capability_types = argin
         self._validate_capability_types(command_name, capability_types)
         self._validate_input_sizes(command_name, argin)
 
         # Set obsState to 'CONFIGURING'.
-        self._obs_state = obs_configuring
+        self._obs_state = ObsState.CONFIGURING
 
         # Perform the configuration.
         for capability_instances, capability_type in zip(
@@ -323,8 +310,7 @@ class SKASubarray(with_metaclass(DeviceMeta, SKAObsDevice)):
             self._configured_capabilities[capability_type] += capability_instances
 
         # Change the obsState to 'READY'.
-        obs_ready = obstate_labels.index('READY')
-        self._obs_state = obs_ready
+        self._obs_state = ObsState.READY
         # PROTECTED REGION END #    //  SKASubarray.ConfigureCapability
 
     @command(dtype_in='str', doc_in="Capability type",)

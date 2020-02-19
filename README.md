@@ -25,7 +25,7 @@ The lmc-base-classe repository contains set of eight classes as mentioned in SKA
 
 ## Version History
 
-#### 0.4.0 (unreleased)
+#### 0.4.0
 - Changed all `DevEnum` attributes to use Python `enum.IntEnum` classes.  These can be imported from the
   new `control_model` namespace, e.g., `skabase.control_model import AdminMode`.
 - The names of some of the enumeration labels were changed to better match the Control Systems Guidelines.
@@ -36,6 +36,7 @@ The lmc-base-classe repository contains set of eight classes as mentioned in SKA
 - Changed `testMode` attribute from `str` to enumerated type: `TestMode`.
 - Deprecated `TangoLoggingLevel`.  Will be removed in version 0.5.0.  Use `skabase.control_model.LoggingLevel`
   instead.
+- Remove unnecessary usage of `DeviceMeta` class.
 
 #### 0.3.1
 - Used `ska_logging` library instead of defining logging format and handlers locally.

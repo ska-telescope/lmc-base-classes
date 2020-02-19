@@ -22,6 +22,7 @@ from tango.server import run, DeviceMeta, attribute
 
 # SKA specific imports
 from skabase import release
+from skabase.control_model import ObsMode, ObsState
 
 file_path = os.path.dirname(os.path.abspath(__file__))
 basedevice_path = os.path.abspath(os.path.join(file_path, os.pardir)) + "/SKABaseDevice"
@@ -30,6 +31,7 @@ from SKABaseDevice import SKABaseDevice
 # PROTECTED REGION END #    //  SKAObsDevice.additionnal_imports
 
 __all__ = ["SKAObsDevice", "main"]
+
 
 
 class SKAObsDevice(with_metaclass(DeviceMeta, SKABaseDevice)):
@@ -44,8 +46,8 @@ class SKAObsDevice(with_metaclass(DeviceMeta, SKABaseDevice)):
                                                 release.description)
         self._version_id = release.version
         # Initialize attribute values.
-        self._obs_state = 0
-        self._obs_mode = 0
+        self._obs_state = ObsState.IDLE
+        self._obs_mode = ObsMode.IDLE
         self._config_progress = 0
         self._config_delay_expected = 0
 
@@ -60,16 +62,15 @@ class SKAObsDevice(with_metaclass(DeviceMeta, SKABaseDevice)):
     # ----------
 
     obsState = attribute(
-        dtype='DevEnum',
+        dtype=ObsState,
+        polling_period=1000,
         doc="Observing State",
-        enum_labels=["IDLE", "CONFIGURING", "READY", "SCANNING", "PAUSED", "ABORTED", "FAULT", ],
     )
 
     obsMode = attribute(
-        dtype='DevEnum',
+        dtype=ObsMode,
+        polling_period=1000,
         doc="Observing Mode",
-        enum_labels=["IDLE", "IMAGING", "PULSAR-SEARCH", "PULSAR-TIMING", "DYNAMIC-SPECTRUM",
-                     "TRANSIENT-SEARCH", "VLBI", "CALIBRATION", ],
     )
 
     configurationProgress = attribute(

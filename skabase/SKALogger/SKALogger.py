@@ -21,10 +21,11 @@ from tango.server import run, DeviceMeta, command
 
 # SKA specific imports
 from skabase import release
+from skabase.control_model import LoggingLevel
 file_path = os.path.dirname(os.path.abspath(__file__))
 basedevice_path = os.path.abspath(os.path.join(file_path, os.pardir)) + "/SKABaseDevice"
 sys.path.insert(0, basedevice_path)
-from SKABaseDevice import SKABaseDevice, TangoLoggingLevel
+from SKABaseDevice import SKABaseDevice
 # PROTECTED REGION END #    //  SKALogger.additionnal_import
 
 __all__ = ["SKALogger", "main"]
@@ -98,7 +99,7 @@ class SKALogger(with_metaclass(DeviceMeta, SKABaseDevice)):
         logging_devices = argin[1][:]
         for level, device in zip(logging_levels, logging_devices):
             try:
-                new_level = TangoLoggingLevel(level)
+                new_level = LoggingLevel(level)
                 self.info_stream("Setting logging level %s for %s", new_level, device)
                 dev_proxy = DeviceProxy(device)
                 dev_proxy.loggingLevel = new_level

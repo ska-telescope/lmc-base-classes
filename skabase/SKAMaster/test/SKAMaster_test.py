@@ -22,6 +22,7 @@ path = os.path.join(os.path.dirname(__file__), os.pardir)
 sys.path.insert(0, os.path.abspath(path))
 
 # PROTECTED REGION ID(SKAMaster.test_additional_imports) ENABLED START #
+from skabase.control_model import AdminMode, ControlMode, HealthState, SimulationMode, TestMode
 # PROTECTED REGION END #    //  SKAMaster.test_additional_imports
 # Device test case
 # PROTECTED REGION ID(SKAMaster.test_SKAMaster_decorators) ENABLED START #
@@ -164,7 +165,7 @@ class TestSKAMaster(object):
     def test_healthState(self, tango_context):
         """Test for healthState"""
         # PROTECTED REGION ID(SKAMaster.test_healthState) ENABLED START #
-        assert tango_context.device.healthState == 0
+        assert tango_context.device.healthState == HealthState.OK
         # PROTECTED REGION END #    //  SKAMaster.test_healthState
 
     # PROTECTED REGION ID(SKAMaster.test_adminMode_decorators) ENABLED START #
@@ -172,7 +173,7 @@ class TestSKAMaster(object):
     def test_adminMode(self, tango_context):
         """Test for adminMode"""
         # PROTECTED REGION ID(SKAMaster.test_adminMode) ENABLED START #
-        assert tango_context.device.adminMode == 0
+        assert tango_context.device.adminMode == AdminMode.ONLINE
         # PROTECTED REGION END #    //  SKAMaster.test_adminMode
 
     # PROTECTED REGION ID(SKAMaster.test_controlMode_decorators) ENABLED START #
@@ -180,7 +181,7 @@ class TestSKAMaster(object):
     def test_controlMode(self, tango_context):
         """Test for controlMode"""
         # PROTECTED REGION ID(SKAMaster.test_controlMode) ENABLED START #
-        assert tango_context.device.controlMode == 0
+        assert tango_context.device.controlMode == ControlMode.REMOTE
         # PROTECTED REGION END #    //  SKAMaster.test_controlMode
 
     # PROTECTED REGION ID(SKAMaster.test_simulationMode_decorators) ENABLED START #
@@ -188,7 +189,7 @@ class TestSKAMaster(object):
     def test_simulationMode(self, tango_context):
         """Test for simulationMode"""
         # PROTECTED REGION ID(SKAMaster.test_simulationMode) ENABLED START #
-        assert tango_context.device.simulationMode is False
+        assert tango_context.device.simulationMode == SimulationMode.FALSE
         # PROTECTED REGION END #    //  SKAMaster.test_simulationMode
 
     # PROTECTED REGION ID(SKAMaster.test_testMode_decorators) ENABLED START #
@@ -196,7 +197,7 @@ class TestSKAMaster(object):
     def test_testMode(self, tango_context):
         """Test for testMode"""
         # PROTECTED REGION ID(SKAMaster.test_testMode) ENABLED START #
-        assert tango_context.device.testMode == ''
+        assert tango_context.device.testMode == TestMode.NONE
         # PROTECTED REGION END #    //  SKAMaster.test_testMode
 
     # PROTECTED REGION ID(SKAMaster.test_maxCapabilities_decorators) ENABLED START #

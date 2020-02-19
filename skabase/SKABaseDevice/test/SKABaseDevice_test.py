@@ -25,7 +25,9 @@ sys.path.insert(0, os.path.abspath(path))
 import logging
 from unittest import mock
 from tango import DevFailed, DevState
-from skabase.SKABaseDevice import TangoLoggingLevel
+from skabase.control_model import (
+    AdminMode, ControlMode, HealthState, LoggingLevel, SimulationMode, TestMode
+)
 from skabase.SKABaseDevice.SKABaseDevice import (
     LoggingUtils,
     LoggingTargetError,
@@ -269,15 +271,15 @@ class TestSKABaseDevice(object):
     def test_loggingLevel(self, tango_context):
         """Test for loggingLevel"""
         # PROTECTED REGION ID(SKABaseDevice.test_loggingLevel) ENABLED START #
-        assert tango_context.device.loggingLevel == TangoLoggingLevel.INFO
+        assert tango_context.device.loggingLevel == LoggingLevel.INFO
 
-        for level in TangoLoggingLevel:
+        for level in LoggingLevel:
             tango_context.device.loggingLevel = level
             assert tango_context.device.loggingLevel == level
             assert tango_context.device.get_logging_level() == level
 
         with pytest.raises(DevFailed):
-            tango_context.device.loggingLevel = TangoLoggingLevel.FATAL + 100
+            tango_context.device.loggingLevel = LoggingLevel.FATAL + 100
         # PROTECTED REGION END #    //  SKABaseDevice.test_loggingLevel
 
     # PROTECTED REGION ID(SKABaseDevice.test_loggingTargets_decorators) ENABLED START #
@@ -324,7 +326,7 @@ class TestSKABaseDevice(object):
     def test_healthState(self, tango_context):
         """Test for healthState"""
         # PROTECTED REGION ID(SKABaseDevice.test_healthState) ENABLED START #
-        assert tango_context.device.healthState == 0
+        assert tango_context.device.healthState == HealthState.OK
         # PROTECTED REGION END #    //  SKABaseDevice.test_healthState
 
     # PROTECTED REGION ID(SKABaseDevice.test_adminMode_decorators) ENABLED START #
@@ -332,7 +334,7 @@ class TestSKABaseDevice(object):
     def test_adminMode(self, tango_context):
         """Test for adminMode"""
         # PROTECTED REGION ID(SKABaseDevice.test_adminMode) ENABLED START #
-        assert tango_context.device.adminMode == 0
+        assert tango_context.device.adminMode == AdminMode.ONLINE
         # PROTECTED REGION END #    //  SKABaseDevice.test_adminMode
 
     # PROTECTED REGION ID(SKABaseDevice.test_controlMode_decorators) ENABLED START #
@@ -340,7 +342,7 @@ class TestSKABaseDevice(object):
     def test_controlMode(self, tango_context):
         """Test for controlMode"""
         # PROTECTED REGION ID(SKABaseDevice.test_controlMode) ENABLED START #
-        assert tango_context.device.controlMode == 0
+        assert tango_context.device.controlMode == ControlMode.REMOTE
         # PROTECTED REGION END #    //  SKABaseDevice.test_controlMode
 
     # PROTECTED REGION ID(SKABaseDevice.test_simulationMode_decorators) ENABLED START #
@@ -348,7 +350,7 @@ class TestSKABaseDevice(object):
     def test_simulationMode(self, tango_context):
         """Test for simulationMode"""
         # PROTECTED REGION ID(SKABaseDevice.test_simulationMode) ENABLED START #
-        assert tango_context.device.simulationMode is False
+        assert tango_context.device.simulationMode == SimulationMode.FALSE
         # PROTECTED REGION END #    //  SKABaseDevice.test_simulationMode
 
     # PROTECTED REGION ID(SKABaseDevice.test_testMode_decorators) ENABLED START #
@@ -356,7 +358,7 @@ class TestSKABaseDevice(object):
     def test_testMode(self, tango_context):
         """Test for testMode"""
         # PROTECTED REGION ID(SKABaseDevice.test_testMode) ENABLED START #
-        assert tango_context.device.testMode == ''
+        assert tango_context.device.testMode == TestMode.NONE
         # PROTECTED REGION END #    //  SKABaseDevice.test_testMode
 
     # TODO: Fix this test case when "Error in get_name() of tango.DeviceImpl while using pytest" is resolved.

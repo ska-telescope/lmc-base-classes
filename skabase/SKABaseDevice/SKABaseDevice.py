@@ -30,6 +30,9 @@ from tango import DeviceProxy, DevFailed
 # SKA specific imports
 import ska_logging
 from skabase import release
+from skabase.control_model import (
+    AdminMode, ControlMode, HealthState, LoggingLevel, SimulationMode, TestMode
+)
 file_path = os.path.dirname(os.path.abspath(__file__))
 auxiliary_path = os.path.abspath(os.path.join(file_path, os.pardir)) + "/auxiliary"
 sys.path.insert(0, auxiliary_path)
@@ -44,19 +47,8 @@ from faults import (GroupDefinitionsError,
 
 LOG_FILE_SIZE = 1024 * 1024  # Log file size 1MB.
 
-
-class TangoLoggingLevel(enum.IntEnum):
-    """Python enumerated type for TANGO logging levels.
-
-    There is a tango.LogLevel type already, but this is a wrapper around
-    a C++ enum.  The Python IntEnum type is more convenient.
-    """
-    OFF = int(tango.LogLevel.LOG_OFF)
-    FATAL = int(tango.LogLevel.LOG_FATAL)
-    ERROR = int(tango.LogLevel.LOG_ERROR)
-    WARNING = int(tango.LogLevel.LOG_WARN)
-    INFO = int(tango.LogLevel.LOG_INFO)
-    DEBUG = int(tango.LogLevel.LOG_DEBUG)
+#  Note:  TangoLoggingLevel enum is deprecated - use LoggingLevel instead
+TangoLoggingLevel = LoggingLevel
 
 
 class _Log4TangoLoggingLevel(enum.IntEnum):
@@ -177,7 +169,6 @@ class LoggingUtils:
                 logger.addHandler(handler)
 
         logger.info('Logging targets set to %s', targets)
-
 
 
 # PROTECTED REGION END #    //  SKABaseDevice.additionnal_import
@@ -317,7 +308,7 @@ class SKABaseDevice(with_metaclass(DeviceMeta, Device)):
     )
 
     loggingLevel = attribute(
-        dtype=TangoLoggingLevel,
+        dtype=LoggingLevel,
         access=AttrWriteType.READ_WRITE,
         doc="Current logging level for this device - "
             "initialises to LoggingLevelDefault on startup",
@@ -332,37 +323,34 @@ class SKABaseDevice(with_metaclass(DeviceMeta, Device)):
     )
 
     healthState = attribute(
-        dtype='DevEnum',
+        dtype=HealthState,
         doc="The health state reported for this device. "
             "It interprets the current device"
             " condition and condition of all managed devices to set this. "
             "Most possibly an aggregate attribute.",
-        enum_labels=["OK", "DEGRADED", "FAILED", "UNKNOWN", ],
     )
 
     adminMode = attribute(
-        dtype='DevEnum',
+        dtype=AdminMode,
         access=AttrWriteType.READ_WRITE,
         memorized=True,
         doc="The admin mode reported for this device. It may interpret the current "
             "device condition and condition of all managed devices to set this. "
             "Most possibly an aggregate attribute.",
-        enum_labels=["ON-LINE", "OFF-LINE", "MAINTENANCE", "NOT-FITTED", "RESERVED", ],
     )
 
     controlMode = attribute(
-        dtype='DevEnum',
+        dtype=ControlMode,
         access=AttrWriteType.READ_WRITE,
         memorized=True,
         doc="The control mode of the device. REMOTE, LOCAL"
             "\nTANGO Device accepts only from a ‘local’ client and ignores commands and "
             "queries received from TM or any other ‘remote’ clients. The Local clients"
             " has to release LOCAL control before REMOTE clients can take control again.",
-        enum_labels=["REMOTE", "LOCAL", ],
     )
 
     simulationMode = attribute(
-        dtype='bool',
+        dtype=SimulationMode,
         access=AttrWriteType.READ_WRITE,
         memorized=True,
         doc="Reports the simulation mode of the device. \nSome devices may implement "
@@ -371,11 +359,11 @@ class SKABaseDevice(with_metaclass(DeviceMeta, Device)):
     )
 
     testMode = attribute(
-        dtype='str',
+        dtype=TestMode,
         access=AttrWriteType.READ_WRITE,
         memorized=True,
         doc="The test mode of the device. \n"
-            "Either no test mode (empty string) or an "
+            "Either no test mode or an "
             "indication of the test mode.",
     )
 
@@ -397,11 +385,11 @@ class SKABaseDevice(with_metaclass(DeviceMeta, Device)):
         self._build_state = '{}, {}, {}'.format(release.name, release.version,
                                                 release.description)
         self._version_id = release.version
-        self._health_state = 0
-        self._admin_mode = 0
-        self._control_mode = 0
-        self._simulation_mode = False
-        self._test_mode = ""
+        self._health_state = HealthState.OK
+        self._admin_mode = AdminMode.ONLINE
+        self._control_mode = ControlMode.REMOTE
+        self._simulation_mode = SimulationMode.FALSE
+        self._test_mode = TestMode.NONE
 
         try:
             # create TANGO Groups objects dict, according to property
@@ -477,30 +465,30 @@ class SKABaseDevice(with_metaclass(DeviceMeta, Device)):
 
         :return: None.
         """
-        self._logging_level = TangoLoggingLevel(value)
+        self._logging_level = LoggingLevel(value)
         tango_logger = self.get_logger()
-        if self._logging_level == TangoLoggingLevel.OFF:
+        if self._logging_level == LoggingLevel.OFF:
             self.logger.setLevel(logging.CRITICAL)  # not allowed to be "off"
             tango_logger.set_level(_Log4TangoLoggingLevel.OFF)
-        elif self._logging_level == TangoLoggingLevel.FATAL:
+        elif self._logging_level == LoggingLevel.FATAL:
             self.logger.setLevel(logging.CRITICAL)
             tango_logger.set_level(_Log4TangoLoggingLevel.FATAL)
-        elif self._logging_level == TangoLoggingLevel.ERROR:
+        elif self._logging_level == LoggingLevel.ERROR:
             self.logger.setLevel(logging.ERROR)
             tango_logger.set_level(_Log4TangoLoggingLevel.ERROR)
-        elif self._logging_level == TangoLoggingLevel.WARNING:
+        elif self._logging_level == LoggingLevel.WARNING:
             self.logger.setLevel(logging.WARNING)
             tango_logger.set_level(_Log4TangoLoggingLevel.WARN)
-        elif self._logging_level == TangoLoggingLevel.INFO:
+        elif self._logging_level == LoggingLevel.INFO:
             self.logger.setLevel(logging.INFO)
             tango_logger.set_level(_Log4TangoLoggingLevel.INFO)
-        elif self._logging_level == TangoLoggingLevel.DEBUG:
+        elif self._logging_level == LoggingLevel.DEBUG:
             self.logger.setLevel(logging.DEBUG)
             tango_logger.set_level(_Log4TangoLoggingLevel.DEBUG)
         else:
             raise LoggingLevelError(
                 "Invalid level - {} - must be between {} and {}".format(
-                    self._logging_level, TangoLoggingLevel.OFF, TangoLoggingLevel.DEBUG))
+                    self._logging_level, LoggingLevel.OFF, LoggingLevel.DEBUG))
         self.logger.info('Logging level set to %s on Python and Tango loggers', self._logging_level)
         # PROTECTED REGION END #    //  SKABaseDevice.loggingLevel_write
 

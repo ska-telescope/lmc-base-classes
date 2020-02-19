@@ -63,7 +63,7 @@ else
 		SHELL := /bin/bash
 	endif
 	ifeq ($(UNAME_S),Darwin)
-		IF_INTERFACE := $(shell netstat -nr | awk '{ if ($$1 ~/default/) { print $$6} }')
+		IF_INTERFACE := $(shell netstat -nr -f inet | awk '{ if ($$1 ~/default/) { print $$4} }')
 		DISPLAY := $(shell ifconfig $(IF_INTERFACE) | awk '{ if ($$1 ~/inet$$/) { print $$2} }'):0
 		# network_mode = host doesn't work on MacOS, so fix to the internal network
 		NETWORK_MODE := tangonet

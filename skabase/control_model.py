@@ -253,7 +253,7 @@ class ControlMode(enum.IntEnum):
     before clients can take  control again. ``controlMode`` may be removed from the
     SCM if unused/not needed.
     
-    **Note:** Setting `controlMode` to `LOCAL` **is not a safe feature**, but rather a
+    **Note:** Setting `controlMode` to `LOCAL` **is not a safety feature**, but rather a
     usability feature.  Safety has to be implemented separately to the control paths.
     """
 

@@ -18,12 +18,10 @@ import os
 import sys
 import threading
 
-from future.utils import with_metaclass
-
 # Tango imports
 import tango
 from tango import DebugIt
-from tango.server import run, Device, DeviceMeta, attribute, command, device_property
+from tango.server import run, Device, attribute, command, device_property
 from tango import AttrQuality, AttrWriteType
 from tango import DeviceProxy, DevFailed
 
@@ -177,7 +175,7 @@ class LoggingUtils:
 __all__ = ["SKABaseDevice", "TangoLoggingLevel", "main"]
 
 
-class SKABaseDevice(with_metaclass(DeviceMeta, Device)):
+class SKABaseDevice(Device):
     """
     A generic base device for SKA.
     """

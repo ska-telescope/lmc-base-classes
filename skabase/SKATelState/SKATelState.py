@@ -12,10 +12,9 @@ A generic base device for Telescope State for SKA.
 # Standard import
 import os
 import sys
-from future.utils import with_metaclass
 
 # Tango imports
-from tango.server import run, DeviceMeta, device_property
+from tango.server import run, device_property
 
 # SKA specific imports
 from skabase import release
@@ -29,7 +28,7 @@ from SKABaseDevice import SKABaseDevice
 __all__ = ["SKATelState", "main"]
 
 
-class SKATelState(with_metaclass(DeviceMeta, SKABaseDevice)):
+class SKATelState(SKABaseDevice):
     """
     A generic base device for Telescope State for SKA.
     """

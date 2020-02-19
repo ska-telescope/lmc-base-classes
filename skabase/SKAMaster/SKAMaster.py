@@ -13,11 +13,10 @@ A master test
 # Standard imports
 import os
 import sys
-from future.utils import with_metaclass
 
 # Tango imports
 from tango import DebugIt
-from tango.server import run, DeviceMeta, attribute, command, device_property
+from tango.server import run, attribute, command, device_property
 
 # SKA specific imports
 from skabase import release
@@ -37,7 +36,7 @@ from utils import (validate_capability_types, validate_input_sizes, convert_dict
 __all__ = ["SKAMaster", "main"]
 
 
-class SKAMaster(with_metaclass(DeviceMeta, SKABaseDevice)):
+class SKAMaster(SKABaseDevice):
     """
     A master test
     """

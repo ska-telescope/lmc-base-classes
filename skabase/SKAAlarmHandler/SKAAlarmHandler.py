@@ -14,11 +14,10 @@ attribute values and quality factors, and are separate from the "built-in" TANGO
 # Standard imports
 import os
 import sys
-from future.utils import with_metaclass
 
 # Tango imports
 from tango import DebugIt
-from tango.server import run, DeviceMeta, attribute, command, device_property
+from tango.server import run, attribute, command, device_property
 
 # SKA specific imports
 from skabase import release
@@ -31,7 +30,7 @@ from SKABaseDevice import SKABaseDevice
 __all__ = ["SKAAlarmHandler", "main"]
 
 
-class SKAAlarmHandler(with_metaclass(DeviceMeta, SKABaseDevice)):
+class SKAAlarmHandler(SKABaseDevice):
     """
     A generic base device for Alarms for SKA.
     """

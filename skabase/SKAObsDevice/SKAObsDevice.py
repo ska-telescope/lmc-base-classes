@@ -15,10 +15,9 @@ an obsMode will inherit from SKAObsDevice instead of just SKABaseDevice.
 # Standard imports
 import os
 import sys
-from future.utils import with_metaclass
 
 # Tango imports
-from tango.server import run, DeviceMeta, attribute
+from tango.server import run, attribute
 
 # SKA specific imports
 from skabase import release
@@ -33,8 +32,7 @@ from SKABaseDevice import SKABaseDevice
 __all__ = ["SKAObsDevice", "main"]
 
 
-
-class SKAObsDevice(with_metaclass(DeviceMeta, SKABaseDevice)):
+class SKAObsDevice(SKABaseDevice):
     """
     A generic base device for Observations for SKA.
     """

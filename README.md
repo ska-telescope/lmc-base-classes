@@ -108,7 +108,7 @@ The base classes are installed as python package in the system. The intended usa
 ```
 from skabase.SKABaseDevice.SKABaseDevice import SKABaseDevice
 
-class DishLeafNode(with_metaclass(DeviceMeta, SKABaseDevice)):
+class DishLeafNode(SKABaseDevice):
 .
 .
 .

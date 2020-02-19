@@ -12,11 +12,10 @@ Capability handling device
 # Standard import
 import os
 import sys
-from future.utils import with_metaclass
 
 # Tango imports
 from tango import DebugIt
-from tango.server import run, DeviceMeta, attribute, command, device_property
+from tango.server import run, attribute, command, device_property
 
 # SKA specific imports
 from skabase import release
@@ -30,7 +29,7 @@ from SKAObsDevice import SKAObsDevice
 __all__ = ["SKACapability", "main"]
 
 
-class SKACapability(with_metaclass(DeviceMeta, SKAObsDevice)):
+class SKACapability(SKAObsDevice):
     """
     A Subarray handling device. It exposes the instances of configured capabilities.
     """

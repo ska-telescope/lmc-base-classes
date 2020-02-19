@@ -13,11 +13,10 @@ capabilities, and exposes the related information like assigned resources, confi
 # Standard imports
 import os
 import sys
-from future.utils import with_metaclass
 
 # Tango imports
 from tango import DebugIt
-from tango.server import run, DeviceMeta, attribute, command
+from tango.server import run, attribute, command
 from tango.server import device_property
 from tango import Except, ErrSeverity, DevState
 
@@ -34,7 +33,7 @@ from SKAObsDevice import SKAObsDevice
 __all__ = ["SKASubarray", "main"]
 
 
-class SKASubarray(with_metaclass(DeviceMeta, SKAObsDevice)):
+class SKASubarray(SKAObsDevice):
     """
     SubArray handling device
     """

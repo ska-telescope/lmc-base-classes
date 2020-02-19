@@ -13,11 +13,10 @@ and to store logs using Python logging. It configures the log levels of remote l
 # Standard imports
 import os
 import sys
-from future.utils import with_metaclass
 
 # Tango imports
 from tango import DebugIt, DeviceProxy, DevFailed
-from tango.server import run, DeviceMeta, command
+from tango.server import run, command
 
 # SKA specific imports
 from skabase import release
@@ -31,7 +30,7 @@ from SKABaseDevice import SKABaseDevice
 __all__ = ["SKALogger", "main"]
 
 
-class SKALogger(with_metaclass(DeviceMeta, SKABaseDevice)):
+class SKALogger(SKABaseDevice):
     """
     A generic base device for Logging for SKA.
     """

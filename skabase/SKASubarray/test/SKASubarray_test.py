@@ -15,7 +15,7 @@ import os
 # Imports
 import re
 import pytest
-from tango import DevState
+from tango import DevState, DevSource
 
 # Path
 path = os.path.join(os.path.dirname(__file__), os.pardir)
@@ -71,6 +71,10 @@ class TestSKASubarray(object):
         tango_context.device.adminMode = AdminMode.ONLINE
         tango_context.device.AssignResources(["BAND1"])
         tango_context.device.ConfigureCapability([[2], ["BAND1"]])
+        # The obsState attribute is changed by ConfigureCapability, but
+        # as it is a polled attribute the value in the cache may be stale,
+        # so change source to ensure we read directly from the device
+        tango_context.device.set_source(DevSource.DEV)
         assert tango_context.device.obsState == ObsState.READY
         assert tango_context.device.configuredCapabilities == ("BAND1:2", )
         # PROTECTED REGION END #    //  SKASubarray.test_ConfigureCapability

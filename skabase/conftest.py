@@ -21,21 +21,23 @@ def tango_context(request):
     request: _pytest.fixtures.SubRequest
         A request object gives access to the requesting test context.
     """
-    ska_master_properties = {
-        'SkaLevel': '4',
-        'LoggingTargetsDefault': '',
-        'GroupDefinitions': '',
-        'NrSubarrays': '16',
-        'CapabilityTypes': '',
-        'MaxCapabilities': ['BAND1:1', 'BAND2:1']
-        }
+    test_properties = {
+        'SKAMaster': {
+            'SkaLevel': '4',
+            'LoggingTargetsDefault': '',
+            'GroupDefinitions': '',
+            'NrSubarrays': '16',
+            'CapabilityTypes': '',
+            'MaxCapabilities': ['BAND1:1', 'BAND2:1']
+            },
 
-    ska_subarray_properties = {
-        'CapabilityTypes': 'BAND1',
-        'LoggingTargetsDefault': '',
-        'GroupDefinitions': '',
-        'SkaLevel': '4',
-        'SubID': '1',
+        'SKASubarray': {
+            'CapabilityTypes': 'BAND1',
+            'LoggingTargetsDefault': '',
+            'GroupDefinitions': '',
+            'SkaLevel': '4',
+            'SubID': '1',
+        },
     }
 
     fq_test_class_name = request.cls.__module__
@@ -47,16 +49,8 @@ def tango_context(request):
     module = importlib.import_module(fq_test_class_name_details[1], fq_test_class_name_details[1])
     klass = getattr(module, class_name)
 
-    if (class_name == 'SKAMaster'):
-        tango_context = DeviceTestContext(klass, properties=ska_master_properties)
-    elif (class_name == 'SKASubarray'):
-        tango_context = DeviceTestContext(klass, properties=ska_subarray_properties)
-    else:
-        tango_context = DeviceTestContext(klass)
-
+    tango_context = DeviceTestContext(klass, properties=test_properties.get(class_name))
     tango_context.start()
-    klass.get_name = mock.Mock(side_effect=tango_context.get_device_access)
-
     yield tango_context
     tango_context.stop()
 

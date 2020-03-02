@@ -284,7 +284,7 @@ class SKABaseDevice(Device):
     )
 
     LoggingLevelDefault = device_property(
-        dtype='uint16', default_value=4
+        dtype='uint16', default_value=LoggingLevel.INFO
     )
 
     LoggingTargetsDefault = device_property(

@@ -25,6 +25,11 @@ The lmc-base-classe repository contains set of eight classes as mentioned in SKA
 
 ## Version History
 
+#### 0.4.1
+- Fix lost properties when re-initialising test device (remove `get_name` mock).
+- Fix Sphinx doc building.
+- Move `ObsDevice` variable initialisation from `__init__` to `init_device`.
+
 #### 0.4.0
 - Changed all `DevEnum` attributes to use Python `enum.IntEnum` classes.  These can be imported from the
   new `control_model` namespace, e.g., `skabase.control_model import AdminMode`.

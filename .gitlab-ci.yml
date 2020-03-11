@@ -26,11 +26,6 @@ stages:
   - pages
   - release
 
-
-.install_pip: &install_pip |-
-  apt-get -y update && apt-get install -yq curl python3-distutils
-  curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py && python3 get-pip.py
-
 clean shell runner:
   stage: .pre
   tags:
@@ -68,7 +63,6 @@ unit tests:
   image: nexus.engageska-portugal.pt/ska-docker/tango-builder:latest
   before_script:
   - docker login -u $DOCKER_REGISTRY_USERNAME -p $DOCKER_REGISTRY_PASSWORD $DOCKER_REGISTRY_HOST
-  - *install_pip
   tags:
     - docker-executor
   script:
@@ -85,7 +79,6 @@ linting:
   image: nexus.engageska-portugal.pt/ska-docker/tango-builder:latest
   before_script:
   - docker login -u $DOCKER_REGISTRY_USERNAME -p $DOCKER_REGISTRY_PASSWORD $DOCKER_REGISTRY_HOST
-  - *install_pip
   tags:
     - docker-executor
   script:

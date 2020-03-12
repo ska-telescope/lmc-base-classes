@@ -26,11 +26,6 @@ stages:
   - pages
   - release
 
-
-.install_pip: &install_pip |-
-  apt-get -y update && apt-get install -yq curl python3-distutils
-  curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py && python3 get-pip.py
-
 clean shell runner:
   stage: .pre
   tags:
@@ -44,7 +39,7 @@ build wheel for publication: # Executed on a tag
   tags:
     - docker-executor
   script:
-    - python setup.py egg_info -b+$CI_COMMIT_SHORT_SHA sdist bdist_wheel
+    - python3 setup.py egg_info -b+$CI_COMMIT_SHORT_SHA sdist bdist_wheel
   only:
     - tags
   artifacts:
@@ -56,7 +51,7 @@ build wheel for development: # Executed on a commit
   tags:
     - docker-executor
   script:
-    - python setup.py egg_info -b+dev.$CI_COMMIT_SHORT_SHA sdist bdist_wheel
+    - python3 setup.py egg_info -b+dev.$CI_COMMIT_SHORT_SHA sdist bdist_wheel
   except:
     - tags
   artifacts:
@@ -68,12 +63,11 @@ unit tests:
   image: nexus.engageska-portugal.pt/ska-docker/tango-builder:latest
   before_script:
   - docker login -u $DOCKER_REGISTRY_USERNAME -p $DOCKER_REGISTRY_PASSWORD $DOCKER_REGISTRY_HOST
-  - *install_pip
   tags:
     - docker-executor
   script:
     - echo $(ls -d ./dist/*.whl | grep $CI_COMMIT_SHORT_SHA)
-    - pip3 install -U $(ls -d ./dist/*.whl | grep $CI_COMMIT_SHORT_SHA) --extra-index-url https://nexus.engageska-portugal.pt/repository/pypi/simple
+    - python3 -m pip install -U $(ls -d ./dist/*.whl | grep $CI_COMMIT_SHORT_SHA) --extra-index-url https://nexus.engageska-portugal.pt/repository/pypi/simple
     - make test
     - scripts/validate-metadata.sh
   artifacts:
@@ -85,12 +79,11 @@ linting:
   image: nexus.engageska-portugal.pt/ska-docker/tango-builder:latest
   before_script:
   - docker login -u $DOCKER_REGISTRY_USERNAME -p $DOCKER_REGISTRY_PASSWORD $DOCKER_REGISTRY_HOST
-  - *install_pip
   tags:
     - docker-executor
   script:
     - echo $(ls -d ./dist/*.whl | grep $CI_COMMIT_SHORT_SHA)
-    - pip3 install -U $(ls -d ./dist/*.whl | grep $CI_COMMIT_SHORT_SHA) --extra-index-url https://nexus.engageska-portugal.pt/repository/pypi/simple
+    - python3 -m pip install -U $(ls -d ./dist/*.whl | grep $CI_COMMIT_SHORT_SHA) --extra-index-url https://nexus.engageska-portugal.pt/repository/pypi/simple
     - make lint
   artifacts:
     paths:
@@ -106,7 +99,7 @@ publish to nexus:
   script:
     # check metadata requirements
     - scripts/validate-metadata.sh
-    - pip install twine
+    - python3 -m pip install twine
     - twine upload --repository-url $PYPI_REPOSITORY_URL dist/*
   only:
     variables:

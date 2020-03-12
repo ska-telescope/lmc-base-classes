@@ -22,10 +22,6 @@ setuptools.setup(
       license=license,
       packages=setuptools.find_packages(),
       include_package_data=True,
-      scripts=["scripts/gen_csv_info.py",
-               "scripts/purge_xmi_tree.py",
-               "scripts/elt_ctl.py",
-               ],
       url='https://www.skatelescope.org/',
       classifiers=[
           "Development Status :: 3 - Alpha",
@@ -41,5 +37,11 @@ setuptools.setup(
           "future",
           "ska_logging >= 0.2.0"
       ],
+      tests_require=[
+          "pytest",
+          "coverage",
+          "pytest-json-report",
+          "pytest-forked",
+        ],
       keywords="lmc base classes ska",
       zip_safe=False)

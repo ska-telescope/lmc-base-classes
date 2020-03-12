@@ -37,18 +37,6 @@ class SKAObsDevice(SKABaseDevice):
     A generic base device for Observations for SKA.
     """
     # PROTECTED REGION ID(SKAObsDevice.class_variable) ENABLED START #
-    def __init__(self, *args, **kwargs):
-        super(SKAObsDevice, self).__init__(*args, **kwargs)
-
-        self._build_state = '{}, {}, {}'.format(release.name, release.version,
-                                                release.description)
-        self._version_id = release.version
-        # Initialize attribute values.
-        self._obs_state = ObsState.IDLE
-        self._obs_mode = ObsMode.IDLE
-        self._config_progress = 0
-        self._config_delay_expected = 0
-
     # PROTECTED REGION END #    //  SKAObsDevice.class_variable
 
     # -----------------
@@ -92,6 +80,14 @@ class SKAObsDevice(SKABaseDevice):
     def init_device(self):
         SKABaseDevice.init_device(self)
         # PROTECTED REGION ID(SKAObsDevice.init_device) ENABLED START #
+        self._build_state = '{}, {}, {}'.format(release.name, release.version,
+                                                release.description)
+        self._version_id = release.version
+        # Initialize attribute values.
+        self._obs_state = ObsState.IDLE
+        self._obs_mode = ObsMode.IDLE
+        self._config_progress = 0
+        self._config_delay_expected = 0
         # PROTECTED REGION END #    //  SKAObsDevice.init_device
 
     def always_executed_hook(self):

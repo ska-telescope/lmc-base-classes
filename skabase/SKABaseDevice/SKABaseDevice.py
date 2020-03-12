@@ -623,14 +623,14 @@ class SKABaseDevice(Device):
     # Commands
     # --------
 
-    @command(dtype_out=('str',), doc_out="[ name: EltTelState ]",)
+    @command(dtype_out=('str',), doc_out="Version strings",)
     @DebugIt()
     def GetVersionInfo(self):
         # PROTECTED REGION ID(SKABaseDevice.GetVersionInfo) ENABLED START #
         """
         Returns the version information of the device.
 
-        :return: Version version details of the device.
+        :return: Version details of the device.
         """
         return ['{}, {}'.format(self.__class__.__name__, self.read_buildState())]
         # PROTECTED REGION END #    //  SKABaseDevice.GetVersionInfo

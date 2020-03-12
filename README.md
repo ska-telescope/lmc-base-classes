@@ -25,6 +25,12 @@ The lmc-base-classe repository contains set of eight classes as mentioned in SKA
 
 ## Version History
 
+#### 0.4.1
+- Fix lost properties when re-initialising test device (remove `get_name` mock).
+- Fix Sphinx doc building.
+- Move `ObsDevice` variable initialisation from `__init__` to `init_device`.
+- Run scripts with `python3` instead of `python` and update pip usage.
+
 #### 0.4.0
 - Changed all `DevEnum` attributes to use Python `enum.IntEnum` classes.  These can be imported from the
   new `control_model` namespace, e.g., `skabase.control_model import AdminMode`.
@@ -94,7 +100,7 @@ The requirements for testing are:
 ### Installation steps
 1. Clone the repository on local machine.
 2. Navigate to the root directory of the repository from terminal
-3. Run 'pip3 install . --extra-index-url https://nexus.engageska-portugal.pt/repository/pypi/simple'
+3. Run 'python3 -m pip install . --extra-index-url https://nexus.engageska-portugal.pt/repository/pypi/simple'
 
 ## Testing
 The LMC base classes can be tested locally my invoking *make CI_JOB_ID=some_id test* command.

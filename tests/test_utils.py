@@ -208,4 +208,3 @@ def test_get_tango_device_type_id():
     device_name = "domain/family/member"
     result = get_tango_device_type_id(device_name)
     assert result == ["family", "member"]
-    

@@ -1,9 +1,0 @@
-recursive-include SKATelState *.py
-recursive-include test *.py
-include *.rst
-include SKATelState.xmi
-include *.txt
-graft docs
-
-global-exclude *.pyc
-global-exclude *.pyo

@@ -1,9 +1,0 @@
-recursive-include SKACapability *.py
-recursive-include test *.py
-include *.rst
-include SKACapability.xmi
-include *.txt
-graft docs
-
-global-exclude *.pyc
-global-exclude *.pyo

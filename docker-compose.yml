@@ -13,7 +13,6 @@
 #   - obsdevice: Container having SKAObsDevice class
 #   - subarray: Container having SKASubarray class
 #   - telstate: Container having SKATelState class
-#   - testdevice: Container having SKATestDevice class
 #
 # Requires:
 #   - None
@@ -171,17 +170,3 @@ services:
       sh -c "wait-for-it.sh ${TANGO_HOST} --timeout=30 --strict --
              tango_admin --add-server SKATelState/01 SKATelState ska/telstate/01 &&\
             /venv/bin/python /app/skabase/SKATelState/SKATelState.py 01"
-
-  testdevice:
-    image: ${DOCKER_REGISTRY_HOST}/${DOCKER_REGISTRY_USER}/lmcbaseclasses:latest
-    restart: unless-stopped
-    depends_on:
-      - databaseds
-    network_mode: ${NETWORK_MODE}
-    container_name: ${CONTAINER_NAME_PREFIX}testdevice
-    environment:
-      - TANGO_HOST=${TANGO_HOST}
-    command: >
-      sh -c "wait-for-it.sh ${TANGO_HOST} --timeout=30 --strict --
-             tango_admin --add-server SKATestDevice/01 SKATestDevice logger/test/1 &&\
-             /venv/bin/python /app/skabase/SKATestDevice/SKATestDevice.py 01"

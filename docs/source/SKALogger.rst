@@ -9,7 +9,7 @@ SKA Logger
 .. toctree::
    :maxdepth: 2
 
-.. automodule:: SKALogger
-.. autoclass:: SKALogger
+.. automodule:: ska.base.logger_device
+.. autoclass:: ska.base.SKALogger
    :members:
    :undoc-members:

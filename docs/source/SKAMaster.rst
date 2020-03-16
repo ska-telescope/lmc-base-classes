@@ -9,7 +9,7 @@ SKA Master
 .. toctree::
    :maxdepth: 2
 
-.. automodule:: SKAMaster
-.. autoclass:: SKAMaster
+.. automodule:: ska.base.master_device
+.. autoclass:: ska.base.SKAMaster
    :members:
    :undoc-members:

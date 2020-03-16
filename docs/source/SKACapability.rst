@@ -9,7 +9,7 @@ SKA Capability
 .. toctree::
    :maxdepth: 2
 
-.. automodule:: SKACapability
-.. autoclass:: SKACapability
+.. automodule:: ska.base.capability_device
+.. autoclass:: ska.base.SKACapability
    :members:
    :undoc-members:

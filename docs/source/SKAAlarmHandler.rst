@@ -9,7 +9,7 @@ SKA AlarmHandler
 .. toctree::
    :maxdepth: 2
 
-.. automodule:: SKAAlarmHandler
-.. autoclass:: SKAAlarmHandler
+.. automodule:: ska.base.alarm_handler_device
+.. autoclass:: ska.base.SKAAlarmHandler
    :members:
    :undoc-members:

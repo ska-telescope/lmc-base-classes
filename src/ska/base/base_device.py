@@ -42,9 +42,6 @@ from .faults import (GroupDefinitionsError,
 
 LOG_FILE_SIZE = 1024 * 1024  # Log file size 1MB.
 
-#  Note:  TangoLoggingLevel enum is deprecated - use LoggingLevel instead
-TangoLoggingLevel = LoggingLevel
-
 
 class _Log4TangoLoggingLevel(enum.IntEnum):
     """Python enumerated type for TANGO log4tango logging levels.
@@ -169,12 +166,12 @@ class LoggingUtils:
 # PROTECTED REGION END #    //  SKABaseDevice.additionnal_import
 
 
-__all__ = ["SKABaseDevice", "TangoLoggingLevel", "main"]
+__all__ = ["SKABaseDevice", "main"]
 
 
 class SKABaseDevice(Device):
     """
-    A generic base device for SKA.  Update!!
+    A generic base device for SKA.
     """
     # PROTECTED REGION ID(SKABaseDevice.class_variable) ENABLED START #
 

@@ -16,10 +16,6 @@ ignore-patterns=
 # Python code to execute, usually for sys.path manipulation such as
 # pygtk.require().
 #init-hook=
-# FIXME These init-hooks should be removed, they are presently needed due to namespace problems with this repo
-init-hook='sys.path.append("./skabase/SKABaseDevice");
-	sys.path.append("./skabase/auxiliary");
-	sys.path.append("./skabase/SKAObsDevice")'
 
 # Use multiple processes to speed up Pylint. Specifying 0 will auto-detect the
 # number of processors available to use.

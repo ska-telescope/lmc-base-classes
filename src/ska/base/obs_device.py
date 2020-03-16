@@ -20,13 +20,8 @@ import sys
 from tango.server import run, attribute
 
 # SKA specific imports
-from skabase import release
-from skabase.control_model import ObsMode, ObsState
-
-file_path = os.path.dirname(os.path.abspath(__file__))
-basedevice_path = os.path.abspath(os.path.join(file_path, os.pardir)) + "/SKABaseDevice"
-sys.path.insert(0, basedevice_path)
-from SKABaseDevice import SKABaseDevice
+from . import SKABaseDevice, release
+from .control_model import ObsMode, ObsState
 # PROTECTED REGION END #    //  SKAObsDevice.additionnal_imports
 
 __all__ = ["SKAObsDevice", "main"]

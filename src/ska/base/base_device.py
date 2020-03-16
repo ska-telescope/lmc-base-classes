@@ -27,21 +27,18 @@ from tango import DeviceProxy, DevFailed
 
 # SKA specific imports
 import ska_logging
-from skabase import release
-from skabase.control_model import (
+from . import release
+from .control_model import (
     AdminMode, ControlMode, HealthState, LoggingLevel, SimulationMode, TestMode
 )
-file_path = os.path.dirname(os.path.abspath(__file__))
-auxiliary_path = os.path.abspath(os.path.join(file_path, os.pardir)) + "/auxiliary"
-sys.path.insert(0, auxiliary_path)
 
-from utils import (get_dp_command,
-                   coerce_value,
-                   get_groups_from_json,
-                   get_tango_device_type_id)
-from faults import (GroupDefinitionsError,
-                    LoggingTargetError,
-                    LoggingLevelError)
+from .utils import (get_dp_command,
+                    coerce_value,
+                    get_groups_from_json,
+                    get_tango_device_type_id)
+from .faults import (GroupDefinitionsError,
+                     LoggingTargetError,
+                     LoggingLevelError)
 
 LOG_FILE_SIZE = 1024 * 1024  # Log file size 1MB.
 
@@ -177,7 +174,7 @@ __all__ = ["SKABaseDevice", "TangoLoggingLevel", "main"]
 
 class SKABaseDevice(Device):
     """
-    A generic base device for SKA.
+    A generic base device for SKA.  Update!!
     """
     # PROTECTED REGION ID(SKABaseDevice.class_variable) ENABLED START #
 
@@ -239,35 +236,6 @@ class SKABaseDevice(Device):
         self.warn_stream = self.logger.warning
         self.error_stream = self.logger.error
         self.fatal_stream = self.logger.critical
-
-    def _parse_argin(self, argin, defaults=None, required=None):
-        """
-        Parses the argument passed to it and returns them in a dictionary form.
-
-        :param argin: The argument to parse
-
-        :param defaults:
-
-        :param required:
-
-        :return: Dictionary containing passed arguments.
-        """
-        args_dict = defaults.copy() if defaults else {}
-        try:
-            if argin:
-                args_dict.update(json.loads(argin))
-        except ValueError as ex:
-            self.logger.fatal(str(ex), exc_info=True)
-            raise
-
-        missing_args = []
-        if required:
-            missing_args = set(required) - set(args_dict.keys())
-        if missing_args:
-            msg = ("Missing arguments: {}"
-                   .format(', '.join([str(m_arg) for m_arg in missing_args])))
-            raise Exception(msg)
-        return args_dict
 
     # PROTECTED REGION END #    //  SKABaseDevice.class_variable
 

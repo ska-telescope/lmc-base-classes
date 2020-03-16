@@ -19,12 +19,8 @@ from tango import DevState, DeviceProxy
 
 import tango
 
-# Path
-path = os.path.join(os.path.dirname(__file__), os.pardir)
-sys.path.insert(0, os.path.abspath(path))
-
 # PROTECTED REGION ID(SKALogger.test_additional_imports) ENABLED START #
-from skabase.control_model import (
+from ska.base.control_model import (
     AdminMode, ControlMode, HealthState, LoggingLevel, SimulationMode, TestMode
 )
 # PROTECTED REGION END #    //  SKALogger.test_additional_imports
@@ -72,7 +68,7 @@ class TestSKALogger(object):
     @pytest.mark.parametrize("logging_level", [int(tango.LogLevel.LOG_ERROR)])
     @pytest.mark.parametrize("logging_target", ["logger/test/1"])
     # PROTECTED REGION END #    //  SKALogger.test_SetLoggingLevel_decorators
-    def test_SetLoggingLevel(self, tango_context, setup_log_test_device,
+    def test_SetLoggingLevel(self, tango_context,
                              logging_level, logging_target):
         """Test for SetLoggingLevel"""
         # PROTECTED REGION ID(SKALogger.test_SetLoggingLevel) ENABLED START #

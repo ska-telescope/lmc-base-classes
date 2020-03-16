@@ -18,12 +18,7 @@ from tango import DebugIt
 from tango.server import run, attribute, command, device_property
 
 # SKA specific imports
-from skabase import release
-
-file_path = os.path.dirname(os.path.abspath(__file__))
-obs_device_path = os.path.abspath(os.path.join(file_path, os.pardir)) + "/SKAObsDevice"
-sys.path.insert(0, obs_device_path)
-from SKAObsDevice import SKAObsDevice
+from . import SKAObsDevice, release
 # PROTECTED REGION END #    //  SKACapability.additionnal_imports
 
 __all__ = ["SKACapability", "main"]

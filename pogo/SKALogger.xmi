@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="ASCII"?>
 <pogoDsl:PogoSystem xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:pogoDsl="http://www.esrf.fr/tango/pogo/PogoDsl">
   <classes name="SKALogger" pogoRevision="9.6">
-    <description description="A generic base device for Logging for SKA." title="SKALogger" sourcePath="/home/tango-cs/src/lmc-base-classes/skabase/SKALogger" language="PythonHL" filestogenerate="XMI   file,Code files,Python Package,Protected Regions" license="none" copyright="" hasMandatoryProperty="false" hasConcreteProperty="true" hasAbstractCommand="false" hasAbstractAttribute="false">
+    <description description="A generic base device for Logging for SKA." title="SKALogger" sourcePath="/home/tango/src/lmc-base-classes/pogo/" language="PythonHL" filestogenerate="XMI   file,Code files,Python Package,Protected Regions" license="none" copyright="" hasMandatoryProperty="false" hasConcreteProperty="true" hasAbstractCommand="false" hasAbstractAttribute="false">
       <inheritances classname="Device_Impl" sourcePath=""/>
-      <inheritances classname="SKABaseDevice" sourcePath="../SKABaseDevice"/>
+      <inheritances classname="SKABaseDevice" sourcePath="."/>
       <identification contact="at gmail.com - lochanb.ska" author="lochanb.ska" emailDomain="gmail.com" classFamily="SKA Base Class" siteSpecific="" platform="All Platforms" bus="Not Applicable" manufacturer="SKA" reference="SKA-SKALogger"/>
     </description>
     <deviceProperties name="SkaLevel" description="Indication of importance of the device in the SKA hierarchy &#xA;to support drill-down navigation: 1..6, with 1 highest.&#xA;Default is 4, making provision for &#xA;EltMaster, EltAlarms, EltTelState = 1&#xA;SubEltMaster = 2&#xA;Subarray, Capability = 2/3&#xA;Others = 4 (or 5 or 6)">

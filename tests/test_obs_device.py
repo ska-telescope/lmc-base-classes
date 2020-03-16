@@ -17,12 +17,8 @@ import re
 import pytest
 from tango import DevState
 
-# Path
-path = os.path.join(os.path.dirname(__file__), os.pardir)
-sys.path.insert(0, os.path.abspath(path))
-
 # PROTECTED REGION ID(SKAObsDevice.test_additional_imports) ENABLED START #
-from skabase.control_model import (
+from ska.base.control_model import (
     AdminMode, ControlMode, HealthState, ObsMode, ObsState, SimulationMode, TestMode
 )
 # PROTECTED REGION END #    //  SKAObsDevice.test_additional_imports

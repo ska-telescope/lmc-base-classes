@@ -12,10 +12,9 @@ from datetime import datetime
 import tango
 from tango import (DeviceProxy, DbDatum, DbDevInfo, AttrQuality,
                    AttrWriteType, Except, ErrSeverity)
-from tango import DevState 
+from tango import DevState
 from contextlib import contextmanager
-from faults import GroupDefinitionsError
-from faults import SKABaseError
+from .faults import GroupDefinitionsError, SKABaseError
 
 int_types = {tango._tango.CmdArgType.DevUShort,
              tango._tango.CmdArgType.DevLong,

@@ -13,6 +13,7 @@
 #   - obsdevice: Container having SKAObsDevice class
 #   - subarray: Container having SKASubarray class
 #   - telstate: Container having SKATelState class
+#   - logtest: Container having SKASubarray class for SKALogger testing
 #
 # Requires:
 #   - None
@@ -71,7 +72,7 @@ services:
     command: >
       sh -c "wait-for-it.sh ${TANGO_HOST} --timeout=30 --strict --
              tango_admin --add-server SKABaseDevice/01 SKABaseDevice ska/basedevice/01 &&\
-             /venv/bin/python /app/skabase/SKABaseDevice/SKABaseDevice.py 01"
+             SKABaseDevice 01"
 
   alarmhandler:
     image: ${DOCKER_REGISTRY_HOST}/${DOCKER_REGISTRY_USER}/lmcbaseclasses:latest
@@ -85,7 +86,7 @@ services:
     command: >
       sh -c "wait-for-it.sh ${TANGO_HOST} --timeout=30 --strict --
              tango_admin --add-server SKAAlarmHandler/01 SKAAlarmhandler ska/alarmhandler/01 &&\
-             /venv/bin/python /app/skabase/SKAAlarmHandler/SKAAlarmHandler.py 01"
+             SKAAlarmHandler 01"
 
   capability:
     image: ${DOCKER_REGISTRY_HOST}/${DOCKER_REGISTRY_USER}/lmcbaseclasses:latest
@@ -99,7 +100,7 @@ services:
     command: >
       sh -c "wait-for-it.sh ${TANGO_HOST} --timeout=30 --strict --
              tango_admin --add-server SKACapability/01 SKACapability ska/capability/01 &&\
-             /venv/bin/python /app/skabase/SKACapability/SKACapability.py 01"
+             SKACapability 01"
 
   logger:
     image: ${DOCKER_REGISTRY_HOST}/${DOCKER_REGISTRY_USER}/lmcbaseclasses:latest
@@ -113,7 +114,7 @@ services:
     command: >
       sh -c "wait-for-it.sh ${TANGO_HOST} --timeout=30 --strict --
              tango_admin --add-server SKALogger/01 SKALogger ska/logger/01 &&\
-             /venv/bin/python /app/skabase/SKALogger/SKALogger.py 01"
+             SKALogger 01"
 
   master:
     image: ${DOCKER_REGISTRY_HOST}/${DOCKER_REGISTRY_USER}/lmcbaseclasses:latest
@@ -127,7 +128,7 @@ services:
     command: >
       sh -c "wait-for-it.sh ${TANGO_HOST} --timeout=30 --strict --
              tango_admin --add-server SKAMaster/01 SKAMaster ska/master/01 &&\
-             /venv/bin/python /app/skabase/SKAMaster/SKAMaster.py 01"
+             SKAMaster 01"
 
   obsdevice:
     image: ${DOCKER_REGISTRY_HOST}/${DOCKER_REGISTRY_USER}/lmcbaseclasses:latest
@@ -141,7 +142,7 @@ services:
     command: >
       sh -c "wait-for-it.sh ${TANGO_HOST} --timeout=30 --strict --
              tango_admin --add-server SKAObsDevice/01 SKAObsDevice ska/obsdevice/01 &&\
-             /venv/bin/python /app/skabase/SKAObsDevice/SKAObsDevice.py 01"
+             SKAObsDevice 01"
 
   subarray:
     image: ${DOCKER_REGISTRY_HOST}/${DOCKER_REGISTRY_USER}/lmcbaseclasses:latest
@@ -155,7 +156,7 @@ services:
     command: >
       sh -c "wait-for-it.sh ${TANGO_HOST} --timeout=30 --strict --
              tango_admin --add-server SKASubarray/01 SKASubarray ska/subarray/01 &&\
-             /venv/bin/python /app/skabase/SKASubarray/SKASubarray.py 01"
+             SKASubarray 01"
 
   telstate:
     image: ${DOCKER_REGISTRY_HOST}/${DOCKER_REGISTRY_USER}/lmcbaseclasses:latest
@@ -169,4 +170,18 @@ services:
     command: >
       sh -c "wait-for-it.sh ${TANGO_HOST} --timeout=30 --strict --
              tango_admin --add-server SKATelState/01 SKATelState ska/telstate/01 &&\
-            /venv/bin/python /app/skabase/SKATelState/SKATelState.py 01"
+             SKATelState 01"
+
+  logtest:
+    image: ${DOCKER_REGISTRY_HOST}/${DOCKER_REGISTRY_USER}/lmcbaseclasses:latest
+    restart: unless-stopped
+    depends_on:
+      - databaseds
+    network_mode: ${NETWORK_MODE}
+    container_name: ${CONTAINER_NAME_PREFIX}testdevice
+    environment:
+      - TANGO_HOST=${TANGO_HOST}
+    command: >
+      sh -c "wait-for-it.sh ${TANGO_HOST} --timeout=30 --strict --
+             tango_admin --add-server SKASubarray/02 SKASubarray logger/test/1 &&\
+             SKASubarray 02"

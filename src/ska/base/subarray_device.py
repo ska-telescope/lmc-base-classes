@@ -21,13 +21,8 @@ from tango.server import device_property
 from tango import Except, ErrSeverity, DevState
 
 # SKA specific imports
-from skabase import release
-from skabase.control_model import AdminMode, ObsState
-
-file_path = os.path.dirname(os.path.abspath(__file__))
-obs_device_path = os.path.abspath(os.path.join(file_path, os.pardir)) + "/SKAObsDevice"
-sys.path.insert(0, obs_device_path)
-from SKAObsDevice import SKAObsDevice
+from . import SKAObsDevice, release
+from .control_model import AdminMode, ObsState
 # PROTECTED REGION END #    //  SKASubarray.additionnal_imports
 
 __all__ = ["SKASubarray", "main"]

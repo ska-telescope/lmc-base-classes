@@ -2,7 +2,7 @@
 import json
 import pytest
 
-from skabase.auxiliary.utils import (
+from ska.base.utils import (
     get_groups_from_json,
     get_tango_device_type_id,
     GroupDefinitionsError,

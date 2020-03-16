@@ -14,21 +14,14 @@ import os
 import re
 import pytest
 
-# Imports
-from skabase.SKABaseDevice import SKABaseDevice
-
-# Path
-path = os.path.join(os.path.dirname(__file__), os.pardir)
-sys.path.insert(0, os.path.abspath(path))
-
 # PROTECTED REGION ID(SKABaseDevice.test_additional_imports) ENABLED START #
 import logging
 from unittest import mock
 from tango import DevFailed, DevState
-from skabase.control_model import (
+from ska.base.control_model import (
     AdminMode, ControlMode, HealthState, LoggingLevel, SimulationMode, TestMode
 )
-from skabase.SKABaseDevice.SKABaseDevice import (
+from ska.base.base_device import (
     LoggingUtils,
     LoggingTargetError,
 )
@@ -289,7 +282,7 @@ class TestSKABaseDevice(object):
         # PROTECTED REGION ID(SKABaseDevice.test_loggingTargets) ENABLED START #
         assert tango_context.device.loggingTargets == tuple()
 
-        with mock.patch("SKABaseDevice.LoggingUtils.create_logging_handler") as mocked_creator:
+        with mock.patch("ska.base.base_device.LoggingUtils.create_logging_handler") as mocked_creator:
 
             def null_creator(target):
                 handler = logging.NullHandler()
@@ -360,26 +353,3 @@ class TestSKABaseDevice(object):
         # PROTECTED REGION ID(SKABaseDevice.test_testMode) ENABLED START #
         assert tango_context.device.testMode == TestMode.NONE
         # PROTECTED REGION END #    //  SKABaseDevice.test_testMode
-
-    # TODO: Fix this test case when "Error in get_name() of tango.DeviceImpl while using pytest" is resolved.
-    # def test_get_device_commands(self, tango_context):
-        # Test the get_device_commands method
-        # commands = SKABaseDevice.get_device_commands(SKABaseDevice)
-        #assert commands == [{'parameters': [], 'name': 'GetVersionInfo', 'component_type': 'nodb', 'component_id': 'skabasedevice'}, {'parameters': [], 'name': 'Init', 'component_type': 'nodb', 'component_id': 'skabasedevice'}, {'parameters': [], 'name': 'Reset', 'component_type': 'nodb', 'component_id': 'skabasedevice'}, {'parameters': [], 'name': 'State', 'component_type': 'nodb', 'component_id': 'skabasedevice'}, {'parameters': [], 'name': 'Status', 'component_type': 'nodb', 'component_id': 'skabasedevice'}]
-
-    # TODO: Fix this test case when "Error in get_name() of tango.DeviceImpl while using pytest" is resolved.
-    # def test_get_device_attributes(self, tango_context):
-    #     # Test the get_device_attributes method
-    #     attributes = SKABaseDevice.get_device_attributes(SKABaseDevice)
-    #     assert attributes == 1
-
-    def test__parse_argin(self, tango_context):
-        result = SKABaseDevice._parse_argin(SKABaseDevice, '{"class": "SKABaseDevice"}')
-        assert result == {'class': 'SKABaseDevice'}
-
-    def test__parse_argin_with_required(self, tango_context):
-        SKABaseDevice._parse_argin(
-            SKABaseDevice, '{"class":"SKABaseDevice"}', required=['class'])
-        with pytest.raises(Exception):
-            SKABaseDevice._parse_argin(
-                SKABaseDevice, '{"class":"SKABaseDevice"}', required=['missing'])

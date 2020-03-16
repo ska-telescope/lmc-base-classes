@@ -9,7 +9,7 @@ SKA Control Model
 .. toctree::
    :maxdepth: 2
 
-.. automodule:: control_model
+.. automodule:: ska.base.control_model
     :members:
     :undoc-members:
 

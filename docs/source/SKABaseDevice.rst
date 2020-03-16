@@ -9,7 +9,7 @@ SKA BaseDevice
 .. toctree::
    :maxdepth: 2
 
-.. automodule:: SKABaseDevice
-.. autoclass:: SKABaseDevice
+.. automodule:: ska.base.base_device
+.. autoclass:: ska.base.SKABaseDevice
    :members:
    :undoc-members:

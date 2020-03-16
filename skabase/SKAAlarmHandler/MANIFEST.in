@@ -1,9 +1,0 @@
-recursive-include SKAAlarmHandler *.py
-recursive-include test *.py
-include *.rst
-include SKAAlarmHandler.xmi
-include *.txt
-graft docs
-
-global-exclude *.pyc
-global-exclude *.pyo

@@ -1,9 +1,0 @@
-recursive-include SKABaseDevice *.py
-recursive-include test *.py
-include *.rst
-include SKABaseDevice.xmi
-include *.txt
-graft docs
-
-global-exclude *.pyc
-global-exclude *.pyo

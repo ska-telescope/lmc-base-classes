@@ -9,7 +9,7 @@ SKA Subarray
 .. toctree::
    :maxdepth: 2
 
-.. automodule:: SKASubarray
-.. autoclass:: SKASubarray
+.. automodule:: ska.base.subarray_device
+.. autoclass:: ska.base.SKASubarray
    :members:
    :undoc-members:

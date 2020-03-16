@@ -25,6 +25,18 @@ The lmc-base-classe repository contains set of eight classes as mentioned in SKA
 
 ## Version History
 
+#### 0.5.0
+- Breaking change:  Major restructuring of the package to simplify imports and reduce confusion.  
+  - The single word `skabase` module has now changed to two words: `ska.base`.
+  - Instead of `from skabase.SKABaseDevice.SKABaseDevice import SKABaseDevice` to import the
+    class, just use `from ska.base import SKABaseDevice`.  
+  - Instead of `skabase.control_mode` use `ska.base.control_mode`.
+  - The `SKATestDevice` was removed.  Note that this class was only intended
+    for internal use in lmc-base-classes and is no longer needed.
+  - Removed unused scripts and modules.
+- Removed `TangoLoggingLevel` which was deprecated in 0.4.0.  Use `ska.base.control_model.LoggingLevel`
+  instead.
+
 #### 0.4.1
 - Fix lost properties when re-initialising test device (remove `get_name` mock).
 - Fix Sphinx doc building.
@@ -111,9 +123,9 @@ code analysis is also done and code coverage report is prepared.
 After testing is done, the containers are taken down.
 
 ## Usage
-The base classes are installed as python package in the system. The intended usage of the base classes is to inherit the class according to the requirement. The class needs to be imported in the module. e.g.
+The base classes are installed as a Python package in the system. The intended usage of the base classes is to inherit the class according to the requirement. The class needs to be imported in the module. e.g.
 ```
-from skabase.SKABaseDevice.SKABaseDevice import SKABaseDevice
+from ska.base import SKABaseDevice
 
 class DishLeafNode(SKABaseDevice):
 .
@@ -121,13 +133,28 @@ class DishLeafNode(SKABaseDevice):
 .
 ```
 
-**Note: The lmc-base-classes repository will be repackaged soon. That will change the way of importing it.**
+## Development
+
+### PyCharm
+
+The Docker integration is recommended.  For development, use the
+`nexus.engageska-portugal.pt/tango-example/lmcbaseclasses:latest` image
+as the Python Interpreter for the project.  Note that if `make` is
+run with targets like `build`, `up`, or `test`, that image will be
+rebuilt by Docker using the local code, and tagged as `latest`.  
+
+As this project uses a `src` [folder structure](https://blog.ionelmc.ro/2014/05/25/python-packaging/#the-structure),
+so under _Preferences > Project Structure_, the `src` folder needs to be marked as "Sources".  That will
+allow the interpreter to be aware of the package from folders like `tests` that are outside of `src`.
+When adding Run/Debug configurations, make sure "Add content roots to PYTHONPATH" and
+"Add source roots to PYTHONPATH" are checked.
 
 ## Docs
+- Online:  [Read The Docs](https://developerskatelescopeorg.readthedocs.io/projects/lmc-base-classes/en/latest)
 - SKA Control System guidelines:  [Google docs folder](https://drive.google.com/drive/folders/0B8fhAW5QnZQWQ2ZlcjhVS0NmRms)
 - Old LEvPro work area: [Google docs folder](https://drive.google.com/drive/folders/0B8fhAW5QnZQWVHVFVGVXT2Via28)
 
 
 
 ## Contribute
-Contributions are always welcome! Please ensure that you adhere to our coding standards [CAM_Style_guide](https://docs.google.com/document/d/1aZoIyR9tz5rCWr2qJKuMTmKp2IzHlFjrCFrpDDHFypM/edit?usp=sharing).  Use [flake8](http://flake8.pycqa.org/en/latest/) for linting (default settings, except maximum line length of 90 characters).
+Contributions are always welcome! Please refer to the [SKA Developer Portal](https://developer.skatelescope.org/en/latest/).

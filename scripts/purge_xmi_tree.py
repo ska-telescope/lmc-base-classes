@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python2
 """
 Utility to purge orphaned elements from the XMI file tree.
 

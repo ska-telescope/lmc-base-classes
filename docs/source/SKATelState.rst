@@ -9,7 +9,7 @@ SKA TelState
 .. toctree::
    :maxdepth: 2
 
-.. automodule:: SKATelState
-.. autoclass:: SKATelState
+.. automodule:: ska.base.tel_state_device
+.. autoclass:: ska.base.SKATelState
    :members:
    :undoc-members:

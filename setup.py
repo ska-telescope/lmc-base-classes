@@ -20,7 +20,7 @@ setuptools.setup(
     author=author,
     author_email=author_email,
     license=license,
-    packages=setuptools.find_packages(where="src"),
+    packages=setuptools.find_namespace_packages(where="src", include=["ska.*"]),
     package_dir={"": "src"},
     include_package_data=True,
     url="https://www.skatelescope.org/",

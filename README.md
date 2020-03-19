@@ -25,6 +25,10 @@ The lmc-base-classe repository contains set of eight classes as mentioned in SKA
 
 ## Version History
 
+#### 0.5.1
+- Make 'ska' a [native namespace package](https://packaging.python.org/guides/packaging-namespace-packages/#native-namespace-packages).
+  No change to usage. 
+
 #### 0.5.0
 - Breaking change:  Major restructuring of the package to simplify imports and reduce confusion.  
   - The single word `skabase` module has now changed to two words: `ska.base`.

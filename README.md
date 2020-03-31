@@ -34,7 +34,7 @@ The lmc-base-classe repository contains set of eight classes as mentioned in SKA
   - The single word `skabase` module has now changed to two words: `ska.base`.
   - Instead of `from skabase.SKABaseDevice.SKABaseDevice import SKABaseDevice` to import the
     class, just use `from ska.base import SKABaseDevice`.  
-  - Instead of `skabase.control_mode` use `ska.base.control_mode`.
+  - Instead of `skabase.control_model` use `ska.base.control_model`.
   - The `SKATestDevice` was removed.  Note that this class was only intended
     for internal use in lmc-base-classes and is no longer needed.
   - Removed unused scripts and modules.

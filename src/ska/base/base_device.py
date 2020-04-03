@@ -356,12 +356,11 @@ class SKABaseDevice(Device):
 
         try:
             # create TANGO Groups objects dict, according to property
-            self.debug_stream("Groups definitions: {}".format(self.GroupDefinitions))
+            self.logger.debug("Groups definitions: {}".format(self.GroupDefinitions))
             self.groups = get_groups_from_json(self.GroupDefinitions)
-            self.info_stream("Groups loaded: {}".format(sorted(self.groups.keys())))
-
+            self.logger.info("Groups loaded: {}".format(sorted(self.groups.keys())))
         except GroupDefinitionsError:
-            self.info_stream("No Groups loaded for device: {}".format(self.get_name()))
+            self.logger.info("No Groups loaded for device: {}".format(self.get_name()))
 
         self.logger.info("Completed SKABaseDevice.init_device")
         # PROTECTED REGION END #    //  SKABaseDevice.init_device

@@ -95,13 +95,11 @@ class SKALogger(SKABaseDevice):
         for level, device in zip(logging_levels, logging_devices):
             try:
                 new_level = LoggingLevel(level)
-                self.info_stream("Setting logging level %s for %s", new_level, device)
+                self.logger.info("Setting logging level %s for %s", new_level, device)
                 dev_proxy = DeviceProxy(device)
                 dev_proxy.loggingLevel = new_level
-            except DevFailed as dev_failed:
-                self.error_stream("Failed to set logging level %s for %s", level, device)
-                str_exception = "Exception: " + str(dev_failed)
-                self.error_stream(str_exception)
+            except DevFailed:
+                self.logger.exception("Failed to set logging level %s for %s", level, device)
         # PROTECTED REGION END #    //  SKALogger.SetLoggingLevel
 
 # ----------

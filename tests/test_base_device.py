@@ -77,7 +77,7 @@ class TestLoggingUtils:
     @mock.patch('logging.handlers.SysLogHandler')
     @mock.patch('logging.handlers.RotatingFileHandler')
     @mock.patch('logging.StreamHandler')
-    @mock.patch('ska_logging.get_default_formatter')
+    @mock.patch('ska.logging.get_default_formatter')
     def test_create_logging_handler(self,
                                     mock_get_formatter,
                                     mock_stream_handler,

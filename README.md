@@ -25,6 +25,9 @@ The lmc-base-classe repository contains set of eight classes as mentioned in SKA
 
 ## Version History
 
+#### (unreleased)
+- Change ska_logger dependency to use ska-namespaced package (v0.3.0).  No change to usage.
+ 
 #### 0.5.1
 - Make 'ska' a [native namespace package](https://packaging.python.org/guides/packaging-namespace-packages/#native-namespace-packages).
   No change to usage. 

@@ -35,7 +35,7 @@ setuptools.setup(
     ],
     platforms=["OS Independent"],
     setup_requires=[] + pytest_runner,
-    install_requires=["future", "ska_logging >= 0.2.0"],
+    install_requires=["future", "ska_logging >= 0.3.0"],
     tests_require=["pytest", "coverage", "pytest-json-report", "pytest-forked"],
     entry_points={
         "console_scripts": [

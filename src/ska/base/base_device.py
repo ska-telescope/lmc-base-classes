@@ -26,7 +26,7 @@ from tango import AttrQuality, AttrWriteType
 from tango import DeviceProxy, DevFailed
 
 # SKA specific imports
-import ska_logging
+import ska.logging as ska_logging
 from . import release
 from .control_model import (
     AdminMode, ControlMode, HealthState, LoggingLevel, SimulationMode, TestMode

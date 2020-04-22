@@ -18,7 +18,7 @@ pytango = "==9.3.1"
 # 'RUN ipython profile create' line from Dockerfile.
 itango = "*"
 future = "*"
-ska_logging = ">=0.2.0"
+ska_logging = ">=0.3.0"
 
 [dev-packages]
 docutils = "*"

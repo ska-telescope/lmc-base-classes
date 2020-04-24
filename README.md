@@ -25,7 +25,7 @@ The lmc-base-classe repository contains set of eight classes as mentioned in SKA
 
 ## Version History
 
-#### (unreleased)
+#### 0.5.2
 - Change ska_logger dependency to use ska-namespaced package (v0.3.0).  No change to usage.
  
 #### 0.5.1

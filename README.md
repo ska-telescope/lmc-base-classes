@@ -27,10 +27,10 @@ The lmc-base-classe repository contains set of eight classes as mentioned in SKA
 
 #### 0.5.2
 - Change ska_logger dependency to use ska-namespaced package (v0.3.0).  No change to usage.
- 
+
 #### 0.5.1
 - Make 'ska' a [native namespace package](https://packaging.python.org/guides/packaging-namespace-packages/#native-namespace-packages).
-  No change to usage. 
+  No change to usage.
 
 #### 0.5.0
 - Breaking change:  Major restructuring of the package to simplify imports and reduce confusion.  
@@ -76,7 +76,7 @@ The lmc-base-classe repository contains set of eight classes as mentioned in SKA
 #### 0.2.0
 - Changed logging to use SKA format
 - Simplified element, storage and central logging to just a single target.  Default writes to stdout.
-  This is in line with the move to Elastic for all logs instead of using the Tango Logging System
+  This is in line with the move to Elastic for all logs instead of using the Tango Logging Service
   for some cases.
 - Deprecated `dev_logging` method.  Will be removed in 0.3.0.  Use direct calls the `self.logger` instead.
 
@@ -139,6 +139,201 @@ class DishLeafNode(SKABaseDevice):
 .
 .
 ```
+
+## Logging explained
+
+In order to provided consistent logging across all Python Tango devices in SKA,
+the logging is configured in the LMC base class: `SKABaseDevice`.
+
+### Default logging targets
+
+The `SKABaseDevice` automatically uses the logging configuration provided by the
+[ska_logging](https://gitlab.com/ska-telescope/ska-logging) package.  This cannot
+be easily disabled, and should not be.  It allows us to get consistent logs from all
+devices, and to effect system wide change, if necessary.  Currently,
+that library sets up the root logger to always output to stdout (i.e., the console).
+This is so that the logs can be consumed by Fluentd and forwarded to Elastic.
+
+The way the `SKABaseDevice` logging formatter and filters are configured, the emitted
+logs include a tag field with the Tango device name.  This is useful when searching
+for logs in tools like Kibana.  For example, `tango-device=ska_mid/tm_leaf_node/d0004`.
+This should work even for multiple devices from a single device server.
+
+### Tango device controls for logging levels and targets
+
+The logging level and additional logging targets are controlled by two attributes.
+These attributes are initialised from two device properties on startup.  An extract
+of the definitions from the base class is shown below.
+
+```python
+class SKABaseDevice(Device):
+
+    ...
+
+    # -----------------
+    # Device Properties
+    # -----------------
+
+    LoggingLevelDefault = device_property(
+        dtype='uint16', default_value=LoggingLevel.INFO
+    )
+
+    LoggingTargetsDefault = device_property(
+        dtype='DevVarStringArray', default_value=[]
+    )
+
+    # ----------
+    # Attributes
+    # ----------
+
+    loggingLevel = attribute(
+        dtype=LoggingLevel,
+        access=AttrWriteType.READ_WRITE,
+        doc="Current logging level for this device - "
+            "initialises to LoggingLevelDefault on startup",
+    )
+
+    loggingTargets = attribute(
+        dtype=('str',),
+        access=AttrWriteType.READ_WRITE,
+        max_dim_x=3,
+        doc="Logging targets for this device, excluding ska_logging defaults"
+            " - initialises to LoggingTargetsDefault on startup",
+    )
+
+   ...
+
+```
+
+### Changing the logging level
+
+The `loggingLevel` attribute allows us to adjust the severity of logs being emitted.
+This attribute is an enumerated type.  The default is currently INFO level, but it
+can be overridden by setting the `LoggingLevelDefault` property in the Tango database.
+
+Example:
+```python
+proxy = tango.DeviceProxy('my/test/device')
+
+# change to debug level using an enum
+proxy.loggingLevel = ska.base.control_model.LoggingLevel.DEBUG
+
+# change to info level using a string
+proxy.loggingLevel = "INFO"
+```
+
+Do not use `proxy.set_logging_level()`.  That method only applies to the Tango Logging
+Service (see section below).  However, note that when the `loggingLevel` attribute
+is set, we internally update the TLS logging level as well.
+
+### Additional logging targets
+
+Note that the the `loggingTargets` attribute says "excluding ska_logging defaults".
+If you want to forward logs to other targets, then you could use this attribute.  It is an
+empty list by default, since we only want the logging to stdout that is already provided
+by the ska_logging library.
+
+The format and usage of this attribute is not that intuitive, but it was not expected to
+be used much, and was kept similar to the existing SKA control system guidelines proposal.
+The string format of each target is chosen to match that used by the
+Tango Logging Service: `"<type>::<location>"`.
+
+It is a spectrum string attribute.  In PyTango we read it back as a tuple of strings,
+and we can write it with either a list or tuple of strings.
+
+```python
+proxy = tango.DeviceProxy('my/test/device')
+
+# read back additional targets (as a tuple)
+current_targets = proxy.loggingTargets
+
+# add a new file target
+new_targets = list(current_targets) + ["file::/tmp/my.log"]
+proxy.loggingTargets = new_targets
+
+# disable all additional targets (empty list breaks, so include an empty string!)
+proxy.loggingTargets = ['']
+```
+
+Currently there are three types of targets implemented:
+- `console`
+- `file`
+- `syslog`
+
+If you were to set the `proxy.loggingTargets = ["console::cout"]` you would get
+all the logs to stdout duplicated.  Once for ska_logging root logger, and once for
+the additional console logger you just added.  For the "console" option it doesn't matter
+what text comes after the `::` - we always use stdout.
+
+For file output, provide the path after the `::`.  If the path is ommitted, then a
+file is created in the device server's current directory, with a name based on the
+the Tango name.  E.g., "my/test/device" would get the file "my_test_device.log".
+Currently, we using a `logging.handlers.RotatingFileHandler` with a 1 MB limit and
+just 2 backups.  This could be modified in future.
+
+For syslog, the syslog target address details must be provided after the `::`.
+This string is what ever you would pass to `logging.handlers.SysLogHandler`'s `address`
+argument.  E.g. `proxy.loggingTargets = ["syslog::/dev/log"]`.
+
+If you want file and syslog targets, you could do something like:
+`proxy.loggingTargets = ["file::/tmp/my.log", "syslog::/dev/log"]`.
+
+**Note:**  There is a limit of 3 additional handlers.  That the maximum length
+of the spectrum attribute. We could change this if there is a reasonable use
+case for it.
+
+### Can I still send logs to the Tango Logging Service?
+
+Not really.  In `SKABaseDevice._init_logging` we monkey patch the Tango Logging Service (TLS)
+methods `debug_stream`, `error_stream`, etc. to point the Python logger methods like
+`logger.debug`, `logger.error`, etc.  This means that logs are no longer forwarded
+to the Tango Logging Service.
+
+In future, we could add a new target that allows the logs to be forwarded to TLS.
+That would be something like `"tls::my/log/consumer"`.
+
+Although, you might get some logs from the admin device, since we cannot override its
+behaviour from the Python layer.  PyTango is wrapper around the C++ Tango library, and
+the admin device is implemented in C++.
+
+The `tango.DeviceProxy` also has some built in logging control methods which you should
+avoid as they only apply to the Tango Logging Service:
+- `DeviceProxy.add_logging_target`
+- `DeviceProxy.remove_logging_target`
+- `DeviceProxy.set_logging_level`
+
+### What code should I write to log from my device?
+
+You should always use the `self.logger` object within methods.  This instance of the
+logger is the only one that knows the Tango device name.  You can also use the PyTango
+decorators like `DebugIt`, since the monkey patching redirects them to that same logger.
+
+```python
+class MyDevice(SKABaseDevice):
+    def my_method(self):
+        someone = "you"
+        self.logger.info("I have a message for %s", someone)
+
+    @tango.DebugIt()
+    def my_handler(self):
+        # great, entry and exit of this method is automatically logged
+        # at debug level!
+        pass
+
+```
+
+Yes, you could use f-strings. `f"I have a message for {someone}"`.  The only benefit
+of the `%s` type formatting is that the full string does not need to be created unless
+the log message will be emitted.  This could provide a small performance gain, depending
+on what is being logged, and how often.
+
+
+### When I set the logging level via command line it doesn't work
+
+Tango devices can be launched with a `-v` parameter to set the logging level. For example,
+'MyDeviceServer instance -v5' for debug level.  Currently, the `SKABaseDevice` does not
+consider this command line option, so it will just use the Tango device property instead.
+In future, it would be useful to override the property with the command line option.
 
 ## Development
 

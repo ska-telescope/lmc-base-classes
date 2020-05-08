@@ -75,7 +75,7 @@ class LoggingUtils:
 
         :param target:
             List of candidate logging target strings, like '<type>[::<name>]'
-            Empty and whitespace-only strings are ignored.
+            Empty and whitespace-only strings are ignored.  Can also be None.
 
         :param device_name:
             TANGO device name, like 'domain/family/member', used
@@ -91,26 +91,27 @@ class LoggingUtils:
             "syslog": None}
 
         valid_targets = []
-        for target in targets:
-            target = target.strip()
-            if not target:
-                continue
-            if "::" in target:
-                target_type, target_name = target.split("::", 1)
-            else:
-                target_type = target
-                target_name = None
-            if target_type not in default_target_names:
-                raise LoggingTargetError(
-                    "Invalid target type: {} - options are {}".format(
-                        target_type, list(default_target_names.keys())))
-            if not target_name:
-                target_name = default_target_names[target_type]
-            if not target_name:
-                raise LoggingTargetError(
-                    "Target name required for type {}".format(target_type))
-            valid_target = "{}::{}".format(target_type, target_name)
-            valid_targets.append(valid_target)
+        if targets:
+            for target in targets:
+                target = target.strip()
+                if not target:
+                    continue
+                if "::" in target:
+                    target_type, target_name = target.split("::", 1)
+                else:
+                    target_type = target
+                    target_name = None
+                if target_type not in default_target_names:
+                    raise LoggingTargetError(
+                        "Invalid target type: {} - options are {}".format(
+                            target_type, list(default_target_names.keys())))
+                if not target_name:
+                    target_name = default_target_names[target_type]
+                if not target_name:
+                    raise LoggingTargetError(
+                        "Target name required for type {}".format(target_type))
+                valid_target = "{}::{}".format(target_type, target_name)
+                valid_targets.append(valid_target)
 
         return valid_targets
 

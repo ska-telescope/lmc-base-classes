@@ -25,6 +25,9 @@ The lmc-base-classe repository contains set of eight classes as mentioned in SKA
 
 ## Version History
 
+#### (unreleased)
+- Setting `loggingTargets` attribute to empty list no longer raises exception.
+
 #### 0.5.2
 - Change ska_logger dependency to use ska-namespaced package (v0.3.0).  No change to usage.
 
@@ -251,8 +254,8 @@ current_targets = proxy.loggingTargets
 new_targets = list(current_targets) + ["file::/tmp/my.log"]
 proxy.loggingTargets = new_targets
 
-# disable all additional targets (empty list breaks, so include an empty string!)
-proxy.loggingTargets = ['']
+# disable all additional targets
+proxy.loggingTargets = []
 ```
 
 Currently there are three types of targets implemented:

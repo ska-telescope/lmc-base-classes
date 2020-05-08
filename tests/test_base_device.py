@@ -32,6 +32,7 @@ from ska.base.base_device import (
 
 class TestLoggingUtils:
     @pytest.fixture(params=[
+            (None, []),
             ([""], []),
             ([" \n\t "], []),
             (["console"], ["console::cout"]),
@@ -307,6 +308,10 @@ class TestSKABaseDevice(object):
                 [mock.call("file::/tmp/dummy"),
                  mock.call("syslog::some/address")],
                 any_order=True)
+
+            # test clearing all targets (note: PyTango returns None for empty spectrum attribute)
+            tango_context.device.loggingTargets = []
+            assert tango_context.device.loggingTargets is None
 
             mocked_creator.reset_mock()
             with pytest.raises(DevFailed):

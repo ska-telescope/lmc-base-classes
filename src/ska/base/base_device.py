@@ -206,8 +206,11 @@ class LoggingUtils:
             handler = logging.handlers.RotatingFileHandler(
                 log_file_name, 'a', LOG_FILE_SIZE, 2, None, False)
         elif target_type == "syslog":
+            address, socktype = LoggingUtils.get_syslog_address_and_socktype(target_name)
             handler = logging.handlers.SysLogHandler(
-                    address=target_name, facility=logging.handlers.SysLogHandler.LOG_SYSLOG)
+                address=address,
+                facility=logging.handlers.SysLogHandler.LOG_SYSLOG,
+                socktype=socktype)
         else:
             raise LoggingTargetError(
                 "Invalid target type requested: '{}' in '{}'".format(target_type, target))

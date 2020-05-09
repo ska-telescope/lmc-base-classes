@@ -25,7 +25,7 @@ The lmc-base-classe repository contains set of eight classes as mentioned in SKA
 
 ## Version History
 
-#### (unreleased)
+#### 0.5.3
 - Setting `loggingTargets` attribute to empty list no longer raises exception.
 - Change syslog targets in `loggingTargets` attribute to a full URL so that remote syslog servers can be specified.
   For example, `"syslog::udp://server.domain:514"`, would send logs to `server.domain` via UDP port 514.

@@ -15,8 +15,13 @@ import json
 import logging
 import logging.handlers
 import os
+import socket
 import sys
 import threading
+import warnings
+
+from urllib.parse import urlparse
+from urllib.request import url2pathname
 
 # Tango imports
 import tango
@@ -114,6 +119,70 @@ class LoggingUtils:
                 valid_targets.append(valid_target)
 
         return valid_targets
+
+    @staticmethod
+    def get_syslog_address_and_socktype(url):
+        """Parse syslog URL and extract address and socktype parameters for SysLogHandler.
+
+        :param url:
+            Universal resource locator string for syslog target.  Three types are supported:
+            file path, remote UDP server, remote TCP server.
+            - Output to a file:  'file://<path to file>'
+              Example:  'file:///dev/log' will write to '/dev/log'
+            - Output to remote server over UDP:  'udp://<hostname>:<port>'
+              Example:  'udp://syslog.com:514' will send to host 'syslog.com' on UDP port 514
+            - Output to remote server over TCP:  'tcp://<hostname>:<port>'
+              Example:  'tcp://rsyslog.com:601' will send to host 'rsyslog.com' on TCP port 601
+            For backwards compatibility, if the protocol prefix is missing, the type is
+            interpreted as file.  This is deprecated.
+            - Example:  '/dev/log' is equivalent to 'file:///dev/log'
+
+        :return: (address, socktype)
+            For file types:
+            - address is the file path as as string
+            - socktype is None
+            For UDP and TCP:
+            - address is tuple of (hostname, port), with hostname a string, and port an integer.
+            - socktype is socket.SOCK_DGRAM for UDP, or socket.SOCK_STREAM for TCP.
+
+        :raises: LoggingTargetError for invalid url string
+        """
+        address = None
+        socktype = None
+        parsed = urlparse(url)
+        if parsed.scheme in ["file", ""]:
+            address = url2pathname(parsed.netloc + parsed.path)
+            socktype = None
+            if not address:
+                raise LoggingTargetError(
+                    "Invalid syslog URL - empty file path from '{}'".format(url)
+                )
+            if parsed.scheme == "":
+                warnings.warn(
+                    "Specifying syslog URL without protocol is deprecated, "
+                    "use 'file://{}' instead of '{}'".format(url, url),
+                    DeprecationWarning,
+                )
+        elif parsed.scheme in ["udp", "tcp"]:
+            if not parsed.hostname:
+                raise LoggingTargetError(
+                    "Invalid syslog URL - could not extract hostname from '{}'".format(url)
+                )
+            try:
+                port = int(parsed.port)
+            except (TypeError, ValueError):
+                raise LoggingTargetError(
+                    "Invalid syslog URL - could not extract integer port number from '{}'".format(
+                        url
+                    )
+                )
+            address = (parsed.hostname, port)
+            socktype = socket.SOCK_DGRAM if parsed.scheme == "udp" else socket.SOCK_STREAM
+        else:
+            raise LoggingTargetError(
+                "Invalid syslog URL - expected file, udp or tcp protocol scheme in '{}'".format(url)
+            )
+        return address, socktype
 
     @staticmethod
     def create_logging_handler(target):

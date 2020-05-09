@@ -16,6 +16,8 @@ import pytest
 
 # PROTECTED REGION ID(SKABaseDevice.test_additional_imports) ENABLED START #
 import logging
+import socket
+
 from unittest import mock
 from tango import DevFailed, DevState
 from ska.base.control_model import (
@@ -42,7 +44,9 @@ class TestLoggingUtils:
             (["file"], ["file::my_dev_name.log"]),
             (["file::"], ["file::my_dev_name.log"]),
             (["file::/tmp/dummy"], ["file::/tmp/dummy"]),
-            (["syslog::some/address"], ["syslog::some/address"]),
+            (["syslog::some/path"], ["syslog::some/path"]),
+            (["syslog::file://some/path"], ["syslog::file://some/path"]),
+            (["syslog::protocol://somehost:1234"], ["syslog::protocol://somehost:1234"]),
             (["console", "file"], ["console::cout", "file::my_dev_name.log"]),
         ])
     def good_logging_targets(self, request):
@@ -62,18 +66,58 @@ class TestLoggingUtils:
         dev_name = "my/dev/name"
         return targets_in, dev_name
 
-
     def test_sanitise_logging_targets_success(self, good_logging_targets):
         targets_in, dev_name, expected = good_logging_targets
         actual = LoggingUtils.sanitise_logging_targets(targets_in, dev_name)
         assert actual == expected
-
 
     def test_sanitise_logging_targets_fail(self, bad_logging_targets):
         targets_in, dev_name = bad_logging_targets
         with pytest.raises(LoggingTargetError):
             LoggingUtils.sanitise_logging_targets(targets_in, dev_name)
 
+    @pytest.fixture(params=[
+            ("deprecated/path", ["deprecated/path", None]),
+            ("file:///abs/path", ["/abs/path", None]),
+            ("file://relative/path", ["relative/path", None]),
+            ("file://some/spaced%20path", ["some/spaced path", None]),
+            ("udp://somehost.domain:1234", [("somehost.domain", 1234), socket.SOCK_DGRAM]),
+            ("udp://127.0.0.1:1234", [("127.0.0.1", 1234), socket.SOCK_DGRAM]),
+            ("tcp://somehost:1234", [("somehost", 1234), socket.SOCK_STREAM]),
+            ("tcp://127.0.0.1:1234", [("127.0.0.1", 1234), socket.SOCK_STREAM]),
+    ])
+    def good_syslog_url(self, request):
+        url, (expected_address, expected_socktype) = request.param
+        return url, (expected_address, expected_socktype)
+
+    @pytest.fixture(params=[
+        None,
+        "",
+        "file://",
+        "udp://",
+        "udp://somehost",
+        "udp://somehost:",
+        "udp://somehost:not_integer_port",
+        "udp://:1234",
+        "tcp://",
+        "tcp://somehost",
+        "tcp://somehost:",
+        "tcp://somehost:not_integer_port",
+        "tcp://:1234",
+        "invalid://somehost:1234"
+    ])
+    def bad_syslog_url(self, request):
+        return request.param
+
+    def test_get_syslog_address_and_socktype_success(self, good_syslog_url):
+        url, (expected_address, expected_socktype) = good_syslog_url
+        actual_address, actual_socktype = LoggingUtils.get_syslog_address_and_socktype(url)
+        assert actual_address == expected_address
+        assert actual_socktype == expected_socktype
+
+    def test_get_syslog_address_and_socktype_fail(self, bad_syslog_url):
+        with pytest.raises(LoggingTargetError):
+            LoggingUtils.get_syslog_address_and_socktype(bad_syslog_url)
 
     @mock.patch('logging.handlers.SysLogHandler')
     @mock.patch('logging.handlers.RotatingFileHandler')
@@ -102,7 +146,22 @@ class TestLoggingUtils:
         assert handler == mock_file_handler()
         handler.setFormatter.assert_called_once_with(mock_formatter)
 
-        handler = LoggingUtils.create_logging_handler("syslog::some/address")
+        handler = LoggingUtils.create_logging_handler("syslog::udp://somehost:1234")
+        mock_syslog_handler.assert_called_once_with(
+            address=("somehost", 1234),
+            facility=mock_syslog_handler.LOG_SYSLOG,
+            socktype=socket.SOCK_DGRAM
+        )
+        assert handler == mock_syslog_handler()
+        handler.setFormatter.assert_called_once_with(mock_formatter)
+
+        mock_syslog_handler.reset_mock()
+        handler = LoggingUtils.create_logging_handler("syslog::file:///tmp/path")
+        mock_syslog_handler.assert_called_once_with(
+            address="/tmp/path",
+            facility=mock_syslog_handler.LOG_SYSLOG,
+            socktype=None
+        )
         assert handler == mock_syslog_handler()
         handler.setFormatter.assert_called_once_with(mock_formatter)
 
@@ -300,13 +359,13 @@ class TestSKABaseDevice(object):
             # test adding file and syslog targets (already have console)
             mocked_creator.reset_mock()
             tango_context.device.loggingTargets = [
-                "console::cout", "file::/tmp/dummy", "syslog::some/address"]
+                "console::cout", "file::/tmp/dummy", "syslog::udp://localhost:514"]
             assert tango_context.device.loggingTargets == (
-                "console::cout", "file::/tmp/dummy", "syslog::some/address")
+                "console::cout", "file::/tmp/dummy", "syslog::udp://localhost:514")
             assert mocked_creator.call_count == 2
             mocked_creator.assert_has_calls(
                 [mock.call("file::/tmp/dummy"),
-                 mock.call("syslog::some/address")],
+                 mock.call("syslog::udp://localhost:514")],
                 any_order=True)
 
             # test clearing all targets (note: PyTango returns None for empty spectrum attribute)

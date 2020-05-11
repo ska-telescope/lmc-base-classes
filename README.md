@@ -286,7 +286,7 @@ The following types are supported:
 - Remote UDP server, `udp://<hostname>:<port>`
   -  E.g., for `server.domain` on UDP port 514 use `udp://server.domain:514`.
 - Remote TCP server, `tcp://<hostname>:<port>`
-  -  E.g., for `server.domain` on TCP port 601 use `udp://server.domain:601`.
+  -  E.g., for `server.domain` on TCP port 601 use `tcp://server.domain:601`.
 
 Example of usage:  `proxy.loggingTargets = ["syslog::udp://server.domain:514"]`.
 

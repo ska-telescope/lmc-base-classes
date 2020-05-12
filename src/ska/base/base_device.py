@@ -15,8 +15,13 @@ import json
 import logging
 import logging.handlers
 import os
+import socket
 import sys
 import threading
+import warnings
+
+from urllib.parse import urlparse
+from urllib.request import url2pathname
 
 # Tango imports
 import tango
@@ -75,7 +80,7 @@ class LoggingUtils:
 
         :param target:
             List of candidate logging target strings, like '<type>[::<name>]'
-            Empty and whitespace-only strings are ignored.
+            Empty and whitespace-only strings are ignored.  Can also be None.
 
         :param device_name:
             TANGO device name, like 'domain/family/member', used
@@ -91,28 +96,93 @@ class LoggingUtils:
             "syslog": None}
 
         valid_targets = []
-        for target in targets:
-            target = target.strip()
-            if not target:
-                continue
-            if "::" in target:
-                target_type, target_name = target.split("::", 1)
-            else:
-                target_type = target
-                target_name = None
-            if target_type not in default_target_names:
-                raise LoggingTargetError(
-                    "Invalid target type: {} - options are {}".format(
-                        target_type, list(default_target_names.keys())))
-            if not target_name:
-                target_name = default_target_names[target_type]
-            if not target_name:
-                raise LoggingTargetError(
-                    "Target name required for type {}".format(target_type))
-            valid_target = "{}::{}".format(target_type, target_name)
-            valid_targets.append(valid_target)
+        if targets:
+            for target in targets:
+                target = target.strip()
+                if not target:
+                    continue
+                if "::" in target:
+                    target_type, target_name = target.split("::", 1)
+                else:
+                    target_type = target
+                    target_name = None
+                if target_type not in default_target_names:
+                    raise LoggingTargetError(
+                        "Invalid target type: {} - options are {}".format(
+                            target_type, list(default_target_names.keys())))
+                if not target_name:
+                    target_name = default_target_names[target_type]
+                if not target_name:
+                    raise LoggingTargetError(
+                        "Target name required for type {}".format(target_type))
+                valid_target = "{}::{}".format(target_type, target_name)
+                valid_targets.append(valid_target)
 
         return valid_targets
+
+    @staticmethod
+    def get_syslog_address_and_socktype(url):
+        """Parse syslog URL and extract address and socktype parameters for SysLogHandler.
+
+        :param url:
+            Universal resource locator string for syslog target.  Three types are supported:
+            file path, remote UDP server, remote TCP server.
+            - Output to a file:  'file://<path to file>'
+              Example:  'file:///dev/log' will write to '/dev/log'
+            - Output to remote server over UDP:  'udp://<hostname>:<port>'
+              Example:  'udp://syslog.com:514' will send to host 'syslog.com' on UDP port 514
+            - Output to remote server over TCP:  'tcp://<hostname>:<port>'
+              Example:  'tcp://rsyslog.com:601' will send to host 'rsyslog.com' on TCP port 601
+            For backwards compatibility, if the protocol prefix is missing, the type is
+            interpreted as file.  This is deprecated.
+            - Example:  '/dev/log' is equivalent to 'file:///dev/log'
+
+        :return: (address, socktype)
+            For file types:
+            - address is the file path as as string
+            - socktype is None
+            For UDP and TCP:
+            - address is tuple of (hostname, port), with hostname a string, and port an integer.
+            - socktype is socket.SOCK_DGRAM for UDP, or socket.SOCK_STREAM for TCP.
+
+        :raises: LoggingTargetError for invalid url string
+        """
+        address = None
+        socktype = None
+        parsed = urlparse(url)
+        if parsed.scheme in ["file", ""]:
+            address = url2pathname(parsed.netloc + parsed.path)
+            socktype = None
+            if not address:
+                raise LoggingTargetError(
+                    "Invalid syslog URL - empty file path from '{}'".format(url)
+                )
+            if parsed.scheme == "":
+                warnings.warn(
+                    "Specifying syslog URL without protocol is deprecated, "
+                    "use 'file://{}' instead of '{}'".format(url, url),
+                    DeprecationWarning,
+                )
+        elif parsed.scheme in ["udp", "tcp"]:
+            if not parsed.hostname:
+                raise LoggingTargetError(
+                    "Invalid syslog URL - could not extract hostname from '{}'".format(url)
+                )
+            try:
+                port = int(parsed.port)
+            except (TypeError, ValueError):
+                raise LoggingTargetError(
+                    "Invalid syslog URL - could not extract integer port number from '{}'".format(
+                        url
+                    )
+                )
+            address = (parsed.hostname, port)
+            socktype = socket.SOCK_DGRAM if parsed.scheme == "udp" else socket.SOCK_STREAM
+        else:
+            raise LoggingTargetError(
+                "Invalid syslog URL - expected file, udp or tcp protocol scheme in '{}'".format(url)
+            )
+        return address, socktype
 
     @staticmethod
     def create_logging_handler(target):
@@ -136,8 +206,11 @@ class LoggingUtils:
             handler = logging.handlers.RotatingFileHandler(
                 log_file_name, 'a', LOG_FILE_SIZE, 2, None, False)
         elif target_type == "syslog":
+            address, socktype = LoggingUtils.get_syslog_address_and_socktype(target_name)
             handler = logging.handlers.SysLogHandler(
-                    address=target_name, facility=logging.handlers.SysLogHandler.LOG_SYSLOG)
+                address=address,
+                facility=logging.handlers.SysLogHandler.LOG_SYSLOG,
+                socktype=socktype)
         else:
             raise LoggingTargetError(
                 "Invalid target type requested: '{}' in '{}'".format(target_type, target))

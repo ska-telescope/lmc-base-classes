@@ -25,6 +25,12 @@ The lmc-base-classe repository contains set of eight classes as mentioned in SKA
 
 ## Version History
 
+#### 0.5.3
+- Setting `loggingTargets` attribute to empty list no longer raises exception.
+- Change syslog targets in `loggingTargets` attribute to a full URL so that remote syslog servers can be specified.
+  For example, `"syslog::udp://server.domain:514"`, would send logs to `server.domain` via UDP port 514.
+  Specifying a path without a protocol, like `"syslog::/var/log"`, is deprecated.
+
 #### 0.5.2
 - Change ska_logger dependency to use ska-namespaced package (v0.3.0).  No change to usage.
 
@@ -251,8 +257,8 @@ current_targets = proxy.loggingTargets
 new_targets = list(current_targets) + ["file::/tmp/my.log"]
 proxy.loggingTargets = new_targets
 
-# disable all additional targets (empty list breaks, so include an empty string!)
-proxy.loggingTargets = ['']
+# disable all additional targets
+proxy.loggingTargets = []
 ```
 
 Currently there are three types of targets implemented:
@@ -271,12 +277,21 @@ the Tango name.  E.g., "my/test/device" would get the file "my_test_device.log".
 Currently, we using a `logging.handlers.RotatingFileHandler` with a 1 MB limit and
 just 2 backups.  This could be modified in future.
 
-For syslog, the syslog target address details must be provided after the `::`.
-This string is what ever you would pass to `logging.handlers.SysLogHandler`'s `address`
-argument.  E.g. `proxy.loggingTargets = ["syslog::/dev/log"]`.
+For syslog, the syslog target address details must be provided after the `::` as a URL.
+The following types are supported:
+- File, `file://<path>`
+  - E.g., for `/dev/log` use `file:///dev/log`.
+  - If the protocol is omitted, it is assumed to be `file://`.  Note: this is deprecated.
+    Support will be removed in v0.6.0.
+- Remote UDP server, `udp://<hostname>:<port>`
+  -  E.g., for `server.domain` on UDP port 514 use `udp://server.domain:514`.
+- Remote TCP server, `tcp://<hostname>:<port>`
+  -  E.g., for `server.domain` on TCP port 601 use `tcp://server.domain:601`.
+
+Example of usage:  `proxy.loggingTargets = ["syslog::udp://server.domain:514"]`.
 
 If you want file and syslog targets, you could do something like:
-`proxy.loggingTargets = ["file::/tmp/my.log", "syslog::/dev/log"]`.
+`proxy.loggingTargets = ["file::/tmp/my.log", "syslog::udp://server.domain:514"]`.
 
 **Note:**  There is a limit of 3 additional handlers.  That the maximum length
 of the spectrum attribute. We could change this if there is a reasonable use

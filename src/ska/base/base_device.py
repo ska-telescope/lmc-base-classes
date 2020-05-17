@@ -67,6 +67,64 @@ class _Log4TangoLoggingLevel(enum.IntEnum):
     DEBUG = 600
 
 
+_PYTHON_TO_TANGO_LOGGING_LEVEL = {
+    logging.CRITICAL: _Log4TangoLoggingLevel.FATAL,
+    logging.ERROR: _Log4TangoLoggingLevel.ERROR,
+    logging.WARNING: _Log4TangoLoggingLevel.WARN,
+    logging.INFO: _Log4TangoLoggingLevel.INFO,
+    logging.DEBUG: _Log4TangoLoggingLevel.DEBUG,
+}
+
+_LMC_TO_TANGO_LOGGING_LEVEL = {
+    LoggingLevel.OFF: _Log4TangoLoggingLevel.OFF,
+    LoggingLevel.FATAL: _Log4TangoLoggingLevel.FATAL,
+    LoggingLevel.ERROR: _Log4TangoLoggingLevel.ERROR,
+    LoggingLevel.WARNING: _Log4TangoLoggingLevel.WARN,
+    LoggingLevel.INFO: _Log4TangoLoggingLevel.INFO,
+    LoggingLevel.DEBUG: _Log4TangoLoggingLevel.DEBUG,
+}
+
+_LMC_TO_PYTHON_LOGGING_LEVEL = {
+    LoggingLevel.OFF: logging.CRITICAL,  # there is no "off"
+    LoggingLevel.FATAL: logging.CRITICAL,
+    LoggingLevel.ERROR: logging.ERROR,
+    LoggingLevel.WARNING: logging.WARNING,
+    LoggingLevel.INFO: logging.INFO,
+    LoggingLevel.DEBUG: logging.DEBUG,
+}
+
+
+class TangoLoggingServiceHandler(logging.Handler):
+    """Handler that emit logs via Tango device's logger to TLS."""
+
+    def __init__(self, tango_logger):
+        super().__init__()
+        self.tango_logger = tango_logger
+
+    def emit(self, record):
+        try:
+            msg = self.format(record)
+            tango_level = _PYTHON_TO_TANGO_LOGGING_LEVEL[record.levelno]
+            self.acquire()
+            try:
+                self.tango_logger.log(tango_level, msg)
+            finally:
+                self.release()
+        except Exception:
+            self.handleError(record)
+
+    def __repr__(self):
+        python_level = logging.getLevelName(self.level)
+        if self.tango_logger:
+            tango_level = _Log4TangoLoggingLevel(self.tango_logger.get_level()).name
+            name = self.tango_logger.get_name()
+        else:
+            tango_level = "UNKNOWN"
+            name = "!No Tango logger!"
+        return '<{} {} (Python {}, Tango {})>'.format(
+            self.__class__.__name__, name, python_level, tango_level)
+
+
 class LoggingUtils:
     """Utility functions to aid logger configuration.
 
@@ -93,7 +151,9 @@ class LoggingUtils:
         default_target_names = {
             "console": "cout",
             "file": "{}.log".format(device_name.replace("/", "_")),
-            "syslog": None}
+            "syslog": None,
+            "tango": "logger",
+        }
 
         valid_targets = []
         if targets:
@@ -185,12 +245,17 @@ class LoggingUtils:
         return address, socktype
 
     @staticmethod
-    def create_logging_handler(target):
-        """Create a Python log handler based on the target type (console, file, syslog)
+    def create_logging_handler(target, tango_logger=None):
+        """Create a Python log handler based on the target type (console, file, syslog, tango)
 
-        :param target: Logging target for logger, <type>::<name>
+        :param target:
+            Logging target for logger, <type>::<name>
 
-        :return: StreamHandler, RotatingFileHandler, or SysLogHandler
+        :param tango_logger:
+            Instance of tango.Logger, optional.  Only required if creating
+            a target of type "tango".
+
+        :return: StreamHandler, RotatingFileHandler, SysLogHandler, or TangoLoggingServiceHandler
 
         :raises: LoggingTargetError for invalid target string
         """
@@ -211,6 +276,11 @@ class LoggingUtils:
                 address=address,
                 facility=logging.handlers.SysLogHandler.LOG_SYSLOG,
                 socktype=socktype)
+        elif target_type == "tango":
+            if tango_logger:
+                handler = TangoLoggingServiceHandler(tango_logger)
+            else:
+                raise LoggingTargetError("Missing tango_logger instance for 'tango' target type")
         else:
             raise LoggingTargetError(
                 "Invalid target type requested: '{}' in '{}'".format(target_type, target))
@@ -230,7 +300,7 @@ class LoggingUtils:
                 logger.removeHandler(handler)
         for target in targets:
             if target in added_targets:
-                handler = LoggingUtils.create_logging_handler(target)
+                handler = LoggingUtils.create_logging_handler(target, logger.tango_logger)
                 logger.addHandler(handler)
 
         logger.info('Logging targets set to %s', targets)
@@ -293,13 +363,17 @@ class SKABaseDevice(Device):
 
         self.logger.addFilter(TangoDeviceTagsFilter())
 
+        # before setting targets, give Python logger a reference to the log4tango logger
+        # to support the TangoLoggingServiceHandler target option
+        self.logger.tango_logger = self.get_logger()
+
         # initialise using defaults in device properties
         self._logging_level = None
         self.write_loggingLevel(self.LoggingLevelDefault)
         self.write_loggingTargets(self.LoggingTargetsDefault)
         self.logger.debug('Logger initialised')
 
-        # Monkey patch TANGO Logging System streams so they go to the Python
+        # monkey patch TANGO Logging Service streams so they go to the Python
         # logger instead
         self.debug_stream = self.logger.debug
         self.info_stream = self.logger.info
@@ -326,7 +400,7 @@ class SKABaseDevice(Device):
     )
 
     LoggingTargetsDefault = device_property(
-        dtype='DevVarStringArray', default_value=[]
+        dtype='DevVarStringArray', default_value=["tango::logger"]
     )
 
     # ----------
@@ -353,7 +427,7 @@ class SKABaseDevice(Device):
     loggingTargets = attribute(
         dtype=('str',),
         access=AttrWriteType.READ_WRITE,
-        max_dim_x=3,
+        max_dim_x=4,
         doc="Logging targets for this device, excluding ska_logging defaults"
             " - initialises to LoggingTargetsDefault on startup",
     )
@@ -500,31 +574,17 @@ class SKABaseDevice(Device):
 
         :return: None.
         """
-        self._logging_level = LoggingLevel(value)
-        tango_logger = self.get_logger()
-        if self._logging_level == LoggingLevel.OFF:
-            self.logger.setLevel(logging.CRITICAL)  # not allowed to be "off"
-            tango_logger.set_level(_Log4TangoLoggingLevel.OFF)
-        elif self._logging_level == LoggingLevel.FATAL:
-            self.logger.setLevel(logging.CRITICAL)
-            tango_logger.set_level(_Log4TangoLoggingLevel.FATAL)
-        elif self._logging_level == LoggingLevel.ERROR:
-            self.logger.setLevel(logging.ERROR)
-            tango_logger.set_level(_Log4TangoLoggingLevel.ERROR)
-        elif self._logging_level == LoggingLevel.WARNING:
-            self.logger.setLevel(logging.WARNING)
-            tango_logger.set_level(_Log4TangoLoggingLevel.WARN)
-        elif self._logging_level == LoggingLevel.INFO:
-            self.logger.setLevel(logging.INFO)
-            tango_logger.set_level(_Log4TangoLoggingLevel.INFO)
-        elif self._logging_level == LoggingLevel.DEBUG:
-            self.logger.setLevel(logging.DEBUG)
-            tango_logger.set_level(_Log4TangoLoggingLevel.DEBUG)
-        else:
+        try:
+            lmc_logging_level = LoggingLevel(value)
+        except ValueError:
             raise LoggingLevelError(
-                "Invalid level - {} - must be between {} and {}".format(
-                    self._logging_level, LoggingLevel.OFF, LoggingLevel.DEBUG))
-        self.logger.info('Logging level set to %s on Python and Tango loggers', self._logging_level)
+                "Invalid level - {} - must be one of {} ".format(
+                    value, [v for v in LoggingLevel.__members__.values()]))
+
+        self._logging_level = lmc_logging_level
+        self.logger.setLevel(_LMC_TO_PYTHON_LOGGING_LEVEL[lmc_logging_level])
+        self.logger.tango_logger.set_level(_LMC_TO_TANGO_LOGGING_LEVEL[lmc_logging_level])
+        self.logger.info('Logging level set to %s on Python and Tango loggers', lmc_logging_level)
         # PROTECTED REGION END #    //  SKABaseDevice.loggingLevel_write
 
     def read_loggingTargets(self):
@@ -655,7 +715,6 @@ class SKABaseDevice(Device):
         self._test_mode = value
         # PROTECTED REGION END #    //  SKABaseDevice.testMode_write
 
-
     # --------
     # Commands
     # --------
@@ -702,6 +761,7 @@ def main(args=None, **kwargs):
     """
     return run((SKABaseDevice,), args=args, **kwargs)
     # PROTECTED REGION END #    //  SKABaseDevice.main
+
 
 if __name__ == '__main__':
     main()

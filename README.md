@@ -25,7 +25,7 @@ The lmc-base-classe repository contains set of eight classes as mentioned in SKA
 
 ## Version History
 
-#### (unreleased)
+#### 0.5.4
 - Remove `ObsState` command from SKACapability, SKAObsDevice and SKASubarray Pogo XMI files.  It should not
   have been included - the `obsState` attribute provides this information. The command was not in the Python
   files, so no change to usage.  It only affects future Pogo code generation.

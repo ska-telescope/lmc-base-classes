@@ -17,6 +17,7 @@ import pytest
 # PROTECTED REGION ID(SKABaseDevice.test_additional_imports) ENABLED START #
 import logging
 import socket
+import tango
 
 from unittest import mock
 from tango import DevFailed, DevState
@@ -24,12 +25,85 @@ from ska.base.control_model import (
     AdminMode, ControlMode, HealthState, LoggingLevel, SimulationMode, TestMode
 )
 from ska.base.base_device import (
+    _Log4TangoLoggingLevel,
+    _PYTHON_TO_TANGO_LOGGING_LEVEL,
     LoggingUtils,
     LoggingTargetError,
+    TangoLoggingServiceHandler,
 )
 # PROTECTED REGION END #    //  SKABaseDevice.test_additional_imports
 # Device test case
 # PROTECTED REGION ID(SKABaseDevice.test_SKABaseDevice_decorators) ENABLED START #
+
+
+class TestTangoLoggingServiceHandler:
+
+    @pytest.fixture()
+    def tls_handler(self):
+        self.tango_logger = mock.MagicMock(spec=tango.Logger)
+        # setup methods used for handler __repr__
+        self.tango_logger.get_name.return_value = "unit/test/dev"
+        self.tango_logger.get_level.return_value = _Log4TangoLoggingLevel.DEBUG
+        return TangoLoggingServiceHandler(self.tango_logger)
+
+    @pytest.fixture(params=[
+            logging.DEBUG,
+            logging.INFO,
+            logging.WARN,
+            logging.ERROR,
+            logging.CRITICAL,
+        ])
+    def python_log_level(self, request):
+        return request.param
+
+    def test_emit_message_at_correct_level(self, tls_handler, python_log_level):
+        # arrange
+        record = logging.LogRecord('test', python_log_level, '', 1, 'message', (), None)
+        # act
+        tls_handler.emit(record)
+        # assert
+        expected_tango_level = _PYTHON_TO_TANGO_LOGGING_LEVEL[python_log_level]
+        expected_calls = [mock.call(expected_tango_level, mock.ANY)]
+        assert self.tango_logger.log.call_args_list == expected_calls
+
+    def test_emit_message_is_formatted(self, tls_handler):
+        # arrange
+        record = logging.LogRecord('test', logging.INFO, '', 1, 'message %s', ('param',), None)
+
+        def format_stub(log_record):
+            return "LOG: " + log_record.getMessage()
+
+        tls_handler.format = format_stub
+        # act
+        tls_handler.emit(record)
+        # assert
+        expected_tango_level = _PYTHON_TO_TANGO_LOGGING_LEVEL[logging.INFO]
+        expected_message = "LOG: message param"
+        expected_calls = [mock.call(expected_tango_level, expected_message)]
+        assert self.tango_logger.log.call_args_list == expected_calls
+
+    def test_emit_exception_error_handled(self, tls_handler):
+        # arrange
+        record = logging.LogRecord('test', logging.INFO, '', 1, 'message', (), None)
+
+        def cause_exception(*args, **kwargs):
+            raise RuntimeError("Testing")
+
+        self.tango_logger.log.side_effect = cause_exception
+        tls_handler.handleError = mock.MagicMock()
+        # act
+        tls_handler.emit(record)
+        # assert
+        assert tls_handler.handleError.call_args_list == [mock.call(record)]
+
+    def test_repr_normal(self, tls_handler):
+        expected = '<TangoLoggingServiceHandler unit/test/dev (Python NOTSET, Tango DEBUG)>'
+        assert repr(tls_handler) == expected
+
+    def test_repr_tango_logger_none(self, tls_handler):
+        tls_handler.tango_logger = None
+        expected = '<TangoLoggingServiceHandler !No Tango logger! (Python NOTSET, Tango UNKNOWN)>'
+        assert repr(tls_handler) == expected
 
 
 class TestLoggingUtils:
@@ -47,13 +121,16 @@ class TestLoggingUtils:
             (["syslog::some/path"], ["syslog::some/path"]),
             (["syslog::file://some/path"], ["syslog::file://some/path"]),
             (["syslog::protocol://somehost:1234"], ["syslog::protocol://somehost:1234"]),
+            (["tango"], ["tango::logger"]),
+            (["tango::"], ["tango::logger"]),
+            (["tango::logger"], ["tango::logger"]),
+            (["tango::anything"], ["tango::anything"]),
             (["console", "file"], ["console::cout", "file::my_dev_name.log"]),
         ])
     def good_logging_targets(self, request):
         targets_in, expected = request.param
         dev_name = "my/dev/name"
         return targets_in, dev_name, expected
-
 
     @pytest.fixture(params=[
             ["invalid"],
@@ -119,6 +196,7 @@ class TestLoggingUtils:
         with pytest.raises(LoggingTargetError):
             LoggingUtils.get_syslog_address_and_socktype(bad_syslog_url)
 
+    @mock.patch('ska.base.base_device.TangoLoggingServiceHandler')
     @mock.patch('logging.handlers.SysLogHandler')
     @mock.patch('logging.handlers.RotatingFileHandler')
     @mock.patch('logging.StreamHandler')
@@ -127,7 +205,8 @@ class TestLoggingUtils:
                                     mock_get_formatter,
                                     mock_stream_handler,
                                     mock_file_handler,
-                                    mock_syslog_handler):
+                                    mock_syslog_handler,
+                                    mock_tango_handler):
         # Expect formatter be created using `get_default_formatter(tags=True)`
         # Use some mocks to check this.
         mock_formatter = mock.MagicMock()
@@ -137,6 +216,7 @@ class TestLoggingUtils:
                 return mock_formatter
 
         mock_get_formatter.side_effect = get_formatter_if_tags_enabled
+        mock_tango_logger = mock.MagicMock(spec=tango.Logger)
 
         handler = LoggingUtils.create_logging_handler("console::cout")
         assert handler == mock_stream_handler()
@@ -165,16 +245,25 @@ class TestLoggingUtils:
         assert handler == mock_syslog_handler()
         handler.setFormatter.assert_called_once_with(mock_formatter)
 
+        handler = LoggingUtils.create_logging_handler("tango::logger", mock_tango_logger)
+        mock_tango_handler.assert_called_once_with(mock_tango_logger)
+        assert handler == mock_tango_handler()
+        handler.setFormatter.assert_called_once_with(mock_formatter)
+
         with pytest.raises(LoggingTargetError):
             LoggingUtils.create_logging_handler("invalid::target")
 
         with pytest.raises(LoggingTargetError):
             LoggingUtils.create_logging_handler("invalid")
 
+        with pytest.raises(LoggingTargetError):
+            LoggingUtils.create_logging_handler("tango::logger", tango_logger=None)
+
     def test_update_logging_handlers(self):
         logger = logging.getLogger('testing')
+        logger.tango_logger = mock.MagicMock(spec=tango.Logger)
 
-        def null_creator(target):
+        def null_creator(target, tango_logger):
             handler = logging.NullHandler()
             handler.name = target
             return handler
@@ -188,7 +277,7 @@ class TestLoggingUtils:
             new_targets = ["console::cout"]
             LoggingUtils.update_logging_handlers(new_targets, logger)
             assert len(logger.handlers) == 1
-            mocked_creator.assert_called_once_with("console::cout")
+            mocked_creator.assert_called_once_with("console::cout", logger.tango_logger)
 
             # test same handler is retained for same request
             old_handler = logger.handlers[0]
@@ -200,24 +289,25 @@ class TestLoggingUtils:
             mocked_creator.assert_not_called()
 
             # test other valid target types
-            new_targets = ["console::cout", "file::/tmp/dummy", "syslog::some/address"]
+            new_targets = [
+                "console::cout", "file::/tmp/dummy", "syslog::some/address", "tango::logger"]
             mocked_creator.reset_mock()
             LoggingUtils.update_logging_handlers(new_targets, logger)
-            assert len(logger.handlers) == 3
-            assert mocked_creator.call_count == 2
+            assert len(logger.handlers) == 4
+            assert mocked_creator.call_count == 3
             mocked_creator.assert_has_calls(
-                [mock.call("file::/tmp/dummy"),
-                 mock.call("syslog::some/address")],
+                [mock.call("file::/tmp/dummy", logger.tango_logger),
+                 mock.call("syslog::some/address", logger.tango_logger),
+                 mock.call("tango::logger", logger.tango_logger)],
                 any_order=True,
             )
 
-            # test clearing of 1 handler
+            # test clearing of 2 handlers
             new_targets = ["console::cout", "syslog::some/address"]
             mocked_creator.reset_mock()
             LoggingUtils.update_logging_handlers(new_targets, logger)
             assert len(logger.handlers) == 2
             mocked_creator.assert_not_called()
-
 
             # test clearing all handlers
             new_targets = []
@@ -340,21 +430,23 @@ class TestSKABaseDevice(object):
     def test_loggingTargets(self, tango_context):
         """Test for loggingTargets"""
         # PROTECTED REGION ID(SKABaseDevice.test_loggingTargets) ENABLED START #
-        assert tango_context.device.loggingTargets == tuple()
+        # tango logging target must be enabled by default
+        assert tango_context.device.loggingTargets == ("tango::logger", )
 
         with mock.patch("ska.base.base_device.LoggingUtils.create_logging_handler") as mocked_creator:
 
-            def null_creator(target):
+            def null_creator(target, tango_logger):
                 handler = logging.NullHandler()
                 handler.name = target
+                assert isinstance(tango_logger, tango.Logger)
                 return handler
 
             mocked_creator.side_effect = null_creator
 
-            # test adding console target
+            # test console target
             tango_context.device.loggingTargets = ["console::cout"]
             assert tango_context.device.loggingTargets == ("console::cout", )
-            mocked_creator.assert_called_once_with("console::cout")
+            mocked_creator.assert_called_once_with("console::cout", mock.ANY)
 
             # test adding file and syslog targets (already have console)
             mocked_creator.reset_mock()
@@ -364,9 +456,16 @@ class TestSKABaseDevice(object):
                 "console::cout", "file::/tmp/dummy", "syslog::udp://localhost:514")
             assert mocked_creator.call_count == 2
             mocked_creator.assert_has_calls(
-                [mock.call("file::/tmp/dummy"),
-                 mock.call("syslog::udp://localhost:514")],
+                [mock.call("file::/tmp/dummy", mock.ANY),
+                 mock.call("syslog::udp://localhost:514", mock.ANY)],
                 any_order=True)
+
+            # test adding tango logging again, now that mock is active
+            # (it wasn't active when device was initialised)
+            mocked_creator.reset_mock()
+            tango_context.device.loggingTargets = ["tango::logger"]
+            assert tango_context.device.loggingTargets == ("tango::logger",)
+            mocked_creator.assert_called_once_with("tango::logger", mock.ANY)
 
             # test clearing all targets (note: PyTango returns None for empty spectrum attribute)
             tango_context.device.loggingTargets = []

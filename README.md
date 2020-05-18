@@ -25,10 +25,13 @@ The lmc-base-classe repository contains set of eight classes as mentioned in SKA
 
 ## Version History
 
-#### (unreleased)
+#### 0.5.4
 - Remove `ObsState` command from SKACapability, SKAObsDevice and SKASubarray Pogo XMI files.  It should not
   have been included - the `obsState` attribute provides this information. The command was not in the Python
-  files, so no change to usage.  It only affects future Pogo code generation. 
+  files, so no change to usage.  It only affects future Pogo code generation.
+- Add new logging target, `"tango::logger"`, that forwards Python logs to the Tango Logging Service.  This
+  is enabled by default in code, but could be overridden by existing Tango Database device properties.
+- Maximum number of logging targets increased from 3 to 4.
 
 #### 0.5.3
 - Setting `loggingTargets` attribute to empty list no longer raises exception.
@@ -170,11 +173,21 @@ logs include a tag field with the Tango device name.  This is useful when search
 for logs in tools like Kibana.  For example, `tango-device=ska_mid/tm_leaf_node/d0004`.
 This should work even for multiple devices from a single device server.
 
+In addition, the `SKABaseDevice`'s default `loggingTargets` are configured to send all
+logs to the [Tango Logging Service](https://tango-controls.readthedocs.io/en/latest/development/device-api/device-server-writing.html#the-tango-logging-service)
+(TLS) as well.  The sections below explain the Tango device attributes and properties
+related to this.
+
 ### Tango device controls for logging levels and targets
 
 The logging level and additional logging targets are controlled by two attributes.
 These attributes are initialised from two device properties on startup.  An extract
 of the definitions from the base class is shown below.
+
+As mentioned above, note that the `LoggingTargetsDefault` includes `"tango::logger"` which
+means Python logs are forwarded to the Tango Logging Service as well.  This can be overridden
+in the Tango database, however disabling the `"tango::logger"` target is strongly discouraged,
+as other devices in the telescope or test infrastructure may rely on this.
 
 ```python
 class SKABaseDevice(Device):
@@ -190,7 +203,7 @@ class SKABaseDevice(Device):
     )
 
     LoggingTargetsDefault = device_property(
-        dtype='DevVarStringArray', default_value=[]
+        dtype='DevVarStringArray', default_value=["tango::logger"]
     )
 
     # ----------
@@ -207,7 +220,7 @@ class SKABaseDevice(Device):
     loggingTargets = attribute(
         dtype=('str',),
         access=AttrWriteType.READ_WRITE,
-        max_dim_x=3,
+        max_dim_x=4,
         doc="Logging targets for this device, excluding ska_logging defaults"
             " - initialises to LoggingTargetsDefault on startup",
     )
@@ -239,10 +252,11 @@ is set, we internally update the TLS logging level as well.
 
 ### Additional logging targets
 
-Note that the the `loggingTargets` attribute says "excluding ska_logging defaults".
-If you want to forward logs to other targets, then you could use this attribute.  It is an
-empty list by default, since we only want the logging to stdout that is already provided
-by the ska_logging library.
+Note that the `loggingTargets` attribute says "excluding ska_logging defaults".
+Even when empty, you will still have the logging to stdout that is already provided
+by the ska_logging library.  If you want to forward logs to other targets, then you can use
+this attribute.  Since we also want logging to TLS, it should include the `"tango::logger"`
+item by default.
 
 The format and usage of this attribute is not that intuitive, but it was not expected to
 be used much, and was kept similar to the existing SKA control system guidelines proposal.
@@ -266,22 +280,28 @@ proxy.loggingTargets = new_targets
 proxy.loggingTargets = []
 ```
 
-Currently there are three types of targets implemented:
+Currently there are four types of targets implemented:
 - `console`
 - `file`
 - `syslog`
+- `tango`
 
+#### console target
 If you were to set the `proxy.loggingTargets = ["console::cout"]` you would get
 all the logs to stdout duplicated.  Once for ska_logging root logger, and once for
 the additional console logger you just added.  For the "console" option it doesn't matter
-what text comes after the `::` - we always use stdout.
+what text comes after the `::` - we always use stdout.  While it may not seem useful
+now, the option is kept in case the ska_logging default configuration changes, and no
+longer outputs to stdout.
 
-For file output, provide the path after the `::`.  If the path is ommitted, then a
+#### file target
+For file output, provide the path after the `::`.  If the path is omitted, then a
 file is created in the device server's current directory, with a name based on the
 the Tango name.  E.g., "my/test/device" would get the file "my_test_device.log".
 Currently, we using a `logging.handlers.RotatingFileHandler` with a 1 MB limit and
 just 2 backups.  This could be modified in future.
 
+#### syslog target
 For syslog, the syslog target address details must be provided after the `::` as a URL.
 The following types are supported:
 - File, `file://<path>`
@@ -295,38 +315,52 @@ The following types are supported:
 
 Example of usage:  `proxy.loggingTargets = ["syslog::udp://server.domain:514"]`.
 
+#### tango target
+All Python logs can be forwarded to the Tango Logging Service by adding the `"tango::logger"`
+target.  This will use the device's log4tango logger object to emit logs into TLS.  The
+TLS targets still need to be added in the usual way.  Typically, using the `add_logging_target`
+method from an instance of a `tango.DeviceProxy` object.
+
+#### multiple targets
 If you want file and syslog targets, you could do something like:
 `proxy.loggingTargets = ["file::/tmp/my.log", "syslog::udp://server.domain:514"]`.
 
-**Note:**  There is a limit of 3 additional handlers.  That the maximum length
+**Note:**  There is a limit of 4 additional handlers.  That is the maximum length
 of the spectrum attribute. We could change this if there is a reasonable use
 case for it.
 
 ### Can I still send logs to the Tango Logging Service?
 
-Not really.  In `SKABaseDevice._init_logging` we monkey patch the Tango Logging Service (TLS)
+Yes.  In `SKABaseDevice._init_logging` we monkey patch the log4tango logger
 methods `debug_stream`, `error_stream`, etc. to point the Python logger methods like
 `logger.debug`, `logger.error`, etc.  This means that logs are no longer forwarded
-to the Tango Logging Service.
+to the Tango Logging Service automatically.  However, by including a `"tango::logger"`
+item in the `loggingTarget` attribute, the Python logs are sent to TLS.
 
-In future, we could add a new target that allows the logs to be forwarded to TLS.
-That would be something like `"tls::my/log/consumer"`.
-
-Although, you might get some logs from the admin device, since we cannot override its
-behaviour from the Python layer.  PyTango is wrapper around the C++ Tango library, and
-the admin device is implemented in C++.
-
-The `tango.DeviceProxy` also has some built in logging control methods which you should
-avoid as they only apply to the Tango Logging Service:
+The `tango.DeviceProxy` also has some built in logging control methods that only apply
+to the Tango Logging Service:
 - `DeviceProxy.add_logging_target`
+  - Can be used to add a log consumer device.
+  - Can be used to log to file (in the TLS format).
+  - Should not be used to turn on console logging, as that will result in duplicate logs.
 - `DeviceProxy.remove_logging_target`
+  - Can be used to remove any TLS logging target.
 - `DeviceProxy.set_logging_level`
+  - Should not be used as it only applies to TLS.  The Python logger level will be out
+    of sync.  Rather use the device attribute `loggingLevel` which sets both.
+
+### Where are the logs from the admin device (dserver)?
+
+PyTango is wrapper around the C++ Tango library, and the admin device is implemented in C++. 
+The admin device does not inherit from the SKABaseDevice and we cannot override its behaviour
+from the Python layer.  Its logs can only be seen by configuring the TLS appropriately.
 
 ### What code should I write to log from my device?
 
 You should always use the `self.logger` object within methods.  This instance of the
 logger is the only one that knows the Tango device name.  You can also use the PyTango
-decorators like `DebugIt`, since the monkey patching redirects them to that same logger.
+[logging decorators](https://pytango.readthedocs.io/en/stable/server_api/logging.html#logging-decorators)
+like `DebugIt`, since the monkey patching redirects them to that same logger.
 
 ```python
 class MyDevice(SKABaseDevice):
@@ -334,7 +368,7 @@ class MyDevice(SKABaseDevice):
         someone = "you"
         self.logger.info("I have a message for %s", someone)
 
-    @tango.DebugIt()
+    @tango.DebugIt(show_args=True, show_ret=True)
     def my_handler(self):
         # great, entry and exit of this method is automatically logged
         # at debug level!

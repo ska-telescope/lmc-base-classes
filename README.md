@@ -252,7 +252,7 @@ is set, we internally update the TLS logging level as well.
 
 ### Additional logging targets
 
-Note that the the `loggingTargets` attribute says "excluding ska_logging defaults".
+Note that the `loggingTargets` attribute says "excluding ska_logging defaults".
 Even when empty, you will still have the logging to stdout that is already provided
 by the ska_logging library.  If you want to forward logs to other targets, then you can use
 this attribute.  Since we also want logging to TLS, it should include the `"tango::logger"`
@@ -325,7 +325,7 @@ method from an instance of a `tango.DeviceProxy` object.
 If you want file and syslog targets, you could do something like:
 `proxy.loggingTargets = ["file::/tmp/my.log", "syslog::udp://server.domain:514"]`.
 
-**Note:**  There is a limit of 4 additional handlers.  That the maximum length
+**Note:**  There is a limit of 4 additional handlers.  That is the maximum length
 of the spectrum attribute. We could change this if there is a reasonable use
 case for it.
 

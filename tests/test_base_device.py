@@ -443,7 +443,7 @@ class TestSKABaseDevice(object):
 
             mocked_creator.side_effect = null_creator
 
-            # test adding console target
+            # test console target
             tango_context.device.loggingTargets = ["console::cout"]
             assert tango_context.device.loggingTargets == ("console::cout", )
             mocked_creator.assert_called_once_with("console::cout", mock.ANY)

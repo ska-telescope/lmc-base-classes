@@ -15,3 +15,19 @@ class LoggingLevelError(SKABaseError):
 
 class LoggingTargetError(SKABaseError):
     """Error parsing logging target string."""
+
+
+class ResultCodeError(ValueError):
+    """A method has returned an invalid return code."""
+
+
+class StateModelError(ValueError):
+    """Error in state machine model related to transitions or state."""
+
+
+class CommandError(RuntimeError):
+    """Error executing a BaseCommand or similar."""
+
+
+class CapabilityValidationError(ValueError):
+    """Error in validating capability input against capability types."""

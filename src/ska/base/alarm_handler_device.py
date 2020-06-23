@@ -4,23 +4,21 @@
 #
 #
 #
-""" SKAAlarmHandler
-
-A generic base device for Alarms for SKA. It exposes SKA alarms and SKA alerts as TANGO attributes.
-SKA Alarms and SKA/Element Alerts are rules-based configurable conditions that can be defined over multiple
-attribute values and quality factors, and are separate from the "built-in" TANGO attribute alarms.
+"""
+This module implements SKAAlarmHandler, a generic base device for Alarms
+for SKA. It exposes SKA alarms and SKA alerts as TANGO attributes. SKA
+Alarms and SKA/Element Alerts are rules-based configurable conditions
+that can be defined over multiple attribute values and quality factors,
+and are separate from the "built-in" TANGO attribute alarms.
 """
 # PROTECTED REGION ID(SKAAlarmHandler.additionnal_import) ENABLED START #
-# Standard imports
-import os
-import sys
-
 # Tango imports
 from tango import DebugIt
 from tango.server import run, attribute, command, device_property
 
 # SKA specific imports
-from . import SKABaseDevice, release
+from ska.base import SKABaseDevice
+from ska.base.commands import BaseCommand
 
 # PROTECTED REGION END #    //  SKAAlarmHandler.additionnal_import
 
@@ -91,13 +89,31 @@ class SKAAlarmHandler(SKABaseDevice):
     # General methods
     # ---------------
 
-    def init_device(self):
-        SKABaseDevice.init_device(self)
-        self._build_state = '{}, {}, {}'.format(release.name, release.version,
-                                                release.description)
-        self._version_id = release.version
-        # PROTECTED REGION ID(SKAAlarmHandler.init_device) ENABLED START #
-        # PROTECTED REGION END #    //  SKAAlarmHandler.init_device
+    def init_command_objects(self):
+        """
+        Sets up the command objects
+        """
+        super().init_command_objects()
+        self.register_command_object(
+            "GetAlarmRule",
+            self.GetAlarmRuleCommand(self, self.state_model, self.logger)
+        )
+        self.register_command_object(
+            "GetAlarmData",
+            self.GetAlarmDataCommand(self, self.state_model, self.logger)
+        )
+        self.register_command_object(
+            "GetAlarmAdditionalInfo",
+            self.GetAlarmAdditionalInfoCommand(self, self.state_model, self.logger)
+        )
+        self.register_command_object(
+            "GetAlarmStats",
+            self.GetAlarmStatsCommand(self, self.state_model, self.logger)
+        )
+        self.register_command_object(
+            "GetAlertStats",
+            self.GetAlertStatsCommand(self, self.state_model, self.logger)
+        )
 
     def always_executed_hook(self):
         # PROTECTED REGION ID(SKAAlarmHandler.always_executed_hook) ENABLED START #
@@ -180,16 +196,88 @@ class SKAAlarmHandler(SKABaseDevice):
     # Commands
     # --------
 
+    class GetAlarmRuleCommand(BaseCommand):
+        """
+        A class for the SKAAlarmHandler's GetAlarmRule() command.
+        """
+        def do(self, argin):
+            """
+            Stateless hook for SKAAlarmHandler GetAlarmRule() command.
+
+            :return: Alarm configuration info: rule, actions, etc.
+            :rtype: JSON string
+            """
+            return ""
+
+    class GetAlarmDataCommand(BaseCommand):
+        """
+        A class for the SKAAlarmHandler's GetAlarmData() command.
+        """
+        def do(self, argin):
+            """
+            Stateless hook for SKAAlarmHandler GetAlarmData() command.
+
+            :return: Alarm data
+            :rtype: JSON string
+            """
+            return ""
+
+    class GetAlarmAdditionalInfoCommand(BaseCommand):
+        """
+        A class for the SKAAlarmHandler's GetAlarmAdditionalInfo()
+        command.
+        """
+        def do(self, argin):
+            """
+            Stateless hook for SKAAlarmHandler GetAlarmAdditionalInfo()
+            command.
+
+            :return: Alarm additional info
+            :rtype: JSON string
+            """
+            return ""
+
+    class GetAlarmStatsCommand(BaseCommand):
+        """
+        A class for the SKAAlarmHandler's GetAlarmStats() command.
+        """
+        def do(self):
+            """
+            Stateless hook for SKAAlarmHandler GetAlarmStats() command.
+
+            :return: Alarm stats
+            :rtype: JSON string
+            """
+            return ""
+
+    class GetAlertStatsCommand(BaseCommand):
+        """
+        A class for the SKAAlarmHandler's GetAlertStats() command.
+        """
+        def do(self):
+            """
+            Stateless hook for SKAAlarmHandler GetAlertStats() command.
+
+            :return: Alert stats
+            :rtype: JSON string
+            """
+            return ""
+
     @command(dtype_in='str', doc_in="Alarm name", dtype_out='str', doc_out="JSON string",)
     @DebugIt()
     def GetAlarmRule(self, argin):
         # PROTECTED REGION ID(SKAAlarmHandler.GetAlarmRule) ENABLED START #
         """
         Get all configuration info of the alarm, e.g. rule, defined action, etc.
+
+        To modify behaviour for this command, modify the do() method of
+        the command class.
+
         :param argin: Name of the alarm
         :return: JSON string containing configuration information of the alarm
         """
-        return ""
+        command = self.get_command_object("GetAlarmRule")
+        return command(argin)
         # PROTECTED REGION END #    //  SKAAlarmHandler.GetAlarmRule
 
     @command(dtype_in='str', doc_in="Alarm name", dtype_out='str', doc_out="JSON string",)
@@ -199,10 +287,15 @@ class SKAAlarmHandler(SKABaseDevice):
         """
         Get list of current value, quality factor and status of
         all attributes participating in the alarm rule.
+
+        To modify behaviour for this command, modify the do() method of
+        the command class.
+
         :param argin: Name of the alarm
         :return: JSON string containing alarm data
         """
-        return ""
+        command = self.get_command_object("GetAlarmData")
+        return command(argin)
         # PROTECTED REGION END #    //  SKAAlarmHandler.GetAlarmData
 
     @command(dtype_in='str', doc_in="Alarm name", dtype_out='str', doc_out="JSON string", )
@@ -211,10 +304,15 @@ class SKAAlarmHandler(SKABaseDevice):
         # PROTECTED REGION ID(SKAAlarmHandler.GetAlarmAdditionalInfo) ENABLED START #
         """
         Get additional alarm information.
+
+        To modify behaviour for this command, modify the do() method of
+        the command class.
+
         :param argin: Name of the alarm
         :return: JSON string containing additional alarm information
         """
-        return ""
+        command = self.get_command_object("GetAlarmAdditionalInfo")
+        return command(argin)
         # PROTECTED REGION END #    //  SKAAlarmHandler.GetAlarmAdditionalInfo
 
     @command(dtype_out='str', doc_out="JSON string",)
@@ -223,9 +321,14 @@ class SKAAlarmHandler(SKABaseDevice):
         # PROTECTED REGION ID(SKAAlarmHandler.GetAlarmStats) ENABLED START #
         """
         Get current alarm stats.
+
+        To modify behaviour for this command, modify the do() method of
+        the command class.
+
         :return: JSON string containing alarm statistics
         """
-        return ""
+        command = self.get_command_object("GetAlarmStats")
+        return command()
         # PROTECTED REGION END #    //  SKAAlarmHandler.GetAlarmStats
 
     @command(dtype_out='str', doc_out="JSON string",)
@@ -234,9 +337,14 @@ class SKAAlarmHandler(SKABaseDevice):
         # PROTECTED REGION ID(SKAAlarmHandler.GetAlertStats) ENABLED START #
         """
         Get current alert stats.
+
+        To modify behaviour for this command, modify the do() method of
+        the command class.
+
         :return: JSON string containing alert statistics
         """
-        return ""
+        command = self.get_command_object("GetAlertStats")
+        return command()
         # PROTECTED REGION END #    //  SKAAlarmHandler.GetAlertStats
 
 # ----------
@@ -254,6 +362,7 @@ def main(args=None, **kwargs):
     """
     return run((SKAAlarmHandler,), args=args, **kwargs)
     # PROTECTED REGION END #    //  SKAAlarmHandler.main
+
 
 if __name__ == '__main__':
     main()

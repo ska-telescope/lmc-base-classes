@@ -21,6 +21,7 @@ Welcome to LMC Base Classes documentation!
    Device:  SKA Subarray<SKASubarray>
 
    SKA Control Model<Control_Model>
+   SKA Commands<Commands>
 
 Indices and tables
 ==================

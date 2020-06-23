@@ -8,10 +8,6 @@
 #########################################################################################
 """Contain the tests for the SKAObsDevice."""
 
-# Standard imports
-import sys
-import os
-
 # Imports
 import re
 import pytest
@@ -22,6 +18,7 @@ from ska.base.control_model import (
     AdminMode, ControlMode, HealthState, ObsMode, ObsState, SimulationMode, TestMode
 )
 # PROTECTED REGION END #    //  SKAObsDevice.test_additional_imports
+
 
 # Device test case
 # PROTECTED REGION ID(SKAObsDevice.test_SKAObsDevice_decorators) ENABLED START #
@@ -55,7 +52,7 @@ class TestSKAObsDevice(object):
     def test_State(self, tango_context):
         """Test for State"""
         # PROTECTED REGION ID(SKAObsDevice.test_State) ENABLED START #
-        assert tango_context.device.State() == DevState.UNKNOWN
+        assert tango_context.device.State() == DevState.OFF
         # PROTECTED REGION END #    //  SKAObsDevice.test_State
 
     # PROTECTED REGION ID(SKAObsDevice.test_Status_decorators) ENABLED START #
@@ -63,7 +60,7 @@ class TestSKAObsDevice(object):
     def test_Status(self, tango_context):
         """Test for Status"""
         # PROTECTED REGION ID(SKAObsDevice.test_Status) ENABLED START #
-        assert tango_context.device.Status() == "The device is in UNKNOWN state."
+        assert tango_context.device.Status() == "The device is in OFF state."
         # PROTECTED REGION END #    //  SKAObsDevice.test_Status
 
     # PROTECTED REGION ID(SKAObsDevice.test_GetVersionInfo_decorators) ENABLED START #
@@ -78,20 +75,12 @@ class TestSKAObsDevice(object):
         assert (re.match(versionPattern, versionInfo[0])) is not None
         # PROTECTED REGION END #    //  SKAObsDevice.test_GetVersionInfo
 
-    # PROTECTED REGION ID(SKAObsDevice.test_Reset_decorators) ENABLED START #
-    # PROTECTED REGION END #    //  SKAObsDevice.test_Reset_decorators
-    def test_Reset(self, tango_context):
-        """Test for Reset"""
-        # PROTECTED REGION ID(SKAObsDevice.test_Reset) ENABLED START #
-        assert tango_context.device.Reset() is None
-        # PROTECTED REGION END #    //  SKAObsDevice.test_Reset
-
     # PROTECTED REGION ID(SKAObsDevice.test_obsState_decorators) ENABLED START #
     # PROTECTED REGION END #    //  SKAObsDevice.test_obsState_decorators
     def test_obsState(self, tango_context):
         """Test for obsState"""
         # PROTECTED REGION ID(SKAObsDevice.test_obsState) ENABLED START #
-        assert tango_context.device.obsState == ObsState.IDLE
+        assert tango_context.device.obsState == ObsState.EMPTY
         # PROTECTED REGION END #    //  SKAObsDevice.test_obsState
 
     # PROTECTED REGION ID(SKAObsDevice.test_obsMode_decorators) ENABLED START #
@@ -126,7 +115,7 @@ class TestSKAObsDevice(object):
         buildPattern = re.compile(
             r'lmcbaseclasses, [0-9].[0-9].[0-9], '
             r'A set of generic base devices for SKA Telescope')
-        assert (re.match(buildPattern, tango_context.device.buildState)) != None
+        assert (re.match(buildPattern, tango_context.device.buildState)) is not None
         # PROTECTED REGION END #    //  SKAObsDevice.test_buildState
 
     # PROTECTED REGION ID(SKAObsDevice.test_versionId_decorators) ENABLED START #
@@ -135,7 +124,7 @@ class TestSKAObsDevice(object):
         """Test for versionId"""
         # PROTECTED REGION ID(SKAObsDevice.test_versionId) ENABLED START #
         versionIdPattern = re.compile(r'[0-9].[0-9].[0-9]')
-        assert (re.match(versionIdPattern, tango_context.device.versionId)) != None
+        assert (re.match(versionIdPattern, tango_context.device.versionId)) is not None
         # PROTECTED REGION END #    //  SKAObsDevice.test_versionId
 
     # PROTECTED REGION ID(SKAObsDevice.test_healthState_decorators) ENABLED START #
@@ -151,7 +140,7 @@ class TestSKAObsDevice(object):
     def test_adminMode(self, tango_context):
         """Test for adminMode"""
         # PROTECTED REGION ID(SKAObsDevice.test_adminMode) ENABLED START #
-        assert tango_context.device.adminMode == AdminMode.ONLINE
+        assert tango_context.device.adminMode == AdminMode.MAINTENANCE
         # PROTECTED REGION END #    //  SKAObsDevice.test_adminMode
 
     # PROTECTED REGION ID(SKAObsDevice.test_controlMode_decorators) ENABLED START #

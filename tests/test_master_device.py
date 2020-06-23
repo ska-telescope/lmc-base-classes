@@ -8,11 +8,6 @@
 #########################################################################################
 """Contain the tests for the SKAMaster."""
 
-# Standard imports
-import sys
-import os
-
-# Imports
 import re
 import pytest
 from tango import DevState
@@ -20,7 +15,8 @@ from tango import DevState
 # PROTECTED REGION ID(SKAMaster.test_additional_imports) ENABLED START #
 from ska.base.control_model import AdminMode, ControlMode, HealthState, SimulationMode, TestMode
 # PROTECTED REGION END #    //  SKAMaster.test_additional_imports
-# Device test case
+
+
 # PROTECTED REGION ID(SKAMaster.test_SKAMaster_decorators) ENABLED START #
 @pytest.mark.usefixtures("tango_context")
 # PROTECTED REGION END #    //  SKAMaster.test_SKAMaster_decorators
@@ -56,7 +52,7 @@ class TestSKAMaster(object):
     def test_State(self, tango_context):
         """Test for State"""
         # PROTECTED REGION ID(SKAMaster.test_State) ENABLED START #
-        assert tango_context.device.State() == DevState.UNKNOWN
+        assert tango_context.device.State() == DevState.OFF
         # PROTECTED REGION END #    //  SKAMaster.test_State
 
     # PROTECTED REGION ID(SKAMaster.test_Status_decorators) ENABLED START #
@@ -64,7 +60,7 @@ class TestSKAMaster(object):
     def test_Status(self, tango_context):
         """Test for Status"""
         # PROTECTED REGION ID(SKAMaster.test_Status) ENABLED START #
-        assert tango_context.device.Status() == "The device is in UNKNOWN state."
+        assert tango_context.device.Status() == "The device is in OFF state."
         # PROTECTED REGION END #    //  SKAMaster.test_Status
 
     # PROTECTED REGION ID(SKAMaster.test_GetVersionInfo_decorators) ENABLED START #
@@ -76,7 +72,7 @@ class TestSKAMaster(object):
             r'SKAMaster, lmcbaseclasses, [0-9].[0-9].[0-9], '
             r'A set of generic base devices for SKA Telescope.')
         versionInfo = tango_context.device.GetVersionInfo()
-        assert (re.match(versionPattern, versionInfo[0])) != None
+        assert (re.match(versionPattern, versionInfo[0])) is not None
         # PROTECTED REGION END #    //  SKAMaster.test_GetVersionInfo
 
     # PROTECTED REGION ID(SKAMaster.test_isCapabilityAchievable_failure_decorators) ENABLED START #
@@ -94,15 +90,6 @@ class TestSKAMaster(object):
         # PROTECTED REGION ID(SKAMaster.test_isCapabilityAchievable_success) ENABLED START #
         assert tango_context.device.isCapabilityAchievable([[1], ['BAND1']]) is True
         # PROTECTED REGION END #    //  SKAMaster.test_isCapabilityAchievable_success
-
-    # PROTECTED REGION ID(SKAMaster.test_Reset_decorators) ENABLED START #
-    # PROTECTED REGION END #    //  SKAMaster.test_Reset_decorators
-    def test_Reset(self, tango_context):
-        """Test for Reset"""
-        # PROTECTED REGION ID(SKAMaster.test_Reset) ENABLED START #
-        assert tango_context.device.Reset() is None
-        # PROTECTED REGION END #    //  SKAMaster.test_Reset
-
 
     # PROTECTED REGION ID(SKAMaster.test_elementLoggerAddress_decorators) ENABLED START #
     # PROTECTED REGION END #    //  SKAMaster.test_elementLoggerAddress_decorators
@@ -144,7 +131,9 @@ class TestSKAMaster(object):
         buildPattern = re.compile(
             r'lmcbaseclasses, [0-9].[0-9].[0-9], '
             r'A set of generic base devices for SKA Telescope')
-        assert (re.match(buildPattern, tango_context.device.buildState)) != None
+        assert (
+            re.match(buildPattern, tango_context.device.buildState)
+        ) is not None
         # PROTECTED REGION END #    //  SKAMaster.test_buildState
 
     # PROTECTED REGION ID(SKAMaster.test_versionId_decorators) ENABLED START #
@@ -153,7 +142,9 @@ class TestSKAMaster(object):
         """Test for versionId"""
         # PROTECTED REGION ID(SKAMaster.test_versionId) ENABLED START #
         versionIdPattern = re.compile(r'[0-9].[0-9].[0-9]')
-        assert (re.match(versionIdPattern, tango_context.device.versionId)) != None
+        assert (
+            re.match(versionIdPattern, tango_context.device.versionId)
+        ) is not None
         # PROTECTED REGION END #    //  SKAMaster.test_versionId
 
     # PROTECTED REGION ID(SKAMaster.test_healthState_decorators) ENABLED START #
@@ -169,7 +160,7 @@ class TestSKAMaster(object):
     def test_adminMode(self, tango_context):
         """Test for adminMode"""
         # PROTECTED REGION ID(SKAMaster.test_adminMode) ENABLED START #
-        assert tango_context.device.adminMode == AdminMode.ONLINE
+        assert tango_context.device.adminMode == AdminMode.MAINTENANCE
         # PROTECTED REGION END #    //  SKAMaster.test_adminMode
 
     # PROTECTED REGION ID(SKAMaster.test_controlMode_decorators) ENABLED START #

@@ -14,7 +14,7 @@ from tango import (DeviceProxy, DbDatum, DbDevInfo, AttrQuality,
                    AttrWriteType, Except, ErrSeverity)
 from tango import DevState
 from contextlib import contextmanager
-from .faults import GroupDefinitionsError, SKABaseError
+from ska.base.faults import GroupDefinitionsError, SKABaseError
 
 int_types = {tango._tango.CmdArgType.DevUShort,
              tango._tango.CmdArgType.DevLong,
@@ -222,7 +222,7 @@ def get_dp_attribute(device_proxy, attribute, with_value=False, with_context=Fal
             ts = datetime.fromtimestamp(attr_value.time.tv_sec)
             ts.replace(microsecond=attr_value.time.tv_usec)
             attr_dict['timestamp'] = ts.isoformat()
-        except:
+        except Exception:
             # TBD - decide what to do - add log?
             pass
 
@@ -358,7 +358,6 @@ def get_groups_from_json(json_definitions):
         # the exc_info is included for detailed traceback
         ska_error = SKABaseError(exc)
         raise GroupDefinitionsError(ska_error).with_traceback(sys.exc_info()[2])
-        #raise GroupDefinitionsError(exc), None, sys.exc_info()[2]
 
 
 def _validate_group(definition):

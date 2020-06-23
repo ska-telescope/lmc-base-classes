@@ -9,16 +9,13 @@
 Capability handling device
 """
 # PROTECTED REGION ID(SKACapability.additionnal_import) ENABLED START #
-# Standard import
-import os
-import sys
-
 # Tango imports
 from tango import DebugIt
 from tango.server import run, attribute, command, device_property
 
 # SKA specific imports
-from . import SKAObsDevice, release
+from ska.base import SKAObsDevice
+from ska.base.commands import ResponseCommand, ResultCode
 # PROTECTED REGION END #    //  SKACapability.additionnal_imports
 
 __all__ = ["SKACapability", "main"]
@@ -28,6 +25,38 @@ class SKACapability(SKAObsDevice):
     """
     A Subarray handling device. It exposes the instances of configured capabilities.
     """
+    def init_command_objects(self):
+        """
+        Sets up the command objects
+        """
+        super().init_command_objects()
+        self.register_command_object(
+            "ConfigureInstances", self.ConfigureInstancesCommand(
+                self, self.state_model, self.logger
+            )
+        )
+
+    class InitCommand(SKAObsDevice.InitCommand):
+        def do(self):
+            """
+            Stateless hook for device initialisation.
+
+            :return: A tuple containing a return code and a string
+                message indicating status. The message is for
+                information purpose only.
+            :rtype: (ResultCode, str)
+            """
+            super().do()
+
+            device = self.target
+            device._activation_time = 0.0
+            device._configured_instances = 0
+            device._used_components = [""]
+
+            message = "SKACapability Init command completed OK"
+            self.logger.info(message)
+            return (ResultCode.OK, message)
+
     # PROTECTED REGION ID(SKACapability.class_variable) ENABLED START #
     # PROTECTED REGION END #    //  SKACapability.class_variable
 
@@ -74,17 +103,6 @@ class SKACapability(SKAObsDevice):
     # General methods
     # ---------------
 
-    def init_device(self):
-        SKAObsDevice.init_device(self)
-        self._build_state = '{}, {}, {}'.format(release.name, release.version,
-                                                release.description)
-        self._version_id = release.version
-        # PROTECTED REGION ID(SKACapability.init_device) ENABLED START #
-        self._activation_time = 0.0
-        self._configured_instances = 0
-        self._used_components = [""]
-        # PROTECTED REGION END #    //  SKACapability.init_device
-
     def always_executed_hook(self):
         # PROTECTED REGION ID(SKACapability.always_executed_hook) ENABLED START #
         pass
@@ -126,34 +144,66 @@ class SKACapability(SKAObsDevice):
         return self._used_components
         # PROTECTED REGION END #    //  SKACapability.usedComponents_read
 
-
     # --------
     # Commands
     # --------
 
-    @command(dtype_in='uint16', doc_in="The number of instances to configure for this Capability.",)
+    class ConfigureInstancesCommand(ResponseCommand):
+        """
+        A class for the SKALoggerDevice's SetLoggingLevel() command.
+        """
+        def do(self, argin):
+            """
+            Stateless hook for ConfigureInstances()) command
+            functionality.
+
+            :return: A tuple containing a return code and a string
+                message indicating status. The message is for
+                information purpose only.
+            :rtype: (ResultCode, str)
+            """
+            device = self.target
+            device._configured_instances = argin
+
+            message = "ConfigureInstances command completed OK"
+            self.logger.info(message)
+            return (ResultCode.OK, message)
+
+    @command(
+        dtype_in='uint16',
+        doc_in="The number of instances to configure for this Capability.",
+        dtype_out='DevVarLongStringArray',
+        doc_out="(ReturnType, 'informational message')",
+    )
     @DebugIt()
     def ConfigureInstances(self, argin):
         # PROTECTED REGION ID(SKACapability.ConfigureInstances) ENABLED START #
         """
         This function indicates how many number of instances of the current capacity
         should to be configured.
+
+        To modify behaviour for this command, modify the do() method of
+        the command class.
+
         :param argin: Number of instances to configure
         :return: None.
         """
-        self._configured_instances = argin
+        command = self.get_command_object("ConfigureInstances")
+        (return_code, message) = command(argin)
+        return [[return_code], [message]]
         # PROTECTED REGION END #    //  SKACapability.ConfigureInstances
+
 
 # ----------
 # Run server
 # ----------
-
 
 def main(args=None, **kwargs):
     # PROTECTED REGION ID(SKACapability.main) ENABLED START #
     """Main function of the SKACapability module."""
     return run((SKACapability,), args=args, **kwargs)
     # PROTECTED REGION END #    //  SKACapability.main
+
 
 if __name__ == '__main__':
     main()

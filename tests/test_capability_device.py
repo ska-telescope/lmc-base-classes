@@ -7,14 +7,9 @@
 #
 #########################################################################################
 """Contain the tests for the SKACapability."""
-
-# Standard imports
-import sys
-import os
-
-# Imports
 import re
 import pytest
+
 
 # PROTECTED REGION ID(SKACapability.test_additional_imports) ENABLED START #
 # PROTECTED REGION END #    //  SKACapability.test_additional_imports

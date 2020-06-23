@@ -122,6 +122,7 @@ BAD_GROUP_KEYS = [
     ('basic_no_subgroups', 'bk1_bad_keys', ),
 ]
 
+
 def _jsonify_group_configs(group_configs):
     """Returns list of JSON definitions for groups."""
     definitions = []

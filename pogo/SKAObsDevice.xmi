@@ -56,7 +56,7 @@
         <type xsi:type="pogoDsl:VoidType"/>
       </argin>
       <argout description="">
-        <type xsi:type="pogoDsl:VoidType"/>
+        <type xsi:type="pogoDsl:LongStringArrayType"/>
       </argout>
       <status abstract="false" inherited="true" concrete="true"/>
     </commands>
@@ -65,13 +65,17 @@
       <dataReadyEvent fire="false" libCheckCriteria="true"/>
       <status abstract="false" inherited="false" concrete="true" concreteHere="true"/>
       <properties description="Observing State" label="" unit="" standardUnit="" displayUnit="" format="" maxValue="" minValue="" maxAlarm="" minAlarm="" maxWarning="" minWarning="" deltaTime="" deltaValue=""/>
+      <enumLabels>EMPTY</enumLabels>
+      <enumLabels>RESOURCING</enumLabels>
       <enumLabels>IDLE</enumLabels>
       <enumLabels>CONFIGURING</enumLabels>
       <enumLabels>READY</enumLabels>
       <enumLabels>SCANNING</enumLabels>
-      <enumLabels>PAUSED</enumLabels>
+      <enumLabels>ABORTING</enumLabels>
       <enumLabels>ABORTED</enumLabels>
+      <enumLabels>RESETTING</enumLabels>
       <enumLabels>FAULT</enumLabels>
+      <enumLabels>RESTARTING</enumLabels>
     </attributes>
     <attributes name="obsMode" attType="Scalar" rwType="READ" displayLevel="OPERATOR" polledPeriod="1000" maxX="" maxY="" allocReadMember="true" isDynamic="false">
       <dataType xsi:type="pogoDsl:EnumType"/>

@@ -6,158 +6,964 @@
 #
 """ SKASubarray
 
-A SubArray handling device. It allows the assigning/releasing of resources into/from Subarray, configuring
-capabilities, and exposes the related information like assigned resources, configured capabilities, etc.
+A SubArray handling device. It allows the assigning/releasing of resources
+into/from Subarray, configuring capabilities, and exposes the related
+information like assigned resources, configured capabilities, etc.
 """
 # PROTECTED REGION ID(SKASubarray.additionnal_import) ENABLED START #
-# Standard imports
-import os
-import sys
+import json
 
-# Tango imports
 from tango import DebugIt
+from tango import DevState
 from tango.server import run, attribute, command
 from tango.server import device_property
-from tango import Except, ErrSeverity, DevState
 
 # SKA specific imports
-from . import SKAObsDevice, release
-from .control_model import AdminMode, ObsState
+from ska.base import SKAObsDevice, SKAObsDeviceStateModel
+from ska.base.commands import ActionCommand, ResultCode
+from ska.base.control_model import ObsState
+from ska.base.faults import CapabilityValidationError
 # PROTECTED REGION END #    //  SKASubarray.additionnal_imports
 
-__all__ = ["SKASubarray", "main"]
+__all__ = ["SKASubarray", "SKASubarrayResourceManager", "SKASubarrayStateModel", "main"]
+
+
+class SKASubarrayStateModel(SKAObsDeviceStateModel):
+    """
+    Implements the state model for the SKASubarray
+    """
+    __transitions = {
+        ('OFF', 'on_succeeded'): (
+            "EMPTY",
+            lambda self: self._set_dev_state(DevState.ON)
+        ),
+        ('OFF', 'on_failed'): (
+            "FAULT",
+            lambda self: self._set_dev_state(DevState.FAULT)
+        ),
+        ('EMPTY', 'off_succeeded'): (
+            "OFF",
+            lambda self: self._set_dev_state(DevState.OFF)
+        ),
+        ('EMPTY', 'off_failed'): (
+            "FAULT",
+            lambda self: self._set_dev_state(DevState.FAULT)
+        ),
+        ('EMPTY', 'assign_started'): (
+            "RESOURCING",
+            lambda self: self._set_obs_state(ObsState.RESOURCING)
+        ),
+        ('EMPTY', 'fatal_error'): (
+            "OBSFAULT",
+            lambda self: self._set_obs_state(ObsState.FAULT)
+        ),
+        ('RESOURCING', 'resourcing_succeeded_some_resources'): (
+            "IDLE",
+            lambda self: self._set_obs_state(ObsState.IDLE)
+        ),
+        ('RESOURCING', 'resourcing_succeeded_no_resources'): (
+            "EMPTY",
+            lambda self: self._set_obs_state(ObsState.EMPTY)
+        ),
+        ('RESOURCING', 'resourcing_failed'): (
+            "OBSFAULT",
+            lambda self: self._set_obs_state(ObsState.FAULT)
+        ),
+        ('RESOURCING', 'fatal_error'): (
+            "OBSFAULT",
+            lambda self: self._set_obs_state(ObsState.FAULT)
+        ),
+        ('IDLE', 'assign_started'): (
+            "RESOURCING",
+            lambda self: self._set_obs_state(ObsState.RESOURCING)
+        ),
+        ('IDLE', 'release_started'): (
+            "RESOURCING",
+            lambda self: self._set_obs_state(ObsState.RESOURCING)
+        ),
+        ('IDLE', 'configure_started'): (
+            "CONFIGURING",
+            lambda self: self._set_obs_state(ObsState.CONFIGURING)
+        ),
+        ('IDLE', 'abort_started'): (
+            "ABORTING",
+            lambda self: self._set_obs_state(ObsState.ABORTING)
+        ),
+        ('IDLE', 'fatal_error'): (
+            "OBSFAULT",
+            lambda self: self._set_obs_state(ObsState.FAULT)
+        ),
+        ('CONFIGURING', 'configure_succeeded'): (
+            "READY",
+            lambda self: self._set_obs_state(ObsState.READY)
+        ),
+        ('CONFIGURING', 'configure_failed'): (
+            "OBSFAULT",
+            lambda self: self._set_obs_state(ObsState.FAULT)
+        ),
+        ('CONFIGURING', 'abort_started'): (
+            "ABORTING",
+            lambda self: self._set_obs_state(ObsState.ABORTING)
+        ),
+        ('CONFIGURING', 'fatal_error'): (
+            "OBSFAULT",
+            lambda self: self._set_obs_state(ObsState.FAULT)
+        ),
+        ('READY', 'end_succeeded'): (
+            "IDLE",
+            lambda self: self._set_obs_state(ObsState.IDLE)
+        ),
+        ('READY', 'end_failed'): (
+            "OBSFAULT",
+            lambda self: self._set_obs_state(ObsState.FAULT)
+        ),
+        ('READY', 'configure_started'): (
+            "CONFIGURING",
+            lambda self: self._set_obs_state(ObsState.CONFIGURING)
+        ),
+        ('READY', 'abort_started'): (
+            "ABORTING",
+            lambda self: self._set_obs_state(ObsState.ABORTING)
+        ),
+        ('READY', 'scan_started'): (
+            "SCANNING",
+            lambda self: self._set_obs_state(ObsState.SCANNING)
+        ),
+        ('READY', 'fatal_error'): (
+            "OBSFAULT",
+            lambda self: self._set_obs_state(ObsState.FAULT)
+        ),
+        ('SCANNING', 'scan_succeeded'): (
+            "READY",
+            lambda self: self._set_obs_state(ObsState.READY)
+        ),
+        ('SCANNING', 'scan_failed'): (
+            "OBSFAULT",
+            lambda self: self._set_obs_state(ObsState.FAULT)
+        ),
+        ('SCANNING', 'end_scan_succeeded'): (
+            "READY",
+            lambda self: self._set_obs_state(ObsState.READY)
+        ),
+        ('SCANNING', 'end_scan_failed'): (
+            "OBSFAULT",
+            lambda self: self._set_obs_state(ObsState.FAULT)
+        ),
+        ('SCANNING', 'abort_started'): (
+            "ABORTING",
+            lambda self: self._set_obs_state(ObsState.ABORTING)
+        ),
+        ('SCANNING', 'fatal_error'): (
+            "OBSFAULT",
+            lambda self: self._set_obs_state(ObsState.FAULT)
+        ),
+        ('ABORTING', 'abort_succeeded'): (
+            "ABORTED",
+            lambda self: self._set_obs_state(ObsState.ABORTED)
+        ),
+        ('ABORTING', 'abort_failed'): (
+            "OBSFAULT",
+            lambda self: self._set_obs_state(ObsState.FAULT)
+        ),
+        ('ABORTING', 'fatal_error'): (
+            "OBSFAULT",
+            lambda self: self._set_obs_state(ObsState.FAULT)
+        ),
+        ('ABORTED', 'obs_reset_started'): (
+            "RESETTING",
+            lambda self: self._set_obs_state(ObsState.RESETTING)
+        ),
+        ('ABORTED', 'restart_started'): (
+            "RESTARTING",
+            lambda self: self._set_obs_state(ObsState.RESTARTING)
+        ),
+        ('ABORTED', 'fatal_error'): (
+            "OBSFAULT",
+            lambda self: self._set_obs_state(ObsState.FAULT)
+        ),
+        ('OBSFAULT', 'obs_reset_started'): (
+            "RESETTING",
+            lambda self: self._set_obs_state(ObsState.RESETTING)
+        ),
+        ('OBSFAULT', 'restart_started'): (
+            "RESTARTING",
+            lambda self: self._set_obs_state(ObsState.RESTARTING)
+        ),
+        ('OBSFAULT', 'fatal_error'): (
+            "OBSFAULT",
+            lambda self: self._set_obs_state(ObsState.FAULT)
+        ),
+        ('RESETTING', 'obs_reset_succeeded'): (
+            "IDLE",
+            lambda self: self._set_obs_state(ObsState.IDLE)
+        ),
+        ('RESETTING', 'obs_reset_failed'): (
+            "OBSFAULT",
+            lambda self: self._set_obs_state(ObsState.FAULT)
+        ),
+        ('RESETTING', 'fatal_error'): (
+            "OBSFAULT",
+            lambda self: self._set_obs_state(ObsState.FAULT)
+        ),
+        ('RESTARTING', 'restart_succeeded'): (
+            "EMPTY",
+            lambda self: self._set_obs_state(ObsState.EMPTY)
+        ),
+        ('RESTARTING', 'restart_failed'): (
+            "OBSFAULT",
+            lambda self: self._set_obs_state(ObsState.FAULT)
+        ),
+        ('RESTARTING', 'fatal_error'): (
+            "OBSFAULT",
+            lambda self: self._set_obs_state(ObsState.FAULT)
+        ),
+    }
+
+    def __init__(self, dev_state_callback=None):
+        """
+        Initialises the model. Note that this does not imply moving to
+        INIT state. The INIT state is managed by the model itself.
+        """
+        super().__init__(
+            dev_state_callback=dev_state_callback,
+        )
+        self.update_transitions(self.__transitions)
+
+
+class SKASubarrayResourceManager:
+    """
+    A simple class for managing subarray resources
+    """
+    def __init__(self):
+        """
+        Constructor for SKASubarrayResourceManager
+        """
+        self._resources = set()
+
+    def __len__(self):
+        """
+        Returns the number of resources currently assigned. Note that
+        this also functions as a boolean method for whether there are
+        any assigned resources: ``if len()``.
+
+        :return: number of resources assigned
+        :rtype: int
+        """
+        return len(self._resources)
+
+    def assign(self, resources):
+        """
+        Assign some resources
+
+        :todo: Currently implemented for testing purposes to take a JSON
+            string encoding a dictionary with key 'example'. In future this
+            will take a collection of resources.
+        :param resources: JSON-encoding of a dictionary, with resources to
+            assign under key 'example'
+        :type resources: JSON string
+        """
+        resources_dict = json.loads(resources)
+        add_resources = resources_dict['example']
+        self._resources |= set(add_resources)
+
+    def release(self, resources):
+        """
+        Release some resources
+
+        :todo: Currently implemented for testing purposes to take a JSON
+            string encoding a dictionary with key 'example'. In future this
+            will take a collection of resources.
+        :param resources: JSON-encoding of a dictionary, with resources to
+            assign under key 'example'
+        :type resources: JSON string
+        """
+        resources_dict = json.loads(resources)
+        drop_resources = resources_dict['example']
+        self._resources -= set(drop_resources)
+
+    def release_all(self):
+        """
+        Release all resources
+        """
+        self._resources.clear()
+
+    def get(self):
+        """
+        Get current resources
+
+        :return: a set of current resources.
+        :rtype: set of string
+        """
+        return set(self._resources)
 
 
 class SKASubarray(SKAObsDevice):
     """
-    SubArray handling device
+    Implements the SKA SubArray device
     """
-    # PROTECTED REGION ID(SKASubarray.class_variable) ENABLED START #
-    def _is_command_allowed(self, command_name):
-        """Determine whether the command specified by the command_name parameter should
-        be allowed to execute or not.
-
-        Parameters
-        ----------
-        command_name: str
-            The name of the command which is to be executed.
-
-        Returns
-        -------
-        True or False: boolean
-            A True is returned when the device is in the allowed states and modes to
-            execute the command. Returns False if the command name is not in the list of
-            commands with rules specified for them.
-
-        Raises
-        ------
-        tango.DevFailed: If the device is not in the allowed states and/modes to
-            execute the command.
+    class InitCommand(SKAObsDevice.InitCommand):
         """
-        admin_mode = self.read_adminMode()
-        obs_state = self.read_obsState()
-        if command_name in ["ReleaseResources", "AssignResources"]:
-            if admin_mode in [AdminMode.OFFLINE, AdminMode.NOT_FITTED]:
-                Except.throw_exception("Command failed!", "Subarray adminMode is"
-                                       " 'OFFLINE' or 'NOT_FITTED'.",
-                                       command_name, ErrSeverity.ERR)
+        A class for the SKASubarray's init_device() "command".
+        """
+        def do(self):
+            """
+            Stateless hook for device initialisation.
 
-            if obs_state == ObsState.IDLE:
-                if admin_mode in [AdminMode.ONLINE, AdminMode.MAINTENANCE]:
-                    return True
-                else:
-                    Except.throw_exception("Command failed!", "Subarray adminMode not"
-                                           "'ONLINE' or not in 'MAINTENANCE'.",
-                                           command_name, ErrSeverity.ERR)
+            :return: A tuple containing a return code and a string
+                message indicating status. The message is for
+                information purpose only.
+            :rtype: (ResultCode, str)
+            """
+            super().do()
+
+            device = self.target
+            device.resource_manager = SKASubarrayResourceManager()
+            device._activation_time = 0.0
+
+            # device._configured_capabilities is kept as a
+            # dictionary internally. The keys and values will represent
+            # the capability type name and the number of instances,
+            # respectively.
+            try:
+                device._configured_capabilities = dict.fromkeys(
+                    device.CapabilityTypes,
+                    0
+                )
+            except TypeError:
+                # Might need to have the device property be mandatory in the database.
+                device._configured_capabilities = {}
+
+            message = "SKASubarray Init command completed OK"
+            self.logger.info(message)
+            return (ResultCode.OK, message)
+
+    class OnCommand(ActionCommand):
+        """
+        A class for the SKASubarray's On() command.
+        """
+        def __init__(self, target, state_model, logger=None):
+            """
+            Constructor for OnCommand
+
+            :param target: the object that this command acts upon; for
+                example, the SKASubarray device for which this class
+                implements the command
+            :type target: object
+            :param state_model: the state model that this command uses
+                 to check that it is allowed to run, and that it drives
+                 with actions.
+            :type state_model: SKABaseClassStateModel or a subclass of
+                same
+            :param logger: the logger to be used by this Command. If not
+                provided, then a default module logger will be used.
+            :type logger: a logger that implements the standard library
+                logger interface
+            """
+            super().__init__(target, state_model, "on", logger=logger)
+
+        def do(self):
+            """
+            Stateless hook for On() command functionality.
+
+            :return: A tuple containing a return code and a string
+                message indicating status. The message is for
+                information purpose only.
+            :rtype: (ResultCode, str)
+            """
+            message = "On command completed OK"
+            self.logger.info(message)
+            return (ResultCode.OK, message)
+
+    class OffCommand(ActionCommand):
+        """
+        A class for the SKASubarray's Off() command.
+        """
+        def __init__(self, target, state_model, logger=None):
+            """
+            Constructor for OffCommand
+
+            :param target: the object that this command acts upon; for
+                example, the SKASubarray device for which this class
+                implements the command
+            :type target: object
+            :param state_model: the state model that this command uses
+                 to check that it is allowed to run, and that it drives
+                 with actions.
+            :type state_model: SKABaseClassStateModel or a subclass of
+                same
+            :param logger: the logger to be used by this Command. If not
+                provided, then a default module logger will be used.
+            :type logger: a logger that implements the standard library
+                logger interface
+            """
+            super().__init__(target, state_model, "off", logger=logger)
+
+        def do(self):
+            """
+            Stateless hook for Off() command functionality.
+
+            :return: A tuple containing a return code and a string
+                message indicating status. The message is for
+                information purpose only.
+            :rtype: (ResultCode, str)
+            """
+            message = "Off command completed OK"
+            self.logger.info(message)
+            return (ResultCode.OK, message)
+
+    class _ResourcingCommand(ActionCommand):
+        """
+        An abstract base class for SKASubarray's resourcing commands.
+        """
+        def __init__(self, target, state_model, action_hook, logger=None):
+            """
+            Constructor for _ResourcingCommand
+
+            :param target: the object that this command acts upon; for
+                example, the SKASubarray device for which this class
+                implements the command
+            :type target: object
+            :param state_model: the state model that this command uses
+                 to check that it is allowed to run, and that it drives
+                 with actions.
+            :type state_model: SKABaseClassStateModel or a subclass of
+                same
+            :param action_hook: a hook for the command, used to build
+                actions that will be sent to the state model; for example,
+                if the hook is "scan", then success of the command will
+                result in action "scan_succeeded" being sent to the state
+                model.
+            :type action_hook: string
+            :param logger: the logger to be used by this Command. If not
+                provided, then a default module logger will be used.
+            :type logger: a logger that implements the standard library
+                logger interface
+            """
+            super().__init__(
+                target, state_model, action_hook, start_action=True, logger=logger
+            )
+
+        def succeeded(self):
+            """
+            Action to take on successful completion of a resourcing
+            command.
+            """
+            if len(self.target):
+                action = "resourcing_succeeded_some_resources"
             else:
-                Except.throw_exception("Command failed!", "Subarray obsState not 'IDLE'.",
-                                       command_name, ErrSeverity.ERR)
+                action = "resourcing_succeeded_no_resources"
+            self.state_model.perform_action(action)
 
-        elif command_name in ['ConfigureCapability', 'DeconfigureCapability',
-                              'DeconfigureAllCapabilities']:
-            if self.get_state() == DevState.ON and admin_mode == AdminMode.ONLINE:
-                if obs_state in [ObsState.IDLE, ObsState.READY]:
-                    return True
-                else:
-                    Except.throw_exception(
-                        "Command failed!", "Subarray obsState not 'IDLE' or 'READY'.",
-                        command_name, ErrSeverity.ERR)
+        def failed(self):
+            """
+            Action to take on failed completion of a resourcing command.
+            """
+            self.state_model.perform_action("resourcing_failed")
+
+    class AssignResourcesCommand(_ResourcingCommand):
+        """
+        A class for SKASubarray's AssignResources() command.
+        """
+        def __init__(self, target, state_model, logger=None):
+            """
+            Constructor for AssignResourcesCommand
+
+            :param target: the object that this command acts upon; for
+                example, the SKASubarray device for which this class
+                implements the command
+            :type target: object
+            :param state_model: the state model that this command uses
+                 to check that it is allowed to run, and that it drives
+                 with actions.
+            :type state_model: SKABaseClassStateModel or a subclass of
+                same
+            :param logger: the logger to be used by this Command. If not
+                provided, then a default module logger will be used.
+            :type logger: a logger that implements the standard library
+                logger interface
+            """
+            super().__init__(target, state_model, "assign", logger=logger)
+
+        def do(self, argin):
+            """
+            Stateless hook for AssignResources() command functionality.
+
+            :param argin: The resources to be assigned
+            :type argin: list of str
+            :return: A tuple containing a return code and a string
+                message indicating status. The message is for
+                information purpose only.
+            :rtype: (ResultCode, str)
+            """
+            resource_manager = self.target
+            resource_manager.assign(argin)
+
+            message = "AssignResources command completed OK"
+            self.logger.info(message)
+            return (ResultCode.OK, message)
+
+    class ReleaseResourcesCommand(_ResourcingCommand):
+        """
+        A class for SKASubarray's ReleaseResources() command.
+        """
+        def __init__(self, target, state_model, logger=None):
+            """
+            Constructor for OnCommand()
+
+            :param target: the object that this command acts upon; for
+                example, the SKASubarray device for which this class
+                implements the command
+            :type target: object
+            :param state_model: the state model that this command uses
+                 to check that it is allowed to run, and that it drives
+                 with actions.
+            :type state_model: SKABaseClassStateModel or a subclass of
+                same
+            :param logger: the logger to be used by this Command. If not
+                provided, then a default module logger will be used.
+            :type logger: a logger that implements the standard library
+                logger interface
+            """
+            super().__init__(target, state_model, "release", logger=logger)
+
+        def do(self, argin):
+            """
+            Stateless hook for ReleaseResources() command functionality.
+
+            :param argin: The resources to be released
+            :type argin: list of str
+            :return: A tuple containing a return code and a string
+                message indicating status. The message is for
+                information purpose only.
+            :rtype: (ResultCode, str)
+            """
+            resource_manager = self.target
+            resource_manager.release(argin)
+
+            message = "ReleaseResources command completed OK"
+            self.logger.info(message)
+            return (ResultCode.OK, message)
+
+    class ReleaseAllResourcesCommand(ReleaseResourcesCommand):
+        """
+        A class for SKASubarray's ReleaseAllResources() command.
+        """
+        def do(self):
+            """
+            Stateless hook for ReleaseAllResources() command functionality.
+
+            :return: A tuple containing a return code and a string
+                message indicating status. The message is for
+                information purpose only.
+            :rtype: (ResultCode, str)
+            """
+            resource_manager = self.target
+            resource_manager.release_all()
+
+            if len(resource_manager):
+                message = "ReleaseAllResources command failed to release all."
+                self.logger.info(message)
+                return (ResultCode.FAILED, message)
             else:
-                Except.throw_exception(
-                    "Command failed!", "Subarray State not 'ON' and/or adminMode not"
-                    " 'ONLINE'.", command_name, ErrSeverity.ERR)
+                message = "ReleaseAllResources command completed OK"
+                self.logger.info(message)
+                return (ResultCode.OK, message)
 
-        return False
+    class ConfigureCommand(ActionCommand):
+        """
+        A class for SKASubarray's Configure() command.
+        """
+        def __init__(self, target, state_model, logger=None):
+            """
+            Constructor for ConfigureCommand
 
+            :param target: the object that this command acts upon; for
+                example, the SKASubarray device for which this class
+                implements the command
+            :type target: object
+            :param state_model: the state model that this command uses
+                 to check that it is allowed to run, and that it drives
+                 with actions.
+            :type state_model: SKABaseClassStateModel or a subclass of
+                same
+            :param logger: the logger to be used by this Command. If not
+                provided, then a default module logger will be used.
+            :type logger: a logger that implements the standard library
+                logger interface
+            """
+            super().__init__(
+                target, state_model, "configure", start_action=True, logger=logger
+            )
 
-    def _validate_capability_types(self, command_name, capability_types):
-        """Check the validity of the input parameter passed on to the command specified
-        by the command_name parameter.
+        def do(self, argin):
+            """
+            Stateless hook for Configure() command functionality.
 
-        Parameters
-        ----------
-        command_name: str
-            The name of the command which is to be executed.
-        capability_types: list
-            A list strings representing capability types.
+            :param argin: The configuration as JSON
+            :type argin: str
+            :return: A tuple containing a return code and a string
+                message indicating status. The message is for
+                information purpose only.
+            :rtype: (ResultCode, str)
+            """
+            device = self.target
 
-        Raises
-        ------
-        tango.DevFailed: If any of the capabilities requested are not valid.
+            # In this example implementation, the keys of the dict
+            # are the capability types, and the values are the
+            # integer number of instances required.
+            # E.g., config = {"BAND1": 5, "BAND2": 3}
+            config = json.loads(argin)
+            capability_types = list(config.keys())
+            device._validate_capability_types(capability_types)
+
+            # Perform the configuration.
+            for capability_type, capability_instances in config.items():
+                device._configured_capabilities[capability_type] += capability_instances
+
+            message = "Configure command completed OK"
+            self.logger.info(message)
+            return (ResultCode.OK, message)
+
+    class ScanCommand(ActionCommand):
+        """
+        A class for SKASubarray's Scan() command.
+        """
+        def __init__(self, target, state_model, logger=None):
+            """
+            Constructor for ScanCommand
+
+            :param target: the object that this command acts upon; for
+                example, the SKASubarray device for which this class
+                implements the command
+            :type target: object
+            :param state_model: the state model that this command uses
+                 to check that it is allowed to run, and that it drives
+                 with actions.
+            :type state_model: SKABaseClassStateModel or a subclass of
+                same
+            :param logger: the logger to be used by this Command. If not
+                provided, then a default module logger will be used.
+            :type logger: a logger that implements the standard library
+                logger interface
+            """
+            super().__init__(
+                target, state_model, "scan", start_action=True, logger=logger
+            )
+
+        def do(self, argin):
+            """
+            Stateless hook for Scan() command functionality.
+
+            :param argin: Scan info
+            :type argin: str
+            :return: A tuple containing a return code and a string
+                message indicating status. The message is for
+                information purpose only.
+            :rtype: (ResultCode, str)
+            """
+            # we do a json.loads just for basic string validation
+            message = f"Scan command STARTED - config {json.loads(argin)}"
+            self.logger.info(message)
+            return (ResultCode.STARTED, message)
+
+    class EndScanCommand(ActionCommand):
+        """
+        A class for SKASubarray's EndScan() command.
+        """
+        def __init__(self, target, state_model, logger=None):
+            """
+            Constructor for EndScanCommand
+
+            :param target: the object that this command acts upon; for
+                example, the SKASubarray device for which this class
+                implements the command
+            :type target: object
+            :param state_model: the state model that this command uses
+                 to check that it is allowed to run, and that it drives
+                 with actions.
+            :type state_model: SKABaseClassStateModel or a subclass of
+                same
+            :param logger: the logger to be used by this Command. If not
+                provided, then a default module logger will be used.
+            :type logger: a logger that implements the standard library
+                logger interface
+            """
+            super().__init__(target, state_model, "end_scan", logger=logger)
+
+        def do(self):
+            """
+            Stateless hook for EndScan() command functionality.
+
+            :return: A tuple containing a return code and a string
+                message indicating status. The message is for
+                information purpose only.
+            :rtype: (ResultCode, str)
+            """
+            message = "EndScan command completed OK"
+            self.logger.info(message)
+            return (ResultCode.OK, message)
+
+    class EndCommand(ActionCommand):
+        """
+        A class for SKASubarray's End() command.
+        """
+        def __init__(self, target, state_model, logger=None):
+            """
+            Constructor for EndCommand
+
+            :param target: the object that this command acts upon; for
+                example, the SKASubarray device for which this class
+                implements the command
+            :type target: object
+            :param state_model: the state model that this command uses
+                 to check that it is allowed to run, and that it drives
+                 with actions.
+            :type state_model: SKABaseClassStateModel or a subclass of
+                same
+            :param logger: the logger to be used by this Command. If not
+                provided, then a default module logger will be used.
+            :type logger: a logger that implements the standard library
+                logger interface
+            """
+            super().__init__(target, state_model, "end", logger=logger)
+
+        def do(self):
+            """
+            Stateless hook for End() command functionality.
+
+            :return: A tuple containing a return code and a string
+                message indicating status. The message is for
+                information purpose only.
+            :rtype: (ResultCode, str)
+            """
+            device = self.target
+            device._deconfigure()
+
+            message = "End command completed OK"
+            self.logger.info(message)
+            return (ResultCode.OK, message)
+
+    class AbortCommand(ActionCommand):
+        """
+        A class for SKASubarray's Abort() command.
+        """
+        def __init__(self, target, state_model, logger=None):
+            """
+            Constructor for AbortCommand
+
+            :param target: the object that this command acts upon; for
+                example, the SKASubarray device for which this class
+                implements the command
+            :type target: object
+            :param state_model: the state model that this command uses
+                 to check that it is allowed to run, and that it drives
+                 with actions.
+            :type state_model: SKABaseClassStateModel or a subclass of
+                same
+            :param logger: the logger to be used by this Command. If not
+                provided, then a default module logger will be used.
+            :type logger: a logger that implements the standard library
+                logger interface
+            """
+            super().__init__(
+                target, state_model, "abort", start_action=True, logger=logger
+            )
+
+        def do(self):
+            """
+            Stateless hook for Abort() command functionality.
+
+            :return: A tuple containing a return code and a string
+                message indicating status. The message is for
+                information purpose only.
+            :rtype: (ResultCode, str)
+            """
+            message = "Abort command completed OK"
+            self.logger.info(message)
+            return (ResultCode.OK, message)
+
+    class ObsResetCommand(ActionCommand):
+        """
+        A class for SKASubarray's ObsReset() command.
+        """
+        def __init__(self, target, state_model, logger=None):
+            """
+            Constructor for ObsResetCommand
+
+            :param target: the object that this command acts upon; for
+                example, the SKASubarray device for which this class
+                implements the command
+            :type target: object
+            :param state_model: the state model that this command uses
+                 to check that it is allowed to run, and that it drives
+                 with actions.
+            :type state_model: SKABaseClassStateModel or a subclass of
+                same
+            :param logger: the logger to be used by this Command. If not
+                provided, then a default module logger will be used.
+            :type logger: a logger that implements the standard library
+                logger interface
+            """
+            super().__init__(
+                target, state_model, "obs_reset", start_action=True, logger=logger
+            )
+
+        def do(self):
+            """
+            Stateless hook for ObsReset() command functionality.
+
+            :return: A tuple containing a return code and a string
+                message indicating status. The message is for
+                information purpose only.
+            :rtype: (ResultCode, str)
+            """
+            device = self.target
+
+            # We might have interrupted a long-running command such as a Configure
+            # or a Scan, so we need to clean up from that.
+
+            # Now totally deconfigure
+            device._deconfigure()
+
+            message = "ObsReset command completed OK"
+            self.logger.info(message)
+            return (ResultCode.OK, message)
+
+    class RestartCommand(ActionCommand):
+        """
+        A class for SKASubarray's Restart() command.
+        """
+        def __init__(self, target, state_model, logger=None):
+            """
+            Constructor for RestartCommand
+
+            :param target: the object that this command acts upon; for
+                example, the SKASubarray device for which this class
+                implements the command
+            :type target: object
+            :param state_model: the state model that this command uses
+                 to check that it is allowed to run, and that it drives
+                 with actions.
+            :type state_model: SKABaseClassStateModel or a subclass of
+                same
+            :param logger: the logger to be used by this Command. If not
+                provided, then a default module logger will be used.
+            :type logger: a logger that implements the standard library
+                logger interface
+            """
+            super().__init__(
+                target, state_model, "restart", start_action=True, logger=logger
+            )
+
+        def do(self):
+            """
+            Stateless hook for Restart() command functionality.
+
+            :return: A tuple containing a return code and a string
+                message indicating status. The message is for
+                information purpose only.
+            :rtype: (ResultCode, str)
+            """
+            device = self.target
+
+            # We might have interrupted a long-running command such as a Configure
+            # or a Scan, so we need to clean up from that.
+
+            # Now totally deconfigure
+            device._deconfigure()
+
+            # and release all resources
+            device.resource_manager.release_all()
+
+            message = "Restart command completed OK"
+            self.logger.info(message)
+            return (ResultCode.OK, message)
+
+    # PROTECTED REGION ID(SKASubarray.class_variable) ENABLED START #
+    def _init_state_model(self):
+        """
+        Sets up the state model for the device
+        """
+        self.state_model = SKASubarrayStateModel(
+            dev_state_callback=self._update_state,
+        )
+
+    def init_command_objects(self):
+        """
+        Sets up the command objects
+        """
+        super().init_command_objects()
+
+        device_args = (self, self.state_model, self.logger)
+        resource_args = (self.resource_manager, self.state_model, self.logger)
+
+        self.register_command_object("On", self.OnCommand(*device_args))
+        self.register_command_object("Off", self.OffCommand(*device_args))
+        self.register_command_object(
+            "AssignResources",
+            self.AssignResourcesCommand(*resource_args)
+        )
+        self.register_command_object(
+            "ReleaseResources",
+            self.ReleaseResourcesCommand(*resource_args)
+        )
+        self.register_command_object(
+            "ReleaseAllResources",
+            self.ReleaseAllResourcesCommand(*resource_args)
+        )
+        self.register_command_object(
+            "Configure",
+            self.ConfigureCommand(*device_args)
+        )
+        self.register_command_object("Scan", self.ScanCommand(*device_args))
+        self.register_command_object(
+            "EndScan",
+            self.EndScanCommand(*device_args)
+        )
+        self.register_command_object("End", self.EndCommand(*device_args))
+        self.register_command_object("Abort", self.AbortCommand(*device_args))
+        self.register_command_object(
+            "ObsReset",
+            self.ObsResetCommand(*device_args)
+        )
+        self.register_command_object(
+            "Restart",
+            self.RestartCommand(*device_args)
+        )
+
+    def _validate_capability_types(self, capability_types):
+        """
+        Check the validity of the input parameter passed to the
+        Configure command.
+
+        :param device: the device for which this class implements
+            the configure command
+        :type device: SKASubarray
+        :param capability_types: a list strings representing
+            capability types.
+        :type capability_types: list
+        :raises ValueError: If any of the capabilities requested are
+            not valid.
         """
         invalid_capabilities = list(
             set(capability_types) - set(self._configured_capabilities))
 
         if invalid_capabilities:
-            Except.throw_exception(
-                "Command failed!", "Invalid capability types requested {}".format(
-                    invalid_capabilities), command_name, ErrSeverity.ERR)
+            raise CapabilityValidationError(
+                "Invalid capability types requested {}".format(
+                    invalid_capabilities
+                )
+            )
 
-
-    def _validate_input_sizes(self, command_name, argin):
-        """Check the validity of the input parameters passed on to the command specified
-        by the command_name parameter.
-
-        Parameters
-        ----------
-        command_name: str
-            The name of the command which is to be executed.
-        argin: tango.DevVarLongStringArray
-            A tuple of two lists representing [number of instances][capability types]
-
-        Raises
-        ------
-        tango.DevFailed: If the two lists are not equal in length.
+    def _deconfigure(self):
         """
-        capabilities_instances, capability_types = argin
-        if len(capabilities_instances) != len(capability_types):
-            Except.throw_exception("Command failed!", "Argin value lists size mismatch.",
-                                   command_name, ErrSeverity.ERR)
-
-
-    def is_AssignResources_allowed(self):
-        return self._is_command_allowed("AssignResources")
-
-    def is_ReleaseResources_allowed(self):
-        return self._is_command_allowed("ReleaseResources")
-
-    def is_ReleaseAllResources_allowed(self):
-        return self._is_command_allowed("ReleaseResources")
-
-    def is_ConfigureCapability_allowed(self):
-        return self._is_command_allowed('ConfigureCapability')
-
-    def is_DeconfigureCapability_allowed(self):
-        return self._is_command_allowed('DeconfigureCapability')
-
-    def is_DeconfigureAllCapabilities_allowed(self):
-        return self._is_command_allowed('DeconfigureAllCapabilities')
-    # PROTECTED REGION END #    //  SKASubarray.class_variable
+        Completely deconfigure the subarray
+        """
+        self._configured_capabilities = {k: 0 for k in self._configured_capabilities}
 
     # -----------------
     # Device Properties
     # -----------------
-
     CapabilityTypes = device_property(
         dtype=('str',),
     )
@@ -169,7 +975,6 @@ class SKASubarray(SKAObsDevice):
     # ----------
     # Attributes
     # ----------
-
     activationTime = attribute(
         dtype='double',
         unit="s",
@@ -196,32 +1001,6 @@ class SKASubarray(SKAObsDevice):
     # ---------------
     # General methods
     # ---------------
-
-    def init_device(self):
-        SKAObsDevice.init_device(self)
-        # PROTECTED REGION ID(SKASubarray.init_device) ENABLED START #
-        self._build_state = '{}, {}, {}'.format(release.name, release.version,
-                                                release.description)
-        self._version_id = release.version
-
-        # Initialize attribute values.
-        self._activation_time = 0.0
-        self._assigned_resources = [""]
-        self._assigned_resources.clear()
-        # self._configured_capabilities is gonna be kept as a dictionary internally. The
-        # keys and value will represent the capability type name and the number of
-        # instances, respectively.
-        try:
-            self._configured_capabilities = dict.fromkeys(self.CapabilityTypes, 0)
-        except TypeError:
-            # Might need to have the device property be mandatory in the database.
-            self._configured_capabilities = {}
-
-        # When Subarray in not in use it reports:
-        self.set_state(DevState.DISABLE)
-
-        # PROTECTED REGION END #    //  SKASubarray.init_device
-
     def always_executed_hook(self):
         # PROTECTED REGION ID(SKASubarray.always_executed_hook) ENABLED START #
         pass
@@ -235,11 +1014,11 @@ class SKASubarray(SKAObsDevice):
     # ------------------
     # Attributes methods
     # ------------------
-
     def read_activationTime(self):
         # PROTECTED REGION ID(SKASubarray.activationTime_read) ENABLED START #
         """
         Reads the time since device is activated.
+
         :return: Time of activation in seconds since Unix epoch.
         """
         return self._activation_time
@@ -249,17 +1028,19 @@ class SKASubarray(SKAObsDevice):
         # PROTECTED REGION ID(SKASubarray.assignedResources_read) ENABLED START #
         """
         Reads the resources assigned to the device.
+
         :return: Resources assigned to the device.
         """
-        return self._assigned_resources
+        return sorted(self.resource_manager.get())
         # PROTECTED REGION END #    //  SKASubarray.assignedResources_read
 
     def read_configuredCapabilities(self):
         # PROTECTED REGION ID(SKASubarray.configuredCapabilities_read) ENABLED START #
         """
         Reads capabilities configured in the Subarray.
-        :return: A list of capability types with no. of instances
-        used in the Subarray
+
+        :return: A list of capability types with no. of instances used
+            in the Subarray
         """
         configured_capabilities = []
         for capability_type, capability_instances in (
@@ -272,164 +1053,366 @@ class SKASubarray(SKAObsDevice):
     # --------
     # Commands
     # --------
+    def is_On_allowed(self):
+        """
+        Check if command `On` is allowed in the current device state.
+
+        :raises ``tango.DevFailed``: if the command is not allowed
+        :return: ``True`` if the command is allowed
+        :rtype: boolean
+        """
+        command = self.get_command_object("On")
+        return command.check_allowed()
 
     @command(
+        dtype_out='DevVarLongStringArray',
+        doc_out="(ReturnType, 'informational message')",
     )
     @DebugIt()
-    def Abort(self):
-        # PROTECTED REGION ID(SKASubarray.Abort) ENABLED START #
-        """Change obsState to ABORTED."""
-        # PROTECTED REGION END #    //  SKASubarray.Abort
+    def On(self):
+        """
+        Turn subarray on
 
-    @command(dtype_in='DevVarLongStringArray', doc_in="[Number of instances to add][Capability types]",)
+        To modify behaviour for this command, modify the do() method of
+        the command class.
+        """
+        command = self.get_command_object("On")
+        (return_code, message) = command()
+        return [[return_code], [message]]
+
+    def is_Off_allowed(self):
+        """
+        Check if command `Off` is allowed in the current device state.
+
+        :raises ``tango.DevFailed``: if the command is not allowed
+        :return: ``True`` if the command is allowed
+        :rtype: boolean
+        """
+        command = self.get_command_object("Off")
+        return command.check_allowed()
+
+    @command(
+        dtype_out='DevVarLongStringArray',
+        doc_out="(ReturnType, 'informational message')",
+    )
     @DebugIt()
-    def ConfigureCapability(self, argin):
-        # PROTECTED REGION ID(SKASubarray.ConfigureCapability) ENABLED START #
-        """Configures number of instances for each capability. If the capability exists,
-        it increments the configured instances by the number of instances requested,
-        otherwise an exception will be raised.
-        Note: The two lists arguments must be of equal length or an exception will be raised."""
-        command_name = 'ConfigureCapability'
+    def Off(self):
+        """
+        Turn the subarray off
 
-        capabilities_instances, capability_types = argin
-        self._validate_capability_types(command_name, capability_types)
-        self._validate_input_sizes(command_name, argin)
+        To modify behaviour for this command, modify the do() method of
+        the command class.
+        """
+        command = self.get_command_object("Off")
+        (return_code, message) = command()
+        return [[return_code], [message]]
 
-        # Set obsState to 'CONFIGURING'.
-        self._obs_state = ObsState.CONFIGURING
+    def is_AssignResources_allowed(self):
+        """
+        Check if command `AssignResources` is allowed in the current
+        device state.
 
-        # Perform the configuration.
-        for capability_instances, capability_type in zip(
-                capabilities_instances, capability_types):
-            self._configured_capabilities[capability_type] += capability_instances
+        :raises ``tango.DevFailed``: if the command is not allowed
+        :return: ``True`` if the command is allowed
+        :rtype: boolean
+        """
+        command = self.get_command_object("AssignResources")
+        return command.check_allowed()
 
-        # Change the obsState to 'READY'.
-        self._obs_state = ObsState.READY
-        # PROTECTED REGION END #    //  SKASubarray.ConfigureCapability
-
-    @command(dtype_in='str', doc_in="Capability type",)
-    @DebugIt()
-    def DeconfigureAllCapabilities(self, argin):
-        # PROTECTED REGION ID(SKASubarray.DeconfigureAllCapabilities) ENABLED START #i
-        """Deconfigure all instances of the given Capability type. If the capability
-        type does not exist an exception will be raised, otherwise it sets the
-        configured instances for that capability type to zero."""
-        self._validate_capability_types('DeconfigureAllCapabilities', [argin])
-        self._configured_capabilities[argin] = 0
-        # PROTECTED REGION END #    //  SKASubarray.DeconfigureAllCapabilities
-
-    @command(dtype_in='DevVarLongStringArray', doc_in="[Number of instances to remove][Capability types]",)
-    @DebugIt()
-    def DeconfigureCapability(self, argin):
-        # PROTECTED REGION ID(SKASubarray.DeconfigureCapability) ENABLED START #
-        """Deconfigures a given number of instances for each capability.
-        If the capability exists, it decrements the configured instances by the
-        number of instances requested, otherwise an exceptioin will be raised.
-        Note: The two lists arguments must be of equal length or an exception
-        will be raised"""
-        command_name = 'DeconfigureCapability'
-        capabilities_instances, capability_types = argin
-
-        self._validate_capability_types(command_name, capability_types)
-        self._validate_input_sizes(command_name, argin)
-
-
-        # Perform the deconfiguration
-        for capability_instances, capability_type in zip(
-                capabilities_instances, capability_types):
-            if self._configured_capabilities[capability_type] < int(capability_instances):
-                self._configured_capabilities[capability_type] = 0
-            else:
-                self._configured_capabilities[capability_type] -= (
-                    int(capability_instances))
-        # PROTECTED REGION END #    //  SKASubarray.DeconfigureCapability
-
-    @command(dtype_in=('str',), doc_in="List of Resources to add to subarray.", dtype_out=('str',),
-             doc_out="A list of Resources added to the subarray.",)
+    @command(
+        dtype_in="DevString",
+        doc_in="JSON-encoded string with the resources to add to subarray",
+        dtype_out='DevVarLongStringArray',
+        doc_out="(ReturnType, 'informational message')",
+    )
     @DebugIt()
     def AssignResources(self, argin):
-        # PROTECTED REGION ID(SKASubarray.AssignResources) ENABLED START #
-        """Assign resources to a Subarray"""
-        argout = []
-        resources = self._assigned_resources[:]
-        for resource in argin:
-            if resource not in resources:
-                self._assigned_resources.append(resource)
-            argout.append(resource)
+        """
+        Assign resources to this subarray
 
-        self.set_state(DevState.ON)
-        return argout
+        To modify behaviour for this command, modify the do() method of
+        the command class.
 
-    @command(dtype_in=('str',), doc_in="List of resources to remove from the subarray.", dtype_out=('str',),
-             doc_out="List of resources removed from the subarray.",)
-    @DebugIt()
-    def ReleaseResources(self, argin):
-        # PROTECTED REGION ID(SKASubarray.ReleaseResources) ENABLED START #
-        """Delta removal of assigned resources."""
-        argout = []
-        # Release resources...
-        resources = self._assigned_resources[:]
-        for resource in argin:
-            if resource in resources:
-                self._assigned_resources.remove(resource)
-            argout.append(resource)
-        return argout
-        # PROTECTED REGION END #    //  SKASubarray.ReleaseResources
+        :param argin: the resources to be assigned
+        :type argin: list of str
+        """
+        command = self.get_command_object("AssignResources")
+        (return_code, message) = command(argin)
+        return [[return_code], [message]]
+
+    def is_ReleaseResources_allowed(self):
+        """
+        Check if command `ReleaseResources` is allowed in the current
+        device state.
+
+        :raises ``tango.DevFailed``: if the command is not allowed
+        :return: ``True`` if the command is allowed
+        :rtype: boolean
+        """
+        command = self.get_command_object("ReleaseResources")
+        return command.check_allowed()
 
     @command(
+        dtype_in="DevString",
+        doc_in="JSON-encoded string with the resources to remove from the subarray",
+        dtype_out='DevVarLongStringArray',
+        doc_out="(ReturnType, 'informational message')",
     )
     @DebugIt()
-    def EndSB(self):
-        # PROTECTED REGION ID(SKASubarray.EndSB) ENABLED START #
-        """Change obsState to IDLE."""
-        # PROTECTED REGION END #    //  SKASubarray.EndSB
+    def ReleaseResources(self, argin):
+        """
+        Delta removal of assigned resources.
+
+        To modify behaviour for this command, modify the do() method of
+        the command class.
+
+        :param argin: the resources to be released
+        :type argin: list of str
+        """
+        command = self.get_command_object("ReleaseResources")
+        (return_code, message) = command(argin)
+        return [[return_code], [message]]
+
+    def is_ReleaseAllResources_allowed(self):
+        """
+        Check if command `ReleaseAllResources` is allowed in the current
+        device state.
+
+        :raises ``tango.DevFailed``: if the command is not allowed
+        :return: ``True`` if the command is allowed
+        :rtype: boolean
+        """
+        command = self.get_command_object("ReleaseAllResources")
+        return command.check_allowed()
 
     @command(
+        dtype_out='DevVarLongStringArray',
+        doc_out="(ReturnType, 'informational message')",
+    )
+    @DebugIt()
+    def ReleaseAllResources(self):
+        """
+        Remove all resources to tear down to an empty subarray.
+
+        To modify behaviour for this command, modify the do() method of
+        the command class.
+
+        :return: list of resources removed
+        :rtype: list of string
+        """
+        command = self.get_command_object("ReleaseAllResources")
+        (return_code, message) = command()
+        return [[return_code], [message]]
+
+    def is_Configure_allowed(self):
+        """
+        Check if command `Configure` is allowed in the current
+        device state.
+
+        :raises ``tango.DevFailed``: if the command is not allowed
+        :return: ``True`` if the command is allowed
+        :rtype: boolean
+        """
+        command = self.get_command_object("Configure")
+        return command.check_allowed()
+
+    @command(
+        dtype_in="DevString",
+        doc_in="JSON-encoded string with the scan configuration",
+        dtype_out='DevVarLongStringArray',
+        doc_out="(ReturnType, 'informational message')",
+    )
+    @DebugIt()
+    def Configure(self, argin):
+        """
+        Configures the capabilities of this subarray
+
+        To modify behaviour for this command, modify the do() method of
+        the command class.
+
+        :param argin: configuration specification
+        :type argin: string
+        """
+        command = self.get_command_object("Configure")
+        (return_code, message) = command(argin)
+        return [[return_code], [message]]
+
+    def is_Scan_allowed(self):
+        """
+        Check if command `Scan` is allowed in the current device state.
+
+        :raises ``tango.DevFailed``: if the command is not allowed
+        :return: ``True`` if the command is allowed
+        :rtype: boolean
+        """
+        command = self.get_command_object("Scan")
+        return command.check_allowed()
+
+    @command(
+        dtype_in="DevString",
+        doc_in="JSON-encoded string with the per-scan configuration",
+        dtype_out="DevVarLongStringArray",
+        doc_out="(ReturnType, 'informational message')",
+    )
+    @DebugIt()
+    def Scan(self, argin):
+        """
+        Start scanning
+
+        To modify behaviour for this command, modify the do() method of
+        the command class.
+
+        :param argin: Information about the scan
+        :type argin: Array of str
+        """
+        command = self.get_command_object("Scan")
+        (return_code, message) = command(argin)
+        return [[return_code], [message]]
+
+    def is_EndScan_allowed(self):
+        """
+        Check if command `EndScan` is allowed in the current device state.
+
+        :raises ``tango.DevFailed``: if the command is not allowed
+        :return: ``True`` if the command is allowed
+        :rtype: boolean
+        """
+        command = self.get_command_object("EndScan")
+        return command.check_allowed()
+
+    @command(
+        dtype_out='DevVarLongStringArray',
+        doc_out="(ReturnType, 'informational message')",
     )
     @DebugIt()
     def EndScan(self):
-        # PROTECTED REGION ID(SKASubarray.EndScan) ENABLED START #
-        """Ends the scan"""
-        # PROTECTED REGION END #    //  SKASubarray.EndScan
+        """
+        End the scan
+
+        To modify behaviour for this command, modify the do() method of
+        the command class.
+        """
+        command = self.get_command_object("EndScan")
+        (return_code, message) = command()
+        return [[return_code], [message]]
+
+    def is_End_allowed(self):
+        """
+        Check if command `End` is allowed in the current device state.
+
+        :raises ``tango.DevFailed``: if the command is not allowed
+        :return: ``True`` if the command is allowed
+        :rtype: boolean
+        """
+        command = self.get_command_object("End")
+        return command.check_allowed()
 
     @command(
+        dtype_out='DevVarLongStringArray',
+        doc_out="(ReturnType, 'informational message')",
     )
     @DebugIt()
-    def Pause(self):
-        # PROTECTED REGION ID(SKASubarray.Pause) ENABLED START #
-        """Pauses the scan"""
-        # PROTECTED REGION END #    //  SKASubarray.Pause
+    def End(self):
+        # PROTECTED REGION ID(SKASubarray.EndSB) ENABLED START #
+        """
+        End the scan block.
 
-    @command(dtype_out=('str',), doc_out="List of resources removed from the subarray.",)
-    @DebugIt()
-    def ReleaseAllResources(self):
-        # PROTECTED REGION ID(SKASubarray.ReleaseAllResources) ENABLED START #
-        """Remove all resources to tear down to an empty subarray."""
-        resources = self._assigned_resources[:]
-        released_resources = self.ReleaseResources(resources)
-        return released_resources
-        # PROTECTED REGION END #    //  SKASubarray.ReleaseAllResources
+        To modify behaviour for this command, modify the do() method of
+        the command class.
+        """
+        command = self.get_command_object("End")
+        (return_code, message) = command()
+        return [[return_code], [message]]
+
+    def is_Abort_allowed(self):
+        """
+        Check if command `Abort` is allowed in the current device state.
+
+        :raises ``tango.DevFailed``: if the command is not allowed
+        :return: ``True`` if the command is allowed
+        :rtype: boolean
+        """
+        command = self.get_command_object("Abort")
+        return command.check_allowed()
 
     @command(
+        dtype_out='DevVarLongStringArray',
+        doc_out="(ReturnType, 'informational message')",
     )
     @DebugIt()
-    def Resume(self):
-        # PROTECTED REGION ID(SKASubarray.Resume) ENABLED START #
-        """Resumes the scan"""
-        # PROTECTED REGION END #    //  SKASubarray.Resume
+    def Abort(self):
+        """
+        Abort any long-running command such as ``Configure()`` or
+        ``Scan()``.
 
-    @command(dtype_in=('str',),)
+        To modify behaviour for this command, modify the do() method of
+        the command class.
+        """
+        command = self.get_command_object("Abort")
+        (return_code, message) = command()
+        return [[return_code], [message]]
+
+    def is_ObsReset_allowed(self):
+        """
+        Check if command `ObsReset` is allowed in the current device
+        state.
+
+        :raises ``tango.DevFailed``: if the command is not allowed
+        :return: ``True`` if the command is allowed
+        :rtype: boolean
+        """
+        command = self.get_command_object("ObsReset")
+        return command.check_allowed()
+
+    @command(
+        dtype_out='DevVarLongStringArray',
+        doc_out="(ReturnType, 'informational message')",
+    )
     @DebugIt()
-    def Scan(self, argin):
-        # PROTECTED REGION ID(SKASubarray.Scan) ENABLED START #
-        """Starts the scan"""
-        # PROTECTED REGION END #    //  SKASubarray.Scan
+    def ObsReset(self):
+        """
+        Reset the current observation process.
+
+        To modify behaviour for this command, modify the do() method of
+        the command class.
+        """
+        command = self.get_command_object("ObsReset")
+        (return_code, message) = command()
+        return [[return_code], [message]]
+
+    def is_Restart_allowed(self):
+        """
+        Check if command `Restart` is allowed in the current device
+        state.
+
+        :raises ``tango.DevFailed``: if the command is not allowed
+        :return: ``True`` if the command is allowed
+        :rtype: boolean
+        """
+        command = self.get_command_object("Restart")
+        return command.check_allowed()
+
+    @command(
+        dtype_out='DevVarLongStringArray',
+        doc_out="(ReturnType, 'informational message')",
+    )
+    @DebugIt()
+    def Restart(self):
+        """
+        Restart the subarray. That is, deconfigure and release
+        all resources.
+
+        To modify behaviour for this command, modify the do() method of
+        the command class.
+        """
+        command = self.get_command_object("Restart")
+        (return_code, message) = command()
+        return [[return_code], [message]]
+
 
 # ----------
 # Run server
 # ----------
-
-
 def main(args=None, **kwargs):
     # PROTECTED REGION ID(SKASubarray.main) ENABLED START #
     """
@@ -437,6 +1420,7 @@ def main(args=None, **kwargs):
     """
     return run((SKASubarray,), args=args, **kwargs)
     # PROTECTED REGION END #    //  SKASubarray.main
+
 
 if __name__ == '__main__':
     main()

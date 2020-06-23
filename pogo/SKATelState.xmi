@@ -60,7 +60,7 @@
         <type xsi:type="pogoDsl:VoidType"/>
       </argin>
       <argout description="">
-        <type xsi:type="pogoDsl:VoidType"/>
+        <type xsi:type="pogoDsl:LongStringArrayType"/>
       </argout>
       <status abstract="false" inherited="true" concrete="true"/>
     </commands>

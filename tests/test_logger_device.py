@@ -8,15 +8,9 @@
 #########################################################################################
 """Contain the tests for the SKALogger."""
 
-# Standard imports
-import sys
-import os
-
-# Imports
 import re
 import pytest
 from tango import DevState, DeviceProxy
-
 import tango
 
 # PROTECTED REGION ID(SKALogger.test_additional_imports) ENABLED START #
@@ -24,7 +18,8 @@ from ska.base.control_model import (
     AdminMode, ControlMode, HealthState, LoggingLevel, SimulationMode, TestMode
 )
 # PROTECTED REGION END #    //  SKALogger.test_additional_imports
-# Device test case
+
+
 # PROTECTED REGION ID(SKALogger.test_SKALogger_decorators) ENABLED START #
 @pytest.mark.usefixtures("tango_context", "initialize_device")
 # PROTECTED REGION END #    //  SKALogger.test_SKALogger_decorators
@@ -53,7 +48,7 @@ class TestSKALogger(object):
     def test_State(self, tango_context):
         """Test for State"""
         # PROTECTED REGION ID(SKALogger.test_State) ENABLED START #
-        assert tango_context.device.State() == DevState.UNKNOWN
+        assert tango_context.device.State() == DevState.OFF
         # PROTECTED REGION END #    //  SKALogger.test_State
 
     # PROTECTED REGION ID(SKALogger.test_Status_decorators) ENABLED START #
@@ -61,7 +56,7 @@ class TestSKALogger(object):
     def test_Status(self, tango_context):
         """Test for Status"""
         # PROTECTED REGION ID(SKALogger.test_Status) ENABLED START #
-        assert tango_context.device.Status() == "The device is in UNKNOWN state."
+        assert tango_context.device.Status() == "The device is in OFF state."
         # PROTECTED REGION END #    //  SKALogger.test_Status
 
     # PROTECTED REGION ID(SKALogger.test_SetLoggingLevel_decorators) ENABLED START #
@@ -99,14 +94,6 @@ class TestSKALogger(object):
         versionInfo = tango_context.device.GetVersionInfo()
         assert (re.match(versionPattern, versionInfo[0])) is not None
         # PROTECTED REGION END #    //  SKALogger.test_GetVersionInfo
-
-    # PROTECTED REGION ID(SKALogger.test_Reset_decorators) ENABLED START #
-    # PROTECTED REGION END #    //  SKALogger.test_Reset_decorators
-    def test_Reset(self, tango_context):
-        """Test for Reset"""
-        # PROTECTED REGION ID(SKALogger.test_Reset) ENABLED START #
-        assert tango_context.device.Reset() is None
-        # PROTECTED REGION END #    //  SKALogger.test_Reset
 
     # PROTECTED REGION ID(SKALogger.test_buildState_decorators) ENABLED START #
     # PROTECTED REGION END #    //  SKALogger.test_buildState_decorators
@@ -149,7 +136,7 @@ class TestSKALogger(object):
     def test_adminMode(self, tango_context):
         """Test for adminMode"""
         # PROTECTED REGION ID(SKALogger.test_adminMode) ENABLED START #
-        assert tango_context.device.adminMode == AdminMode.ONLINE
+        assert tango_context.device.adminMode == AdminMode.MAINTENANCE
         # PROTECTED REGION END #    //  SKALogger.test_adminMode
 
     # PROTECTED REGION ID(SKALogger.test_controlMode_decorators) ENABLED START #

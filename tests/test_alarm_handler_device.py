@@ -8,13 +8,10 @@
 #########################################################################################
 """Contain the tests for the SKAAlarmHandler."""
 
-# Standard imports
-import sys
-import os
-
 # Imports
 import re
 import pytest
+
 
 # PROTECTED REGION ID(SKAAlarmHandler.test_additional_imports) ENABLED START #
 # PROTECTED REGION END #    //  SKAAlarmHandler.test_additional_imports
@@ -46,7 +43,6 @@ class TestSKAAlarmHandler(object):
         # Test the properties
         # PROTECTED REGION ID(SKAAlarmHandler.test_properties) ENABLED START #
         # PROTECTED REGION END #    //  SKAAlarmHandler.test_properties
-
 
     # PROTECTED REGION ID(SKAAlarmHandler.test_GetAlarmRule_decorators) ENABLED START #
     # PROTECTED REGION END #    //  SKAAlarmHandler.test_GetAlarmRule_decorators

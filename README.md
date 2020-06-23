@@ -25,6 +25,36 @@ The lmc-base-classe repository contains set of eight classes as mentioned in SKA
 
 ## Version History
 
+#### 0.6.0
+- Breaking change: State management
+  - SKABaseDevice implements a simple state machine with states
+    `DISABLED`, `OFF`, `ON`, `INIT` and `FAULT`, along with transitions
+    between them.
+  - SKASubarray implements full subarray state machine in accordance
+    with ADR-8 (the underlying state model supports all states and
+    transitions, including transitions through transient states; the
+    subarray device uses this state model but currently provide a
+    simple, purely synchronous implementation)
+  - Base classes provide subclassing code hooks that separate management
+    of device state from other device functionality. Thus, subclasses
+    are encouraged to leave state management in the care of the base
+    classes by:
+    - leaving `init_device()` alone and placing their (stateless)
+      initialisation code in the `do()` method of the `InitCommand` object instead. The base `init_device()` implementation will ensure that
+      the `do()` method is called, whilst ensuring state is managed e.g.
+      the device is put into state `IDLE` beforehand, and put into the
+      right state afterwards.
+    - leaving commands like `Configure()` alone and placing their
+      (stateless) implementation code in `ConfigureCommand.do()`
+      instead. This applies to all commands that affect device state:
+       `Off()`, `On()`, `AssignResources()`, `ReleaseResources()`,
+       `ReleaseAllResources()`, `Configure()`, `Scan()`, `EndScan()`,
+       `End()`, `Abort()`, `Reset()`, `Restart()`.
+    - leaving the base device to handle reads from and writes to the
+      state attributes `adminMode`, `obsState` and device `state`. For
+      example, do not call `Device.set_state()` directly; and do not
+      override methods like `write_adminMode()`.
+
 #### 0.5.4
 - Remove `ObsState` command from SKACapability, SKAObsDevice and SKASubarray Pogo XMI files.  It should not
   have been included - the `obsState` attribute provides this information. The command was not in the Python

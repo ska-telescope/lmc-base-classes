@@ -8,9 +8,6 @@
 #########################################################################################
 """Contain the tests for the SKABASE."""
 
-# Standard imports
-import sys
-import os
 import re
 import pytest
 
@@ -323,7 +320,9 @@ class TestLoggingUtils:
 @pytest.mark.usefixtures("tango_context", "initialize_device")
 # PROTECTED REGION END #    //  SKABaseDevice.test_SKABaseDevice_decorators
 class TestSKABaseDevice(object):
-    """Test case for packet generation."""
+    """
+    Test cases for SKABaseDevice.
+    """
 
     properties = {
         'SkaLevel': '4',
@@ -358,7 +357,7 @@ class TestSKABaseDevice(object):
     def test_State(self, tango_context):
         """Test for State"""
         # PROTECTED REGION ID(SKABaseDevice.test_State) ENABLED START #
-        assert tango_context.device.State() == DevState.UNKNOWN
+        assert tango_context.device.State() == DevState.OFF
         # PROTECTED REGION END #    //  SKABaseDevice.test_State
 
     # PROTECTED REGION ID(SKABaseDevice.test_Status_decorators) ENABLED START #
@@ -366,7 +365,7 @@ class TestSKABaseDevice(object):
     def test_Status(self, tango_context):
         """Test for Status"""
         # PROTECTED REGION ID(SKABaseDevice.test_Status) ENABLED START #
-        assert tango_context.device.Status() == "The device is in UNKNOWN state."
+        assert tango_context.device.Status() == "The device is in OFF state."
         # PROTECTED REGION END #    //  SKABaseDevice.test_Status
 
     # PROTECTED REGION ID(SKABaseDevice.test_GetVersionInfo_decorators) ENABLED START #
@@ -386,7 +385,11 @@ class TestSKABaseDevice(object):
     def test_Reset(self, tango_context):
         """Test for Reset"""
         # PROTECTED REGION ID(SKABaseDevice.test_Reset) ENABLED START #
-        assert tango_context.device.Reset() is None
+        # This is a pretty weak test, but Reset() is only allowed from
+        # device state FAULT, and we have no way of putting into FAULT
+        # state through its interface.
+        with pytest.raises(DevFailed):
+            tango_context.device.Reset()
         # PROTECTED REGION END #    //  SKABaseDevice.test_Reset
 
     # PROTECTED REGION ID(SKABaseDevice.test_buildState_decorators) ENABLED START #
@@ -433,7 +436,9 @@ class TestSKABaseDevice(object):
         # tango logging target must be enabled by default
         assert tango_context.device.loggingTargets == ("tango::logger", )
 
-        with mock.patch("ska.base.base_device.LoggingUtils.create_logging_handler") as mocked_creator:
+        with mock.patch(
+            "ska.base.base_device.LoggingUtils.create_logging_handler"
+        ) as mocked_creator:
 
             def null_creator(target, tango_logger):
                 handler = logging.NullHandler()
@@ -490,7 +495,7 @@ class TestSKABaseDevice(object):
     def test_adminMode(self, tango_context):
         """Test for adminMode"""
         # PROTECTED REGION ID(SKABaseDevice.test_adminMode) ENABLED START #
-        assert tango_context.device.adminMode == AdminMode.ONLINE
+        assert tango_context.device.adminMode == AdminMode.MAINTENANCE
         # PROTECTED REGION END #    //  SKABaseDevice.test_adminMode
 
     # PROTECTED REGION ID(SKABaseDevice.test_controlMode_decorators) ENABLED START #

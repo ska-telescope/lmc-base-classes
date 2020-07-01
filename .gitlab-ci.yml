@@ -1,7 +1,7 @@
 # GitLab CI in conjunction with GitLab Runner can use Docker Engine to test and build any application.
 # Docker, when used with GitLab CI, runs each job in a separate and isolated container using the predefined image that is set up in .gitlab-ci.yml.
 # In this case we use the latest python docker image to build and test this project.
-image: nexus.engageska-portugal.pt/ska-docker/ska-python-buildenv:latest
+image: nexus.engageska-portugal.pt/ska-docker/ska-python-buildenv:9.3.2
 
 include:
   - project: 'ska-telescope/templates-repository'

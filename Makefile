@@ -150,9 +150,6 @@ ifneq ($(NETWORK_MODE),host)
 endif
 	$(DOCKER_COMPOSE_ARGS) docker-compose up -d
 
-piplock: build  ## overwrite Pipfile.lock with the image version
-	docker run $(IMAGE_TO_TEST) cat /app/Pipfile.lock > $(CURDIR)/Pipfile.lock
-
 interactive: up
 interactive:  ## start an interactive session using the project image (caution: R/W mounts source directory to /app)
 	docker run --rm -it -p 3000:3000 --name=$(CONTAINER_NAME_PREFIX)dev -e TANGO_HOST=$(TANGO_HOST) --network=$(NETWORK_MODE) \

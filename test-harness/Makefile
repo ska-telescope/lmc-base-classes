@@ -34,6 +34,7 @@ test:
 # FIXME: Add pylint2junit to the tango-builder:latest image so that we don't need to install it here.
 # FIXME: Missing functionality in pylint2junit prevents converting from parseable to xml. Once it's implemented there is no need to run linting twice.
 lint:
+	python3 -m pip install -U pylint==2.4.4; \
 	python3 -m pip install pylint2junit; \
 	mkdir -p /build/reports; \
 	cd /app && pylint --output-format=parseable src/ska | tee /build/code_analysis.stdout; \

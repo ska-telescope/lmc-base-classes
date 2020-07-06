@@ -30,14 +30,32 @@ class SKAObsDeviceStateModel(SKABaseDeviceStateModel):
     """
     Implements the state model for the SKABaseDevice
     """
-    def __init__(self, dev_state_callback=None):
+    def __init__(
+        self,
+        dev_state_callback=None,
+        admin_mode_callback=None,
+        obs_state_callback=None
+    ):
         """
         Initialises the model. Note that this does not imply moving to
         INIT state. The INIT state is managed by the model itself.
+
+        :param dev_state_callback: A callback to be called when a
+            transition implies a change to device state
+        :type dev_state_callback: callable
+        :param admin_mode_callback: A callback to be called when a
+            transition causes a change to device admin_mode
+        :type admin_mode_callback: callable
+        :param obs_state_callback: A callback to be called when a
+            transition causes a change to device obs_state
+        :type obs_state_callback: callable
         """
         super().__init__(
-            dev_state_callback=dev_state_callback
+            dev_state_callback=dev_state_callback,
+            admin_mode_callback=admin_mode_callback
         )
+        self._obs_state_callback = obs_state_callback
+
         self.update_transitions(
             {
                 ('UNINITIALISED', 'init_started'): (
@@ -54,12 +72,16 @@ class SKAObsDeviceStateModel(SKABaseDeviceStateModel):
 
     def _set_obs_state(self, obs_state):
         """
-        Helper method: set the value of obs_state value
+        Helper method: set the value of obs_state value, and calls the
+        obs_state_callback if one exists.
 
         :param obs_state: the new obs_state value
         :type obs_state: ObsState
         """
-        self._obs_state = obs_state
+        if self._obs_state != obs_state:
+            self._obs_state = obs_state
+            if self._obs_state_callback is not None:
+                self._obs_state_callback(self._obs_state)
 
     @property
     def obs_state(self):
@@ -86,6 +108,9 @@ class SKAObsDevice(SKABaseDevice):
             super().do()
 
             device = self.target
+            device.set_change_event("obsState", True, True)
+            device.set_archive_event("obsState", True, True)
+
             device._obs_mode = ObsMode.IDLE
             device._config_progress = 0
             device._config_delay_expected = 0
@@ -108,13 +133,11 @@ class SKAObsDevice(SKABaseDevice):
 
     obsState = attribute(
         dtype=ObsState,
-        polling_period=1000,
         doc="Observing State",
     )
 
     obsMode = attribute(
         dtype=ObsMode,
-        polling_period=1000,
         doc="Observing Mode",
     )
 
@@ -135,12 +158,25 @@ class SKAObsDevice(SKABaseDevice):
     # ---------------
     # General methods
     # ---------------
+    def _update_obs_state(self, obs_state):
+        """
+        Helper method for changing obs_state; passed to the state model as a
+        callback
+
+        :param obs_state: the new obs_state value
+        :type obs_state: ObsState
+        """
+        self.push_change_event("obsState", obs_state)
+        self.push_archive_event("obsState", obs_state)
+
     def _init_state_model(self):
         """
         Sets up the state model for the device
         """
         self.state_model = SKAObsDeviceStateModel(
             dev_state_callback=self._update_state,
+            admin_mode_callback=self._update_admin_mode,
+            obs_state_callback=self._update_obs_state
         )
 
     def always_executed_hook(self):

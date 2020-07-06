@@ -158,7 +158,7 @@
       </argout>
       <status abstract="false" inherited="false" concrete="true" concreteHere="true"/>
     </commands>
-    <attributes name="activationTime" attType="Scalar" rwType="READ" displayLevel="OPERATOR" polledPeriod="1000" maxX="" maxY="" allocReadMember="true" isDynamic="false">
+    <attributes name="activationTime" attType="Scalar" rwType="READ" displayLevel="OPERATOR" polledPeriod="0" maxX="" maxY="" allocReadMember="true" isDynamic="false">
       <dataType xsi:type="pogoDsl:DoubleType"/>
       <changeEvent fire="false" libCheckCriteria="false"/>
       <archiveEvent fire="false" libCheckCriteria="false"/>
@@ -168,10 +168,13 @@
     </attributes>
     <attributes name="adminMode" attType="Scalar" rwType="READ_WRITE" displayLevel="OPERATOR" polledPeriod="0" maxX="" maxY="" memorized="true" allocReadMember="true">
       <dataType xsi:type="pogoDsl:EnumType"/>
+      <changeEvent fire="true" libCheckCriteria="true"/>
+      <archiveEvent fire="true" libCheckCriteria="true"/>
+      <dataReadyEvent fire="false" libCheckCriteria="true"/>
       <status abstract="false" inherited="true" concrete="true"/>
       <properties description="The admin mode reported for this device. It may interpret the current device condition &#xA;and condition of all managed devices to set this. Most possibly an aggregate attribute." label="" unit="" standardUnit="" displayUnit="" format="" maxValue="" minValue="" maxAlarm="" minAlarm="" maxWarning="" minWarning="" deltaTime="" deltaValue=""/>
     </attributes>
-    <attributes name="buildState" attType="Scalar" rwType="READ" displayLevel="OPERATOR" polledPeriod="60000" maxX="" maxY="" allocReadMember="true">
+    <attributes name="buildState" attType="Scalar" rwType="READ" displayLevel="OPERATOR" polledPeriod="0" maxX="" maxY="" allocReadMember="true">
       <dataType xsi:type="pogoDsl:StringType"/>
       <status abstract="false" inherited="true" concrete="true"/>
       <properties description="Build state of this device" label="" unit="" standardUnit="" displayUnit="" format="" maxValue="" minValue="" maxAlarm="" minAlarm="" maxWarning="" minWarning="" deltaTime="" deltaValue=""/>
@@ -196,7 +199,7 @@
       <status abstract="false" inherited="true" concrete="true"/>
       <properties description="The health state reported for this device. It interprets the current device condition &#xA;and condition of all managed devices to set this. Most possibly an aggregate attribute." label="" unit="" standardUnit="" displayUnit="" format="" maxValue="" minValue="" maxAlarm="" minAlarm="" maxWarning="" minWarning="" deltaTime="" deltaValue=""/>
     </attributes>
-    <attributes name="loggingLevel" attType="Scalar" rwType="READ_WRITE" displayLevel="OPERATOR" polledPeriod="1000" maxX="" maxY="" allocReadMember="true">
+    <attributes name="loggingLevel" attType="Scalar" rwType="READ_WRITE" displayLevel="OPERATOR" polledPeriod="0" maxX="" maxY="" allocReadMember="true">
       <dataType xsi:type="pogoDsl:EnumType"/>
       <changeEvent fire="false" libCheckCriteria="false"/>
       <archiveEvent fire="false" libCheckCriteria="false"/>
@@ -210,6 +213,9 @@
     </attributes>
     <attributes name="obsState" attType="Scalar" rwType="READ" displayLevel="OPERATOR" polledPeriod="0" maxX="" maxY="" allocReadMember="true">
       <dataType xsi:type="pogoDsl:EnumType"/>
+      <changeEvent fire="true" libCheckCriteria="true"/>
+      <archiveEvent fire="true" libCheckCriteria="true"/>
+      <dataReadyEvent fire="false" libCheckCriteria="true"/>
       <status abstract="false" inherited="true" concrete="true"/>
       <properties description="Observing State" label="" unit="" standardUnit="" displayUnit="" format="" maxValue="" minValue="" maxAlarm="" minAlarm="" maxWarning="" minWarning="" deltaTime="" deltaValue=""/>
     </attributes>
@@ -223,12 +229,12 @@
       <status abstract="false" inherited="true" concrete="true"/>
       <properties description="The test mode of the device. &#xA;Either no test mode (empty string) or an indication of the test mode." label="" unit="" standardUnit="" displayUnit="" format="" maxValue="" minValue="" maxAlarm="" minAlarm="" maxWarning="" minWarning="" deltaTime="" deltaValue=""/>
     </attributes>
-    <attributes name="versionId" attType="Scalar" rwType="READ" displayLevel="OPERATOR" polledPeriod="60000" maxX="" maxY="" allocReadMember="true">
+    <attributes name="versionId" attType="Scalar" rwType="READ" displayLevel="OPERATOR" polledPeriod="0" maxX="" maxY="" allocReadMember="true">
       <dataType xsi:type="pogoDsl:StringType"/>
       <status abstract="false" inherited="true" concrete="true"/>
       <properties description="Build state of this device" label="" unit="" standardUnit="" displayUnit="" format="" maxValue="" minValue="" maxAlarm="" minAlarm="" maxWarning="" minWarning="" deltaTime="" deltaValue=""/>
     </attributes>
-    <attributes name="assignedResources" attType="Spectrum" rwType="READ" displayLevel="OPERATOR" polledPeriod="1000" maxX="100" maxY="" allocReadMember="true" isDynamic="false">
+    <attributes name="assignedResources" attType="Spectrum" rwType="READ" displayLevel="OPERATOR" polledPeriod="0" maxX="100" maxY="" allocReadMember="true" isDynamic="false">
       <dataType xsi:type="pogoDsl:StringType"/>
       <changeEvent fire="false" libCheckCriteria="false"/>
       <archiveEvent fire="false" libCheckCriteria="false"/>
@@ -236,7 +242,7 @@
       <status abstract="false" inherited="false" concrete="true" concreteHere="true"/>
       <properties description="The list of resources assigned to the subarray." label="" unit="" standardUnit="" displayUnit="" format="" maxValue="" minValue="" maxAlarm="" minAlarm="" maxWarning="" minWarning="" deltaTime="" deltaValue=""/>
     </attributes>
-    <attributes name="configuredCapabilities" attType="Spectrum" rwType="READ" displayLevel="OPERATOR" polledPeriod="1000" maxX="10" maxY="" allocReadMember="true" isDynamic="false">
+    <attributes name="configuredCapabilities" attType="Spectrum" rwType="READ" displayLevel="OPERATOR" polledPeriod="0" maxX="10" maxY="" allocReadMember="true" isDynamic="false">
       <dataType xsi:type="pogoDsl:StringType"/>
       <changeEvent fire="false" libCheckCriteria="false"/>
       <archiveEvent fire="false" libCheckCriteria="false"/>
@@ -276,14 +282,5 @@
       <status abstract="false" inherited="true" concrete="true"/>
     </states>
     <preferences docHome="./doc_html" makefileHome="$(TANGO_HOME)"/>
-    <overlodedPollPeriodObject name="adminMode" type="attribute" pollPeriod="0"/>
-    <overlodedPollPeriodObject name="configurationDelayExpected" type="attribute" pollPeriod="0"/>
-    <overlodedPollPeriodObject name="configurationProgress" type="attribute" pollPeriod="0"/>
-    <overlodedPollPeriodObject name="controlMode" type="attribute" pollPeriod="0"/>
-    <overlodedPollPeriodObject name="healthState" type="attribute" pollPeriod="0"/>
-    <overlodedPollPeriodObject name="obsMode" type="attribute" pollPeriod="0"/>
-    <overlodedPollPeriodObject name="obsState" type="attribute" pollPeriod="0"/>
-    <overlodedPollPeriodObject name="simulationMode" type="attribute" pollPeriod="0"/>
-    <overlodedPollPeriodObject name="testMode" type="attribute" pollPeriod="0"/>
   </classes>
 </pogoDsl:PogoSystem>

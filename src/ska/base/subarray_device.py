@@ -219,13 +219,30 @@ class SKASubarrayStateModel(SKAObsDeviceStateModel):
         ),
     }
 
-    def __init__(self, dev_state_callback=None):
+    def __init__(
+        self,
+        dev_state_callback=None,
+        admin_mode_callback=None,
+        obs_state_callback=None
+    ):
         """
         Initialises the model. Note that this does not imply moving to
         INIT state. The INIT state is managed by the model itself.
+
+        :param dev_state_callback: A callback to be called when a
+            transition implies a change to device state
+        :type dev_state_callback: callable
+        :param admin_mode_callback: A callback to be called when a
+            transition causes a change to device admin_mode
+        :type admin_mode_callback: callable
+        :param obs_state_callback: A callback to be called when a
+            transition causes a change to device obs_state
+        :type obs_state_callback: callable
         """
         super().__init__(
             dev_state_callback=dev_state_callback,
+            admin_mode_callback=admin_mode_callback,
+            obs_state_callback=obs_state_callback
         )
         self.update_transitions(self.__transitions)
 
@@ -334,80 +351,6 @@ class SKASubarray(SKAObsDevice):
                 device._configured_capabilities = {}
 
             message = "SKASubarray Init command completed OK"
-            self.logger.info(message)
-            return (ResultCode.OK, message)
-
-    class OnCommand(ActionCommand):
-        """
-        A class for the SKASubarray's On() command.
-        """
-        def __init__(self, target, state_model, logger=None):
-            """
-            Constructor for OnCommand
-
-            :param target: the object that this command acts upon; for
-                example, the SKASubarray device for which this class
-                implements the command
-            :type target: object
-            :param state_model: the state model that this command uses
-                 to check that it is allowed to run, and that it drives
-                 with actions.
-            :type state_model: SKABaseClassStateModel or a subclass of
-                same
-            :param logger: the logger to be used by this Command. If not
-                provided, then a default module logger will be used.
-            :type logger: a logger that implements the standard library
-                logger interface
-            """
-            super().__init__(target, state_model, "on", logger=logger)
-
-        def do(self):
-            """
-            Stateless hook for On() command functionality.
-
-            :return: A tuple containing a return code and a string
-                message indicating status. The message is for
-                information purpose only.
-            :rtype: (ResultCode, str)
-            """
-            message = "On command completed OK"
-            self.logger.info(message)
-            return (ResultCode.OK, message)
-
-    class OffCommand(ActionCommand):
-        """
-        A class for the SKASubarray's Off() command.
-        """
-        def __init__(self, target, state_model, logger=None):
-            """
-            Constructor for OffCommand
-
-            :param target: the object that this command acts upon; for
-                example, the SKASubarray device for which this class
-                implements the command
-            :type target: object
-            :param state_model: the state model that this command uses
-                 to check that it is allowed to run, and that it drives
-                 with actions.
-            :type state_model: SKABaseClassStateModel or a subclass of
-                same
-            :param logger: the logger to be used by this Command. If not
-                provided, then a default module logger will be used.
-            :type logger: a logger that implements the standard library
-                logger interface
-            """
-            super().__init__(target, state_model, "off", logger=logger)
-
-        def do(self):
-            """
-            Stateless hook for Off() command functionality.
-
-            :return: A tuple containing a return code and a string
-                message indicating status. The message is for
-                information purpose only.
-            :rtype: (ResultCode, str)
-            """
-            message = "Off command completed OK"
             self.logger.info(message)
             return (ResultCode.OK, message)
 
@@ -886,6 +829,8 @@ class SKASubarray(SKAObsDevice):
         """
         self.state_model = SKASubarrayStateModel(
             dev_state_callback=self._update_state,
+            admin_mode_callback=self._update_admin_mode,
+            obs_state_callback=self._update_obs_state
         )
 
     def init_command_objects(self):
@@ -897,8 +842,6 @@ class SKASubarray(SKAObsDevice):
         device_args = (self, self.state_model, self.logger)
         resource_args = (self.resource_manager, self.state_model, self.logger)
 
-        self.register_command_object("On", self.OnCommand(*device_args))
-        self.register_command_object("Off", self.OffCommand(*device_args))
         self.register_command_object(
             "AssignResources",
             self.AssignResourcesCommand(*resource_args)
@@ -1053,59 +996,6 @@ class SKASubarray(SKAObsDevice):
     # --------
     # Commands
     # --------
-    def is_On_allowed(self):
-        """
-        Check if command `On` is allowed in the current device state.
-
-        :raises ``tango.DevFailed``: if the command is not allowed
-        :return: ``True`` if the command is allowed
-        :rtype: boolean
-        """
-        command = self.get_command_object("On")
-        return command.check_allowed()
-
-    @command(
-        dtype_out='DevVarLongStringArray',
-        doc_out="(ReturnType, 'informational message')",
-    )
-    @DebugIt()
-    def On(self):
-        """
-        Turn subarray on
-
-        To modify behaviour for this command, modify the do() method of
-        the command class.
-        """
-        command = self.get_command_object("On")
-        (return_code, message) = command()
-        return [[return_code], [message]]
-
-    def is_Off_allowed(self):
-        """
-        Check if command `Off` is allowed in the current device state.
-
-        :raises ``tango.DevFailed``: if the command is not allowed
-        :return: ``True`` if the command is allowed
-        :rtype: boolean
-        """
-        command = self.get_command_object("Off")
-        return command.check_allowed()
-
-    @command(
-        dtype_out='DevVarLongStringArray',
-        doc_out="(ReturnType, 'informational message')",
-    )
-    @DebugIt()
-    def Off(self):
-        """
-        Turn the subarray off
-
-        To modify behaviour for this command, modify the do() method of
-        the command class.
-        """
-        command = self.get_command_object("Off")
-        (return_code, message) = command()
-        return [[return_code], [message]]
 
     def is_AssignResources_allowed(self):
         """

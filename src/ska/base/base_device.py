@@ -472,19 +472,40 @@ class SKABaseDeviceStateModel(DeviceStateModel):
             "FAULT (ENABLED)",
             lambda self: self._set_dev_state(DevState.FAULT)
         ),
+        ('OFF', 'on_succeeded'): (
+            "ON",
+            lambda self: self._set_dev_state(DevState.ON)
+        ),
+        ('OFF', 'on_failed'): (
+            "FAULT",
+            lambda self: self._set_dev_state(DevState.FAULT)
+        ),
+        ('ON', 'off_succeeded'): (
+            "OFF",
+            lambda self: self._set_dev_state(DevState.OFF)
+        ),
+        ('ON', 'off_failed'): (
+            "FAULT",
+            lambda self: self._set_dev_state(DevState.FAULT)
+        ),
+
     }
 
-    def __init__(self, dev_state_callback=None):
+    def __init__(self, dev_state_callback=None, admin_mode_callback=None):
         """
         Initialises the state model.
 
         :param dev_state_callback: A callback to be called when a
             transition implies a change to device state
-        :type dev_state_callback: tango.DevState
+        :type dev_state_callback: callable
+        :param admin_mode_callback: A callback to be called when a
+            transition causes a change to device admin_mode
+        :type admin_mode_callback: callable
         """
         super().__init__(self.__transitions, "UNINITIALISED")
 
         self._admin_mode = None
+        self._admin_mode_callback = admin_mode_callback
         self._dev_state = None
         self._dev_state_callback = dev_state_callback
 
@@ -505,7 +526,10 @@ class SKABaseDeviceStateModel(DeviceStateModel):
         :param admin_mode: the new admin_mode value
         :type admin_mode: AdminMode
         """
-        self._admin_mode = admin_mode
+        if self._admin_mode != admin_mode:
+            self._admin_mode = admin_mode
+            if self._admin_mode_callback is not None:
+                self._admin_mode_callback(self._admin_mode)
 
     @property
     def dev_state(self):
@@ -571,6 +595,13 @@ class SKABaseDevice(Device):
             :rtype: (ResultCode, str)
             """
             device = self.target
+
+            device.set_change_event("adminMode", True, True)
+            device.set_archive_event("adminMode", True, True)
+            device.set_change_event("state", True, True)
+            device.set_archive_event("state", True, True)
+            device.set_change_event("status", True, True)
+            device.set_archive_event("status", True, True)
 
             device._health_state = HealthState.OK
             device._control_mode = ControlMode.REMOTE
@@ -768,6 +799,17 @@ class SKABaseDevice(Device):
     # General methods
     # ---------------
 
+    def _update_admin_mode(self, admin_mode):
+        """
+        Helper method for changing admin_mode; passed to the state model as a
+        callback
+
+        :param admin_mode: the new admin_mode value
+        :type admin_mode: AdminMode
+        """
+        self.push_change_event("adminMode", admin_mode)
+        self.push_archive_event("adminMode", admin_mode)
+
     def _update_state(self, state):
         """
         Helper method for changing state; passed to the state model as a
@@ -782,6 +824,16 @@ class SKABaseDevice(Device):
             )
             self.set_state(state)
             self.set_status(f"The device is in {state} state.")
+
+    def set_state(self, state):
+        super().set_state(state)
+        self.push_change_event('state')
+        self.push_archive_event('state')
+
+    def set_status(self, status):
+        super().set_status(status)
+        self.push_change_event('status')
+        self.push_archive_event('status')
 
     def init_device(self):
         """
@@ -818,7 +870,8 @@ class SKABaseDevice(Device):
         Creates the state model for the device
         """
         self.state_model = SKABaseDeviceStateModel(
-            dev_state_callback=self._update_state
+            dev_state_callback=self._update_state,
+            admin_mode_callback=self._update_admin_mode
         )
 
     def register_command_object(self, command_name, command_object):
@@ -828,12 +881,14 @@ class SKABaseDevice(Device):
         return self._command_objects[command_name]
 
     def init_command_objects(self):
-        self.register_command_object(
-            "Reset", self.ResetCommand(self, self.state_model, self.logger)
-        )
+        device_args = (self, self.state_model, self.logger)
+
+        self.register_command_object("On", self.OnCommand(*device_args))
+        self.register_command_object("Off", self.OffCommand(*device_args))
+        self.register_command_object("Reset", self.ResetCommand(*device_args))
         self.register_command_object(
             "GetVersionInfo",
-            self.GetVersionInfoCommand(self, self.state_model, self.logger)
+            self.GetVersionInfoCommand(*device_args)
         )
 
     def always_executed_hook(self):
@@ -1160,6 +1215,134 @@ class SKABaseDevice(Device):
         :return: None
         """
         command = self.get_command_object("Reset")
+        (return_code, message) = command()
+        return [[return_code], [message]]
+
+    class OnCommand(ActionCommand):
+        """
+        A class for the SKABaseDevice's On() command.
+        """
+        def __init__(self, target, state_model, logger=None):
+            """
+            Constructor for OnCommand
+
+            :param target: the object that this command acts upon; for
+                example, the SKABaseDevice for which this class
+                implements the command
+            :type target: object
+            :param state_model: the state model that this command uses
+                 to check that it is allowed to run, and that it drives
+                 with actions.
+            :type state_model: SKABaseClassStateModel or a subclass of
+                same
+            :param logger: the logger to be used by this Command. If not
+                provided, then a default module logger will be used.
+            :type logger: a logger that implements the standard library
+                logger interface
+            """
+            super().__init__(target, state_model, "on", logger=logger)
+
+        def do(self):
+            """
+            Stateless hook for On() command functionality.
+
+            :return: A tuple containing a return code and a string
+                message indicating status. The message is for
+                information purpose only.
+            :rtype: (ResultCode, str)
+            """
+            message = "On command completed OK"
+            self.logger.info(message)
+            return (ResultCode.OK, message)
+
+    def is_On_allowed(self):
+        """
+        Check if command `On` is allowed in the current device state.
+
+        :raises ``tango.DevFailed``: if the command is not allowed
+        :return: ``True`` if the command is allowed
+        :rtype: boolean
+        """
+        command = self.get_command_object("On")
+        return command.check_allowed()
+
+    @command(
+        dtype_out='DevVarLongStringArray',
+        doc_out="(ReturnType, 'informational message')",
+    )
+    @DebugIt()
+    def On(self):
+        """
+        Turn device on
+
+        To modify behaviour for this command, modify the do() method of
+        the command class.
+        """
+        command = self.get_command_object("On")
+        (return_code, message) = command()
+        return [[return_code], [message]]
+
+    class OffCommand(ActionCommand):
+        """
+        A class for the SKABaseDevice's Off() command.
+        """
+        def __init__(self, target, state_model, logger=None):
+            """
+            Constructor for OffCommand
+
+            :param target: the object that this command acts upon; for
+                example, the SKABaseDevice for which this class
+                implements the command
+            :type target: object
+            :param state_model: the state model that this command uses
+                 to check that it is allowed to run, and that it drives
+                 with actions.
+            :type state_model: SKABaseClassStateModel or a subclass of
+                same
+            :param logger: the logger to be used by this Command. If not
+                provided, then a default module logger will be used.
+            :type logger: a logger that implements the standard library
+                logger interface
+            """
+            super().__init__(target, state_model, "off", logger=logger)
+
+        def do(self):
+            """
+            Stateless hook for Off() command functionality.
+
+            :return: A tuple containing a return code and a string
+                message indicating status. The message is for
+                information purpose only.
+            :rtype: (ResultCode, str)
+            """
+            message = "Off command completed OK"
+            self.logger.info(message)
+            return (ResultCode.OK, message)
+
+    def is_Off_allowed(self):
+        """
+        Check if command `Off` is allowed in the current device state.
+
+        :raises ``tango.DevFailed``: if the command is not allowed
+        :return: ``True`` if the command is allowed
+        :rtype: boolean
+        """
+        command = self.get_command_object("Off")
+        return command.check_allowed()
+
+    @command(
+        dtype_out='DevVarLongStringArray',
+        doc_out="(ReturnType, 'informational message')",
+    )
+    @DebugIt()
+    def Off(self):
+        """
+        Turn the device off
+
+        To modify behaviour for this command, modify the do() method of
+        the command class.
+        """
+        command = self.get_command_object("Off")
         (return_code, message) = command()
         return [[return_code], [message]]
 

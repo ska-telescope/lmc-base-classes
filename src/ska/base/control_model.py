@@ -355,7 +355,8 @@ class DeviceStateModel:
         :type initial_state: a state with an entry in the transitions
             table
         """
-        self._transitions = transitions
+        # instances may update transitions dict, so need a copy
+        self._transitions = transitions.copy()
         self._state = initial_state
 
     @property

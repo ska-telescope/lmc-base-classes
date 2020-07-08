@@ -11,9 +11,12 @@
 # Imports
 import re
 import pytest
+
 from tango import DevState
+from tango.test_context import MultiDeviceTestContext
 
 # PROTECTED REGION ID(SKAObsDevice.test_additional_imports) ENABLED START #
+from ska.base import SKABaseDevice, SKAObsDevice
 from ska.base.control_model import (
     AdminMode, ControlMode, HealthState, ObsMode, ObsState, SimulationMode, TestMode
 )
@@ -171,3 +174,19 @@ class TestSKAObsDevice(object):
         # PROTECTED REGION ID(SKAObsDevice.test_testMode) ENABLED START #
         assert tango_context.device.testMode == TestMode.NONE
         # PROTECTED REGION END #    //  SKAObsDevice.test_testMode
+
+
+def test_multiple_devices_in_same_process():
+
+    # The order here is important - base class last, so that we can
+    # test that the subclass isn't breaking anything.
+    devices_info = (
+        {"class": SKAObsDevice, "devices": [{"name": "test/obs/1"}]},
+        {"class": SKABaseDevice, "devices": [{"name": "test/base/1"}]},
+    )
+
+    with MultiDeviceTestContext(devices_info, process=False) as context:
+        proxy1 = context.get_device("test/obs/1")
+        proxy2 = context.get_device("test/base/1")
+        assert proxy1.State() == DevState.OFF
+        assert proxy2.State() == DevState.OFF

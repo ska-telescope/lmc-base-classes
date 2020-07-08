@@ -28,7 +28,7 @@ The lmc-base-classe repository contains set of eight classes as mentioned in SKA
 #### 0.6.2
 - Fix issue with incorrect updates to transitions dict from inherited devices.
   Only noticeable if running multiple devices of different types in the same
-  the process.
+  process.
 
 #### 0.6.1
 - Add ON state to SKABaseDeviceStateModel.

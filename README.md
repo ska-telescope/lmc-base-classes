@@ -25,6 +25,9 @@ The lmc-base-classe repository contains set of eight classes as mentioned in SKA
 
 ## Version History
 
+#### 0.6.3
+- Fix omission of fatal_error transition from base device state machine.
+
 #### 0.6.2
 - Fix issue with incorrect updates to transitions dict from inherited devices.
   Only noticeable if running multiple devices of different types in the same

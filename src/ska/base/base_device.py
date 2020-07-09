@@ -477,7 +477,7 @@ class SKABaseDeviceStateModel(DeviceStateModel):
             lambda self: self._set_dev_state(DevState.ON)
         ),
         ('OFF', 'on_failed'): (
-            "FAULT",
+            "FAULT (ENABLED)",
             lambda self: self._set_dev_state(DevState.FAULT)
         ),
         ('ON', 'off_succeeded'): (
@@ -485,7 +485,11 @@ class SKABaseDeviceStateModel(DeviceStateModel):
             lambda self: self._set_dev_state(DevState.OFF)
         ),
         ('ON', 'off_failed'): (
-            "FAULT",
+            "FAULT (ENABLED)",
+            lambda self: self._set_dev_state(DevState.FAULT)
+        ),
+        ('ON', 'fatal_error'): (
+            "FAULT (ENABLED)",
             lambda self: self._set_dev_state(DevState.FAULT)
         ),
 

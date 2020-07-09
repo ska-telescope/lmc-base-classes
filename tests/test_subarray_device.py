@@ -15,7 +15,7 @@ import pytest
 from tango import DevState, DevFailed
 
 # PROTECTED REGION ID(SKASubarray.test_additional_imports) ENABLED START #
-from ska.base import SKASubarray, SKASubarrayResourceManager
+from ska.base import SKASubarray, SKASubarrayResourceManager, SKASubarrayStateModel
 from ska.base.commands import ResultCode
 from ska.base.control_model import (
     AdminMode, ControlMode, HealthState, ObsMode, ObsState, SimulationMode, TestMode
@@ -577,6 +577,11 @@ class TestSKASubarray(object):
 @pytest.fixture
 def resource_manager():
     yield SKASubarrayResourceManager()
+
+
+@pytest.fixture
+def state_model():
+    yield SKASubarrayStateModel()
 
 
 class TestSKASubarrayResourceManager:

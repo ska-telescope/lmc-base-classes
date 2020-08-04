@@ -6,14 +6,6 @@
 SKA BaseDevice
 ============================================
 
-The SKABaseDevice implements the basic device state machine, as illustrated
-below, but without, at present, a Standby state.
-
-.. image:: images/device_state_diagram.png
-  :width: 400
-  :alt: Diagram of the device state machine showing states and transitions
-
-
 .. toctree::
    :maxdepth: 2
 

@@ -14,13 +14,11 @@ other useful enumerations.
 """
 
 import enum
-from ska.base.faults import StateModelError
+
 
 # ---------------------------------
 # Core SKA Control Model attributes
 # ---------------------------------
-
-
 class HealthState(enum.IntEnum):
     """Python enumerated type for ``healthState`` attribute."""
 
@@ -328,94 +326,3 @@ class LoggingLevel(enum.IntEnum):
     WARNING = 3
     INFO = 4
     DEBUG = 5
-
-
-class DeviceStateModel:
-    """
-    Base class for the state model used by SKA devices.
-    """
-
-    def __init__(self, transitions, initial_state):
-        """
-        Create a new device state model.
-
-        :param transitions: a dictionary for which each key is a (state,
-            event) tuple, and each value is a (state, side-effect)
-            tuple. When the device is in state `IN-STATE`, and action
-            `ACTION` is attempted, the transitions table will be checked
-            for an entry under key `(IN-STATE, EVENT)`. If no such key
-            exists, the action will be denied and a model will raise a
-            `StateModelError`. If the key does exist, then its value
-            `(OUT-STATE, SIDE-EFFECT)` will result in the model
-            transitioning to state `OUT-STATE`, and executing
-            `SIDE-EFFECT`, which must be a function or lambda that
-            takes a single parameter - a model instance.
-        :type transitions: dict
-        :param initial_state: the starting state of the model
-        :type initial_state: a state with an entry in the transitions
-            table
-        """
-        # instances may update transitions dict, so need a copy
-        self._transitions = transitions.copy()
-        self._state = initial_state
-
-    @property
-    def state(self):
-        """Return current state as a string."""
-        return self._state
-
-    def update_transitions(self, transitions):
-        """
-        Update the transitions table with new transitions.
-
-        :param transitions: new transitions to be included in the
-            transitions table. Transitions with pre-existing keys will
-            replace the transitions for that key. Transitions with novel
-            keys will be added. There is no provision for removing
-            transitions
-        :type transitions: dict
-        """
-        self._transitions.update(transitions)
-
-    def is_action_allowed(self, action):
-        """
-        Whether a given action is allowed in the current state.
-
-        :param action: an action, as given in the transitions table
-        :type action: ANY
-        """
-        return (self._state, action) in self._transitions
-
-    def try_action(self, action):
-        """
-        Checks whether a given action is allowed in the current state,
-        and raises a StateModelError if it is not.
-
-        :param action: an action, as given in the transitions table
-        :type action: ANY
-        :raises StateModelError: if the action is not allowed in the
-            current state
-        :returns: True if the action is allowed
-        :rtype: boolean
-        """
-        if not self.is_action_allowed(action):
-            raise StateModelError(
-                f"Action '{action}' not allowed in current state ({self._state})."
-            )
-        return True
-
-    def perform_action(self, action):
-        """
-        Performs an action on the state model
-
-        :param action: an action, as given in the transitions table
-        :type action: ANY
-        :raises StateModelError: if the action is not allowed in the
-            current state
-
-        """
-        self.try_action(action)
-
-        (self._state, side_effect) = self._transitions[(self._state, action)]
-        if side_effect is not None:
-            side_effect(self)

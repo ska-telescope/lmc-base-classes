@@ -6,20 +6,19 @@
 #
 #
 #########################################################################################
-"""Contain the tests for the SKABASE."""
-
-import itertools
-import re
-import pytest
+"""
+This module contains the tests for the SKABaseDevice.
+"""
 
 # PROTECTED REGION ID(SKABaseDevice.test_additional_imports) ENABLED START #
 import logging
+import re
+import pytest
 import socket
 import tango
 
 from unittest import mock
 from tango import DevFailed, DevState
-from ska.base import SKABaseDeviceStateModel
 from ska.base.control_model import (
     AdminMode, ControlMode, HealthState, LoggingLevel, SimulationMode, TestMode
 )
@@ -28,9 +27,12 @@ from ska.base.base_device import (
     _PYTHON_TO_TANGO_LOGGING_LEVEL,
     LoggingUtils,
     LoggingTargetError,
+    SKABaseDeviceStateModel,
     TangoLoggingServiceHandler,
 )
 from ska.base.faults import StateModelError
+
+from .conftest import load_data, StateMachineTester
 
 # PROTECTED REGION END #    //  SKABaseDevice.test_additional_imports
 # Device test case
@@ -321,7 +323,103 @@ class TestLoggingUtils:
             LoggingUtils.create_logging_handler = orig_create_logging_handler
 
 
-@pytest.mark.usefixtures("tango_context", "initialize_device")
+@pytest.fixture
+def device_state_model():
+    """
+    Yields a new SKABaseDeviceStateModel for testing
+    """
+    yield SKABaseDeviceStateModel(logging.getLogger())
+
+
+@pytest.mark.state_machine_tester(load_data("base_device_state_machine"))
+class TestSKABaseDeviceStateModel(StateMachineTester):
+    """
+    This class contains the test suite for the ska.base.SKABaseDevice class.
+    """
+    @pytest.fixture
+    def machine(self, device_state_model):
+        """
+        Fixture that returns the state machine under test in this class
+        """
+        yield device_state_model
+
+    state_checks = {
+        "UNINITIALISED":
+            (None, None),
+        "FAULT_ENABLED":
+            ([AdminMode.ONLINE, AdminMode.MAINTENANCE], DevState.FAULT),
+        "FAULT_DISABLED":
+            ([AdminMode.NOT_FITTED, AdminMode.OFFLINE], DevState.FAULT),
+        "INIT_ENABLED":
+            ([AdminMode.ONLINE, AdminMode.MAINTENANCE], DevState.INIT),
+        "INIT_DISABLED":
+            ([AdminMode.NOT_FITTED, AdminMode.OFFLINE], DevState.INIT),
+        "DISABLED":
+            ([AdminMode.NOT_FITTED, AdminMode.OFFLINE], DevState.DISABLE),
+        "OFF":
+            ([AdminMode.ONLINE, AdminMode.MAINTENANCE], DevState.OFF),
+        "ON":
+            ([AdminMode.ONLINE, AdminMode.MAINTENANCE], DevState.ON),
+    }
+
+    def assert_state(self, machine, state):
+        """
+        Assert the current state of this state machine, based on the
+        values of the adminMode, opState and obsState attributes of this
+        model.
+
+        :param machine: the state machine under test
+        :type machine: state machine object instance
+        :param state: the state that we are asserting to be the current
+            state of the state machine under test
+        :type state: str
+        """
+
+        (admin_modes, op_state) = self.state_checks[state]
+        if admin_modes is None:
+            assert machine.admin_mode is None
+        else:
+            assert machine.admin_mode in admin_modes
+        if op_state is None:
+            assert machine.op_state is None
+        else:
+            assert machine.op_state == op_state
+
+    def perform_action(self, machine, action):
+        """
+        Perform a given action on the state machine under test.
+
+        :param action: action to be performed on the state machine
+        :type action: str
+        """
+        machine.perform_action(action)
+
+    def check_action_disallowed(self, machine, action):
+        """
+        Assert that performing a given action on the state maching under
+        test fails in its current state.
+
+        :param machine: the state machine under test
+        :type machine: state machine object instance
+        :param action: action to be performed on the state machine
+        :type action: str
+        """
+        with pytest.raises(StateModelError):
+            self.perform_action(machine, action)
+
+    def to_state(self, machine, target_state):
+        """
+        Transition the state machine to a target state.
+
+        :param machine: the state machine under test
+        :type machine: state machine object instance
+        :param target_state: the state that we want to get the state
+            machine under test into
+        :type target_state: str
+        """
+        machine._straight_to_state(target_state)
+
+
 # PROTECTED REGION END #    //  SKABaseDevice.test_SKABaseDevice_decorators
 class TestSKABaseDevice(object):
     """
@@ -587,145 +685,3 @@ class TestSKABaseDevice(object):
         # PROTECTED REGION ID(SKABaseDevice.test_testMode) ENABLED START #
         assert tango_context.device.testMode == TestMode.NONE
         # PROTECTED REGION END #    //  SKABaseDevice.test_testMode
-
-
-@pytest.fixture
-def state_model():
-    yield SKABaseDeviceStateModel()
-
-
-class TestSKABaseDeviceStateModel():
-    """
-    Test cases for SKABaseDeviceStateModel.
-    """
-
-    @pytest.mark.parametrize(
-        'state_under_test, action_under_test',
-        itertools.product(
-            ["UNINITIALISED", "INIT_ENABLED", "INIT_DISABLED", "FAULT_ENABLED",
-             "FAULT_DISABLED", "DISABLED", "OFF", "ON"],
-            ["init_started", "init_succeeded", "init_failed", "fatal_error",
-             "reset_succeeded", "reset_failed", "to_notfitted",
-             "to_offline", "to_online", "to_maintenance", "on_succeeded",
-             "on_failed", "off_succeeded", "off_failed"]
-        )
-    )
-    def test_state_machine(
-        self, state_model, state_under_test, action_under_test
-    ):
-        """
-        Test the subarray state machine: for a given initial state and
-        an action, does execution of that action, from that initial
-        state, yield the expected results? If the action was not allowed
-        from that initial state, does the device raise a DevFailed
-        exception? If the action was allowed, does it result in the
-        correct state transition?
-
-        :todo: support starting in different memorised adminModes
-        """
-        states = {
-            "UNINITIALISED":
-                (None, None),
-            "FAULT_ENABLED":
-                ([AdminMode.ONLINE, AdminMode.MAINTENANCE], DevState.FAULT),
-            "FAULT_DISABLED":
-                ([AdminMode.NOT_FITTED, AdminMode.OFFLINE], DevState.FAULT),
-            "INIT_ENABLED":
-                ([AdminMode.ONLINE, AdminMode.MAINTENANCE], DevState.INIT),
-            "INIT_DISABLED":
-                ([AdminMode.NOT_FITTED, AdminMode.OFFLINE], DevState.INIT),
-            "DISABLED":
-                ([AdminMode.NOT_FITTED, AdminMode.OFFLINE], DevState.DISABLE),
-            "OFF":
-                ([AdminMode.ONLINE, AdminMode.MAINTENANCE], DevState.OFF),
-            "ON":
-                ([AdminMode.ONLINE, AdminMode.MAINTENANCE], DevState.ON),
-        }
-
-        def assert_state(state):
-            (admin_modes, state) = states[state]
-            if admin_modes is not None:
-                assert state_model.admin_mode in admin_modes
-            if state is not None:
-                assert state_model.dev_state == state
-
-        transitions = {
-            ('UNINITIALISED', 'init_started'): "INIT_ENABLED",
-            ('INIT_ENABLED', 'to_notfitted'): "INIT_DISABLED",
-            ('INIT_ENABLED', 'to_offline'): "INIT_DISABLED",
-            ('INIT_ENABLED', 'to_online'): "INIT_ENABLED",
-            ('INIT_ENABLED', 'to_maintenance'): "INIT_ENABLED",
-            ('INIT_ENABLED', 'init_succeeded'): 'OFF',
-            ('INIT_ENABLED', 'init_failed'): 'FAULT_ENABLED',
-            ('INIT_ENABLED', 'fatal_error'): "FAULT_ENABLED",
-            ('INIT_DISABLED', 'to_notfitted'): "INIT_DISABLED",
-            ('INIT_DISABLED', 'to_offline'): "INIT_DISABLED",
-            ('INIT_DISABLED', 'to_online'): "INIT_ENABLED",
-            ('INIT_DISABLED', 'to_maintenance'): "INIT_ENABLED",
-            ('INIT_DISABLED', 'init_succeeded'): 'DISABLED',
-            ('INIT_DISABLED', 'init_failed'): 'FAULT_DISABLED',
-            ('INIT_DISABLED', 'fatal_error'): "FAULT_DISABLED",
-            ('FAULT_DISABLED', 'to_notfitted'): "FAULT_DISABLED",
-            ('FAULT_DISABLED', 'to_offline'): "FAULT_DISABLED",
-            ('FAULT_DISABLED', 'to_online'): "FAULT_ENABLED",
-            ('FAULT_DISABLED', 'to_maintenance'): "FAULT_ENABLED",
-            ('FAULT_DISABLED', 'reset_succeeded'): "DISABLED",
-            ('FAULT_DISABLED', 'reset_failed'): "FAULT_DISABLED",
-            ('FAULT_DISABLED', 'fatal_error'): "FAULT_DISABLED",
-            ('FAULT_ENABLED', 'to_notfitted'): "FAULT_DISABLED",
-            ('FAULT_ENABLED', 'to_offline'): "FAULT_DISABLED",
-            ('FAULT_ENABLED', 'to_online'): "FAULT_ENABLED",
-            ('FAULT_ENABLED', 'to_maintenance'): "FAULT_ENABLED",
-            ('FAULT_ENABLED', 'reset_succeeded'): "OFF",
-            ('FAULT_ENABLED', 'reset_failed'): "FAULT_ENABLED",
-            ('FAULT_ENABLED', 'fatal_error'): "FAULT_ENABLED",
-            ('DISABLED', 'to_notfitted'): "DISABLED",
-            ('DISABLED', 'to_offline'): "DISABLED",
-            ('DISABLED', 'to_online'): "OFF",
-            ('DISABLED', 'to_maintenance'): "OFF",
-            ('DISABLED', 'fatal_error'): "FAULT_DISABLED",
-            ('OFF', 'to_notfitted'): "DISABLED",
-            ('OFF', 'to_offline'): "DISABLED",
-            ('OFF', 'to_online'): "OFF",
-            ('OFF', 'to_maintenance'): "OFF",
-            ('OFF', 'on_succeeded'): "ON",
-            ('OFF', 'on_failed'): "FAULT_ENABLED",
-            ('OFF', 'fatal_error'): "FAULT_ENABLED",
-            ('ON', 'off_succeeded'): "OFF",
-            ('ON', 'off_failed'): "FAULT_ENABLED",
-            ('ON', 'fatal_error'): "FAULT_ENABLED",
-        }
-
-        setups = {
-            "UNINITIALISED": [],
-            "INIT_ENABLED": ['init_started'],
-            "INIT_DISABLED": ['init_started', 'to_offline'],
-            "FAULT_ENABLED": ['init_started', 'init_failed'],
-            "FAULT_DISABLED": ['init_started', 'to_offline', 'init_failed'],
-            "OFF": ['init_started', 'init_succeeded'],
-            "DISABLED": ['init_started', 'init_succeeded', 'to_offline'],
-            "ON": ['init_started', 'init_succeeded', 'on_succeeded'],
-        }
-
-        # state = "UNINITIALISED"  # for test debugging only
-        # assert_state(state)  # for test debugging only
-
-        # Put the device into the state under test
-        for action in setups[state_under_test]:
-            state_model.perform_action(action)
-            # state = transitions[state, action]  # for test debugging only
-            # assert_state(state)  # for test debugging only
-
-        # Check that we are in the state under test
-        assert_state(state_under_test)
-
-        # Test that the action under test does what we expect it to
-        if (state_under_test, action_under_test) in transitions:
-            # Action should succeed
-            state_model.perform_action(action_under_test)
-            assert_state(transitions[(state_under_test, action_under_test)])
-        else:
-            # Action should fail and the state should not change
-            with pytest.raises(StateModelError):
-                state_model.perform_action(action_under_test)
-            assert_state(state_under_test)

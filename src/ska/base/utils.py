@@ -1,11 +1,13 @@
 """General utilities that may be useful to SKA devices and clients."""
 from builtins import str
 import ast
+import functools
 import inspect
 import json
 import pydoc
 import traceback
 import sys
+import warnings
 
 from datetime import datetime
 
@@ -462,3 +464,26 @@ def convert_dict_to_list(dictionary):
         the_list.append("{}:{}".format(key, value))
 
     return sorted(the_list)
+
+
+def for_testing_only(func, _testing_check=lambda: 'pytest' in sys.modules):
+    """
+    A decorator that marks a function as available for testing purposes only.
+    If the decorated function is called outside of testing, a warning is raised.
+
+    Testing this decorator leads to a Godelian paradox: how to test that a
+    warning is raised when we are not testing. Monkeypatching sys.modules would
+    break everything, so instead, the condition that we evaluate to decide
+    whether we are testing or not is exposed through a `_testing_check`
+    argument, allowing for it to be replaced in testing. (The `_testing_check`
+    argument is inaccessible via the @-syntax, which is a nice bonus.)
+    """
+    @functools.wraps(func)
+    def wrapper(*args, **kwargs):
+        """
+        Function wrapper for `testing_only` decorator.
+        """
+        if not _testing_check():
+            warnings.warn(f"{func.__name__} should only be used for testing purposes.")
+        return func(*args, **kwargs)
+    return wrapper

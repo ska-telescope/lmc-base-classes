@@ -22,6 +22,7 @@ Welcome to LMC Base Classes documentation!
 
    SKA Control Model<Control_Model>
    SKA Commands<Commands>
+   SKA State Machine<State_Machine>
 
 Indices and tables
 ==================
@@ -29,4 +30,3 @@ Indices and tables
 * :ref:`genindex`
 * :ref:`modindex`
 * :ref:`search`
-

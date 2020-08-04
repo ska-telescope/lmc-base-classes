@@ -1,12 +1,13 @@
 __all__ = (
     "commands",
     "control_model",
+    "state_machine",
     "SKAAlarmHandler",
     "SKABaseDevice", "SKABaseDeviceStateModel",
     "SKACapability",
     "SKALogger",
     "SKAMaster",
-    "SKAObsDevice", "SKAObsDeviceStateModel",
+    "SKAObsDevice",
     "SKASubarray", "SKASubarrayStateModel", "SKASubarrayResourceManager",
     "SKATelState",
 )
@@ -21,7 +22,7 @@ from .master_device import SKAMaster
 from .tel_state_device import SKATelState
 
 # SKAObsDevice, and then classes that inherit from it
-from .obs_device import SKAObsDevice, SKAObsDeviceStateModel
+from .obs_device import SKAObsDevice
 from .capability_device import SKACapability
 from .subarray_device import (
     SKASubarray, SKASubarrayStateModel, SKASubarrayResourceManager

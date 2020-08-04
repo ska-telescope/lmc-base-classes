@@ -153,7 +153,8 @@ class BaseCommand:
             return self.state_model.try_action(action)
         except StateModelError as exc:
             raise CommandError(
-                f"Error executing command {self.name}") from exc
+                f"Error executing command {self.name}"
+            ) from exc
 
     def _perform_action(self, action):
         """
@@ -167,6 +168,12 @@ class BaseCommand:
 
 
 class ResponseCommand(BaseCommand):
+    """
+    Abstract base class for a tango command handler, for commands that
+    execute a procedure/operation and return a (ResultCode, message)
+    tuple.
+    """
+
     def __call__(self, argin=None):
         """
         What to do when the command is called. This base class simply

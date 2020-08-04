@@ -1,4 +1,5 @@
 """Tests for skabase.utils."""
+from contextlib import nullcontext
 import json
 import pytest
 
@@ -6,6 +7,7 @@ from ska.base.utils import (
     get_groups_from_json,
     get_tango_device_type_id,
     GroupDefinitionsError,
+    for_testing_only
 )
 
 TEST_GROUPS = {
@@ -209,3 +211,46 @@ def test_get_tango_device_type_id():
     device_name = "domain/family/member"
     result = get_tango_device_type_id(device_name)
     assert result == ["family", "member"]
+
+
+@pytest.mark.parametrize(
+    "in_test, context",
+    [
+        (
+            False,
+            pytest.warns(
+                UserWarning,
+                match='foo should only be used for testing purposes'
+            )
+        ),
+        (True, nullcontext()),
+    ]
+)
+def test_for_testing_only(in_test, context):
+    """
+    Test the @for_testing_only decorator, to ensure that a warning is raised if and only
+    if we are NOT testing. This is achieved by patching the test, which cannot be done
+    using the @decorator syntax.
+    """
+    def foo():
+        """Dummy function for wrapping by decorator under test."""
+        return "foo"
+
+    foo = for_testing_only(foo, _testing_check=lambda: in_test)
+
+    with context:
+        assert foo() == "foo"
+
+
+def test_for_testing_only_decorator():
+    """
+    Test the unpatched for_testing_only decorator using the usual @decorator syntax
+    """
+    @for_testing_only
+    def bah():
+        """Dummy function for wrapping by decorator under test."""
+        return "bah"
+
+    with pytest.warns(None) as warning_record:
+        assert bah() == "bah"
+    assert len(warning_record) == 0  # no warning was raised because we are testing

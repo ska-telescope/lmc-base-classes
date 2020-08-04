@@ -14,78 +14,15 @@ instead of just SKABaseDevice.
 # Additional import
 # PROTECTED REGION ID(SKAObsDevice.additionnal_import) ENABLED START #
 # Tango imports
-from tango import DevState
 from tango.server import run, attribute
 
 # SKA specific imports
-from ska.base import SKABaseDevice, SKABaseDeviceStateModel
+from ska.base import SKABaseDevice
 from ska.base.commands import ResultCode
-from ska.base.control_model import AdminMode, ObsMode, ObsState
+from ska.base.control_model import ObsMode, ObsState
 # PROTECTED REGION END #    //  SKAObsDevice.additionnal_imports
 
-__all__ = ["SKAObsDevice", "SKAObsDeviceStateModel", "main"]
-
-
-class SKAObsDeviceStateModel(SKABaseDeviceStateModel):
-    """
-    Implements the state model for the SKABaseDevice
-    """
-    def __init__(
-        self,
-        dev_state_callback=None,
-        admin_mode_callback=None,
-        obs_state_callback=None
-    ):
-        """
-        Initialises the model. Note that this does not imply moving to
-        INIT state. The INIT state is managed by the model itself.
-
-        :param dev_state_callback: A callback to be called when a
-            transition implies a change to device state
-        :type dev_state_callback: callable
-        :param admin_mode_callback: A callback to be called when a
-            transition causes a change to device admin_mode
-        :type admin_mode_callback: callable
-        :param obs_state_callback: A callback to be called when a
-            transition causes a change to device obs_state
-        :type obs_state_callback: callable
-        """
-        super().__init__(
-            dev_state_callback=dev_state_callback,
-            admin_mode_callback=admin_mode_callback
-        )
-        self._obs_state_callback = obs_state_callback
-
-        self.update_transitions(
-            {
-                ('UNINITIALISED', 'init_started'): (
-                    "INIT (ENABLED)",
-                    lambda self: (
-                        self._set_admin_mode(AdminMode.MAINTENANCE),
-                        self._set_dev_state(DevState.INIT),
-                        self._set_obs_state(ObsState.EMPTY)
-                    )
-                )
-            }
-        )
-        self._obs_state = None
-
-    def _set_obs_state(self, obs_state):
-        """
-        Helper method: set the value of obs_state value, and calls the
-        obs_state_callback if one exists.
-
-        :param obs_state: the new obs_state value
-        :type obs_state: ObsState
-        """
-        if self._obs_state != obs_state:
-            self._obs_state = obs_state
-            if self._obs_state_callback is not None:
-                self._obs_state_callback(self._obs_state)
-
-    @property
-    def obs_state(self):
-        return self._obs_state
+__all__ = ["SKAObsDevice", "main"]
 
 
 class SKAObsDevice(SKABaseDevice):
@@ -111,6 +48,7 @@ class SKAObsDevice(SKABaseDevice):
             device.set_change_event("obsState", True, True)
             device.set_archive_event("obsState", True, True)
 
+            device._obs_state = ObsState.EMPTY
             device._obs_mode = ObsMode.IDLE
             device._config_progress = 0
             device._config_delay_expected = 0
@@ -166,26 +104,27 @@ class SKAObsDevice(SKABaseDevice):
         :param obs_state: the new obs_state value
         :type obs_state: ObsState
         """
+        self._obs_state = obs_state
         self.push_change_event("obsState", obs_state)
         self.push_archive_event("obsState", obs_state)
 
-    def _init_state_model(self):
-        """
-        Sets up the state model for the device
-        """
-        self.state_model = SKAObsDeviceStateModel(
-            dev_state_callback=self._update_state,
-            admin_mode_callback=self._update_admin_mode,
-            obs_state_callback=self._update_obs_state
-        )
-
     def always_executed_hook(self):
         # PROTECTED REGION ID(SKAObsDevice.always_executed_hook) ENABLED START #
+        """
+        Method that is always executed before any device command gets executed.
+
+        :return: None
+        """
         pass
         # PROTECTED REGION END #    //  SKAObsDevice.always_executed_hook
 
     def delete_device(self):
         # PROTECTED REGION ID(SKAObsDevice.delete_device) ENABLED START #
+        """
+        Method to cleanup when device is stopped.
+
+        :return: None
+        """
         pass
         # PROTECTED REGION END #    //  SKAObsDevice.delete_device
 
@@ -196,7 +135,7 @@ class SKAObsDevice(SKABaseDevice):
     def read_obsState(self):
         # PROTECTED REGION ID(SKAObsDevice.obsState_read) ENABLED START #
         """Reads Observation State of the device"""
-        return self.state_model.obs_state
+        return self._obs_state
         # PROTECTED REGION END #    //  SKAObsDevice.obsState_read
 
     def read_obsMode(self):

@@ -404,6 +404,7 @@ class ObservationStateMachine(Machine):
                 "source": [
                     ObsState.IDLE.name, ObsState.CONFIGURING.name,
                     ObsState.READY.name, ObsState.SCANNING.name,
+                    ObsState.RESETTING.name,
                 ],
                 "trigger": "abort_started",
                 "dest": ObsState.ABORTING.name,

@@ -191,6 +191,11 @@
     ],
     [
         "RESETTING",
+        "abort_started",
+        "ABORTING"
+    ],
+    [
+        "RESETTING",
         "fatal_error",
         "FAULT"
     ],

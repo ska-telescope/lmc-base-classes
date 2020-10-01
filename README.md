@@ -25,6 +25,9 @@ The lmc-base-classe repository contains set of eight classes as mentioned in SKA
 
 ## Version History
 
+#### 0.6.6
+- Documentation bugfix
+
 #### 0.6.5
 - Fix to observation state machine: allow Abort() from RESETTING observation
   state

@@ -15,7 +15,6 @@ from tango.test_context import MultiDeviceTestContext
 from ska.base.logger_device import SKALogger
 from ska.base.subarray_device import SKASubarray
 import tango
-from unittest.mock import patch, MagicMock
 
 # PROTECTED REGION ID(SKALogger.test_additional_imports) ENABLED START #
 from ska.base.control_model import (

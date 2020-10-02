@@ -121,6 +121,7 @@ pages:
     - docker-executor
   script:
     - cp -R build public
+    - ls public
     - mv public/lmcbaseclasses_htmlcov/* public
 
   artifacts:

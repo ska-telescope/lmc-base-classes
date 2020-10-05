@@ -27,7 +27,8 @@
 # sys.modules.update((mod_name, Mock()) for mod_name in MOCK_MODULES)
 
 autodoc_mock_imports = ['PyTango', 'tango', 'tango.server', 'run', 'command',
-                        'future', 'future.utils', 'ska.logging', 'ska.logging.configuration']
+                        'future', 'future.utils', 'transitions',
+                        'ska.logging', 'ska.logging.configuration']
 
 import sys
 import os

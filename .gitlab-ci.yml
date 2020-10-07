@@ -60,9 +60,6 @@ build wheel for development: # Executed on non-tagged commit
 
 unit tests:
   stage: test
-  image: nexus.engageska-portugal.pt/ska-docker/tango-builder:latest
-  before_script:
-  - docker login -u $DOCKER_REGISTRY_USERNAME -p $DOCKER_REGISTRY_PASSWORD $DOCKER_REGISTRY_HOST
   tags:
     - docker-executor
   script:
@@ -76,9 +73,6 @@ unit tests:
 
 linting:
   stage: linting
-  image: nexus.engageska-portugal.pt/ska-docker/tango-builder:latest
-  before_script:
-  - docker login -u $DOCKER_REGISTRY_USERNAME -p $DOCKER_REGISTRY_PASSWORD $DOCKER_REGISTRY_HOST
   tags:
     - docker-executor
   script:
@@ -123,14 +117,12 @@ release docker image:
 
 pages:
   stage: pages
-  image: nexus.engageska-portugal.pt/ska-docker/tango-builder:latest
-  before_script:
-  - docker login -u $DOCKER_REGISTRY_USERNAME -p $DOCKER_REGISTRY_PASSWORD $DOCKER_REGISTRY_HOST
   tags:
     - docker-executor
   script:
     - cp -R build public
-    - mv public/lmcbaseclasses_htmlcov/* public
+    - mv public/htmlcov/* public
+
   artifacts:
     paths:
       - public

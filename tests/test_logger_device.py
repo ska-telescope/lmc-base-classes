@@ -10,13 +10,22 @@
 
 import re
 import pytest
-from tango import DevState, DeviceProxy
+from tango import DevState
+from tango.test_context import MultiDeviceTestContext
+from ska.base.logger_device import SKALogger
+from ska.base.subarray_device import SKASubarray
 import tango
 
 # PROTECTED REGION ID(SKALogger.test_additional_imports) ENABLED START #
 from ska.base.control_model import (
-    AdminMode, ControlMode, HealthState, LoggingLevel, SimulationMode, TestMode
+    AdminMode,
+    ControlMode,
+    HealthState,
+    LoggingLevel,
+    SimulationMode,
+    TestMode,
 )
+
 # PROTECTED REGION END #    //  SKALogger.test_additional_imports
 
 
@@ -25,9 +34,11 @@ from ska.base.control_model import (
 # PROTECTED REGION END #    //  SKALogger.test_SKALogger_decorators
 class TestSKALogger(object):
     """Test case for packet generation."""
-    properties = {'SkaLevel': '1',
-                  'GroupDefinitions': '',
-                  }
+
+    properties = {
+        "SkaLevel": "1",
+        "GroupDefinitions": "",
+    }
 
     @classmethod
     def mocking(cls):
@@ -59,38 +70,15 @@ class TestSKALogger(object):
         assert tango_context.device.Status() == "The device is in OFF state."
         # PROTECTED REGION END #    //  SKALogger.test_Status
 
-    # PROTECTED REGION ID(SKALogger.test_SetLoggingLevel_decorators) ENABLED START #
-    @pytest.mark.parametrize("logging_level", [int(tango.LogLevel.LOG_ERROR)])
-    @pytest.mark.parametrize("logging_target", ["logger/test/1"])
-    # PROTECTED REGION END #    //  SKALogger.test_SetLoggingLevel_decorators
-    def test_SetLoggingLevel(self, tango_context,
-                             logging_level, logging_target):
-        """Test for SetLoggingLevel"""
-        # PROTECTED REGION ID(SKALogger.test_SetLoggingLevel) ENABLED START #
-        # initial setting must not be same as what it will be set to
-        dev_proxy = DeviceProxy(logging_target)
-        dev_proxy.loggingLevel = int(tango.LogLevel.LOG_FATAL)
-        assert dev_proxy.loggingLevel != logging_level
-
-        levels = []
-        levels.append(logging_level)
-        targets = []
-        targets.append(logging_target)
-        device_details = []
-        device_details.append(levels)
-        device_details.append(targets)
-        tango_context.device.SetLoggingLevel(device_details)
-        assert dev_proxy.loggingLevel == logging_level
-        # PROTECTED REGION END #    //  SKALogger.test_SetLoggingLevel
-
     # PROTECTED REGION ID(SKALogger.test_GetVersionInfo_decorators) ENABLED START #
     # PROTECTED REGION END #    //  SKALogger.test_GetVersionInfo_decorators
     def test_GetVersionInfo(self, tango_context):
         """Test for GetVersionInfo"""
         # PROTECTED REGION ID(SKALogger.test_GetVersionInfo) ENABLED START #
         versionPattern = re.compile(
-            r'SKALogger, lmcbaseclasses, [0-9].[0-9].[0-9], '
-            r'A set of generic base devices for SKA Telescope.')
+            r"SKALogger, lmcbaseclasses, [0-9].[0-9].[0-9], "
+            r"A set of generic base devices for SKA Telescope."
+        )
         versionInfo = tango_context.device.GetVersionInfo()
         assert (re.match(versionPattern, versionInfo[0])) is not None
         # PROTECTED REGION END #    //  SKALogger.test_GetVersionInfo
@@ -101,8 +89,9 @@ class TestSKALogger(object):
         """Test for buildState"""
         # PROTECTED REGION ID(SKALogger.test_buildState) ENABLED START #
         buildPattern = re.compile(
-            r'lmcbaseclasses, [0-9].[0-9].[0-9], '
-            r'A set of generic base devices for SKA Telescope')
+            r"lmcbaseclasses, [0-9].[0-9].[0-9], "
+            r"A set of generic base devices for SKA Telescope"
+        )
         assert (re.match(buildPattern, tango_context.device.buildState)) is not None
         # PROTECTED REGION END #    //  SKALogger.test_buildState
 
@@ -111,7 +100,7 @@ class TestSKALogger(object):
     def test_versionId(self, tango_context):
         """Test for versionId"""
         # PROTECTED REGION ID(SKALogger.test_versionId) ENABLED START #
-        versionIdPattern = re.compile(r'[0-9].[0-9].[0-9]')
+        versionIdPattern = re.compile(r"[0-9].[0-9].[0-9]")
         assert (re.match(versionIdPattern, tango_context.device.versionId)) is not None
         # PROTECTED REGION END #    //  SKALogger.test_versionId
 
@@ -162,3 +151,30 @@ class TestSKALogger(object):
         # PROTECTED REGION ID(SKALogger.test_testMode) ENABLED START #
         assert tango_context.device.testMode == TestMode.NONE
         # PROTECTED REGION END #    //  SKALogger.test_testMode
+
+
+def test_SetLoggingLevel():
+    """Test for SetLoggingLevel"""
+    logging_level = int(tango.LogLevel.LOG_ERROR)
+    logging_target = "logger/target/1"
+    logger_device = "logger/device/1"
+    devices_info = (
+        {"class": SKALogger, "devices": [{"name": logger_device}]},
+        {"class": SKASubarray, "devices": [{"name": logging_target}]},
+    )
+
+    with MultiDeviceTestContext(devices_info, process=False) as multi_context:
+        dev_proxy = multi_context.get_device(logging_target)
+        dev_proxy.Init()
+        dev_proxy.loggingLevel = int(tango.LogLevel.LOG_FATAL)
+        assert dev_proxy.loggingLevel != logging_level
+
+        levels = []
+        levels.append(logging_level)
+        targets = []
+        targets.append(multi_context.get_device_access(logging_target))
+        device_details = []
+        device_details.append(levels)
+        device_details.append(targets)
+        multi_context.get_device(logger_device).SetLoggingLevel(device_details)
+        assert dev_proxy.loggingLevel == logging_level

@@ -17,7 +17,7 @@ SHELL = /bin/bash
 #
 DOCKER_REGISTRY_USER:=tango-example
 PROJECT = lmcbaseclasses
-
+IMAGE_FOR_DIAGRAMS = nexus.engageska-portugal.pt/ska-docker/ska-python-buildenv:9.3.2.1
 #
 # include makefile to pick up the standard Make targets, e.g., 'make build'
 # build, 'make push' docker push procedure, etc. The other Make targets
@@ -40,10 +40,21 @@ lint: ## lint lmcbaseclasses Python code
 	pylint --output-format=pylint2junit.JunitReporter src/ska > build/reports/linting.xml
 
 test-in-docker: build ## Build the docker image and run tests inside it.
-	@docker run $(IMAGE):$(VERSION) make test
+	@docker run --rm $(IMAGE):$(VERSION) make test
 
 lint-in-docker: build ## Build the docker image and run lint inside it.
-	@docker run $(IMAGE):$(VERSION) make lint
+	@docker run --rm $(IMAGE):$(VERSION) make lint
+
+generate-diagrams-in-docker: ## Build the docker image and generate state machine diagrams inside it.
+	@docker run --rm -v $(PWD):/diagrams $(IMAGE_FOR_DIAGRAMS) bash -c "cd /diagrams && make generate-diagrams-in-docker-internals"
+
+generate-diagrams-in-docker-internals:  ## Generate state machine diagrams (within a container!)
+	test -f /.dockerenv  # ensure running in docker container
+	apt-get update
+	apt-get install --yes graphviz graphviz-dev gsfonts pkg-config
+	python3 -m pip install pygraphviz
+	cd /diagrams/docs/source && python3 draw_state_machines.py
+	ls -lo /diagrams/docs/source/images/
 
 help:  ## show this help.
 	@grep -hE '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'

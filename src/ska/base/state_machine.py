@@ -17,13 +17,15 @@ class OperationStateMachine(Machine):
     administratively disabled.
     """
 
-    def __init__(self, callback=None):
+    def __init__(self, callback=None, **extra_kwargs):
         """
         Initialises the state model.
 
         :param callback: A callback to be called when a transition
             implies a change to op state
         :type callback: callable
+        :param extra_kwargs: Additional keywords arguments to pass to super class
+            initialiser (useful for graphing)
         """
         self._callback = callback
 
@@ -203,6 +205,7 @@ class OperationStateMachine(Machine):
             initial="UNINITIALISED",
             transitions=transitions,
             after_state_change=self._state_changed,
+            **extra_kwargs,
         )
 
     def _state_changed(self):
@@ -219,13 +222,15 @@ class AdminModeStateMachine(Machine):
     The state machine governing admin modes
     """
 
-    def __init__(self, callback=None):
+    def __init__(self, callback=None, **extra_kwargs):
         """
         Initialises the admin mode state machine model.
 
         :param callback: A callback to be called whenever there is a transition
             to a new admin mode value
         :type callback: callable
+        :param extra_kwargs: Additional keywords arguments to pass to super class
+            initialiser (useful for graphing)
         """
         self._callback = callback
 
@@ -263,6 +268,7 @@ class AdminModeStateMachine(Machine):
             initial="MAINTENANCE",
             transitions=transitions,
             after_state_change=self._state_changed,
+            **extra_kwargs,
         )
         self._state_changed()
 
@@ -281,12 +287,14 @@ class ObservationStateMachine(Machine):
     ADR-8.
     """
 
-    def __init__(self, callback=None):
+    def __init__(self, callback=None, **extra_kwargs):
         """
         Initialises the model.
 
         :param callback: A callback to be called when the state changes
         :type callback: callable
+        :param extra_kwargs: Additional keywords arguments to pass to super class
+            initialiser (useful for graphing)
         """
         self._callback = callback
 
@@ -442,6 +450,7 @@ class ObservationStateMachine(Machine):
             initial="EMPTY",
             transitions=transitions,
             after_state_change=self._state_changed,
+            **extra_kwargs,
         )
         self._state_changed()
 

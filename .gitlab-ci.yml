@@ -1,7 +1,7 @@
 # GitLab CI in conjunction with GitLab Runner can use Docker Engine to test and build any application.
 # Docker, when used with GitLab CI, runs each job in a separate and isolated container using the predefined image that is set up in .gitlab-ci.yml.
 # In this case we use the latest python docker image to build and test this project.
-image: nexus.engageska-portugal.pt/ska-docker/ska-python-buildenv:9.3.2
+image: nexus.engageska-portugal.pt/ska-docker/ska-python-buildenv:9.3.2.1
 
 include:
   - project: 'ska-telescope/templates-repository'
@@ -29,7 +29,7 @@ stages:
 clean shell runner:
   stage: .pre
   tags:
-    - docker-executor
+    - k8srunner
   script:
     # Gitlab CI badges creation
     - rm -rf build/*
@@ -37,7 +37,7 @@ clean shell runner:
 build wheel for publication: # Executed on a tag
   stage: build
   tags:
-    - docker-executor
+    - k8srunner
   script:
     - python3 setup.py egg_info -b+$CI_COMMIT_SHORT_SHA sdist bdist_wheel
   rules:
@@ -49,7 +49,7 @@ build wheel for publication: # Executed on a tag
 build wheel for development: # Executed on non-tagged commit
   stage: build
   tags:
-    - docker-executor
+    - k8srunner
   script:
     - python3 setup.py egg_info -b+dev.$CI_COMMIT_SHORT_SHA sdist bdist_wheel
   rules:
@@ -61,7 +61,7 @@ build wheel for development: # Executed on non-tagged commit
 unit tests:
   stage: test
   tags:
-    - docker-executor
+    - k8srunner
   script:
     - echo $(ls -d ./dist/*.whl | grep $CI_COMMIT_SHORT_SHA)
     - python3 -m pip install -U $(ls -d ./dist/*.whl | grep $CI_COMMIT_SHORT_SHA)
@@ -74,7 +74,7 @@ unit tests:
 linting:
   stage: linting
   tags:
-    - docker-executor
+    - k8srunner
   script:
     - echo $(ls -d ./dist/*.whl | grep $CI_COMMIT_SHORT_SHA)
     - python3 -m pip install -U $(ls -d ./dist/*.whl | grep $CI_COMMIT_SHORT_SHA)
@@ -86,7 +86,7 @@ linting:
 publish to nexus:
   stage: publish
   tags:
-    - docker-executor
+    - k8srunner
   variables:
     TWINE_USERNAME: $TWINE_USERNAME
     TWINE_PASSWORD: $TWINE_PASSWORD
@@ -105,7 +105,7 @@ release docker image:
   before_script:
   - docker login -u $DOCKER_REGISTRY_USERNAME -p $DOCKER_REGISTRY_PASSWORD $DOCKER_REGISTRY_HOST
   tags:
-    - docker-executor
+    - k8srunner
   script:
     - make build
     - make push
@@ -118,7 +118,7 @@ release docker image:
 pages:
   stage: pages
   tags:
-    - docker-executor
+    - k8srunner
   script:
     - cp -R build public
     - mv public/htmlcov/* public

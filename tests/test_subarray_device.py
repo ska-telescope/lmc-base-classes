@@ -18,11 +18,18 @@ from tango import DevState, DevFailed
 from ska.base import SKASubarray, SKASubarrayResourceManager, SKASubarrayStateModel
 from ska.base.commands import ResultCode
 from ska.base.control_model import (
-    AdminMode, ControlMode, HealthState, ObsMode, ObsState, SimulationMode, TestMode
+    AdminMode,
+    ControlMode,
+    HealthState,
+    ObsMode,
+    ObsState,
+    SimulationMode,
+    TestMode,
 )
 from ska.base.faults import CommandError, StateModelError
 
-from .conftest import load_data, StateMachineTester
+from .conftest import load_state_machine_spec, StateMachineTester
+
 # PROTECTED REGION END #    //  SKASubarray.test_additional_imports
 
 
@@ -34,57 +41,18 @@ def subarray_state_model():
     yield SKASubarrayStateModel(logging.getLogger())
 
 
-@pytest.mark.state_machine_tester(load_data("subarray_state_machine"))
+@pytest.mark.state_machine_tester(load_state_machine_spec("subarray_state_machine"))
 class TestSKASubarrayStateModel(StateMachineTester):
     """
     This class contains the test for the SKASubarrayStateModel class.
     """
+
     @pytest.fixture
     def machine(self, subarray_state_model):
         """
         Fixture that returns the state machine under test in this class
         """
         yield subarray_state_model
-
-    state_checks = {
-        "UNINITIALISED":
-            (None, None, ObsState.EMPTY),
-        "FAULT_ENABLED":
-            ([AdminMode.ONLINE, AdminMode.MAINTENANCE], DevState.FAULT, ObsState.EMPTY),
-        "FAULT_DISABLED":
-            ([AdminMode.NOT_FITTED, AdminMode.OFFLINE], DevState.FAULT, ObsState.EMPTY),
-        "INIT_ENABLED":
-            ([AdminMode.ONLINE, AdminMode.MAINTENANCE], DevState.INIT, ObsState.EMPTY),
-        "INIT_DISABLED":
-            ([AdminMode.NOT_FITTED, AdminMode.OFFLINE], DevState.INIT, ObsState.EMPTY),
-        "DISABLED":
-            ([AdminMode.NOT_FITTED, AdminMode.OFFLINE], DevState.DISABLE, ObsState.EMPTY),
-        "OFF":
-            ([AdminMode.ONLINE, AdminMode.MAINTENANCE], DevState.OFF, ObsState.EMPTY),
-        "EMPTY":
-            ([AdminMode.ONLINE, AdminMode.MAINTENANCE], DevState.ON, ObsState.EMPTY),
-        "RESOURCING":
-            ([AdminMode.ONLINE, AdminMode.MAINTENANCE], DevState.ON, ObsState.RESOURCING),
-        "IDLE":
-            ([AdminMode.ONLINE, AdminMode.MAINTENANCE], DevState.ON, ObsState.IDLE),
-        "CONFIGURING":
-            ([AdminMode.ONLINE, AdminMode.MAINTENANCE], DevState.ON, ObsState.CONFIGURING),
-        "READY":
-            ([AdminMode.ONLINE, AdminMode.MAINTENANCE], DevState.ON, ObsState.READY),
-        "SCANNING":
-            ([AdminMode.ONLINE, AdminMode.MAINTENANCE], DevState.ON, ObsState.SCANNING),
-        "ABORTING":
-            ([AdminMode.ONLINE, AdminMode.MAINTENANCE], DevState.ON, ObsState.ABORTING),
-        "ABORTED":
-            ([AdminMode.ONLINE, AdminMode.MAINTENANCE], DevState.ON, ObsState.ABORTED),
-        "FAULT":
-            ([AdminMode.ONLINE, AdminMode.MAINTENANCE], DevState.ON, ObsState.FAULT),
-        "RESETTING":
-            ([AdminMode.ONLINE, AdminMode.MAINTENANCE], DevState.ON, ObsState.RESETTING),
-        "RESTARTING":
-            ([AdminMode.ONLINE, AdminMode.MAINTENANCE], DevState.ON, ObsState.RESTARTING),
-
-    }
 
     def assert_state(self, machine, state):
         """
@@ -98,22 +66,21 @@ class TestSKASubarrayStateModel(StateMachineTester):
             state of the state machine under test
         :type state: str
         """
-        # Debugging only -- machine is already tested
-        # assert self.model._state == state
-        # print(f"State is {state}")
-        (admin_modes, op_state, obs_state) = self.state_checks[state]
-        if admin_modes is None:
-            assert machine.admin_mode is None
-        else:
-            assert machine.admin_mode in admin_modes
-        if op_state is None:
-            assert machine.op_state is None
-        else:
-            assert machine.op_state == op_state
-        if obs_state is None:
-            assert machine.obs_state is None
-        else:
-            assert machine.obs_state == obs_state
+        assert machine.admin_mode == state["admin_mode"]
+        assert machine.op_state == state["op_state"]
+        assert machine.obs_state == state["obs_state"]
+
+    def is_action_allowed(self, machine, action):
+        """
+        Returns whether the state machine under state thinks an action
+        is permitted in its current state
+
+        :param machine: the state machine under test
+        :type machine: state machine object instance
+        :param action: action to be performed on the state machine
+        :type action: str
+        """
+        return machine.is_action_allowed(action)
 
     def perform_action(self, machine, action):
         """
@@ -126,9 +93,9 @@ class TestSKASubarrayStateModel(StateMachineTester):
         """
         machine.perform_action(action)
 
-    def check_action_disallowed(self, machine, action):
+    def check_action_fails(self, machine, action):
         """
-        Assert that performing a given action on the state maching under
+        Assert that attempting a given action on the state machine under
         test fails in its current state.
 
         :param machine: the state machine under test
@@ -149,7 +116,7 @@ class TestSKASubarrayStateModel(StateMachineTester):
             machine under test into
         :type target_state: str
         """
-        machine._straight_to_state(target_state)
+        machine._straight_to_state(**target_state)
 
 
 class TestSKASubarray:
@@ -163,7 +130,7 @@ class TestSKASubarray:
         'SkaLevel': '4',
         'LoggingTargetsDefault': '',
         'SubID': '',
-        }
+    }
 
     @classmethod
     def mocking(cls):
@@ -418,18 +385,19 @@ class TestSKASubarray:
         """Test for adminMode"""
         # PROTECTED REGION ID(SKASubarray.test_adminMode) ENABLED START #
         assert tango_context.device.adminMode == AdminMode.MAINTENANCE
-        assert tango_context.device.state() == DevState.OFF
+
+        tango_context.device.Disable()
+        assert tango_context.device.state() == DevState.DISABLE
 
         admin_mode_callback = tango_change_event_helper.subscribe("adminMode")
         dev_state_callback = tango_change_event_helper.subscribe("state")
         admin_mode_callback.assert_call(AdminMode.MAINTENANCE)
-        dev_state_callback.assert_call(DevState.OFF)
+        dev_state_callback.assert_call(DevState.DISABLE)
 
         tango_context.device.adminMode = AdminMode.OFFLINE
         assert tango_context.device.adminMode == AdminMode.OFFLINE
         assert tango_context.device.state() == DevState.DISABLE
         admin_mode_callback.assert_call(AdminMode.OFFLINE)
-        dev_state_callback.assert_call(DevState.DISABLE)
 
         # PROTECTED REGION END #    //  SKASubarray.test_adminMode
 
@@ -538,6 +506,8 @@ class TestSKASubarray:
 def resource_manager():
     """
     Fixture that yields an SKASubarrayResourceManager
+
+    :yields: a SKASubarrayResourceManager instance
     """
     yield SKASubarrayResourceManager()
 
@@ -546,6 +516,7 @@ class TestSKASubarrayResourceManager:
     """
     Test suite for SKASubarrayResourceManager class
     """
+
     def test_ResourceManager_assign(self, resource_manager):
         """
         Test that the ResourceManager assigns resource correctly.
@@ -582,7 +553,6 @@ class TestSKASubarrayResourceManager:
         """
         Test that the ResourceManager releases resource correctly.
         """
-        resource_manager = SKASubarrayResourceManager()
         resource_manager.assign('{"example": ["A", "B", "C", "D"]}')
 
         # okay to release resources not assigned; does nothing
@@ -625,40 +595,51 @@ class TestSKASubarray_commands:
             subarray_state_model
         )
 
-        all_states = {
-            "UNINITIALISED", "FAULT_ENABLED", "FAULT_DISABLED", "INIT_ENABLED",
-            "INIT_DISABLED", "DISABLED", "OFF", "EMPTY", "RESOURCING", "IDLE",
-            "CONFIGURING", "READY", "SCANNING", "ABORTING", "ABORTED", "FAULT",
-            "RESETTING", "RESTARTING",
-        }
-
+        machine_spec = load_state_machine_spec("subarray_state_machine")
+        states = machine_spec["states"]
         # in all states except EMPTY and IDLE, the assign resources command is
         # not permitted, should not be allowed, should fail, should have no
         # side-effect
-        for state in all_states - {"EMPTY", "IDLE"}:
-            subarray_state_model._straight_to_state(state)
+        for state in set(states) - {
+            "EMPTY_ONLINE",
+            "EMPTY_MAINTENANCE",
+            "IDLE_ONLINE",
+            "IDLE_MAINTENANCE",
+        }:
+
+            subarray_state_model._straight_to_state(**states[state])
             assert not assign_resources.is_allowed()
             with pytest.raises(CommandError):
                 assign_resources('{"example": ["foo"]}')
             assert not len(resource_manager)
             assert resource_manager.get() == set()
-            assert subarray_state_model._state == state
+            assert subarray_state_model.admin_mode == states[state]["admin_mode"]
+            assert subarray_state_model.op_state == states[state]["op_state"]
+            assert subarray_state_model.obs_state == states[state]["obs_state"]
 
         # now push to empty, a state in which is IS allowed
-        subarray_state_model._straight_to_state("EMPTY")
+        subarray_state_model._straight_to_state(**states["EMPTY_ONLINE"])
         assert assign_resources.is_allowed()
         assert assign_resources('{"example": ["foo"]}') == (
-            ResultCode.OK, "AssignResources command completed OK"
+            ResultCode.OK,
+            "AssignResources command completed OK",
         )
         assert len(resource_manager) == 1
         assert resource_manager.get() == set(["foo"])
 
-        assert subarray_state_model._state == "IDLE"
+        assert subarray_state_model.admin_mode == states["IDLE_ONLINE"]["admin_mode"]
+        assert subarray_state_model.op_state == states["IDLE_ONLINE"]["op_state"]
+        assert subarray_state_model.obs_state == states["IDLE_ONLINE"]["obs_state"]
 
-        # AssignResources is still allowed in ON_IDLE
+        # AssignResources is still allowed in IDLE
         assert assign_resources.is_allowed()
         assert assign_resources('{"example": ["bar"]}') == (
-            ResultCode.OK, "AssignResources command completed OK"
+            ResultCode.OK,
+            "AssignResources command completed OK",
         )
         assert len(resource_manager) == 2
         assert resource_manager.get() == set(["foo", "bar"])
+
+        assert subarray_state_model.admin_mode == states["IDLE_ONLINE"]["admin_mode"]
+        assert subarray_state_model.op_state == states["IDLE_ONLINE"]["op_state"]
+        assert subarray_state_model.obs_state == states["IDLE_ONLINE"]["obs_state"]

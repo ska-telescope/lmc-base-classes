@@ -231,7 +231,7 @@ class SKAMaster(SKABaseDevice):
             * [nrInstances]: DevLong. Number of instances of the capability.
             * [Capability types]: DevString. Type of capability.
 
-        :type argin: DevVarLongStringArray.
+        :type argin: :py:class:`tango.DevVarLongStringArray`.
 
         :return: True if capability can be achieved, False if cannot
         :rtype: DevBoolean

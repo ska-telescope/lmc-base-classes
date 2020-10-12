@@ -25,6 +25,13 @@ The lmc-base-classe repository contains set of eight classes as mentioned in SKA
 
 ## Version History
 
+#### 0.7.0
+- Separate adminMode state machine from opState state machine
+- Add support for STANDBY opState
+- Add Standby() and Disable() commands to SKABaseDevice
+- Breaking behavioural changes to adminMode and opState state machines
+- Breaking change to `_straight_to_state` method signature
+
 #### 0.6.6
 - Documentation bugfix
 
@@ -36,7 +43,7 @@ The lmc-base-classe repository contains set of eight classes as mentioned in SKA
 - Refactor state machine to use pytransitions library.
 - Minor behavioural change: Off() command is accepted in every obsState, rather
 than only EMPTY obsState.
-- support `straight_to_state` shortcuts to simplify test setups
+- support `_straight_to_state` shortcuts to simplify test setups
 - Refactor of state machine testing to make it more portable
 
 #### 0.6.3

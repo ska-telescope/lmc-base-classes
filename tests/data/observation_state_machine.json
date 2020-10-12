@@ -1,217 +1,232 @@
-[
-    [
-        "EMPTY",
-        "assign_started",
-        "RESOURCING"
-    ],
-    [
-        "EMPTY",
-        "fatal_error",
-        "FAULT"
-    ],
-    [
-        "RESOURCING",
-        "resourcing_succeeded_some_resources",
-        "IDLE"
-    ],
-    [
-        "RESOURCING",
-        "resourcing_succeeded_no_resources",
-        "EMPTY"
-    ],
-    [
-        "RESOURCING",
-        "resourcing_failed",
-        "FAULT"
-    ],
-    [
-        "RESOURCING",
-        "fatal_error",
-        "FAULT"
-    ],
-    [
-        "IDLE",
-        "assign_started",
-        "RESOURCING"
-    ],
-    [
-        "IDLE",
-        "release_started",
-        "RESOURCING"
-    ],
-    [
-        "IDLE",
-        "configure_started",
-        "CONFIGURING"
-    ],
-    [
-        "IDLE",
-        "abort_started",
-        "ABORTING"
-    ],
-    [
-        "IDLE",
-        "fatal_error",
-        "FAULT"
-    ],
-    [
-        "CONFIGURING",
-        "configure_succeeded",
-        "READY"
-    ],
-    [
-        "CONFIGURING",
-        "configure_failed",
-        "FAULT"
-    ],
-    [
-        "CONFIGURING",
-        "abort_started",
-        "ABORTING"
-    ],
-    [
-        "CONFIGURING",
-        "fatal_error",
-        "FAULT"
-    ],
-    [
-        "READY",
-        "end_succeeded",
-        "IDLE"
-    ],
-    [
-        "READY",
-        "end_failed",
-        "FAULT"
-    ],
-    [
-        "READY",
-        "configure_started",
-        "CONFIGURING"
-    ],
-    [
-        "READY",
-        "abort_started",
-        "ABORTING"
-    ],
-    [
-        "READY",
-        "scan_started",
-        "SCANNING"
-    ],
-    [
-        "READY",
-        "fatal_error",
-        "FAULT"
-    ],
-    [
-        "SCANNING",
-        "scan_succeeded",
-        "READY"
-    ],
-    [
-        "SCANNING",
-        "scan_failed",
-        "FAULT"
-    ],
-    [
-        "SCANNING",
-        "end_scan_succeeded",
-        "READY"
-    ],
-    [
-        "SCANNING",
-        "end_scan_failed",
-        "FAULT"
-    ],
-    [
-        "SCANNING",
-        "abort_started",
-        "ABORTING"
-    ],
-    [
-        "SCANNING",
-        "fatal_error",
-        "FAULT"
-    ],
-    [
-        "ABORTING",
-        "abort_succeeded",
-        "ABORTED"
-    ],
-    [
-        "ABORTING",
-        "abort_failed",
-        "FAULT"
-    ],
-    [
-        "ABORTING",
-        "fatal_error",
-        "FAULT"
-    ],
-    [
-        "ABORTED",
-        "obs_reset_started",
-        "RESETTING"
-    ],
-    [
-        "ABORTED",
-        "restart_started",
-        "RESTARTING"
-    ],
-    [
-        "ABORTED",
-        "fatal_error",
-        "FAULT"
-    ],
-    [
-        "FAULT",
-        "obs_reset_started",
-        "RESETTING"
-    ],
-    [
-        "FAULT",
-        "restart_started",
-        "RESTARTING"
-    ],
-    [
-        "FAULT",
-        "fatal_error",
-        "FAULT"
-    ],
-    [
-        "RESETTING",
-        "obs_reset_succeeded",
-        "IDLE"
-    ],
-    [
-        "RESETTING",
-        "obs_reset_failed",
-        "FAULT"
-    ],
-    [
-        "RESETTING",
-        "abort_started",
-        "ABORTING"
-    ],
-    [
-        "RESETTING",
-        "fatal_error",
-        "FAULT"
-    ],
-    [
-        "RESTARTING",
-        "restart_succeeded",
-        "EMPTY"
-    ],
-    [
-        "RESTARTING",
-        "restart_failed",
-        "FAULT"
-    ],
-    [
-        "RESTARTING",
-        "fatal_error",
-        "FAULT"
+{
+    "states": {
+        "EMPTY": {},
+        "RESOURCING": {},
+        "FAULT": {},
+        "IDLE": {},
+        "CONFIGURING": {},
+        "ABORTING": {},
+        "READY": {},
+        "SCANNING": {},
+        "ABORTED": {},
+        "RESETTING": {},
+        "RESTARTING": {}
+    },
+    "transitions": [
+        {
+            "from": "EMPTY",
+            "to": "RESOURCING",
+            "trigger": "assign_started"
+        },
+        {
+            "from": "EMPTY",
+            "to": "FAULT",
+            "trigger": "fatal_error"
+        },
+        {
+            "from": "RESOURCING",
+            "to": "IDLE",
+            "trigger": "resourcing_succeeded_some_resources"
+        },
+        {
+            "from": "RESOURCING",
+            "to": "EMPTY",
+            "trigger": "resourcing_succeeded_no_resources"
+        },
+        {
+            "from": "RESOURCING",
+            "to": "FAULT",
+            "trigger": "resourcing_failed"
+        },
+        {
+            "from": "RESOURCING",
+            "to": "FAULT",
+            "trigger": "fatal_error"
+        },
+        {
+            "from": "IDLE",
+            "to": "RESOURCING",
+            "trigger": "assign_started"
+        },
+        {
+            "from": "IDLE",
+            "to": "RESOURCING",
+            "trigger": "release_started"
+        },
+        {
+            "from": "IDLE",
+            "to": "CONFIGURING",
+            "trigger": "configure_started"
+        },
+        {
+            "from": "IDLE",
+            "to": "ABORTING",
+            "trigger": "abort_started"
+        },
+        {
+            "from": "IDLE",
+            "to": "FAULT",
+            "trigger": "fatal_error"
+        },
+        {
+            "from": "CONFIGURING",
+            "to": "READY",
+            "trigger": "configure_succeeded"
+        },
+        {
+            "from": "CONFIGURING",
+            "to": "FAULT",
+            "trigger": "configure_failed"
+        },
+        {
+            "from": "CONFIGURING",
+            "to": "ABORTING",
+            "trigger": "abort_started"
+        },
+        {
+            "from": "CONFIGURING",
+            "to": "FAULT",
+            "trigger": "fatal_error"
+        },
+        {
+            "from": "READY",
+            "to": "IDLE",
+            "trigger": "end_succeeded"
+        },
+        {
+            "from": "READY",
+            "to": "FAULT",
+            "trigger": "end_failed"
+        },
+        {
+            "from": "READY",
+            "to": "CONFIGURING",
+            "trigger": "configure_started"
+        },
+        {
+            "from": "READY",
+            "to": "ABORTING",
+            "trigger": "abort_started"
+        },
+        {
+            "from": "READY",
+            "to": "SCANNING",
+            "trigger": "scan_started"
+        },
+        {
+            "from": "READY",
+            "to": "FAULT",
+            "trigger": "fatal_error"
+        },
+        {
+            "from": "SCANNING",
+            "to": "READY",
+            "trigger": "scan_succeeded"
+        },
+        {
+            "from": "SCANNING",
+            "to": "FAULT",
+            "trigger": "scan_failed"
+        },
+        {
+            "from": "SCANNING",
+            "to": "READY",
+            "trigger": "end_scan_succeeded"
+        },
+        {
+            "from": "SCANNING",
+            "to": "FAULT",
+            "trigger": "end_scan_failed"
+        },
+        {
+            "from": "SCANNING",
+            "to": "ABORTING",
+            "trigger": "abort_started"
+        },
+        {
+            "from": "SCANNING",
+            "to": "FAULT",
+            "trigger": "fatal_error"
+        },
+        {
+            "from": "ABORTING",
+            "to": "ABORTED",
+            "trigger": "abort_succeeded"
+        },
+        {
+            "from": "ABORTING",
+            "to": "FAULT",
+            "trigger": "abort_failed"
+        },
+        {
+            "from": "ABORTING",
+            "to": "FAULT",
+            "trigger": "fatal_error"
+        },
+        {
+            "from": "ABORTED",
+            "to": "RESETTING",
+            "trigger": "reset_started"
+        },
+        {
+            "from": "ABORTED",
+            "to": "RESTARTING",
+            "trigger": "restart_started"
+        },
+        {
+            "from": "ABORTED",
+            "to": "FAULT",
+            "trigger": "fatal_error"
+        },
+        {
+            "from": "FAULT",
+            "to": "RESETTING",
+            "trigger": "reset_started"
+        },
+        {
+            "from": "FAULT",
+            "to": "RESTARTING",
+            "trigger": "restart_started"
+        },
+        {
+            "from": "FAULT",
+            "to": "FAULT",
+            "trigger": "fatal_error"
+        },
+        {
+            "from": "RESETTING",
+            "to": "IDLE",
+            "trigger": "reset_succeeded"
+        },
+        {
+            "from": "RESETTING",
+            "to": "FAULT",
+            "trigger": "reset_failed"
+        },
+        {
+            "from": "RESETTING",
+            "to": "ABORTING",
+            "trigger": "abort_started"
+        },
+        {
+            "from": "RESETTING",
+            "to": "FAULT",
+            "trigger": "fatal_error"
+        },
+        {
+            "from": "RESTARTING",
+            "to": "EMPTY",
+            "trigger": "restart_succeeded"
+        },
+        {
+            "from": "RESTARTING",
+            "to": "FAULT",
+            "trigger": "restart_failed"
+        },
+        {
+            "from": "RESTARTING",
+            "to": "FAULT",
+            "trigger": "fatal_error"
+        }
     ]
-]
+}

@@ -146,7 +146,7 @@ class BaseCommand:
 
         :param action: the action to perform on the state model
         :type action: string
-        :raises: CommandError if the action is not allowed in current state
+        :raises CommandError: if the action is not allowed in current state
         :returns: True is the action is allowed
         """
         try:
@@ -288,7 +288,7 @@ class ActionCommand(ResponseCommand):
 
         :param return_code: The return_code returned by the ``do()``
             method
-        :type return_code: ResultCode
+        :type return_code: :py:class:`ResultCode`
         """
         if return_code == ResultCode.OK:
             self.succeeded()

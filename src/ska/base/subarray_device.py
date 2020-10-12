@@ -162,7 +162,7 @@ class SKASubarrayStateModel(DeviceStateModel):
 
         :returns: where the action is allowed in the current state:
         :rtype: bool: True if the action is allowed, False if it is
-            no allowed
+            not allowed
         :raises StateModelError: for an unrecognised action
         """
         obs_allowed = self._is_obs_action_allowed(action)
@@ -244,11 +244,11 @@ class SKASubarrayStateModel(DeviceStateModel):
         OFFLINE, opState STANDBY, and obsState SCANNING).
 
         :param op_state: the target operational state (optional)
-        :type op_state: string
+        :type op_state: :py:class:`tango.DevState`
         :param admin_mode: the target admin mode (optional)
-        :type admin_mode: string
+        :type admin_mode: :py:class:`~ska.base.control_model.AdminMode`
         :param obs_state: the target observation state (optional)
-        :type obs_state: string
+        :type obs_state: :py:class:`~ska.base.control_model.ObsState`
         """
         if obs_state is not None:
             getattr(self._observation_state_machine, f"to_{obs_state.name}")()
@@ -384,7 +384,7 @@ class SKASubarray(SKAObsDevice):
             :param state_model: the state model that this command uses
                  to check that it is allowed to run, and that it drives
                  with actions.
-            :type state_model: SKASubarrayStateModel instance
+            :type state_model: :py:class:`SKASubarrayStateModel`
             :param action_hook: a hook for the command, used to build
                 actions that will be sent to the state model; for example,
                 if the hook is "scan", then success of the command will
@@ -433,7 +433,7 @@ class SKASubarray(SKAObsDevice):
             :param state_model: the state model that this command uses
                  to check that it is allowed to run, and that it drives
                  with actions.
-            :type state_model: SKASubarrayStateModel instance
+            :type state_model: :py:class:`SKASubarrayStateModel`
             :param logger: the logger to be used by this Command. If not
                 provided, then a default module logger will be used.
             :type logger: a logger that implements the standard library
@@ -476,7 +476,7 @@ class SKASubarray(SKAObsDevice):
             :param state_model: the state model that this command uses
                  to check that it is allowed to run, and that it drives
                  with actions.
-            :type state_model: SKASubarrayStateModel instance
+            :type state_model: :py:class:`SKASubarrayStateModel`
             :param logger: the logger to be used by this Command. If not
                 provided, then a default module logger will be used.
             :type logger: a logger that implements the standard library
@@ -545,7 +545,7 @@ class SKASubarray(SKAObsDevice):
             :param state_model: the state model that this command uses
                  to check that it is allowed to run, and that it drives
                  with actions.
-            :type state_model: SKASubarrayStateModel instance
+            :type state_model: :py:class:`SKASubarrayStateModel`
             :param logger: the logger to be used by this Command. If not
                 provided, then a default module logger will be used.
             :type logger: a logger that implements the standard library
@@ -601,7 +601,7 @@ class SKASubarray(SKAObsDevice):
             :param state_model: the state model that this command uses
                  to check that it is allowed to run, and that it drives
                  with actions.
-            :type state_model: SKASubarrayStateModel
+            :type state_model: :py:class:`SKASubarrayStateModel`
             :param logger: the logger to be used by this Command. If not
                 provided, then a default module logger will be used.
             :type logger: a logger that implements the standard library
@@ -644,7 +644,7 @@ class SKASubarray(SKAObsDevice):
             :param state_model: the state model that this command uses
                  to check that it is allowed to run, and that it drives
                  with actions.
-            :type state_model: SKASubarrayStateModel
+            :type state_model: :py:class:`SKASubarrayStateModel`
             :param logger: the logger to be used by this Command. If not
                 provided, then a default module logger will be used.
             :type logger: a logger that implements the standard library
@@ -681,7 +681,7 @@ class SKASubarray(SKAObsDevice):
             :param state_model: the state model that this command uses
                  to check that it is allowed to run, and that it drives
                  with actions.
-            :type state_model: SKASubarrayStateModel
+            :type state_model: :py:class:`SKASubarrayStateModel`
             :param logger: the logger to be used by this Command. If not
                 provided, then a default module logger will be used.
             :type logger: a logger that implements the standard library
@@ -721,7 +721,7 @@ class SKASubarray(SKAObsDevice):
             :param state_model: the state model that this command uses
                  to check that it is allowed to run, and that it drives
                  with actions.
-            :type state_model: SKASubarrayStateModel
+            :type state_model: :py:class:`SKASubarrayStateModel`
             :param logger: the logger to be used by this Command. If not
                 provided, then a default module logger will be used.
             :type logger: a logger that implements the standard library
@@ -760,7 +760,7 @@ class SKASubarray(SKAObsDevice):
             :param state_model: the state model that this command uses
                  to check that it is allowed to run, and that it drives
                  with actions.
-            :type state_model: SKASubarrayStateModel
+            :type state_model: :py:class:`SKASubarrayStateModel`
             :param logger: the logger to be used by this Command. If not
                 provided, then a default module logger will be used.
             :type logger: a logger that implements the standard library
@@ -807,7 +807,7 @@ class SKASubarray(SKAObsDevice):
             :param state_model: the state model that this command uses
                  to check that it is allowed to run, and that it drives
                  with actions.
-            :type state_model: SKASubarrayStateModel
+            :type state_model: :py:class:`SKASubarrayStateModel`
             :param logger: the logger to be used by this Command. If not
                 provided, then a default module logger will be used.
             :type logger: a logger that implements the standard library
@@ -886,7 +886,7 @@ class SKASubarray(SKAObsDevice):
 
         :param device: the device for which this class implements
             the configure command
-        :type device: SKASubarray
+        :type device: :py:class:`SKASubarray`
         :param capability_types: a list strings representing
             capability types.
         :type capability_types: list

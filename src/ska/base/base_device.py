@@ -308,7 +308,7 @@ class LoggingUtils:
 # PROTECTED REGION END #    //  SKABaseDevice.additionnal_import
 
 
-__all__ = ["SKABaseDevice", "main"]
+__all__ = ["DeviceStateModel", "SKABaseDevice", "main"]
 
 
 class DeviceStateModel:
@@ -527,9 +527,9 @@ class DeviceStateModel:
         combination of admin_mode and op_state (e.g. OFFLINE and ON).
 
         :param op_state: the target operational state (optional)
-        :type op_state: string
+        :type op_state: :py:class:`tango.DevState`
         :param admin_mode: the target admin mode (optional)
-        :type admin_mode: string
+        :type admin_mode: :py:class:`~ska.base.control_model.AdminMode`
         """
         if admin_mode is None:
             admin_mode = self._admin_mode_state_machine.state
@@ -571,7 +571,7 @@ class SKABaseDevice(Device):
             :param state_model: the state model that this command uses
                  to check that it is allowed to run, and that it drives
                  with actions.
-            :type state_model: DeviceStateModel
+            :type state_model: :py:class:`DeviceStateModel`
             :param logger: the logger to be used by this Command. If not
                 provided, then a default module logger will be used.
             :type logger: a logger that implements the standard library
@@ -804,7 +804,7 @@ class SKABaseDevice(Device):
         callback
 
         :param admin_mode: the new admin_mode value
-        :type admin_mode: AdminMode
+        :type admin_mode: :py:class:`~ska.base.control_model.AdminMode`
         """
         self.push_change_event("adminMode", admin_mode)
         self.push_archive_event("adminMode", admin_mode)
@@ -815,7 +815,7 @@ class SKABaseDevice(Device):
         callback
 
         :param state: the new state value
-        :type state: DevState
+        :type state: :py:class:`tango.DevState`
         """
         if state != self.get_state():
             self.logger.info(f"Device state changed from {self.get_state()} to {state}")
@@ -828,7 +828,7 @@ class SKABaseDevice(Device):
         events are pushed.
 
         :param state: the new state
-        :type state: tango.DevState
+        :type state: :py:class:`tango.DevState`
         """
         super().set_state(state)
         self.push_change_event("state")
@@ -1057,7 +1057,7 @@ class SKABaseDevice(Device):
         Sets Admin Mode of the device.
 
         :param value: Admin Mode of the device.
-        :type value: AdminMode
+        :type value: :py:class:`~ska.base.control_model.AdminMode`
 
         :raises ValueError: for unknown adminMode
         """
@@ -1186,7 +1186,7 @@ class SKABaseDevice(Device):
             :param state_model: the state model that this command uses
                  to check that it is allowed to run, and that it drives
                  with actions.
-            :type state_model: DeviceStateModel
+            :type state_model: :py:class:`DeviceStateModel`
             :param logger: the logger to be used by this Command. If not
                 provided, then a default module logger will be used.
             :type logger: a logger that implements the standard library
@@ -1262,7 +1262,7 @@ class SKABaseDevice(Device):
             :param state_model: the state model that this command uses
                  to check that it is allowed to run, and that it drives
                  with actions.
-            :type state_model: DeviceStateModel
+            :type state_model: :py:class:`DeviceStateModel`
             :param logger: the logger to be used by this Command. If not
                 provided, then a default module logger will be used.
             :type logger: a logger that implements the standard library
@@ -1332,7 +1332,7 @@ class SKABaseDevice(Device):
             :param state_model: the state model that this command uses
                  to check that it is allowed to run, and that it drives
                  with actions.
-            :type state_model: DeviceStateModel
+            :type state_model: :py:class:`DeviceStateModel`
             :param logger: the logger to be used by this Command. If not
                 provided, then a default module logger will be used.
             :type logger: a logger that implements the standard library
@@ -1402,7 +1402,7 @@ class SKABaseDevice(Device):
             :param state_model: the state model that this command uses
                  to check that it is allowed to run, and that it drives
                  with actions.
-            :type state_model: DeviceStateModel
+            :type state_model: :py:class:`DeviceStateModel`
             :param logger: the logger to be used by this Command. If not
                 provided, then a default module logger will be used.
             :type logger: a logger that implements the standard library
@@ -1472,7 +1472,7 @@ class SKABaseDevice(Device):
             :param state_model: the state model that this command uses
                  to check that it is allowed to run, and that it drives
                  with actions.
-            :type state_model: DeviceStateModel
+            :type state_model: :py:class:`DeviceStateModel`
             :param logger: the logger to be used by this Command. If not
                 provided, then a default module logger will be used.
             :type logger: a logger that implements the standard library

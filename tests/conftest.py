@@ -418,7 +418,7 @@ def tango_change_event_helper(tango_context):
             Event subscription callback
 
             :param event_data: data about the change events
-            :type event_data: tango.EventData
+            :type event_data: :py:class:`tango.EventData`
             """
             if event_data.err:
                 error = event_data.errors[0]

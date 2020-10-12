@@ -10,6 +10,11 @@ SKA BaseDevice
    :maxdepth: 2
 
 .. automodule:: ska.base.base_device
+
+.. autoclass:: ska.base.DeviceStateModel
+   :members:
+   :undoc-members:
+
 .. autoclass:: ska.base.SKABaseDevice
    :members:
    :undoc-members:

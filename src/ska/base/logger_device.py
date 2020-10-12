@@ -139,7 +139,7 @@ class SKALogger(SKABaseDevice):
             * argin[0]: list of DevLong. Desired logging level.
             * argin[1]: list of DevString. Desired tango device.
 
-        :type argin: DevVarLongStringArray
+        :type argin: :py:class:`tango.DevVarLongStringArray`
 
         :returns: None.
         """

@@ -4,6 +4,9 @@ This module contains specifications of SKA state machines.
 from transitions import Machine, State
 
 
+__all__ = ["OperationStateMachine", "AdminModeStateMachine", "ObservationStateMachine"]
+
+
 class OperationStateMachine(Machine):
     """
     State machine for operational state ("opState").

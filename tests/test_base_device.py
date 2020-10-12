@@ -358,7 +358,7 @@ class TestDeviceStateModel(StateMachineTester):
         :type machine: state machine object instance
         :param state: the state that we are asserting to be the current
             state of the state machine under test
-        :type state: str
+        :type state: dict
         """
         assert machine.admin_mode == state["admin_mode"]
         assert machine.op_state == state["op_state"]
@@ -407,7 +407,7 @@ class TestDeviceStateModel(StateMachineTester):
         :type machine: state machine object instance
         :param target_state: the state that we want to get the state
             machine under test into
-        :type target_state: str
+        :type target_state: dict
         """
         machine._straight_to_state(**target_state)
 
@@ -543,6 +543,8 @@ class TestSKABaseDevice(object):
 
         # Check that we can turn off a device that is already off
         tango_context.device.Off()
+        state_callback.assert_not_called()
+        status_callback.assert_not_called()
 
     # PROTECTED REGION ID(SKABaseDevice.test_buildState_decorators) ENABLED START #
     # PROTECTED REGION END #    //  SKABaseDevice.test_buildState_decorators
@@ -660,6 +662,10 @@ class TestSKABaseDevice(object):
         tango_context.device.adminMode = AdminMode.ONLINE
         assert tango_context.device.adminMode == AdminMode.ONLINE
         admin_mode_callback.assert_call(AdminMode.ONLINE)
+
+        tango_context.device.adminMode = AdminMode.ONLINE
+        assert tango_context.device.adminMode == AdminMode.ONLINE
+        admin_mode_callback.assert_not_called()
 
         # PROTECTED REGION END #    //  SKABaseDevice.test_adminMode
 

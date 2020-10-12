@@ -102,7 +102,7 @@ class SKAObsDevice(SKABaseDevice):
         callback
 
         :param obs_state: the new obs_state value
-        :type obs_state: ObsState
+        :type admin_mode: :py:class:`~ska.base.control_model.ObsState`
         """
         self._obs_state = obs_state
         self.push_change_event("obsState", obs_state)

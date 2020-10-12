@@ -151,11 +151,15 @@ observations (currently only subarray devices).
 API
 ---
 
-.. toctree::
-   :maxdepth: 2
-
-
 .. automodule:: ska.base.state_machine
     :members:
     :undoc-members:
 
+.. autoclass:: OperationStateMachine
+    :members:
+
+.. autoclass:: AdminModeStateMachine
+    :members:
+
+.. autoclass:: ObservationStateMachine
+    :members:

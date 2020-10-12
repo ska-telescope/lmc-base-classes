@@ -14,12 +14,12 @@ information like assigned resources, configured capabilities, etc.
 import json
 import warnings
 
-from tango import DebugIt
+from tango import DebugIt, DevState
 from tango.server import run, attribute, command
 from tango.server import device_property
 
 # SKA specific imports
-from ska.base import SKAObsDevice, SKABaseDeviceStateModel
+from ska.base import SKAObsDevice, DeviceStateModel
 from ska.base.commands import ActionCommand, ResultCode
 from ska.base.control_model import AdminMode, ObsState
 from ska.base.faults import CapabilityValidationError, StateModelError
@@ -28,10 +28,10 @@ from ska.base.utils import for_testing_only
 
 # PROTECTED REGION END #    //  SKASubarray.additionnal_imports
 
-__all__ = ["SKASubarray", "main"]
+__all__ = ["SKASubarray", "SKASubarrayStateModel", "main"]
 
 
-class SKASubarrayStateModel(SKABaseDeviceStateModel):
+class SKASubarrayStateModel(DeviceStateModel):
     """
     Implements the state model for the SKASubarray
     """
@@ -41,7 +41,7 @@ class SKASubarrayStateModel(SKABaseDeviceStateModel):
         logger,
         op_state_callback=None,
         admin_mode_callback=None,
-        obs_state_callback=None
+        obs_state_callback=None,
     ):
         """
         Initialises the model. Note that this does not imply moving to
@@ -66,7 +66,7 @@ class SKASubarrayStateModel(SKABaseDeviceStateModel):
             admin_mode_callback=admin_mode_callback,
         )
 
-        self._obs_state = ObsState.EMPTY
+        self._obs_state = None
         self._obs_state_callback = obs_state_callback
 
         self._observation_state_machine = ObservationStateMachine(
@@ -83,18 +83,75 @@ class SKASubarrayStateModel(SKABaseDeviceStateModel):
         """
         return self._obs_state
 
-    def _update_obs_state(self, obs_state):
+    def _update_obs_state(self, machine_state):
         """
-        Helper method that updates obs_state, ensuring that the callback
-        is called if one exists.
+        Helper method that updates obs_state whenever the observation
+        state machine reports a change of state, ensuring that the
+        callback is called if one exists.
 
-        :param obs_state: the new obsState attribute value
-        :type obs_state: ObsState
+        :param machine_state: the new state of the observation state
+            machine
+        :type machine_state: str
         """
+        obs_state = ObsState[machine_state]
         if self._obs_state != obs_state:
             self._obs_state = obs_state
             if self._obs_state_callback is not None:
                 self._obs_state_callback(obs_state)
+
+    __action_breakdown = {
+        # "action": ("action_on_obs_machine", "action_on_superclass"),
+        "off_succeeded": ("to_EMPTY", "off_succeeded"),
+        "off_failed": ("to_EMPTY", "off_failed"),
+        "on_succeeded": (None, "on_succeeded"),
+        "on_failed": ("to_EMPTY", "on_failed"),
+        "assign_started": ("assign_started", None),
+        "release_started": ("release_started", None),
+        "resourcing_succeeded_some_resources": (
+            "resourcing_succeeded_some_resources",
+            None,
+        ),
+        "resourcing_succeeded_no_resources": (
+            "resourcing_succeeded_no_resources",
+            None,
+        ),
+        "resourcing_failed": ("resourcing_failed", None),
+        "configure_started": ("configure_started", None),
+        "configure_succeeded": ("configure_succeeded", None),
+        "configure_failed": ("configure_failed", None),
+        "scan_started": ("scan_started", None),
+        "scan_succeeded": ("scan_succeeded", None),
+        "scan_failed": ("scan_failed", None),
+        "end_scan_succeeded": ("end_scan_succeeded", None),
+        "end_scan_failed": ("end_scan_failed", None),
+        "end_succeeded": ("end_succeeded", None),
+        "end_failed": ("end_failed", None),
+        "abort_started": ("abort_started", None),
+        "abort_succeeded": ("abort_succeeded", None),
+        "abort_failed": ("abort_failed", None),
+        "obs_reset_started": ("reset_started", None),
+        "obs_reset_succeeded": ("reset_succeeded", None),
+        "obs_reset_failed": ("reset_failed", None),
+        "restart_started": ("restart_started", None),
+        "restart_succeeded": ("restart_succeeded", None),
+        "restart_failed": ("restart_failed", None),
+        "fatal_error": ("fatal_error", None),
+    }
+
+    def _is_obs_action_allowed(self, action):
+        if action not in self.__action_breakdown:
+            return None
+
+        if self.op_state != DevState.ON:
+            return False
+
+        (obs_action, super_action) = self.__action_breakdown[action]
+
+        if obs_action not in self._observation_state_machine.get_triggers(
+            self._observation_state_machine.state
+        ):
+            return False
+        return super_action is None or super().is_action_allowed(super_action)
 
     def is_action_allowed(self, action):
         """
@@ -102,14 +159,43 @@ class SKASubarrayStateModel(SKABaseDeviceStateModel):
 
         :param action: an action, as given in the transitions table
         :type action: ANY
-        """
-        if self._state_machine.state == "ON":
-            if action in self._observation_state_machine.get_triggers(
-                self._observation_state_machine.state
-            ):
-                return True
 
-        return action in self._state_machine.get_triggers(self._state_machine.state)
+        :returns: where the action is allowed in the current state:
+        :rtype: bool: True if the action is allowed, False if it is
+            not allowed
+        :raises StateModelError: for an unrecognised action
+        """
+        obs_allowed = self._is_obs_action_allowed(action)
+        if obs_allowed is None:
+            return super().is_action_allowed(action)
+        if obs_allowed:
+            return True
+        try:
+            return super().is_action_allowed(action)
+        except StateModelError:
+            return False
+
+    def try_action(self, action):
+        """
+        Checks whether a given action is allowed in the current state,
+        and raises a StateModelError if it is not.
+
+        :param action: an action, as given in the transitions table
+        :type action: str
+
+        :raises StateModelError: if the action is not allowed in the
+            current state
+
+        :returns: True if the action is allowed
+        :rtype: boolean
+        """
+        if not self.is_action_allowed(action):
+            raise StateModelError(
+                f"Action {action} is not allowed in operational state "
+                f"{self.op_state}, admin mode {self.admin_mode}, "
+                f"observation state {self.obs_state}."
+            )
+        return True
 
     def perform_action(self, action):
         """
@@ -122,17 +208,12 @@ class SKASubarrayStateModel(SKABaseDeviceStateModel):
             current state
 
         """
-        if self._state_machine.state == "ON":
-            if action in self._observation_state_machine.get_triggers(
-                self._observation_state_machine.state
-            ):
-                self._observation_state_machine.trigger(action)
-                return
+        self.try_action(action)
 
-        if action in self._state_machine.get_triggers(
-            self._state_machine.state
-        ):
-            if self._observation_state_machine.state != "EMPTY":
+        if self._is_obs_action_allowed(action):
+            (obs_action, super_action) = self.__action_breakdown[action]
+
+            if obs_action == "to_EMPTY":
                 message = (
                     "Changing device state of a non-EMPTY observing device "
                     "should only be done as an emergency measure and may be "
@@ -140,74 +221,46 @@ class SKASubarrayStateModel(SKABaseDeviceStateModel):
                 )
                 self.logger.warning(message)
                 warnings.warn(message, PendingDeprecationWarning)
-                self._observation_state_machine.to_EMPTY()
-            self._state_machine.trigger(action)
-            return
 
-        raise StateModelError(
-            f"Action {action} is not allowed in device state "
-            "{self._state_machine.state}, observation_state "
-            "{self._observation_state_machine.state}."
-        )
+            self._observation_state_machine.trigger(obs_action)
+            if super_action is not None:
+                super().perform_action(super_action)
+        else:
+            super().perform_action(action)
 
     @for_testing_only
-    def _straight_to_state(self, state):
+    def _straight_to_state(self, op_state=None, admin_mode=None, obs_state=None):
         """
-        Takes the DeviceStateModel straight to the specified state. This method
-        exists to simplify testing; for example, if testing that a command may
-        be run in a given state, one can push the state model straight to that
-        state, rather than having to drive it to that state through a sequence
-        of actions. It is not intended that this method would be called outside
-        of test setups. A warning is raised if it is.
+        Takes the SKASubarrayStateModel straight to the specified states.
+        This method exists to simplify testing; for example, if testing
+        that a command may be run in a given state, one can push the
+        state model straight to that state, rather than having to drive
+        it to that state through a sequence of actions. It is not
+        intended that this method would be called outside of test
+        setups. A warning will be raised if it is.
 
-        Note that states are non-deterministics with respect to adminMode. For
-        example, in state "FAULT-DISABLED", the adminMode could be OFFLINE or
-        NOT_FITTED. When you drive the state machine through its transitions,
-        the adminMode will be set accordingly. When using this method, the
-        adminMode will simply be set to something sensible.
+        Note that this method will allow you to put the device into an
+        incoherent combination of states and modes (e.g. adminMode
+        OFFLINE, opState STANDBY, and obsState SCANNING).
 
-        :param state: the target state
-        :type state: string
+        :param op_state: the target operational state (optional)
+        :type op_state: :py:class:`tango.DevState`
+        :param admin_mode: the target admin mode (optional)
+        :type admin_mode: :py:class:`~ska.base.control_model.AdminMode`
+        :param obs_state: the target observation state (optional)
+        :type obs_state: :py:class:`~ska.base.control_model.ObsState`
         """
-        if state == "UNINITIALISED":
-            pass
-        elif "DISABLED" in state:
-            if self._admin_mode not in [AdminMode.OFFLINE, AdminMode.NOT_FITTED]:
-                self._state_machine._update_admin_mode(AdminMode.OFFLINE)
-        else:
-            if self._admin_mode not in [AdminMode.ONLINE, AdminMode.MAINTENANCE]:
-                self._state_machine._update_admin_mode(AdminMode.ONLINE)
+        if obs_state is not None:
+            getattr(self._observation_state_machine, f"to_{obs_state.name}")()
+        super()._straight_to_state(op_state=op_state, admin_mode=admin_mode)
 
-        to_state = getattr(self._observation_state_machine, f"to_{state}", None)
-        if to_state is not None:
-            self._state_machine.to_ON()
-            to_state()
-            return
-
-        to_state = getattr(self._state_machine, f"to_{state}", None)
-        if to_state is not None:
-            self._observation_state_machine.to_EMPTY()
-            to_state()
-            return
-
-        raise StateModelError(f"No such state {state}")
-
-    @property
-    def _state(self):
-        """
-        Returns the state of the underlying state machine. This would normally
-        be a hidden implementation detail, but is exposed here for testing
-        purposes.
-        """
-        if self._state_machine.state == "ON":
-            return self._observation_state_machine.state
-        return self._state_machine.state
 
 
 class SKASubarrayResourceManager:
     """
     A simple class for managing subarray resources
     """
+
     def __init__(self):
         """
         Constructor for SKASubarrayResourceManager
@@ -277,10 +330,12 @@ class SKASubarray(SKAObsDevice):
     """
     Implements the SKA SubArray device
     """
+
     class InitCommand(SKAObsDevice.InitCommand):
         """
         A class for the SKASubarray's init_device() "command".
         """
+
         def do(self):
             """
             Stateless hook for device initialisation.
@@ -317,6 +372,7 @@ class SKASubarray(SKAObsDevice):
         """
         An abstract base class for SKASubarray's resourcing commands.
         """
+
         def __init__(self, target, state_model, action_hook, logger=None):
             """
             Constructor for _ResourcingCommand
@@ -328,7 +384,7 @@ class SKASubarray(SKAObsDevice):
             :param state_model: the state model that this command uses
                  to check that it is allowed to run, and that it drives
                  with actions.
-            :type state_model: SKASubarrayStateModel instance
+            :type state_model: :py:class:`SKASubarrayStateModel`
             :param action_hook: a hook for the command, used to build
                 actions that will be sent to the state model; for example,
                 if the hook is "scan", then success of the command will
@@ -365,6 +421,7 @@ class SKASubarray(SKAObsDevice):
         """
         A class for SKASubarray's AssignResources() command.
         """
+
         def __init__(self, target, state_model, logger=None):
             """
             Constructor for AssignResourcesCommand
@@ -376,7 +433,7 @@ class SKASubarray(SKAObsDevice):
             :param state_model: the state model that this command uses
                  to check that it is allowed to run, and that it drives
                  with actions.
-            :type state_model: SKASubarrayStateModel instance
+            :type state_model: :py:class:`SKASubarrayStateModel`
             :param logger: the logger to be used by this Command. If not
                 provided, then a default module logger will be used.
             :type logger: a logger that implements the standard library
@@ -407,6 +464,7 @@ class SKASubarray(SKAObsDevice):
         """
         A class for SKASubarray's ReleaseResources() command.
         """
+
         def __init__(self, target, state_model, logger=None):
             """
             Constructor for OnCommand()
@@ -418,7 +476,7 @@ class SKASubarray(SKAObsDevice):
             :param state_model: the state model that this command uses
                  to check that it is allowed to run, and that it drives
                  with actions.
-            :type state_model: SKASubarrayStateModel instance
+            :type state_model: :py:class:`SKASubarrayStateModel`
             :param logger: the logger to be used by this Command. If not
                 provided, then a default module logger will be used.
             :type logger: a logger that implements the standard library
@@ -449,6 +507,7 @@ class SKASubarray(SKAObsDevice):
         """
         A class for SKASubarray's ReleaseAllResources() command.
         """
+
         def do(self):
             """
             Stateless hook for ReleaseAllResources() command functionality.
@@ -474,6 +533,7 @@ class SKASubarray(SKAObsDevice):
         """
         A class for SKASubarray's Configure() command.
         """
+
         def __init__(self, target, state_model, logger=None):
             """
             Constructor for ConfigureCommand
@@ -485,7 +545,7 @@ class SKASubarray(SKAObsDevice):
             :param state_model: the state model that this command uses
                  to check that it is allowed to run, and that it drives
                  with actions.
-            :type state_model: SKASubarrayStateModel instance
+            :type state_model: :py:class:`SKASubarrayStateModel`
             :param logger: the logger to be used by this Command. If not
                 provided, then a default module logger will be used.
             :type logger: a logger that implements the standard library
@@ -529,6 +589,7 @@ class SKASubarray(SKAObsDevice):
         """
         A class for SKASubarray's Scan() command.
         """
+
         def __init__(self, target, state_model, logger=None):
             """
             Constructor for ScanCommand
@@ -540,7 +601,7 @@ class SKASubarray(SKAObsDevice):
             :param state_model: the state model that this command uses
                  to check that it is allowed to run, and that it drives
                  with actions.
-            :type state_model: SKASubarrayStateModel
+            :type state_model: :py:class:`SKASubarrayStateModel`
             :param logger: the logger to be used by this Command. If not
                 provided, then a default module logger will be used.
             :type logger: a logger that implements the standard library
@@ -571,6 +632,7 @@ class SKASubarray(SKAObsDevice):
         """
         A class for SKASubarray's EndScan() command.
         """
+
         def __init__(self, target, state_model, logger=None):
             """
             Constructor for EndScanCommand
@@ -582,7 +644,7 @@ class SKASubarray(SKAObsDevice):
             :param state_model: the state model that this command uses
                  to check that it is allowed to run, and that it drives
                  with actions.
-            :type state_model: SKASubarrayStateModel
+            :type state_model: :py:class:`SKASubarrayStateModel`
             :param logger: the logger to be used by this Command. If not
                 provided, then a default module logger will be used.
             :type logger: a logger that implements the standard library
@@ -607,6 +669,7 @@ class SKASubarray(SKAObsDevice):
         """
         A class for SKASubarray's End() command.
         """
+
         def __init__(self, target, state_model, logger=None):
             """
             Constructor for EndCommand
@@ -618,7 +681,7 @@ class SKASubarray(SKAObsDevice):
             :param state_model: the state model that this command uses
                  to check that it is allowed to run, and that it drives
                  with actions.
-            :type state_model: SKASubarrayStateModel
+            :type state_model: :py:class:`SKASubarrayStateModel`
             :param logger: the logger to be used by this Command. If not
                 provided, then a default module logger will be used.
             :type logger: a logger that implements the standard library
@@ -646,6 +709,7 @@ class SKASubarray(SKAObsDevice):
         """
         A class for SKASubarray's Abort() command.
         """
+
         def __init__(self, target, state_model, logger=None):
             """
             Constructor for AbortCommand
@@ -657,7 +721,7 @@ class SKASubarray(SKAObsDevice):
             :param state_model: the state model that this command uses
                  to check that it is allowed to run, and that it drives
                  with actions.
-            :type state_model: SKASubarrayStateModel
+            :type state_model: :py:class:`SKASubarrayStateModel`
             :param logger: the logger to be used by this Command. If not
                 provided, then a default module logger will be used.
             :type logger: a logger that implements the standard library
@@ -684,6 +748,7 @@ class SKASubarray(SKAObsDevice):
         """
         A class for SKASubarray's ObsReset() command.
         """
+
         def __init__(self, target, state_model, logger=None):
             """
             Constructor for ObsResetCommand
@@ -695,7 +760,7 @@ class SKASubarray(SKAObsDevice):
             :param state_model: the state model that this command uses
                  to check that it is allowed to run, and that it drives
                  with actions.
-            :type state_model: SKASubarrayStateModel
+            :type state_model: :py:class:`SKASubarrayStateModel`
             :param logger: the logger to be used by this Command. If not
                 provided, then a default module logger will be used.
             :type logger: a logger that implements the standard library
@@ -730,6 +795,7 @@ class SKASubarray(SKAObsDevice):
         """
         A class for SKASubarray's Restart() command.
         """
+
         def __init__(self, target, state_model, logger=None):
             """
             Constructor for RestartCommand
@@ -741,7 +807,7 @@ class SKASubarray(SKAObsDevice):
             :param state_model: the state model that this command uses
                  to check that it is allowed to run, and that it drives
                  with actions.
-            :type state_model: SKASubarrayStateModel
+            :type state_model: :py:class:`SKASubarrayStateModel`
             :param logger: the logger to be used by this Command. If not
                 provided, then a default module logger will be used.
             :type logger: a logger that implements the standard library
@@ -784,7 +850,7 @@ class SKASubarray(SKAObsDevice):
             logger=self.logger,
             op_state_callback=self._update_state,
             admin_mode_callback=self._update_admin_mode,
-            obs_state_callback=self._update_obs_state
+            obs_state_callback=self._update_obs_state,
         )
 
     def init_command_objects(self):
@@ -797,36 +863,21 @@ class SKASubarray(SKAObsDevice):
         resource_args = (self.resource_manager, self.state_model, self.logger)
 
         self.register_command_object(
-            "AssignResources",
-            self.AssignResourcesCommand(*resource_args)
+            "AssignResources", self.AssignResourcesCommand(*resource_args)
         )
         self.register_command_object(
-            "ReleaseResources",
-            self.ReleaseResourcesCommand(*resource_args)
+            "ReleaseResources", self.ReleaseResourcesCommand(*resource_args)
         )
         self.register_command_object(
-            "ReleaseAllResources",
-            self.ReleaseAllResourcesCommand(*resource_args)
+            "ReleaseAllResources", self.ReleaseAllResourcesCommand(*resource_args)
         )
-        self.register_command_object(
-            "Configure",
-            self.ConfigureCommand(*device_args)
-        )
+        self.register_command_object("Configure", self.ConfigureCommand(*device_args))
         self.register_command_object("Scan", self.ScanCommand(*device_args))
-        self.register_command_object(
-            "EndScan",
-            self.EndScanCommand(*device_args)
-        )
+        self.register_command_object("EndScan", self.EndScanCommand(*device_args))
         self.register_command_object("End", self.EndCommand(*device_args))
         self.register_command_object("Abort", self.AbortCommand(*device_args))
-        self.register_command_object(
-            "ObsReset",
-            self.ObsResetCommand(*device_args)
-        )
-        self.register_command_object(
-            "Restart",
-            self.RestartCommand(*device_args)
-        )
+        self.register_command_object("ObsReset", self.ObsResetCommand(*device_args))
+        self.register_command_object("Restart", self.RestartCommand(*device_args))
 
     def _validate_capability_types(self, capability_types):
         """
@@ -835,13 +886,13 @@ class SKASubarray(SKAObsDevice):
 
         :param device: the device for which this class implements
             the configure command
-        :type device: SKASubarray
+        :type device: :py:class:`SKASubarray`
         :param capability_types: a list strings representing
             capability types.
         :type capability_types: list
 
-        :raises ValueError: If any of the capabilities requested are
-            not valid.
+        :raises CapabilityValidationError: If any of the capabilities
+            requested are not valid.
         """
         invalid_capabilities = list(
             set(capability_types) - set(self._configured_capabilities))
@@ -903,8 +954,6 @@ class SKASubarray(SKAObsDevice):
         # PROTECTED REGION ID(SKASubarray.always_executed_hook) ENABLED START #
         """
         Method that is always executed before any device command gets executed.
-
-        :return: None
         """
         pass
         # PROTECTED REGION END #    //  SKASubarray.always_executed_hook
@@ -913,8 +962,6 @@ class SKASubarray(SKAObsDevice):
         # PROTECTED REGION ID(SKASubarray.delete_device) ENABLED START #
         """
         Method to cleanup when device is stopped.
-
-        :return: None
         """
         pass
         # PROTECTED REGION END #    //  SKASubarray.delete_device
@@ -951,8 +998,9 @@ class SKASubarray(SKAObsDevice):
             in the Subarray
         """
         configured_capabilities = []
-        for capability_type, capability_instances in (
-                list(self._configured_capabilities.items())):
+        for capability_type, capability_instances in list(
+            self._configured_capabilities.items()
+        ):
             configured_capabilities.append(
                 "{}:{}".format(capability_type, capability_instances))
         return sorted(configured_capabilities)
@@ -991,6 +1039,11 @@ class SKASubarray(SKAObsDevice):
 
         :param argin: the resources to be assigned
         :type argin: list of str
+
+        :return: A tuple containing a return code and a string
+            message indicating status. The message is for
+            information purpose only.
+        :rtype: (ResultCode, str)
         """
         command = self.get_command_object("AssignResources")
         (return_code, message) = command(argin)
@@ -1025,6 +1078,11 @@ class SKASubarray(SKAObsDevice):
 
         :param argin: the resources to be released
         :type argin: list of str
+
+        :return: A tuple containing a return code and a string
+            message indicating status. The message is for
+            information purpose only.
+        :rtype: (ResultCode, str)
         """
         command = self.get_command_object("ReleaseResources")
         (return_code, message) = command(argin)
@@ -1055,8 +1113,10 @@ class SKASubarray(SKAObsDevice):
         To modify behaviour for this command, modify the do() method of
         the command class.
 
-        :return: list of resources removed
-        :rtype: list of string
+        :return: A tuple containing a return code and a string
+            message indicating status. The message is for
+            information purpose only.
+        :rtype: (ResultCode, str)
         """
         command = self.get_command_object("ReleaseAllResources")
         (return_code, message) = command()
@@ -1091,6 +1151,11 @@ class SKASubarray(SKAObsDevice):
 
         :param argin: configuration specification
         :type argin: string
+
+        :return: A tuple containing a return code and a string
+            message indicating status. The message is for
+            information purpose only.
+        :rtype: (ResultCode, str)
         """
         command = self.get_command_object("Configure")
         (return_code, message) = command(argin)
@@ -1124,6 +1189,11 @@ class SKASubarray(SKAObsDevice):
 
         :param argin: Information about the scan
         :type argin: Array of str
+
+        :return: A tuple containing a return code and a string
+            message indicating status. The message is for
+            information purpose only.
+        :rtype: (ResultCode, str)
         """
         command = self.get_command_object("Scan")
         (return_code, message) = command(argin)
@@ -1152,6 +1222,11 @@ class SKASubarray(SKAObsDevice):
 
         To modify behaviour for this command, modify the do() method of
         the command class.
+
+        :return: A tuple containing a return code and a string
+            message indicating status. The message is for
+            information purpose only.
+        :rtype: (ResultCode, str)
         """
         command = self.get_command_object("EndScan")
         (return_code, message) = command()
@@ -1181,6 +1256,11 @@ class SKASubarray(SKAObsDevice):
 
         To modify behaviour for this command, modify the do() method of
         the command class.
+
+        :return: A tuple containing a return code and a string
+            message indicating status. The message is for
+            information purpose only.
+        :rtype: (ResultCode, str)
         """
         command = self.get_command_object("End")
         (return_code, message) = command()
@@ -1210,6 +1290,11 @@ class SKASubarray(SKAObsDevice):
 
         To modify behaviour for this command, modify the do() method of
         the command class.
+
+        :return: A tuple containing a return code and a string
+            message indicating status. The message is for
+            information purpose only.
+        :rtype: (ResultCode, str)
         """
         command = self.get_command_object("Abort")
         (return_code, message) = command()
@@ -1239,6 +1324,11 @@ class SKASubarray(SKAObsDevice):
 
         To modify behaviour for this command, modify the do() method of
         the command class.
+
+        :return: A tuple containing a return code and a string
+            message indicating status. The message is for
+            information purpose only.
+        :rtype: (ResultCode, str)
         """
         command = self.get_command_object("ObsReset")
         (return_code, message) = command()
@@ -1269,6 +1359,11 @@ class SKASubarray(SKAObsDevice):
 
         To modify behaviour for this command, modify the do() method of
         the command class.
+
+        :return: A tuple containing a return code and a string
+            message indicating status. The message is for
+            information purpose only.
+        :rtype: (ResultCode, str)
         """
         command = self.get_command_object("Restart")
         (return_code, message) = command()
@@ -1282,6 +1377,11 @@ def main(args=None, **kwargs):
     # PROTECTED REGION ID(SKASubarray.main) ENABLED START #
     """
     Main entry point of the module.
+
+    :param args: positional args to tango.server.run
+    :param kwargs: named args to tango.server.run
+
+    :return: exit code
     """
     return run((SKASubarray,), args=args, **kwargs)
     # PROTECTED REGION END #    //  SKASubarray.main

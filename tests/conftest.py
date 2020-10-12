@@ -1,6 +1,7 @@
 """
 A module defining a list of fixtures that are shared across all ska.base tests.
 """
+from collections import defaultdict
 import importlib
 import itertools
 import json
@@ -8,8 +9,10 @@ import pytest
 from queue import Empty, Queue
 from transitions import MachineError
 
-from tango import EventType
+from tango import DevState, EventType
 from tango.test_context import DeviceTestContext
+
+from ska.base.control_model import AdminMode, ObsState
 
 
 def pytest_configure(config):
@@ -31,32 +34,30 @@ def pytest_generate_tests(metafunc):
     will have its tests parameterised by the states and actions in the
     specification provided by that mark
     """
-    # called once per each test function
     mark = metafunc.definition.get_closest_marker("state_machine_tester")
     if mark:
         spec = mark.args[0]
-        states = set()
+
+        states = {state: spec["states"][state] or state for state in spec["states"]}
+
         triggers = set()
-        expected = {}
-
-        for (from_state, trigger, to_state) in spec:
-            states.add(from_state)
-            states.add(to_state)
-            triggers.add(trigger)
-            expected[(from_state, trigger)] = to_state
-
-        states = sorted(states)
-        triggers = sorted(triggers)
+        expected = defaultdict(lambda: None)
+        for transition in spec["transitions"]:
+            triggers.add(transition["trigger"])
+            expected[(transition["from"], transition["trigger"])] = states[transition["to"]]
+        test_cases = list(itertools.product(sorted(states), sorted(triggers)))
+        test_ids = [f"{state}-{trigger}" for (state, trigger) in test_cases]
 
         metafunc.parametrize(
             "state_under_test, action_under_test, expected_state",
             [
                 (
-                    state,
+                    states[state],
                     trigger,
-                    expected[(state, trigger)] if (state, trigger) in expected else None
-                ) for (state, trigger) in itertools.product(states, triggers)
-            ]
+                    expected[(state, trigger)]
+                ) for (state, trigger) in test_cases
+            ],
+            ids=test_ids
         )
 
 
@@ -102,10 +103,12 @@ class StateMachineTester:
         # Test that the action under test does what we expect it to
         if expected_state is None:
             # Action should fail and the state should not change
-            self.check_action_disallowed(machine, action_under_test)
+            assert not self.is_action_allowed(machine, action_under_test)
+            self.check_action_fails(machine, action_under_test)
             self.assert_state(machine, state_under_test)
         else:
             # Action should succeed
+            assert self.is_action_allowed(machine, action_under_test)
             self.perform_action(machine, action_under_test)
             self.assert_state(machine, expected_state)
 
@@ -122,6 +125,18 @@ class StateMachineTester:
         """
         raise NotImplementedError()
 
+    def is_action_allowed(self, machine, action):
+        """
+        Abstract method for checking whether the action under test is
+        allowed from the current state.
+
+        :param machine: the state machine under test
+        :type machine: state machine object instance
+        :param action: action to be performed on the state machine
+        :type action: str
+        """
+        raise NotImplementedError()
+
     def perform_action(self, machine, action):
         """
         Abstract method for performing an action on the state machine
@@ -133,7 +148,7 @@ class StateMachineTester:
         """
         raise NotImplementedError()
 
-    def check_action_disallowed(self, machine, action):
+    def check_action_fails(self, machine, action):
         """
         Abstract method for asserting that an action fails if performed
         on the state machine under test in its current state.
@@ -179,6 +194,18 @@ class TransitionsStateMachineTester(StateMachineTester):
         """
         assert machine.state == state
 
+    def is_action_allowed(self, machine, action):
+        """
+        Check whether the action under test is allowed from the current
+        state.
+
+        :param machine: the state machine under test
+        :type machine: state machine object instance
+        :param action: action to be performed on the state machine
+        :type action: str
+        """
+        return action in machine.get_triggers(machine.state)
+
     def perform_action(self, machine, action):
         """
         Perform a given action on the state machine under test.
@@ -190,9 +217,9 @@ class TransitionsStateMachineTester(StateMachineTester):
         """
         machine.trigger(action)
 
-    def check_action_disallowed(self, machine, action):
+    def check_action_fails(self, machine, action):
         """
-        Assert that performing a given action on the state maching under
+        Check that attempting a given action on the state machine under
         test fails in its current state.
 
         :param machine: the state machine under test
@@ -233,6 +260,25 @@ def load_data(name):
     with open(f"tests/data/{name}.json", "r") as json_file:
         return json.load(json_file)
 
+def load_state_machine_spec(name):
+    """
+    Loads a state machine specification by name.
+
+    :param name: name of the dataset to be loaded; this implementation
+        uses the name to find a JSON file containing the data to be
+        loaded.
+    :type name: string
+    """
+    machine_spec = load_data(name)
+    for state in machine_spec["states"]:
+        state_spec = machine_spec["states"][state]
+        if "admin_mode" in state_spec:
+            state_spec["admin_mode"] = AdminMode[state_spec["admin_mode"]]
+        if "op_state" in state_spec:
+            state_spec["op_state"] = getattr(DevState, state_spec["op_state"])
+        if "obs_state" in state_spec:
+            state_spec["obs_state"] = ObsState[state_spec["obs_state"]]
+    return machine_spec
 
 @pytest.fixture(scope="class")
 def tango_context(request):
@@ -251,8 +297,7 @@ def tango_context(request):
             'NrSubarrays': '16',
             'CapabilityTypes': '',
             'MaxCapabilities': ['BAND1:1', 'BAND2:1']
-            },
-
+        },
         'SKASubarray': {
             "CapabilityTypes": ["BAND1", "BAND2"],
             'LoggingTargetsDefault': '',
@@ -319,12 +364,14 @@ def tango_change_event_helper(tango_context):
         state_callback.assert_calls([DevState.OFF, DevState.ON])
 
     """
+
     class _Callback:
         """
         Private callback handler class, an instance of which is returned
         by the tango_change_event_helper each time it is used to
         subscribe to a change event.
         """
+
         @staticmethod
         def subscribe(attribute_name):
             """
@@ -371,7 +418,7 @@ def tango_change_event_helper(tango_context):
             Event subscription callback
 
             :param event_data: data about the change events
-            :type event_data: tango.EventData
+            :type event_data: :py:class:`tango.EventData`
             """
             if event_data.err:
                 error = event_data.errors[0]

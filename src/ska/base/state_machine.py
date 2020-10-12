@@ -2,212 +2,204 @@
 This module contains specifications of SKA state machines.
 """
 from transitions import Machine, State
-from tango import DevState
-
-from ska.base.control_model import AdminMode, ObsState
 
 
-class BaseDeviceStateMachine(Machine):
+__all__ = ["OperationStateMachine", "AdminModeStateMachine", "ObservationStateMachine"]
+
+
+class OperationStateMachine(Machine):
     """
-    State machine for an SKA base device. Supports ON and OFF states,
-    states, plus initialisation and fault states, and
-    also the basic admin modes.
+    State machine for operational state ("opState").
+
+    The states supported are "UNINITIALISED", "INIT", "FAULT",
+    "DISABLE", "STANDBY", "OFF" and "ON".
+
+    The states "INIT", "FAULT" and "DISABLE" also have "INIT_ADMIN",
+    "FAULT_ADMIN" and "DISABLE_ADMIN" flavours to represent these states
+    in situations where the device being modelled has been
+    administratively disabled.
     """
 
-    def __init__(self, op_state_callback=None, admin_mode_callback=None):
+    def __init__(self, callback=None, **extra_kwargs):
         """
         Initialises the state model.
 
-        :param op_state_callback: A callback to be called when a
-            transition implies a change to op state
-        :type op_state_callback: callable
-        :param admin_mode_callback: A callback to be called when a
-            transition causes a change to device admin_mode
-        :type admin_mode_callback: callable
+        :param callback: A callback to be called when a transition
+            implies a change to op state
+        :type callback: callable
+        :param extra_kwargs: Additional keywords arguments to pass to super class
+            initialiser (useful for graphing)
         """
-        self._admin_mode = None
-        self._admin_mode_callback = admin_mode_callback
-        self._op_state = None
-        self._op_state_callback = op_state_callback
+        self._callback = callback
 
         states = [
-            State("UNINITIALISED"),
-            State("INIT_ENABLED", on_enter="_init_entered"),
-            State("INIT_DISABLED", on_enter="_init_entered"),
-            State("FAULT_ENABLED", on_enter="_fault_entered"),
-            State("FAULT_DISABLED", on_enter="_fault_entered"),
-            State("DISABLED", on_enter="_disabled_entered"),
-            State("OFF", on_enter="_off_entered"),
-            State("ON", on_enter="_on_entered"),
+            "UNINITIALISED",
+            "INIT",
+            "INIT_ADMIN",
+            "FAULT",
+            "FAULT_ADMIN",
+            "DISABLE",
+            "DISABLE_ADMIN",
+            "STANDBY",
+            "OFF",
+            "ON",
         ]
 
         transitions = [
             {
                 "source": "UNINITIALISED",
                 "trigger": "init_started",
-                "dest": "INIT_ENABLED",
-                "after": self._maintenance_callback,
+                "dest": "INIT",
             },
             {
-                "source": ["INIT_ENABLED", "OFF", "FAULT_ENABLED", "ON"],
+                "source": ["INIT", "FAULT", "DISABLE", "STANDBY", "OFF", "ON"],
                 "trigger": "fatal_error",
-                "dest": "FAULT_ENABLED",
+                "dest": "FAULT",
             },
             {
-                "source": ["INIT_DISABLED", "DISABLED", "FAULT_DISABLED"],
+                "source": ["INIT_ADMIN", "FAULT_ADMIN", "DISABLE_ADMIN"],
                 "trigger": "fatal_error",
-                "dest": "FAULT_DISABLED",
+                "dest": "FAULT_ADMIN",
             },
             {
-                "source": "INIT_ENABLED",
-                "trigger": "init_succeeded",
+                "source": "INIT",
+                "trigger": "init_succeeded_disable",
+                "dest": "DISABLE",
+            },
+            {
+                "source": "INIT_ADMIN",
+                "trigger": "init_succeeded_disable",
+                "dest": "DISABLE_ADMIN",
+            },
+            {
+                "source": "INIT",
+                "trigger": "init_succeeded_standby",
+                "dest": "STANDBY",
+            },
+            {
+                "source": "INIT",
+                "trigger": "init_succeeded_off",
                 "dest": "OFF",
             },
             {
-                "source": "INIT_DISABLED",
-                "trigger": "init_succeeded",
-                "dest": "DISABLED",
-            },
-            {
-                "source": "INIT_ENABLED",
+                "source": "INIT",
                 "trigger": "init_failed",
-                "dest": "FAULT_ENABLED",
+                "dest": "FAULT",
             },
             {
-                "source": "INIT_DISABLED",
+                "source": "INIT_ADMIN",
                 "trigger": "init_failed",
-                "dest": "FAULT_DISABLED",
+                "dest": "FAULT_ADMIN",
             },
             {
-                "source": ["INIT_ENABLED", "INIT_DISABLED"],
-                "trigger": "to_notfitted",
-                "dest": "INIT_DISABLED",
-                "after": self._not_fitted_callback
+                "source": ["INIT", "INIT_ADMIN"],
+                "trigger": "admin_on",
+                "dest": "INIT_ADMIN",
             },
             {
-                "source": ["INIT_ENABLED", "INIT_DISABLED"],
-                "trigger": "to_offline",
-                "dest": "INIT_DISABLED",
-                "after": self._offline_callback
+                "source": ["INIT", "INIT_ADMIN"],
+                "trigger": "admin_off",
+                "dest": "INIT",
             },
             {
-                "source": ["INIT_ENABLED", "INIT_DISABLED"],
-                "trigger": "to_maintenance",
-                "dest": "INIT_ENABLED",
-                "after": self._maintenance_callback
+                "source": "FAULT",
+                "trigger": "reset_succeeded_disable",
+                "dest": "DISABLE",
             },
             {
-                "source": ["INIT_ENABLED", "INIT_DISABLED"],
-                "trigger": "to_online",
-                "dest": "INIT_ENABLED",
-                "after": self._online_callback
+                "source": "FAULT_ADMIN",
+                "trigger": "reset_succeeded_disable",
+                "dest": "DISABLE_ADMIN",
             },
             {
-                "source": "FAULT_DISABLED",
-                "trigger": "reset_succeeded",
-                "dest": "DISABLED",
+                "source": "FAULT",
+                "trigger": "reset_succeeded_standby",
+                "dest": "STANDBY",
             },
             {
-                "source": "FAULT_ENABLED",
-                "trigger": "reset_succeeded",
+                "source": "FAULT",
+                "trigger": "reset_succeeded_off",
                 "dest": "OFF",
             },
             {
-                "source": ["FAULT_DISABLED", "FAULT_ENABLED"],
+                "source": "FAULT",
                 "trigger": "reset_failed",
-                "dest": None,
+                "dest": "FAULT",
             },
             {
-                "source": ["FAULT_DISABLED", "FAULT_ENABLED"],
-                "trigger": "to_notfitted",
-                "dest": "FAULT_DISABLED",
-                "after": self._not_fitted_callback
+                "source": "FAULT_ADMIN",
+                "trigger": "reset_failed",
+                "dest": "FAULT_ADMIN",
             },
             {
-                "source": ["FAULT_DISABLED", "FAULT_ENABLED"],
-                "trigger": "to_offline",
-                "dest": "FAULT_DISABLED",
-                "after": self._offline_callback
+                "source": ["FAULT", "FAULT_ADMIN"],
+                "trigger": "admin_on",
+                "dest": "FAULT_ADMIN",
             },
             {
-                "source": ["FAULT_DISABLED", "FAULT_ENABLED"],
-                "trigger": "to_maintenance",
-                "dest": "FAULT_ENABLED",
-                "after": self._maintenance_callback
+                "source": ["FAULT", "FAULT_ADMIN"],
+                "trigger": "admin_off",
+                "dest": "FAULT",
             },
             {
-                "source": ["FAULT_DISABLED", "FAULT_ENABLED"],
-                "trigger": "to_online",
-                "dest": "FAULT_ENABLED",
-                "after": self._online_callback
+                "source": ["DISABLE", "DISABLE_ADMIN"],
+                "trigger": "admin_on",
+                "dest": "DISABLE_ADMIN",
             },
             {
-                "source": "DISABLED",
-                "trigger": "to_notfitted",
-                "dest": "DISABLED",
-                "after": self._not_fitted_callback
+                "source": ["DISABLE", "DISABLE_ADMIN"],
+                "trigger": "admin_off",
+                "dest": "DISABLE",
             },
             {
-                "source": "DISABLED",
-                "trigger": "to_offline",
-                "dest": "DISABLED",
-                "after": self._offline_callback
+                "source": "DISABLE_ADMIN",
+                "trigger": "disable_succeeded",
+                "dest": "DISABLE_ADMIN",
             },
             {
-                "source": "DISABLED",
-                "trigger": "to_maintenance",
-                "dest": "OFF",
-                "after": self._maintenance_callback
+                "source": "DISABLE_ADMIN",
+                "trigger": "disable_failed",
+                "dest": "FAULT_ADMIN",
             },
             {
-                "source": "DISABLED",
-                "trigger": "to_online",
-                "dest": "OFF",
-                "after": self._online_callback
+                "source": ["DISABLE", "STANDBY", "OFF"],
+                "trigger": "disable_succeeded",
+                "dest": "DISABLE",
             },
             {
-                "source": "OFF",
-                "trigger": "to_notfitted",
-                "dest": "DISABLED",
-                "after": self._not_fitted_callback
+                "source": ["DISABLE", "STANDBY", "OFF"],
+                "trigger": "disable_failed",
+                "dest": "FAULT",
             },
             {
-                "source": "OFF",
-                "trigger": "to_offline",
-                "dest": "DISABLED",
-                "after": self._offline_callback
+                "source": ["DISABLE", "STANDBY", "OFF"],
+                "trigger": "standby_succeeded",
+                "dest": "STANDBY",
             },
             {
-                "source": "OFF",
-                "trigger": "to_maintenance",
-                "dest": "OFF",
-                "after": self._maintenance_callback
+                "source": ["DISABLE", "STANDBY", "OFF"],
+                "trigger": "standby_failed",
+                "dest": "FAULT",
             },
             {
-                "source": "OFF",
-                "trigger": "to_online",
-                "dest": "OFF",
-                "after": self._online_callback
-            },
-            {
-                "source": "OFF",
-                "trigger": "on_succeeded",
-                "dest": "ON",
-            },
-            {
-                "source": "OFF",
-                "trigger": "on_failed",
-                "dest": "FAULT_ENABLED",
-            },
-            {
-                "source": "ON",
+                "source": ["DISABLE", "STANDBY", "OFF", "ON"],
                 "trigger": "off_succeeded",
                 "dest": "OFF",
             },
             {
-                "source": "ON",
+                "source": ["DISABLE", "STANDBY", "OFF", "ON"],
                 "trigger": "off_failed",
-                "dest": "FAULT_ENABLED",
+                "dest": "FAULT",
+            },
+            {
+                "source": ["OFF", "ON"],
+                "trigger": "on_succeeded",
+                "dest": "ON",
+            },
+            {
+                "source": ["OFF", "ON"],
+                "trigger": "on_failed",
+                "dest": "FAULT",
             },
         ]
 
@@ -215,90 +207,81 @@ class BaseDeviceStateMachine(Machine):
             states=states,
             initial="UNINITIALISED",
             transitions=transitions,
+            after_state_change=self._state_changed,
+            **extra_kwargs,
         )
 
-    def _init_entered(self):
+    def _state_changed(self):
         """
-        called when the state machine enters the "" state.
+        State machine callback that is called every time the op_state
+        changes. Responsible for ensuring that callbacks are called.
         """
-        self._update_op_state(DevState.INIT)
+        if self._callback is not None:
+            self._callback(self.state)
 
-    def _fault_entered(self):
-        """
-        called when the state machine enters the "" state.
-        """
-        self._update_op_state(DevState.FAULT)
 
-    def _disabled_entered(self):
-        """
-        called when the state machine enters the "" state.
-        """
-        self._update_op_state(DevState.DISABLE)
+class AdminModeStateMachine(Machine):
+    """
+    The state machine governing admin modes
+    """
 
-    def _off_entered(self):
+    def __init__(self, callback=None, **extra_kwargs):
         """
-        called when the state machine enters the "" state.
-        """
-        self._update_op_state(DevState.OFF)
+        Initialises the admin mode state machine model.
 
-    def _on_entered(self):
+        :param callback: A callback to be called whenever there is a transition
+            to a new admin mode value
+        :type callback: callable
+        :param extra_kwargs: Additional keywords arguments to pass to super class
+            initialiser (useful for graphing)
         """
-        called when the state machine enters the "" state.
-        """
-        self._update_op_state(DevState.ON)
+        self._callback = callback
 
-    def _not_fitted_callback(self):
-        """
-        callback called when the state machine is set to admin mode
-        NOT FITTED
-        """
-        self._update_admin_mode(AdminMode.NOT_FITTED)
+        states = ["RESERVED", "NOT_FITTED", "OFFLINE", "MAINTENANCE", "ONLINE"]
+        transitions = [
+            {
+                "source": ["NOT_FITTED", "RESERVED", "OFFLINE"],
+                "trigger": "to_reserved",
+                "dest": "RESERVED",
+            },
+            {
+                "source": ["RESERVED", "NOT_FITTED", "OFFLINE"],
+                "trigger": "to_notfitted",
+                "dest": "NOT_FITTED",
+            },
+            {
+                "source": ["RESERVED", "NOT_FITTED", "OFFLINE", "MAINTENANCE", "ONLINE"],
+                "trigger": "to_offline",
+                "dest": "OFFLINE",
+            },
+            {
+                "source": ["OFFLINE", "MAINTENANCE", "ONLINE"],
+                "trigger": "to_maintenance",
+                "dest": "MAINTENANCE",
+            },
+            {
+                "source": ["OFFLINE", "MAINTENANCE", "ONLINE"],
+                "trigger": "to_online",
+                "dest": "ONLINE",
+            },
+        ]
 
-    def _offline_callback(self):
-        """
-        callback called when the state machine is set to admin mode
-        OFFLINE
-        """
-        self._update_admin_mode(AdminMode.OFFLINE)
+        super().__init__(
+            states=states,
+            initial="MAINTENANCE",
+            transitions=transitions,
+            after_state_change=self._state_changed,
+            **extra_kwargs,
+        )
+        self._state_changed()
 
-    def _maintenance_callback(self):
+    def _state_changed(self):
         """
-        callback called when the state machine is set to admin mode
-        MAINTENANCE
+        State machine callback that is called every time the admin mode
+        changes. Responsible for ensuring that callbacks are called.
         """
-        self._update_admin_mode(AdminMode.MAINTENANCE)
-
-    def _online_callback(self):
-        """
-        callback called when the state machine is set to admin mode
-        online
-        """
-        self._update_admin_mode(AdminMode.ONLINE)
-
-    def _update_admin_mode(self, admin_mode):
-        """
-        Helper method: calls the admin_mode callback if one exists
-
-        :param admin_mode: the new admin_mode value
-        :type admin_mode: AdminMode
-        """
-        if self._admin_mode != admin_mode:
-            self._admin_mode = admin_mode
-            if self._admin_mode_callback is not None:
-                self._admin_mode_callback(self._admin_mode)
-
-    def _update_op_state(self, op_state):
-        """
-        Helper method: sets this state models op_state, and calls the
-        op_state callback if one exists
-
-        :param op_state: the new op state value
-        :type op_state: DevState
-        """
-        if self._op_state != op_state:
-            self._op_state = op_state
-            if self._op_state_callback is not None:
-                self._op_state_callback(self._op_state)
+        if self._callback is not None:
+            self._callback(self.state)
 
 
 class ObservationStateMachine(Machine):
@@ -307,164 +290,177 @@ class ObservationStateMachine(Machine):
     ADR-8.
     """
 
-    def __init__(self, obs_state_callback=None):
+    def __init__(self, callback=None, **extra_kwargs):
         """
         Initialises the model.
 
-        :param obs_state_callback: A callback to be called when a
-            transition causes a change to device obs_state
-        :type obs_state_callback: callable
+        :param callback: A callback to be called when the state changes
+        :type callback: callable
+        :param extra_kwargs: Additional keywords arguments to pass to super class
+            initialiser (useful for graphing)
         """
-        self._obs_state = ObsState.EMPTY
-        self._obs_state_callback = obs_state_callback
+        self._callback = callback
 
-        states = [obs_state.name for obs_state in ObsState]
+        states = [
+            "EMPTY",
+            "RESOURCING",
+            "IDLE",
+            "CONFIGURING",
+            "READY",
+            "SCANNING",
+            "ABORTING",
+            "ABORTED",
+            "RESETTING",
+            "RESTARTING",
+            "FAULT",
+        ]
         transitions = [
             {
                 "source": "*",
                 "trigger": "fatal_error",
-                "dest": ObsState.FAULT.name,
+                "dest": "FAULT",
             },
             {
-                "source": [ObsState.EMPTY.name, ObsState.IDLE.name],
+                "source": ["EMPTY", "IDLE"],
                 "trigger": "assign_started",
-                "dest": ObsState.RESOURCING.name,
+                "dest": "RESOURCING",
             },
             {
-                "source": ObsState.IDLE.name,
+                "source": "IDLE",
                 "trigger": "release_started",
-                "dest": ObsState.RESOURCING.name,
+                "dest": "RESOURCING",
             },
             {
-                "source": ObsState.RESOURCING.name,
+                "source": "RESOURCING",
                 "trigger": "resourcing_succeeded_some_resources",
-                "dest": ObsState.IDLE.name,
+                "dest": "IDLE",
             },
             {
-                "source": ObsState.RESOURCING.name,
+                "source": "RESOURCING",
                 "trigger": "resourcing_succeeded_no_resources",
-                "dest": ObsState.EMPTY.name,
+                "dest": "EMPTY",
             },
             {
-                "source": ObsState.RESOURCING.name,
+                "source": "RESOURCING",
                 "trigger": "resourcing_failed",
-                "dest": ObsState.FAULT.name,
+                "dest": "FAULT",
             },
             {
-                "source": [ObsState.IDLE.name, ObsState.READY.name],
+                "source": ["IDLE", "READY"],
                 "trigger": "configure_started",
-                "dest": ObsState.CONFIGURING.name,
+                "dest": "CONFIGURING",
             },
             {
-                "source": ObsState.CONFIGURING.name,
+                "source": "CONFIGURING",
                 "trigger": "configure_succeeded",
-                "dest": ObsState.READY.name,
+                "dest": "READY",
             },
             {
-                "source": ObsState.CONFIGURING.name,
+                "source": "CONFIGURING",
                 "trigger": "configure_failed",
-                "dest": ObsState.FAULT.name,
+                "dest": "FAULT",
             },
             {
-                "source": ObsState.READY.name,
+                "source": "READY",
                 "trigger": "end_succeeded",
-                "dest": ObsState.IDLE.name,
+                "dest": "IDLE",
             },
             {
-                "source": ObsState.READY.name,
+                "source": "READY",
                 "trigger": "end_failed",
-                "dest": ObsState.FAULT.name,
+                "dest": "FAULT",
             },
             {
-                "source": ObsState.READY.name,
+                "source": "READY",
                 "trigger": "scan_started",
-                "dest": ObsState.SCANNING.name,
+                "dest": "SCANNING",
             },
             {
-                "source": ObsState.SCANNING.name,
+                "source": "SCANNING",
                 "trigger": "scan_succeeded",
-                "dest": ObsState.READY.name,
+                "dest": "READY",
             },
             {
-                "source": ObsState.SCANNING.name,
+                "source": "SCANNING",
                 "trigger": "scan_failed",
-                "dest": ObsState.FAULT.name,
+                "dest": "FAULT",
             },
             {
-                "source": ObsState.SCANNING.name,
+                "source": "SCANNING",
                 "trigger": "end_scan_succeeded",
-                "dest": ObsState.READY.name,
+                "dest": "READY",
             },
             {
-                "source": ObsState.SCANNING.name,
+                "source": "SCANNING",
                 "trigger": "end_scan_failed",
-                "dest": ObsState.FAULT.name,
+                "dest": "FAULT",
             },
             {
                 "source": [
-                    ObsState.IDLE.name, ObsState.CONFIGURING.name,
-                    ObsState.READY.name, ObsState.SCANNING.name,
-                    ObsState.RESETTING.name,
+                    "IDLE",
+                    "CONFIGURING",
+                    "READY",
+                    "SCANNING",
+                    "RESETTING",
                 ],
                 "trigger": "abort_started",
-                "dest": ObsState.ABORTING.name,
+                "dest": "ABORTING",
             },
             {
-                "source": ObsState.ABORTING.name,
+                "source": "ABORTING",
                 "trigger": "abort_succeeded",
-                "dest": ObsState.ABORTED.name,
+                "dest": "ABORTED",
             },
             {
-                "source": ObsState.ABORTING.name,
+                "source": "ABORTING",
                 "trigger": "abort_failed",
-                "dest": ObsState.FAULT.name,
+                "dest": "FAULT",
             },
             {
-                "source": [ObsState.ABORTED.name, ObsState.FAULT.name],
-                "trigger": "obs_reset_started",
-                "dest": ObsState.RESETTING.name,
+                "source": ["ABORTED", "FAULT"],
+                "trigger": "reset_started",
+                "dest": "RESETTING",
             },
             {
-                "source": ObsState.RESETTING.name,
-                "trigger": "obs_reset_succeeded",
-                "dest": ObsState.IDLE.name,
+                "source": "RESETTING",
+                "trigger": "reset_succeeded",
+                "dest": "IDLE",
             },
             {
-                "source": ObsState.RESETTING.name,
-                "trigger": "obs_reset_failed",
-                "dest": ObsState.FAULT.name,
+                "source": "RESETTING",
+                "trigger": "reset_failed",
+                "dest": "FAULT",
             },
             {
-                "source": [ObsState.ABORTED.name, ObsState.FAULT.name],
+                "source": ["ABORTED", "FAULT"],
                 "trigger": "restart_started",
-                "dest": ObsState.RESTARTING.name,
+                "dest": "RESTARTING",
             },
             {
-                "source": ObsState.RESTARTING.name,
+                "source": "RESTARTING",
                 "trigger": "restart_succeeded",
-                "dest": ObsState.EMPTY.name,
+                "dest": "EMPTY",
             },
             {
-                "source": ObsState.RESTARTING.name,
+                "source": "RESTARTING",
                 "trigger": "restart_failed",
-                "dest": ObsState.FAULT.name,
+                "dest": "FAULT",
             },
         ]
 
         super().__init__(
             states=states,
-            initial=ObsState.EMPTY.name,
+            initial="EMPTY",
             transitions=transitions,
-            after_state_change=self._obs_state_changed
+            after_state_change=self._state_changed,
+            **extra_kwargs,
         )
+        self._state_changed()
 
-    def _obs_state_changed(self):
+    def _state_changed(self):
         """
         State machine callback that is called every time the obs_state
         changes. Responsible for ensuring that callbacks are called.
         """
-        obs_state = ObsState[self.state]
-        if self._obs_state != obs_state:
-            self._obs_state = obs_state
-            if self._obs_state_callback is not None:
-                self._obs_state_callback(self._obs_state)
+        if self._callback is not None:
+            self._callback(self.state)

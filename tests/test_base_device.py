@@ -19,6 +19,8 @@ import tango
 
 from unittest import mock
 from tango import DevFailed, DevState
+from ska.base import SKABaseDevice
+from ska.base.commands import ResultCode
 from ska.base.control_model import (
     AdminMode, ControlMode, HealthState, LoggingLevel, SimulationMode, TestMode
 )
@@ -30,7 +32,7 @@ from ska.base.base_device import (
     DeviceStateModel,
     TangoLoggingServiceHandler,
 )
-from ska.base.faults import StateModelError
+from ska.base.faults import CommandError, StateModelError
 
 from .conftest import load_state_machine_spec, StateMachineTester
 
@@ -479,9 +481,8 @@ class TestSKABaseDevice(object):
     def test_Reset(self, tango_context):
         """Test for Reset"""
         # PROTECTED REGION ID(SKABaseDevice.test_Reset) ENABLED START #
-        # This is a pretty weak test, but Reset() is only allowed from
-        # device state FAULT, and we have no way of putting into FAULT
-        # state through its interface.
+        # The main test of this command is
+        # TestSKABaseDevice_commands::test_ResetCommand
         with pytest.raises(DevFailed):
             tango_context.device.Reset()
         # PROTECTED REGION END #    //  SKABaseDevice.test_Reset
@@ -692,3 +693,47 @@ class TestSKABaseDevice(object):
         # PROTECTED REGION ID(SKABaseDevice.test_testMode) ENABLED START #
         assert tango_context.device.testMode == TestMode.NONE
         # PROTECTED REGION END #    //  SKABaseDevice.test_testMode
+
+class TestSKABaseDevice_commands:
+    """
+    This class contains tests of SKASubarray commands
+    """
+
+    def test_ResetCommand(self, device_state_model):
+        """
+        Test for SKBaseDevice.ResetCommand
+        """
+        mock_device = mock.Mock()
+
+        reset_command = SKABaseDevice.ResetCommand(
+            mock_device,
+            device_state_model
+        )
+
+        machine_spec = load_state_machine_spec("device_state_machine")
+        states = machine_spec["states"]
+
+        transitions = {
+            "FAULT_MAINTENANCE": "OFF_MAINTENANCE",
+            "FAULT_ONLINE": "OFF_ONLINE",
+        }
+
+        for state in states:
+            device_state_model._straight_to_state(**states[state])
+            if state in transitions:
+                # the reset command is permitted, should succeed.
+                assert reset_command.is_allowed()
+                assert reset_command() == (
+                    ResultCode.OK,
+                    "Reset command completed OK",
+                )
+                expected = transitions[state]
+            else:
+                # the reset command is not permitted, should not be allowed,
+                # should fail, should have no side-effect
+                assert not reset_command.is_allowed()
+                with pytest.raises(CommandError):
+                    reset_command()
+                expected = state
+            assert device_state_model.admin_mode == states[expected]["admin_mode"]
+            assert device_state_model.op_state == states[expected]["op_state"]

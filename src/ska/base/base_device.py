@@ -1194,6 +1194,31 @@ class SKABaseDevice(Device):
             """
             super().__init__(target, state_model, "reset", logger=logger)
 
+        def check_allowed(self):
+            """
+            Checks whether the command is allowed to be run in the current
+            state of the state model.
+
+            :returns: True if the command is allowed to be run
+            """
+            return self._try_action("reset_succeeded_off")
+
+        def is_allowed(self):
+            """
+            Whether this command is allowed to run in the current state of
+            the state model.
+
+            :returns: whether this command is allowed to run
+            :rtype: boolean
+            """
+            return self._is_action_allowed("reset_succeeded_off")
+
+        def succeeded(self):
+            """
+            Action to take on successful completion of a reset
+            """
+            self.state_model.perform_action("reset_succeeded_off")
+
         def do(self):
             """
             Stateless hook for device reset.

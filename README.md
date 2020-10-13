@@ -25,6 +25,9 @@ The lmc-base-classe repository contains set of eight classes as mentioned in SKA
 
 ## Version History
 
+#### 0.7.1
+- Bugfix for Reset() command
+
 #### 0.7.0
 - Separate adminMode state machine from opState state machine
 - Add support for STANDBY opState

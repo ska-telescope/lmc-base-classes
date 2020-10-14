@@ -1,0 +1,381 @@
+<?xml version="1.0" encoding="ASCII"?>
+<pogoDsl:PogoSystem xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:pogoDsl="http://www.esrf.fr/tango/pogo/PogoDsl">
+  <classes name="CspSubElementMaster" pogoRevision="9.6">
+    <description description="Master device for SKA CSP Subelement." title="CspSubElementMaster" sourcePath="/home/toor/ska-git/lmc-base-classes/pogo" language="PythonHL" filestogenerate="XMI   file,Code files,Protected Regions" license="GPL" copyright="" hasMandatoryProperty="false" hasConcreteProperty="true" hasAbstractCommand="false" hasAbstractAttribute="false">
+      <inheritances classname="Device_Impl" sourcePath=""/>
+      <inheritances classname="SKABaseDevice" sourcePath="./"/>
+      <inheritances classname="SKAMaster" sourcePath="/home/toor/ska-git/lmc-base-classes/pogo"/>
+      <identification contact="at inaf.it - elisabetta.giani" author="elisabetta.giani" emailDomain="inaf.it" classFamily="SkaBase" siteSpecific="" platform="All Platforms" bus="Not Applicable" manufacturer="none" reference=""/>
+    </description>
+    <deviceProperties name="SkaLevel" description="Indication of importance of the device in the SKA hierarchy &#xA;to support drill-down navigation: 1..6, with 1 highest.&#xA;Default is 4, making provision for &#xA;EltMaster, EltAlarms, EltTelState = 1&#xA;SubEltMaster = 2&#xA;Subarray, Capability = 2/3&#xA;Others = 4 (or 5 or 6)">
+      <type xsi:type="pogoDsl:ShortType"/>
+      <status abstract="false" inherited="true" concrete="true"/>
+      <DefaultPropValue>4</DefaultPropValue>
+    </deviceProperties>
+    <deviceProperties name="LoggingLevelDefault" description="Default logging level at device startup.&#xA;(0=OFF, 1=FATAL, 2=ERROR, 3=WARNING, 4=INFO, 5=DEBUG)">
+      <type xsi:type="pogoDsl:UShortType"/>
+      <status abstract="false" inherited="true" concrete="true"/>
+      <DefaultPropValue>4</DefaultPropValue>
+    </deviceProperties>
+    <deviceProperties name="LoggingTargetsDefault" description="Default logging targets at device startup.&#xA;Each item has the format:  target_type::target_name.&#xA;To log to stdout, use 'console::cout'.&#xA;To log to syslog, use 'syslog::&lt;address>',&#xA;  where &lt;address> is a file path,&#xA;  for example 'syslog::/var/run/rsyslog/dev/log'.&#xA;To log to a file, use 'file::&lt;path>',&#xA;  where &lt;path> is a file path,&#xA;  for example 'file::/tmp/my_dev.log'.">
+      <type xsi:type="pogoDsl:StringVectorType"/>
+      <status abstract="false" inherited="true" concrete="true"/>
+    </deviceProperties>
+    <deviceProperties name="GroupDefinitions" description="Each string in the list is a JSON serialised dict defining the ``group_name``,&#xA;``devices`` and ``subgroups`` in the group.  A TANGO Group object is created&#xA;for each item in the list, according to the hierarchy defined.  This provides&#xA;easy access to the managed devices in bulk, or individually.&#xA;&#xA;The general format of the list is as follows, with optional ``devices`` and&#xA;``subgroups`` keys:&#xA;    [ {``group_name``: ``&lt;name>``,&#xA;       ``devices``: [``&lt;dev name>``, ...]},&#xA;      {``group_name``: ``&lt;name>``,&#xA;       ``devices``: [``&lt;dev name>``, ``&lt;dev name>``, ...],&#xA;       ``subgroups`` : [{&lt;nested group>},&#xA;                              {&lt;nested group>}, ...]},&#xA;      ...&#xA;      ]&#xA;&#xA;For example, a hierarchy of racks, servers and switches:&#xA;    [ {``group_name``: ``servers``,&#xA;       ``devices``: [``elt/server/1``, ``elt/server/2``,&#xA;                       ``elt/server/3``, ``elt/server/4``]},&#xA;      {``group_name``: ``switches``,&#xA;       ``devices``: [``elt/switch/A``, ``elt/switch/B``]},&#xA;      {``group_name``: ``pdus``,&#xA;       ``devices``: [``elt/pdu/rackA``, ``elt/pdu/rackB``]},&#xA;      {``group_name``: ``racks``,&#xA;      ``subgroups``: [&#xA;            {``group_name``: ``rackA``,&#xA;             ``devices``: [``elt/server/1``, ``elt/server/2``,&#xA;                               ``elt/switch/A``, ``elt/pdu/rackA``]},&#xA;            {``group_name``: ``rackB``,&#xA;             ``devices``: [``elt/server/3``, ``elt/server/4``,&#xA;                              ``elt/switch/B``, ``elt/pdu/rackB``],&#xA;             ``subgroups``: []}&#xA;       ]} ]">
+      <type xsi:type="pogoDsl:StringVectorType"/>
+      <status abstract="false" inherited="true" concrete="true"/>
+    </deviceProperties>
+    <deviceProperties name="NrSubarrays" description="Number of subarrays in the element; Default: 16">
+      <type xsi:type="pogoDsl:UShortType"/>
+      <status abstract="false" inherited="true" concrete="true"/>
+      <DefaultPropValue>16</DefaultPropValue>
+    </deviceProperties>
+    <deviceProperties name="CapabilityTypes" description="Types of capabilities in this Element; e.g. Correlators, PssBeams, PstBeams, VlbiBeams">
+      <type xsi:type="pogoDsl:StringVectorType"/>
+      <status abstract="false" inherited="true" concrete="true"/>
+    </deviceProperties>
+    <deviceProperties name="MaxCapabilities" description="List of maximum number of instances per capability type provided by this Element;&#xA;CORRELATOR=512, PSS-BEAMS=4, PST-BEAMS=6, VLBI-BEAMS=4  or for DSH it can be: &#xA;BAND-1=1, BAND-2=1, BAND3=0, BAND-4=0, BAND-5=0 (if only bands 1&amp;amp;2 is installed)">
+      <type xsi:type="pogoDsl:StringVectorType"/>
+      <status abstract="false" inherited="true" concrete="true"/>
+    </deviceProperties>
+    <deviceProperties name="PowerDelayStandbyOn" description="Delay in ms between  power-up stages in Standby&lt;-> On&#xA;transitions.">
+      <type xsi:type="pogoDsl:UShortType"/>
+      <status abstract="false" inherited="false" concrete="true" concreteHere="true"/>
+    </deviceProperties>
+    <deviceProperties name="PowerDelayStandbyOff" description="Delay in ms between  power-up stages in Standby-> Off&#xA;transition.">
+      <type xsi:type="pogoDsl:UShortType"/>
+      <status abstract="false" inherited="false" concrete="true" concreteHere="true"/>
+    </deviceProperties>
+    <commands name="State" description="This command gets the device state (stored in its device_state data member) and returns it to the caller." execMethod="dev_state" displayLevel="OPERATOR" polledPeriod="0">
+      <argin description="none">
+        <type xsi:type="pogoDsl:VoidType"/>
+      </argin>
+      <argout description="Device state">
+        <type xsi:type="pogoDsl:StateType"/>
+      </argout>
+      <status abstract="true" inherited="true" concrete="true"/>
+    </commands>
+    <commands name="Status" description="This command gets the device status (stored in its device_status data member) and returns it to the caller." execMethod="dev_status" displayLevel="OPERATOR" polledPeriod="0">
+      <argin description="none">
+        <type xsi:type="pogoDsl:VoidType"/>
+      </argin>
+      <argout description="Device status">
+        <type xsi:type="pogoDsl:ConstStringType"/>
+      </argout>
+      <status abstract="true" inherited="true" concrete="true"/>
+    </commands>
+    <commands name="GetVersionInfo" description="Array of version strings of all entities modelled by this device. &#xA;(One level down only)&#xA;Each string in the array lists the version info for one entity&#xA;managed by this device. &#xA;The first entry is version info for this TANGO Device itself.&#xA;The entities may be TANGO devices, or hardware LRUs or &#xA;anything else this devices manages/models.&#xA;The intention with this command is that it can provide more &#xA;detailed information than can be captured in the versionId &#xA;and buildState attributes, if necessary.&#xA;In the minimal case the GetVersionInfo will contain only the &#xA;versionId and buildState attributes of the next lower level&#xA;entities." execMethod="get_version_info" displayLevel="OPERATOR" polledPeriod="0">
+      <argin description="">
+        <type xsi:type="pogoDsl:VoidType"/>
+      </argin>
+      <argout description="[ name: EltTelState">
+        <type xsi:type="pogoDsl:StringArrayType"/>
+      </argout>
+      <status abstract="false" inherited="true" concrete="true"/>
+    </commands>
+    <commands name="isCapabilityAchievable" description="" execMethod="is_capability_achievable" displayLevel="OPERATOR" polledPeriod="0">
+      <argin description="[nrInstances][Capability types]">
+        <type xsi:type="pogoDsl:LongStringArrayType"/>
+      </argin>
+      <argout description="">
+        <type xsi:type="pogoDsl:BooleanType"/>
+      </argout>
+      <status abstract="false" inherited="true" concrete="true"/>
+    </commands>
+    <commands name="Reset" description="Reset device to its default state" execMethod="reset" displayLevel="OPERATOR" polledPeriod="0">
+      <argin description="">
+        <type xsi:type="pogoDsl:VoidType"/>
+      </argin>
+      <argout description="">
+        <type xsi:type="pogoDsl:LongStringArrayType"/>
+      </argout>
+      <status abstract="false" inherited="true" concrete="true"/>
+    </commands>
+    <commands name="LoadFirmware" description="Deploy new versions of software and firmware and &#xA;trigger a restart so that a Component initializes using a &#xA;newly deployed version." execMethod="load_firmware" displayLevel="OPERATOR" polledPeriod="0" isDynamic="false">
+      <argin description="The file name or a pointer to the filename , &#xA;the list of components that use software or firmware package (file),&#xA;checksum or signing">
+        <type xsi:type="pogoDsl:StringArrayType"/>
+      </argin>
+      <argout description="">
+        <type xsi:type="pogoDsl:LongStringArrayType"/>
+      </argout>
+      <status abstract="false" inherited="false" concrete="true" concreteHere="true"/>
+    </commands>
+    <commands name="PowerOnDevices" description="Power on a list of devices." execMethod="power_on_devices" displayLevel="OPERATOR" polledPeriod="0" isDynamic="false">
+      <argin description="The list of FQDNs to power-up">
+        <type xsi:type="pogoDsl:StringArrayType"/>
+      </argin>
+      <argout description="ReturnType, `informational message`">
+        <type xsi:type="pogoDsl:LongStringArrayType"/>
+      </argout>
+      <status abstract="false" inherited="false" concrete="true" concreteHere="true"/>
+    </commands>
+    <commands name="PowerOffDevices" description="Power off a list of devices." execMethod="power_off_devices" displayLevel="OPERATOR" polledPeriod="0" isDynamic="false">
+      <argin description="List of FQDNs to power-off">
+        <type xsi:type="pogoDsl:StringArrayType"/>
+      </argin>
+      <argout description="ReturnType, `informational message`">
+        <type xsi:type="pogoDsl:LongStringArrayType"/>
+      </argout>
+      <status abstract="false" inherited="false" concrete="true" concreteHere="true"/>
+    </commands>
+    <commands name="ReInitDevices" description="The exact functionality may vary for different devices &#xA;and sub-systems, each TANGO Device/Server&#xA;should define what does ReinitDevices means.&#xA;Ex:&#xA;ReInitDevices FPGA &#x2192; reset&#xA;ReInitDevices Master &#x2192; Restart&#xA;ReInitDevices Leaf PC &#x2192; reboot" execMethod="re_init_devices" displayLevel="OPERATOR" polledPeriod="0" isDynamic="false">
+      <argin description="List of devices to re-initialize">
+        <type xsi:type="pogoDsl:StringArrayType"/>
+      </argin>
+      <argout description="ReturnType, message">
+        <type xsi:type="pogoDsl:LongStringArrayType"/>
+      </argout>
+      <status abstract="false" inherited="false" concrete="true" concreteHere="true"/>
+    </commands>
+    <attributes name="elementLoggerAddress" attType="Scalar" rwType="READ" displayLevel="OPERATOR" polledPeriod="0" maxX="" maxY="" allocReadMember="true">
+      <dataType xsi:type="pogoDsl:StringType"/>
+      <changeEvent fire="false" libCheckCriteria="false"/>
+      <archiveEvent fire="false" libCheckCriteria="false"/>
+      <status abstract="false" inherited="true" concrete="true"/>
+      <properties description="FQDN of Element Logger" label="" unit="" standardUnit="" displayUnit="" format="" maxValue="" minValue="" maxAlarm="" minAlarm="" maxWarning="" minWarning="" deltaTime="" deltaValue=""/>
+    </attributes>
+    <attributes name="elementAlarmAddress" attType="Scalar" rwType="READ" displayLevel="OPERATOR" polledPeriod="0" maxX="" maxY="" allocReadMember="true">
+      <dataType xsi:type="pogoDsl:StringType"/>
+      <changeEvent fire="false" libCheckCriteria="false"/>
+      <archiveEvent fire="false" libCheckCriteria="false"/>
+      <status abstract="false" inherited="true" concrete="true"/>
+      <properties description="FQDN of Element Alarm Handlers" label="" unit="" standardUnit="" displayUnit="" format="" maxValue="" minValue="" maxAlarm="" minAlarm="" maxWarning="" minWarning="" deltaTime="" deltaValue=""/>
+    </attributes>
+    <attributes name="elementTelStateAddress" attType="Scalar" rwType="READ" displayLevel="OPERATOR" polledPeriod="0" maxX="" maxY="" allocReadMember="true">
+      <dataType xsi:type="pogoDsl:StringType"/>
+      <changeEvent fire="false" libCheckCriteria="false"/>
+      <archiveEvent fire="false" libCheckCriteria="false"/>
+      <status abstract="false" inherited="true" concrete="true"/>
+      <properties description="FQDN of Element TelState device" label="" unit="" standardUnit="" displayUnit="" format="" maxValue="" minValue="" maxAlarm="" minAlarm="" maxWarning="" minWarning="" deltaTime="" deltaValue=""/>
+    </attributes>
+    <attributes name="elementDatabaseAddress" attType="Scalar" rwType="READ" displayLevel="OPERATOR" polledPeriod="0" maxX="" maxY="" allocReadMember="true">
+      <dataType xsi:type="pogoDsl:StringType"/>
+      <changeEvent fire="false" libCheckCriteria="false"/>
+      <archiveEvent fire="false" libCheckCriteria="false"/>
+      <status abstract="false" inherited="true" concrete="true"/>
+      <properties description="FQDN of Element Database device" label="" unit="" standardUnit="" displayUnit="" format="" maxValue="" minValue="" maxAlarm="" minAlarm="" maxWarning="" minWarning="" deltaTime="" deltaValue=""/>
+    </attributes>
+    <attributes name="buildState" attType="Scalar" rwType="READ" displayLevel="OPERATOR" polledPeriod="0" maxX="" maxY="" allocReadMember="true">
+      <dataType xsi:type="pogoDsl:StringType"/>
+      <changeEvent fire="false" libCheckCriteria="false"/>
+      <archiveEvent fire="false" libCheckCriteria="false"/>
+      <status abstract="false" inherited="true" concrete="true"/>
+      <properties description="Build state of this device" label="" unit="" standardUnit="" displayUnit="" format="" maxValue="" minValue="" maxAlarm="" minAlarm="" maxWarning="" minWarning="" deltaTime="" deltaValue=""/>
+    </attributes>
+    <attributes name="versionId" attType="Scalar" rwType="READ" displayLevel="OPERATOR" polledPeriod="0" maxX="" maxY="" allocReadMember="true">
+      <dataType xsi:type="pogoDsl:StringType"/>
+      <changeEvent fire="false" libCheckCriteria="false"/>
+      <archiveEvent fire="false" libCheckCriteria="false"/>
+      <status abstract="false" inherited="true" concrete="true"/>
+      <properties description="Build state of this device" label="" unit="" standardUnit="" displayUnit="" format="" maxValue="" minValue="" maxAlarm="" minAlarm="" maxWarning="" minWarning="" deltaTime="" deltaValue=""/>
+    </attributes>
+    <attributes name="loggingLevel" attType="Scalar" rwType="READ_WRITE" displayLevel="OPERATOR" polledPeriod="0" maxX="" maxY="" allocReadMember="true">
+      <dataType xsi:type="pogoDsl:EnumType"/>
+      <changeEvent fire="false" libCheckCriteria="false"/>
+      <archiveEvent fire="false" libCheckCriteria="false"/>
+      <status abstract="false" inherited="true" concrete="true"/>
+      <properties description="Current logging level for this device - initialises to LoggingLevelDefault on startup" label="" unit="" standardUnit="" displayUnit="" format="" maxValue="" minValue="" maxAlarm="" minAlarm="" maxWarning="" minWarning="" deltaTime="" deltaValue=""/>
+    </attributes>
+    <attributes name="healthState" attType="Scalar" rwType="READ" displayLevel="OPERATOR" polledPeriod="0" maxX="" maxY="" allocReadMember="true">
+      <dataType xsi:type="pogoDsl:EnumType"/>
+      <changeEvent fire="false" libCheckCriteria="false"/>
+      <archiveEvent fire="false" libCheckCriteria="false"/>
+      <status abstract="false" inherited="true" concrete="true"/>
+      <properties description="The health state reported for this device. It interprets the current device condition &#xA;and condition of all managed devices to set this. Most possibly an aggregate attribute." label="" unit="" standardUnit="" displayUnit="" format="" maxValue="" minValue="" maxAlarm="" minAlarm="" maxWarning="" minWarning="" deltaTime="" deltaValue=""/>
+    </attributes>
+    <attributes name="adminMode" attType="Scalar" rwType="READ_WRITE" displayLevel="OPERATOR" polledPeriod="0" maxX="" maxY="" memorized="true" allocReadMember="true">
+      <dataType xsi:type="pogoDsl:EnumType"/>
+      <changeEvent fire="true" libCheckCriteria="true"/>
+      <archiveEvent fire="true" libCheckCriteria="true"/>
+      <status abstract="false" inherited="true" concrete="true"/>
+      <properties description="The admin mode reported for this device. It may interpret the current device condition &#xA;and condition of all managed devices to set this. Most possibly an aggregate attribute." label="" unit="" standardUnit="" displayUnit="" format="" maxValue="" minValue="" maxAlarm="" minAlarm="" maxWarning="" minWarning="" deltaTime="" deltaValue=""/>
+    </attributes>
+    <attributes name="controlMode" attType="Scalar" rwType="READ_WRITE" displayLevel="OPERATOR" polledPeriod="0" maxX="" maxY="" memorized="true" allocReadMember="true">
+      <dataType xsi:type="pogoDsl:EnumType"/>
+      <changeEvent fire="false" libCheckCriteria="false"/>
+      <archiveEvent fire="false" libCheckCriteria="false"/>
+      <status abstract="false" inherited="true" concrete="true"/>
+      <properties description="The control mode of the device. REMOTE, LOCAL&#xA;TANGO Device accepts only from a &#x2018;local&#x2019; client and ignores commands and queries received from TM&#xA;or any other &#x2018;remote&#x2019; clients. The Local clients has to release LOCAL control before REMOTE clients&#xA;can take control again." label="" unit="" standardUnit="" displayUnit="" format="" maxValue="" minValue="" maxAlarm="" minAlarm="" maxWarning="" minWarning="" deltaTime="" deltaValue=""/>
+    </attributes>
+    <attributes name="simulationMode" attType="Scalar" rwType="READ_WRITE" displayLevel="OPERATOR" polledPeriod="0" maxX="" maxY="" memorized="true" allocReadMember="true">
+      <dataType xsi:type="pogoDsl:EnumType"/>
+      <changeEvent fire="false" libCheckCriteria="false"/>
+      <archiveEvent fire="false" libCheckCriteria="false"/>
+      <status abstract="false" inherited="true" concrete="true"/>
+      <properties description="Reports the simulation mode of the device. Some devices may implement both modes,&#xA;while others will have simulators that set simulationMode to True while the real&#xA;devices always set simulationMode to False." label="" unit="" standardUnit="" displayUnit="" format="" maxValue="" minValue="" maxAlarm="" minAlarm="" maxWarning="" minWarning="" deltaTime="" deltaValue=""/>
+    </attributes>
+    <attributes name="testMode" attType="Scalar" rwType="READ_WRITE" displayLevel="OPERATOR" polledPeriod="0" maxX="" maxY="" memorized="true" allocReadMember="true">
+      <dataType xsi:type="pogoDsl:EnumType"/>
+      <changeEvent fire="false" libCheckCriteria="false"/>
+      <archiveEvent fire="false" libCheckCriteria="false"/>
+      <status abstract="false" inherited="true" concrete="true"/>
+      <properties description="The test mode of the device. &#xA;Either no test mode (empty string) or an indication of the test mode." label="" unit="" standardUnit="" displayUnit="" format="" maxValue="" minValue="" maxAlarm="" minAlarm="" maxWarning="" minWarning="" deltaTime="" deltaValue=""/>
+    </attributes>
+    <attributes name="powerDelayStandbyOn" attType="Scalar" rwType="READ_WRITE" displayLevel="OPERATOR" polledPeriod="0" maxX="" maxY="" allocReadMember="true" isDynamic="false">
+      <dataType xsi:type="pogoDsl:UShortType"/>
+      <changeEvent fire="false" libCheckCriteria="false"/>
+      <archiveEvent fire="false" libCheckCriteria="false"/>
+      <dataReadyEvent fire="false" libCheckCriteria="true"/>
+      <status abstract="false" inherited="false" concrete="true" concreteHere="true"/>
+      <properties description="Delay in msec between the power-up stages in Standby&lt;->On transitions." label="powerDelayStandbyOn" unit="msec." standardUnit="" displayUnit="" format="" maxValue="" minValue="" maxAlarm="" minAlarm="" maxWarning="" minWarning="" deltaTime="" deltaValue=""/>
+    </attributes>
+    <attributes name="onProgress" attType="Scalar" rwType="READ" displayLevel="OPERATOR" polledPeriod="0" maxX="" maxY="" allocReadMember="true" isDynamic="false">
+      <dataType xsi:type="pogoDsl:UShortType"/>
+      <changeEvent fire="false" libCheckCriteria="false"/>
+      <archiveEvent fire="false" libCheckCriteria="false"/>
+      <dataReadyEvent fire="false" libCheckCriteria="true"/>
+      <status abstract="false" inherited="false" concrete="true" concreteHere="true"/>
+      <properties description="Progress percentage of the task execution." label="onProgress" unit="" standardUnit="" displayUnit="" format="" maxValue="100" minValue="0" maxAlarm="" minAlarm="" maxWarning="" minWarning="" deltaTime="" deltaValue=""/>
+    </attributes>
+    <attributes name="onMaximumDuration" attType="Scalar" rwType="READ_WRITE" displayLevel="OPERATOR" polledPeriod="0" maxX="" maxY="" allocReadMember="true" isDynamic="false">
+      <dataType xsi:type="pogoDsl:UShortType"/>
+      <changeEvent fire="false" libCheckCriteria="false"/>
+      <archiveEvent fire="false" libCheckCriteria="false"/>
+      <dataReadyEvent fire="false" libCheckCriteria="true"/>
+      <status abstract="false" inherited="false" concrete="true" concreteHere="true"/>
+      <properties description="The maximum duration (msec.) to execute the On command." label="onMaximumDuration" unit="msec." standardUnit="" displayUnit="" format="" maxValue="" minValue="" maxAlarm="" minAlarm="" maxWarning="" minWarning="" deltaTime="" deltaValue=""/>
+    </attributes>
+    <attributes name="onMeasuredDuration" attType="Scalar" rwType="READ" displayLevel="OPERATOR" polledPeriod="0" maxX="" maxY="" allocReadMember="false" isDynamic="false">
+      <dataType xsi:type="pogoDsl:UShortType"/>
+      <changeEvent fire="false" libCheckCriteria="false"/>
+      <archiveEvent fire="false" libCheckCriteria="false"/>
+      <dataReadyEvent fire="false" libCheckCriteria="true"/>
+      <status abstract="false" inherited="false" concrete="true" concreteHere="true"/>
+      <properties description="The measured time (msec) taken to execute the command." label="OnCmdMeasuredDuration" unit="msec" standardUnit="" displayUnit="" format="" maxValue="" minValue="" maxAlarm="" minAlarm="" maxWarning="" minWarning="" deltaTime="" deltaValue=""/>
+    </attributes>
+    <attributes name="standbyProgress" attType="Scalar" rwType="READ" displayLevel="OPERATOR" polledPeriod="0" maxX="" maxY="" allocReadMember="true" isDynamic="false">
+      <dataType xsi:type="pogoDsl:UShortType"/>
+      <changeEvent fire="false" libCheckCriteria="false"/>
+      <archiveEvent fire="false" libCheckCriteria="false"/>
+      <dataReadyEvent fire="false" libCheckCriteria="true"/>
+      <status abstract="false" inherited="false" concrete="true" concreteHere="true"/>
+      <properties description="Progress percentage of the task execution." label="standbyProgress" unit="" standardUnit="" displayUnit="" format="" maxValue="100" minValue="0" maxAlarm="" minAlarm="" maxWarning="" minWarning="" deltaTime="" deltaValue=""/>
+    </attributes>
+    <attributes name="standbyMaximumDuration" attType="Scalar" rwType="READ_WRITE" displayLevel="OPERATOR" polledPeriod="0" maxX="" maxY="" allocReadMember="true" isDynamic="false">
+      <dataType xsi:type="pogoDsl:UShortType"/>
+      <changeEvent fire="false" libCheckCriteria="false"/>
+      <archiveEvent fire="false" libCheckCriteria="false"/>
+      <dataReadyEvent fire="false" libCheckCriteria="true"/>
+      <status abstract="false" inherited="false" concrete="true" concreteHere="true"/>
+      <properties description="The maximum duration (msec.) to execute the Standby command." label="standbyMaximumDuration" unit="msec." standardUnit="" displayUnit="" format="" maxValue="" minValue="" maxAlarm="" minAlarm="" maxWarning="" minWarning="" deltaTime="" deltaValue=""/>
+    </attributes>
+    <attributes name="standbyMeasuredDuration" attType="Scalar" rwType="READ" displayLevel="OPERATOR" polledPeriod="0" maxX="" maxY="" allocReadMember="false" isDynamic="false">
+      <dataType xsi:type="pogoDsl:UShortType"/>
+      <changeEvent fire="false" libCheckCriteria="false"/>
+      <archiveEvent fire="false" libCheckCriteria="false"/>
+      <dataReadyEvent fire="false" libCheckCriteria="true"/>
+      <status abstract="false" inherited="false" concrete="true" concreteHere="true"/>
+      <properties description="The measured time (msec) taken to execute the Standby command." label="OnCmdMeasuredDuration" unit="msec" standardUnit="" displayUnit="" format="" maxValue="" minValue="" maxAlarm="" minAlarm="" maxWarning="" minWarning="" deltaTime="" deltaValue=""/>
+    </attributes>
+    <attributes name="offProgress" attType="Scalar" rwType="READ" displayLevel="OPERATOR" polledPeriod="0" maxX="" maxY="" allocReadMember="true" isDynamic="false">
+      <dataType xsi:type="pogoDsl:UShortType"/>
+      <changeEvent fire="false" libCheckCriteria="false"/>
+      <archiveEvent fire="false" libCheckCriteria="false"/>
+      <dataReadyEvent fire="false" libCheckCriteria="true"/>
+      <status abstract="false" inherited="false" concrete="true" concreteHere="true"/>
+      <properties description="Progress percentage of the task execution." label="offProgress" unit="" standardUnit="" displayUnit="" format="" maxValue="100" minValue="0" maxAlarm="" minAlarm="" maxWarning="" minWarning="" deltaTime="" deltaValue=""/>
+    </attributes>
+    <attributes name="offMaximumDuration" attType="Scalar" rwType="READ_WRITE" displayLevel="OPERATOR" polledPeriod="0" maxX="" maxY="" allocReadMember="true" isDynamic="false">
+      <dataType xsi:type="pogoDsl:UShortType"/>
+      <changeEvent fire="false" libCheckCriteria="false"/>
+      <archiveEvent fire="false" libCheckCriteria="false"/>
+      <dataReadyEvent fire="false" libCheckCriteria="true"/>
+      <status abstract="false" inherited="false" concrete="true" concreteHere="true"/>
+      <properties description="The maximum duration (msec.) to execute the Off command." label="offMaximumDuration" unit="msec." standardUnit="" displayUnit="" format="" maxValue="" minValue="" maxAlarm="" minAlarm="" maxWarning="" minWarning="" deltaTime="" deltaValue=""/>
+    </attributes>
+    <attributes name="offMeasuredDuration" attType="Scalar" rwType="READ" displayLevel="OPERATOR" polledPeriod="0" maxX="" maxY="" allocReadMember="false" isDynamic="false">
+      <dataType xsi:type="pogoDsl:UShortType"/>
+      <changeEvent fire="false" libCheckCriteria="false"/>
+      <archiveEvent fire="false" libCheckCriteria="false"/>
+      <dataReadyEvent fire="false" libCheckCriteria="true"/>
+      <status abstract="false" inherited="false" concrete="true" concreteHere="true"/>
+      <properties description="The measured time (msec) taken to execute the Off command." label="OnCmdMeasuredDuration" unit="msec" standardUnit="" displayUnit="" format="" maxValue="" minValue="" maxAlarm="" minAlarm="" maxWarning="" minWarning="" deltaTime="" deltaValue=""/>
+    </attributes>
+    <attributes name="totalOutputDataRateToSdp" attType="Scalar" rwType="READ" displayLevel="OPERATOR" polledPeriod="0" maxX="" maxY="" allocReadMember="true" isDynamic="false">
+      <dataType xsi:type="pogoDsl:FloatType"/>
+      <changeEvent fire="false" libCheckCriteria="false"/>
+      <archiveEvent fire="false" libCheckCriteria="false"/>
+      <dataReadyEvent fire="false" libCheckCriteria="true"/>
+      <status abstract="false" inherited="false" concrete="true" concreteHere="true"/>
+      <properties description="Report the total link expected  output data rate." label="totalOutputDataRateToSdp" unit="GB/s" standardUnit="" displayUnit="" format="" maxValue="" minValue="" maxAlarm="" minAlarm="" maxWarning="" minWarning="" deltaTime="" deltaValue=""/>
+    </attributes>
+    <attributes name="powerDelayStandbyOff" attType="Scalar" rwType="READ_WRITE" displayLevel="OPERATOR" polledPeriod="0" maxX="" maxY="" allocReadMember="true" isDynamic="false">
+      <dataType xsi:type="pogoDsl:UShortType"/>
+      <changeEvent fire="false" libCheckCriteria="false"/>
+      <archiveEvent fire="false" libCheckCriteria="false"/>
+      <dataReadyEvent fire="false" libCheckCriteria="true"/>
+      <status abstract="false" inherited="false" concrete="true" concreteHere="true"/>
+      <properties description="Delay in msec between the power-up stages in Standby->Off transitions." label="powerDelayStandbyOff" unit="msec" standardUnit="" displayUnit="" format="" maxValue="" minValue="" maxAlarm="" minAlarm="" maxWarning="" minWarning="" deltaTime="" deltaValue=""/>
+    </attributes>
+    <attributes name="loadFirmwareProgress" attType="Scalar" rwType="READ" displayLevel="OPERATOR" polledPeriod="0" maxX="" maxY="" allocReadMember="true" isDynamic="false">
+      <dataType xsi:type="pogoDsl:UShortType"/>
+      <changeEvent fire="false" libCheckCriteria="false"/>
+      <archiveEvent fire="false" libCheckCriteria="false"/>
+      <dataReadyEvent fire="false" libCheckCriteria="true"/>
+      <status abstract="false" inherited="false" concrete="true" concreteHere="true"/>
+      <properties description="The task progress percentage." label="loadFirmwareProgress" unit="" standardUnit="" displayUnit="" format="" maxValue="100" minValue="0" maxAlarm="" minAlarm="" maxWarning="" minWarning="" deltaTime="" deltaValue=""/>
+    </attributes>
+    <attributes name="loadFirmwareMaximumDuration" attType="Scalar" rwType="READ_WRITE" displayLevel="OPERATOR" polledPeriod="0" maxX="" maxY="" allocReadMember="true" isDynamic="false">
+      <dataType xsi:type="pogoDsl:UShortType"/>
+      <changeEvent fire="false" libCheckCriteria="false"/>
+      <archiveEvent fire="false" libCheckCriteria="false"/>
+      <dataReadyEvent fire="false" libCheckCriteria="true"/>
+      <status abstract="false" inherited="false" concrete="true" concreteHere="true"/>
+      <properties description="The expected maximum duration (in msec) for task execution." label="loadFirmwareMaximumDuration" unit="msec" standardUnit="" displayUnit="" format="" maxValue="" minValue="" maxAlarm="" minAlarm="" maxWarning="" minWarning="" deltaTime="" deltaValue=""/>
+    </attributes>
+    <attributes name="loadFirmwareMeasuredDuration" attType="Scalar" rwType="READ" displayLevel="OPERATOR" polledPeriod="0" maxX="" maxY="" allocReadMember="true" isDynamic="false">
+      <dataType xsi:type="pogoDsl:UShortType"/>
+      <changeEvent fire="false" libCheckCriteria="false"/>
+      <archiveEvent fire="false" libCheckCriteria="false"/>
+      <dataReadyEvent fire="false" libCheckCriteria="true"/>
+      <status abstract="false" inherited="false" concrete="true" concreteHere="true"/>
+      <properties description="The task execution measured duration (in msec)." label="loadFirmwareMeasuredDuration" unit="msec" standardUnit="" displayUnit="" format="" maxValue="" minValue="" maxAlarm="" minAlarm="" maxWarning="" minWarning="" deltaTime="" deltaValue=""/>
+    </attributes>
+    <attributes name="maxCapabilities" attType="Spectrum" rwType="READ" displayLevel="OPERATOR" polledPeriod="0" maxX="20" maxY="" allocReadMember="true">
+      <dataType xsi:type="pogoDsl:StringType"/>
+      <changeEvent fire="false" libCheckCriteria="false"/>
+      <archiveEvent fire="false" libCheckCriteria="false"/>
+      <status abstract="false" inherited="true" concrete="true"/>
+      <properties description="Maximum number of instances of each capability type, e.g. 'CORRELATOR:512', 'PSS-BEAMS:4'." label="" unit="" standardUnit="" displayUnit="" format="" maxValue="" minValue="" maxAlarm="" minAlarm="" maxWarning="" minWarning="" deltaTime="" deltaValue=""/>
+    </attributes>
+    <attributes name="availableCapabilities" attType="Spectrum" rwType="READ" displayLevel="OPERATOR" polledPeriod="0" maxX="20" maxY="" allocReadMember="true">
+      <dataType xsi:type="pogoDsl:StringType"/>
+      <changeEvent fire="false" libCheckCriteria="false"/>
+      <archiveEvent fire="false" libCheckCriteria="false"/>
+      <status abstract="false" inherited="true" concrete="true"/>
+      <properties description="A list of available number of instances of each capability type, e.g. 'CORRELATOR:512', 'PSS-BEAMS:4'." label="" unit="" standardUnit="" displayUnit="" format="" maxValue="" minValue="" maxAlarm="" minAlarm="" maxWarning="" minWarning="" deltaTime="" deltaValue=""/>
+    </attributes>
+    <attributes name="loggingTargets" attType="Spectrum" rwType="READ_WRITE" displayLevel="OPERATOR" polledPeriod="0" maxX="3" maxY="" allocReadMember="true">
+      <dataType xsi:type="pogoDsl:StringType"/>
+      <changeEvent fire="false" libCheckCriteria="false"/>
+      <archiveEvent fire="false" libCheckCriteria="false"/>
+      <status abstract="false" inherited="true" concrete="true"/>
+      <properties description="Logging targets for this device, excluding ska_logging defaults - &#xA;initialises to LoggingTargetsDefault on startup" label="" unit="" standardUnit="" displayUnit="" format="" maxValue="" minValue="" maxAlarm="" minAlarm="" maxWarning="" minWarning="" deltaTime="" deltaValue=""/>
+    </attributes>
+    <states name="ON" description="This state could have been called OK or OPERATIONAL. It means that the device is in its operational state. (E.g. the power supply is giving its nominal current, th motor is ON and ready to move, the instrument is operating). This state is modified by the Attribute alarm checking of the DeviceImpl:dev_state method. i.e. if the State is ON and one attribute has its quality factor to ATTR_WARNING or ATTR_ALARM, then the State is modified to ALARM.">
+      <status abstract="false" inherited="true" concrete="true"/>
+    </states>
+    <states name="OFF" description="The device is in normal condition but is not active. E.g. the power supply main circuit breaker is open; the RF transmitter has no power etc...">
+      <status abstract="false" inherited="true" concrete="true"/>
+    </states>
+    <states name="FAULT" description="The device has a major failure that prevents it to work. For instance, A power supply has stopped due to over temperature A motor cannot move because it has fault conditions. Usually we cannot get out from this state without an intervention on the hardware or a reset command.">
+      <status abstract="false" inherited="true" concrete="true"/>
+    </states>
+    <states name="INIT" description="This state is reserved to the starting phase of the device server. It means that the software is not fully operational and that the user must wait">
+      <status abstract="false" inherited="true" concrete="true"/>
+    </states>
+    <states name="ALARM" description="ALARM - The device is operating but&#xA;at least one of the attributes is out of range. It can be linked to alarm conditions set by attribute properties or a specific case. (E.g. temperature alarm on a stepper motor, end switch pressed on a stepper motor, up water level in a tank, etc....). In alarm, usually the device does its job, but the operator has to perform an action to avoid a bigger problem that may switch the state to FAULT.">
+      <status abstract="false" inherited="true" concrete="true"/>
+    </states>
+    <states name="UNKNOWN" description="The device cannot retrieve its state. It is the case when there is a communication problem to the hardware (network cut, broken cable etc...) It could also represent an incoherent situation">
+      <status abstract="false" inherited="true" concrete="true"/>
+    </states>
+    <states name="STANDBY" description="Equates to LOW-POWER mode. This is the initial transition from INIT if the device supports a low-power mode. The device is not fully active but is ready to operate.">
+      <status abstract="false" inherited="true" concrete="true"/>
+    </states>
+    <states name="DISABLE" description="The device cannot be switched ON for an external reason. E.g. the power supply has its door open, the safety conditions are not satisfactory to allow the device to operate.">
+      <status abstract="false" inherited="true" concrete="true"/>
+    </states>
+    <preferences docHome="./doc_html" makefileHome="/usr/local/share/pogo/preferences"/>
+  </classes>
+</pogoDsl:PogoSystem>

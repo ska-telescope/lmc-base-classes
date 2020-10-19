@@ -48,6 +48,7 @@ setuptools.setup(
             "SKAObsDevice=ska.base.obs_device:main",
             "SKASubarray=ska.base.subarray_device:main",
             "SKATelState=ska.base.tel_state_device:main",
+            "CspSubelementMaster=ska.base.csp_subelement_master:main",
         ]
     },
     keywords="lmc base classes ska",

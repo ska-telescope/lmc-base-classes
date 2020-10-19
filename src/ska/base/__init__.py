@@ -13,6 +13,7 @@ __all__ = (
     "SKASubarrayStateModel",
     "SKASubarrayResourceManager",
     "SKATelState",
+    "CspSubElementMaster",
 )
 
 # Note: order of imports is important - start with lowest in the hierarchy
@@ -32,3 +33,5 @@ from .subarray_device import (
     SKASubarrayStateModel,
     SKASubarrayResourceManager,
 )
+# CspSubElement classes
+from .csp_subelement_master import CspSubElementMaster

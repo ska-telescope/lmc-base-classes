@@ -23,6 +23,8 @@ from tango.server import run, attribute, command, device_property
 
 from ska.base import SKAMaster
 from ska.base.commands import ResultCode, ResponseCommand
+from ska.base.control_model import AdminMode
+from ska.base.faults import CommandError
 # PROTECTED REGION END #    //  CspSubElementMaster.additionnal_import
 
 __all__ = ["CspSubElementMaster", "main"]
@@ -412,10 +414,12 @@ class CspSubElementMaster(SKAMaster):
                 information purpose only.
             :rtype: (ResultCode, str)
             """
-            self.logger.info("type(argin): {}".format(type(argin)))
-            list_of_devices = argin[1]. split(',')
-            self.logger.info(list_of_devices)
-            return (ResultCode.OK, "Command suceeded")
+            message = "LoadFirmware command completed OK"
+            return (ResultCode.OK, message)
+
+        def check_allowed(self):
+            return self.state_model.op_state == tango.DevState.OFF and \
+                   self.state_model.admin_mode == AdminMode.MAINTENANCE
 
     class PowerOnDevicesCommand(ResponseCommand):
         """
@@ -430,7 +434,11 @@ class CspSubElementMaster(SKAMaster):
                 information purpose only.
             :rtype: (ResultCode, str)
             """
-            return (ResultCode.OK, "Command suceeded")
+            message = "PowerOnDevices command completed OK"
+            return (ResultCode.OK, message)
+
+        def check_allowed(self):
+            return self.state_model.op_state == tango.DevState.ON
 
     class PowerOffDevicesCommand(ResponseCommand):
         """
@@ -445,7 +453,11 @@ class CspSubElementMaster(SKAMaster):
                 information purpose only.
             :rtype: (ResultCode, str)
             """
-            return (ResultCode.OK, "Command suceeded")
+            message = "PowerOffDevices command completed OK"
+            return (ResultCode.OK, message)
+
+        def check_allowed(self):
+            return self.state_model.op_state == tango.DevState.ON
 
     class ReInitDevicesCommand(ResponseCommand):
         """
@@ -460,7 +472,25 @@ class CspSubElementMaster(SKAMaster):
                 information purpose only.
             :rtype: (ResultCode, str)
             """
-            return (ResultCode.OK, "Command suceeded")
+            message = "ReInitDevices command completed OK"
+            return (ResultCode.OK, message)
+        
+        def check_allowed(self):
+            return self.state_model.op_state == tango.DevState.ON
+
+    def is_LoadFirmware_allowed(self):
+        """
+        Check if the LodFirmware command is allowed in the current 
+        state.
+
+        :raises ``CommandError`` if command not allowed
+        :return ``True`` if command is allowed
+        :rtype: boolean
+        """
+        command = self.get_command_object("LoadFirmware")
+        if not command.check_allowed():
+            raise CommandError(f"{command.name} not allowed in {self.state_model.op_state}/{AdminMode(self.state_model.admin_mode).name}.")
+        return True
 
     @command(
         dtype_in='DevVarStringArray',
@@ -482,7 +512,8 @@ class CspSubElementMaster(SKAMaster):
             - The file name or a pointer to the filename specifed as URL. 
             - the list of components that use software or firmware package (file),
             - checksum or signing
-            Ex: ['file://firmware.txt','test/dev/1, test/dev/2, test/dev/3', '918698a7fea3fa9da5996db001d33628'] 
+            Ex: ['file://firmware.txt','test/dev/1, test/dev/2, test/dev/3', 
+                 '918698a7fea3fa9da5996db001d33628'] 
         :type argin: 'DevVarStringArray'
 
         :return: A tuple containing a return code and a string
@@ -494,6 +525,20 @@ class CspSubElementMaster(SKAMaster):
         (return_code, message) = command(argin)
         return [[return_code], [message]]
         # PROTECTED REGION END #    //  CspSubElementMaster.LoadFirmware
+
+    def is_PowerOnDevices_allowed(self):
+        """
+        Check if the LodFirmware command is allowed in the current 
+        state.
+
+        :raises ``CommandError`` if command not allowed
+        :return ``True`` if command is allowed
+        :rtype: boolean
+        """
+        command = self.get_command_object("PowerOnDevices")
+        if not command.check_allowed():
+            raise CommandError(f'{command.name}: not allowed in {self.state_model.op_state}.')
+        return True
 
     @command(
         dtype_in='DevVarStringArray',
@@ -520,6 +565,20 @@ class CspSubElementMaster(SKAMaster):
         return [[return_code], [message]]
         # PROTECTED REGION END #    //  CspSubElementMaster.PowerOnDevices
 
+    def is_PowerOffDevices_allowed(self):
+        """
+        Check if the PowerOffDevices command is allowed in the current 
+        state.
+
+        :raises ``CommandError`` if command not allowed
+        :return ``True`` if command is allowed
+        :rtype: boolean
+        """
+        command = self.get_command_object("PowerOffDevices")
+        if not command.check_allowed():
+            raise CommandError(f'{command.name} not allowed in {self.state_model.op_state}.')
+        return True
+
     @command(
         dtype_in='DevVarStringArray',
         doc_in="List of FQDNs to power-off",
@@ -545,6 +604,20 @@ class CspSubElementMaster(SKAMaster):
         return [[return_code], [message]]
 
         # PROTECTED REGION END #    //  CspSubElementMaster.PowerOffDevices
+
+    def is_ReInitDevices_allowed(self):
+        """
+        Check if the ReInitDevices command is allowed in the current 
+        state.
+
+        :raises ``CommandError`` if command not allowed
+        :return ``True`` if command is allowed
+        :rtype: boolean
+        """
+        command = self.get_command_object("ReInitDevices")
+        if not command.check_allowed():
+            raise CommandError(f'{command.name} not allowed in {self.state_model.op_state}.')
+        return True
 
     @command(
         dtype_in='DevVarStringArray',
@@ -577,7 +650,6 @@ class CspSubElementMaster(SKAMaster):
         (return_code, message) = command(argin)
         return [[return_code], [message]]
         # PROTECTED REGION END #    //  CspSubElementMaster.ReInitDevices
-
 
 # ----------
 # Run server

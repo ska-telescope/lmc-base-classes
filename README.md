@@ -25,6 +25,9 @@ The lmc-base-classe repository contains set of eight classes as mentioned in SKA
 
 ## Version History
 
+#### 0.7.2
+- Switch to threadsafe state machine
+
 #### 0.7.1
 - Bugfix for Reset() command
 

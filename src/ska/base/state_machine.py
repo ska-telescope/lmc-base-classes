@@ -1,7 +1,8 @@
 """
 This module contains specifications of SKA state machines.
 """
-from transitions import Machine, State
+from transitions import State
+from transitions.extensions import LockedMachine as Machine
 
 
 __all__ = ["OperationStateMachine", "AdminModeStateMachine", "ObservationStateMachine"]

@@ -28,9 +28,8 @@ include .make/Makefile.mk
 .DEFAULT_GOAL := help
 
 test: ## test lmcbaseclasses Python code
-	mkdir -p build
+	mkdir -p build/reports
 	python3 setup.py test | tee build/setup_py_test.stdout
-	mv coverage.xml build
 
 lint: ## lint lmcbaseclasses Python code
 	python3 -m pip install -U pylint==2.4.4

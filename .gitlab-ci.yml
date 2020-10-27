@@ -120,9 +120,12 @@ pages:
   tags:
     - k8srunner
   script:
-    - cp -R build public
-    - mv public/htmlcov/* public
-
+    - mkdir .public
+    - cp -R build .public
+    - mv .public public
   artifacts:
     paths:
       - public
+  only:
+  - master
+  

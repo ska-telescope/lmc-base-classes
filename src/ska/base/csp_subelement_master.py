@@ -407,7 +407,7 @@ class CspSubElementMaster(SKAMaster):
         """
         def do(self, argin):
             """
-            #Stateless hook for device LoadFirmware() command.
+            Stateless hook for device LoadFirmware() command.
 
             :return: A tuple containing a return code and a string
                 message indicating status. The message is for

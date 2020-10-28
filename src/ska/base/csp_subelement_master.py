@@ -418,8 +418,8 @@ class CspSubElementMaster(SKAMaster):
             return (ResultCode.OK, message)
 
         def check_allowed(self):
-            return self.state_model.op_state == tango.DevState.OFF and \
-                   self.state_model.admin_mode == AdminMode.MAINTENANCE
+            return (self.state_model.op_state == tango.DevState.OFF
+                    and self.state_model.admin_mode == AdminMode.MAINTENANCE)
 
     class PowerOnDevicesCommand(ResponseCommand):
         """

@@ -306,8 +306,8 @@ def tango_context(request):
             'SubID': '1',
         },
         'CspSubElementMaster': {
-            'PowerDelayStandbyOn': '1500',
-            'PowerDelayStandbyOff': '1000',
+            'PowerDelayStandbyOn': '1.5',
+            'PowerDelayStandbyOff': '1.0',
         },
     }
 

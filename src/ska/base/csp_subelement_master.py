@@ -38,10 +38,10 @@ class CspSubElementMaster(SKAMaster):
 
     - Device Property
         PowerDelayStandbyOn
-            - Delay in ms between  power-up stages in Standby<-> On\ntransitions.
+            - Delay in ms between power-up stages in Standby <-> On transition.
             - Type:'DevUShort'
         PowerDelayStandByOff
-            - Delay in ms between  power-up stages in Standby-> Off\ntransition.
+            - Delay in ms between power-up stages in Standby -> Off transition.
             - Type:'DevUShort'
     """
     # PROTECTED REGION ID(CspSubElementMaster.class_variable) ENABLED START #

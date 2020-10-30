@@ -242,8 +242,8 @@ class CspSubElementMaster(SKAMaster):
             device._total_output_rate_to_sdp = 0.0
 
             # initialise using defaults in device properties
-            device._power_delay_standy_on =  device.PowerDelayStandbyOn
-            device._power_delay_standy_off =  device.PowerDelayStandbyOff
+            device._power_delay_standy_on = device.PowerDelayStandbyOn
+            device._power_delay_standy_off = device.PowerDelayStandbyOff
 
             message = "CspSubElementMaster Init command completed OK"
             device.logger.info(message)

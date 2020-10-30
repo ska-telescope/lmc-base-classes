@@ -580,7 +580,7 @@ class CspSubElementMaster(SKAMaster):
 
     def is_PowerOnDevices_allowed(self):
         """
-        Check if the PoweROnDevice command is allowed in the current 
+        Check if the PowerOnDevice command is allowed in the current 
         state.
 
         :raises ``tango.DevFailed`` if command not allowed

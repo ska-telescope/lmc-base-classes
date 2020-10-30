@@ -305,6 +305,10 @@ def tango_context(request):
             'SkaLevel': '4',
             'SubID': '1',
         },
+        'CspSubElementMaster': {
+            'PowerDelayStandbyOn': '1.5',
+            'PowerDelayStandbyOff': '1.0',
+        },
     }
 
     # This fixture is used to decorate classes like "TestSKABaseDevice" or

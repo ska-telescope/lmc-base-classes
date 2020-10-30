@@ -323,7 +323,7 @@ class TestCspSubElementMaster(object):
 
     # PROTECTED REGION ID(CspSubelementMaster.test_PowerOffDevices_WHEN_in_wrong_state_decorators) ENABLED START #
     # PROTECTED REGION END #    //  CspSubelementMaster.test_PowerOffDevices_decorators
-    def test_PowerOffDevices_WHEN_in_wrong_state(self, tango_context):
+    def test_PowerOffDevices_when_in_wrong_state(self, tango_context):
         """Test for PowerOffDevices when the Master is in wrong state"""
         # PROTECTED REGION ID(CspSubelementMaster.test_PowerOffDevices_WHEN_in_wrong_state) ENABLED START #
         with pytest.raises(DevFailed) as df:

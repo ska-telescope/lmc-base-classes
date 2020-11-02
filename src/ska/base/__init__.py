@@ -35,3 +35,4 @@ from .subarray_device import (
 )
 # CspSubElement classes
 from .csp_subelement_master import CspSubElementMaster
+from .csp_subelement_obsdevice import CspSubElementObsDevice

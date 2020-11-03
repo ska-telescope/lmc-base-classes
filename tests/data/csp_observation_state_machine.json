@@ -1,0 +1,143 @@
+{
+    "states": {
+        "FAULT": {},
+        "IDLE": {},
+        "CONFIGURING": {},
+        "ABORTING": {},
+        "READY": {},
+        "SCANNING": {},
+        "ABORTED": {}
+    },
+    "transitions": [
+        {
+            "from": "IDLE",
+            "to": "CONFIGURING",
+            "trigger": "configure_started"
+        },
+        {
+            "from": "IDLE",
+            "to": "ABORTING",
+            "trigger": "abort_started"
+        },
+        {
+            "from": "IDLE",
+            "to": "FAULT",
+            "trigger": "fatal_error"
+        },
+        {
+            "from": "CONFIGURING",
+            "to": "READY",
+            "trigger": "configure_succeeded"
+        },
+        {
+            "from": "CONFIGURING",
+            "to": "FAULT",
+            "trigger": "configure_failed"
+        },
+        {
+            "from": "CONFIGURING",
+            "to": "ABORTING",
+            "trigger": "abort_started"
+        },
+        {
+            "from": "CONFIGURING",
+            "to": "FAULT",
+            "trigger": "fatal_error"
+        },
+        {
+            "from": "READY",
+            "to": "IDLE",
+            "trigger": "end_succeeded"
+        },
+        {
+            "from": "READY",
+            "to": "FAULT",
+            "trigger": "end_failed"
+        },
+        {
+            "from": "READY",
+            "to": "CONFIGURING",
+            "trigger": "configure_started"
+        },
+        {
+            "from": "READY",
+            "to": "ABORTING",
+            "trigger": "abort_started"
+        },
+        {
+            "from": "READY",
+            "to": "SCANNING",
+            "trigger": "scan_started"
+        },
+        {
+            "from": "READY",
+            "to": "FAULT",
+            "trigger": "fatal_error"
+        },
+        {
+            "from": "SCANNING",
+            "to": "READY",
+            "trigger": "scan_succeeded"
+        },
+        {
+            "from": "SCANNING",
+            "to": "FAULT",
+            "trigger": "scan_failed"
+        },
+        {
+            "from": "SCANNING",
+            "to": "READY",
+            "trigger": "end_scan_succeeded"
+        },
+        {
+            "from": "SCANNING",
+            "to": "FAULT",
+            "trigger": "end_scan_failed"
+        },
+        {
+            "from": "SCANNING",
+            "to": "ABORTING",
+            "trigger": "abort_started"
+        },
+        {
+            "from": "SCANNING",
+            "to": "FAULT",
+            "trigger": "fatal_error"
+        },
+        {
+            "from": "ABORTING",
+            "to": "ABORTED",
+            "trigger": "abort_succeeded"
+        },
+        {
+            "from": "ABORTING",
+            "to": "FAULT",
+            "trigger": "abort_failed"
+        },
+        {
+            "from": "ABORTING",
+            "to": "FAULT",
+            "trigger": "fatal_error"
+        },
+        {
+            "from": "ABORTED",
+            "to": "FAULT",
+            "trigger": "fatal_error"
+        },
+        {
+            "from": "FAULT",
+            "to": "FAULT",
+            "trigger": "fatal_error"
+        },
+        {
+            "from": "ABORTED",
+            "to": "IDLE",
+            "trigger": "reset_succeeded"
+        },
+        {
+            "from": "FAULT",
+            "to": "IDLE",
+            "trigger": "reset_succeeded"
+        }
+    ]
+}

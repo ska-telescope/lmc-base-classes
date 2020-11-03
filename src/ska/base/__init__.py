@@ -2,6 +2,7 @@ __all__ = (
     "commands",
     "control_model",
     "state_machine",
+    "csp_subelement_state_machine",
     "SKAAlarmHandler",
     "SKABaseDevice",
     "DeviceStateModel",
@@ -14,6 +15,7 @@ __all__ = (
     "SKASubarrayResourceManager",
     "SKATelState",
     "CspSubElementMaster",
+    "CspSubElementObsDevice",
 )
 
 # Note: order of imports is important - start with lowest in the hierarchy
@@ -35,4 +37,7 @@ from .subarray_device import (
 )
 # CspSubElement classes
 from .csp_subelement_master import CspSubElementMaster
-from .csp_subelement_obsdevice import CspSubElementObsDevice
+from .csp_subelement_obsdevice import (
+        CspSubElementObsDevice,
+        CspSubElementObsDeviceStateModel
+)

@@ -146,7 +146,7 @@ class CspSubElementObsDevice(SKAObsDevice):
             device._scan_id = 0
             device._subarray_id = [0,]
 
-            device._sdp_addresses = ''
+            device._sdp_addresses = {"outputHost":[], "outputMac": [], "outputPort":[]}
             device._sdp_links_active = [False,]
             device._sdp_link_capacity = 0.
 
@@ -208,7 +208,7 @@ class CspSubElementObsDevice(SKAObsDevice):
     def read_sdpDestinationAddresses(self):
         # PROTECTED REGION ID(CspSubElementObsDevice.sdpDestinationAddresses_read) ENABLED START #
         """Return the sdpDestinationAddresses attribute."""
-        return self._sdp_addresses
+        return json.dumps(self._sdp_addresses)
         # PROTECTED REGION END #    //  CspSubElementObsDevice.sdpDestinationAddresses_read
 
     def read_sdpLinkCapacity(self):
@@ -430,11 +430,12 @@ class CspSubElementObsDevice(SKAObsDevice):
                 information purpose only.
             :rtype: (ResultCode, str)
             """
+            device = self.target
             # enter RESETTING obsState if the device supports this obsState
-            # device._update_obs_state(ObsState.RESETTING)
+            #device._update_obs_state(ObsState.RESETTING)
             # reset 
             # set the obsState device to IDLE if command ends ok
-            #device._update_obs_state(ObsState.IDLE)
+            device._update_obs_state(ObsState.IDLE)
             return (ResultCode.OK, "ObsReset command completed OK")
         
         def check_allowed(self): 
@@ -471,6 +472,7 @@ class CspSubElementObsDevice(SKAObsDevice):
                 information purpose only.
             :rtype: (ResultCode, str)
             """
+            device = self.target
             # enter the ABORTING obsState if the device supports it.
             # device._update_obs_state(ObsState.ABORTING)
             # handle habort command
@@ -492,7 +494,6 @@ class CspSubElementObsDevice(SKAObsDevice):
             if (self.state_model.op_state == tango.DevState.ON
                     and device._obs_state in [ObsState.SCANNING, 
                                             ObsState.CONFIGURING,
-                                            ObsState.IDLE,
                                             ObsState.READY]):
                 return True
             msg = "{} not allowed in {}/{}".format (self.name,

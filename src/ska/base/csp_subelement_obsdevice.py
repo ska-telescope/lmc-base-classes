@@ -32,7 +32,7 @@ class CspSubElementObsDevice(SKAObsDevice):
     **Properties:**
 
     - Device Property
-        DeviceId
+        DeviceID
             - Identification number of the observing device.
             - Type:'DevUShort'
     """
@@ -43,7 +43,7 @@ class CspSubElementObsDevice(SKAObsDevice):
     # Device Properties
     # -----------------
 
-    DeviceId = device_property(
+    DeviceID = device_property(
         dtype='DevUShort',
     )
 
@@ -56,7 +56,8 @@ class CspSubElementObsDevice(SKAObsDevice):
         access=AttrWriteType.READ_WRITE,
         max_dim_x=16,
         label="subarrayMembership",
-        doc="Identification number of the affilaited subarray.\nImplemented an array because some  devices can be shared among several subarrays.\n",
+        doc="Identification number of the affilaited subarray.\nImplemented an array because"
+            " some  devices can be shared among several subarrays.\n",
     )
 
     scanID = attribute(
@@ -74,13 +75,16 @@ class CspSubElementObsDevice(SKAObsDevice):
     lastScanConfiguration = attribute(
         dtype='DevString',
         label="lastScanConfiguration",
-        doc="The last valid scan confiuration.",
+        doc="The last valid scan configuration.",
     )
 
     sdpDestinationAddresses = attribute(
         dtype='DevString',
         label="sdpDestinationAddresses",
-        doc="JSON formatted string\nReport the list of all the SDP addresses provided by SDP to receive the output products.\nSpecifies the Mac, IP, Port for each resource:\nCBF: visibility channels\nPSS ? Pss pipelines\nPST ? PSTBeam\nNot used by al CSP Sub-element observing device (for ex. Mid CBF VCCs)",
+        doc="JSON formatted string\nReport the list of all the SDP addresses provided by SDP"
+            " to receive the output products.\nSpecifies the Mac, IP, Port for each resource:\nCBF:"
+            " visibility channels\nPSS ? Pss pipelines\nPST ? PSTBeam\nNot used by al CSP Sub-element"
+            " observing device (for ex. Mid CBF VCCs)",
     )
 
     sdpLinkCapacity = attribute(
@@ -91,7 +95,7 @@ class CspSubElementObsDevice(SKAObsDevice):
 
     sdpLinkActive = attribute(
         dtype=('DevBoolean',),
-        max_dim_x=1000,
+        max_dim_x=100,
         label="sdpLinkActive",
         doc="Flag reporting if the SDP link is active.\nTrue: active\nFalse:down",
     )
@@ -307,7 +311,7 @@ class CspSubElementObsDevice(SKAObsDevice):
                 message indicating status. The message is for
                 information purpose only.
             :rtype: (ResultCode, str)
-            :raises: ``CommandError`` ifinput argument is invalid.
+            :raises: ``CommandError`` if input argument is invalid.
             """
             device = self.target
             if not argin.isdigit():
@@ -349,8 +353,8 @@ class CspSubElementObsDevice(SKAObsDevice):
                 information purpose only.
             :rtype: (ResultCode, str)
             """
-            device = self.target
             # set the  obsState device to READY if scan ends with success
+            device = self.target
             device._update_obs_state(ObsState.READY)
             return (ResultCode.OK, "EndScan command completed OK")
         
@@ -483,7 +487,7 @@ class CspSubElementObsDevice(SKAObsDevice):
             """
             Check if the command is in the proper state (State/obsState)
             to be executed.
-            The observing device has to be in ON/[READY, SCANNING, CONFIGURING, IDLE]
+            The observing device has to be in ON/[READY, SCANNING, CONFIGURING]
             state to process the Abort command.
 
             : raises: ``CommandError`` if command not allowed
@@ -697,8 +701,8 @@ class CspSubElementObsDevice(SKAObsDevice):
     def Abort(self):
         # PROTECTED REGION ID(CspSubElementObsDevice.Abort) ENABLED START #
         """
-            Abort the current observing process and move the device
-            to ABORTED obsState.
+        Abort the current observing process and move the device
+        to ABORTED obsState.
 
         :return:
             A tuple containing a return code and a string message indicating status.

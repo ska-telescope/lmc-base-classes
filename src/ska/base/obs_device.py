@@ -13,16 +13,214 @@ instead of just SKABaseDevice.
 
 # Additional import
 # PROTECTED REGION ID(SKAObsDevice.additionnal_import) ENABLED START #
+import warnings
+
 # Tango imports
+from tango import DevState
 from tango.server import run, attribute
 
 # SKA specific imports
-from ska.base import SKABaseDevice
+from ska.base import SKABaseDevice, DeviceStateModel
 from ska.base.commands import ResultCode
 from ska.base.control_model import ObsMode, ObsState
+from ska.base.faults import StateModelError
+from ska.base.utils import for_testing_only
 # PROTECTED REGION END #    //  SKAObsDevice.additionnal_imports
 
-__all__ = ["SKAObsDevice", "main"]
+__all__ = ["SKAObsDevice", "ObsDeviceStateModel", "main"]
+
+class ObsDeviceStateModel(DeviceStateModel):
+    """
+    Implements the state model for the CspSubElementObsDevice
+    """
+
+    def __init__(
+        self,
+        action_breakdown,
+        obs_machine_class,
+        logger,
+        op_state_callback=None,
+        admin_mode_callback=None,
+        obs_state_callback=None,
+    ):
+        """
+        Initialises the model.
+
+        :param action_breakdown: the action breakdown associated with the observing
+           state machine class
+        :type action_breakdown: dictionary defining actions to be performed
+            on the observation state machine and,as needed, on the device state machine.
+        :param obs_machine_class
+        :type obs_machine_class: state machine for the observing state of a 
+            SKAObsDevice class device.
+        :param logger: the logger to be used by this state model.
+        :type logger: a logger that implements the standard library
+            logger interface
+        :param op_state_callback: A callback to be called when a
+            transition implies a change to op state
+        :type op_state_callback: callable
+        :param admin_mode_callback: A callback to be called when a
+            transition causes a change to device admin_mode
+        :type admin_mode_callback: callable
+        :param obs_state_callback: A callback to be called when a
+            transition causes a change to device obs_state
+        :type obs_state_callback: callable
+        """
+        super().__init__(
+            logger,
+            op_state_callback=op_state_callback,
+            admin_mode_callback=admin_mode_callback,
+        )
+
+        self._obs_state = None
+        self._obs_state_callback = obs_state_callback
+
+        self._observation_state_machine = obs_machine_class(
+            self._update_obs_state
+        )
+        self._action_breakdown = action_breakdown
+
+    @property
+    def obs_state(self):
+        """
+        Returns the obs_state
+
+        :returns: obs_state of this state model
+        :rtype: ObsState
+        """
+        return self._obs_state
+
+    def _update_obs_state(self, machine_state):
+        """
+        Helper method that updates obs_state whenever the observation
+        state machine reports a change of state, ensuring that the
+        callback is called if one exists.
+
+        :param machine_state: the new state of the observation state
+            machine
+        :type machine_state: str
+        """
+        obs_state = ObsState[machine_state]
+        if self._obs_state != obs_state:
+            self._obs_state = obs_state
+            if self._obs_state_callback is not None:
+                self._obs_state_callback(obs_state)
+
+    def _is_obs_action_allowed(self, action):
+        if action not in self._action_breakdown:
+            return None
+
+        if self.op_state != DevState.ON:
+            return False
+
+        (obs_action, super_action) = self._action_breakdown[action]
+
+        if obs_action not in self._observation_state_machine.get_triggers(
+            self._observation_state_machine.state
+        ):
+            return False
+        return super_action is None or super().is_action_allowed(super_action)
+
+    def is_action_allowed(self, action):
+        """
+        Whether a given action is allowed in the current state.
+
+        :param action: an action, as given in the transitions table
+        :type action: ANY
+
+        :returns: where the action is allowed in the current state:
+        :rtype: bool: True if the action is allowed, False if it is
+            not allowed
+        :raises StateModelError: for an unrecognised action
+        """
+        obs_allowed = self._is_obs_action_allowed(action)
+        if obs_allowed is None:
+            return super().is_action_allowed(action)
+        if obs_allowed:
+            return True
+        try:
+            return super().is_action_allowed(action)
+        except StateModelError:
+            return False
+
+    def try_action(self, action):
+        """
+        Checks whether a given action is allowed in the current state,
+        and raises a StateModelError if it is not.
+
+        :param action: an action, as given in the transitions table
+        :type action: str
+
+        :raises StateModelError: if the action is not allowed in the
+            current state
+
+        :returns: True if the action is allowed
+        :rtype: boolean
+        """
+        if not self.is_action_allowed(action):
+            raise StateModelError(
+                f"Action {action} is not allowed in operational state "
+                f"{self.op_state}, admin mode {self.admin_mode}, "
+                f"observation state {self.obs_state}."
+            )
+        return True
+
+    def perform_action(self, action):
+        """
+        Performs an action on the state model
+
+        :param action: an action, as given in the transitions table
+        :type action: ANY
+
+        :raises StateModelError: if the action is not allowed in the
+            current state
+
+        """
+        self.try_action(action)
+
+        if self._is_obs_action_allowed(action):
+            (obs_action, super_action) = self._action_breakdown[action]
+
+            if obs_action == "to_IDLE":
+                message = (
+                    "Changing device state of a non-IDLE observing device "
+                    "should only be done as an emergency measure and may be "
+                    "disallowed in future."
+                )
+                self.logger.warning(message)
+                warnings.warn(message, PendingDeprecationWarning)
+
+            self._observation_state_machine.trigger(obs_action)
+            if super_action is not None:
+                super().perform_action(super_action)
+        else:
+            super().perform_action(action)
+
+    @for_testing_only
+    def _straight_to_state(self, op_state=None, admin_mode=None, obs_state=None):
+        """
+        Takes the ObsDEviceStateModel straight to the specified states.
+        This method exists to simplify testing; for example, if testing
+        that a command may be run in a given state, one can push the
+        state model straight to that state, rather than having to drive
+        it to that state through a sequence of actions. It is not
+        intended that this method would be called outside of test
+        setups. A warning will be raised if it is.
+
+        Note that this method will allow you to put the device into an
+        incoherent combination of states and modes (e.g. adminMode
+        OFFLINE, opState STANDBY, and obsState SCANNING).
+
+        :param op_state: the target operational state (optional)
+        :type op_state: :py:class:`tango.DevState`
+        :param admin_mode: the target admin mode (optional)
+        :type admin_mode: :py:class:`~ska.base.control_model.AdminMode`
+        :param obs_state: the target observation state (optional)
+        :type obs_state: :py:class:`~ska.base.control_model.ObsState`
+        """
+        if obs_state is not None:
+            getattr(self._observation_state_machine, f"to_{obs_state.name}")()
+        super()._straight_to_state(op_state=op_state, admin_mode=admin_mode)
 
 
 class SKAObsDevice(SKABaseDevice):

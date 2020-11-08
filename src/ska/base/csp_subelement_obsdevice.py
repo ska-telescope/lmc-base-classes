@@ -11,6 +11,8 @@ General observing device for SKA CSP Subelement.
 # PROTECTED REGION ID(CspSubElementObsDevice.additionnal_import) ENABLED START #
 import json
 import warnings
+import numpy as np
+from json.decoder import JSONDecodeError
 
 # Tango imports 
 import tango
@@ -18,19 +20,171 @@ from tango import DebugIt, DevState, AttrWriteType
 from tango.server import run, attribute, command, device_property
 
 # SKA specific imports
-from ska.base import SKAObsDevice, DeviceStateModel
+from ska.base import SKAObsDevice, ObsDeviceStateModel
 from ska.base.commands import ResultCode, ResponseCommand, ActionCommand
 from ska.base.control_model import ObsState
-from ska.base.csp_subelement_state_machine import CspObservationStateMachine
+#from ska.base.csp_subelement_state_machine import CspObservationStateMachine
 from ska.base.faults import StateModelError
-from ska.base.utils import for_testing_only
+
+# State Machine imports
+from transitions import State
+from transitions.extensions import LockedMachine as Machine
 # PROTECTED REGION END #    //  CspSubElementObsDevice.additionnal_import
 
-__all__ = ["CspSubElementObsDevice", "CspSubElementObsDeviceStateModel", "main"]
+__all__ = ["CspSubElementObsDevice", 
+           "CspSubElementObsDeviceStateModel", 
+           "CspSubElementObsDeviceStateMachine",
+           "main"
+          ]
 
-class CspSubElementObsDeviceStateModel(DeviceStateModel):
+
+class CspSubElementObsDeviceStateMachine(Machine):
     """
-    Implements the state model for the CspSubElementObsDevice
+    The observation state machine used by a generic CSP 
+    Sub-element ObsDevice (derived from SKAObsDevice).
+    """
+
+    def __init__(self, callback=None, **extra_kwargs):
+        """
+        Initialises the model.
+
+        :param callback: A callback to be called when the state changes
+        :type callback: callable
+        :param extra_kwargs: Additional keywords arguments to pass to super class
+            initialiser (useful for graphing)
+        """
+        self._callback = callback
+
+        states = [
+            "IDLE",
+            "CONFIGURING",
+            "READY",
+            "SCANNING",
+            "ABORTING",
+            "ABORTED",
+            "FAULT",
+        ]
+        transitions = [
+            {
+                "source": "*",
+                "trigger": "fatal_error",
+                "dest": "FAULT",
+            },
+            {
+                "source": ["IDLE", "READY"],
+                "trigger": "configure_started",
+                "dest": "CONFIGURING",
+            },
+            {
+                "source": "CONFIGURING",
+                "trigger": "configure_succeeded",
+                "dest": "READY",
+            },
+            {
+                "source": "CONFIGURING",
+                "trigger": "configure_failed",
+                "dest": "FAULT",
+            },
+            {
+                "source": "READY",
+                "trigger": "end_succeeded",
+                "dest": "IDLE",
+            },
+            {
+                "source": "READY",
+                "trigger": "end_failed",
+                "dest": "FAULT",
+            },
+            {
+                "source": "READY",
+                "trigger": "scan_started",
+                "dest": "SCANNING",
+            },
+            {
+                "source": "SCANNING",
+                "trigger": "scan_succeeded",
+                "dest": "READY",
+            },
+            {
+                "source": "SCANNING",
+                "trigger": "scan_failed",
+                "dest": "FAULT",
+            },
+            {
+                "source": "SCANNING",
+                "trigger": "end_scan_succeeded",
+                "dest": "READY",
+            },
+            {
+                "source": "SCANNING",
+                "trigger": "end_scan_failed",
+                "dest": "FAULT",
+            },
+            {
+                "source": [
+                    "CONFIGURING",
+                    "READY",
+                    "SCANNING",
+                    "IDLE",
+                ],
+                "trigger": "abort_started",
+                "dest": "ABORTING",
+            },
+            {
+                "source": "ABORTING",
+                "trigger": "abort_succeeded",
+                "dest": "ABORTED",
+            },
+            {
+                "source": "ABORTING",
+                "trigger": "abort_failed",
+                "dest": "FAULT",
+            },
+            {
+                "source": ["ABORTED", "FAULT"],
+                "trigger": "reset_succeeded",
+                "dest": "IDLE",
+            },
+            {
+                "source": ["ABORTED", "FAULT"],
+                "trigger": "reset_failed",
+                "dest": "FAULT",
+            },
+        ]
+
+        super().__init__(
+            states=states,
+            initial="IDLE",
+            transitions=transitions,
+            after_state_change=self._state_changed,
+            **extra_kwargs,
+        )
+        self._state_changed()
+
+    def _state_changed(self):
+        """
+        State machine callback that is called every time the obs_state
+        changes. Responsible for ensuring that callbacks are called.
+        """
+        if self._callback is not None:
+            self._callback(self.state)
+
+class CspSubElementObsDeviceStateModel(ObsDeviceStateModel):
+    """
+    Implements the state model for the CspSubElementObsDevice.
+
+    :param logger: the logger to be used by this state model.
+    :type logger: a logger that implements the standard library
+       logger interface
+    :param op_state_callback: A callback to be called when a
+       transition implies a change to op state
+    :type op_state_callback: callable
+    :param admin_mode_callback: A callback to be called when a
+       transition causes a change to device admin_mode
+    :type admin_mode_callback: callable
+    :param obs_state_callback: A callback to be called when a
+       transition causes a change to device obs_state
+    :type obs_state_callback: callable
     """
 
     def __init__(
@@ -40,199 +194,37 @@ class CspSubElementObsDeviceStateModel(DeviceStateModel):
         admin_mode_callback=None,
         obs_state_callback=None,
     ):
-        """
-        Initialises the model. Note that this does not imply moving to
-        INIT state. The INIT state is managed by the model itself.
-
-        :param logger: the logger to be used by this state model.
-        :type logger: a logger that implements the standard library
-            logger interface
-        :param op_state_callback: A callback to be called when a
-            transition implies a change to op state
-        :type op_state_callback: callable
-        :param admin_mode_callback: A callback to be called when a
-            transition causes a change to device admin_mode
-        :type admin_mode_callback: callable
-        :param obs_state_callback: A callback to be called when a
-            transition causes a change to device obs_state
-        :type obs_state_callback: callable
-        """
+        action_breakdown = {
+            # "action": ("action_on_obs_machine", "action_on_superclass"),
+            "off_succeeded": ("to_IDLE", "off_succeeded"),
+            "off_failed": ("to_IDLE", "off_failed"),
+            "on_succeeded": (None, "on_succeeded"),
+            "on_failed": ("to_IDLE", "on_failed"),
+            "configure_started": ("configure_started", None),
+            "configure_succeeded": ("configure_succeeded", None),
+            "configure_failed": ("configure_failed", None),
+            "scan_started": ("scan_started", None),
+            "scan_succeeded": ("scan_succeeded", None),
+            "scan_failed": ("scan_failed", None),
+            "end_scan_succeeded": ("end_scan_succeeded", None),
+            "end_scan_failed": ("end_scan_failed", None),
+            "end_succeeded": ("end_succeeded", None),
+            "end_failed": ("end_failed", None),
+            "abort_started": ("abort_started", None),
+            "abort_succeeded": ("abort_succeeded", None),
+            "abort_failed": ("abort_failed", None),
+            "obs_reset_succeeded": ("reset_succeeded", None),
+            "obs_reset_failed": ("reset_failed", None),
+            "fatal_error": ("fatal_error", None),
+          }
         super().__init__(
+            action_breakdown,
+            CspSubElementObsDeviceStateMachine,
             logger,
             op_state_callback=op_state_callback,
             admin_mode_callback=admin_mode_callback,
+            obs_state_callback=obs_state_callback,
         )
-
-        self._obs_state = None
-        self._obs_state_callback = obs_state_callback
-
-        self._observation_state_machine = CspObservationStateMachine(
-            self._update_obs_state
-        )
-
-    @property
-    def obs_state(self):
-        """
-        Returns the obs_state
-
-        :returns: obs_state of this state model
-        :rtype: ObsState
-        """
-    def _update_obs_state(self, machine_state):
-        """
-        Helper method that updates obs_state whenever the observation
-        state machine reports a change of state, ensuring that the
-        callback is called if one exists.
-
-        :param machine_state: the new state of the observation state
-            machine
-        :type machine_state: str
-        """
-        obs_state = ObsState[machine_state]
-        if self._obs_state != obs_state:
-            self._obs_state = obs_state
-            if self._obs_state_callback is not None:
-                self._obs_state_callback(obs_state)
-
-    __action_breakdown = {
-        # "action": ("action_on_obs_machine", "action_on_superclass"),
-        "off_succeeded": ("to_IDLE", "off_succeeded"),
-        "off_failed": ("to_IDLE", "off_failed"),
-        "on_succeeded": (None, "on_succeeded"),
-        "on_failed": ("to_IDLE", "on_failed"),
-        "configure_started": ("configure_started", None),
-        "configure_succeeded": ("configure_succeeded", None),
-        "configure_failed": ("configure_failed", None),
-        "scan_started": ("scan_started", None),
-        "scan_succeeded": ("scan_succeeded", None),
-        "scan_failed": ("scan_failed", None),
-        "end_scan_succeeded": ("end_scan_succeeded", None),
-        "end_scan_failed": ("end_scan_failed", None),
-        "end_succeeded": ("end_succeeded", None),
-        "end_failed": ("end_failed", None),
-        "abort_started": ("abort_started", None),
-        "abort_succeeded": ("abort_succeeded", None),
-        "abort_failed": ("abort_failed", None),
-        "obs_reset_succeeded": ("reset_succeeded", None),
-        "obs_reset_failed": ("reset_failed", None),
-    }
-
-    def _is_obs_action_allowed(self, action):
-        if action not in self.__action_breakdown:
-            return None
-
-        if self.op_state != DevState.ON:
-            return False
-
-        (obs_action, super_action) = self.__action_breakdown[action]
-
-        if obs_action not in self._observation_state_machine.get_triggers(
-            self._observation_state_machine.state
-        ):
-            return False
-        return super_action is None or super().is_action_allowed(super_action)
-
-    def is_action_allowed(self, action):
-        """
-        Whether a given action is allowed in the current state.
-
-        :param action: an action, as given in the transitions table
-        :type action: ANY
-
-        :returns: where the action is allowed in the current state:
-        :rtype: bool: True if the action is allowed, False if it is
-            not allowed
-        :raises StateModelError: for an unrecognised action
-        """
-        obs_allowed = self._is_obs_action_allowed(action)
-        if obs_allowed is None:
-            return super().is_action_allowed(action)
-        if obs_allowed:
-            return True
-        try:
-            return super().is_action_allowed(action)
-        except StateModelError:
-            return False
-
-    def try_action(self, action):
-        """
-        Checks whether a given action is allowed in the current state,
-        and raises a StateModelError if it is not.
-
-        :param action: an action, as given in the transitions table
-        :type action: str
-
-        :raises StateModelError: if the action is not allowed in the
-            current state
-
-        :returns: True if the action is allowed
-        :rtype: boolean
-        """
-        if not self.is_action_allowed(action):
-            raise StateModelError(
-                f"Action {action} is not allowed in operational state "
-                f"{self.op_state}, admin mode {self.admin_mode}, "
-                f"observation state {self.obs_state}."
-            )
-        return True
-
-    def perform_action(self, action):
-        """
-        Performs an action on the state model
-
-        :param action: an action, as given in the transitions table
-        :type action: ANY
-
-        :raises StateModelError: if the action is not allowed in the
-            current state
-
-        """
-        self.try_action(action)
-
-        if self._is_obs_action_allowed(action):
-            (obs_action, super_action) = self.__action_breakdown[action]
-
-            if obs_action == "to_IDLE":
-                message = (
-                    "Changing device state of a non-IDLE observing device "
-                    "should only be done as an emergency measure and may be "
-                    "disallowed in future."
-                )
-                self.logger.warning(message)
-                warnings.warn(message, PendingDeprecationWarning)
-
-            self._observation_state_machine.trigger(obs_action)
-            if super_action is not None:
-                super().perform_action(super_action)
-        else:
-            super().perform_action(action)
-
-    @for_testing_only
-    def _straight_to_state(self, op_state=None, admin_mode=None, obs_state=None):
-        """
-        Takes the SKASubarrayStateModel straight to the specified states.
-        This method exists to simplify testing; for example, if testing
-        that a command may be run in a given state, one can push the
-        state model straight to that state, rather than having to drive
-        it to that state through a sequence of actions. It is not
-        intended that this method would be called outside of test
-        setups. A warning will be raised if it is.
-
-        Note that this method will allow you to put the device into an
-        incoherent combination of states and modes (e.g. adminMode
-        OFFLINE, opState STANDBY, and obsState SCANNING).
-
-        :param op_state: the target operational state (optional)
-        :type op_state: :py:class:`tango.DevState`
-        :param admin_mode: the target admin mode (optional)
-        :type admin_mode: :py:class:`~ska.base.control_model.AdminMode`
-        :param obs_state: the target observation state (optional)
-        :type obs_state: :py:class:`~ska.base.control_model.ObsState`
-        """
-        if obs_state is not None:
-            getattr(self._observation_state_machine, f"to_{obs_state.name}")()
-        super()._straight_to_state(op_state=op_state, admin_mode=admin_mode)
-
 
 class CspSubElementObsDevice(SKAObsDevice):
     """
@@ -259,15 +251,6 @@ class CspSubElementObsDevice(SKAObsDevice):
     # ----------
     # Attributes
     # ----------
-
-    subarrayMembership = attribute(
-        dtype=('DevUShort',),
-        access=AttrWriteType.READ_WRITE,
-        max_dim_x=16,
-        label="subarrayMembership",
-        doc="Identification number of the affilaited subarray.\nImplemented an array because"
-            " some  devices can be shared among several subarrays.\n",
-    )
 
     scanID = attribute(
         dtype='DevULong64',
@@ -368,11 +351,10 @@ class CspSubElementObsDevice(SKAObsDevice):
             device = self.target
             device._obs_state = ObsState.IDLE
             device._scan_id = 0
-            device._subarray_id = [0,]
 
             device._sdp_addresses = {"outputHost":[], "outputMac": [], "outputPort":[]}
-            device._sdp_links_active = [False,]
-            device._sdp_link_capacity = 0.
+            device._sdp_links_active = []
+            device._sdp_links_capacity = 0.
 
             device._config_id = ''
             device._last_scan_configuration = ''
@@ -398,18 +380,6 @@ class CspSubElementObsDevice(SKAObsDevice):
     # ------------------
     # Attributes methods
     # ------------------
-
-    def read_subarrayMembership(self):
-        # PROTECTED REGION ID(CspSubElementObsDevice.subarrayMembership_read) ENABLED START #
-        """Return the subarrayMembership attribute."""
-        return self._subarray_id
-        # PROTECTED REGION END #    //  CspSubElementObsDevice.subarrayMembership_read
-        
-    def write_subarrayMembership(self, value):
-        # PROTECTED REGION ID(CspSubElementObsDevice.subarrayMembership_write) ENABLED START #
-        """Set the subarrayMembership attribute."""
-        self._subarray_id = value
-        # PROTECTED REGION END #    //  CspSubElementObsDevice.subarrayMembership_write
 
     def read_scanID(self):
         # PROTECTED REGION ID(CspSubElementObsDevice.scanID_read) ENABLED START #
@@ -438,13 +408,13 @@ class CspSubElementObsDevice(SKAObsDevice):
     def read_sdpLinkCapacity(self):
         # PROTECTED REGION ID(CspSubElementObsDevice.sdpLinkCapacity_read) ENABLED START #
         """Return the sdpLinkCapacity attribute."""
-        return self._sdp_link_capacity
+        return self._sdp_links_capacity
         # PROTECTED REGION END #    //  CspSubElementObsDevice.sdpLinkCapacity_read
 
     def read_sdpLinkActive(self):
         # PROTECTED REGION ID(CspSubElementObsDevice.sdpLinkActive_read) ENABLED START #
         """Return the sdpLinkActive attribute."""
-        return self._sdp_link_active
+        return self._sdp_links_active
         # PROTECTED REGION END #    //  CspSubElementObsDevice.sdpLinkActive_read
 
     # --------
@@ -493,7 +463,7 @@ class CspSubElementObsDevice(SKAObsDevice):
             if result_code == ResultCode.FAILED:
                 return (result_code, msg)
             # store the configuration on command success
-            device._last_valid_configuration = argin
+            device._last_scan_configuration = argin
             return (ResultCode.OK, "Configure command completed OK")
 
         def validate_configuration_data(self, argin):
@@ -509,9 +479,13 @@ class CspSubElementObsDevice(SKAObsDevice):
             try: 
                 configuration_dict = json.loads(argin)
                 device._config_id = configuration_dict['id']
-            except Exception:
-                return (ResultCode.FAILED, "No configuration ID specified")
-            return (ResultCode.OK, "Configuration validated with success")
+                return (ResultCode.OK, "Configuration validated with success")
+            except KeyError as key_err:
+                msg = f"Key {key_err} not present in scan configuration"
+            except JSONDecodeError as json_err:
+                msg = f"Json decode error: {json_err}"
+            self.logger.error(msg)
+            return (ResultCode.FAILED, msg)
 
     class ScanCommand(ActionCommand):
         """
@@ -552,7 +526,9 @@ class CspSubElementObsDevice(SKAObsDevice):
             """
             device = self.target
             if not argin.isdigit():
-                return (ResultCode.FAILED, "Scan argument is not an integer")
+                msg = f"Input argument '{argin}' is not an integer" 
+                self.logger.error(msg)
+                return (ResultCode.FAILED, msg)
             device._scan_id = int(argin)
             return (ResultCode.STARTED, "Scan command started")
         

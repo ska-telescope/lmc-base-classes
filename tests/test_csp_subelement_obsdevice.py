@@ -6,9 +6,11 @@
 #
 #
 #########################################################################################
-"""Contain the tests for the CspSubelementObsDevice."""
-
+"""Contain the tests for the CspSubelementObsDevice and the State model implemented by
+   such device.
+"""
 # Imports
+import logging
 import re
 import pytest
 import json
@@ -17,18 +19,106 @@ from tango import DevState, DevFailed
 from tango.test_context import MultiDeviceTestContext
 
 # PROTECTED REGION ID(CspSubelementObsDevice.test_additional_imports) ENABLED START #
-from ska.base import SKAObsDevice, CspSubElementObsDevice
+from ska.base import SKAObsDevice, CspSubElementObsDevice, CspSubElementObsDeviceStateModel
 from ska.base.commands import ResultCode
-from ska.base.faults import CommandError
+from ska.base.faults import StateModelError
 from ska.base.control_model import (
     ObsState, AdminMode, ControlMode, HealthState, SimulationMode, TestMode
 )
+from .conftest import load_state_machine_spec, StateMachineTester
 # PROTECTED REGION END #    //  CspSubElementObsDevice.test_additional_imports
 
 
 # Device test case
 # PROTECTED REGION ID(CspSubElementObsDevice.test_CspSubelementObsDevice_decorators) ENABLED START #
 # PROTECTED REGION END #    // CspSubelementObsDevice.test_CspSubelementObsDevice_decorators
+
+@pytest.fixture
+def csp_subelement_obsdevice_state_model():
+    """
+    Yields a new SKASubarrayStateModel for testing
+    """
+    yield CspSubElementObsDeviceStateModel(logging.getLogger())
+
+
+@pytest.mark.state_machine_tester(load_state_machine_spec("csp_subelement_obsdevice_state_machine"))
+class TestCspSubElementObsDeviceStateModel(StateMachineTester):
+    """
+    This class contains the test for the SKASubarrayStateModel class.
+    """
+
+    @pytest.fixture
+    def machine(self, csp_subelement_obsdevice_state_model):
+        """
+        Fixture that returns the state machine under test in this class
+        """
+        yield csp_subelement_obsdevice_state_model
+
+    def assert_state(self, machine, state):
+        """
+        Assert the current state of this state machine, based on the
+        values of the adminMode, opState and obsState attributes of this
+        model.
+
+        :param machine: the state machine under test
+        :type machine: state machine object instance
+        :param state: the state that we are asserting to be the current
+            state of the state machine under test
+        :type state: str
+        """
+        assert machine.admin_mode == state["admin_mode"]
+        assert machine.op_state == state["op_state"]
+        assert machine.obs_state == state["obs_state"]
+
+    def is_action_allowed(self, machine, action):
+        """
+        Returns whether the state machine under state thinks an action
+        is permitted in its current state
+
+        :param machine: the state machine under test
+        :type machine: state machine object instance
+        :param action: action to be performed on the state machine
+        :type action: str
+        """
+        return machine.is_action_allowed(action)
+
+    def perform_action(self, machine, action):
+        """
+        Perform a given action on the state machine under test.
+
+        :param machine: the state machine under test
+        :type machine: state machine object instance
+        :param action: action to be performed on the state machine
+        :type action: str
+        """
+        machine.perform_action(action)
+
+    def check_action_fails(self, machine, action):
+        """
+        Assert that attempting a given action on the state machine under
+        test fails in its current state.
+
+        :param machine: the state machine under test
+        :type machine: state machine object instance
+        :param action: action to be performed on the state machine
+        :type action: str
+        """
+        with pytest.raises(StateModelError):
+            self.perform_action(machine, action)
+
+    def to_state(self, machine, target_state):
+        """
+        Transition the state machine to a target state.
+
+        :param machine: the state machine under test
+        :type machine: state machine object instance
+        :param target_state: the state that we want to get the state
+            machine under test into
+        :type target_state: str
+        """
+        machine._straight_to_state(**target_state)
+
+
 class TestCspSubElementObsDevice(object):
     """Test case for CSP SubElement ObsDevice class."""
 
@@ -140,15 +230,6 @@ class TestCspSubElementObsDevice(object):
         assert tango_context.device.testMode == TestMode.NONE
         # PROTECTED REGION END #    //  CspSubelementObsDevice.test_testMode
 
-    # PROTECTED REGION ID(CspSubelementObsDevice.test_subarrayMembership_decorators) ENABLED START #
-    # PROTECTED REGION END #    //  CspSubelementObsDevice.test_subarrayMembership_decorators
-    def test_subarrayMembership(self, tango_context):
-        """Test for testMode"""
-        # PROTECTED REGION ID(CspSubelementObsDevice.test_subarrayMembership) ENABLED START #
-        tango_context.device.subarrayMembership = [1,2,5]
-        assert set(tango_context.device.subarrayMembership) == {1,2,5}
-        # PROTECTED REGION END #    //  CspSubelementObsDevice.test_subarrayMembership
-
     # PROTECTED REGION ID(CspSubelementObsDevice.test_scanID_decorators) ENABLED START #
     # PROTECTED REGION END #    //  CspSubelementObsDevice.test_scanID_decorators
     def test_scanID(self, tango_context):
@@ -166,6 +247,28 @@ class TestCspSubElementObsDevice(object):
         assert tango_context.device.sdpDestinationAddresses == json.dumps(addresses_dict)
         # PROTECTED REGION END #    //  CspSubelementObsDevice.test_sdpDestinationAddresses
 
+    # PROTECTED REGION ID(CspSubelementObsDevice.test_sdpLinkActive_decorators) ENABLED START #
+    # PROTECTED REGION END #    //  CspSubelementObsDevice.test_sdpLinkActive_decorators
+    def test_sdpLinkActivity(self, tango_context):
+        """Test for sdpLinkActive """
+        # PROTECTED REGION ID(CspSubelementObsDevice.test_sdpLinkActive) ENABLED START #
+        expected = tango_context.device.sdpLinkActive
+        if expected is not None:
+            n_links = len(expected)
+            actual  = [ False for i in range(0, n_links)]
+            assert all([a == b for a, b in zip(actual, expected)])
+        else:
+            assert expected is None
+        # PROTECTED REGION END #    //  CspSubelementObsDevice.test_sdpLinkActive
+
+    # PROTECTED REGION ID(CspSubelementObsDevice.test_sdpLinkCapacity_decorators) ENABLED START #
+    # PROTECTED REGION END #    //  CspSubelementObsDevice.test_sdpLinkCapacity_decorators
+    def test_sdpLinkCapacity(self, tango_context):
+        """Test for sdpLinkCapacity """
+        # PROTECTED REGION ID(CspSubelementObsDevice.test_sdpLinkCapacity) ENABLED START #
+        assert tango_context.device.sdpLinkCapacity == 0
+        # PROTECTED REGION END #    //  CspSubelementObsDevice.test_sdpLinkCapacity
+
     # PROTECTED REGION ID(CspSubelementObsDevice.test_ConfigureScan_decorators) ENABLED START #
     # PROTECTED REGION END #    //  CspSubelementObsDevice.test_ConfigureScan_decorators
     def test_ConfigureScan(self, tango_context, tango_change_event_helper):
@@ -173,9 +276,11 @@ class TestCspSubElementObsDevice(object):
         # PROTECTED REGION ID(CspSubelementObsDevice.test_ConfigureScan) ENABLED START #
         tango_context.device.On()
         obs_state_callback = tango_change_event_helper.subscribe("obsState")
-        tango_context.device.ConfigureScan('{"id":"sbi-mvp01-20200325-00002"}')
+        scan_configuration = '{"id":"sbi-mvp01-20200325-00002"}'
+        tango_context.device.ConfigureScan(scan_configuration)
         obs_state_callback.assert_calls([ObsState.IDLE,ObsState.CONFIGURING])
         assert tango_context.device.configurationID == "sbi-mvp01-20200325-00002"
+        assert tango_context.device.lastScanConfiguration == scan_configuration
         # PROTECTED REGION END #    //  CspSubelementObsDevice.test_ConfigureScan
 
     # PROTECTED REGION ID(CspSubelementObsDevice.test_ConfigureScan_when_in_wrong_state_decorators) ENABLED START #
@@ -186,9 +291,32 @@ class TestCspSubElementObsDevice(object):
         # The device in in OFF/IDLE state, not valid to invoke ConfigureScan.
         with pytest.raises(DevFailed) as df:
             tango_context.device.ConfigureScan('{"id":"sbi-mvp01-20200325-00002"}')
-        #assert "ConfigureScanCommand not allowed" in str(df.value.args[0].desc)
         assert "Error executing command ConfigureScanCommand" in str(df.value.args[0].desc)
         # PROTECTED REGION END #    //  CspSubelementObsDevice.test_ConfigureScan_when_in_wrong_state
+
+    # PROTECTED REGION ID(CspSubelementObsDevice.test_ConfigureScan_with_wrong_configId_key_decorators) ENABLED START #
+    # PROTECTED REGION END #    //  CspSubelementObsDevice.test_ConfigureScan_with_wrong_configId_key_decorators
+    def test_ConfigureScan_with_wrong_configId_key(self, tango_context):
+        """Test for ConfigureScan when json configuration specifies a wrong key for 
+           configuration ID
+        """
+        # PROTECTED REGION ID(CspSubelementObsDevice.test_ConfigureScan_with_wrong_configId_key) ENABLED START #
+        tango_context.device.On()
+        # wrong configurationID key
+        wrong_configuration = '{"subid":"sbi-mvp01-20200325-00002"}'
+        result_code, msg = tango_context.device.ConfigureScan(wrong_configuration)
+        assert result_code == ResultCode.FAILED
+        # PROTECTED REGION END #    //  CspSubelementObsDevice.test_ConfigureScan_with_wrong_configId_key
+
+    # PROTECTED REGION ID(CspSubelementObsDevice.test_ConfigureScan_with_json_syntax_error) ENABLED START #
+    # PROTECTED REGION END #    //  CspSubelementObsDevice.test_ConfigureScan_with_json_syntax_error_decorators
+    def test_ConfigureScan_with_json_syntax_error(self, tango_context):
+        """Test for ConfigureScan when syntax error in json configuration """
+        # PROTECTED REGION ID(CspSubelementObsDevice.test_ConfigureScan_with_json_syntax_error) ENABLED START #
+        tango_context.device.On()
+        result_code, msg = tango_context.device.ConfigureScan('{"foo": 1,}')
+        assert result_code == ResultCode.FAILED
+        # PROTECTED REGION END #    //  CspSubelementObsDevice.test_ConfigureScan_with_json_syntax_error
 
     # PROTECTED REGION ID(CspSubelementObsDevice.test_GoToIdle_decorators) ENABLED START #
     # PROTECTED REGION END #    //  CspSubelementObsDevice.test_GoToIdle_decorators
@@ -213,7 +341,6 @@ class TestCspSubElementObsDevice(object):
         # The device in in OFF/IDLE state, not valid to invoke GoToIdle.
         with pytest.raises(DevFailed) as df:
             tango_context.device.GoToIdle()
-        #assert "GoToIdleCommand not allowed" in str(df.value.args[0].desc)
         assert "Error executing command GoToIdleCommand" in str(df.value.args[0].desc)
         # PROTECTED REGION END #    //  CspSubelementObsDevice.test_GoToIdle_when_in_wrong_state
 

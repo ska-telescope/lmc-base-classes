@@ -183,6 +183,92 @@ class TestCspSubElementSubarray(object):
         assert tango_context.device.outputDataRateToSdp == 0
         # PROTECTED REGION END #    //  CspSubelementSubarray.test_outputDataRateToSdp
 
+    # PROTECTED REGION ID(CspSubelementSubarray.test_listOfDevicesCompletedTasks_decorators) ENABLED START #
+    # PROTECTED REGION END #    //  CspSubelementSubarray.test_listOfDevicesCompletedTasks_decorators
+    def test_listOfDevicesCompletedTasks(self, tango_context):
+        """Test for listOfDevicesCompletedTasks """
+        # PROTECTED REGION ID(CspSubelementSubarray.test_listOfDevicesCompletedTasks) ENABLED START #
+        attr_value_as_dict = json.loads(tango_context.device.listOfDevicesCompletedTasks)
+        assert not bool(attr_value_as_dict)
+        # PROTECTED REGION END #    //  CspSubelementSubarray.test_listOfDevicesCompletedTasks
+
+    # PROTECTED REGION ID(CspSubelementSubarray.test_ConfigureScan_decorators) ENABLED START #
+    # PROTECTED REGION END #    //  CspSubelementSubarray.test_ConfigureScan_decorators
+
+    # PROTECTED REGION ID(CspSubelementSubarray.test_assignResourcesMaximumDuration_decorators) ENABLED START #
+    # PROTECTED REGION END #    //  CspSubelementSubarray.test_assignResourcesMaximumDuration_decorators
+    def test_assignResourcesMaximumDuration(self, tango_context):
+        """Test for assignResourcesMaximumDuration """
+        # PROTECTED REGION ID(CspSubelementSubarray.test_assignResourcesMaximumDuration) ENABLED START #
+        tango_context.device.assignResourcesMaximumDuration = 5
+        assert tango_context.device.assignResourcesMaximumDuration == 5
+        # PROTECTED REGION END #    //  CspSubelementSubarray.test_assignResourcesMaximumDuration
+
+    # PROTECTED REGION ID(CspSubelementSubarray.test_configureScanMeasuredDuration_decorators) ENABLED START #
+    # PROTECTED REGION END #    //  CspSubelementSubarray.test_configureScanMeasuredDuration_decorators
+    def test_configureScanMeasuredDuration(self, tango_context):
+        """Test for configureScanMeasuredDuration """
+        # PROTECTED REGION ID(CspSubelementSubarray.test_configureScanMeasuredDuration) ENABLED START #
+        assert tango_context.device.configureScanMeasuredDuration == 0
+        # PROTECTED REGION END #    //  CspSubelementSubarray.test_configureScanMeasuredDuration
+
+    # PROTECTED REGION ID(CspSubelementSubarray.test_configurationProgress_decorators) ENABLED START #
+    # PROTECTED REGION END #    //  CspSubelementSubarray.test_configurationProgress_decorators
+    def test_configurationProgress(self, tango_context):
+        """Test for configurationProgress """
+        # PROTECTED REGION ID(CspSubelementSubarray.test_configurationProgress) ENABLED START #
+        assert tango_context.device.configurationProgress == 0
+        # PROTECTED REGION END #    //  CspSubelementSubarray.test_configurationProgress
+
+    # PROTECTED REGION ID(CspSubelementSubarray.test_assignResourcesMeasuredDuration_decorators) ENABLED START #
+    # PROTECTED REGION END #    //  CspSubelementSubarray.test_assignResourcesMeasuredDuration_decorators
+    def test_assignResourcesMeasuredDuration(self, tango_context):
+        """Test for assignResourcesMeasuredDuration """
+        # PROTECTED REGION ID(CspSubelementSubarray.test_assignResourcesMeasuredDuration) ENABLED START #
+        assert tango_context.device.assignResourcesMeasuredDuration == 0
+        # PROTECTED REGION END #    //  CspSubelementSubarray.test_assignResourcesMeasuredDuration
+
+    # PROTECTED REGION ID(CspSubelementSubarray.test_assignResourcesProgress_decorators) ENABLED START #
+    # PROTECTED REGION END #    //  CspSubelementSubarray.test_assignResourcesProgress_decorators
+    def test_assignResourcesProgress(self, tango_context):
+        """Test for assignResourcesProgress """
+        # PROTECTED REGION ID(CspSubelementSubarray.test_assignResourcesProgress) ENABLED START #
+        assert tango_context.device.assignResourcesProgress == 0
+        # PROTECTED REGION END #    //  CspSubelementSubarray.test_assignResourcesProgress
+
+    # PROTECTED REGION ID(CspSubelementSubarray.test_releaseResourcesMaximumDuration_decorators) ENABLED START #
+    # PROTECTED REGION END #    //  CspSubelementSubarray.test_releaseResourcesMaximumDuration_decorators
+    def test_releaseResourcesMaximumDuration(self, tango_context):
+        """Test for releaseResourcesMaximumDuration """
+        # PROTECTED REGION ID(CspSubelementSubarray.test_releaseResourcesMaximumDuration) ENABLED START #
+        tango_context.device.releaseResourcesMaximumDuration = 5
+        assert tango_context.device.releaseResourcesMaximumDuration == 5
+        # PROTECTED REGION END #    //  CspSubelementSubarray.test_releaseResourcesMaximumDuration
+
+    # PROTECTED REGION ID(CspSubelementSubarray.test_releaseResourcesMeasuredDuration_decorators) ENABLED START #
+    # PROTECTED REGION END #    //  CspSubelementSubarray.test_releaseResourcesMeasuredDuration_decorators
+    def test_releaseResourcesMeasuredDuration(self, tango_context):
+        """Test for releaseResourcesMeasuredDuration """
+        # PROTECTED REGION ID(CspSubelementSubarray.test_releaseResourcesMeasuredDuration) ENABLED START #
+        assert tango_context.device.releaseResourcesMeasuredDuration == 0
+        # PROTECTED REGION END #    //  CspSubelementSubarray.test_releaseResourcesMeasuredDuration
+
+    # PROTECTED REGION ID(CspSubelementSubarray.test_releaseResourcesProgress_decorators) ENABLED START #
+    # PROTECTED REGION END #    //  CspSubelementSubarray.test_releaseResourcesProgress_decorators
+    def test_releaseResourcesProgress(self, tango_context):
+        """Test for releaseResourcesProgress """
+        # PROTECTED REGION ID(CspSubelementSubarray.test_releaseResourcesProgress) ENABLED START #
+        assert tango_context.device.releaseResourcesProgress == 0
+        # PROTECTED REGION END #    //  CspSubelementSubarray.test_releaseResourcesProgress
+
+    # PROTECTED REGION ID(CspSubelementSubarray.test_timeoutExpiredFlag_decorators) ENABLED START #
+    # PROTECTED REGION END #    //  CspSubelementSubarray.test_timeoutExpiredFlag_decorators
+    def test_timeoutExpiredFlag(self, tango_context):
+        """Test for timeoutExpiredFlag """
+        # PROTECTED REGION ID(CspSubelementSubarray.test_timeoutExpiredFlag) ENABLED START #
+        assert tango_context.device.timeoutExpiredFlag == False
+        # PROTECTED REGION END #    //  CspSubelementSubarray.test_timeoutExpiredFlag
+
     # PROTECTED REGION ID(CspSubelementSubarray.test_ConfigureScan_decorators) ENABLED START #
     # PROTECTED REGION END #    //  CspSubelementSubarray.test_ConfigureScan_decorators
     def test_ConfigureScan(self, tango_context, tango_change_event_helper):
@@ -261,6 +347,22 @@ class TestCspSubElementSubarray(object):
         tango_context.device.ConfigureScan('{"id":"sbi-mvp01-20200325-00002"}')
         obs_state_callback.assert_calls([ObsState.IDLE,ObsState.CONFIGURING, ObsState.READY])
         tango_context.device.GoToIdle()
+        obs_state_callback.assert_call(ObsState.IDLE)
+        assert tango_context.device.scanID == 0
+        assert tango_context.device.configurationID == ''
+        # PROTECTED REGION END #    //  CspSubelementSubarray.test_GoToIdle
+
+    # PROTECTED REGION ID(CspSubelementSubarray.test_End_decorators) ENABLED START #
+    # PROTECTED REGION END #    //  CspSubelementSubarray.test_End_decorators
+    def test_End(self, tango_context, tango_change_event_helper):
+        """Test for End"""
+        # PROTECTED REGION ID(CspSubelementSubarray.test_End) ENABLED START #
+        tango_context.device.On()
+        tango_context.device.AssignResources('{"example": [1,2,3]}')
+        obs_state_callback = tango_change_event_helper.subscribe("obsState")
+        tango_context.device.ConfigureScan('{"id":"sbi-mvp01-20200325-00002"}')
+        obs_state_callback.assert_calls([ObsState.IDLE,ObsState.CONFIGURING, ObsState.READY])
+        tango_context.device.End()
         obs_state_callback.assert_call(ObsState.IDLE)
         assert tango_context.device.scanID == 0
         assert tango_context.device.configurationID == ''

@@ -480,10 +480,10 @@ class CspSubElementObsDevice(SKAObsDevice):
                 configuration_dict = json.loads(argin)
                 device._config_id = configuration_dict['id']
                 return (ResultCode.OK, "Configuration validated with success")
-            except KeyError as key_err:
-                msg = f"Key {key_err} not present in scan configuration"
-            except JSONDecodeError as json_err:
-                msg = f"Json decode error: {json_err}"
+            except (KeyError, JSONDecodeError)  as err:
+                msg = "Validate configuration failed with error:{}".format(err)
+            except Exception as other_errs:
+                msg = msg = "Validate configuration failed with unknown error:{}".format(other_errs)
             self.logger.error(msg)
             return (ResultCode.FAILED, msg)
 

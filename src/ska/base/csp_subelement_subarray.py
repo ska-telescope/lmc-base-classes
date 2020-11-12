@@ -440,8 +440,8 @@ class CspSubElementSubarray(SKASubarray):
                 return (ResultCode.OK, "Configuration validated with success")
             except (KeyError, JSONDecodeError) as err:
                 msg = "Validate configuration failed with error:{}".format(err)
-            except Exception as anything_else:
-                msg = "Validate configuration failed with unknown error:{}".format(err)
+            except Exception as other_errs:
+                msg = "Validate configuration failed with unknown error:{}".format(other_errs)
             self.logger.error(msg)
             return (ResultCode.FAILED, msg)
 

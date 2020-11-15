@@ -148,6 +148,31 @@ observations (currently only subarray devices).
   previous demonstrates that the machine has been implemented in
   conformance with ADR-8.
 
+CSP SubElement ObsDevice Observation state machine
+--------------------------------------------------
+This  state machine is implemented for the CSP SubElement devices, different
+from the subarrays, that manage observations.
+
+Compared to the SKA Observation State Machine, it implements a smaller number 
+of states, number that can be further descreased depending on the necessities of the different
+sub-elements.
+
+The implemeted states for the current state machine are:
+
+* IDLE: this is the observing state after the device intialization.
+* CONFIGURING: transitional state to report the device configuration is in progress. 
+  Need to understand if this state is really required by the observing devices of any
+  CSP sub-element.
+* READY: the device is configured and is ready to perform observations
+* SCANNING: the device is performing the observation.
+* ABORTING: the device is processing an abort.
+  Need to understand if this state is really required by the observing devices of any
+  CSP sub-element.
+* ABORTED: the device has completed the abort request. 
+* FAULT: the device has experienced an error from which it can be recovered only via
+  manual intervention invoking a reset command that force the device to the base
+  state (IDLE).
+
 API
 ---
 
@@ -162,4 +187,11 @@ API
     :members:
 
 .. autoclass:: ObservationStateMachine
+    :members:
+
+.. automodule:: ska.base.csp_subelement_state_machine
+    :members:
+    :undoc-members:
+
+.. autoclass:: CspSubElementObsDeviceStateMachine
     :members:

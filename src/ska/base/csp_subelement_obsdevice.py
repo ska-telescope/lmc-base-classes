@@ -161,6 +161,13 @@ class CspSubElementObsDevice(SKAObsDevice):
         doc="Flag reporting if the SDP link is active.\nTrue: active\nFalse:down",
     )
 
+    healthFailureMessage = attribute(
+        dtype='DevString',
+        label="healthFailureMessage",
+        doc="Message providing info about device health failure.",
+    )
+
+
     # ---------------
     # General methods
     # ---------------
@@ -227,6 +234,7 @@ class CspSubElementObsDevice(SKAObsDevice):
 
             device._config_id = ''
             device._last_scan_configuration = ''
+            device._health_failure_msg = ''
 
             message = "CspSubElementObsDevice Init command completed OK"
             device.logger.info(message)
@@ -291,6 +299,13 @@ class CspSubElementObsDevice(SKAObsDevice):
         """Return the sdpLinkActive attribute."""
         return self._sdp_links_active
         # PROTECTED REGION END #    //  CspSubElementObsDevice.sdpLinkActive_read
+
+    def read_healthFailureMessage(self):
+        # PROTECTED REGION ID(CspSubElementObsDevice.healthFailureMessage_read) ENABLED START #
+        """Return the healthFailureMessage attribute."""
+        return self._health_failure_msg
+        # PROTECTED REGION END #    //  CspSubElementObsDevice.healthFailureMessage_read
+
 
     # --------
     # Commands

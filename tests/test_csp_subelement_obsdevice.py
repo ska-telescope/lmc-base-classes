@@ -278,6 +278,14 @@ class TestCspSubElementObsDevice(object):
         assert tango_context.device.sdpLinkCapacity == 0
         # PROTECTED REGION END #    //  CspSubelementObsDevice.test_sdpLinkCapacity
 
+    # PROTECTED REGION ID(CspSubelementObsDevice.test_healthFailureMessage_decorators) ENABLED START #
+    # PROTECTED REGION END #    //  CspSubelementObsDevice.test_healthFailureMessage_decorators
+    def test_healthFailureMessage(self, tango_context):
+        """Test for healthFailureMessage """
+        # PROTECTED REGION ID(CspSubelementObsDevice.test_healthFailureMessage) ENABLED START #
+        assert tango_context.device.healthFailureMessage == ''
+        # PROTECTED REGION END #    //  CspSubelementObsDevice.test_healthFailureMessage
+
     # PROTECTED REGION ID(CspSubelementObsDevice.test_ConfigureScan_decorators) ENABLED START #
     # PROTECTED REGION END #    //  CspSubelementObsDevice.test_ConfigureScan_decorators
     def test_ConfigureScan(self, tango_context, tango_change_event_helper):

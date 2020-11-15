@@ -33,16 +33,6 @@ __all__ = ["CspSubElementMaster", "main"]
 class CspSubElementMaster(SKAMaster):
     """
     Master device for SKA CSP Subelement.
-
-    **Properties:**
-
-    - Device Property
-        PowerDelayStandbyOn
-            - Delay in sec between  power-up stages in Standby<-> On\ntransitions.
-            - Type:'DevFloat'
-        PowerDelayStandByOff
-            - Delay in sec between  power-up stages in Standby-> Off\ntransition.
-            - Type:'DevFloat'
     """
 
     # PROTECTED REGION ID(CspSubElementMaster.class_variable) ENABLED START #
@@ -401,7 +391,6 @@ class CspSubElementMaster(SKAMaster):
         """
         A class for the CspSubElementMaster's LoadFirmware command.
         """
-
         def do(self, argin):
             """
             Stateless hook for device LoadFirmware() command.
@@ -421,9 +410,9 @@ class CspSubElementMaster(SKAMaster):
             The master device has to be in OFF/MAINTENACE to process the
             LoadFirmware command.
             
-            : raises: ``CommandError`` if command not allowed 
-            : return: ``True`` if the command is allowed.
-            : rtype: boolean
+            :raises: ``CommandError`` if command not allowed 
+            :return: ``True`` if the command is allowed.
+            :rtype: boolean
             """
             if (self.state_model.op_state == tango.DevState.OFF
                     and self.state_model.admin_mode == AdminMode.MAINTENANCE):
@@ -559,15 +548,13 @@ class CspSubElementMaster(SKAMaster):
         a restart so that a Component initializes using a newly 
         deployed version.
 
-        :param argin: 
-            A list of three strings:
+        :param argin: A list of three strings:
             - The file name or a pointer to the filename specified as URL. 
             - the list of components that use software or firmware package (file),
             - checksum or signing
             Ex: ['file://firmware.txt','test/dev/1, test/dev/2, test/dev/3', 
-                 '918698a7fea3fa9da5996db001d33628'] 
+            '918698a7fea3fa9da5996db001d33628'] 
         :type argin: 'DevVarStringArray'
-
         :return: A tuple containing a return code and a string
             message indicating status. The message is for
             information purpose only.

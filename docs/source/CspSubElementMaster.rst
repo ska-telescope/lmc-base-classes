@@ -5,6 +5,7 @@
 
 SKA CSP Sub-element Master
 ============================================
+This module implements a general Master device for a CSP Sub-element.
 
 .. toctree::
    :maxdepth: 2

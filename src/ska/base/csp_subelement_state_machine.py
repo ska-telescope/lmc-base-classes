@@ -1,15 +1,16 @@
 """
-This module contains specifications of SKA state machines.
+This module contains specifications of the CSP SubElement Observing state machine.
 """
 from transitions import State
 from transitions.extensions import LockedMachine as Machine
 
-__all__ = ["CspObservationStateMachine"]
+__all__ = ["CspSubElementObsDeviceStateMachine"]
 
-class CspObservationStateMachine(Machine):
+
+class CspSubElementObsDeviceStateMachine(Machine):
     """
     The observation state machine used by a generic CSP 
-    Sub-element observing device.
+    Sub-element ObsDevice (derived from SKAObsDevice).
     """
 
     def __init__(self, callback=None, **extra_kwargs):
@@ -54,7 +55,22 @@ class CspObservationStateMachine(Machine):
                 "dest": "FAULT",
             },
             {
+                "source": "CONFIGURING",
+                "trigger": "configure_rejected",
+                "dest": "READY",
+            },
+            {
+                "source": "CONFIGURING",
+                "trigger": "configure_rejected_to_idle",
+                "dest": "IDLE",
+            },
+            {
                 "source": "READY",
+                "trigger": "end_succeeded",
+                "dest": "IDLE",
+            },
+            {
+                "source": "IDLE",
                 "trigger": "end_succeeded",
                 "dest": "IDLE",
             },
@@ -71,6 +87,11 @@ class CspObservationStateMachine(Machine):
             {
                 "source": "SCANNING",
                 "trigger": "scan_succeeded",
+                "dest": "READY",
+            },
+            {
+                "source": "SCANNING",
+                "trigger": "scan_rejected",
                 "dest": "READY",
             },
             {
@@ -136,3 +157,4 @@ class CspObservationStateMachine(Machine):
         """
         if self._callback is not None:
             self._callback(self.state)
+

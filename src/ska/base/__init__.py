@@ -14,6 +14,8 @@ __all__ = (
     "SKASubarrayResourceManager",
     "SKATelState",
     "ObsDeviceStateModel",
+    "csp_commands",
+    "csp_subelement_state_machine",
     "CspSubElementMaster",
     "CspSubElementObsDevice",
     "CspSubElementObsDeviceStateModel",

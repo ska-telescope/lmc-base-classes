@@ -25,6 +25,21 @@
             "trigger": "fatal_error"
         },
         {
+            "from": "IDLE",
+            "to": "IDLE",
+            "trigger": "end_succeeded"
+        },
+        {
+            "from": "CONFIGURING",
+            "to": "IDLE",
+            "trigger": "configure_rejected_to_idle"
+        },
+        {
+            "from": "CONFIGURING",
+            "to": "READY",
+            "trigger": "configure_rejected"
+        },
+        {
             "from": "CONFIGURING",
             "to": "READY",
             "trigger": "configure_succeeded"

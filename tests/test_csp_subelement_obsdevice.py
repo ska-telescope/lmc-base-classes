@@ -126,7 +126,7 @@ class TestCspSubElementObsDevice(object):
         'SkaLevel': '4',
         'LoggingTargetsDefault': '',
         'GroupDefinitions': '',
-        'DeviceId': '11',
+        'DeviceID': 11,
         }
 
     @classmethod
@@ -171,7 +171,8 @@ class TestCspSubElementObsDevice(object):
         assert (re.match(versionPattern, versionInfo[0])) is not None
         # PROTECTED REGION END #    //  CspSubelementObsDevice.test_GetVersionInfo
 
-    # PROTECTED REGION ID(CspSubelementObsDevice.test_configurationProgress_decorators) ENABLED START #
+    # PROTECTED REGION ID(CspSubelementObsDevice.test_buildState_decorators) ENABLED START #
+    # PROTECTED REGION END #    //  CspSubelementObsDevice.test_buildState_decorators
     def test_buildState(self, tango_context):
         """Test for buildState"""
         # PROTECTED REGION ID(CspSubelementObsDevice.test_buildState) ENABLED START #
@@ -238,6 +239,14 @@ class TestCspSubElementObsDevice(object):
         assert tango_context.device.scanID == 0
         # PROTECTED REGION END #    //  CspSubelementObsDevice.test_scanID
 
+    # PROTECTED REGION ID(CspSubelementObsDevice.test_deviceID_decorators) ENABLED START #
+    # PROTECTED REGION END #    //  CspSubelementObsDevice.test_deviceID_decorators
+    def test_deviceID(self, tango_context):
+        """Test for deviceID"""
+        # PROTECTED REGION ID(CspSubelementObsDevice.test_scanID) ENABLED START #
+        assert tango_context.device.deviceID == self.properties['DeviceID']
+        # PROTECTED REGION END #    //  CspSubelementObsDevice.test_scanID
+
     # PROTECTED REGION ID(CspSubelementObsDevice.test_sdpDestinationAddresses_decorators) ENABLED START #
     # PROTECTED REGION END #    //  CspSubelementObsDevice.test_sdpDestinationAddresses_decorators
     def test_sdpDestinationAddresses(self, tango_context):
@@ -294,19 +303,39 @@ class TestCspSubElementObsDevice(object):
         assert "Error executing command ConfigureScanCommand" in str(df.value.args[0].desc)
         # PROTECTED REGION END #    //  CspSubelementObsDevice.test_ConfigureScan_when_in_wrong_state
 
-    # PROTECTED REGION ID(CspSubelementObsDevice.test_ConfigureScan_with_wrong_configId_key_decorators) ENABLED START #
-    # PROTECTED REGION END #    //  CspSubelementObsDevice.test_ConfigureScan_with_wrong_configId_key_decorators
-    def test_ConfigureScan_with_wrong_configId_key(self, tango_context):
-        """Test for ConfigureScan when json configuration specifies a wrong key for 
-           configuration ID
+    # PROTECTED REGION ID(CspSubelementObsDevice.test_ConfigureScan_with_wrong_input_args_when_idle_decorators) ENABLED START #
+    # PROTECTED REGION END #    //  CspSubelementObsDevice.test_ConfigureScan_with_wrong_input_args_when_idle_decorators
+    def test_ConfigureScan_with_wrong_input_args_when_idle(self, tango_context):
+        """Test for ConfigureScan when input argument specifies a wrong json configuration
+           and the device is in IDLE state.
         """
-        # PROTECTED REGION ID(CspSubelementObsDevice.test_ConfigureScan_with_wrong_configId_key) ENABLED START #
+        # PROTECTED REGION ID(CspSubelementObsDevice.test_ConfigureScan_with_wrong_input_args_when_idle) ENABLED START #
         tango_context.device.On()
+        init_obs_state = tango_context.device.obsState
         # wrong configurationID key
         wrong_configuration = '{"subid":"sbi-mvp01-20200325-00002"}'
-        result_code, msg = tango_context.device.ConfigureScan(wrong_configuration)
-        assert result_code == ResultCode.FAILED
-        # PROTECTED REGION END #    //  CspSubelementObsDevice.test_ConfigureScan_with_wrong_configId_key
+        with pytest.raises(DevFailed) as df:
+            tango_context.device.ConfigureScan(wrong_configuration)
+        assert tango_context.device.obsState == init_obs_state
+        # PROTECTED REGION END #    //  CspSubelementObsDevice.test_ConfigureScan_with_wrong_input_args_when_idle
+
+    # PROTECTED REGION ID(CspSubelementObsDevice.test_ConfigureScan_with_wrong_input_args_when_ready_decorators) ENABLED START #
+    # PROTECTED REGION END #    //  CspSubelementObsDevice.test_ConfigureScan_with_wrong_configId_key_decorators
+    def test_ConfigureScan_with_wrong_input_args_when_ready(self, tango_context):
+        """Test for ConfigureScan when json configuration specifies a wrong data and the device is
+           in ON/READY state.
+        """
+        # PROTECTED REGION ID(CspSubelementObsDevice.test_ConfigureScan_with_wrong_input_args_when_ready) ENABLED START #
+        tango_context.device.On()
+        # wrong configurationID key
+        valid_configuration = '{"id":"sbi-mvp01-20200325-00002"}'
+        tango_context.device.ConfigureScan(valid_configuration)
+        current_obs_state = tango_context.device.obsState
+        wrong_configuration = '{"subid":"sbi-mvp01-20200325-00002"}'
+        with pytest.raises(DevFailed) as df:
+            tango_context.device.ConfigureScan(wrong_configuration)
+        assert tango_context.device.obsState == current_obs_state
+        # PROTECTED REGION END #    //  CspSubelementObsDevice.test_ConfigureScan_with_wrong_input_args_when_ready
 
     # PROTECTED REGION ID(CspSubelementObsDevice.test_ConfigureScan_with_json_syntax_error) ENABLED START #
     # PROTECTED REGION END #    //  CspSubelementObsDevice.test_ConfigureScan_with_json_syntax_error_decorators
@@ -314,8 +343,11 @@ class TestCspSubElementObsDevice(object):
         """Test for ConfigureScan when syntax error in json configuration """
         # PROTECTED REGION ID(CspSubelementObsDevice.test_ConfigureScan_with_json_syntax_error) ENABLED START #
         tango_context.device.On()
-        result_code, msg = tango_context.device.ConfigureScan('{"foo": 1,}')
-        assert result_code == ResultCode.FAILED
+        init_obs_state = tango_context.device.obsState
+        with pytest.raises(DevFailed) as df:
+            tango_context.device.ConfigureScan('{"foo": 1,}')
+        assert tango_context.device.obsState == init_obs_state
+        assert tango_context.device.obsState != ObsState.FAULT
         # PROTECTED REGION END #    //  CspSubelementObsDevice.test_ConfigureScan_with_json_syntax_error
 
     # PROTECTED REGION ID(CspSubelementObsDevice.test_GoToIdle_decorators) ENABLED START #
@@ -377,9 +409,11 @@ class TestCspSubElementObsDevice(object):
         # Set the device in ON/IDLE state
         tango_context.device.On()
         tango_context.device.ConfigureScan('{"id":"sbi-mvp01-20200325-00002"}')
-        result_code, msg = tango_context.device.Scan('abc')
-        assert result_code == ResultCode.FAILED
-        # PROTECTED REGION END #    //  CspSubelementObsDevice.test_Scan_when_in_wrong_state
+        current_obs_state = tango_context.device.obsState
+        with pytest.raises(DevFailed) as df:
+            tango_context.device.Scan('abc')
+        assert tango_context.device.obsState == current_obs_state
+        # PROTECTED REGION END #    //  CspSubelementObsDevice.test_Scan_with_wrong_argument
 
     # PROTECTED REGION ID(CspSubelementObsDevice.test_EndScan_decorators) ENABLED START #
     # PROTECTED REGION END #    //  CspSubelementObsDevice.test_EndScan_decorators

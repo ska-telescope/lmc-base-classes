@@ -21,153 +21,13 @@ from tango.server import run, attribute, command, device_property
 
 # SKA specific imports
 from ska.base import SKAObsDevice, ObsDeviceStateModel
-from ska.base.commands import ResultCode, ResponseCommand, ActionCommand
+from ska.base.commands import ResultCode, ActionCommand
+from ska.base.csp_commands import  InputValidatedCommand
 from ska.base.control_model import ObsState
-#from ska.base.csp_subelement_state_machine import CspObservationStateMachine
-from ska.base.faults import StateModelError
+from ska.base.faults import CommandError
+from ska.base.csp_subelement_state_machine import CspSubElementObsDeviceStateMachine
 
-# State Machine imports
-from transitions import State
-from transitions.extensions import LockedMachine as Machine
-# PROTECTED REGION END #    //  CspSubElementObsDevice.additionnal_import
-
-__all__ = ["CspSubElementObsDevice", 
-           "CspSubElementObsDeviceStateModel", 
-           "CspSubElementObsDeviceStateMachine",
-           "main"
-          ]
-
-
-class CspSubElementObsDeviceStateMachine(Machine):
-    """
-    The observation state machine used by a generic CSP 
-    Sub-element ObsDevice (derived from SKAObsDevice).
-    """
-
-    def __init__(self, callback=None, **extra_kwargs):
-        """
-        Initialises the model.
-
-        :param callback: A callback to be called when the state changes
-        :type callback: callable
-        :param extra_kwargs: Additional keywords arguments to pass to super class
-            initialiser (useful for graphing)
-        """
-        self._callback = callback
-
-        states = [
-            "IDLE",
-            "CONFIGURING",
-            "READY",
-            "SCANNING",
-            "ABORTING",
-            "ABORTED",
-            "FAULT",
-        ]
-        transitions = [
-            {
-                "source": "*",
-                "trigger": "fatal_error",
-                "dest": "FAULT",
-            },
-            {
-                "source": ["IDLE", "READY"],
-                "trigger": "configure_started",
-                "dest": "CONFIGURING",
-            },
-            {
-                "source": "CONFIGURING",
-                "trigger": "configure_succeeded",
-                "dest": "READY",
-            },
-            {
-                "source": "CONFIGURING",
-                "trigger": "configure_failed",
-                "dest": "FAULT",
-            },
-            {
-                "source": "READY",
-                "trigger": "end_succeeded",
-                "dest": "IDLE",
-            },
-            {
-                "source": "READY",
-                "trigger": "end_failed",
-                "dest": "FAULT",
-            },
-            {
-                "source": "READY",
-                "trigger": "scan_started",
-                "dest": "SCANNING",
-            },
-            {
-                "source": "SCANNING",
-                "trigger": "scan_succeeded",
-                "dest": "READY",
-            },
-            {
-                "source": "SCANNING",
-                "trigger": "scan_failed",
-                "dest": "FAULT",
-            },
-            {
-                "source": "SCANNING",
-                "trigger": "end_scan_succeeded",
-                "dest": "READY",
-            },
-            {
-                "source": "SCANNING",
-                "trigger": "end_scan_failed",
-                "dest": "FAULT",
-            },
-            {
-                "source": [
-                    "CONFIGURING",
-                    "READY",
-                    "SCANNING",
-                    "IDLE",
-                ],
-                "trigger": "abort_started",
-                "dest": "ABORTING",
-            },
-            {
-                "source": "ABORTING",
-                "trigger": "abort_succeeded",
-                "dest": "ABORTED",
-            },
-            {
-                "source": "ABORTING",
-                "trigger": "abort_failed",
-                "dest": "FAULT",
-            },
-            {
-                "source": ["ABORTED", "FAULT"],
-                "trigger": "reset_succeeded",
-                "dest": "IDLE",
-            },
-            {
-                "source": ["ABORTED", "FAULT"],
-                "trigger": "reset_failed",
-                "dest": "FAULT",
-            },
-        ]
-
-        super().__init__(
-            states=states,
-            initial="IDLE",
-            transitions=transitions,
-            after_state_change=self._state_changed,
-            **extra_kwargs,
-        )
-        self._state_changed()
-
-    def _state_changed(self):
-        """
-        State machine callback that is called every time the obs_state
-        changes. Responsible for ensuring that callbacks are called.
-        """
-        if self._callback is not None:
-            self._callback(self.state)
+__all__ = ["CspSubElementObsDevice", "CspSubElementObsDeviceStateModel", "main"]
 
 class CspSubElementObsDeviceStateModel(ObsDeviceStateModel):
     """
@@ -203,8 +63,11 @@ class CspSubElementObsDeviceStateModel(ObsDeviceStateModel):
             "configure_started": ("configure_started", None),
             "configure_succeeded": ("configure_succeeded", None),
             "configure_failed": ("configure_failed", None),
+            "configure_rejected_to_idle": ("configure_rejected_to_idle", None),
+            "configure_rejected": ("configure_rejected", None),
             "scan_started": ("scan_started", None),
             "scan_succeeded": ("scan_succeeded", None),
+            "scan_rejected": ("scan_rejected", None),
             "scan_failed": ("scan_failed", None),
             "end_scan_succeeded": ("end_scan_succeeded", None),
             "end_scan_failed": ("end_scan_failed", None),
@@ -245,7 +108,7 @@ class CspSubElementObsDevice(SKAObsDevice):
     # -----------------
 
     DeviceID = device_property(
-        dtype='DevUShort',
+        dtype='DevUShort', default_value=1
     )
 
     # ----------
@@ -262,6 +125,12 @@ class CspSubElementObsDevice(SKAObsDevice):
         dtype='DevString',
         label="configurationID",
         doc="The configuration ID specified into the JSON configuration.",
+    )
+
+    deviceID = attribute(
+        dtype='DevUShort',
+        label="deviceID",
+        doc="The observing device ID.",
     )
 
     lastScanConfiguration = attribute(
@@ -393,6 +262,12 @@ class CspSubElementObsDevice(SKAObsDevice):
         return self._config_id
         # PROTECTED REGION END #    //  CspSubElementObsDevice.configurationID_read
 
+    def read_deviceID(self):
+        # PROTECTED REGION ID(CspSubElementObsDevice.deviceID_read) ENABLED START #
+        """Return the deviceID attribute."""
+        return self.DeviceID
+        # PROTECTED REGION END #    //  CspSubElementObsDevice.deviceID_read
+
     def read_lastScanConfiguration(self):
         # PROTECTED REGION ID(CspSubElementObsDevice.lastScanConfiguration_read) ENABLED START #
         """Return the lastScanConfiguration attribute."""
@@ -420,8 +295,9 @@ class CspSubElementObsDevice(SKAObsDevice):
     # --------
     # Commands
     # --------
-
-    class ConfigureScanCommand(ActionCommand):
+    
+    
+    class ConfigureScanCommand(InputValidatedCommand):
         """
         A class for the CspSubElementObsDevices's ConfigureScan command.
         """
@@ -457,37 +333,44 @@ class CspSubElementObsDevice(SKAObsDevice):
                 message indicating status. The message is for
                 information purpose only.
             :rtype: (ResultCode, str)
+            :raises: ``CommandError`` if the configuration data validation fails. 
             """
             device = self.target
-            result_code, msg = self.validate_configuration_data(argin)
-            if result_code == ResultCode.FAILED:
-                return (result_code, msg)
             # store the configuration on command success
             device._last_scan_configuration = argin
             return (ResultCode.OK, "Configure command completed OK")
 
-        def validate_configuration_data(self, argin):
+        def validate_input(self, argin):
             """
             Validate the configuration parameters against allowed values, as needed.
-            :param argin:
-                The JSON formatted string with configuration for the device.
-            : type argin: 'DevString'
-            :return: A tuple containing a return code and a string message.
+            The developer is free to return a FAULT code or raise an exception taking into
+            account that in the first case the observing state of the device transits
+            to FAULT while in the second case it is restored the observing state of the device
+            as it was before the command was invoked.
+
+            :param argin: The JSON formatted string with configuration for the device.
+            :type argin: 'DevString'
+            :return: A tuple containing a return code and a string message. 
             :rtype: (ResultCode, str)
+            :raises: ``CommandError`` exception when wrong type or range values are specified for
+                the configuration data. In this case the device restores the observing
+                state before command was invoked.
             """
             device = self.target
             try: 
                 configuration_dict = json.loads(argin)
                 device._config_id = configuration_dict['id']
-                return (ResultCode.OK, "Configuration validated with success")
+                # call the method to validate the data sent with
+                # the configuration, as needed.
+                return (ResultCode.OK, "ConfigureScan arguments validation successfull")
             except (KeyError, JSONDecodeError)  as err:
                 msg = "Validate configuration failed with error:{}".format(err)
             except Exception as other_errs:
-                msg = msg = "Validate configuration failed with unknown error:{}".format(other_errs)
-            self.logger.error(msg)
-            return (ResultCode.FAILED, msg)
+                msg = "Validate configuration failed with unknown error:{}".format(other_errs)
+                self.logger.error(msg)
+            raise CommandError(msg)
 
-    class ScanCommand(ActionCommand):
+    class ScanCommand(InputValidatedCommand):
         """
         A class for the CspSubElementObsDevices's Scan command.
         """
@@ -525,12 +408,27 @@ class CspSubElementObsDevice(SKAObsDevice):
             :rtype: (ResultCode, str)
             """
             device = self.target
+            device._scan_id = int(argin)
+            return (ResultCode.STARTED, "Scan command started")
+
+        def validate_input(self, argin):
+            """
+            Validate the command input argument.
+
+            :param argin: the scan id
+            :type argin: string
+            :return: A tuple containing a return code and a string
+                message indicating status. The message is for
+                information purpose only.
+            :rtype: (ResultCode, str)
+            :raises: ``CommandError`` exception when wrong type or value arguments
+                are specified.
+            """
             if not argin.isdigit():
                 msg = f"Input argument '{argin}' is not an integer" 
                 self.logger.error(msg)
-                return (ResultCode.FAILED, msg)
-            device._scan_id = int(argin)
-            return (ResultCode.STARTED, "Scan command started")
+                raise CommandError(msg)
+            return (ResultCode.OK, "Scan arguments validation successfull")
         
     class EndScanCommand(ActionCommand):
         """
@@ -603,12 +501,14 @@ class CspSubElementObsDevice(SKAObsDevice):
             :rtype: (ResultCode, str)
             """
             device = self.target
+            if device.state_model.obs_state == ObsState.IDLE:
+                return (ResultCode.OK, "GoToIdle command completed OK. Device already IDLE")
             # reset to default values the configurationID and scanID
             device._config_id = ''
             device._scan_id = 0
+            device._last_scan_configuration = ''
             return (ResultCode.OK, "GoToIdle command completed OK")
         
-
     class ObsResetCommand(ActionCommand):
         """
         A class for the CspSubElementObsDevices's ObsReset command.
@@ -700,8 +600,7 @@ class CspSubElementObsDevice(SKAObsDevice):
         :param argin: JSON formatted string with the scan configuration.
         :type argin: 'DevString'
 
-        :return:
-            A tuple containing a return code and a string message indicating status. 
+        :return: A tuple containing a return code and a string message indicating status.
             The message is for information purpose only.
         :rtype: (ResultCode, str)
         """
@@ -726,8 +625,7 @@ class CspSubElementObsDevice(SKAObsDevice):
         :param argin: A string with the scan ID
         :type argin: 'DevString'
 
-        :return:
-            A tuple containing a return code and a string message indicating status.
+        :return: A tuple containing a return code and a string message indicating status.
             The message is for information purpose only.
         :rtype: (ResultCode, str)
         """
@@ -747,8 +645,7 @@ class CspSubElementObsDevice(SKAObsDevice):
         """
         End a running scan.
 
-        :return:'DevVarLongStringArray'
-            A tuple containing a return code and a string message indicating status.
+        :return: A tuple containing a return code and a string message indicating status.
             The message is for information purpose only.
         :rtype: (ResultCode, str)
         """
@@ -768,8 +665,7 @@ class CspSubElementObsDevice(SKAObsDevice):
         """
         Transit the device from READY to IDLE obsState.
 
-        :return:
-            A tuple containing a return code and a string  message indicating status.
+        :return: A tuple containing a return code and a string  message indicating status.
             The message is for information purpose only.
         :rtype: (ResultCode, str)
         """
@@ -789,8 +685,7 @@ class CspSubElementObsDevice(SKAObsDevice):
         """
         Reset the observing device from a FAULT/ABORTED obsState to IDLE.
 
-        :return:
-            A tuple containing a return code and a string message indicating status.
+        :return: A tuple containing a return code and a string message indicating status.
             The message is for information purpose only.
         :rtype: (ResultCode, str)
         """
@@ -811,8 +706,7 @@ class CspSubElementObsDevice(SKAObsDevice):
         Abort the current observing process and move the device
         to ABORTED obsState.
 
-        :return:
-            A tuple containing a return code and a string message indicating status.
+        :return: A tuple containing a return code and a string message indicating status.
             The message is for information purpose only.
         :rtype: (ResultCode, str)
         """

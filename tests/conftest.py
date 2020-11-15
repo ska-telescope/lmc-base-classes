@@ -309,6 +309,10 @@ def tango_context(request):
             'PowerDelayStandbyOn': '1.5',
             'PowerDelayStandbyOff': '1.0',
         },
+
+        'CspSubElementObsDevice': {
+            'DeviceID': '11',
+        },
     }
 
     # This fixture is used to decorate classes like "TestSKABaseDevice" or

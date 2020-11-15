@@ -4,7 +4,7 @@ Module to test the transitions of a CSP SubElement ObsDevice
 """
 import pytest
 
-from ska.base.csp_subelement_obsdevice import (
+from ska.base.csp_subelement_state_machine import (
     CspSubElementObsDeviceStateMachine,
 )
 from .conftest import load_state_machine_spec, TransitionsStateMachineTester

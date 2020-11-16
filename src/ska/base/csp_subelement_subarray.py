@@ -38,10 +38,6 @@ __all__ = ["CspSubElementSubarray", "main"]
 class CspSubElementSubarray(SKASubarray):
     """
     Subarray device for SKA CSP SubElement
-
-    **Properties:**
-
-    - Device Property
     """
     # PROTECTED REGION ID(CspSubElementSubarray.class_variable) ENABLED START #
     # PROTECTED REGION END #    //  CspSubElementSubarray.class_variable
@@ -232,7 +228,7 @@ class CspSubElementSubarray(SKASubarray):
             # configure the flag to push event from the device server
             device.set_change_event('timeoutExpiredFlag', True, True)
             
-            message = "CspSubElementSubarray Init comma,nd completed OK"
+            message = "CspSubElementSubarray Init command completed OK"
             device.logger.info(message)
             return (ResultCode.OK, message)
 
@@ -305,7 +301,7 @@ class CspSubElementSubarray(SKASubarray):
     def read_configureScanMeasuredDuration(self):
         # PROTECTED REGION ID(CspSubElementSubarray.configureScanMeasuredDuration_read) ENABLED START #
         """Return the configureScanMeasuredDuration attribute."""
-        return 0.0
+        return self._cmd_measured_duration['configurescan']
         # PROTECTED REGION END #    //  CspSubElementSubarray.configureScanMeasuredDuration_read
         
     def read_listOfDevicesCompletedTasks(self):
@@ -427,9 +423,8 @@ class CspSubElementSubarray(SKASubarray):
         def validate_configuration_data(self, argin):
             """
             Validate the configuration parameters against allowed values, as needed.
-            :param argin:
-                The JSON formatted string with configuration for the device.
-            : type argin: 'DevString'
+            :param argin: The JSON formatted string with configuration for the device.
+            :type argin: 'DevString'
             :return: A tuple containing a return code and a string message.
             :rtype: (ResultCode, str)
             """

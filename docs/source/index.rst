@@ -21,6 +21,7 @@ Welcome to LMC Base Classes documentation!
    Device:  SKA Subarray<SKASubarray>
 
    Device:  SKA CSP Sub-element Master<CspSubElementMaster>
+   Device:  SKA CSP Sub-element Subarray<CspSubElementSubarray>
 
    SKA Control Model<Control_Model>
    SKA Commands<Commands>

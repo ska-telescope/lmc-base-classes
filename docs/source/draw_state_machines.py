@@ -23,11 +23,14 @@ from transitions.extensions import GraphMachine
 # local import, so we can run this without installing the whole package
 sys.path.append("../../src/ska/base")
 import state_machine
+import csp_subelement_state_machine
 
 
 def patch_in_graph_machine():
-    with mock.patch("transitions.Machine", GraphMachine):
+    with mock.patch("transitions.extensions.LockedMachine", GraphMachine):
         mod = sys.modules["state_machine"]
+        importlib.reload(mod)
+        mod = sys.modules["csp_subelement_state_machine"]
         importlib.reload(mod)
 
 
@@ -48,3 +51,4 @@ if __name__ == "__main__":
     draw(state_machine.OperationStateMachine)
     draw(state_machine.AdminModeStateMachine)
     draw(state_machine.ObservationStateMachine)
+    draw(csp_subelement_state_machine.CspSubElementObsDeviceStateMachine)

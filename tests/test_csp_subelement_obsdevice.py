@@ -21,11 +21,10 @@ from tango.test_context import MultiDeviceTestContext
 # PROTECTED REGION ID(CspSubelementObsDevice.test_additional_imports) ENABLED START #
 from ska.base import SKAObsDevice, CspSubElementObsDevice, CspSubElementObsDeviceStateModel
 from ska.base.commands import ResultCode
-from ska.base.faults import StateModelError
 from ska.base.control_model import (
     ObsState, AdminMode, ControlMode, HealthState, SimulationMode, TestMode
 )
-from .conftest import load_state_machine_spec, StateMachineTester
+from .conftest import load_state_machine_spec, ModelStateMachineTester
 # PROTECTED REGION END #    //  CspSubElementObsDevice.test_additional_imports
 
 
@@ -42,7 +41,7 @@ def csp_subelement_obsdevice_state_model():
 
 
 @pytest.mark.state_machine_tester(load_state_machine_spec("csp_subelement_obsdevice_state_machine"))
-class TestCspSubElementObsDeviceStateModel(StateMachineTester):
+class TestCspSubElementObsDeviceStateModel(ModelStateMachineTester):
     """
     This class contains the test for the SKASubarrayStateModel class.
     """
@@ -69,54 +68,6 @@ class TestCspSubElementObsDeviceStateModel(StateMachineTester):
         assert machine.admin_mode == state["admin_mode"]
         assert machine.op_state == state["op_state"]
         assert machine.obs_state == state["obs_state"]
-
-    def is_action_allowed(self, machine, action):
-        """
-        Returns whether the state machine under state thinks an action
-        is permitted in its current state
-
-        :param machine: the state machine under test
-        :type machine: state machine object instance
-        :param action: action to be performed on the state machine
-        :type action: str
-        """
-        return machine.is_action_allowed(action)
-
-    def perform_action(self, machine, action):
-        """
-        Perform a given action on the state machine under test.
-
-        :param machine: the state machine under test
-        :type machine: state machine object instance
-        :param action: action to be performed on the state machine
-        :type action: str
-        """
-        machine.perform_action(action)
-
-    def check_action_fails(self, machine, action):
-        """
-        Assert that attempting a given action on the state machine under
-        test fails in its current state.
-
-        :param machine: the state machine under test
-        :type machine: state machine object instance
-        :param action: action to be performed on the state machine
-        :type action: str
-        """
-        with pytest.raises(StateModelError):
-            self.perform_action(machine, action)
-
-    def to_state(self, machine, target_state):
-        """
-        Transition the state machine to a target state.
-
-        :param machine: the state machine under test
-        :type machine: state machine object instance
-        :param target_state: the state that we want to get the state
-            machine under test into
-        :type target_state: str
-        """
-        machine._straight_to_state(**target_state)
 
 
 class TestCspSubElementObsDevice(object):

@@ -32,9 +32,9 @@ from ska.base.base_device import (
     DeviceStateModel,
     TangoLoggingServiceHandler,
 )
-from ska.base.faults import CommandError, StateModelError
+from ska.base.faults import CommandError
 
-from .conftest import load_state_machine_spec, StateMachineTester
+from .conftest import load_state_machine_spec, ModelStateMachineTester
 
 # PROTECTED REGION END #    //  SKABaseDevice.test_additional_imports
 # Device test case
@@ -336,7 +336,7 @@ def device_state_model():
 
 
 @pytest.mark.state_machine_tester(load_state_machine_spec("device_state_machine"))
-class TestDeviceStateModel(StateMachineTester):
+class TestDeviceStateModel(ModelStateMachineTester):
     """
     This class contains the test suite for the ska.base.SKABaseDevice class.
     """
@@ -364,54 +364,6 @@ class TestDeviceStateModel(StateMachineTester):
         """
         assert machine.admin_mode == state["admin_mode"]
         assert machine.op_state == state["op_state"]
-
-    def is_action_allowed(self, machine, action):
-        """
-        Returns whether the state machine under test thinks an action
-        is permitted in its current state
-
-        :param machine: the state machine under test
-        :type machine: state machine object instance
-        :param action: action to be performed on the state machine
-        :type action: str
-        """
-        return machine.is_action_allowed(action)
-
-    def perform_action(self, machine, action):
-        """
-        Perform a given action on the state machine under test.
-
-        :param machine: the state machine under test
-        :type machine: state machine object instance
-        :param action: action to be performed on the state machine
-        :type action: str
-        """
-        machine.perform_action(action)
-
-    def check_action_fails(self, machine, action):
-        """
-        Assert that performing a given action on the state maching under
-        test fails in its current state.
-
-        :param machine: the state machine under test
-        :type machine: state machine object instance
-        :param action: action to be performed on the state machine
-        :type action: str
-        """
-        with pytest.raises(StateModelError):
-            self.perform_action(machine, action)
-
-    def to_state(self, machine, target_state):
-        """
-        Transition the state machine to a target state.
-
-        :param machine: the state machine under test
-        :type machine: state machine object instance
-        :param target_state: the state that we want to get the state
-            machine under test into
-        :type target_state: dict
-        """
-        machine._straight_to_state(**target_state)
 
 
 # PROTECTED REGION END #    //  SKABaseDevice.test_SKABaseDevice_decorators

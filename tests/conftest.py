@@ -13,6 +13,7 @@ from tango import DevState, EventType
 from tango.test_context import DeviceTestContext
 
 from ska.base.control_model import AdminMode, ObsState
+from ska.base.faults import StateModelError
 
 
 def pytest_configure(config):
@@ -245,6 +246,77 @@ class TransitionsStateMachineTester(StateMachineTester):
         :type target_state: str
         """
         machine.trigger(f"to_{target_state}")
+
+
+class ModelStateMachineTester(StateMachineTester):
+    """
+    Abstract base class for a class for testing state models using state machines.
+
+    The ``assert_state`` method has to be implemented in concrete classes,
+    and the `machine` fixture must also be provided.
+    """
+
+    def assert_state(self, machine, state):
+        """
+        Assert the current state of this state machine, based on the
+        values of the adminMode, opState and obsState attributes of this
+        model.
+
+        :param machine: the state machine under test
+        :type machine: state machine object instance
+        :param state: the state that we are asserting to be the current
+            state of the state machine under test
+        :type state: dict
+        """
+        raise NotImplementedError()
+
+    def is_action_allowed(self, machine, action):
+        """
+        Returns whether the state machine under test thinks an action
+        is permitted in its current state
+
+        :param machine: the state machine under test
+        :type machine: state machine object instance
+        :param action: action to be performed on the state machine
+        :type action: str
+        """
+        return machine.is_action_allowed(action)
+
+    def perform_action(self, machine, action):
+        """
+        Perform a given action on the state machine under test.
+
+        :param machine: the state machine under test
+        :type machine: state machine object instance
+        :param action: action to be performed on the state machine
+        :type action: str
+        """
+        machine.perform_action(action)
+
+    def check_action_fails(self, machine, action):
+        """
+        Assert that performing a given action on the state maching under
+        test fails in its current state.
+
+        :param machine: the state machine under test
+        :type machine: state machine object instance
+        :param action: action to be performed on the state machine
+        :type action: str
+        """
+        with pytest.raises(StateModelError):
+            self.perform_action(machine, action)
+
+    def to_state(self, machine, target_state):
+        """
+        Transition the state machine to a target state.
+
+        :param machine: the state machine under test
+        :type machine: state machine object instance
+        :param target_state: the state that we want to get the state
+            machine under test into
+        :type target_state: dict
+        """
+        machine._straight_to_state(**target_state)
 
 
 def load_data(name):

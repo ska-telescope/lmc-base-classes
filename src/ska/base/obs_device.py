@@ -31,7 +31,7 @@ __all__ = ["SKAObsDevice", "ObsDeviceStateModel", "main"]
 
 class ObsDeviceStateModel(DeviceStateModel):
     """
-    Implements the state model for the CspSubElementObsDevice
+    Base class for ObsDevice state models
     """
 
     def __init__(
@@ -78,7 +78,7 @@ class ObsDeviceStateModel(DeviceStateModel):
         self._observation_state_machine = obs_machine_class(
             self._update_obs_state
         )
-        self._action_breakdown = action_breakdown
+        self._action_breakdown = dict(action_breakdown)
 
     @property
     def obs_state(self):
@@ -181,11 +181,11 @@ class ObsDeviceStateModel(DeviceStateModel):
         if self._is_obs_action_allowed(action):
             (obs_action, super_action) = self._action_breakdown[action]
 
-            if obs_action == "to_IDLE":
+            if obs_action.startswith("to_"):
                 message = (
-                    "Changing device state of a non-IDLE observing device "
-                    "should only be done as an emergency measure and may be "
-                    "disallowed in future."
+                    f"Forcing device state of an observing device "
+                    f"should only be done as an emergency measure and may be "
+                    f"disallowed in future (action: {obs_action})."
                 )
                 self.logger.warning(message)
                 warnings.warn(message, PendingDeprecationWarning)
@@ -199,7 +199,7 @@ class ObsDeviceStateModel(DeviceStateModel):
     @for_testing_only
     def _straight_to_state(self, op_state=None, admin_mode=None, obs_state=None):
         """
-        Takes the ObsDEviceStateModel straight to the specified states.
+        Takes the ObsDeviceStateModel straight to the specified states.
         This method exists to simplify testing; for example, if testing
         that a command may be run in a given state, one can push the
         state model straight to that state, rather than having to drive

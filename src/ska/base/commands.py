@@ -40,6 +40,12 @@ class ResultCode(enum.IntEnum):
     """
 
 
+    REJECTED = 5
+    """
+    The command was rejected without performing any action (possibly validation error).
+    """
+
+
 class BaseCommand:
     """
     Abstract base class for Tango device server commands. Ensures the
@@ -169,7 +175,7 @@ class BaseCommand:
 
 class ResponseCommand(BaseCommand):
     """
-    Abstract base class for a tango command handler, for commands that
+    Abstract base class for a Tango command handler, for commands that
     execute a procedure/operation and return a (ResultCode, message)
     tuple.
     """
@@ -217,8 +223,9 @@ class ResponseCommand(BaseCommand):
 
 class ActionCommand(ResponseCommand):
     """
-    Abstract base class for a tango command, which checks a state model
-    to find out whether the command is allowed to be run, and after
+    Abstract base class for a Tango command, which checks a state model
+    to find out whether the command is allowed to be run, performs
+    input validation, if valid then runs the command, and after
     running, sends an action to that state model, thus driving device
     state.
     """
@@ -258,9 +265,12 @@ class ActionCommand(ResponseCommand):
     def __call__(self, argin=None):
         """
         What to do when the command is called. This is implemented to
-        check that the command is allowed to run, then run the command,
-        then send an action to the state model advising whether the
-        command succeeded or failed.
+        check that the command is allowed to run, then validate the input.
+        If valid, then send an action to the state model advising that
+        the command has started.  Next, run the command, and send an action
+        to the state model advising whether the command succeeded or failed.
+        If the input validation fails, the state model is not notified, and
+        the command exits early, indicating that it was rejected.
 
         :param argin: the argument passed to the Tango command, if
             present
@@ -268,8 +278,10 @@ class ActionCommand(ResponseCommand):
         """
         self.check_allowed()
         try:
-            self.started()
-            (return_code, message) = self._call_do(argin)
+            (return_code, message) = self._call_validate_input(argin)
+            if return_code != ResultCode.REJECTED:
+                self.started()
+                (return_code, message) = self._call_do(argin)
             self._returned(return_code)
         except Exception:
             self.logger.exception(
@@ -277,6 +289,26 @@ class ActionCommand(ResponseCommand):
             )
             self.fatal_error()
             raise
+        return (return_code, message)
+
+    def _call_validate_input(self, argin):
+        """
+        Helper method that calls the subclass's ``validate_input`` method,
+        if necessary, and logs the call.
+
+        :param argin: the argument passed to the Tango command, if
+            present
+        :type argin: ANY
+        """
+        if argin is not None:
+            (return_code, message) = self.validate_input(argin)
+            self.logger.info(
+                f"Command {self.name} validation return_code {return_code!s}, "
+                f"message: '{message}'"
+            )
+        else:
+            return_code = ResultCode.OK
+            message = ""
         return (return_code, message)
 
     def _returned(self, return_code):
@@ -294,6 +326,8 @@ class ActionCommand(ResponseCommand):
             self.succeeded()
         elif return_code == ResultCode.FAILED:
             self.failed()
+        elif return_code == ResultCode.REJECTED:
+            pass
         else:
             if self._started_hook is None:
                 raise ResultCodeError(
@@ -323,9 +357,37 @@ class ActionCommand(ResponseCommand):
             self._started_hook or self._succeeded_hook
         )
 
+    def validate_input(self, argin):
+        """
+        Hook for optional validation functionality that the command implements.
+        This class provides no functionality; subclasses that require validation
+        must subclass this method with their command input validation.
+
+        If the validation fails, the method must include
+        ``ResultCode.REJECTED`` in the return value.  In that case,
+        the command will not be started, and the device remains in the
+        same state - the failed action hook is not used.
+        For any other ``ResultCode`` value, the command will be started and
+        executed.
+
+        .. note::
+            The ``validate_input`` method is only executed if the
+            command takes an argument.  Commands with ``DevVoid``
+            inputs will not do any validation.
+
+        :param argin: the argument passed to the Tango command, if present
+        :type argin: ANY
+
+        :return: A tuple containing a return code and a string
+            message indicating status. The message is for
+            information purpose only.
+        :rtype: (ResultCode, str)
+        """
+        return (ResultCode.OK, "No validation performed")
+
     def started(self):
         """
-        Action to perform upon starting the comand.
+        Action to perform upon starting the command.
         """
         if self._started_hook is not None:
             self._perform_action(self._started_hook)

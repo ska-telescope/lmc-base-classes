@@ -7,12 +7,13 @@
 #
 #########################################################################################
 """Contain the tests for the SKASubarray."""
-
+import json
 import logging
 import re
 import pytest
 
 from tango import DevState, DevFailed
+from tango.test_context import DeviceTestContext
 
 # PROTECTED REGION ID(SKASubarray.test_additional_imports) ENABLED START #
 from ska.base import SKASubarray, SKASubarrayResourceManager, SKASubarrayStateModel
@@ -643,3 +644,66 @@ class TestSKASubarray_commands:
         assert subarray_state_model.admin_mode == states["IDLE_ONLINE"]["admin_mode"]
         assert subarray_state_model.op_state == states["IDLE_ONLINE"]["op_state"]
         assert subarray_state_model.obs_state == states["IDLE_ONLINE"]["obs_state"]
+
+
+class TestSKASubarrayWithValidation:
+
+    class TestDevice(SKASubarray):
+
+        class ConfigureCommand(SKASubarray.ConfigureCommand):
+            def validate_input(self, argin):
+                try:
+                    config = json.loads(argin)
+                    capability_types = list(config.keys())
+                    device = self.target
+                    device._validate_capability_types(capability_types)
+                except Exception as exc:
+                    return (
+                        ResultCode.REJECTED,
+                        f"Validation failed for argin {argin!r}: {exc!r}"
+                    )
+                return ResultCode.OK, "Validation OK"
+
+    @pytest.fixture
+    def tango_context(self, request):
+        tango_context = DeviceTestContext(
+            self.TestDevice, properties={"CapabilityTypes": ["BAND1"]})
+        tango_context.start()
+        yield tango_context
+        tango_context.stop()
+
+    def test_Configure_accepts_valid_input_with_state_change(
+            self, tango_context, tango_change_event_helper):
+        tango_context.device.On()
+        tango_context.device.AssignResources('{"example": ["BAND1"]}')
+
+        obs_state_callback = tango_change_event_helper.subscribe("obsState")
+        obs_state_callback.assert_call(ObsState.IDLE)
+
+        result = tango_context.device.Configure('{"BAND1": 2}')
+        result_code = result[0][0]
+        result_message = result[1][0]
+
+        assert result_code == ResultCode.OK
+        assert "Validation failed" not in result_message
+        obs_state_callback.assert_calls(
+            [ObsState.CONFIGURING, ObsState.READY]
+        )
+        assert tango_context.device.obsState == ObsState.READY
+
+    def test_Configure_rejects_invalid_input_with_no_state_change(
+            self, tango_context, tango_change_event_helper):
+        tango_context.device.On()
+        tango_context.device.AssignResources('{"example": ["BAND1"]}')
+
+        obs_state_callback = tango_change_event_helper.subscribe("obsState")
+        obs_state_callback.assert_call(ObsState.IDLE)
+
+        result = tango_context.device.Configure('{"INVALID_BAND": 123}')
+        result_code = result[0][0]
+        result_message = result[1][0]
+
+        assert result_code == ResultCode.REJECTED
+        assert "Validation failed" in result_message
+        assert tango_context.device.obsState == ObsState.IDLE
+        obs_state_callback.assert_not_called()

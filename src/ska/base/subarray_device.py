@@ -573,6 +573,8 @@ class SKASubarray(SKAObsDevice):
             # are the capability types, and the values are the
             # integer number of instances required.
             # E.g., config = {"BAND1": 5, "BAND2": 3}
+            # Note:  validation should rather be done by
+            # overriding this command class's `validate_input` method.
             config = json.loads(argin)
             capability_types = list(config.keys())
             device._validate_capability_types(capability_types)

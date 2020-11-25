@@ -25,6 +25,14 @@ The lmc-base-classe repository contains set of eight classes as mentioned in SKA
 
 ## Version History
 
+#### Unreleased (0.8.0?)
+- Add `validate_input()` method to ActionCommand, which is called before
+  starting the command and calling the `do()` method, if the command has
+  an input argument.  Overriding the new validation method is optional.
+  Commands that fail validation return `ResultCode.REJECTED` to the client,
+  and no state change occurs.  This may be preferable to returning an exception
+  and putting the device into a fault state.
+
 #### 0.7.2
 - Switch to threadsafe state machine
 

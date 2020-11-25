@@ -246,7 +246,7 @@ class TestCspSubElementObsDevice(object):
         obs_state_callback = tango_change_event_helper.subscribe("obsState")
         scan_configuration = '{"id":"sbi-mvp01-20200325-00002"}'
         tango_context.device.ConfigureScan(scan_configuration)
-        obs_state_callback.assert_calls([ObsState.IDLE,ObsState.CONFIGURING])
+        obs_state_callback.assert_calls([ObsState.IDLE, ObsState.CONFIGURING])
         assert tango_context.device.configurationID == "sbi-mvp01-20200325-00002"
         assert tango_context.device.lastScanConfiguration == scan_configuration
         # PROTECTED REGION END #    //  CspSubelementObsDevice.test_ConfigureScan

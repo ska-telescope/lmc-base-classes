@@ -33,6 +33,17 @@ __all__ = ["CspSubElementMaster", "main"]
 class CspSubElementMaster(SKAMaster):
     """
     Master device for SKA CSP Subelement.
+
+     **Properties:**
+
+    - Device Property
+        PowerDelayStandbyOn
+            - Delay in sec between  power-up stages in Standby<-> On transitions.
+            - Type:'DevFloat'
+
+        PowerDelayStandByOff
+            - Delay in sec between  power-up stages in Standby-> Off transition.
+            - Type:'DevFloat'
     """
 
     # PROTECTED REGION ID(CspSubElementMaster.class_variable) ENABLED START #

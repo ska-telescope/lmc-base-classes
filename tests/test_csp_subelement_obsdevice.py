@@ -35,7 +35,7 @@ from .conftest import load_state_machine_spec, ModelStateMachineTester
 @pytest.fixture
 def csp_subelement_obsdevice_state_model():
     """
-    Yields a new SKASubarrayStateModel for testing
+    Yields a new CspSubElementObsDevice StateModel for testing
     """
     yield CspSubElementObsDeviceStateModel(logging.getLogger())
 
@@ -43,7 +43,7 @@ def csp_subelement_obsdevice_state_model():
 @pytest.mark.state_machine_tester(load_state_machine_spec("csp_subelement_obsdevice_state_machine"))
 class TestCspSubElementObsDeviceStateModel(ModelStateMachineTester):
     """
-    This class contains the test for the SKASubarrayStateModel class.
+    This class contains the test for the CspSubElementObsDevice StateModel class.
     """
 
     @pytest.fixture
@@ -69,7 +69,6 @@ class TestCspSubElementObsDeviceStateModel(ModelStateMachineTester):
         assert machine.op_state == state["op_state"]
         assert machine.obs_state == state["obs_state"]
 
-
 class TestCspSubElementObsDevice(object):
     """Test case for CSP SubElement ObsDevice class."""
 
@@ -79,20 +78,6 @@ class TestCspSubElementObsDevice(object):
         'GroupDefinitions': '',
         'DeviceID': 11,
         }
-
-    @classmethod
-    def mocking(cls):
-        """Mock external libraries."""
-        # Example : Mock numpy
-        # cls.numpy = CspSubelementObsDevice.numpy = MagicMock()
-        # PROTECTED REGION ID(CspSubelementObsDevice.test_mocking) ENABLED START #
-        # PROTECTED REGION END #    //  CspSubelementObsDevice.test_mocking
-
-    def test_properties(self, tango_context):
-        # Test the properties
-        # PROTECTED REGION ID(CspSubelementObsDevice.test_properties) ENABLED START #
-        # PROTECTED REGION END #    //  CspSubelementObsDevice.test_properties
-        pass
 
     # PROTECTED REGION ID(CspSubelementObsDevice.test_State_decorators) ENABLED START #
     # PROTECTED REGION END #    //  CspSubelementObsDevice.test_State_decorators
@@ -212,13 +197,10 @@ class TestCspSubElementObsDevice(object):
     def test_sdpLinkActivity(self, tango_context):
         """Test for sdpLinkActive """
         # PROTECTED REGION ID(CspSubelementObsDevice.test_sdpLinkActive) ENABLED START #
-        expected = tango_context.device.sdpLinkActive
-        if expected is not None:
-            n_links = len(expected)
-            actual  = [ False for i in range(0, n_links)]
-            assert all([a == b for a, b in zip(actual, expected)])
-        else:
-            assert expected is None
+        actual = tango_context.device.sdpLinkActive
+        n_links = len(actual)
+        expected  = [ False for i in range(0, n_links)]
+        assert all([a == b for a, b in zip(actual, expected)])
         # PROTECTED REGION END #    //  CspSubelementObsDevice.test_sdpLinkActive
 
     # PROTECTED REGION ID(CspSubelementObsDevice.test_sdpLinkCapacity_decorators) ENABLED START #

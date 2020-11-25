@@ -52,7 +52,7 @@ Diagrams of the admin mode state machine are shown below.
   above demonstrates that the machine has been implemented as designed.
 
 
-Operational state state machine
+Operational state machine
 -------------------------------
 The operational state (opState) machine represents the operational state
 of a SKA device. It is represented in TANGO devices using the TANGO
@@ -148,7 +148,7 @@ observations (currently only subarray devices).
   previous demonstrates that the machine has been implemented in
   conformance with ADR-8.
 
-CSP SubElement ObsDevice Observation state machine
+CSP SubElement ObsDevice state machine
 --------------------------------------------------
 This  state machine is implemented for the CSP SubElement devices, different
 from the subarrays, that manage observations.

@@ -229,7 +229,9 @@ class CspSubElementObsDevice(SKAObsDevice):
             device._scan_id = 0
 
             device._sdp_addresses = {"outputHost":[], "outputMac": [], "outputPort":[]}
-            device._sdp_links_active = []
+            # a sub-element obsdevice can have more than one link to the SDP
+            # (for ex. Mid.CBF FSP)
+            device._sdp_links_active = [False,]
             device._sdp_links_capacity = 0.
 
             device._config_id = ''

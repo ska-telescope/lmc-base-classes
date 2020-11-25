@@ -96,6 +96,11 @@
         },
         {
             "from": "SCANNING",
+            "to": "READY",
+            "trigger": "scan_rejected"
+        },
+        {
+            "from": "SCANNING",
             "to": "FAULT",
             "trigger": "scan_failed"
         },
@@ -140,14 +145,24 @@
             "trigger": "fatal_error"
         },
         {
-            "from": "FAULT",
+            "from": "ABORTED",
             "to": "FAULT",
-            "trigger": "fatal_error"
+            "trigger": "reset_failed"
         },
         {
             "from": "ABORTED",
             "to": "IDLE",
             "trigger": "reset_succeeded"
+        },
+        {
+            "from": "FAULT",
+            "to": "FAULT",
+            "trigger": "fatal_error"
+        },
+        {
+            "from": "FAULT",
+            "to": "FAULT",
+            "trigger": "reset_failed"
         },
         {
             "from": "FAULT",

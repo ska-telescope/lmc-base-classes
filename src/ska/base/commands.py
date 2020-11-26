@@ -302,10 +302,14 @@ class ActionCommand(ResponseCommand):
         """
         if argin is not None:
             (return_code, message) = self.validate_input(argin)
-            self.logger.info(
-                f"Command {self.name} validation return_code {return_code!s}, "
-                f"message: '{message}'"
+            subclassed_method = (
+                self.validate_input.__func__ is not ActionCommand.validate_input
             )
+            if subclassed_method:
+                self.logger.info(
+                    f"Command {self.name} validation return_code {return_code!s}, "
+                    f"message: '{message}'"
+                )
         else:
             return_code = ResultCode.OK
             message = ""

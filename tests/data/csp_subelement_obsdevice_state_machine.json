@@ -999,16 +999,6 @@
         },
         {
             "from": "CONFIGURING_ONLINE",
-            "to": "READY_ONLINE",
-            "trigger": "configure_rejected"
-        },
-        {
-            "from": "CONFIGURING_ONLINE",
-            "to": "IDLE_ONLINE",
-            "trigger": "configure_rejected_to_idle"
-        },
-        {
-            "from": "CONFIGURING_ONLINE",
             "to": "OBSFAULT_ONLINE",
             "trigger": "configure_failed"
         },
@@ -1046,16 +1036,6 @@
             "from": "CONFIGURING_MAINTENANCE",
             "to": "READY_MAINTENANCE",
             "trigger": "configure_succeeded"
-        },
-        {
-            "from": "CONFIGURING_MAINTENANCE",
-            "to": "READY_MAINTENANCE",
-            "trigger": "configure_rejected"
-        },
-        {
-            "from": "CONFIGURING_MAINTENANCE",
-            "to": "IDLE_MAINTENANCE",
-            "trigger": "configure_rejected_to_idle"
         },
         {
             "from": "CONFIGURING_MAINTENANCE",

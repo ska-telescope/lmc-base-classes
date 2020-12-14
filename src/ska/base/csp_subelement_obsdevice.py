@@ -22,7 +22,6 @@ from tango.server import run, attribute, command, device_property
 # SKA specific imports
 from ska.base import SKAObsDevice, ObsDeviceStateModel
 from ska.base.commands import ResultCode, ActionCommand
-from ska.base.csp_commands import  InputValidatedCommand
 from ska.base.control_model import ObsState
 from ska.base.faults import CommandError
 from ska.base.csp_subelement_state_machine import CspSubElementObsDeviceStateMachine
@@ -63,11 +62,8 @@ class CspSubElementObsDeviceStateModel(ObsDeviceStateModel):
             "configure_started": ("configure_started", None),
             "configure_succeeded": ("configure_succeeded", None),
             "configure_failed": ("configure_failed", None),
-            "configure_rejected_to_idle": ("configure_rejected_to_idle", None),
-            "configure_rejected": ("configure_rejected", None),
             "scan_started": ("scan_started", None),
             "scan_succeeded": ("scan_succeeded", None),
-            "scan_rejected": ("scan_rejected", None),
             "scan_failed": ("scan_failed", None),
             "end_scan_succeeded": ("end_scan_succeeded", None),
             "end_scan_failed": ("end_scan_failed", None),
@@ -314,7 +310,7 @@ class CspSubElementObsDevice(SKAObsDevice):
     # --------
     
     
-    class ConfigureScanCommand(InputValidatedCommand):
+    class ConfigureScanCommand(ActionCommand):
         """
         A class for the CspSubElementObsDevices's ConfigureScan command.
         """
@@ -353,25 +349,22 @@ class CspSubElementObsDevice(SKAObsDevice):
             :raises: ``CommandError`` if the configuration data validation fails. 
             """
             device = self.target
-            # store the configuration on command success
-            device._last_scan_configuration = argin
-            return (ResultCode.OK, "Configure command completed OK")
+            # validate the input args
+            (result_code, msg) = self.validate_input(argin)
+            if result_code == ResultCode.OK:
+                # store the configuration on command success
+                device._last_scan_configuration = argin
+                msg = "Configure command completed OK"
+            return(result_code, msg)
 
         def validate_input(self, argin):
             """
             Validate the configuration parameters against allowed values, as needed.
-            The developer is free to return a FAULT code or raise an exception taking into
-            account that in the first case the observing state of the device transits
-            to FAULT while in the second case it is restored the observing state of the device
-            as it was before the command was invoked.
 
             :param argin: The JSON formatted string with configuration for the device.
             :type argin: 'DevString'
             :return: A tuple containing a return code and a string message. 
             :rtype: (ResultCode, str)
-            :raises: ``CommandError`` exception when wrong type or range values are specified for
-                the configuration data. In this case the device restores the observing
-                state before command was invoked.
             """
             device = self.target
             try: 
@@ -385,9 +378,9 @@ class CspSubElementObsDevice(SKAObsDevice):
             except Exception as other_errs:
                 msg = "Validate configuration failed with unknown error:{}".format(other_errs)
                 self.logger.error(msg)
-            raise CommandError(msg)
+            return (ResultCode.FAILED, msg)
 
-    class ScanCommand(InputValidatedCommand):
+    class ScanCommand(ActionCommand):
         """
         A class for the CspSubElementObsDevices's Scan command.
         """
@@ -425,8 +418,12 @@ class CspSubElementObsDevice(SKAObsDevice):
             :rtype: (ResultCode, str)
             """
             device = self.target
-            device._scan_id = int(argin)
-            return (ResultCode.STARTED, "Scan command started")
+            (result_code, msg) = self.validate_input(argin)
+            if result_code == ResultCode.OK:
+                # store the configuration on command success
+                device._scan_id = int(argin)
+                return (ResultCode.STARTED, "Scan command started")
+            return(result_code, msg)
 
         def validate_input(self, argin):
             """
@@ -438,13 +435,11 @@ class CspSubElementObsDevice(SKAObsDevice):
                 message indicating status. The message is for
                 information purpose only.
             :rtype: (ResultCode, str)
-            :raises: ``CommandError`` exception when wrong type or value arguments
-                are specified.
             """
             if not argin.isdigit():
                 msg = f"Input argument '{argin}' is not an integer" 
                 self.logger.error(msg)
-                raise CommandError(msg)
+                return (ResultCode.FAILED, msg)
             return (ResultCode.OK, "Scan arguments validation successfull")
         
     class EndScanCommand(ActionCommand):

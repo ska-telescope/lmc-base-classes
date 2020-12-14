@@ -55,16 +55,6 @@ class CspSubElementObsDeviceStateMachine(Machine):
                 "dest": "FAULT",
             },
             {
-                "source": "CONFIGURING",
-                "trigger": "configure_rejected",
-                "dest": "READY",
-            },
-            {
-                "source": "CONFIGURING",
-                "trigger": "configure_rejected_to_idle",
-                "dest": "IDLE",
-            },
-            {
                 "source": "READY",
                 "trigger": "end_succeeded",
                 "dest": "IDLE",
@@ -87,11 +77,6 @@ class CspSubElementObsDeviceStateMachine(Machine):
             {
                 "source": "SCANNING",
                 "trigger": "scan_succeeded",
-                "dest": "READY",
-            },
-            {
-                "source": "SCANNING",
-                "trigger": "scan_rejected",
                 "dest": "READY",
             },
             {

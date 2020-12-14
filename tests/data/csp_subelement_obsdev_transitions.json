@@ -31,16 +31,6 @@
         },
         {
             "from": "CONFIGURING",
-            "to": "IDLE",
-            "trigger": "configure_rejected_to_idle"
-        },
-        {
-            "from": "CONFIGURING",
-            "to": "READY",
-            "trigger": "configure_rejected"
-        },
-        {
-            "from": "CONFIGURING",
             "to": "READY",
             "trigger": "configure_succeeded"
         },
@@ -93,11 +83,6 @@
             "from": "SCANNING",
             "to": "READY",
             "trigger": "scan_succeeded"
-        },
-        {
-            "from": "SCANNING",
-            "to": "READY",
-            "trigger": "scan_rejected"
         },
         {
             "from": "SCANNING",

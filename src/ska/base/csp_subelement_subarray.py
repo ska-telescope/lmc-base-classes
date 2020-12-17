@@ -196,7 +196,7 @@ class CspSubElementSubarray(SKASubarray):
             device._config_id = ''
             device._last_scan_configuration = ''
             
-            # _list_of_devices_completed_task: for eaxh task/command reports
+            # _list_of_devices_completed_task: for each task/command reports
             # the list of the devices that successfully completed the task.
             # Implemented as a defualt dictionary:
             # keys: the command name in lower case (configurescan, assignresources, etc.)

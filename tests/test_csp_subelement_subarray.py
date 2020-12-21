@@ -16,7 +16,6 @@ import pytest
 import json
 
 from tango import DevState, DevFailed
-from tango.test_context import MultiDeviceTestContext
 
 # PROTECTED REGION ID(CspSubelementSubarray.test_additional_imports) ENABLED START #
 from ska.base import SKASubarray, CspSubElementSubarray
@@ -50,6 +49,7 @@ class TestCspSubElementSubarray(object):
         # PROTECTED REGION ID(CspSubelementSubarray.test_mocking) ENABLED START #
         # PROTECTED REGION END #    //  CspSubelementSubarray.test_mocking
 
+    @pytest.mark.skip(reason="Not implemented")
     def test_properties(self, tango_context):
         # Test the properties
         # PROTECTED REGION ID(CspSubelementSubarray.test_properties) ENABLED START #
@@ -166,13 +166,10 @@ class TestCspSubElementSubarray(object):
     def test_sdpLinkActivity(self, tango_context):
         """Test for sdpLinkActive """
         # PROTECTED REGION ID(CspSubelementSubarray.test_sdpLinkActive) ENABLED START #
-        expected = tango_context.device.sdpLinkActive
-        if expected is not None:
-            n_links = len(expected)
-            actual  = [ False for i in range(0, n_links)]
-            assert all([a == b for a, b in zip(actual, expected)])
-        else:
-            assert expected is None
+        actual = tango_context.device.sdpLinkActive
+        n_links = len(actual)
+        expected  = [ False for i in range(0, n_links)]
+        assert all([a == b for a, b in zip(actual, expected)])
         # PROTECTED REGION END #    //  CspSubelementSubarray.test_sdpLinkActive
 
     # PROTECTED REGION ID(CspSubelementSubarray.test_outputDataRateToSdp_decorators) ENABLED START #
@@ -263,41 +260,43 @@ class TestCspSubElementSubarray(object):
 
     # PROTECTED REGION ID(CspSubelementSubarray.test_timeoutExpiredFlag_decorators) ENABLED START #
     # PROTECTED REGION END #    //  CspSubelementSubarray.test_timeoutExpiredFlag_decorators
-    def test_timeoutExpiredFlag(self, tango_context):
+    def test_configureScanTimeoutExpiredFlag(self, tango_context):
         """Test for timeoutExpiredFlag """
         # PROTECTED REGION ID(CspSubelementSubarray.test_timeoutExpiredFlag) ENABLED START #
-        assert tango_context.device.timeoutExpiredFlag == False
+        assert tango_context.device.configureScanTimeoutExpiredFlag == False
+        # PROTECTED REGION END #    //  CspSubelementSubarray.test_timeoutExpiredFlag
+
+    # PROTECTED REGION ID(CspSubelementSubarray.test_timeoutExpiredFlag_decorators) ENABLED START #
+    # PROTECTED REGION END #    //  CspSubelementSubarray.test_timeoutExpiredFlag_decorators
+    def test_assignResourcesTimeoutExpiredFlag(self, tango_context):
+        """Test for timeoutExpiredFlag """
+        # PROTECTED REGION ID(CspSubelementSubarray.test_timeoutExpiredFlag) ENABLED START #
+        assert tango_context.device.assignResourcesTimeoutExpiredFlag == False
+        # PROTECTED REGION END #    //  CspSubelementSubarray.test_timeoutExpiredFlag
+
+    # PROTECTED REGION ID(CspSubelementSubarray.test_timeoutExpiredFlag_decorators) ENABLED START #
+    # PROTECTED REGION END #    //  CspSubelementSubarray.test_timeoutExpiredFlag_decorators
+    def test_releaseResourcesTimeoutExpiredFlag(self, tango_context):
+        """Test for timeoutExpiredFlag """
+        # PROTECTED REGION ID(CspSubelementSubarray.test_timeoutExpiredFlag) ENABLED START #
+        assert tango_context.device.releaseResourcesTimeoutExpiredFlag == False
         # PROTECTED REGION END #    //  CspSubelementSubarray.test_timeoutExpiredFlag
 
     # PROTECTED REGION ID(CspSubelementSubarray.test_ConfigureScan_decorators) ENABLED START #
     # PROTECTED REGION END #    //  CspSubelementSubarray.test_ConfigureScan_decorators
-    def test_ConfigureScan(self, tango_context, tango_change_event_helper):
+    @pytest.mark.parametrize("command_alias", ["Configure", "ConfigureScan"])
+    def test_ConfigureScan(self, tango_context, tango_change_event_helper, command_alias):
         """Test for ConfigureScan"""
         # PROTECTED REGION ID(CspSubelementSubarray.test_ConfigureScan) ENABLED START #
         tango_context.device.On()
         tango_context.device.AssignResources('{"example": [1,2,3]}')
         obs_state_callback = tango_change_event_helper.subscribe("obsState")
         scan_configuration = '{"id":"sbi-mvp01-20200325-00002"}'
-        tango_context.device.ConfigureScan(scan_configuration)
+        tango_context.device.command_inout(command_alias, (scan_configuration))
         obs_state_callback.assert_calls([ObsState.IDLE,ObsState.CONFIGURING])
         assert tango_context.device.configurationID == "sbi-mvp01-20200325-00002"
         assert tango_context.device.lastScanConfiguration == scan_configuration
         # PROTECTED REGION END #    //  CspSubelementSubarray.test_ConfigureScan
-
-    # PROTECTED REGION ID(CspSubelementSubarray.test_Configure_decorators) ENABLED START #
-    # PROTECTED REGION END #    //  CspSubelementSubarray.test_Configure_decorators
-    def test_Configure(self, tango_context, tango_change_event_helper):
-        """Test for ConfigureScan"""
-        # PROTECTED REGION ID(CspSubelementSubarray.test_Configure) ENABLED START #
-        tango_context.device.On()
-        tango_context.device.AssignResources('{"example": [1,2,3]}')
-        obs_state_callback = tango_change_event_helper.subscribe("obsState")
-        scan_configuration = '{"id":"sbi-mvp01-20200325-00002"}'
-        tango_context.device.Configure(scan_configuration)
-        obs_state_callback.assert_calls([ObsState.IDLE,ObsState.CONFIGURING])
-        assert tango_context.device.configurationID == "sbi-mvp01-20200325-00002"
-        assert tango_context.device.lastScanConfiguration == scan_configuration
-        # PROTECTED REGION END #    //  CspSubelementSubarray.test_Configure
 
     # PROTECTED REGION ID(CspSubelementSubarray.test_ConfigureScan_when_in_wrong_state_decorators) ENABLED START #
     # PROTECTED REGION END #    //  CspSubelementSubarray.test_ConfigureScan_when_in_wrong_state_decorators
@@ -305,9 +304,8 @@ class TestCspSubElementSubarray(object):
         """Test for ConfigureScan when the device is in wrong state"""
         # PROTECTED REGION ID(CspSubelementSubarray.test_ConfigureScan_when_in_wrong_state) ENABLED START #
         # The device in in OFF/EMPTY state, not valid to invoke ConfigureScan.
-        with pytest.raises(DevFailed) as df:
+        with pytest.raises(DevFailed, match="Error executing command ConfigureScanCommand"):
             tango_context.device.ConfigureScan('{"id":"sbi-mvp01-20200325-00002"}')
-        assert "Error executing command ConfigureScanCommand" in str(df.value.args[0].desc)
         # PROTECTED REGION END #    //  CspSubelementSubarray.test_ConfigureScan_when_in_wrong_state
 
     # PROTECTED REGION ID(CspSubelementSubarray.test_ConfigureScan_with_wrong_configId_key_decorators) ENABLED START #
@@ -338,7 +336,8 @@ class TestCspSubElementSubarray(object):
 
     # PROTECTED REGION ID(CspSubelementSubarray.test_GoToIdle_decorators) ENABLED START #
     # PROTECTED REGION END #    //  CspSubelementSubarray.test_GoToIdle_decorators
-    def test_GoToIdle(self, tango_context, tango_change_event_helper):
+    @pytest.mark.parametrize("command_alias", ["GoToIdle", "End"])
+    def test_GoToIdle(self, tango_context, tango_change_event_helper, command_alias):
         """Test for GoToIdle"""
         # PROTECTED REGION ID(CspSubelementSubarray.test_GoToIdle) ENABLED START #
         tango_context.device.On()
@@ -346,36 +345,8 @@ class TestCspSubElementSubarray(object):
         obs_state_callback = tango_change_event_helper.subscribe("obsState")
         tango_context.device.ConfigureScan('{"id":"sbi-mvp01-20200325-00002"}')
         obs_state_callback.assert_calls([ObsState.IDLE,ObsState.CONFIGURING, ObsState.READY])
-        tango_context.device.GoToIdle()
+        tango_context.device.command_inout(command_alias)
         obs_state_callback.assert_call(ObsState.IDLE)
         assert tango_context.device.scanID == 0
         assert tango_context.device.configurationID == ''
         # PROTECTED REGION END #    //  CspSubelementSubarray.test_GoToIdle
-
-    # PROTECTED REGION ID(CspSubelementSubarray.test_End_decorators) ENABLED START #
-    # PROTECTED REGION END #    //  CspSubelementSubarray.test_End_decorators
-    def test_End(self, tango_context, tango_change_event_helper):
-        """Test for End"""
-        # PROTECTED REGION ID(CspSubelementSubarray.test_End) ENABLED START #
-        tango_context.device.On()
-        tango_context.device.AssignResources('{"example": [1,2,3]}')
-        obs_state_callback = tango_change_event_helper.subscribe("obsState")
-        tango_context.device.ConfigureScan('{"id":"sbi-mvp01-20200325-00002"}')
-        obs_state_callback.assert_calls([ObsState.IDLE,ObsState.CONFIGURING, ObsState.READY])
-        tango_context.device.End()
-        obs_state_callback.assert_call(ObsState.IDLE)
-        assert tango_context.device.scanID == 0
-        assert tango_context.device.configurationID == ''
-        # PROTECTED REGION END #    //  CspSubelementSubarray.test_GoToIdle
-
-def test_multiple_devices_in_same_process():
-    devices_info = (
-        {"class": CspSubElementSubarray, "devices": [{"name": "test/se/1"}]},
-        {"class": SKASubarray, "devices": [{"name": "test/obsdevice/1"}]},
-    )
-
-    with MultiDeviceTestContext(devices_info, process=False) as context:
-        proxy1 = context.get_device("test/se/1")
-        proxy2 = context.get_device("test/obsdevice/1")
-        assert proxy1.State() == DevState.OFF
-        assert proxy2.State() == DevState.OFF

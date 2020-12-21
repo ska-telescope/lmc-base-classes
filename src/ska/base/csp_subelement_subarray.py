@@ -72,6 +72,7 @@ class CspSubElementSubarray(SKASubarray):
     outputDataRateToSdp = attribute(
         dtype='DevFloat',
         label="outputDataRateToSdp",
+        unit="GB/s",
         doc="The output data rate (GB/s) on the link for each scan.",
     )
 
@@ -101,6 +102,12 @@ class CspSubElementSubarray(SKASubarray):
         doc="The measured time (sec) taken to execute the command",
     )
 
+    configureScanTimeoutExpiredFlag = attribute(
+        dtype='DevBoolean',
+        label="configureScanTimeoutExpiredFlag",
+        doc="Flag reporting  ConfigureScan command timeout expiration.",
+    )
+
     assignResourcesMaximumDuration = attribute(
         dtype='DevFloat',
         access=AttrWriteType.READ_WRITE,
@@ -123,6 +130,13 @@ class CspSubElementSubarray(SKASubarray):
         min_value=0,
         doc="The percentage progress of the command in the [0,100].",
     )
+
+    assignResourcesTimeoutExpiredFlag = attribute(
+        dtype='DevBoolean',
+        label="assignResourcesTimeoutExpiredFlag",
+        doc="Flag reporting  AssignResources command timeout expiration.",
+    )
+
 
     releaseResourcesMaximumDuration = attribute(
         dtype='DevFloat',
@@ -147,7 +161,7 @@ class CspSubElementSubarray(SKASubarray):
         doc="The percentage progress of the command in the [0,100].",
     )
 
-    timeoutExpiredFlag = attribute(
+    releaseResourcesTimeoutExpiredFlag = attribute(
         dtype='DevBoolean',
         label="timeoutExpiredFlag",
         doc="Flag reporting  command timeout expiration.",
@@ -190,7 +204,7 @@ class CspSubElementSubarray(SKASubarray):
             device._scan_id = 0
 
             device._sdp_addresses = {"outputHost":[], "outputMac": [], "outputPort":[]}
-            device._sdp_links_active = []
+            device._sdp_links_active = [False,]
             device._sdp_output_data_rate = 0.
 
             device._config_id = ''
@@ -223,11 +237,18 @@ class CspSubElementSubarray(SKASubarray):
             
             # _timeout_expired: boolean flag to signal timeout during command execution.
             # To check and reset before a command execution.
-            # Need to implement one for each command?
-            device._timeout_expired = False
-            # configure the flag to push event from the device server
-            device.set_change_event('timeoutExpiredFlag', True, True)
+            # keys: the command name in lower case(configurescan, assignresources,..)
+            # values: True/False
+            device._timeout_expired = defaultdict(bool)
+            # configure the flags to push event from the device server
+            device.set_change_event('configureScanTimeoutExpiredFlag', True, True)
+            device.set_archive_event('configureScanTimeoutExpiredFlag', True, True)
+            device.set_change_event('assignResourcesTimeoutExpiredFlag', True, True)
+            device.set_archive_event('assignResourcesTimeoutExpiredFlag', True, True)
+            device.set_change_event('releaseResourcesTimeoutExpiredFlag', True, True)
+            device.set_archive_event('releaseResourcesTimeoutExpiredFlag', True, True)
             
+
             message = "CspSubElementSubarray Init command completed OK"
             device.logger.info(message)
             return (ResultCode.OK, message)
@@ -247,17 +268,6 @@ class CspSubElementSubarray(SKASubarray):
         # PROTECTED REGION ID(CspSubElementSubarray.delete_device) ENABLED START #
         # PROTECTED REGION END #    //  CspSubElementSubarray.delete_device
     
-    def _fire_timeout_expired_event(self, value):
-        """
-        Helper method that updates the timeout_expired internal variable and push the event on the 
-        timeoutExpiredFlag TANGO attribute.
-        
-        :param value: the flag value
-        :type value: boolean
-        """
-        self._timeout_expired = value
-        self.push_change_event('timeoutExpiredFlag', self._timeout_expired)
-        
     # ------------------
     # Attributes methods
     # ------------------
@@ -304,6 +314,12 @@ class CspSubElementSubarray(SKASubarray):
         return self._cmd_measured_duration['configurescan']
         # PROTECTED REGION END #    //  CspSubElementSubarray.configureScanMeasuredDuration_read
         
+    def read_configureScanTimeoutExpiredFlag(self):
+        # PROTECTED REGION ID(CspSubElementSubarray.configureScanTimeoutExpiredFlag_read) ENABLED START #
+        """Return the configureScanTimeoutExpiredFlag attribute."""
+        return self._timeout_expired['configurescan']
+        # PROTECTED REGION END #    //  CspSubElementSubarray.configureScanTimeoutExpiredFlag_read
+
     def read_listOfDevicesCompletedTasks(self):
         # PROTECTED REGION ID(CspSubElementSubarray.listOfDevicesCompletedTasks_read) ENABLED START #
         """Return the listOfDevicesCompletedTasks attribute."""
@@ -335,6 +351,12 @@ class CspSubElementSubarray(SKASubarray):
         return self._cmd_progress['assignresources']
         # PROTECTED REGION END #    //  CspSubElementSubarray.assignResourcesProgress_read
 
+    def read_assignResourcesTimeoutExpiredFlag(self):
+        # PROTECTED REGION ID(CspSubElementSubarray.assignResourcesTimeoutExpiredFlag_read) ENABLED START #
+        """Return the assignResourcesTimeoutExpiredFlag attribute."""
+        return self._timeout_expired['assignresources']
+        # PROTECTED REGION END #    //  CspSubElementSubarray.assignResourcesTimeoutExpiredFlag_read
+
     def read_releaseResourcesMaximumDuration(self):
         # PROTECTED REGION ID(CspSubElementSubarray.releaseResourcesMaximumDuration_read) ENABLED START #
         """Return the releaseResourcesMaximumDuration attribute."""
@@ -358,12 +380,12 @@ class CspSubElementSubarray(SKASubarray):
         """Return the releaseResourcesProgress attribute."""
         return self._cmd_progress['releaseresources']
         # PROTECTED REGION END #    //  CspSubElementSubarray.releaseResourcesProgress_read
-
-    def read_timeoutExpiredFlag(self):
-        # PROTECTED REGION ID(CspSubElementSubarray.timeoutExpiredFlag_read) ENABLED START #
-        """Return the timeoutExpiredFlag attribute."""
-        return self._timeout_expired
-        # PROTECTED REGION END #    //  CspSubElementSubarray.timeoutExpiredFlag_read
+    
+    def read_releaseResourcesTimeoutExpiredFlag(self):
+        # PROTECTED REGION ID(CspSubElementSubarray.releaseResourcesTimeoutExpiredFlag_read) ENABLED START #
+        """Return the releaseResourcesTimeoutExpiredFlag attribute."""
+        return self._timeout_expired['releaseresources']
+        # PROTECTED REGION END #    //  CspSubElementSubarray.releaseResourcesTimeoutExpiredFlag_read
 
     def read_sdpLinkActive(self):
         # PROTECTED REGION ID(CspSubElementSubarray.sdpLinkActive_read) ENABLED START #
@@ -413,14 +435,14 @@ class CspSubElementSubarray(SKASubarray):
             :rtype: (ResultCode, str)
             """
             device = self.target
-            result_code, msg = self.validate_configuration_data(argin)
+            result_code, msg = self.validate_input(argin)
             if result_code == ResultCode.FAILED:
                 return (result_code, msg)
             # store the configuration on command success
             device._last_scan_configuration = argin
             return (ResultCode.OK, "Configure command completed OK")
 
-        def validate_configuration_data(self, argin):
+        def validate_input(self, argin):
             """
             Validate the configuration parameters against allowed values, as needed.
             :param argin: The JSON formatted string with configuration for the device.

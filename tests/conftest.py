@@ -250,7 +250,7 @@ class TransitionsStateMachineTester(StateMachineTester):
 
 class ModelStateMachineTester(StateMachineTester):
     """
-    Abstract base class for a class for testing state models using state machines.
+    Abstract base class for testing state models using state machines.
 
     The ``assert_state`` method has to be implemented in concrete classes,
     and the `machine` fixture must also be provided.

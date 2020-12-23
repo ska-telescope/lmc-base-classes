@@ -18,6 +18,7 @@ __all__ = (
     "CspSubElementMaster",
     "CspSubElementObsDevice",
     "CspSubElementObsDeviceStateModel",
+    "CspSubElementSubarray",
 )
 
 # Note: order of imports is important - start with lowest in the hierarchy
@@ -39,6 +40,7 @@ from .subarray_device import (
 )
 # CspSubElement classes
 from .csp_subelement_master import CspSubElementMaster
+from .csp_subelement_subarray import CspSubElementSubarray
 from .csp_subelement_obsdevice import (
         CspSubElementObsDevice,
         CspSubElementObsDeviceStateModel,

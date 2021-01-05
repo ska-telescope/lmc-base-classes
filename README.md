@@ -25,6 +25,9 @@ The lmc-base-classe repository contains set of eight classes as mentioned in SKA
 
 ## Version History
 
+#### 0.8.1
+- Fix broken docs
+
 #### 0.8.0
 - Add base classes for CSP SubElements
 

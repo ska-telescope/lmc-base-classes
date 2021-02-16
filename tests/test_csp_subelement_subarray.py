@@ -18,10 +18,10 @@ import json
 from tango import DevState, DevFailed
 
 # PROTECTED REGION ID(CspSubelementSubarray.test_additional_imports) ENABLED START #
-from ska.base import SKASubarray, CspSubElementSubarray
-from ska.base.commands import ResultCode
-from ska.base.faults import StateModelError
-from ska.base.control_model import (
+from ska_tango_base import SKASubarray, CspSubElementSubarray
+from ska_tango_base.commands import ResultCode
+from ska_tango_base.faults import StateModelError
+from ska_tango_base.control_model import (
     ObsState, AdminMode, ControlMode, HealthState, SimulationMode, TestMode
 )
 from .conftest import load_state_machine_spec, StateMachineTester
@@ -39,7 +39,7 @@ class TestCspSubElementSubarray(object):
         'SkaLevel': '4',
         'LoggingTargetsDefault': '',
         'GroupDefinitions': '',
-        }
+    }
 
     @classmethod
     def mocking(cls):
@@ -78,7 +78,7 @@ class TestCspSubElementSubarray(object):
         """Test for GetVersionInfo"""
         # PROTECTED REGION ID(CspSubelementSubarray.test_GetVersionInfo) ENABLED START #
         versionPattern = re.compile(
-            r'CspSubElementSubarray, lmcbaseclasses, [0-9].[0-9].[0-9], '
+            r'CspSubElementSubarray, ska_tango_base, [0-9].[0-9].[0-9], '
             r'A set of generic base devices for SKA Telescope.')
         versionInfo = tango_context.device.GetVersionInfo()
         assert (re.match(versionPattern, versionInfo[0])) is not None
@@ -89,7 +89,7 @@ class TestCspSubElementSubarray(object):
         """Test for buildState"""
         # PROTECTED REGION ID(CspSubelementSubarray.test_buildState) ENABLED START #
         buildPattern = re.compile(
-            r'lmcbaseclasses, [0-9].[0-9].[0-9], '
+            r'ska_tango_base, [0-9].[0-9].[0-9], '
             r'A set of generic base devices for SKA Telescope')
         assert (re.match(buildPattern, tango_context.device.buildState)) is not None
         # PROTECTED REGION END #    //  CspSubelementSubarray.test_buildState
@@ -168,7 +168,7 @@ class TestCspSubElementSubarray(object):
         # PROTECTED REGION ID(CspSubelementSubarray.test_sdpLinkActive) ENABLED START #
         actual = tango_context.device.sdpLinkActive
         n_links = len(actual)
-        expected  = [ False for i in range(0, n_links)]
+        expected = [False for i in range(0, n_links)]
         assert all([a == b for a, b in zip(actual, expected)])
         # PROTECTED REGION END #    //  CspSubelementSubarray.test_sdpLinkActive
 
@@ -293,7 +293,7 @@ class TestCspSubElementSubarray(object):
         obs_state_callback = tango_change_event_helper.subscribe("obsState")
         scan_configuration = '{"id":"sbi-mvp01-20200325-00002"}'
         tango_context.device.command_inout(command_alias, (scan_configuration))
-        obs_state_callback.assert_calls([ObsState.IDLE,ObsState.CONFIGURING])
+        obs_state_callback.assert_calls([ObsState.IDLE, ObsState.CONFIGURING])
         assert tango_context.device.configurationID == "sbi-mvp01-20200325-00002"
         assert tango_context.device.lastScanConfiguration == scan_configuration
         # PROTECTED REGION END #    //  CspSubelementSubarray.test_ConfigureScan
@@ -311,7 +311,7 @@ class TestCspSubElementSubarray(object):
     # PROTECTED REGION ID(CspSubelementSubarray.test_ConfigureScan_with_wrong_configId_key_decorators) ENABLED START #
     # PROTECTED REGION END #    //  CspSubelementSubarray.test_ConfigureScan_with_wrong_configId_key_decorators
     def test_ConfigureScan_with_wrong_configId_key(self, tango_context):
-        """Test for ConfigureScan when json configuration specifies a wrong key for 
+        """Test for ConfigureScan when json configuration specifies a wrong key for
            configuration ID
         """
         # PROTECTED REGION ID(CspSubelementSubarray.test_ConfigureScan_with_wrong_configId_key) ENABLED START #
@@ -344,7 +344,8 @@ class TestCspSubElementSubarray(object):
         tango_context.device.AssignResources('{"example": [1,2,3]}')
         obs_state_callback = tango_change_event_helper.subscribe("obsState")
         tango_context.device.ConfigureScan('{"id":"sbi-mvp01-20200325-00002"}')
-        obs_state_callback.assert_calls([ObsState.IDLE,ObsState.CONFIGURING, ObsState.READY])
+        obs_state_callback.assert_calls(
+            [ObsState.IDLE, ObsState.CONFIGURING, ObsState.READY])
         tango_context.device.command_inout(command_alias)
         obs_state_callback.assert_call(ObsState.IDLE)
         assert tango_context.device.scanID == 0

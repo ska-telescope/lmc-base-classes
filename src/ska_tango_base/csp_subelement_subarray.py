@@ -26,9 +26,9 @@ from tango import AttrQuality, DispLevel, DevState
 from tango import AttrWriteType, PipeWriteType
 
 # SKA import
-from ska.base import SKASubarray
-from ska.base.commands import ResultCode, ActionCommand
-from ska.base.control_model import ObsState
+from ska_tango_base import SKASubarray
+from ska_tango_base.commands import ResultCode, ActionCommand
+from ska_tango_base.control_model import ObsState
 # Additional import
 # PROTECTED REGION END #    //  CspSubElementSubarray.additionnal_import
 
@@ -94,7 +94,7 @@ class CspSubElementSubarray(SKASubarray):
         label="listOfDevicesCompletedTasks",
         doc="JSON formatted string reporting for each task/command the list of devices\nthat completed successfully the task.\nEx.\n{``cmd1``: [``device1``, ``device2``], ``cmd2``: [``device2``, ``device3``]}",
     )
-    
+
     configureScanMeasuredDuration = attribute(
         dtype='DevFloat',
         label="configureScanMeasuredDuration",
@@ -136,7 +136,6 @@ class CspSubElementSubarray(SKASubarray):
         label="assignResourcesTimeoutExpiredFlag",
         doc="Flag reporting  AssignResources command timeout expiration.",
     )
-
 
     releaseResourcesMaximumDuration = attribute(
         dtype='DevFloat',
@@ -183,7 +182,7 @@ class CspSubElementSubarray(SKASubarray):
         self.register_command_object(
             "GoToIdle", self.GoToIdleCommand(*device_args)
         )
-    
+
     class InitCommand(SKASubarray.InitCommand):
         """
         A class for the CspSubElementObsDevice's init_device() "command".
@@ -203,38 +202,38 @@ class CspSubElementSubarray(SKASubarray):
             device = self.target
             device._scan_id = 0
 
-            device._sdp_addresses = {"outputHost":[], "outputMac": [], "outputPort":[]}
-            device._sdp_links_active = [False,]
+            device._sdp_addresses = {"outputHost": [], "outputMac": [], "outputPort": []}
+            device._sdp_links_active = [False, ]
             device._sdp_output_data_rate = 0.
 
             device._config_id = ''
             device._last_scan_configuration = ''
-            
+
             # _list_of_devices_completed_task: for each task/command reports
             # the list of the devices that successfully completed the task.
             # Implemented as a defualt dictionary:
             # keys: the command name in lower case (configurescan, assignresources, etc.)
             # values: the list of devices' FQDN
             device._list_of_devices_completed_task = defaultdict(list)
-            
+
             # _cmd_progress: command execution's progress percentage
             # implemented as a default dictionary:
             # keys: the command name in lower case(configurescan,..)
             # values: the progress percentage (default 0)
             device._cmd_progress = defaultdict(int)
-            
+
             # _cmd_maximun_duration: command execution's expected maximum duration (sec.)
             # implemented as a default dictionary:
             # keys: the command name in lower case(configurescan, assignresources,..)
             # values: the expected maximum duration in sec.
             device._cmd_maximum_duration = defaultdict(float)
 
-            # _cmd_measure_duration: command execution's measured duration (sec.) 
+            # _cmd_measure_duration: command execution's measured duration (sec.)
             # implemented as a default dictionary:
             # keys: the command name in lower case(configurescan, assignresources,..)
             # values: the measured execution time (sec.)
             device._cmd_measured_duration = defaultdict(float)
-            
+
             # _timeout_expired: boolean flag to signal timeout during command execution.
             # To check and reset before a command execution.
             # keys: the command name in lower case(configurescan, assignresources,..)
@@ -247,7 +246,6 @@ class CspSubElementSubarray(SKASubarray):
             device.set_archive_event('assignResourcesTimeoutExpiredFlag', True, True)
             device.set_change_event('releaseResourcesTimeoutExpiredFlag', True, True)
             device.set_archive_event('releaseResourcesTimeoutExpiredFlag', True, True)
-            
 
             message = "CspSubElementSubarray Init command completed OK"
             device.logger.info(message)
@@ -267,7 +265,7 @@ class CspSubElementSubarray(SKASubarray):
         """
         # PROTECTED REGION ID(CspSubElementSubarray.delete_device) ENABLED START #
         # PROTECTED REGION END #    //  CspSubElementSubarray.delete_device
-    
+
     # ------------------
     # Attributes methods
     # ------------------
@@ -313,7 +311,7 @@ class CspSubElementSubarray(SKASubarray):
         """Return the configureScanMeasuredDuration attribute."""
         return self._cmd_measured_duration['configurescan']
         # PROTECTED REGION END #    //  CspSubElementSubarray.configureScanMeasuredDuration_read
-        
+
     def read_configureScanTimeoutExpiredFlag(self):
         # PROTECTED REGION ID(CspSubElementSubarray.configureScanTimeoutExpiredFlag_read) ENABLED START #
         """Return the configureScanTimeoutExpiredFlag attribute."""
@@ -380,7 +378,7 @@ class CspSubElementSubarray(SKASubarray):
         """Return the releaseResourcesProgress attribute."""
         return self._cmd_progress['releaseresources']
         # PROTECTED REGION END #    //  CspSubElementSubarray.releaseResourcesProgress_read
-    
+
     def read_releaseResourcesTimeoutExpiredFlag(self):
         # PROTECTED REGION ID(CspSubElementSubarray.releaseResourcesTimeoutExpiredFlag_read) ENABLED START #
         """Return the releaseResourcesTimeoutExpiredFlag attribute."""
@@ -401,6 +399,7 @@ class CspSubElementSubarray(SKASubarray):
         """
         A class for the CspSubElementObsDevices's ConfigureScan command.
         """
+
         def __init__(self, target, state_model, logger=None):
             """
             Constructor for ConfigureScanCommand
@@ -451,22 +450,23 @@ class CspSubElementSubarray(SKASubarray):
             :rtype: (ResultCode, str)
             """
             device = self.target
-            try: 
+            try:
                 configuration_dict = json.loads(argin)
                 device._config_id = configuration_dict['id']
                 return (ResultCode.OK, "Configuration validated with success")
             except (KeyError, JSONDecodeError) as err:
                 msg = "Validate configuration failed with error:{}".format(err)
             except Exception as other_errs:
-                msg = "Validate configuration failed with unknown error:{}".format(other_errs)
+                msg = "Validate configuration failed with unknown error:{}".format(
+                    other_errs)
             self.logger.error(msg)
             return (ResultCode.FAILED, msg)
-
 
     class GoToIdleCommand(ActionCommand):
         """
         A class for the CspSubElementObsDevices's GoToIdle command.
         """
+
         def __init__(self, target, state_model, logger=None):
             """
             Constructor for GoToIdle Command.
@@ -502,7 +502,7 @@ class CspSubElementSubarray(SKASubarray):
             device._config_id = ''
             device._scan_id = 0
             return (ResultCode.OK, "GoToIdle command completed OK")
-        
+
     @command(
         dtype_in='DevString',
         doc_in="A Json-encoded string with the scan configuration.",
@@ -520,7 +520,7 @@ class CspSubElementSubarray(SKASubarray):
         :type argin: 'DevString'
 
         :return:
-            A tuple containing a return code and a string message indicating status. 
+            A tuple containing a return code and a string message indicating status.
             The message is for information purpose only.
         :rtype: (ResultCode, str)
         """

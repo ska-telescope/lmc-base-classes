@@ -19,12 +19,12 @@ from tango.server import run, attribute, command
 from tango.server import device_property
 
 # SKA specific imports
-from ska.base import SKAObsDevice, ObsDeviceStateModel
-from ska.base.commands import ActionCommand, ResultCode
-from ska.base.control_model import AdminMode, ObsState
-from ska.base.faults import CapabilityValidationError, StateModelError
-from ska.base.state_machine import ObservationStateMachine
-from ska.base.utils import for_testing_only
+from ska_tango_base import SKAObsDevice, ObsDeviceStateModel
+from ska_tango_base.commands import ActionCommand, ResultCode
+from ska_tango_base.control_model import AdminMode, ObsState
+from ska_tango_base.faults import CapabilityValidationError, StateModelError
+from ska_tango_base.state_machine import ObservationStateMachine
+from ska_tango_base.utils import for_testing_only
 
 # PROTECTED REGION END #    //  SKASubarray.additionnal_imports
 

@@ -15,9 +15,9 @@ from tango import DebugIt
 from tango.server import run, attribute, command, device_property
 
 # SKA specific imports
-from ska.base import SKABaseDevice
-from ska.base.commands import BaseCommand, ResultCode
-from ska.base.utils import validate_capability_types, validate_input_sizes, convert_dict_to_list
+from ska_tango_base import SKABaseDevice
+from ska_tango_base.commands import BaseCommand, ResultCode
+from ska_tango_base.utils import validate_capability_types, validate_input_sizes, convert_dict_to_list
 
 
 # PROTECTED REGION END #    //  SKAMaster.additionnal_imports
@@ -29,6 +29,7 @@ class SKAMaster(SKABaseDevice):
     """
     Master device
     """
+
     def init_command_objects(self):
         """
         Sets up the command objects
@@ -45,6 +46,7 @@ class SKAMaster(SKABaseDevice):
         """
         A class for the SKAMaster's init_device() "command".
         """
+
         def do(self):
             """
             Stateless hook for device initialisation.
@@ -68,7 +70,8 @@ class SKAMaster(SKABaseDevice):
             if device.MaxCapabilities:
                 for max_capability in device.MaxCapabilities:
                     capability_type, max_capability_instances = max_capability.split(":")
-                    device._max_capabilities[capability_type] = int(max_capability_instances)
+                    device._max_capabilities[capability_type] = int(
+                        max_capability_instances)
             device._available_capabilities = device._max_capabilities.copy()
 
             message = "SKAMaster Init command completed OK"
@@ -189,6 +192,7 @@ class SKAMaster(SKABaseDevice):
         """
         A class for the SKAMaster's IsCapabilityAchievable() command.
         """
+
         def do(self, argin):
             """
             Stateless hook for device IsCapabilityAchievable() command.

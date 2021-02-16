@@ -88,7 +88,7 @@ class TestSKACapability(object):
         """Test for buildState"""
         # PROTECTED REGION ID(SKACapability.test_buildState) ENABLED START #
         buildPattern = re.compile(
-            r'lmcbaseclasses, [0-9].[0-9].[0-9], '
+            r'ska_tango_base, [0-9].[0-9].[0-9], '
             r'A set of generic base devices for SKA Telescope')
         assert (re.match(buildPattern, tango_context.device.buildState)) is not None
         # PROTECTED REGION END #    //  SKACapability.test_buildState

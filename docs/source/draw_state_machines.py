@@ -2,9 +2,9 @@
 This module draws diagrams of the state machines.
 
 Usage:
-    ~/ska-src/lmc-base-classes$ docker run --rm -ti -v $PWD:/app continuumio/miniconda3 bash
+    ~/ska-src/ska-tango-base$ docker run --rm -ti -v $PWD:/app continuumio/miniconda3 bash
 
-    (base) root@293f3b699c9b:/opt/project/src/ska/base# history
+    (base) root@293f3b699c9b:#
     $ conda install --yes pygraphviz
     $ pip install transitions
     $ apt-get update && apt-get install gsfonts
@@ -21,7 +21,7 @@ from unittest import mock
 from transitions.extensions import GraphMachine
 
 # local import, so we can run this without installing the whole package
-sys.path.append("../../src/ska/base")
+sys.path.append("../../src/ska_tango_base")
 import state_machine
 import csp_subelement_state_machine
 

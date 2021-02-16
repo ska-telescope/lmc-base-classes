@@ -16,8 +16,8 @@ from tango import DevState
 from tango.test_context import MultiDeviceTestContext
 
 # PROTECTED REGION ID(SKAObsDevice.test_additional_imports) ENABLED START #
-from ska.base import SKABaseDevice, SKAObsDevice
-from ska.base.control_model import (
+from ska_tango_base import SKABaseDevice, SKAObsDevice
+from ska_tango_base.control_model import (
     AdminMode, ControlMode, HealthState, ObsMode, ObsState, SimulationMode, TestMode
 )
 # PROTECTED REGION END #    //  SKAObsDevice.test_additional_imports
@@ -34,7 +34,7 @@ class TestSKAObsDevice(object):
         'SkaLevel': '4',
         'LoggingTargetsDefault': '',
         'GroupDefinitions': '',
-        }
+    }
 
     @classmethod
     def mocking(cls):
@@ -72,7 +72,7 @@ class TestSKAObsDevice(object):
         """Test for GetVersionInfo"""
         # PROTECTED REGION ID(SKAObsDevice.test_GetVersionInfo) ENABLED START #
         versionPattern = re.compile(
-            r'SKAObsDevice, lmcbaseclasses, [0-9].[0-9].[0-9], '
+            r'SKAObsDevice, ska_tango_base, [0-9].[0-9].[0-9], '
             r'A set of generic base devices for SKA Telescope.')
         versionInfo = tango_context.device.GetVersionInfo()
         assert (re.match(versionPattern, versionInfo[0])) is not None
@@ -121,7 +121,7 @@ class TestSKAObsDevice(object):
         """Test for buildState"""
         # PROTECTED REGION ID(SKAObsDevice.test_buildState) ENABLED START #
         buildPattern = re.compile(
-            r'lmcbaseclasses, [0-9].[0-9].[0-9], '
+            r'ska_tango_base, [0-9].[0-9].[0-9], '
             r'A set of generic base devices for SKA Telescope')
         assert (re.match(buildPattern, tango_context.device.buildState)) is not None
         # PROTECTED REGION END #    //  SKAObsDevice.test_buildState

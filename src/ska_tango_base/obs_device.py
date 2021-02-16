@@ -20,14 +20,15 @@ from tango import DevState
 from tango.server import run, attribute
 
 # SKA specific imports
-from ska.base import SKABaseDevice, DeviceStateModel
-from ska.base.commands import ResultCode
-from ska.base.control_model import ObsMode, ObsState
-from ska.base.faults import StateModelError
-from ska.base.utils import for_testing_only
+from ska_tango_base import SKABaseDevice, DeviceStateModel
+from ska_tango_base.commands import ResultCode
+from ska_tango_base.control_model import ObsMode, ObsState
+from ska_tango_base.faults import StateModelError
+from ska_tango_base.utils import for_testing_only
 # PROTECTED REGION END #    //  SKAObsDevice.additionnal_imports
 
 __all__ = ["SKAObsDevice", "ObsDeviceStateModel", "main"]
+
 
 class ObsDeviceStateModel(DeviceStateModel):
     """
@@ -51,7 +52,7 @@ class ObsDeviceStateModel(DeviceStateModel):
         :type action_breakdown: dictionary defining actions to be performed
             on the observation state machine and,as needed, on the device state machine.
         :param obs_machine_class
-        :type obs_machine_class: state machine for the observing state of a 
+        :type obs_machine_class: state machine for the observing state of a
             SKAObsDevice class device.
         :param logger: the logger to be used by this state model.
         :type logger: a logger that implements the standard library
@@ -214,9 +215,9 @@ class ObsDeviceStateModel(DeviceStateModel):
         :param op_state: the target operational state (optional)
         :type op_state: :py:class:`tango.DevState`
         :param admin_mode: the target admin mode (optional)
-        :type admin_mode: :py:class:`~ska.base.control_model.AdminMode`
+        :type admin_mode: :py:class:`~ska_tango_base.control_model.AdminMode`
         :param obs_state: the target observation state (optional)
-        :type obs_state: :py:class:`~ska.base.control_model.ObsState`
+        :type obs_state: :py:class:`~ska_tango_base.control_model.ObsState`
         """
         if obs_state is not None:
             getattr(self._observation_state_machine, f"to_{obs_state.name}")()
@@ -231,6 +232,7 @@ class SKAObsDevice(SKABaseDevice):
         """
         A class for the SKAObsDevice's init_device() "command".
         """
+
         def do(self):
             """
             Stateless hook for device initialisation.
@@ -300,7 +302,7 @@ class SKAObsDevice(SKABaseDevice):
         callback
 
         :param obs_state: the new obs_state value
-        :type admin_mode: :py:class:`~ska.base.control_model.ObsState`
+        :type admin_mode: :py:class:`~ska_tango_base.control_model.ObsState`
         """
         self._obs_state = obs_state
         self.push_change_event("obsState", obs_state)

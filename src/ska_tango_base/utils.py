@@ -16,7 +16,7 @@ from tango import (DeviceProxy, DbDatum, DbDevInfo, AttrQuality,
                    AttrWriteType, Except, ErrSeverity)
 from tango import DevState
 from contextlib import contextmanager
-from ska.base.faults import GroupDefinitionsError, SKABaseError
+from ska_tango_base.faults import GroupDefinitionsError, SKABaseError
 
 int_types = {tango._tango.CmdArgType.DevUShort,
              tango._tango.CmdArgType.DevLong,

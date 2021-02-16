@@ -16,9 +16,9 @@ from tango import DebugIt, DeviceProxy, DevFailed
 from tango.server import run, command
 
 # SKA specific imports
-from ska.base import SKABaseDevice
-from ska.base.commands import ResponseCommand, ResultCode
-from ska.base.control_model import LoggingLevel
+from ska_tango_base import SKABaseDevice
+from ska_tango_base.commands import ResponseCommand, ResultCode
+from ska_tango_base.control_model import LoggingLevel
 # PROTECTED REGION END #    //  SKALogger.additionnal_import
 
 __all__ = ["SKALogger", "main"]
@@ -73,6 +73,7 @@ class SKALogger(SKABaseDevice):
         """
         A class for the SKALoggerDevice's SetLoggingLevel() command.
         """
+
         def __init__(self, target, state_model, logger=None):
             """
             Constructor for SetLoggingLevelCommand
@@ -111,7 +112,8 @@ class SKALogger(SKABaseDevice):
                     dev_proxy = DeviceProxy(device)
                     dev_proxy.loggingLevel = new_level
                 except DevFailed:
-                    self.logger.exception("Failed to set logging level %s for %s", level, device)
+                    self.logger.exception(
+                        "Failed to set logging level %s for %s", level, device)
 
             message = "SetLoggingLevel command completed OK"
             self.logger.info(message)

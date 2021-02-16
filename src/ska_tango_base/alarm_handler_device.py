@@ -17,8 +17,8 @@ from tango import DebugIt
 from tango.server import run, attribute, command, device_property
 
 # SKA specific imports
-from ska.base import SKABaseDevice
-from ska.base.commands import BaseCommand
+from ska_tango_base import SKABaseDevice
+from ska_tango_base.commands import BaseCommand
 
 # PROTECTED REGION END #    //  SKAAlarmHandler.additionnal_import
 
@@ -200,6 +200,7 @@ class SKAAlarmHandler(SKABaseDevice):
         """
         A class for the SKAAlarmHandler's GetAlarmRule() command.
         """
+
         def do(self, argin):
             """
             Stateless hook for SKAAlarmHandler GetAlarmRule() command.
@@ -213,6 +214,7 @@ class SKAAlarmHandler(SKABaseDevice):
         """
         A class for the SKAAlarmHandler's GetAlarmData() command.
         """
+
         def do(self, argin):
             """
             Stateless hook for SKAAlarmHandler GetAlarmData() command.
@@ -227,6 +229,7 @@ class SKAAlarmHandler(SKABaseDevice):
         A class for the SKAAlarmHandler's GetAlarmAdditionalInfo()
         command.
         """
+
         def do(self, argin):
             """
             Stateless hook for SKAAlarmHandler GetAlarmAdditionalInfo()
@@ -241,6 +244,7 @@ class SKAAlarmHandler(SKABaseDevice):
         """
         A class for the SKAAlarmHandler's GetAlarmStats() command.
         """
+
         def do(self):
             """
             Stateless hook for SKAAlarmHandler GetAlarmStats() command.
@@ -254,6 +258,7 @@ class SKAAlarmHandler(SKABaseDevice):
         """
         A class for the SKAAlarmHandler's GetAlertStats() command.
         """
+
         def do(self):
             """
             Stateless hook for SKAAlarmHandler GetAlertStats() command.

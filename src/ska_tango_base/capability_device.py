@@ -14,8 +14,8 @@ from tango import DebugIt
 from tango.server import run, attribute, command, device_property
 
 # SKA specific imports
-from ska.base import SKAObsDevice
-from ska.base.commands import ResponseCommand, ResultCode
+from ska_tango_base import SKAObsDevice
+from ska_tango_base.commands import ResponseCommand, ResultCode
 # PROTECTED REGION END #    //  SKACapability.additionnal_imports
 
 __all__ = ["SKACapability", "main"]
@@ -25,6 +25,7 @@ class SKACapability(SKAObsDevice):
     """
     A Subarray handling device. It exposes the instances of configured capabilities.
     """
+
     def init_command_objects(self):
         """
         Sets up the command objects
@@ -152,6 +153,7 @@ class SKACapability(SKAObsDevice):
         """
         A class for the SKALoggerDevice's SetLoggingLevel() command.
         """
+
         def do(self, argin):
             """
             Stateless hook for ConfigureInstances()) command

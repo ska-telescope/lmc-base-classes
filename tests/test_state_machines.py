@@ -1,9 +1,9 @@
 """
-This module contains the tests for the ska.base.state_machine module.
+This module contains the tests for the ska_tango_base.state_machine module.
 """
 import pytest
 
-from ska.base.state_machine import (
+from ska_tango_base.state_machine import (
     AdminModeStateMachine,
     OperationStateMachine,
     ObservationStateMachine,

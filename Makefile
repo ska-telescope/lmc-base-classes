@@ -1,5 +1,5 @@
 #
-# Project makefile for a LMC Base Classes project. You should normally only need to modify
+# Project makefile for a SKA Tango Base project. You should normally only need to modify
 # DOCKER_REGISTRY_USER and PROJECT below.
 
 # Use bash shell with pipefail option enabled so that the return status of a
@@ -13,10 +13,10 @@ SHELL = /bin/bash
 # the Docker tag for this project. The definition below inherits the standard
 # value for DOCKER_REGISTRY_HOST (=rnexus.engageska-portugal.pt) and overwrites
 # DOCKER_REGISTRY_USER and PROJECT to give a final Docker tag of
-# nexus.engageska-portugal.pt/tango-example/dishmaster
+# nexus.engageska-portugal.pt/ska-telescope/ska_tango_base
 #
-DOCKER_REGISTRY_USER:=tango-example
-PROJECT = lmcbaseclasses
+DOCKER_REGISTRY_USER:=ska-telescope
+PROJECT = ska_tango_base
 IMAGE_FOR_DIAGRAMS = nexus.engageska-portugal.pt/ska-docker/ska-python-buildenv:9.3.3.1
 #
 # include makefile to pick up the standard Make targets, e.g., 'make build'
@@ -27,16 +27,16 @@ include .make/Makefile.mk
 
 .DEFAULT_GOAL := help
 
-test: ## test lmcbaseclasses Python code
+test: ## test ska_tango_base Python code
 	mkdir -p build/reports
 	python3 setup.py test | tee build/setup_py_test.stdout
 
-lint: ## lint lmcbaseclasses Python code
+lint: ## lint ska_tango_base Python code
 	python3 -m pip install -U pylint==2.4.4
 	python3 -m pip install pylint2junit
 	mkdir -p build/reports
-	pylint --output-format=parseable src/ska | tee build/code_analysis.stdout
-	pylint --output-format=pylint2junit.JunitReporter src/ska > build/reports/linting.xml
+	pylint --output-format=parseable src/ska_tango_base | tee build/code_analysis.stdout
+	pylint --output-format=pylint2junit.JunitReporter src/ska_tango_base > build/reports/linting.xml
 
 test-in-docker: build ## Build the docker image and run tests inside it.
 	@docker run --rm $(IMAGE):$(VERSION) make test

@@ -16,10 +16,10 @@ from tango import DevState, DevFailed
 from tango.test_context import MultiDeviceTestContext
 
 # PROTECTED REGION ID(CspSubelementMaster.test_additional_imports) ENABLED START #
-from ska.base import SKAMaster, CspSubElementMaster
-from ska.base.commands import ResultCode
-from ska.base.faults import CommandError
-from ska.base.control_model import (
+from ska_tango_base import SKAMaster, CspSubElementMaster
+from ska_tango_base.commands import ResultCode
+from ska_tango_base.faults import CommandError
+from ska_tango_base.control_model import (
     AdminMode, ControlMode, HealthState, SimulationMode, TestMode
 )
 # PROTECTED REGION END #    //  CspSubElementMaster.test_additional_imports
@@ -37,7 +37,7 @@ class TestCspSubElementMaster(object):
         'GroupDefinitions': '',
         'PowerDelayStandbyOn': 1.5,
         'PowerDelayStandbyOff': 1.0,
-        }
+    }
 
     @classmethod
     def mocking(cls):
@@ -75,7 +75,7 @@ class TestCspSubElementMaster(object):
         """Test for GetVersionInfo"""
         # PROTECTED REGION ID(CspSubelementMaster.test_GetVersionInfo) ENABLED START #
         versionPattern = re.compile(
-            r'CspSubElementMaster, lmcbaseclasses, [0-9].[0-9].[0-9], '
+            r'CspSubElementMaster, ska_tango_base, [0-9].[0-9].[0-9], '
             r'A set of generic base devices for SKA Telescope.')
         versionInfo = tango_context.device.GetVersionInfo()
         assert (re.match(versionPattern, versionInfo[0])) is not None
@@ -86,7 +86,7 @@ class TestCspSubElementMaster(object):
         """Test for buildState"""
         # PROTECTED REGION ID(CspSubelementMaster.test_buildState) ENABLED START #
         buildPattern = re.compile(
-            r'lmcbaseclasses, [0-9].[0-9].[0-9], '
+            r'ska_tango_base, [0-9].[0-9].[0-9], '
             r'A set of generic base devices for SKA Telescope')
         assert (re.match(buildPattern, tango_context.device.buildState)) is not None
         # PROTECTED REGION END #    //  CspSubelementMaster.test_buildState
@@ -267,7 +267,7 @@ class TestCspSubElementMaster(object):
         # PROTECTED REGION ID(CspSubelementMaster.test_LoadFirmware) ENABLED START #
         # After initialization the device is in the right state (OFF/MAINTENANCE) to
         # execute the command.
-        assert tango_context.device.LoadFirmware(['file', 'test/dev/b','918698a7fea3']) == [
+        assert tango_context.device.LoadFirmware(['file', 'test/dev/b', '918698a7fea3']) == [
             [ResultCode.OK], ["LoadFirmware command completed OK"]
         ]
         # PROTECTED REGION END #    //  CspSubelementMaster.test_LoadFirmware
@@ -283,7 +283,7 @@ class TestCspSubElementMaster(object):
         tango_context.device.Off()
         tango_context.device.On()
         with pytest.raises(DevFailed) as df:
-            tango_context.device.LoadFirmware(['file', 'test/dev/b','918698a7fea3'])
+            tango_context.device.LoadFirmware(['file', 'test/dev/b', '918698a7fea3'])
         assert "LoadFirmwareCommand not allowed" in str(df.value.args[0].desc)
         # PROTECTED REGION END #    //  CspSubelementMaster.test_LoadFirmware_when_in_wrong_state
 

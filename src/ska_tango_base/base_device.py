@@ -29,19 +29,19 @@ from tango.server import run, Device, attribute, command, device_property
 
 # SKA specific imports
 import ska.logging as ska_logging
-from ska.base import release
-from ska.base.commands import (
+from ska_tango_base import release
+from ska_tango_base.commands import (
     ActionCommand, BaseCommand, ResultCode
 )
-from ska.base.control_model import (
+from ska_tango_base.control_model import (
     AdminMode, ControlMode, SimulationMode, TestMode, HealthState,
     LoggingLevel
 )
-from ska.base.faults import StateModelError
-from ska.base.state_machine import OperationStateMachine, AdminModeStateMachine
+from ska_tango_base.faults import StateModelError
+from ska_tango_base.state_machine import OperationStateMachine, AdminModeStateMachine
 
-from ska.base.utils import get_groups_from_json, for_testing_only
-from ska.base.faults import GroupDefinitionsError, LoggingTargetError, LoggingLevelError
+from ska_tango_base.utils import get_groups_from_json, for_testing_only
+from ska_tango_base.faults import GroupDefinitionsError, LoggingTargetError, LoggingLevelError
 
 LOG_FILE_SIZE = 1024 * 1024  # Log file size 1MB.
 
@@ -54,8 +54,8 @@ class _Log4TangoLoggingLevel(enum.IntEnum):
     via PyTango, so we hard code it here in the interim.
 
     Source:
-       https://github.com/tango-controls/cppTango/blob/
-       4feffd7c8e24b51c9597a40b9ef9982dd6e99cdf/log4tango/include/log4tango/Level.hh#L86-L93
+       https://gitlab.com/tango-controls/cppTango/blob/
+       4feffd7c8e24b51c9597a40b9ef9982dd6e99cdf/log4tango/include/log4tango/Level.hh#L86-93
     """
 
     OFF = 100
@@ -135,7 +135,7 @@ class LoggingUtils:
     def sanitise_logging_targets(targets, device_name):
         """Validate and return logging targets '<type>::<name>' strings.
 
-        :param targets: 
+        :param targets:
             List of candidate logging target strings, like '<type>[::<name>]'
             Empty and whitespace-only strings are ignored.  Can also be None.
 
@@ -225,7 +225,8 @@ class LoggingUtils:
         elif parsed.scheme in ["udp", "tcp"]:
             if not parsed.hostname:
                 raise LoggingTargetError(
-                    "Invalid syslog URL - could not extract hostname from '{}'".format(url)
+                    "Invalid syslog URL - could not extract hostname from '{}'".format(
+                        url)
                 )
             try:
                 port = int(parsed.port)
@@ -239,7 +240,8 @@ class LoggingUtils:
             socktype = socket.SOCK_DGRAM if parsed.scheme == "udp" else socket.SOCK_STREAM
         else:
             raise LoggingTargetError(
-                "Invalid syslog URL - expected file, udp or tcp protocol scheme in '{}'".format(url)
+                "Invalid syslog URL - expected file, udp or tcp protocol scheme in '{}'".format(
+                    url)
             )
         return address, socktype
 
@@ -279,7 +281,8 @@ class LoggingUtils:
             if tango_logger:
                 handler = TangoLoggingServiceHandler(tango_logger)
             else:
-                raise LoggingTargetError("Missing tango_logger instance for 'tango' target type")
+                raise LoggingTargetError(
+                    "Missing tango_logger instance for 'tango' target type")
         else:
             raise LoggingTargetError(
                 "Invalid target type requested: '{}' in '{}'".format(target_type, target))
@@ -529,7 +532,7 @@ class DeviceStateModel:
         :param op_state: the target operational state (optional)
         :type op_state: :py:class:`tango.DevState`
         :param admin_mode: the target admin mode (optional)
-        :type admin_mode: :py:class:`~ska.base.control_model.AdminMode`
+        :type admin_mode: :py:class:`~ska_tango_base.control_model.AdminMode`
         """
         if admin_mode is None:
             admin_mode = self._admin_mode_state_machine.state
@@ -649,6 +652,7 @@ class SKABaseDevice(Device):
 
         class EnsureTagsFilter(logging.Filter):
             """Ensure all records have a "tags" field - empty string, if not provided."""
+
             def filter(self, record):
                 if not hasattr(record, "tags"):
                     record.tags = ""
@@ -804,7 +808,7 @@ class SKABaseDevice(Device):
         callback
 
         :param admin_mode: the new admin_mode value
-        :type admin_mode: :py:class:`~ska.base.control_model.AdminMode`
+        :type admin_mode: :py:class:`~ska_tango_base.control_model.AdminMode`
         """
         self.push_change_event("adminMode", admin_mode)
         self.push_archive_event("adminMode", admin_mode)
@@ -1057,7 +1061,7 @@ class SKABaseDevice(Device):
         Sets Admin Mode of the device.
 
         :param value: Admin Mode of the device.
-        :type value: :py:class:`~ska.base.control_model.AdminMode`
+        :type value: :py:class:`~ska_tango_base.control_model.AdminMode`
 
         :raises ValueError: for unknown adminMode
         """
@@ -1143,6 +1147,7 @@ class SKABaseDevice(Device):
         """
         A class for the SKABaseDevice's Reset() command.
         """
+
         def do(self):
             """
             Stateless hook for device GetVersionInfo() command.
@@ -1175,6 +1180,7 @@ class SKABaseDevice(Device):
         """
         A class for the SKABaseDevice's Reset() command.
         """
+
         def __init__(self, target, state_model, logger=None):
             """
             Create a new ResetCommand

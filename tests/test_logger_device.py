@@ -12,12 +12,12 @@ import re
 import pytest
 from tango import DevState
 from tango.test_context import MultiDeviceTestContext
-from ska.base.logger_device import SKALogger
-from ska.base.subarray_device import SKASubarray
+from ska_tango_base.logger_device import SKALogger
+from ska_tango_base.subarray_device import SKASubarray
 import tango
 
 # PROTECTED REGION ID(SKALogger.test_additional_imports) ENABLED START #
-from ska.base.control_model import (
+from ska_tango_base.control_model import (
     AdminMode,
     ControlMode,
     HealthState,
@@ -76,7 +76,7 @@ class TestSKALogger(object):
         """Test for GetVersionInfo"""
         # PROTECTED REGION ID(SKALogger.test_GetVersionInfo) ENABLED START #
         versionPattern = re.compile(
-            r"SKALogger, lmcbaseclasses, [0-9].[0-9].[0-9], "
+            r"SKALogger, ska_tango_base, [0-9].[0-9].[0-9], "
             r"A set of generic base devices for SKA Telescope."
         )
         versionInfo = tango_context.device.GetVersionInfo()
@@ -89,7 +89,7 @@ class TestSKALogger(object):
         """Test for buildState"""
         # PROTECTED REGION ID(SKALogger.test_buildState) ENABLED START #
         buildPattern = re.compile(
-            r"lmcbaseclasses, [0-9].[0-9].[0-9], "
+            r"ska_tango_base, [0-9].[0-9].[0-9], "
             r"A set of generic base devices for SKA Telescope"
         )
         assert (re.match(buildPattern, tango_context.device.buildState)) is not None

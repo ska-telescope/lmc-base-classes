@@ -1,19 +1,19 @@
-# lmc-base-classes
+# SKA Tango Base Classes and Utilities
 
 
 
-[![Documentation Status](https://readthedocs.org/projects/lmc-base-classes/badge/?version=latest)](https://developerskatelescopeorg.readthedocs.io/projects/lmc-base-classes/en/latest/?badge=latest)
+[![Documentation Status](https://readthedocs.org/projects/ska-tango-base/badge/?version=latest)](https://developerskatelescopeorg.readthedocs.io/projects/ska-tango-base/en/latest/?badge=latest)
 
 
 
 ## About
 
-A shared repository for the Local Monitoring and Control (LMC) Base Classes. The goal is to create a Software Development Kit for the Control System of the [Square Kilometre Array](http://skatelescope.org/) (SKA) radio telescope project. The Telescope Manager provides the Central Control System and each _Element_ provides a Local Control System that all work together as the Control System for the instrument. In the SKA case _Elements_ are subsystems such as the Central Signal Processor (CSP), Science Data Processor (SDP), Dishes (DSH), Low-Frequency Apperture Array (LFAA) etc.  Control is implement using the distributed control system, [TANGO](http://www.tango-controls.org), which is accessed from Python using the [PyTango](https://github.com/tango-controls/pytango) package.
+A shared repository for the Local Monitoring and Control (LMC) Tango Base Classes. The goal is to create a Software Development Kit for the Control System of the [Square Kilometre Array](http://skatelescope.org/) (SKA) radio telescope project. The Telescope Manager provides the Central Control System and each _Element_ provides a Local Control System that all work together as the Control System for the instrument. In the SKA case _Elements_ are subsystems such as the Central Signal Processor (CSP), Science Data Processor (SDP), Dishes (DSH), Low-Frequency Apperture Array (LFAA) etc.  Control is implement using the distributed control system, [TANGO](http://www.tango-controls.org), which is accessed from Python using the [PyTango](https://gitlab.com/tango-controls/pytango) package.
 
 
 Early work in this repo was done as part of the LMC Base Classes Evolutionary Prototype (LEvPro) project, under the INDO-SA collaboration program.
 
-The lmc-base-classe repository contains set of eight classes as mentioned in SKA Control systems guidelines. Following is the list of base classes
+The ska-tango-base repository includes a set of eight classes as mentioned in SKA Control systems guidelines. Following is the list of base classes
 - SKABaseDevice: This is generic class that includes common attributes, commands and properties that are required for any SKA tango device.
 - SKACapability: This is generic base class for any element to provide common functionality of a capability of an SKA device.
 - SKAAlarmHandler: This is the generic class meant to handle the alarms and alerts.
@@ -24,6 +24,12 @@ The lmc-base-classe repository contains set of eight classes as mentioned in SKA
 - SKATelState: This is the generic base class to provide common functionality of a TelState device of any SKA Element.
 
 ## Version History
+
+#### 0.9.0
+- Breaking change: Package rename
+  - Installable package name changed from `lmcbaseclasses` to `ska_tango_base`.
+  - Package import `ska.base` has been changed to `ska_tango_base`.  For example, instead of
+    `from ska.base import SKABaseDevice` use `from ska_tango_base import SKABaseDevice`.
 
 #### 0.8.1
 - Fix broken docs
@@ -125,13 +131,13 @@ than only EMPTY obsState.
   No change to usage.
 
 #### 0.5.0
-- Breaking change:  Major restructuring of the package to simplify imports and reduce confusion.  
+- Breaking change:  Major restructuring of the package to simplify imports and reduce confusion.
   - The single word `skabase` module has now changed to two words: `ska.base`.
   - Instead of `from skabase.SKABaseDevice.SKABaseDevice import SKABaseDevice` to import the
-    class, just use `from ska.base import SKABaseDevice`.  
+    class, just use `from ska.base import SKABaseDevice`.
   - Instead of `skabase.control_model` use `ska.base.control_model`.
   - The `SKATestDevice` was removed.  Note that this class was only intended
-    for internal use in lmc-base-classes and is no longer needed.
+    for internal use and is no longer needed.
   - Removed unused scripts and modules.
 - Removed `TangoLoggingLevel` which was deprecated in 0.4.0.  Use `ska.base.control_model.LoggingLevel`
   instead.
@@ -214,9 +220,9 @@ The requirements for testing are:
 3. Run 'python3 -m pip install . --extra-index-url https://nexus.engageska-portugal.pt/repository/pypi/simple'
 
 ## Testing
-The LMC base classes can be tested locally my invoking *make CI_JOB_ID=some_id test* command.
-This invokes a chain of commands from the makefile which builds the lmc base classes
-python package, creates a docker image with lmc base classes, instantiates separate
+The project can be tested locally my invoking *make CI_JOB_ID=some_id test* command.
+This invokes a chain of commands from the makefile which builds the project's
+python package, creates a docker image with the project, instantiates separate
 container for each of the base class and runs unit test cases of each class. Additionally,
 code analysis is also done and code coverage report is prepared.
 After testing is done, the containers are taken down.
@@ -429,7 +435,7 @@ to the Tango Logging Service:
 
 ### Where are the logs from the admin device (dserver)?
 
-PyTango is wrapper around the C++ Tango library, and the admin device is implemented in C++. 
+PyTango is wrapper around the C++ Tango library, and the admin device is implemented in C++.
 The admin device does not inherit from the SKABaseDevice and we cannot override its behaviour
 from the Python layer.  Its logs can only be seen by configuring the TLS appropriately.
 
@@ -472,10 +478,10 @@ In future, it would be useful to override the property with the command line opt
 ### PyCharm
 
 The Docker integration is recommended.  For development, use the
-`nexus.engageska-portugal.pt/tango-example/lmcbaseclasses:latest` image
+`nexus.engageska-portugal.pt/ska-telescope/ska_tango_base:latest` image
 as the Python Interpreter for the project.  Note that if `make` is
 run with targets like `build`, `up`, or `test`, that image will be
-rebuilt by Docker using the local code, and tagged as `latest`.  
+rebuilt by Docker using the local code, and tagged as `latest`.
 
 As this project uses a `src` [folder structure](https://blog.ionelmc.ro/2014/05/25/python-packaging/#the-structure),
 so under _Preferences > Project Structure_, the `src` folder needs to be marked as "Sources".  That will
@@ -484,7 +490,7 @@ When adding Run/Debug configurations, make sure "Add content roots to PYTHONPATH
 "Add source roots to PYTHONPATH" are checked.
 
 ## Docs
-- Online:  [Read The Docs](https://developerskatelescopeorg.readthedocs.io/projects/lmc-base-classes/en/latest)
+- Online:  [Read The Docs](https://developerskatelescopeorg.readthedocs.io/projects/ska-tango-base/en/latest)
 - SKA Control System guidelines:  [Google docs folder](https://drive.google.com/drive/folders/0B8fhAW5QnZQWQ2ZlcjhVS0NmRms)
 - Old LEvPro work area: [Google docs folder](https://drive.google.com/drive/folders/0B8fhAW5QnZQWVHVFVGVXT2Via28)
 

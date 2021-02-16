@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="ASCII"?>
 <pogoDsl:PogoSystem xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:pogoDsl="http://www.esrf.fr/tango/pogo/PogoDsl">
   <classes name="SKAMaster" pogoRevision="9.6">
-    <description description="A master test" title="SKAMaster" sourcePath="/home/tango/src/lmc-base-classes/pogo" language="PythonHL" filestogenerate="XMI   file,Code files,Python Package,Protected Regions" license="none" hasMandatoryProperty="false" hasConcreteProperty="true" hasAbstractCommand="false" hasAbstractAttribute="false">
+    <description description="A master test" title="SKAMaster" sourcePath="/home/tango/src/ska-tango-base/pogo" language="PythonHL" filestogenerate="XMI   file,Code files,Python Package,Protected Regions" license="none" hasMandatoryProperty="false" hasConcreteProperty="true" hasAbstractCommand="false" hasAbstractAttribute="false">
       <inheritances classname="Device_Impl" sourcePath=""/>
       <inheritances classname="SKABaseDevice" sourcePath="./"/>
       <identification contact="at ska.ac.za - cam" author="cam" emailDomain="ska.ac.za" classFamily="SkaBase" siteSpecific="" platform="All Platforms" bus="Not Applicable" manufacturer="none" reference=""/>

@@ -21,10 +21,10 @@ from tango.server import run, attribute, command, device_property
 
 # SKA specific imports
 
-from ska.base import SKAMaster
-from ska.base.commands import ResultCode, ResponseCommand
-from ska.base.control_model import AdminMode
-from ska.base.faults import CommandError
+from ska_tango_base import SKAMaster
+from ska_tango_base.commands import ResultCode, ResponseCommand
+from ska_tango_base.control_model import AdminMode
+from ska_tango_base.faults import CommandError
 # PROTECTED REGION END #    //  CspSubElementMaster.additionnal_import
 
 __all__ = ["CspSubElementMaster", "main"]
@@ -180,7 +180,6 @@ class CspSubElementMaster(SKAMaster):
         doc="The command execution measured duration (in sec).",
     )
 
-
     # ---------------
     # General methods
     # ---------------
@@ -203,7 +202,7 @@ class CspSubElementMaster(SKAMaster):
         self.register_command_object(
             "ReInitDevices", self.ReInitDevicesCommand(*device_args)
         )
-    
+
     class InitCommand(SKAMaster.InitCommand):
         """
         A class for the CspSubElementMaster's init_device() "command".
@@ -234,7 +233,7 @@ class CspSubElementMaster(SKAMaster):
             # values: the expected maximum duration in sec.
             device._cmd_maximum_duration = defaultdict(float)
 
-            # _cmd_measure_duration: command execution's measured duration (msec.) 
+            # _cmd_measure_duration: command execution's measured duration (msec.)
             # implemented as a default dictionary:
             # keys: the command name in lower case(on, off, standby,..)
             # values: the measured execution time (sec.)
@@ -402,6 +401,7 @@ class CspSubElementMaster(SKAMaster):
         """
         A class for the CspSubElementMaster's LoadFirmware command.
         """
+
         def do(self, argin):
             """
             Stateless hook for device LoadFirmware() command.
@@ -420,17 +420,17 @@ class CspSubElementMaster(SKAMaster):
             to be executed.
             The master device has to be in OFF/MAINTENACE to process the
             LoadFirmware command.
-            
-            :raises: ``CommandError`` if command not allowed 
+
+            :raises: ``CommandError`` if command not allowed
             :return: ``True`` if the command is allowed.
             :rtype: boolean
             """
             if (self.state_model.op_state == tango.DevState.OFF
                     and self.state_model.admin_mode == AdminMode.MAINTENANCE):
                 return True
-            msg = "{} not allowed in {}/{}".format (self.name,
-                                                    self.state_model.op_state,
-                                                    AdminMode(self.state_model.admin_mode).name)
+            msg = "{} not allowed in {}/{}".format(self.name,
+                                                   self.state_model.op_state,
+                                                   AdminMode(self.state_model.admin_mode).name)
             raise CommandError(msg)
 
     class PowerOnDevicesCommand(ResponseCommand):
@@ -455,8 +455,8 @@ class CspSubElementMaster(SKAMaster):
             Check if the command is in the proper state to be executed.
             The master device has to be in ON to process the
             PowerOnDevices command.
-            
-            : raises: ``CommandError`` if command not allowed 
+
+            : raises: ``CommandError`` if command not allowed
             : return: ``True`` if the command is allowed.
             : rtype: boolean
             """
@@ -488,8 +488,8 @@ class CspSubElementMaster(SKAMaster):
             Check if the command is in the proper state to be executed.
             The master device has to be in ON to process the
             PowerOffDevices command.
-            
-            : raises: ``CommandError`` if command not allowed 
+
+            : raises: ``CommandError`` if command not allowed
             : return: ``True`` if the command is allowed.
             : rtype: boolean
             """
@@ -515,18 +515,18 @@ class CspSubElementMaster(SKAMaster):
             """
             message = "ReInitDevices command completed OK"
             return (ResultCode.OK, message)
-        
+
         def check_allowed(self):
             """
             Check if the command is in the proper state to be executed.
             The master device has to be in ON to process the
             ReInitDevices command.
-            
-            : raises: ``CommandError`` if command not allowed 
+
+            : raises: ``CommandError`` if command not allowed
             : return: ``True`` if the command is allowed.
             : rtype: boolean
             """
-            if self.state_model.op_state == tango.DevState.ON: 
+            if self.state_model.op_state == tango.DevState.ON:
                 return True
             msg = "{} not allowed in {}".format(self.name,
                                                 self.state_model.op_state)
@@ -534,7 +534,7 @@ class CspSubElementMaster(SKAMaster):
 
     def is_LoadFirmware_allowed(self):
         """
-        Check if the LoadFirmware command is allowed in the current 
+        Check if the LoadFirmware command is allowed in the current
         state.
 
         :raises: ``CommandError`` if command not allowed
@@ -555,16 +555,16 @@ class CspSubElementMaster(SKAMaster):
     def LoadFirmware(self, argin):
         # PROTECTED REGION ID(CspSubElementMaster.LoadFirmware) ENABLED START #
         """
-        Deploy new versions of software and firmware and trigger 
-        a restart so that a Component initializes using a newly 
+        Deploy new versions of software and firmware and trigger
+        a restart so that a Component initializes using a newly
         deployed version.
 
         :param argin: A list of three strings:
-            - The file name or a pointer to the filename specified as URL. 
+            - The file name or a pointer to the filename specified as URL.
             - the list of components that use software or firmware package (file),
             - checksum or signing
-            Ex: ['file://firmware.txt','test/dev/1, test/dev/2, test/dev/3', 
-            '918698a7fea3fa9da5996db001d33628'] 
+            Ex: ['file://firmware.txt','test/dev/1, test/dev/2, test/dev/3',
+            '918698a7fea3fa9da5996db001d33628']
         :type argin: 'DevVarStringArray'
         :return: A tuple containing a return code and a string
             message indicating status. The message is for
@@ -578,7 +578,7 @@ class CspSubElementMaster(SKAMaster):
 
     def is_PowerOnDevices_allowed(self):
         """
-        Check if the PowerOnDevice command is allowed in the current 
+        Check if the PowerOnDevice command is allowed in the current
         state.
 
         :raises ``tango.DevFailed`` if command not allowed
@@ -615,7 +615,7 @@ class CspSubElementMaster(SKAMaster):
 
     def is_PowerOffDevices_allowed(self):
         """
-        Check if the PowerOffDevices command is allowed in the current 
+        Check if the PowerOffDevices command is allowed in the current
         state.
 
         :raises: ``tango.DevFailed`` if command not allowed
@@ -653,7 +653,7 @@ class CspSubElementMaster(SKAMaster):
 
     def is_ReInitDevices_allowed(self):
         """
-        Check if the ReInitDevices command is allowed in the current 
+        Check if the ReInitDevices command is allowed in the current
         state.
 
         :raises: ``tango.DevFailed`` if command not allowed
@@ -674,8 +674,8 @@ class CspSubElementMaster(SKAMaster):
         # PROTECTED REGION ID(CspSubElementMaster.ReInitDevices) ENABLED START #
         """
         Reinitialize the devices passed in the input argument.
-        The exact functionality may vary for different devices 
-        and sub-systems, each TANGO Device/Server should define 
+        The exact functionality may vary for different devices
+        and sub-systems, each TANGO Device/Server should define
         what does ReInitDevices means.
         Ex:
         ReInitDevices FPGA -> reset

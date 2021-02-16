@@ -14,7 +14,7 @@ A generic base device for Telescope State for SKA.
 from tango.server import run, device_property
 
 # SKA specific imports
-from ska.base import SKABaseDevice
+from ska_tango_base import SKABaseDevice
 # PROTECTED REGION END #    //  SKATelState.additionnal_imports
 
 __all__ = ["SKATelState", "main"]

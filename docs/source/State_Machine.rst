@@ -99,7 +99,7 @@ state state machine by
 * three extra states: INIT_ADMIN, FAULT_ADMIN and DISABLED_ADMIN
 * two extra transition triggers: "admin_on" and "admin_off", which allow
   for transition between INIT and INIT_ADMIN; FAULT and FAULT_ADMIN; and
-  DISABLE and DISABLE_ADMIN. 
+  DISABLE and DISABLE_ADMIN.
 
 This implementation minimises the coupling between admin mode and
 operational state, allowing the two machines to be conceptualised almost
@@ -133,7 +133,7 @@ observations (currently only subarray devices).
   :width: 80%
   :alt: Diagram of the observation state machine, as decided and
         published in ADR-8.
-  
+
   Diagram of the observation state machine, as decided and published in
   ADR-8.
 
@@ -142,7 +142,7 @@ observations (currently only subarray devices).
   :width: 80%
   :alt: Diagram of the observation state machine, automatically
         generated from the implementation
-  
+
   Diagram of the observation state machine, automatically generated from
   the implementation. The equivalance of this diagram to the diagram
   previous demonstrates that the machine has been implemented in
@@ -153,14 +153,14 @@ CSP SubElement ObsDevice state machine
 This  state machine is implemented for the CSP SubElement devices, different
 from the subarrays, that manage observations.
 
-Compared to the SKA Observation State Machine, it implements a smaller number 
+Compared to the SKA Observation State Machine, it implements a smaller number
 of states, number that can be further descreased depending on the necessities of the different
 sub-elements.
 
 The implemented states for the current state machine are:
 
 * IDLE: this is the observing state after the device intialization.
-* CONFIGURING: transitional state to report the device configuration is in progress. 
+* CONFIGURING: transitional state to report the device configuration is in progress.
   *Need to understand if this state is really required by the observing devices of any
   CSP sub-element.*
 * READY: the device is configured and is ready to perform observations
@@ -168,7 +168,7 @@ The implemented states for the current state machine are:
 * ABORTING: the device is processing an abort.
   Need to understand if this state is really required by the observing devices of any
   CSP sub-element.
-* ABORTED: the device has completed the abort request. 
+* ABORTED: the device has completed the abort request.
 * FAULT: the device has experienced an error from which it can be recovered only via
   manual intervention invoking a reset command that force the device to the base
   state (IDLE).
@@ -184,7 +184,7 @@ The implemented states for the current state machine are:
 API
 ---
 
-.. automodule:: ska.base.state_machine
+.. automodule:: ska_tango_base.state_machine
     :members:
     :undoc-members:
 
@@ -197,7 +197,7 @@ API
 .. autoclass:: ObservationStateMachine
     :members:
 
-.. automodule:: ska.base.csp_subelement_state_machine
+.. automodule:: ska_tango_base.csp_subelement_state_machine
     :members:
     :undoc-members:
 

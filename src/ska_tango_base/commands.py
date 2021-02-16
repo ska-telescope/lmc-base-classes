@@ -4,7 +4,7 @@ ResultCode enum.
 """
 import enum
 import logging
-from ska.base.faults import CommandError, ResultCodeError, StateModelError
+from ska_tango_base.faults import CommandError, ResultCodeError, StateModelError
 
 module_logger = logging.getLogger(__name__)
 
@@ -222,6 +222,7 @@ class ActionCommand(ResponseCommand):
     running, sends an action to that state model, thus driving device
     state.
     """
+
     def __init__(
         self, target, state_model, action_hook, start_action=False, logger=None
     ):

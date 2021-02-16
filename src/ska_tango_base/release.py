@@ -1,13 +1,13 @@
 # -*- coding: utf-8 -*-
 #
-# This file is part of the SKA LMC Base Classes project
+# This file is part of the SKA Tango Base project
 #
 #
 #
-"""Release information for lmc-base-classes Python Package"""
+"""Release information for ska_tango_base Python Package"""
 
-name = """lmcbaseclasses"""
-version = "0.8.1"
+name = """ska_tango_base"""
+version = "0.9.0"
 version_info = version.split(".")
 description = """A set of generic base devices for SKA Telescope."""
 author = "SKA India and SARAO and CSIRO and INAF"

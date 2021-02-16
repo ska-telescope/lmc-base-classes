@@ -1,5 +1,5 @@
 """
-A module defining a list of fixtures that are shared across all ska.base tests.
+A module defining a list of fixtures that are shared across all ska_tango_base tests.
 """
 from collections import defaultdict
 import importlib
@@ -12,8 +12,8 @@ from transitions import MachineError
 from tango import DevState, EventType
 from tango.test_context import DeviceTestContext
 
-from ska.base.control_model import AdminMode, ObsState
-from ska.base.faults import StateModelError
+from ska_tango_base.control_model import AdminMode, ObsState
+from ska_tango_base.faults import StateModelError
 
 
 def pytest_configure(config):
@@ -45,7 +45,8 @@ def pytest_generate_tests(metafunc):
         expected = defaultdict(lambda: None)
         for transition in spec["transitions"]:
             triggers.add(transition["trigger"])
-            expected[(transition["from"], transition["trigger"])] = states[transition["to"]]
+            expected[(transition["from"], transition["trigger"])
+                     ] = states[transition["to"]]
         test_cases = list(itertools.product(sorted(states), sorted(triggers)))
         test_ids = [f"{state}-{trigger}" for (state, trigger) in test_cases]
 
@@ -332,6 +333,7 @@ def load_data(name):
     with open(f"tests/data/{name}.json", "r") as json_file:
         return json.load(json_file)
 
+
 def load_state_machine_spec(name):
     """
     Loads a state machine specification by name.
@@ -351,6 +353,7 @@ def load_state_machine_spec(name):
         if "obs_state" in state_spec:
             state_spec["obs_state"] = ObsState[state_spec["obs_state"]]
     return machine_spec
+
 
 @pytest.fixture(scope="class")
 def tango_context(request):
@@ -394,10 +397,11 @@ def tango_context(request):
     # first "test_" to get the module name
     test_class_name = request.cls.__name__
     class_name = test_class_name.split('Test', 1)[-1]
-    module = importlib.import_module("ska.base", class_name)
+    module = importlib.import_module("ska_tango_base", class_name)
     class_type = getattr(module, class_name)
 
-    tango_context = DeviceTestContext(class_type, properties=test_properties.get(class_name))
+    tango_context = DeviceTestContext(
+        class_type, properties=test_properties.get(class_name))
     tango_context.start()
     yield tango_context
     tango_context.stop()
@@ -502,7 +506,8 @@ def tango_change_event_helper(tango_context):
             """
             if event_data.err:
                 error = event_data.errors[0]
-                self._errors.append("Event callback error: [%s] %s" % (error.reason, error.desc))
+                self._errors.append(
+                    "Event callback error: [%s] %s" % (error.reason, error.desc))
             else:
                 self._values_queue.put(event_data.attr_value.value)
 

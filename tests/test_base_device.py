@@ -19,12 +19,12 @@ import tango
 
 from unittest import mock
 from tango import DevFailed, DevState
-from ska.base import SKABaseDevice
-from ska.base.commands import ResultCode
-from ska.base.control_model import (
+from ska_tango_base import SKABaseDevice
+from ska_tango_base.commands import ResultCode
+from ska_tango_base.control_model import (
     AdminMode, ControlMode, HealthState, LoggingLevel, SimulationMode, TestMode
 )
-from ska.base.base_device import (
+from ska_tango_base.base_device import (
     _Log4TangoLoggingLevel,
     _PYTHON_TO_TANGO_LOGGING_LEVEL,
     LoggingUtils,
@@ -32,7 +32,7 @@ from ska.base.base_device import (
     DeviceStateModel,
     TangoLoggingServiceHandler,
 )
-from ska.base.faults import CommandError
+from ska_tango_base.faults import CommandError
 
 from .conftest import load_state_machine_spec, ModelStateMachineTester
 
@@ -52,12 +52,12 @@ class TestTangoLoggingServiceHandler:
         return TangoLoggingServiceHandler(self.tango_logger)
 
     @pytest.fixture(params=[
-            logging.DEBUG,
-            logging.INFO,
-            logging.WARN,
-            logging.ERROR,
-            logging.CRITICAL,
-        ])
+        logging.DEBUG,
+        logging.INFO,
+        logging.WARN,
+        logging.ERROR,
+        logging.CRITICAL,
+    ])
     def python_log_level(self, request):
         return request.param
 
@@ -73,7 +73,8 @@ class TestTangoLoggingServiceHandler:
 
     def test_emit_message_is_formatted(self, tls_handler):
         # arrange
-        record = logging.LogRecord('test', logging.INFO, '', 1, 'message %s', ('param',), None)
+        record = logging.LogRecord('test', logging.INFO, '', 1,
+                                   'message %s', ('param',), None)
 
         def format_stub(log_record):
             return "LOG: " + log_record.getMessage()
@@ -113,36 +114,36 @@ class TestTangoLoggingServiceHandler:
 
 class TestLoggingUtils:
     @pytest.fixture(params=[
-            (None, []),
-            ([""], []),
-            ([" \n\t "], []),
-            (["console"], ["console::cout"]),
-            (["console::"], ["console::cout"]),
-            (["console::cout"], ["console::cout"]),
-            (["console::anything"], ["console::anything"]),
-            (["file"], ["file::my_dev_name.log"]),
-            (["file::"], ["file::my_dev_name.log"]),
-            (["file::/tmp/dummy"], ["file::/tmp/dummy"]),
-            (["syslog::some/path"], ["syslog::some/path"]),
-            (["syslog::file://some/path"], ["syslog::file://some/path"]),
-            (["syslog::protocol://somehost:1234"], ["syslog::protocol://somehost:1234"]),
-            (["tango"], ["tango::logger"]),
-            (["tango::"], ["tango::logger"]),
-            (["tango::logger"], ["tango::logger"]),
-            (["tango::anything"], ["tango::anything"]),
-            (["console", "file"], ["console::cout", "file::my_dev_name.log"]),
-        ])
+        (None, []),
+        ([""], []),
+        ([" \n\t "], []),
+        (["console"], ["console::cout"]),
+        (["console::"], ["console::cout"]),
+        (["console::cout"], ["console::cout"]),
+        (["console::anything"], ["console::anything"]),
+        (["file"], ["file::my_dev_name.log"]),
+        (["file::"], ["file::my_dev_name.log"]),
+        (["file::/tmp/dummy"], ["file::/tmp/dummy"]),
+        (["syslog::some/path"], ["syslog::some/path"]),
+        (["syslog::file://some/path"], ["syslog::file://some/path"]),
+        (["syslog::protocol://somehost:1234"], ["syslog::protocol://somehost:1234"]),
+        (["tango"], ["tango::logger"]),
+        (["tango::"], ["tango::logger"]),
+        (["tango::logger"], ["tango::logger"]),
+        (["tango::anything"], ["tango::anything"]),
+        (["console", "file"], ["console::cout", "file::my_dev_name.log"]),
+    ])
     def good_logging_targets(self, request):
         targets_in, expected = request.param
         dev_name = "my/dev/name"
         return targets_in, dev_name, expected
 
     @pytest.fixture(params=[
-            ["invalid"],
-            ["invalid", "console"],
-            ["invalid::type"],
-            ["syslog"],
-        ])
+        ["invalid"],
+        ["invalid", "console"],
+        ["invalid::type"],
+        ["syslog"],
+    ])
     def bad_logging_targets(self, request):
         targets_in = request.param
         dev_name = "my/dev/name"
@@ -159,14 +160,15 @@ class TestLoggingUtils:
             LoggingUtils.sanitise_logging_targets(targets_in, dev_name)
 
     @pytest.fixture(params=[
-            ("deprecated/path", ["deprecated/path", None]),
-            ("file:///abs/path", ["/abs/path", None]),
-            ("file://relative/path", ["relative/path", None]),
-            ("file://some/spaced%20path", ["some/spaced path", None]),
-            ("udp://somehost.domain:1234", [("somehost.domain", 1234), socket.SOCK_DGRAM]),
-            ("udp://127.0.0.1:1234", [("127.0.0.1", 1234), socket.SOCK_DGRAM]),
-            ("tcp://somehost:1234", [("somehost", 1234), socket.SOCK_STREAM]),
-            ("tcp://127.0.0.1:1234", [("127.0.0.1", 1234), socket.SOCK_STREAM]),
+        ("deprecated/path", ["deprecated/path", None]),
+        ("file:///abs/path", ["/abs/path", None]),
+        ("file://relative/path", ["relative/path", None]),
+        ("file://some/spaced%20path", ["some/spaced path", None]),
+        ("udp://somehost.domain:1234",
+         [("somehost.domain", 1234), socket.SOCK_DGRAM]),
+        ("udp://127.0.0.1:1234", [("127.0.0.1", 1234), socket.SOCK_DGRAM]),
+        ("tcp://somehost:1234", [("somehost", 1234), socket.SOCK_STREAM]),
+        ("tcp://127.0.0.1:1234", [("127.0.0.1", 1234), socket.SOCK_STREAM]),
     ])
     def good_syslog_url(self, request):
         url, (expected_address, expected_socktype) = request.param
@@ -193,7 +195,8 @@ class TestLoggingUtils:
 
     def test_get_syslog_address_and_socktype_success(self, good_syslog_url):
         url, (expected_address, expected_socktype) = good_syslog_url
-        actual_address, actual_socktype = LoggingUtils.get_syslog_address_and_socktype(url)
+        actual_address, actual_socktype = LoggingUtils.get_syslog_address_and_socktype(
+            url)
         assert actual_address == expected_address
         assert actual_socktype == expected_socktype
 
@@ -201,7 +204,7 @@ class TestLoggingUtils:
         with pytest.raises(LoggingTargetError):
             LoggingUtils.get_syslog_address_and_socktype(bad_syslog_url)
 
-    @mock.patch('ska.base.base_device.TangoLoggingServiceHandler')
+    @mock.patch('ska_tango_base.base_device.TangoLoggingServiceHandler')
     @mock.patch('logging.handlers.SysLogHandler')
     @mock.patch('logging.handlers.RotatingFileHandler')
     @mock.patch('logging.StreamHandler')
@@ -338,7 +341,7 @@ def device_state_model():
 @pytest.mark.state_machine_tester(load_state_machine_spec("device_state_machine"))
 class TestDeviceStateModel(ModelStateMachineTester):
     """
-    This class contains the test suite for the ska.base.SKABaseDevice class.
+    This class contains the test suite for the ska_tango_base.SKABaseDevice class.
     """
 
     @pytest.fixture
@@ -376,7 +379,7 @@ class TestSKABaseDevice(object):
         'SkaLevel': '4',
         'GroupDefinitions': '',
         'LoggingTargetsDefault': ''
-        }
+    }
 
     @classmethod
     def mocking(cls):
@@ -422,7 +425,7 @@ class TestSKABaseDevice(object):
         """Test for GetVersionInfo"""
         # PROTECTED REGION ID(SKABaseDevice.test_GetVersionInfo) ENABLED START #
         versionPattern = re.compile(
-            r'SKABaseDevice, lmcbaseclasses, [0-9].[0-9].[0-9], '
+            r'SKABaseDevice, ska_tango_base, [0-9].[0-9].[0-9], '
             r'A set of generic base devices for SKA Telescope.')
         versionInfo = tango_context.device.GetVersionInfo()
         assert (re.match(versionPattern, versionInfo[0])) is not None
@@ -505,7 +508,7 @@ class TestSKABaseDevice(object):
         """Test for buildState"""
         # PROTECTED REGION ID(SKABaseDevice.test_buildState) ENABLED START #
         buildPattern = re.compile(
-            r'lmcbaseclasses, [0-9].[0-9].[0-9], '
+            r'ska_tango_base, [0-9].[0-9].[0-9], '
             r'A set of generic base devices for SKA Telescope')
         assert (re.match(buildPattern, tango_context.device.buildState)) is not None
         # PROTECTED REGION END #    //  SKABaseDevice.test_buildState
@@ -544,7 +547,7 @@ class TestSKABaseDevice(object):
         assert tango_context.device.loggingTargets == ("tango::logger", )
 
         with mock.patch(
-            "ska.base.base_device.LoggingUtils.create_logging_handler"
+            "ska_tango_base.base_device.LoggingUtils.create_logging_handler"
         ) as mocked_creator:
 
             def null_creator(target, tango_logger):
@@ -645,6 +648,7 @@ class TestSKABaseDevice(object):
         # PROTECTED REGION ID(SKABaseDevice.test_testMode) ENABLED START #
         assert tango_context.device.testMode == TestMode.NONE
         # PROTECTED REGION END #    //  SKABaseDevice.test_testMode
+
 
 class TestSKABaseDevice_commands:
     """

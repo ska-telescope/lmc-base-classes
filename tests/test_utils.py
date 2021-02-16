@@ -3,7 +3,7 @@ from contextlib import nullcontext
 import json
 import pytest
 
-from ska.base.utils import (
+from ska_tango_base.utils import (
     get_groups_from_json,
     get_tango_device_type_id,
     GroupDefinitionsError,
@@ -34,14 +34,14 @@ TEST_GROUPS = {
         'subgroups': [
             {'group_name': 'racks',
              'subgroups': [
-                {'group_name': 'rackA',
-                 'devices': ['dc1/server/1', 'dc1/server/2',
-                             'dc1/switch/A', 'dc1/pdu/rackA']},
-                {'group_name': 'rackB',
-                 'devices': ['dc1/server/3', 'dc1/server/4',
-                             'dc1/switch/B', 'dc1/pdu/rackB'],
-                 'subgroups': []},
-                ]},
+                 {'group_name': 'rackA',
+                  'devices': ['dc1/server/1', 'dc1/server/2',
+                              'dc1/switch/A', 'dc1/pdu/rackA']},
+                 {'group_name': 'rackB',
+                     'devices': ['dc1/server/3', 'dc1/server/4',
+                                 'dc1/switch/B', 'dc1/pdu/rackB'],
+                     'subgroups': []},
+             ]},
         ]
     },
 

@@ -15,9 +15,9 @@ import pytest
 from tango import DevState, DevFailed
 
 # PROTECTED REGION ID(SKASubarray.test_additional_imports) ENABLED START #
-from ska.base import SKASubarray, SKASubarrayResourceManager, SKASubarrayStateModel
-from ska.base.commands import ResultCode
-from ska.base.control_model import (
+from ska_tango_base import SKASubarray, SKASubarrayResourceManager, SKASubarrayStateModel
+from ska_tango_base.commands import ResultCode
+from ska_tango_base.control_model import (
     AdminMode,
     ControlMode,
     HealthState,
@@ -26,7 +26,7 @@ from ska.base.control_model import (
     SimulationMode,
     TestMode,
 )
-from ska.base.faults import CommandError
+from ska_tango_base.faults import CommandError
 
 from .conftest import load_state_machine_spec, ModelStateMachineTester
 
@@ -146,7 +146,7 @@ class TestSKASubarray:
         """Test for GetVersionInfo"""
         # PROTECTED REGION ID(SKASubarray.test_GetVersionInfo) ENABLED START #
         versionPattern = re.compile(
-            r'SKASubarray, lmcbaseclasses, [0-9].[0-9].[0-9], '
+            r'SKASubarray, ska_tango_base, [0-9].[0-9].[0-9], '
             r'A set of generic base devices for SKA Telescope.')
         versionInfo = tango_context.device.GetVersionInfo()
         assert (re.match(versionPattern, versionInfo[0])) is not None
@@ -359,7 +359,7 @@ class TestSKASubarray:
         """Test for buildState"""
         # PROTECTED REGION ID(SKASubarray.test_buildState) ENABLED START #
         buildPattern = re.compile(
-            r'lmcbaseclasses, [0-9].[0-9].[0-9], '
+            r'ska_tango_base, [0-9].[0-9].[0-9], '
             r'A set of generic base devices for SKA Telescope')
         assert (re.match(buildPattern, tango_context.device.buildState)) is not None
         # PROTECTED REGION END #    //  SKASubarray.test_buildState

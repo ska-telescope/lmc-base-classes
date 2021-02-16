@@ -14,19 +14,20 @@ import warnings
 import numpy as np
 from json.decoder import JSONDecodeError
 
-# Tango imports 
+# Tango imports
 import tango
 from tango import DebugIt, DevState, AttrWriteType
 from tango.server import run, attribute, command, device_property
 
 # SKA specific imports
-from ska.base import SKAObsDevice, ObsDeviceStateModel
-from ska.base.commands import ResultCode, ActionCommand
-from ska.base.control_model import ObsState
-from ska.base.faults import CommandError
-from ska.base.csp_subelement_state_machine import CspSubElementObsDeviceStateMachine
+from ska_tango_base import SKAObsDevice, ObsDeviceStateModel
+from ska_tango_base.commands import ResultCode, ActionCommand
+from ska_tango_base.control_model import ObsState
+from ska_tango_base.faults import CommandError
+from ska_tango_base.csp_subelement_state_machine import CspSubElementObsDeviceStateMachine
 
 __all__ = ["CspSubElementObsDevice", "CspSubElementObsDeviceStateModel", "main"]
+
 
 class CspSubElementObsDeviceStateModel(ObsDeviceStateModel):
     """
@@ -75,7 +76,7 @@ class CspSubElementObsDeviceStateModel(ObsDeviceStateModel):
             "obs_reset_succeeded": ("reset_succeeded", None),
             "obs_reset_failed": ("reset_failed", None),
             "fatal_error": ("fatal_error", None),
-          }
+        }
         super().__init__(
             action_breakdown,
             CspSubElementObsDeviceStateMachine,
@@ -84,6 +85,7 @@ class CspSubElementObsDeviceStateModel(ObsDeviceStateModel):
             admin_mode_callback=admin_mode_callback,
             obs_state_callback=obs_state_callback,
         )
+
 
 class CspSubElementObsDevice(SKAObsDevice):
     """
@@ -163,7 +165,6 @@ class CspSubElementObsDevice(SKAObsDevice):
         doc="Message providing info about device health failure.",
     )
 
-
     # ---------------
     # General methods
     # ---------------
@@ -203,7 +204,7 @@ class CspSubElementObsDevice(SKAObsDevice):
         self.register_command_object(
             "ObsReset", self.ObsResetCommand(*device_args)
         )
-    
+
     class InitCommand(SKAObsDevice.InitCommand):
         """
         A class for the CspSubElementObsDevice's init_device() "command".
@@ -224,10 +225,10 @@ class CspSubElementObsDevice(SKAObsDevice):
             device._obs_state = ObsState.IDLE
             device._scan_id = 0
 
-            device._sdp_addresses = {"outputHost":[], "outputMac": [], "outputPort":[]}
+            device._sdp_addresses = {"outputHost": [], "outputMac": [], "outputPort": []}
             # a sub-element obsdevice can have more than one link to the SDP
             # (for ex. Mid.CBF FSP)
-            device._sdp_links_active = [False,]
+            device._sdp_links_active = [False, ]
             device._sdp_links_capacity = 0.
 
             device._config_id = ''
@@ -259,7 +260,7 @@ class CspSubElementObsDevice(SKAObsDevice):
     def read_scanID(self):
         # PROTECTED REGION ID(CspSubElementObsDevice.scanID_read) ENABLED START #
         """Return the scanID attribute."""
-        return self._scan_id 
+        return self._scan_id
         # PROTECTED REGION END #    //  CspSubElementObsDevice.scanID_read
 
     def read_configurationID(self):
@@ -304,16 +305,15 @@ class CspSubElementObsDevice(SKAObsDevice):
         return self._health_failure_msg
         # PROTECTED REGION END #    //  CspSubElementObsDevice.healthFailureMessage_read
 
-
     # --------
     # Commands
     # --------
-    
-    
+
     class ConfigureScanCommand(ActionCommand):
         """
         A class for the CspSubElementObsDevices's ConfigureScan command.
         """
+
         def __init__(self, target, state_model, logger=None):
             """
             Constructor for ConfigureScanCommand
@@ -346,7 +346,7 @@ class CspSubElementObsDevice(SKAObsDevice):
                 message indicating status. The message is for
                 information purpose only.
             :rtype: (ResultCode, str)
-            :raises: ``CommandError`` if the configuration data validation fails. 
+            :raises: ``CommandError`` if the configuration data validation fails.
             """
             device = self.target
             # validate the input args
@@ -363,20 +363,21 @@ class CspSubElementObsDevice(SKAObsDevice):
 
             :param argin: The JSON formatted string with configuration for the device.
             :type argin: 'DevString'
-            :return: A tuple containing a return code and a string message. 
+            :return: A tuple containing a return code and a string message.
             :rtype: (ResultCode, str)
             """
             device = self.target
-            try: 
+            try:
                 configuration_dict = json.loads(argin)
                 device._config_id = configuration_dict['id']
                 # call the method to validate the data sent with
                 # the configuration, as needed.
                 return (ResultCode.OK, "ConfigureScan arguments validation successfull")
-            except (KeyError, JSONDecodeError)  as err:
+            except (KeyError, JSONDecodeError) as err:
                 msg = "Validate configuration failed with error:{}".format(err)
             except Exception as other_errs:
-                msg = "Validate configuration failed with unknown error:{}".format(other_errs)
+                msg = "Validate configuration failed with unknown error:{}".format(
+                    other_errs)
                 self.logger.error(msg)
             return (ResultCode.FAILED, msg)
 
@@ -384,6 +385,7 @@ class CspSubElementObsDevice(SKAObsDevice):
         """
         A class for the CspSubElementObsDevices's Scan command.
         """
+
         def __init__(self, target, state_model, logger=None):
             """
             Constructor for ScanCommand
@@ -437,15 +439,16 @@ class CspSubElementObsDevice(SKAObsDevice):
             :rtype: (ResultCode, str)
             """
             if not argin.isdigit():
-                msg = f"Input argument '{argin}' is not an integer" 
+                msg = f"Input argument '{argin}' is not an integer"
                 self.logger.error(msg)
                 return (ResultCode.FAILED, msg)
             return (ResultCode.OK, "Scan arguments validation successfull")
-        
+
     class EndScanCommand(ActionCommand):
         """
         A class for the CspSubElementObsDevices's EndScan command.
         """
+
         def __init__(self, target, state_model, logger=None):
             """
             Constructor for EndScanCommand
@@ -477,11 +480,12 @@ class CspSubElementObsDevice(SKAObsDevice):
             :rtype: (ResultCode, str)
             """
             return (ResultCode.OK, "EndScan command completed OK")
-        
+
     class GoToIdleCommand(ActionCommand):
         """
         A class for the CspSubElementObsDevices's GoToIdle command.
         """
+
         def __init__(self, target, state_model, logger=None):
             """
             Constructor for GoToIdle Command.
@@ -520,11 +524,12 @@ class CspSubElementObsDevice(SKAObsDevice):
             device._scan_id = 0
             device._last_scan_configuration = ''
             return (ResultCode.OK, "GoToIdle command completed OK")
-        
+
     class ObsResetCommand(ActionCommand):
         """
         A class for the CspSubElementObsDevices's ObsReset command.
         """
+
         def __init__(self, target, state_model, logger=None):
             """
             Constructor for ObsReset Command.
@@ -558,12 +563,12 @@ class CspSubElementObsDevice(SKAObsDevice):
             message = "ObsReset command completed OK"
             self.logger.info(message)
             return (ResultCode.OK, message)
-        
 
     class AbortCommand(ActionCommand):
         """
         A class for the CspSubElementObsDevices's Abort command.
         """
+
         def __init__(self, target, state_model, logger=None):
             """
             Constructor for Abort Command.
@@ -595,7 +600,7 @@ class CspSubElementObsDevice(SKAObsDevice):
             :rtype: (ResultCode, str)
             """
             return (ResultCode.OK, "Abort command completed OK")
-        
+
     @command(
         dtype_in='DevString',
         doc_in="JSON formatted string with the scan configuration.",

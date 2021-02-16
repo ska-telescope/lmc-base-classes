@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="ASCII"?>
 <pogoDsl:PogoSystem xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:pogoDsl="http://www.esrf.fr/tango/pogo/PogoDsl">
   <classes name="CspSubElementSubarray" pogoRevision="9.6">
-    <description description="Subarray device for SKA CSP SubElement" title="CspSubElementSubarray" sourcePath="/home/toor/ska-git/lmc-base-classes/pogo" language="PythonHL" filestogenerate="XMI   file,Code files,Protected Regions" license="BSD3" copyright="" hasMandatoryProperty="false" hasConcreteProperty="false" hasAbstractCommand="false" hasAbstractAttribute="false">
+    <description description="Subarray device for SKA CSP SubElement" title="CspSubElementSubarray" sourcePath="/home/toor/ska-git/ska-tango-base/pogo" language="PythonHL" filestogenerate="XMI   file,Code files,Protected Regions" license="BSD3" copyright="" hasMandatoryProperty="false" hasConcreteProperty="false" hasAbstractCommand="false" hasAbstractAttribute="false">
       <inheritances classname="Device_Impl" sourcePath=""/>
       <inheritances classname="SKAObsDevice" sourcePath="./"/>
-      <inheritances classname="SKASubarray" sourcePath="/home/toor/ska-git/lmc-base-classes/pogo"/>
+      <inheritances classname="SKASubarray" sourcePath="/home/toor/ska-git/ska-tango-base/pogo"/>
       <identification contact="at inaf.it - elisabetta.giani" author="elisabetta.giani" emailDomain="inaf.it" classFamily="SkaBase" siteSpecific="" platform="All Platforms" bus="Not Applicable" manufacturer="none" reference=""/>
     </description>
     <deviceProperties name="CapabilityTypes" description="List of Capability types e.g. capCorr, capPss,&#xA;capPstBf, capVlbi, this will be used to dynamically&#xA;define groups for subarray.">

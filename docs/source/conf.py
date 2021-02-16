@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# LMC Base Classes documentation build configuration file, created by
+# SKA Tango Base documentation build configuration file, created by
 # sphinx-quickstart on Fri Jan 11 10:03:42 2019.
 #
 # This file is execfile()d with the current directory set to its
@@ -26,21 +26,21 @@
 #                 'future', 'future.utils', 'logging', 'logging.handlers']
 # sys.modules.update((mod_name, Mock()) for mod_name in MOCK_MODULES)
 
+from unittest.mock import Mock as MagicMock
+import os
+import sys
 autodoc_mock_imports = ['PyTango', 'tango', 'tango.server', 'run', 'command',
-                        'future', 'future.utils', 'transitions',
+                        'future', 'future.utils', 'transitions', 'ska',
                         'ska.logging', 'ska.logging.configuration',
                         'numpy'
-                       ]
+                        ]
 
-import sys
-import os
-
-from unittest.mock import Mock as MagicMock
 
 class Mock(MagicMock):
     @classmethod
     def __getattr__(cls, name):
         return MagicMock()
+
 
 # Mock tango modules
 MOCK_MODULES = ['logging', 'logging.handlers']
@@ -78,7 +78,7 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # General information about the project.
-project = u'LMC Base Classes'
+project = u'SKA Tango Base'
 copyright = u'2019, NCRA India and SARAO'
 
 # The version info for the project you're documenting, acts as replacement for
@@ -86,10 +86,12 @@ copyright = u'2019, NCRA India and SARAO'
 # built documents.
 #
 
+
 def get_release_version():
-    release_filename = os.path.join("..", "..", "src", "ska", "base", "release.py")
+    release_filename = os.path.join("..", "..", "src", "ska_tango_base", "release.py")
     exec(open(release_filename).read())
     return locals()["version"]
+
 
 release_version = get_release_version()
 
@@ -222,28 +224,28 @@ html_static_path = ['_static']
 #html_file_suffix = None
 
 # Output file base name for HTML help builder.
-htmlhelp_basename = 'LMCBaseClassesdoc'
+htmlhelp_basename = 'SKA_TangoBasedoc'
 
 
 # -- Options for LaTeX output ---------------------------------------------
 
 latex_elements = {
-# The paper size ('letterpaper' or 'a4paper').
-#'papersize': 'letterpaper',
+    # The paper size ('letterpaper' or 'a4paper').
+    # 'papersize': 'letterpaper',
 
-# The font size ('10pt', '11pt' or '12pt').
-#'pointsize': '10pt',
+    # The font size ('10pt', '11pt' or '12pt').
+    # 'pointsize': '10pt',
 
-# Additional stuff for the LaTeX preamble.
-#'preamble': '',
+    # Additional stuff for the LaTeX preamble.
+    # 'preamble': '',
 }
 
 # Grouping the document tree into LaTeX files. List of tuples
 # (source start file, target name, title,
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
-  ('index', 'LMCBaseClasses.tex', u'LMC Base Classes Documentation',
-   u'NCRA India', 'manual'),
+    ('index', 'SKA_TangoBase.tex', u'SKA Tango Base Documentation',
+     u'NCRA India', 'manual'),
 ]
 
 # The name of an image file (relative to this directory) to place at the top of
@@ -272,7 +274,7 @@ latex_documents = [
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
 man_pages = [
-    ('index', 'lmcbaseclasses', u'LMC Base Classes Documentation',
+    ('index', 'ska_tango_base', u'SKA Tango Base Documentation',
      [u'NCRA India'], 1)
 ]
 
@@ -286,9 +288,9 @@ man_pages = [
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [
-  ('index', 'LMCBaseClasses', u'LMC Base Classes Documentation',
-   u'NCRA India', 'LMCBaseClasses', 'One line description of project.',
-   'Miscellaneous'),
+    ('index', 'SKA_TangoBase', u'SKA Tango Base Documentation',
+     u'NCRA India', 'SKA_TangoBase', 'One line description of project.',
+     'Miscellaneous'),
 ]
 
 # Documents to append as an appendix to all manuals.

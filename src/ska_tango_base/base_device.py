@@ -28,7 +28,7 @@ from tango import AttrWriteType, DebugIt, DevState
 from tango.server import run, Device, attribute, command, device_property
 
 # SKA specific imports
-import ska.logging as ska_logging
+import ska_ser_logging
 from ska_tango_base import release
 from ska_tango_base.commands import (
     ActionCommand, BaseCommand, ResultCode
@@ -286,7 +286,7 @@ class LoggingUtils:
         else:
             raise LoggingTargetError(
                 "Invalid target type requested: '{}' in '{}'".format(target_type, target))
-        formatter = ska_logging.get_default_formatter(tags=True)
+        formatter = ska_ser_logging.get_default_formatter(tags=True)
         handler.setFormatter(formatter)
         handler.name = target
         return handler
@@ -663,7 +663,7 @@ class SKABaseDevice(Device):
         # a flag to ensure the SKA standard logging configuration is only applied once.
         with SKABaseDevice._logging_config_lock:
             if not SKABaseDevice._logging_configured:
-                ska_logging.configure_logging(tags_filter=EnsureTagsFilter)
+                ska_ser_logging.configure_logging(tags_filter=EnsureTagsFilter)
                 SKABaseDevice._logging_configured = True
 
         device_name = self.get_name()
@@ -749,7 +749,7 @@ class SKABaseDevice(Device):
         dtype=('str',),
         access=AttrWriteType.READ_WRITE,
         max_dim_x=4,
-        doc="Logging targets for this device, excluding ska_logging defaults"
+        doc="Logging targets for this device, excluding ska_ser_logging defaults"
             " - initialises to LoggingTargetsDefault on startup",
     )
 
@@ -1010,7 +1010,7 @@ class SKABaseDevice(Device):
         """
         Reads the additional logging targets of the device.
 
-        Note that this excludes the handlers provided by the ska_logging
+        Note that this excludes the handlers provided by the ska_ser_logging
         library defaults.
 
         :return:  Logging level of the device.
@@ -1023,7 +1023,7 @@ class SKABaseDevice(Device):
         """
         Sets the additional logging targets for the device.
 
-        Note that this excludes the handlers provided by the ska_logging
+        Note that this excludes the handlers provided by the ska_ser_logging
         library defaults.
 
         :param value: Logging targets for logger

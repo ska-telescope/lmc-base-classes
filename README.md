@@ -25,6 +25,9 @@ The ska-tango-base repository includes a set of eight classes as mentioned in SK
 
 ## Version History
 
+#### 0.9.1
+- Changed dependency from `ska_logging` to `ska_ser_logging`.
+
 #### 0.9.0
 - Breaking change: Package rename
   - Installable package name changed from `lmcbaseclasses` to `ska_tango_base`.

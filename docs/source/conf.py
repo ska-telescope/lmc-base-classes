@@ -30,8 +30,8 @@ from unittest.mock import Mock as MagicMock
 import os
 import sys
 autodoc_mock_imports = ['PyTango', 'tango', 'tango.server', 'run', 'command',
-                        'future', 'future.utils', 'transitions', 'ska',
-                        'ska.logging', 'ska.logging.configuration',
+                        'future', 'future.utils', 'transitions',
+                        'ska_ser_logging', 'ska_ser_logging.configuration',
                         'numpy'
                         ]
 

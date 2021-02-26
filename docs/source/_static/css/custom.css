@@ -1,0 +1,78 @@
+/*
+Following SKA brand guidelines colors are defined as
+
+SKA Sky Blue:    rgb(0, 174, 239)
+SKA Ocean Blue:  rgb(0, 84, 164)
+SKA Teal Blue:   rgb(0, 104, 138)
+SKA Burnt Sun:   rgb(236, 134, 35)
+SKA Earth Green: rgb(166, 206, 57)
+*/
+
+.wy-nav-side{
+        background-color: rgb(0, 84, 164);
+        color: white;
+}
+
+.wy-side-nav-search{
+        padding-top: 0px;
+        /*background-color: rgb(0, 174, 239);*/
+        background-color: rgb(0, 84, 164);
+        text-align: center;
+}
+
+.wy-menu-vertical p.caption{
+        color: rgb(236, 134, 35);
+}
+
+.wy-menu {
+        color: white;
+}
+
+.wy-menu-vertical a{
+  color: white;
+}
+
+.local-toc ul li a:hover {
+        background-color: rgb(0, 174, 239);
+}
+
+.wy-side-nav-search a{
+    padding-top: 0px;
+}
+
+.wy-side-nav-search a img.logo{
+	background-color: rgb(255, 255, 255);
+	border-bottom-left-radius: 6px;
+	border-bottom-right-radius: 6px;
+      padding-top: 40px;
+}
+
+.ska-logo, ska-logo:hover{
+	background-attachment: scroll;
+	background-clip: border-box;
+	background-color: rgb(255, 255, 255);
+	background-image: url("https://www.skatelescope.org/wp-content/themes/skatelescope.org-theme/img/img-logo3.png");
+	background-origin: padding-box;
+	background-position: 22px 35px;
+	background-position-x: 22px;
+	background-position-y: 35px;
+	background-repeat: no-repeat;
+	background-size: 153px 98px;
+	border-bottom-left-radius: 6px;
+	border-bottom-right-radius: 6px;
+	/*color: rgb(0, 86, 120);
+	float: left;
+	font-family: "Eurostile LT W01 Demi", sans-serif;
+	font-size: 44.8px;
+	font-weight: 400;
+	line-height: 60px;
+	list-style-image: none;
+	list-style-position: outside;
+	list-style-type: none;*/
+	margin-bottom: 0px;
+	margin-left: 0px;
+	margin-right: 0px;
+	margin-top: 0px;
+	width: 186px;
+	height: 135px;
+}

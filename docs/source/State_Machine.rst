@@ -188,18 +188,7 @@ API
     :members:
     :undoc-members:
 
-.. autoclass:: OperationStateMachine
-    :members:
-
-.. autoclass:: AdminModeStateMachine
-    :members:
-
-.. autoclass:: ObservationStateMachine
-    :members:
 
 .. automodule:: ska_tango_base.csp_subelement_state_machine
     :members:
     :undoc-members:
-
-.. autoclass:: CspSubElementObsDeviceStateMachine
-    :members:

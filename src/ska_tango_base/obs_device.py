@@ -51,9 +51,9 @@ class ObsDeviceStateModel(DeviceStateModel):
            state machine class
         :type action_breakdown: dictionary defining actions to be performed
             on the observation state machine and,as needed, on the device state machine.
-        :param obs_machine_class
-        :type obs_machine_class: state machine for the observing state of a
+        :param obs_machine_class: state machine for the observing state of a
             SKAObsDevice class device.
+        :type obs_machine_class: :py:class:`transitions.Machine`
         :param logger: the logger to be used by this state model.
         :type logger: a logger that implements the standard library
             logger interface
@@ -273,11 +273,13 @@ class SKAObsDevice(SKABaseDevice):
         dtype=ObsState,
         doc="Observing State",
     )
+    """Device attribute."""
 
     obsMode = attribute(
         dtype=ObsMode,
         doc="Observing Mode",
     )
+    """Device attribute."""
 
     configurationProgress = attribute(
         dtype='uint16',
@@ -286,12 +288,14 @@ class SKAObsDevice(SKABaseDevice):
         min_value=0,
         doc="Percentage configuration progress",
     )
+    """Device attribute."""
 
     configurationDelayExpected = attribute(
         dtype='uint16',
         unit="seconds",
         doc="Configuration delay expected in seconds",
     )
+    """Device attribute."""
 
     # ---------------
     # General methods

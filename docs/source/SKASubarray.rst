@@ -3,13 +3,31 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-SKA Subarray
+Subarray
 ============================================
 
 .. toctree::
    :maxdepth: 2
 
 .. automodule:: ska_tango_base.subarray_device
+
+Device Class
+------------
+
 .. autoclass:: ska_tango_base.SKASubarray
+   :members:
+   :undoc-members:
+
+Device State Model
+------------------
+
+.. autoclass:: ska_tango_base.SKASubarrayStateModel
+   :members:
+   :undoc-members:
+
+Resource Manager
+----------------
+
+.. autoclass:: ska_tango_base.SKASubarrayResourceManager
    :members:
    :undoc-members:

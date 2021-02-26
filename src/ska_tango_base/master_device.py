@@ -100,21 +100,25 @@ class SKAMaster(SKABaseDevice):
         dtype='str',
         doc="FQDN of Element Logger",
     )
+    """Device attribute."""
 
     elementAlarmAddress = attribute(
         dtype='str',
         doc="FQDN of Element Alarm Handlers",
     )
+    """Device attribute."""
 
     elementTelStateAddress = attribute(
         dtype='str',
         doc="FQDN of Element TelState device",
     )
+    """Device attribute."""
 
     elementDatabaseAddress = attribute(
         dtype='str',
         doc="FQDN of Element Database device",
     )
+    """Device attribute."""
 
     maxCapabilities = attribute(
         dtype=('str',),
@@ -122,6 +126,7 @@ class SKAMaster(SKABaseDevice):
         doc=("Maximum number of instances of each capability type,"
              " e.g. 'CORRELATOR:512', 'PSS-BEAMS:4'."),
     )
+    """Device attribute."""
 
     availableCapabilities = attribute(
         dtype=('str',),
@@ -129,6 +134,7 @@ class SKAMaster(SKABaseDevice):
         doc="A list of available number of instances of each capability type, "
             "e.g. 'CORRELATOR:512', 'PSS-BEAMS:4'.",
     )
+    """Device attribute."""
 
     # ---------------
     # General methods

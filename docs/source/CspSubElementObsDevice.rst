@@ -7,13 +7,17 @@
 
    <br />
 
-SKA CSP Sub-element ObsDevice
+CSP Sub-element ObsDevice
 ============================================
 
 .. toctree::
    :maxdepth: 2
 
 .. automodule:: ska_tango_base.csp_subelement_obsdevice
+
+Tango Device Class
+------------------
+
 .. autoclass:: ska_tango_base.CspSubElementObsDevice
    :members:
    :undoc-members:

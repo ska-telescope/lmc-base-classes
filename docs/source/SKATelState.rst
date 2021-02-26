@@ -3,13 +3,17 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-SKA TelState
+Telescope State
 ============================================
 
 .. toctree::
    :maxdepth: 2
 
 .. automodule:: ska_tango_base.tel_state_device
+
+Tango Device Class
+------------------
+
 .. autoclass:: ska_tango_base.SKATelState
    :members:
    :undoc-members:

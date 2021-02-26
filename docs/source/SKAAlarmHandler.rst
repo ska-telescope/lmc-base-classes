@@ -3,13 +3,17 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-SKA AlarmHandler
+Alarm Handler
 ============================================
 
 .. toctree::
    :maxdepth: 2
 
 .. automodule:: ska_tango_base.alarm_handler_device
+
+Tango Device Class
+------------------
+
 .. autoclass:: ska_tango_base.SKAAlarmHandler
    :members:
    :undoc-members:

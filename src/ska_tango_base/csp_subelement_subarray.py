@@ -55,12 +55,14 @@ class CspSubElementSubarray(SKASubarray):
         label="scanID",
         doc="The scan identification number to be inserted in the output products.",
     )
+    """Device attribute."""
 
     configurationID = attribute(
         dtype='DevString',
         label="configurationID",
         doc="The configuration ID specified into the JSON configuration.",
     )
+    """Device attribute."""
 
     sdpDestinationAddresses = attribute(
         dtype='DevString',
@@ -68,6 +70,7 @@ class CspSubElementSubarray(SKASubarray):
         label="sdpDestinationAddresses",
         doc="JSON formatted string.\nReport the list of all the SDP addresses provided by SDP to receive the output products.\nSpecifies the Mac, IP, Port for each resource:CBF visibility channels, Pss pipelines, PSTBeam",
     )
+    """Device attribute."""
 
     outputDataRateToSdp = attribute(
         dtype='DevFloat',
@@ -75,12 +78,14 @@ class CspSubElementSubarray(SKASubarray):
         unit="GB/s",
         doc="The output data rate (GB/s) on the link for each scan.",
     )
+    """Device attribute."""
 
     lastScanConfiguration = attribute(
         dtype='DevString',
         label="lastScanConfiguration",
         doc="The last valid scan configuration.",
     )
+    """Device attribute."""
 
     sdpLinkActive = attribute(
         dtype=('DevBoolean',),
@@ -88,12 +93,14 @@ class CspSubElementSubarray(SKASubarray):
         label="sdpLinkActive",
         doc="Flag reporting if the SDP links are active.",
     )
+    """Device attribute."""
 
     listOfDevicesCompletedTasks = attribute(
         dtype='DevString',
         label="listOfDevicesCompletedTasks",
         doc="JSON formatted string reporting for each task/command the list of devices\nthat completed successfully the task.\nEx.\n{``cmd1``: [``device1``, ``device2``], ``cmd2``: [``device2``, ``device3``]}",
     )
+    """Device attribute."""
 
     configureScanMeasuredDuration = attribute(
         dtype='DevFloat',
@@ -101,12 +108,14 @@ class CspSubElementSubarray(SKASubarray):
         unit="sec",
         doc="The measured time (sec) taken to execute the command",
     )
+    """Device attribute."""
 
     configureScanTimeoutExpiredFlag = attribute(
         dtype='DevBoolean',
         label="configureScanTimeoutExpiredFlag",
         doc="Flag reporting  ConfigureScan command timeout expiration.",
     )
+    """Device attribute."""
 
     assignResourcesMaximumDuration = attribute(
         dtype='DevFloat',
@@ -115,6 +124,7 @@ class CspSubElementSubarray(SKASubarray):
         unit="sec",
         doc="The maximum expected command duration.",
     )
+    """Device attribute."""
 
     assignResourcesMeasuredDuration = attribute(
         dtype='DevFloat',
@@ -122,6 +132,7 @@ class CspSubElementSubarray(SKASubarray):
         unit="sec",
         doc="The measured command execution duration.",
     )
+    """Device attribute."""
 
     assignResourcesProgress = attribute(
         dtype='DevUShort',
@@ -130,12 +141,14 @@ class CspSubElementSubarray(SKASubarray):
         min_value=0,
         doc="The percentage progress of the command in the [0,100].",
     )
+    """Device attribute."""
 
     assignResourcesTimeoutExpiredFlag = attribute(
         dtype='DevBoolean',
         label="assignResourcesTimeoutExpiredFlag",
         doc="Flag reporting  AssignResources command timeout expiration.",
     )
+    """Device attribute."""
 
     releaseResourcesMaximumDuration = attribute(
         dtype='DevFloat',
@@ -144,6 +157,7 @@ class CspSubElementSubarray(SKASubarray):
         unit="sec",
         doc="The maximum expected command duration.",
     )
+    """Device attribute."""
 
     releaseResourcesMeasuredDuration = attribute(
         dtype='DevFloat',
@@ -151,6 +165,7 @@ class CspSubElementSubarray(SKASubarray):
         unit="sec",
         doc="The measured command execution duration.",
     )
+    """Device attribute."""
 
     releaseResourcesProgress = attribute(
         dtype='DevUShort',
@@ -159,12 +174,14 @@ class CspSubElementSubarray(SKASubarray):
         min_value=0,
         doc="The percentage progress of the command in the [0,100].",
     )
+    """Device attribute."""
 
     releaseResourcesTimeoutExpiredFlag = attribute(
         dtype='DevBoolean',
         label="timeoutExpiredFlag",
         doc="Flag reporting  command timeout expiration.",
     )
+    """Device attribute."""
 
     # ---------------
     # General methods

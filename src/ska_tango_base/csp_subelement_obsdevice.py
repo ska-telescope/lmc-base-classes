@@ -118,24 +118,28 @@ class CspSubElementObsDevice(SKAObsDevice):
         label="scanID",
         doc="The scan identification number to be inserted in the output\nproducts.",
     )
+    """Device attribute."""
 
     configurationID = attribute(
         dtype='DevString',
         label="configurationID",
         doc="The configuration ID specified into the JSON configuration.",
     )
+    """Device attribute."""
 
     deviceID = attribute(
         dtype='DevUShort',
         label="deviceID",
         doc="The observing device ID.",
     )
+    """Device attribute."""
 
     lastScanConfiguration = attribute(
         dtype='DevString',
         label="lastScanConfiguration",
         doc="The last valid scan configuration.",
     )
+    """Device attribute."""
 
     sdpDestinationAddresses = attribute(
         dtype='DevString',
@@ -145,12 +149,14 @@ class CspSubElementObsDevice(SKAObsDevice):
             " visibility channels\nPSS ? Pss pipelines\nPST ? PSTBeam\nNot used by al CSP Sub-element"
             " observing device (for ex. Mid CBF VCCs)",
     )
+    """Device attribute."""
 
     sdpLinkCapacity = attribute(
         dtype='DevFloat',
         label="sdpLinkCapacity",
         doc="The SDP link capavity in GB/s.",
     )
+    """Device attribute."""
 
     sdpLinkActive = attribute(
         dtype=('DevBoolean',),
@@ -158,12 +164,14 @@ class CspSubElementObsDevice(SKAObsDevice):
         label="sdpLinkActive",
         doc="Flag reporting if the SDP link is active.\nTrue: active\nFalse:down",
     )
+    """Device attribute."""
 
     healthFailureMessage = attribute(
         dtype='DevString',
         label="healthFailureMessage",
         doc="Message providing info about device health failure.",
     )
+    """Device attribute."""
 
     # ---------------
     # General methods

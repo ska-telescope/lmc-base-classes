@@ -52,38 +52,45 @@ class SKAAlarmHandler(SKABaseDevice):
         dtype='int',
         doc="Number of active Alerts",
     )
+    """Device attribute."""
 
     statsNrAlarms = attribute(
         dtype='int',
         doc="Number of active Alarms",
     )
+    """Device attribute."""
 
     statsNrNewAlarms = attribute(
         dtype='int',
         doc="Number of New active alarms",
     )
+    """Device attribute."""
 
     statsNrUnackAlarms = attribute(
         dtype='double',
         doc="Number of unacknowledged alarms",
     )
+    """Device attribute."""
 
     statsNrRtnAlarms = attribute(
         dtype='double',
         doc="Number of returned alarms",
     )
+    """Device attribute."""
 
     activeAlerts = attribute(
         dtype=('str',),
         max_dim_x=10000,
         doc="List of active alerts",
     )
+    """Device attribute."""
 
     activeAlarms = attribute(
         dtype=('str',),
         max_dim_x=10000,
         doc="List of active alarms",
     )
+    """Device attribute."""
 
     # ---------------
     # General methods

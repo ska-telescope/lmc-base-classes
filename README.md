@@ -25,6 +25,10 @@ The ska-tango-base repository includes a set of eight classes as mentioned in SK
 
 ## Version History
 
+#### (next release)
+- Add `DebugDevice` command to `SKABaseDevice`.  This will allow remote debugging to be
+  enabled on all devices.  It cannot be disabled without restarting the process.
+
 #### 0.9.1
 - Changed dependency from `ska_logging` to `ska_ser_logging`.
 

@@ -13,13 +13,16 @@ device.
 # PROTECTED REGION ID(SKABaseDevice.additionnal_import) ENABLED START #
 # Standard imports
 import enum
+import inspect
 import logging
 import logging.handlers
 import socket
 import sys
 import threading
+import typing
 import warnings
-from transitions import MachineError
+
+from functools import partial
 from urllib.parse import urlparse
 from urllib.request import url2pathname
 
@@ -28,6 +31,7 @@ from tango import AttrWriteType, DebugIt, DevState
 from tango.server import run, Device, attribute, command, device_property
 
 # SKA specific imports
+import debugpy
 import ska_ser_logging
 from ska_tango_base import release
 from ska_tango_base.commands import (
@@ -44,6 +48,7 @@ from ska_tango_base.utils import get_groups_from_json, for_testing_only
 from ska_tango_base.faults import GroupDefinitionsError, LoggingTargetError, LoggingLevelError
 
 LOG_FILE_SIZE = 1024 * 1024  # Log file size 1MB.
+_DEBUGGER_PORT = 5678
 
 
 class _Log4TangoLoggingLevel(enum.IntEnum):
@@ -558,6 +563,8 @@ class SKABaseDevice(Device):
     A generic base device for SKA.
     """
 
+    _global_debugger_listening = False
+
     class InitCommand(ActionCommand):
         """
         A class for the SKABaseDevice's init_device() "command".
@@ -611,6 +618,7 @@ class SKABaseDevice(Device):
                                                       release.version,
                                                       release.description)
             device._version_id = release.version
+            device._methods_patched_for_debugger = False
 
             try:
                 # create TANGO Groups dict, according to property
@@ -1002,6 +1010,7 @@ class SKABaseDevice(Device):
         self.register_command_object(
             "GetVersionInfo", self.GetVersionInfoCommand(*device_args)
         )
+        self.register_command_object("DebugDevice", self.DebugDeviceCommand(*device_args))
 
     def always_executed_hook(self):
         # PROTECTED REGION ID(SKABaseDevice.always_executed_hook) ENABLED START #
@@ -1628,6 +1637,96 @@ class SKABaseDevice(Device):
         command = self.get_command_object("On")
         (return_code, message) = command()
         return [[return_code], [message]]
+
+    class DebugDeviceCommand(BaseCommand):
+        """
+        A class for the SKABaseDevice's DebugDevice() command.
+        """
+
+        def do(self):
+            """
+            Stateless hook for device DebugDevice() command.
+
+            Starts the ``debugpy`` debugger listening for remote connections
+            (via Debugger Adaptor Protocol), and patches all methods so that
+            they can be debugged.
+
+            If the debugger is already listening, additional execution of this
+            command will trigger a breakpoint.
+
+            :return: The TCP port the debugger is listening on.
+            :rtype: DevUShort
+            """
+            if not SKABaseDevice._global_debugger_listening:
+                self.logger.warning("Starting debugger...")
+                debugpy.listen(("0.0.0.0", _DEBUGGER_PORT))
+                SKABaseDevice._global_debugger_listening = True
+                self.logger.warning(
+                    f"Debugger listening on port {_DEBUGGER_PORT}. Performance may be degraded."
+                )
+            device = self.target
+            if not device._methods_patched_for_debugger:
+                self.monkey_patch_all_methods_for_debugger()
+                device._methods_patched_for_debugger = True
+                self.logger.warning(
+                    "All methods patched for debugger. Performance may be degraded."
+                )
+            else:
+                debugpy.breakpoint()
+            return _DEBUGGER_PORT
+
+        def monkey_patch_all_methods_for_debugger(self):
+            all_methods = inspect.getmembers(self.target, inspect.ismethod)
+            patched = []
+            for name, method in all_methods:
+                if self.method_must_be_patched_for_debugger(name, method):
+                    self.patch_method_for_debugger(name, method)
+                    patched.append(
+                        "%s from %s" % (method.__func__.__qualname__, method.__func__.__module__))
+            self.logger.debug("Patched %s methods: %s", len(patched), sorted(patched))
+
+        @staticmethod
+        def method_must_be_patched_for_debugger(name, method):
+            """Determine if methods are worth debugging.
+
+            The goal is to find all the user's Python methods, but not the
+            lower level PyTango device and Boost extension methods.  The
+            `typing.types.FunctionType` check excludes the Boost methods.
+            """
+            skip_module_names = ["tango.device_server", "tango.server", "logging"]
+            return (
+                isinstance(method.__func__, typing.types.FunctionType)
+                and method.__func__.__module__ not in skip_module_names
+            )
+
+        def patch_method_for_debugger(self, name, method):
+            """Ensure method calls trigger the debugger.
+
+            Most methods in a device are executed by calls from threads spawned
+            by the cppTango layer.  These threads are not known to Python, so
+            we have to explicitly inform the debugger about them.
+            """
+
+            def debug_thread_wrapper(orig_method, *args, **kwargs):
+                debugpy.debug_this_thread()
+                return orig_method(*args, **kwargs)
+
+            patched_method = partial(debug_thread_wrapper, method)
+            setattr(self.target, name, patched_method)
+
+    @command(
+        dtype_out="DevUShort",
+        doc_out="The TCP port the debugger is listening on."
+    )
+    def DebugDevice(self):
+        """
+        Enables remote debugging of this device.
+
+        To modify behaviour for this command, modify the do() method of
+        the command class.  See it for further details.
+        """
+        command = self.get_command_object("DebugDevice")
+        return command()
 
 
 # ----------

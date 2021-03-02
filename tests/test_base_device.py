@@ -25,6 +25,7 @@ from ska_tango_base.control_model import (
     AdminMode, ControlMode, HealthState, LoggingLevel, SimulationMode, TestMode
 )
 from ska_tango_base.base_device import (
+    _DEBUGGER_PORT,
     _Log4TangoLoggingLevel,
     _PYTHON_TO_TANGO_LOGGING_LEVEL,
     LoggingUtils,
@@ -648,6 +649,31 @@ class TestSKABaseDevice(object):
         # PROTECTED REGION ID(SKABaseDevice.test_testMode) ENABLED START #
         assert tango_context.device.testMode == TestMode.NONE
         # PROTECTED REGION END #    //  SKABaseDevice.test_testMode
+
+    def test_debugger_not_listening_by_default(self, tango_context):
+        assert not SKABaseDevice._global_debugger_listening
+        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+            with pytest.raises(ConnectionRefusedError):
+                s.connect(("localhost", _DEBUGGER_PORT))
+
+    def test_DebugDevice_starts_listening(self, tango_context):
+        port = tango_context.device.DebugDevice()
+        assert port == _DEBUGGER_PORT
+        assert SKABaseDevice._global_debugger_listening
+        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+            s.connect(("localhost", _DEBUGGER_PORT))
+        assert tango_context.device.state
+
+    def test_DebugDevice_twice_does_not_raise(self, tango_context):
+        tango_context.device.DebugDevice()
+        tango_context.device.DebugDevice()
+        assert SKABaseDevice._global_debugger_listening
+
+    def test_DebugDevice_does_not_break_a_command(self, tango_context):
+        tango_context.device.DebugDevice()
+        assert tango_context.device.State() == DevState.OFF
+        tango_context.device.On()
+        assert tango_context.device.State() == DevState.ON
 
 
 class TestSKABaseDevice_commands:

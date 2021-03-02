@@ -3,13 +3,24 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-SKA ObsDevice
+Observation Device
 ============================================
 
 .. toctree::
    :maxdepth: 2
 
 .. automodule:: ska_tango_base.obs_device
+
+Tango Device Class
+------------------
+
 .. autoclass:: ska_tango_base.SKAObsDevice
+   :members:
+   :undoc-members:
+
+Device State Model
+------------------
+
+.. autoclass:: ska_tango_base.ObsDeviceStateModel
    :members:
    :undoc-members:

@@ -784,12 +784,14 @@ class SKASubarray(SKAObsDevice):
         display_unit="s",
         doc="Time of activation in seconds since Unix epoch.",
     )
+    """Device attribute."""
 
     assignedResources = attribute(
         dtype=('str',),
         max_dim_x=100,
         doc="The list of resources assigned to the subarray.",
     )
+    """Device attribute."""
 
     configuredCapabilities = attribute(
         dtype=('str',),
@@ -799,6 +801,7 @@ class SKASubarray(SKAObsDevice):
             "e.g.\nCorrelators:512, PssBeams:4, "
             "PstBeams:4, VlbiBeams:0.",
     )
+    """Device attribute."""
 
     # ---------------
     # General methods

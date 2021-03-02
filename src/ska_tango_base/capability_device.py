@@ -88,17 +88,20 @@ class SKACapability(SKAObsDevice):
         display_unit="s",
         doc="Time of activation in seconds since Unix epoch.",
     )
+    """Device attribute."""
 
     configuredInstances = attribute(
         dtype='uint16',
         doc="Number of instances of this Capability Type currently in use on this subarray.",
     )
+    """Device attribute."""
 
     usedComponents = attribute(
         dtype=('str',),
         max_dim_x=100,
         doc="A list of components with no. of instances in use on this Capability.",
     )
+    """Device attribute."""
 
     # ---------------
     # General methods

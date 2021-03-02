@@ -72,6 +72,7 @@ class CspSubElementMaster(SKAMaster):
         unit="sec.",
         doc="Delay in sec between the power-up stages in Standby<->On transitions.",
     )
+    """Device attribute."""
 
     powerDelayStandbyOff = attribute(
         dtype='DevFloat',
@@ -80,6 +81,7 @@ class CspSubElementMaster(SKAMaster):
         unit="sec",
         doc="Delay in sec between the power-up stages in Standby->Off transitions.",
     )
+    """Device attribute."""
 
     onProgress = attribute(
         dtype='DevUShort',
@@ -88,6 +90,7 @@ class CspSubElementMaster(SKAMaster):
         min_value=0,
         doc="Progress percentage of the command execution.",
     )
+    """Device attribute."""
 
     onMaximumDuration = attribute(
         dtype='DevFloat',
@@ -96,6 +99,7 @@ class CspSubElementMaster(SKAMaster):
         unit="sec.",
         doc="The expected maximum duration (sec.) to execute the On command.",
     )
+    """Device attribute."""
 
     onMeasuredDuration = attribute(
         dtype='DevFloat',
@@ -103,6 +107,7 @@ class CspSubElementMaster(SKAMaster):
         unit="sec",
         doc="The measured time (sec) taken to execute the command.",
     )
+    """Device attribute."""
 
     standbyProgress = attribute(
         dtype='DevUShort',
@@ -111,6 +116,7 @@ class CspSubElementMaster(SKAMaster):
         min_value=0,
         doc="Progress percentage of the command execution.",
     )
+    """Device attribute."""
 
     standbyMaximumDuration = attribute(
         dtype='DevFloat',
@@ -119,6 +125,7 @@ class CspSubElementMaster(SKAMaster):
         unit="sec.",
         doc="The expected maximum duration (sec.) to execute the Standby command.",
     )
+    """Device attribute."""
 
     standbyMeasuredDuration = attribute(
         dtype='DevFloat',
@@ -126,6 +133,7 @@ class CspSubElementMaster(SKAMaster):
         unit="sec",
         doc="The measured time (sec) taken to execute the Standby command.",
     )
+    """Device attribute."""
 
     offProgress = attribute(
         dtype='DevUShort',
@@ -134,6 +142,7 @@ class CspSubElementMaster(SKAMaster):
         min_value=0,
         doc="Progress percentage of the command execution.",
     )
+    """Device attribute."""
 
     offMaximumDuration = attribute(
         dtype='DevFloat',
@@ -142,6 +151,7 @@ class CspSubElementMaster(SKAMaster):
         unit="sec.",
         doc="The expected maximum duration (sec.) to execute the Off command.",
     )
+    """Device attribute."""
 
     offMeasuredDuration = attribute(
         dtype='DevFloat',
@@ -149,6 +159,7 @@ class CspSubElementMaster(SKAMaster):
         unit="sec",
         doc="The measured time (sec) taken to execute the Off command.",
     )
+    """Device attribute."""
 
     totalOutputDataRateToSdp = attribute(
         dtype='DevFloat',
@@ -156,6 +167,7 @@ class CspSubElementMaster(SKAMaster):
         unit="GB/s",
         doc="Report the total link expected  output data rate.",
     )
+    """Device attribute."""
 
     loadFirmwareProgress = attribute(
         dtype='DevUShort',
@@ -164,6 +176,7 @@ class CspSubElementMaster(SKAMaster):
         min_value=0,
         doc="The command progress percentage.",
     )
+    """Device attribute."""
 
     loadFirmwareMaximumDuration = attribute(
         dtype='DevFloat',
@@ -172,6 +185,7 @@ class CspSubElementMaster(SKAMaster):
         unit="sec",
         doc="The expected maximum duration (in sec) for command execution.",
     )
+    """Device attribute."""
 
     loadFirmwareMeasuredDuration = attribute(
         dtype='DevFloat',
@@ -179,6 +193,7 @@ class CspSubElementMaster(SKAMaster):
         unit="sec",
         doc="The command execution measured duration (in sec).",
     )
+    """Device attribute."""
 
     # ---------------
     # General methods

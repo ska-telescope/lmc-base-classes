@@ -3,7 +3,7 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-SKA CSP Sub-element Subarray
+CSP Sub-element Subarray
 ============================================
 This module implements a generic Subarray device for a CSP Sub-element.
 The scope of this module is to provide a uniform access to a CSP Sub-element
@@ -14,6 +14,10 @@ subarray from the CSP.LMC side.
    :maxdepth: 2
 
 .. automodule:: ska_tango_base.csp_subelement_subarray
+
+Tango Device Class
+------------------
+
 .. autoclass:: ska_tango_base.CspSubElementSubarray
    :members:
    :undoc-members:

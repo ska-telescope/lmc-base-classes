@@ -3,7 +3,7 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-SKA CSP Sub-element Master
+CSP Sub-element Master
 ============================================
 This module implements a general Master device for a CSP Sub-element.
 
@@ -11,6 +11,10 @@ This module implements a general Master device for a CSP Sub-element.
    :maxdepth: 2
 
 .. automodule:: ska_tango_base.csp_subelement_master
+
+Tango Device Class
+------------------
+
 .. autoclass:: ska_tango_base.CspSubElementMaster
    :members:
    :undoc-members:

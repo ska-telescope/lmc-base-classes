@@ -711,18 +711,77 @@ class SKABaseDevice(Device):
     SkaLevel = device_property(
         dtype='int16', default_value=4
     )
+    """
+    Device property.
+       
+    Indication of importance of the device in the SKA hierarchy
+    to support drill-down navigation: 1..6, with 1 highest.
+    """
 
     GroupDefinitions = device_property(
         dtype=('str',),
     )
+    """
+    Device property.
+       
+    Each string in the list is a JSON serialised dict defining the ``group_name``,
+    ``devices`` and ``subgroups`` in the group.  A TANGO Group object is created
+    for each item in the list, according to the hierarchy defined.  This provides
+    easy access to the managed devices in bulk, or individually.
+    
+    The general format of the list is as follows, with optional ``devices`` and
+    ``subgroups`` keys::
+    
+        [ {"group_name": "<name>",
+           "devices": ["<dev name>", ...]},
+          {"group_name": "<name>",
+           "devices": ["<dev name>", "<dev name>", ...],
+           "subgroups" : [{<nested group>},
+                            {<nested group>}, ...]},
+          ...
+          ]
+    
+    For example, a hierarchy of racks, servers and switches::
+    
+        [ {"group_name": "servers",
+           "devices": ["elt/server/1", "elt/server/2",
+                         "elt/server/3", "elt/server/4"]},
+          {"group_name": "switches",
+           "devices": ["elt/switch/A", "elt/switch/B"]},
+          {"group_name": "pdus",
+           "devices": ["elt/pdu/rackA", "elt/pdu/rackB"]},
+          {"group_name": "racks",
+           "subgroups": [
+                {"group_name": "rackA",
+                 "devices": ["elt/server/1", "elt/server/2",
+                               "elt/switch/A", "elt/pdu/rackA"]},
+                {"group_name": "rackB",
+                 "devices": ["elt/server/3", "elt/server/4",
+                               "elt/switch/B", "elt/pdu/rackB"],
+                 "subgroups": []}
+           ]} ]
+
+    """
 
     LoggingLevelDefault = device_property(
         dtype='uint16', default_value=LoggingLevel.INFO
     )
+    """
+    Device property.
+       
+    Default logging level at device startup.
+    See :py:class:`~ska_tango_base.control_model.LoggingLevel`
+    """
 
     LoggingTargetsDefault = device_property(
         dtype='DevVarStringArray', default_value=["tango::logger"]
     )
+    """
+    Device property.
+       
+    Default logging targets at device startup.
+    See the project readme for details.
+    """
 
     # ----------
     # Attributes
@@ -732,11 +791,13 @@ class SKABaseDevice(Device):
         dtype='str',
         doc="Build state of this device",
     )
+    """Device attribute."""
 
     versionId = attribute(
         dtype='str',
         doc="Version Id of this device",
     )
+    """Device attribute."""
 
     loggingLevel = attribute(
         dtype=LoggingLevel,
@@ -744,6 +805,11 @@ class SKABaseDevice(Device):
         doc="Current logging level for this device - "
             "initialises to LoggingLevelDefault on startup",
     )
+    """
+    Device attribute.
+    
+    See :py:class:`~ska_tango_base.control_model.LoggingLevel`
+    """
 
     loggingTargets = attribute(
         dtype=('str',),
@@ -752,6 +818,7 @@ class SKABaseDevice(Device):
         doc="Logging targets for this device, excluding ska_ser_logging defaults"
             " - initialises to LoggingTargetsDefault on startup",
     )
+    """Device attribute."""
 
     healthState = attribute(
         dtype=HealthState,
@@ -760,6 +827,7 @@ class SKABaseDevice(Device):
             " condition and condition of all managed devices to set this. "
             "Most possibly an aggregate attribute.",
     )
+    """Device attribute."""
 
     adminMode = attribute(
         dtype=AdminMode,
@@ -769,6 +837,7 @@ class SKABaseDevice(Device):
             "device condition and condition of all managed devices to set this. "
             "Most possibly an aggregate attribute.",
     )
+    """Device attribute."""
 
     controlMode = attribute(
         dtype=ControlMode,
@@ -779,6 +848,7 @@ class SKABaseDevice(Device):
             "queries received from TM or any other ‘remote’ clients. The Local clients"
             " has to release LOCAL control before REMOTE clients can take control again.",
     )
+    """Device attribute."""
 
     simulationMode = attribute(
         dtype=SimulationMode,
@@ -788,6 +858,7 @@ class SKABaseDevice(Device):
             "both modes, while others will have simulators that set simulationMode "
             "to True while the real devices always set simulationMode to False.",
     )
+    """Device attribute."""
 
     testMode = attribute(
         dtype=TestMode,
@@ -797,6 +868,7 @@ class SKABaseDevice(Device):
             "Either no test mode or an "
             "indication of the test mode.",
     )
+    """Device attribute."""
 
     # ---------------
     # General methods

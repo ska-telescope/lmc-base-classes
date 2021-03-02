@@ -7,26 +7,34 @@ Welcome to SKA Tango Base documentation!
 ========================================
 
 .. toctree::
-  :caption: Table of Contents
+  :caption: Standard Devices
   :maxdepth: 2
 
-   Device:  SKA Base Device<SKABaseDevice>
-   Device:  SKA Alarm Handler<SKAAlarmHandler>
-   Device:  SKA Logger<SKALogger>
-   Device:  SKA Master<SKAMaster>
-   Device:  SKA TelState<SKATelState>
+   Base Device<SKABaseDevice>
+   Alarm Handler<SKAAlarmHandler>
+   Logger<SKALogger>
+   Master<SKAMaster>
+   Tel State<SKATelState>
 
-   Device:  SKA ObsDevice<SKAObsDevice>
-   Device:  SKA Capability<SKACapability>
-   Device:  SKA Subarray<SKASubarray>
+   Obs Device<SKAObsDevice>
+   Capability<SKACapability>
+   Subarray<SKASubarray>
 
-   Device:  SKA CSP Sub-element Master<CspSubElementMaster>
-   Device:  SKA CSP Sub-element ObsDevice<CspSubElementObsDevice>
-   Device:  SKA CSP Sub-element Subarray<CspSubElementSubarray>
+.. toctree::
+  :caption: CSP Devices
+  :maxdepth: 2
 
-   SKA Control Model<Control_Model>
-   SKA Commands<Commands>
-   SKA State Machine<State_Machine>
+   CSP Sub-element Master<CspSubElementMaster>
+   CSP Sub-element Obs Device<CspSubElementObsDevice>
+   CSP Sub-element Subarray<CspSubElementSubarray>
+
+.. toctree::
+  :caption: Control Model
+  :maxdepth: 2
+
+   Control Model<Control_Model>
+   Commands<Commands>
+   State Machine<State_Machine>
 
 Indices and tables
 ==================

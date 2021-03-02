@@ -3,13 +3,17 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-SKA Logger
+Logger
 ============================================
 
 .. toctree::
    :maxdepth: 2
 
 .. automodule:: ska_tango_base.logger_device
+
+Tango Device Class
+------------------
+
 .. autoclass:: ska_tango_base.SKALogger
    :members:
    :undoc-members:

@@ -1658,7 +1658,7 @@ class SKABaseDevice(Device):
             :rtype: DevUShort
             """
             if not SKABaseDevice._global_debugger_listening:
-                port = self.start_debugger()
+                self.start_debugger(_DEBUGGER_PORT)
                 SKABaseDevice._global_debugger_listening = True
             device = self.target
             if not device._methods_patched_for_debugger:
@@ -1666,15 +1666,14 @@ class SKABaseDevice(Device):
                 device._methods_patched_for_debugger = True
             else:
                 debugpy.breakpoint()
-            return port
-
-        def start_debugger(self):
-            self.logger.warning("Starting debugger...")
-            debugpy.listen(("0.0.0.0", _DEBUGGER_PORT))
-            self.logger.warning(
-                f"Debugger listening on port {_DEBUGGER_PORT}. Performance may be degraded."
-            )
             return _DEBUGGER_PORT
+
+        def start_debugger(self, port):
+            self.logger.warning("Starting debugger...")
+            debugpy.listen(("0.0.0.0", port))
+            self.logger.warning(
+                f"Debugger listening on port {port}. Performance may be degraded."
+            )
 
         def monkey_patch_all_methods_for_debugger(self):
             all_methods = self.get_all_methods()

@@ -56,10 +56,11 @@ _MockObject.__call__ = call_mock
 # hack end
 
 autodoc_mock_imports = [
+    'debugpy',
+    'numpy',
+    'ska_ser_logging',
     'tango',
     'transitions',
-    'ska_ser_logging',
-    'numpy',
 ]
 
 autodoc_default_options = {

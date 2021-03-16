@@ -1658,35 +1658,48 @@ class SKABaseDevice(Device):
             :rtype: DevUShort
             """
             if not SKABaseDevice._global_debugger_listening:
-                self.logger.warning("Starting debugger...")
-                debugpy.listen(("0.0.0.0", _DEBUGGER_PORT))
+                port = self.start_debugger()
                 SKABaseDevice._global_debugger_listening = True
-                self.logger.warning(
-                    f"Debugger listening on port {_DEBUGGER_PORT}. Performance may be degraded."
-                )
             device = self.target
             if not device._methods_patched_for_debugger:
                 self.monkey_patch_all_methods_for_debugger()
                 device._methods_patched_for_debugger = True
-                self.logger.warning(
-                    "All methods patched for debugger. Performance may be degraded."
-                )
             else:
                 debugpy.breakpoint()
+            return port
+
+        def start_debugger(self):
+            self.logger.warning("Starting debugger...")
+            debugpy.listen(("0.0.0.0", _DEBUGGER_PORT))
+            self.logger.warning(
+                f"Debugger listening on port {_DEBUGGER_PORT}. Performance may be degraded."
+            )
             return _DEBUGGER_PORT
 
         def monkey_patch_all_methods_for_debugger(self):
-            all_methods = inspect.getmembers(self.target, inspect.ismethod)
+            all_methods = self.get_all_methods()
             patched = []
-            for name, method in all_methods:
-                if self.method_must_be_patched_for_debugger(name, method):
-                    self.patch_method_for_debugger(name, method)
+            for owner, name, method in all_methods:
+                if self.method_must_be_patched_for_debugger(owner, method):
+                    self.patch_method_for_debugger(owner, name, method)
                     patched.append(
-                        "%s from %s" % (method.__func__.__qualname__, method.__func__.__module__))
-            self.logger.debug("Patched %s methods: %s", len(patched), sorted(patched))
+                        f"{owner} {method.__func__.__qualname__} in {method.__func__.__module__}"
+                    )
+            self.logger.info("Patched %s of %s methods", len(patched), len(all_methods))
+            self.logger.debug("Patched methods: %s", sorted(patched))
+
+        def get_all_methods(self):
+            methods = []
+            device = self.target
+            for name, method in inspect.getmembers(device, inspect.ismethod):
+                methods.append((device, name, method))
+            for command_object in device._command_objects.values():
+                for name, method in inspect.getmembers(command_object, inspect.ismethod):
+                    methods.append((command_object, name, method))
+            return methods
 
         @staticmethod
-        def method_must_be_patched_for_debugger(name, method):
+        def method_must_be_patched_for_debugger(owner, method):
             """Determine if methods are worth debugging.
 
             The goal is to find all the user's Python methods, but not the
@@ -1694,12 +1707,14 @@ class SKABaseDevice(Device):
             `typing.types.FunctionType` check excludes the Boost methods.
             """
             skip_module_names = ["tango.device_server", "tango.server", "logging"]
+            skip_owner_types = [SKABaseDevice.DebugDeviceCommand]
             return (
                 isinstance(method.__func__, typing.types.FunctionType)
                 and method.__func__.__module__ not in skip_module_names
+                and type(owner) not in skip_owner_types
             )
 
-        def patch_method_for_debugger(self, name, method):
+        def patch_method_for_debugger(self, owner, name, method):
             """Ensure method calls trigger the debugger.
 
             Most methods in a device are executed by calls from threads spawned
@@ -1712,7 +1727,7 @@ class SKABaseDevice(Device):
                 return orig_method(*args, **kwargs)
 
             patched_method = partial(debug_thread_wrapper, method)
-            setattr(self.target, name, patched_method)
+            setattr(owner, name, patched_method)
 
     @command(
         dtype_out="DevUShort",

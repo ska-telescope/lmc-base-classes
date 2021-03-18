@@ -1665,6 +1665,7 @@ class SKABaseDevice(Device):
                 self.monkey_patch_all_methods_for_debugger()
                 device._methods_patched_for_debugger = True
             else:
+                self.logger.warning("Triggering debugger breakpoint...")
                 debugpy.breakpoint()
             return _DEBUGGER_PORT
 
@@ -1732,12 +1733,13 @@ class SKABaseDevice(Device):
         dtype_out="DevUShort",
         doc_out="The TCP port the debugger is listening on."
     )
+    @DebugIt()
     def DebugDevice(self):
         """
         Enables remote debugging of this device.
 
         To modify behaviour for this command, modify the do() method of
-        the command class.  See it for further details.
+        the command class: :class:`.DebugDeviceCommand`.
         """
         command = self.get_command_object("DebugDevice")
         return command()

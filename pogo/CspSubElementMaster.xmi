@@ -93,6 +93,15 @@
       </argout>
       <status abstract="false" inherited="true" concrete="true"/>
     </commands>
+    <commands name="DebugDevice" description="Enables remote debugging of this device" execMethod="debug_device" displayLevel="OPERATOR" polledPeriod="0" isDynamic="false">
+      <argin description="">
+        <type xsi:type="pogoDsl:VoidType"/>
+      </argin>
+      <argout description="TCP port debugger is listening on">
+        <type xsi:type="pogoDsl:UShortType"/>
+      </argout>
+      <status abstract="false" inherited="true" concrete="true"/>
+    </commands>
     <commands name="LoadFirmware" description="Deploy new versions of software and firmware and &#xA;trigger a restart so that a Component initializes using a &#xA;newly deployed version." execMethod="load_firmware" displayLevel="OPERATOR" polledPeriod="0" isDynamic="false">
       <argin description="The file name or a pointer to the filename , &#xA;the list of components that use software or firmware package (file),&#xA;checksum or signing">
         <type xsi:type="pogoDsl:StringArrayType"/>

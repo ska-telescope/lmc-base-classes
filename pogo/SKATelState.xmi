@@ -64,6 +64,15 @@
       </argout>
       <status abstract="false" inherited="true" concrete="true"/>
     </commands>
+    <commands name="DebugDevice" description="Enables remote debugging of this device" execMethod="debug_device" displayLevel="OPERATOR" polledPeriod="0" isDynamic="false">
+      <argin description="">
+        <type xsi:type="pogoDsl:VoidType"/>
+      </argin>
+      <argout description="TCP port debugger is listening on">
+        <type xsi:type="pogoDsl:UShortType"/>
+      </argout>
+      <status abstract="false" inherited="true" concrete="true"/>
+    </commands>
     <attributes name="buildState" attType="Scalar" rwType="READ" displayLevel="OPERATOR" polledPeriod="0" maxX="" maxY="" allocReadMember="true">
       <dataType xsi:type="pogoDsl:StringType"/>
       <status abstract="false" inherited="true" concrete="true"/>

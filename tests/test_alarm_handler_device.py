@@ -90,7 +90,7 @@ class TestSKAAlarmHandler(object):
         """Test for GetVersionInfo"""
         # PROTECTED REGION ID(SKAAlarmHandler.test_GetVersionInfo) ENABLED START #
         versionPattern = re.compile(
-            r'SKAAlarmHandler, ska_tango_base, [0-9].[0-9].[0-9], '
+            r'SKAAlarmHandler, ska_tango_base, [0-9]+.[0-9]+.[0-9]+, '
             r'A set of generic base devices for SKA Telescope.')
         versionInfo = tango_context.device.GetVersionInfo()
         assert (re.match(versionPattern, versionInfo[0])) is not None
@@ -142,7 +142,7 @@ class TestSKAAlarmHandler(object):
         """Test for buildState"""
         # PROTECTED REGION ID(SKAAlarmHandler.test_buildState) ENABLED START #
         buildPattern = re.compile(
-            r'ska_tango_base, [0-9].[0-9].[0-9], '
+            r'ska_tango_base, [0-9]+.[0-9]+.[0-9]+, '
             r'A set of generic base devices for SKA Telescope')
         assert (re.match(buildPattern, tango_context.device.buildState)) is not None
         # PROTECTED REGION END #    //  SKAAlarmHandler.test_buildState
@@ -152,7 +152,7 @@ class TestSKAAlarmHandler(object):
     def test_versionId(self, tango_context):
         """Test for versionId"""
         # PROTECTED REGION ID(SKAAlarmHandler.test_versionId) ENABLED START #
-        versionIdPattern = re.compile(r'[0-9].[0-9].[0-9]')
+        versionIdPattern = re.compile(r'[0-9]+.[0-9]+.[0-9]+')
         assert (re.match(versionIdPattern, tango_context.device.versionId)) is not None
         # PROTECTED REGION END #    //  SKAAlarmHandler.test_versionId
 

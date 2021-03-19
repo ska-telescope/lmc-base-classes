@@ -66,6 +66,15 @@
       </argout>
       <status abstract="false" inherited="true" concrete="true"/>
     </commands>
+    <commands name="DebugDevice" description="Enables remote debugging of this device" execMethod="debug_device" displayLevel="OPERATOR" polledPeriod="0" isDynamic="false">
+      <argin description="">
+        <type xsi:type="pogoDsl:VoidType"/>
+      </argin>
+      <argout description="TCP port debugger is listening on">
+        <type xsi:type="pogoDsl:UShortType"/>
+      </argout>
+      <status abstract="false" inherited="true" concrete="true"/>
+    </commands>
     <commands name="ConfigureScan" description="Configure the observing device parameters for the current scan," execMethod="configure_scan" displayLevel="OPERATOR" polledPeriod="0" isDynamic="false">
       <argin description="JSON formatted string with the scan configuration.">
         <type xsi:type="pogoDsl:StringType"/>

@@ -35,7 +35,13 @@ setuptools.setup(
     ],
     platforms=["OS Independent"],
     setup_requires=[] + pytest_runner,
-    install_requires=["debugpy", "numpy", "pytango", "transitions", "ska_ser_logging"],
+    install_requires=[
+        "debugpy",
+        "numpy",
+        "pytango",
+        "ska_ser_logging",
+        "transitions",
+    ],
     tests_require=["pytest", "coverage", "pytest-json-report", "pytest-forked"],
     entry_points={
         "console_scripts": [

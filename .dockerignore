@@ -1,0 +1,5 @@
+.devcontainer/
+.pytest_cache/
+build/
+htmlcov/
+**/__pycache__/

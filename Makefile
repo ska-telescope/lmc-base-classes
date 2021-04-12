@@ -18,7 +18,6 @@ SHELL = /bin/bash
 DOCKER_REGISTRY_USER:=ska-telescope
 PROJECT = ska_tango_base
 IMAGE_FOR_DIAGRAMS = nexus.engageska-portugal.pt/ska-docker/ska-python-buildenv:9.3.3.1
-IMAGE_FOR_DOCS = sphinxdoc/sphinx:latest
 #
 # include makefile to pick up the standard Make targets, e.g., 'make build'
 # build, 'make push' docker push procedure, etc. The other Make targets
@@ -57,12 +56,8 @@ generate-diagrams-in-docker-internals:  ## Generate state machine diagrams (with
 	ls -lo /diagrams/docs/source/images/
 
 docs-in-docker: ## Generate docs inside a container
-	@docker run --rm -v $(PWD):/project $(IMAGE_FOR_DOCS) bash -c "cd /project && make docs-in-docker-internals"
-
-docs-in-docker-internals:  ## Generate docs (within a container!)
-	test -f /.dockerenv  # ensure running in docker container
-	python3 -m pip install -r /project/docs/requirements.txt
-	cd /project/docs && make clean && make html
+	@docker build -t ska_tango_base_docs_builder  . -f docs/Dockerfile
+	@docker run --rm -v $(PWD):/project --user $(id -u):$(id -g) ska_tango_base_docs_builder
 
 help:  ## show this help.
 	@grep -hE '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'

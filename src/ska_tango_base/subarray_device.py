@@ -114,11 +114,14 @@ class SKASubarrayResourceManager:
     A simple class for managing subarray resources
     """
 
-    def __init__(self):
+    def __init__(self, key: str = "example"):
         """
         Constructor for SKASubarrayResourceManager
+
+        :param key: Key used to select from JSON input to assign/release methods.
         """
         self._resources = set()
+        self._key = key
 
     def __len__(self):
         """
@@ -136,15 +139,15 @@ class SKASubarrayResourceManager:
         Assign some resources
 
         :todo: Currently implemented for testing purposes to take a JSON
-            string encoding a dictionary with key 'example'. In future this
+            string encoding a dictionary. In future this
             will take a collection of resources.
 
         :param resources: JSON-encoding of a dictionary, with resources to
-            assign under key 'example'
+            assign under the configured key (default 'example')
         :type resources: JSON string
         """
         resources_dict = json.loads(resources)
-        add_resources = resources_dict['example']
+        add_resources = resources_dict[self._key]
         self._resources |= set(add_resources)
 
     def release(self, resources):
@@ -152,15 +155,15 @@ class SKASubarrayResourceManager:
         Release some resources
 
         :todo: Currently implemented for testing purposes to take a JSON
-            string encoding a dictionary with key 'example'. In future this
+            string encoding a dictionary. In future this
             will take a collection of resources.
 
         :param resources: JSON-encoding of a dictionary, with resources to
-            assign under key 'example'
+            assign under the configured key (default 'example')
         :type resources: JSON string
         """
         resources_dict = json.loads(resources)
-        drop_resources = resources_dict['example']
+        drop_resources = resources_dict[self._key]
         self._resources -= set(drop_resources)
 
     def release_all(self):

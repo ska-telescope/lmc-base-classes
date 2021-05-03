@@ -25,11 +25,9 @@ The ska-tango-base repository includes a set of eight classes as mentioned in SK
 
 ## Version History
 
-#### Not released yet
-- Make dependency on `pytango` and `numpy` python packages explicit.
-
 #### 0.10.1
-- Add optional "key" parameter to SKASubarrayResourceManager to filter JSON for 
+- Make dependency on `pytango` and `numpy` python packages explicit.
+- Add optional "key" parameter to `SKASubarrayResourceManager` to filter JSON for
   assign & release methods.
 
 #### 0.10.0

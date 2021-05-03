@@ -28,6 +28,10 @@ The ska-tango-base repository includes a set of eight classes as mentioned in SK
 #### Not released yet
 - Make dependency on `pytango` and `numpy` python packages explicit.
 
+#### 0.10.1
+- Add optional "key" parameter to SKASubarrayResourceManager to filter JSON for 
+  assign & release methods.
+
 #### 0.10.0
 - Add `DebugDevice` command to `SKABaseDevice`.  This allows remote debugging to be
   enabled on all devices.  It cannot be disabled without restarting the process.

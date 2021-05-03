@@ -7,7 +7,7 @@
 """Release information for ska_tango_base Python Package"""
 
 name = """ska_tango_base"""
-version = "0.10.0"
+version = "0.10.1"
 version_info = version.split(".")
 description = """A set of generic base devices for SKA Telescope."""
 author = "SKA India and SARAO and CSIRO and INAF"

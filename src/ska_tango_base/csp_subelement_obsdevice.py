@@ -20,71 +20,15 @@ from tango import DebugIt, DevState, AttrWriteType
 from tango.server import run, attribute, command, device_property
 
 # SKA specific imports
-from ska_tango_base import SKAObsDevice, ObsDeviceStateModel
-from ska_tango_base.commands import ResultCode, ActionCommand
+from ska_tango_base import SKAObsDevice
+from ska_tango_base.commands import ResultCode, CompletionCommand, ObservationCommand, ResponseCommand
 from ska_tango_base.control_model import ObsState
+from ska_tango_base.csp_subelement_obs_component_manager import CspSubelementObsComponentManager
 from ska_tango_base.faults import CommandError
-from ska_tango_base.csp_subelement_state_machine import CspSubElementObsDeviceStateMachine
-
-__all__ = ["CspSubElementObsDevice", "CspSubElementObsDeviceStateModel", "main"]
+from ska_tango_base.state import CspSubElementObsStateModel
 
 
-class CspSubElementObsDeviceStateModel(ObsDeviceStateModel):
-    """
-    Implements the state model for the CspSubElementObsDevice.
-
-    :param logger: the logger to be used by this state model.
-    :type logger: a logger that implements the standard library
-       logger interface
-    :param op_state_callback: A callback to be called when a
-       transition implies a change to op state
-    :type op_state_callback: callable
-    :param admin_mode_callback: A callback to be called when a
-       transition causes a change to device admin_mode
-    :type admin_mode_callback: callable
-    :param obs_state_callback: A callback to be called when a
-       transition causes a change to device obs_state
-    :type obs_state_callback: callable
-    """
-
-    def __init__(
-        self,
-        logger,
-        op_state_callback=None,
-        admin_mode_callback=None,
-        obs_state_callback=None,
-    ):
-        action_breakdown = {
-            # "action": ("action_on_obs_machine", "action_on_superclass"),
-            "off_succeeded": ("to_IDLE", "off_succeeded"),
-            "off_failed": ("to_IDLE", "off_failed"),
-            "on_succeeded": (None, "on_succeeded"),
-            "on_failed": ("to_IDLE", "on_failed"),
-            "configure_started": ("configure_started", None),
-            "configure_succeeded": ("configure_succeeded", None),
-            "configure_failed": ("configure_failed", None),
-            "scan_started": ("scan_started", None),
-            "scan_succeeded": ("scan_succeeded", None),
-            "scan_failed": ("scan_failed", None),
-            "end_scan_succeeded": ("end_scan_succeeded", None),
-            "end_scan_failed": ("end_scan_failed", None),
-            "end_succeeded": ("end_succeeded", None),
-            "end_failed": ("end_failed", None),
-            "abort_started": ("abort_started", None),
-            "abort_succeeded": ("abort_succeeded", None),
-            "abort_failed": ("abort_failed", None),
-            "obs_reset_succeeded": ("reset_succeeded", None),
-            "obs_reset_failed": ("reset_failed", None),
-            "fatal_error": ("fatal_error", None),
-        }
-        super().__init__(
-            action_breakdown,
-            CspSubElementObsDeviceStateMachine,
-            logger,
-            op_state_callback=op_state_callback,
-            admin_mode_callback=admin_mode_callback,
-            obs_state_callback=obs_state_callback,
-        )
+__all__ = ["CspSubElementObsDevice", "main"]
 
 
 class CspSubElementObsDevice(SKAObsDevice):
@@ -181,11 +125,17 @@ class CspSubElementObsDevice(SKAObsDevice):
         """
         Sets up the state model for the device
         """
-        self.state_model = CspSubElementObsDeviceStateModel(
+        super()._init_state_model()
+        self.obs_state_model = CspSubElementObsStateModel(
             logger=self.logger,
-            op_state_callback=self._update_state,
-            admin_mode_callback=self._update_admin_mode,
-            obs_state_callback=self._update_obs_state,
+            callback=self._update_obs_state,
+        )
+
+    def init_component_manager(self):
+        return CspSubelementObsComponentManager(
+            self.op_state_model,
+            self.obs_state_model,
+            logger=self.logger
         )
 
     def init_command_objects(self):
@@ -193,25 +143,21 @@ class CspSubElementObsDevice(SKAObsDevice):
         Sets up the command objects
         """
         super().init_command_objects()
-        device_args = (self, self.state_model, self.logger)
-        self.register_command_object(
-            "ConfigureScan", self.ConfigureScanCommand(*device_args)
-        )
-        self.register_command_object(
-            "Scan", self.ScanCommand(*device_args)
-        )
-        self.register_command_object(
-            "EndScan", self.EndScanCommand(*device_args)
-        )
-        self.register_command_object(
-            "GoToIdle", self.GoToIdleCommand(*device_args)
-        )
-        self.register_command_object(
-            "Abort", self.AbortCommand(*device_args)
-        )
-        self.register_command_object(
-            "ObsReset", self.ObsResetCommand(*device_args)
-        )
+
+        for (command_name, command_class, target) in [
+            ("ConfigureScan", self.ConfigureScanCommand, self),
+            ("Scan", self.ScanCommand, self.component_manager),
+            ("EndScan", self.EndScanCommand, self.component_manager),
+            ("GoToIdle", self.GoToIdleCommand, self),
+            ("Abort", self.AbortCommand, self),
+            ("ObsReset", self.ObsResetCommand, self),
+        ]:
+            self.register_command_object(
+                command_name,
+                command_class(
+                    target, self.op_state_model, self.obs_state_model, self.logger
+                )
+            )
 
     class InitCommand(SKAObsDevice.InitCommand):
         """
@@ -231,7 +177,6 @@ class CspSubElementObsDevice(SKAObsDevice):
 
             device = self.target
             device._obs_state = ObsState.IDLE
-            device._scan_id = 0
 
             device._sdp_addresses = {"outputHost": [], "outputMac": [], "outputPort": []}
             # a sub-element obsdevice can have more than one link to the SDP
@@ -239,7 +184,7 @@ class CspSubElementObsDevice(SKAObsDevice):
             device._sdp_links_active = [False, ]
             device._sdp_links_capacity = 0.
 
-            device._config_id = ''
+            # JSON string, deliberately left in Tango layer
             device._last_scan_configuration = ''
             device._health_failure_msg = ''
 
@@ -268,13 +213,13 @@ class CspSubElementObsDevice(SKAObsDevice):
     def read_scanID(self):
         # PROTECTED REGION ID(CspSubElementObsDevice.scanID_read) ENABLED START #
         """Return the scanID attribute."""
-        return self._scan_id
+        return self.component_manager.scan_id  #pylint: disable=no-member
         # PROTECTED REGION END #    //  CspSubElementObsDevice.scanID_read
 
     def read_configurationID(self):
         # PROTECTED REGION ID(CspSubElementObsDevice.configurationID_read) ENABLED START #
         """Return the configurationID attribute."""
-        return self._config_id
+        return self.component_manager.config_id  #pylint: disable=no-member
         # PROTECTED REGION END #    //  CspSubElementObsDevice.configurationID_read
 
     def read_deviceID(self):
@@ -317,12 +262,12 @@ class CspSubElementObsDevice(SKAObsDevice):
     # Commands
     # --------
 
-    class ConfigureScanCommand(ActionCommand):
+    class ConfigureScanCommand(ObservationCommand, ResponseCommand, CompletionCommand):
         """
         A class for the CspSubElementObsDevices's ConfigureScan command.
         """
 
-        def __init__(self, target, state_model, logger=None):
+        def __init__(self, target, op_state_model, obs_state_model, logger=None):
             """
             Constructor for ConfigureScanCommand
 
@@ -330,17 +275,20 @@ class CspSubElementObsDevice(SKAObsDevice):
                 example, the CspSubElementObsDevice device for which this class
                 implements the command
             :type target: object
-            :param state_model: the state model that this command uses
-                 to check that it is allowed to run, and that it drives
-                 with actions.
-            :type state_model: :py:class:`CspSubElementObsStateModel`
+            :param op_state_model: the op state model that this command
+                uses to check that it is allowed to run
+            :type op_state_model: :py:class:`OpStateModel`
+            :param obs_state_model: the observation state model that
+                 this command uses to check that it is allowed to run,
+                 and that it drives with actions.
+            :type obs_state_model: :py:class:`CspSubElementObsStateModel`
             :param logger: the logger to be used by this Command. If not
                 provided, then a default module logger will be used.
             :type logger: a logger that implements the standard library
                 logger interface
             """
             super().__init__(
-                target, state_model, "configure", start_action=True, logger=logger
+                target, obs_state_model, "configure", op_state_model, logger=logger
             )
 
         def do(self, argin):
@@ -354,14 +302,14 @@ class CspSubElementObsDevice(SKAObsDevice):
                 message indicating status. The message is for
                 information purpose only.
             :rtype: (ResultCode, str)
-            :raises: ``CommandError`` if the configuration data validation fails.
             """
             device = self.target
             # validate the input args
-            (result_code, msg) = self.validate_input(argin)
+            (configuration, result_code, msg) = self.validate_input(argin)
             if result_code == ResultCode.OK:
                 # store the configuration on command success
                 device._last_scan_configuration = argin
+                device.component_manager.configure_scan(configuration)
                 msg = "Configure command completed OK"
             return(result_code, msg)
 
@@ -374,27 +322,25 @@ class CspSubElementObsDevice(SKAObsDevice):
             :return: A tuple containing a return code and a string message.
             :rtype: (ResultCode, str)
             """
-            device = self.target
             try:
                 configuration_dict = json.loads(argin)
-                device._config_id = configuration_dict['id']
-                # call the method to validate the data sent with
-                # the configuration, as needed.
-                return (ResultCode.OK, "ConfigureScan arguments validation successfull")
+                _ = configuration_dict["id"]
             except (KeyError, JSONDecodeError) as err:
-                msg = "Validate configuration failed with error:{}".format(err)
-            except Exception as other_errs:
-                msg = "Validate configuration failed with unknown error:{}".format(
-                    other_errs)
+                msg = f"Validate configuration failed with error:{err}"
                 self.logger.error(msg)
-            return (ResultCode.FAILED, msg)
+                return (None, ResultCode.FAILED, msg)
+            except Exception as other_errs:
+                msg = f"Validate configuration failed with unknown error: {other_errs}"
+                return (None, ResultCode.FAILED, msg)
 
-    class ScanCommand(ActionCommand):
+            return (configuration_dict, ResultCode.OK, "ConfigureScan arguments validation successful")
+
+    class ScanCommand(ObservationCommand, ResponseCommand):
         """
         A class for the CspSubElementObsDevices's Scan command.
         """
 
-        def __init__(self, target, state_model, logger=None):
+        def __init__(self, target, op_state_model, obs_state_model, logger=None):
             """
             Constructor for ScanCommand
 
@@ -402,17 +348,20 @@ class CspSubElementObsDevice(SKAObsDevice):
                 example, the CspSubElementObsDevice device for which this class
                 implements the command
             :type target: object
-            :param state_model: the state model that this command uses
-                 to check that it is allowed to run, and that it drives
-                 with actions.
-            :type state_model: :py:class:`CspSubElementObsStateModel`
+            :param op_state_model: the op state model that this command
+                uses to check that it is allowed to run
+            :type op_state_model: :py:class:`OpStateModel`
+            :param obs_state_model: the observation state model that
+                 this command uses to check that it is allowed to run,
+                 and that it drives with actions.
+            :type obs_state_model: :py:class:`SubarrayObsStateModel`
             :param logger: the logger to be used by this Command. If not
                 provided, then a default module logger will be used.
             :type logger: a logger that implements the standard library
                 logger interface
             """
             super().__init__(
-                target, state_model, "scan", start_action=True, logger=logger
+                target, obs_state_model, "scan", op_state_model, logger=logger
             )
 
         def do(self, argin):
@@ -427,11 +376,10 @@ class CspSubElementObsDevice(SKAObsDevice):
                 information purpose only.
             :rtype: (ResultCode, str)
             """
-            device = self.target
+            component_manager = self.target
             (result_code, msg) = self.validate_input(argin)
             if result_code == ResultCode.OK:
-                # store the configuration on command success
-                device._scan_id = int(argin)
+                component_manager.scan(int(argin))
                 return (ResultCode.STARTED, "Scan command started")
             return(result_code, msg)
 
@@ -452,12 +400,12 @@ class CspSubElementObsDevice(SKAObsDevice):
                 return (ResultCode.FAILED, msg)
             return (ResultCode.OK, "Scan arguments validation successfull")
 
-    class EndScanCommand(ActionCommand):
+    class EndScanCommand(ObservationCommand, ResponseCommand):
         """
         A class for the CspSubElementObsDevices's EndScan command.
         """
 
-        def __init__(self, target, state_model, logger=None):
+        def __init__(self, target, op_state_model, obs_state_model, logger=None):
             """
             Constructor for EndScanCommand
 
@@ -465,17 +413,20 @@ class CspSubElementObsDevice(SKAObsDevice):
                 example, the CspSubElementObsDevice device for which this class
                 implements the command
             :type target: object
-            :param state_model: the state model that this command uses
-                 to check that it is allowed to run, and that it drives
-                 with actions.
-            :type state_model: :py:class:`CspSubElementObsStateModel`
+            :param op_state_model: the op state model that this command
+                uses to check that it is allowed to run
+            :type op_state_model: :py:class:`OpStateModel`
+            :param obs_state_model: the observation state model that
+                 this command uses to check that it is allowed to run,
+                 and that it drives with actions.
+            :type obs_state_model: :py:class:`SubarrayObsStateModel`
             :param logger: the logger to be used by this Command. If not
                 provided, then a default module logger will be used.
             :type logger: a logger that implements the standard library
                 logger interface
             """
             super().__init__(
-                target, state_model, "end_scan", logger=logger
+                target, obs_state_model, "end_scan", op_state_model, logger=logger
             )
 
         def do(self):
@@ -487,32 +438,37 @@ class CspSubElementObsDevice(SKAObsDevice):
                 information purpose only.
             :rtype: (ResultCode, str)
             """
+            component_manager = self.target
+            component_manager.end_scan()
             return (ResultCode.OK, "EndScan command completed OK")
 
-    class GoToIdleCommand(ActionCommand):
+    class GoToIdleCommand(ObservationCommand, ResponseCommand):
         """
         A class for the CspSubElementObsDevices's GoToIdle command.
         """
 
-        def __init__(self, target, state_model, logger=None):
+        def __init__(self, target, op_state_model, obs_state_model, logger=None):
             """
-            Constructor for GoToIdle Command.
+            Constructor for EndCommand
 
             :param target: the object that this command acts upon; for
-                example, the CspSubElementObsDevice device for which this class
+                example, the SKASubarray device for which this class
                 implements the command
             :type target: object
-            :param state_model: the state model that this command uses
-                 to check that it is allowed to run, and that it drives
-                 with actions.
-            :type state_model: :py:class:`CspSubElementObsStateModel`
+            :param op_state_model: the op state model that this command
+                uses to check that it is allowed to run
+            :type op_state_model: :py:class:`OpStateModel`
+            :param obs_state_model: the observation state model that
+                 this command uses to check that it is allowed to run,
+                 and that it drives with actions.
+            :type obs_state_model: :py:class:`SubarrayObsStateModel`
             :param logger: the logger to be used by this Command. If not
                 provided, then a default module logger will be used.
             :type logger: a logger that implements the standard library
                 logger interface
             """
             super().__init__(
-                target, state_model, "end", logger=logger
+                target, obs_state_model, "end", op_state_model, logger=logger
             )
 
         def do(self):
@@ -525,20 +481,16 @@ class CspSubElementObsDevice(SKAObsDevice):
             :rtype: (ResultCode, str)
             """
             device = self.target
-            if device.state_model.obs_state == ObsState.IDLE:
-                return (ResultCode.OK, "GoToIdle command completed OK. Device already IDLE")
-            # reset to default values the configurationID and scanID
-            device._config_id = ''
-            device._scan_id = 0
+            device.component_manager.deconfigure()
             device._last_scan_configuration = ''
             return (ResultCode.OK, "GoToIdle command completed OK")
 
-    class ObsResetCommand(ActionCommand):
+    class ObsResetCommand(ObservationCommand, ResponseCommand, CompletionCommand):
         """
         A class for the CspSubElementObsDevices's ObsReset command.
         """
 
-        def __init__(self, target, state_model, logger=None):
+        def __init__(self, target, op_state_model, obs_state_model, logger=None):
             """
             Constructor for ObsReset Command.
 
@@ -546,17 +498,20 @@ class CspSubElementObsDevice(SKAObsDevice):
                 example, the CspSubElementObsDevice device for which this class
                 implements the command
             :type target: object
-            :param state_model: the state model that this command uses
-                 to check that it is allowed to run, and that it drives
-                 with actions.
-            :type state_model: :py:class:`CspSubElementObsStateModel`
+            :param op_state_model: the op state model that this command
+                uses to check that it is allowed to run
+            :type op_state_model: :py:class:`OpStateModel`
+            :param obs_state_model: the observation state model that
+                 this command uses to check that it is allowed to run,
+                 and that it drives with actions.
+            :type obs_state_model: :py:class:`CspSubElementObsStateModel`
             :param logger: the logger to be used by this Command. If not
                 provided, then a default module logger will be used.
             :type logger: a logger that implements the standard library
                 logger interface
             """
             super().__init__(
-                target, state_model, "obs_reset", logger=logger
+                target, obs_state_model, "obsreset", op_state_model, logger=logger
             )
 
         def do(self):
@@ -572,12 +527,12 @@ class CspSubElementObsDevice(SKAObsDevice):
             self.logger.info(message)
             return (ResultCode.OK, message)
 
-    class AbortCommand(ActionCommand):
+    class AbortCommand(ObservationCommand, ResponseCommand, CompletionCommand):
         """
         A class for the CspSubElementObsDevices's Abort command.
         """
 
-        def __init__(self, target, state_model, logger=None):
+        def __init__(self, target, op_state_model, obs_state_model, logger=None):
             """
             Constructor for Abort Command.
 
@@ -585,17 +540,20 @@ class CspSubElementObsDevice(SKAObsDevice):
                 example, the CspSubElementObsDevice device for which this class
                 implements the command
             :type target: object
-            :param state_model: the state model that this command uses
-                 to check that it is allowed to run, and that it drives
-                 with actions.
-            :type state_model: :py:class:`CspSubElementObsStateModel`
+            :param op_state_model: the op state model that this command
+                uses to check that it is allowed to run
+            :type op_state_model: :py:class:`OpStateModel`
+            :param obs_state_model: the observation state model that
+                 this command uses to check that it is allowed to run,
+                 and that it drives with actions.
+            :type obs_state_model: :py:class:`CspSubElementObsStateModel`
             :param logger: the logger to be used by this Command. If not
                 provided, then a default module logger will be used.
             :type logger: a logger that implements the standard library
                 logger interface
             """
             super().__init__(
-                target, state_model, "abort", start_action=True, logger=logger
+                target, obs_state_model, "abort", op_state_model, logger=logger
             )
 
         def do(self):

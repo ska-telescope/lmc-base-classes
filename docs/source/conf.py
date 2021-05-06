@@ -102,6 +102,9 @@ extensions = [
     'sphinx.ext.viewcode',
     'sphinxcontrib.plantuml'
 ]
+autoclass_content = "class"
+plantuml_syntax_error_image = True
+
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']

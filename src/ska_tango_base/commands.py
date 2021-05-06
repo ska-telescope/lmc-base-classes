@@ -1,9 +1,48 @@
 """
 This module provides abstract base classes for device commands, and a
 ResultCode enum.
+
+Device commands are implement as a collection of mixins, as follows:
+
+* **BaseCommand**: that implements the common pattern for commands;
+  implement the do() method, and invoke the command class by *calling*
+  it.
+
+* **OperationCommand**: implements a command that drives the operation
+  state of the device; for example, "On()", "Standby()", "Off()".
+
+* **ObservationCommand**: implements a command that drives the
+  observation state of an obsDevice, such as a subarray; for example,
+  AssignResources(), Configure(), Scan().
+
+* **ResponseCommand**: for commands that return a (ResultCode, message)
+  tuple.
+  
+* **CompletionCommand**: for commands that need to let their state
+  machine know when they have completed; that is, long-running commands
+  with transitional states, such as AssignResources() and Configure().
+
+To use these commands: subclass from the mixins needed, then implement
+the ``__init__`` and ``do`` methods. For example::
+
+.. code-block:: py
+
+    class AssignResourcesCommand(
+        ObservationCommand, ResponseCommand, CompletionCommand
+    ):
+        def __init__(self, target, op_state_model, obs_state_model, logger=None):
+            super().__init__(target, obs_state_model, "assign", op_state_model, logger=logger)
+
+        def do(self, argin):
+            # do stuff
+            return (ResultCode.OK, "AssignResources command completed OK")
+
 """
 import enum
 import logging
+
+from tango import DevState
+
 from ska_tango_base.faults import CommandError, ResultCodeError, StateModelError
 
 module_logger = logging.getLogger(__name__)
@@ -42,22 +81,22 @@ class ResultCode(enum.IntEnum):
 
 class BaseCommand:
     """
-    Abstract base class for Tango device server commands. Ensures the
-    command is run, and that if the command errors, the "fatal_error"
-    action will be called on the state model.
+    Abstract base class for Tango device server commands. Checks that
+    the command is allowed to run in the current state, and runs the
+    command.
     """
 
-    def __init__(self, target, state_model, logger=None):
+    def __init__(self, target, state_model, *args, logger=None, **kwargs):
         """
         Creates a new BaseCommand object for a device.
 
-        :param state_model: the state model that this command uses, for
-             example to raise a fatal error if the command errors out.
-        :type state_model: SKABaseClassStateModel or a subclass of same
         :param target: the object that this base command acts upon. For
             example, the device that this BaseCommand implements the
             command for.
         :type target: object
+        :param state_model: the state model that this command uses, for
+            example to raise a fatal error if the command errors out.
+        :type state_model: SKABaseClassStateModel or a subclass of same
         :param logger: the logger to be used by this Command. If not
             provided, then a default module logger will be used.
         :type logger: a logger that implements the standard library
@@ -84,7 +123,6 @@ class BaseCommand:
             self.logger.exception(
                 f"Error executing command {self.name} with argin '{argin}'"
             )
-            self.fatal_error()
             raise
 
     def _call_do(self, argin=None):
@@ -120,52 +158,148 @@ class BaseCommand:
             "BaseCommand is abstract; do() must be subclassed not called."
         )
 
-    def fatal_error(self):
-        """
-        Callback for a fatal error in the command, such as an unhandled
-        exception.
-        """
-        self._perform_action("fatal_error")
 
-    def _is_action_allowed(self, action):
+class OperationCommand(BaseCommand):
+    def __init__(self, target, state_model, action_slug, *args, logger=None, **kwargs):
         """
-        Helper method; whether a given action is permitted in the
-        current state of the state model.
+        A base command for commands that drive the operating state of
+        the device.
 
-        :param action: the action on the state model that is being
-            scrutinised
-        :type action: string
-        :returns: whether the action is allowed
-        :rtype: boolean
+        :param target: the object that this base command acts upon. For
+            example, the device that this BaseCommand implements the
+            command for.
+        :type target: object
+        :param state_model: the state model that this command uses, for
+            example to raise a fatal error if the command errors out.
+        :type state_model: SKABaseClassStateModel or a subclass of same
+        :param action_slug: a slug for this command, used to construct
+            actions on the state model corresponding to this command.
+            For example, if we set the slug for the Scan() command to
+            "scan", then invoking the command would correspond to the
+            "scan_invoked" action on the state model.
+        :param args: additional positional arguments
+        :param logger: the logger to be used by this Command. If not
+            provided, then a default module logger will be used.
+        :type logger: a logger that implements the standard library
+            logger interface
+        :param kwargs: additional keyword arguments
         """
-        return self.state_model.is_action_allowed(action)
+        super().__init__(target, state_model, action_slug, *args, logger=logger, **kwargs)
+        self._action_slug = action_slug
+        self._invoked_action = f"{action_slug}_invoked"
 
-    def _try_action(self, action):
+    def __call__(self, argin=None):
         """
-        Helper method; "tries" an action on the state model.
+        What to do when the command is called. Ensures that we perform
+        the "invoked" action on the state machine.
 
-        :param action: the action to perform on the state model
-        :type action: string
-        :raises CommandError: if the action is not allowed in current state
-        :returns: True is the action is allowed
+        :param argin: the argument passed to the Tango command, if
+            present
+        :type argin: ANY
+
+        :return: result of call
+
+        :raises CommandError: if the command is not allowed
         """
         try:
-            return self.state_model.try_action(action)
-        except StateModelError as exc:
+            self.state_model.perform_action(self._invoked_action)
+        except StateModelError as sme:
+            raise CommandError("Command not permitted") from sme
+
+        return super().__call__(argin)
+
+    def is_allowed(self, raise_if_disallowed=False):
+        """
+        Whether this command is allowed to run in the current state of
+        the state model.
+
+        :param raise_if_disallowed: whether to raise an error or
+            simply return False if the command is disallowed
+
+        :returns: whether this command is allowed to run
+        :rtype: boolean
+
+        :raises CommandError: if the command is not allowed and
+            `raise_if_disallowed` is True
+        """
+        try:
+            return self.state_model.is_action_allowed(
+                self._invoked_action,
+                raise_if_disallowed=raise_if_disallowed
+            )
+        except StateModelError as state_model_error:
             raise CommandError(
                 f"Error executing command {self.name}"
-            ) from exc
+            ) from state_model_error
 
-    def _perform_action(self, action):
+
+class ObservationCommand(OperationCommand):
+    def __init__(
+        self,
+        target,
+        obs_state_model,
+        action_slug,
+        op_state_model,
+        *args,
+        logger=None,
+        **kwargs
+    ):
         """
-        Helper method; performs an action on the state model, thus
-        driving state
+        A base class for commands that drive the device's observing
+        state.
 
-        :param action: the action to perform on the state model
-        :type action: string
+        :param target: the object that this base command acts upon. For
+            example, the device that this BaseCommand implements the
+            command for.
+        :type target: object
+        :param obs_state_model: the observation state model that
+                this command uses to check that it is allowed to run,
+                and that it drives with actions.
+        :type obs_state_model: :py:class:`CspSubElementObsStateModel`
+        :param action_slug: a slug for this command, used to construct
+            actions on the state model corresponding to this command.
+            For example, if we set the slug for the Scan() command to
+            "scan", then invoking the command would correspond to the
+            "scan_invoked" action on the state model.
+        :param op_state_model: the op state model that this command
+            uses to check that it is allowed to run
+        :type op_state_model: :py:class:`OpStateModel`
+        :param logger: the logger to be used by this Command. If not
+            provided, then a default module logger will be used.
+        :type logger: a logger that implements the standard library
+            logger interface
         """
-        self.state_model.perform_action(action)
+        self._op_state_model = op_state_model
+        super().__init__(
+            target, obs_state_model, action_slug, *args, logger=logger, **kwargs
+        )
+        self._action_slug = action_slug
+        self._invoked_action = f"{action_slug}_invoked"
 
+    def is_allowed(self, raise_if_disallowed=False):
+        """
+        Whether this command is allowed to run in the current state of
+        the state model.
+
+        :param raise_if_disallowed: whether to raise an error or
+            simply return False if the command is disallowed
+
+        :returns: whether this command is allowed to run
+        :rtype: boolean
+
+        :raises CommandError: if the command is not allowed and
+            `raise_if_disallowed` is True
+        """
+        if self._op_state_model.op_state != DevState.ON:
+            if raise_if_disallowed:
+                raise CommandError(
+                    "Observation commands are only permitted in Op state ON."
+                )
+            else:
+                return False
+
+        return super().is_allowed(raise_if_disallowed=raise_if_disallowed)
+    
 
 class ResponseCommand(BaseCommand):
     """
@@ -182,26 +316,6 @@ class ResponseCommand(BaseCommand):
         ResultCode.UNKNOWN: logging.WARNING
     }
 
-    def __call__(self, argin=None):
-        """
-        What to do when the command is called. This base class simply
-        calls ``do()`` or ``do(argin)``, depending on whether the
-        ``argin`` argument is provided.
-
-        :param argin: the argument passed to the Tango command, if
-            present
-        :type argin: ANY
-        """
-        try:
-            (return_code, message) = self._call_do(argin)
-        except Exception:
-            self.logger.exception(
-                f"Error executing command {self.name} with argin '{argin}'"
-            )
-            self.fatal_error()
-            raise
-        return (return_code, message)
-
     def _call_do(self, argin=None):
         """
         Helper method that ensures the ``do`` method is called with the
@@ -210,6 +324,11 @@ class ResponseCommand(BaseCommand):
         :param argin: the argument passed to the Tango command, if
             present
         :type argin: ANY
+
+        :return: A tuple containing a return code and a string
+            message indicating status. The message is for
+            information purpose only.
+        :rtype: (ResultCode, str)
         """
         if argin is None:
             (return_code, message) = self.do()
@@ -218,22 +337,20 @@ class ResponseCommand(BaseCommand):
 
         self.logger.log(
             self.RESULT_LOG_LEVEL.get(return_code, logging.ERROR),
-            f"Exiting command {self.name} with return_code {return_code!s}, "
-            f"message: '{message}'"
+            f"Exiting command {self.name} with return_code "
+            f"{return_code!s}, message: '{message}'."
         )
         return (return_code, message)
 
 
-class ActionCommand(ResponseCommand):
+class CompletionCommand(BaseCommand):
     """
-    Abstract base class for a tango command, which checks a state model
-    to find out whether the command is allowed to be run, and after
-    running, sends an action to that state model, thus driving device
-    state.
+    Abstract base class for a command that sends a "completed" action to
+    the state model at command completion.
     """
 
     def __init__(
-        self, target, state_model, action_hook, start_action=False, logger=None
+        self, target, state_model, action_slug, *args, logger=None, **kwargs
     ):
         """
         Create a new ActionCommand for a device.
@@ -242,28 +359,25 @@ class ActionCommand(ResponseCommand):
             example, the device that this ActionCommand implements the
             command for.
         :type target: object
-        :param action_hook: a hook for the command, used to build
-            actions that will be sent to the state model; for example,
-            if the hook is "scan", then success of the command will
-            result in action "scan_succeeded" being sent to the state
-            model.
-        :type action_hook: string
-        :param start_action: whether the state model supports a start
-            action (i.e. to put the state model into an transient state
-            while the command is running); default False
-        :type start_action: boolean
+        :param state_model: the state model that this command uses, for
+            example to raise a fatal error if the command errors out.
+        :type state_model: SKABaseClassStateModel or a subclass of same
+        :param action_slug: a slug for this command, used to construct
+            actions on the state model corresponding to this command.
+            For example, if we set the slug for the Scan() command to
+            "scan", then invokation and completion of the command would
+            correspond respectively to the "scan_invoked" and
+            "scan_completed" actions on the state model.
+        :type action_slug: string
+        :param args: additional positional arguments
         :param logger: the logger to be used by this Command. If not
             provided, then a default module logger will be used.
         :type logger: a logger that implements the standard library
             logger interface
+        :param kwargs: additional keyword arguments
         """
-        super().__init__(target, state_model, logger=logger)
-        self._succeeded_hook = f"{action_hook}_succeeded"
-        self._failed_hook = f"{action_hook}_failed"
-
-        self._started_hook = None
-        if start_action:
-            self._started_hook = f"{action_hook}_started"
+        super().__init__(target, state_model, action_slug, *args, logger=logger, **kwargs)
+        self._completed_hook = f"{action_slug}_completed"
 
     def __call__(self, argin=None):
         """
@@ -275,79 +389,15 @@ class ActionCommand(ResponseCommand):
         :param argin: the argument passed to the Tango command, if
             present
         :type argin: ANY
-        """
-        self.check_allowed()
-        try:
-            self.started()
-            (return_code, message) = self._call_do(argin)
-            self._returned(return_code)
-        except Exception:
-            self.logger.exception(
-                f"Error executing command {self.name} with argin '{argin}'"
-            )
-            self.fatal_error()
-            raise
-        return (return_code, message)
 
-    def _returned(self, return_code):
+        :return: The result of the call.
         """
-        Helper method that handles the return of the ``do()`` method.
-        If the return code is OK or FAILED, then it performs an
-        appropriate action on the state model. Otherwise it raises an
-        error.
+        result = super().__call__(argin)
+        self.completed()
+        return result
 
-        :param return_code: The return_code returned by the ``do()``
-            method
-        :type return_code: :py:class:`ResultCode`
+    def completed(self):
         """
-        if return_code == ResultCode.OK:
-            self.succeeded()
-        elif return_code == ResultCode.FAILED:
-            self.failed()
-        else:
-            if self._started_hook is None:
-                raise ResultCodeError(
-                    f"ActionCommands that do not have a started action may"
-                    f"only return with code OK or FAILED, not {return_code!s}."
-                )
-
-    def check_allowed(self):
+        Callback for the completion of the command.
         """
-        Checks whether the command is allowed to be run in the current
-        state of the state model.
-
-        :returns: True if the command is allowed to be run
-        :raises StateModelError: if the command is not allowed to be run
-        """
-        return self._try_action(self._started_hook or self._succeeded_hook)
-
-    def is_allowed(self):
-        """
-        Whether this command is allowed to run in the current state of
-        the state model.
-
-        :returns: whether this command is allowed to run
-        :rtype: boolean
-        """
-        return self._is_action_allowed(
-            self._started_hook or self._succeeded_hook
-        )
-
-    def started(self):
-        """
-        Action to perform upon starting the comand.
-        """
-        if self._started_hook is not None:
-            self._perform_action(self._started_hook)
-
-    def succeeded(self):
-        """
-        Callback for the successful completion of the command.
-        """
-        self._perform_action(self._succeeded_hook)
-
-    def failed(self):
-        """
-        Callback for the failed completion of the command.
-        """
-        self._perform_action(self._failed_hook)
+        self.state_model.perform_action(self._completed_hook)

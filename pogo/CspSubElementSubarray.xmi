@@ -141,7 +141,7 @@
       </argout>
       <status abstract="false" inherited="true" concrete="true"/>
     </commands>
-    <commands name="ObsReset" description="Reset observation state machine to its default state" execMethod="obs_reset" displayLevel="OPERATOR" polledPeriod="0">
+    <commands name="ObsReset" description="Reset observation state machine to its default state" execMethod="obsreset" displayLevel="OPERATOR" polledPeriod="0">
       <argin description="">
         <type xsi:type="pogoDsl:VoidType"/>
       </argin>

@@ -204,10 +204,13 @@ class CspSubElementMaster(SKAMaster):
         Sets up the command objects
         """
         super().init_command_objects()
-        device_args = (self, self.state_model, self.logger)
         self.register_command_object(
-            "LoadFirmware", self.LoadFirmwareCommand(*device_args)
+            "LoadFirmware",
+            self.LoadFirmwareCommand(
+                self, self.op_state_model, self.admin_mode_model, self.logger
+            )
         )
+        device_args = (self, self.op_state_model, self.logger)
         self.register_command_object(
             "PowerOnDevices", self.PowerOnDevicesCommand(*device_args)
         )
@@ -414,12 +417,37 @@ class CspSubElementMaster(SKAMaster):
     # --------
     class LoadFirmwareCommand(ResponseCommand):
         """
-        A class for the CspSubElementMaster's LoadFirmware command.
+        A class for the LoadFirmware command.
         """
+        def __init__(self, target, op_state_model, admin_mode_model, *args, logger=None, **kwargs):
+            """
+            Creates a new BaseCommand object for a device.
+
+            :param target: the object that this base command acts upon. For
+                example, the device that this BaseCommand implements the
+                command for.
+            :type target: object
+            :param op_state_model: the op state model that this command
+                uses.
+            :type op_state_model: OpStateModel
+            :param admin_mode_model: the admin model that this command
+                uses.
+            :type admin_mode_model: AdminModeModel
+            :param args: other positional arguments
+            :param kwargs: other keyword arguments
+            :param logger: the logger to be used by this Command. If not
+                provided, then a default module logger will be used.
+            :type logger: a logger that implements the standard library
+                logger interface
+            """
+            self._admin_mode_model = admin_mode_model
+            super().__init__(target, op_state_model, *args, logger=logger, **kwargs)
 
         def do(self, argin):
             """
             Stateless hook for device LoadFirmware() command.
+
+            :param argin: argument to command, currently unused
 
             :return: A tuple containing a return code and a string
                 message indicating status. The message is for
@@ -429,24 +457,30 @@ class CspSubElementMaster(SKAMaster):
             message = "LoadFirmware command completed OK"
             return (ResultCode.OK, message)
 
-        def check_allowed(self):
+        def is_allowed(self, raise_if_disallowed=False):
             """
             Check if the command is in the proper state (State/adminMode)
             to be executed.
             The master device has to be in OFF/MAINTENACE to process the
             LoadFirmware command.
 
-            :raises: ``CommandError`` if command not allowed
+            :param raise_if_disallowed: whether to raise an error or
+                simply return False if the command is disallowed
+
+            :raises CommandError: if command not allowed
             :return: ``True`` if the command is allowed.
             :rtype: boolean
             """
-            if (self.state_model.op_state == tango.DevState.OFF
-                    and self.state_model.admin_mode == AdminMode.MAINTENANCE):
+            allowed = (self.state_model.op_state == tango.DevState.OFF and
+                       self._admin_mode_model.admin_mode == AdminMode.MAINTENANCE)
+            if allowed:
                 return True
-            msg = "{} not allowed in {}/{}".format(self.name,
-                                                   self.state_model.op_state,
-                                                   AdminMode(self.state_model.admin_mode).name)
-            raise CommandError(msg)
+            if raise_if_disallowed:
+                raise CommandError(
+                    f"{self.name} not allowed in {self.state_model.op_state}"
+                    f"/{self._admin_mode_model.admin_mode.name}"
+                )
+            return False
 
     class PowerOnDevicesCommand(ResponseCommand):
         """
@@ -457,6 +491,8 @@ class CspSubElementMaster(SKAMaster):
             """
             Stateless hook for device PowerOnDevices() command.
 
+            :param argin: argument to command, currently unused
+
             :return: A tuple containing a return code and a string
                 message indicating status. The message is for
                 information purpose only.
@@ -465,21 +501,26 @@ class CspSubElementMaster(SKAMaster):
             message = "PowerOnDevices command completed OK"
             return (ResultCode.OK, message)
 
-        def check_allowed(self):
+        def is_allowed(self, raise_if_disallowed=False):
             """
             Check if the command is in the proper state to be executed.
             The master device has to be in ON to process the
             PowerOnDevices command.
 
-            : raises: ``CommandError`` if command not allowed
-            : return: ``True`` if the command is allowed.
-            : rtype: boolean
+            :param raise_if_disallowed: whether to raise an error or
+                simply return False if the command is disallowed
+
+            :raises CommandError: if command not allowed
+            :return: ``True`` if the command is allowed.
+            :rtype: boolean
             """
             if self.state_model.op_state == tango.DevState.ON:
                 return True
-            msg = "{} not allowed in {}".format(self.name,
-                                                self.state_model.op_state)
-            raise CommandError(msg)
+            if raise_if_disallowed:
+                raise CommandError(
+                    f"{self.name} not allowed in {self.state_model.op_state}"
+                )
+            return False
 
     class PowerOffDevicesCommand(ResponseCommand):
         """
@@ -490,6 +531,8 @@ class CspSubElementMaster(SKAMaster):
             """
             Stateless hook for device PowerOffDevices() command.
 
+            :param argin: argument to command, currently unused
+
             :return: A tuple containing a return code and a string
                 message indicating status. The message is for
                 information purpose only.
@@ -498,21 +541,26 @@ class CspSubElementMaster(SKAMaster):
             message = "PowerOffDevices command completed OK"
             return (ResultCode.OK, message)
 
-        def check_allowed(self):
+        def is_allowed(self, raise_if_disallowed=False):
             """
             Check if the command is in the proper state to be executed.
             The master device has to be in ON to process the
             PowerOffDevices command.
 
-            : raises: ``CommandError`` if command not allowed
-            : return: ``True`` if the command is allowed.
-            : rtype: boolean
+            :param raise_if_disallowed: whether to raise an error or
+                simply return False if the command is disallowed
+
+            :raises CommandError: if command not allowed
+            :return: ``True`` if the command is allowed.
+            :rtype: boolean
             """
             if self.state_model.op_state == tango.DevState.ON:
                 return True
-            msg = "{} not allowed in {}".format(self.name,
-                                                self.state_model.op_state)
-            raise CommandError(msg)
+            if raise_if_disallowed:
+                raise CommandError(
+                    f"{self.name} not allowed in {self.state_model.op_state}"
+                )
+            return False
 
     class ReInitDevicesCommand(ResponseCommand):
         """
@@ -523,6 +571,8 @@ class CspSubElementMaster(SKAMaster):
             """
             Stateless hook for device ReInitDevices() command.
 
+            :param argin: argument to command, currently unused
+
             :return: A tuple containing a return code and a string
                 message indicating status. The message is for
                 information purpose only.
@@ -531,33 +581,37 @@ class CspSubElementMaster(SKAMaster):
             message = "ReInitDevices command completed OK"
             return (ResultCode.OK, message)
 
-        def check_allowed(self):
+        def is_allowed(self, raise_if_disallowed=False):
             """
             Check if the command is in the proper state to be executed.
             The master device has to be in ON to process the
             ReInitDevices command.
 
-            : raises: ``CommandError`` if command not allowed
-            : return: ``True`` if the command is allowed.
-            : rtype: boolean
+            :param raise_if_disallowed: whether to raise an error or
+                simply return False if the command is disallowed
+
+            :raises CommandError: if command not allowed
+            :return: ``True`` if the command is allowed.
+            :rtype: boolean
             """
             if self.state_model.op_state == tango.DevState.ON:
                 return True
-            msg = "{} not allowed in {}".format(self.name,
-                                                self.state_model.op_state)
-            raise CommandError(msg)
+            if raise_if_disallowed:
+                raise CommandError(
+                    f"{self.name} not allowed in {self.state_model.op_state}."
+                )
+            return True
 
     def is_LoadFirmware_allowed(self):
         """
         Check if the LoadFirmware command is allowed in the current
         state.
 
-        :raises: ``CommandError`` if command not allowed
         :return: ``True`` if command is allowed
         :rtype: boolean
         """
         command = self.get_command_object("LoadFirmware")
-        return command.check_allowed()
+        return command.is_allowed(True)
 
     @command(
         dtype_in='DevVarStringArray',
@@ -596,12 +650,11 @@ class CspSubElementMaster(SKAMaster):
         Check if the PowerOnDevice command is allowed in the current
         state.
 
-        :raises ``tango.DevFailed`` if command not allowed
-        :return ``True`` if command is allowed
+        :return: ``True`` if command is allowed
         :rtype: boolean
         """
         command = self.get_command_object("PowerOnDevices")
-        return command.check_allowed()
+        return command.is_allowed(True)
 
     @command(
         dtype_in='DevVarStringArray',
@@ -633,12 +686,11 @@ class CspSubElementMaster(SKAMaster):
         Check if the PowerOffDevices command is allowed in the current
         state.
 
-        :raises: ``tango.DevFailed`` if command not allowed
         :return: ``True`` if command is allowed
         :rtype: boolean
         """
         command = self.get_command_object("PowerOffDevices")
-        return command.check_allowed()
+        return command.is_allowed(True)
 
     @command(
         dtype_in='DevVarStringArray',
@@ -671,12 +723,11 @@ class CspSubElementMaster(SKAMaster):
         Check if the ReInitDevices command is allowed in the current
         state.
 
-        :raises: ``tango.DevFailed`` if command not allowed
         :return: ``True`` if command is allowed
         :rtype: boolean
         """
         command = self.get_command_object("ReInitDevices")
-        return command.check_allowed()
+        return command.is_allowed(True)
 
     @command(
         dtype_in='DevVarStringArray',
@@ -716,7 +767,14 @@ class CspSubElementMaster(SKAMaster):
 
 
 def main(args=None, **kwargs):
-    """Main function of the CspSubElementMaster module."""
+    """
+    Entry point for the CspSubElementMaster module.
+
+    :param args: str
+    :param kwargs: str
+
+    :return: exit code
+    """
     # PROTECTED REGION ID(CspSubElementMaster.main) ENABLED START #
     return run((CspSubElementMaster,), args=args, **kwargs)
     # PROTECTED REGION END #    //  CspSubElementMaster.main

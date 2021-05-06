@@ -17,10 +17,3 @@ Tango Device Class
 .. autoclass:: ska_tango_base.SKABaseDevice
    :members:
    :undoc-members:
-
-Device State Model
-------------------
-
-.. autoclass:: ska_tango_base.DeviceStateModel
-   :members:
-   :undoc-members:

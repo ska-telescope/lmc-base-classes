@@ -278,13 +278,10 @@ class TestCspSubElementMaster(object):
         """Test for LoadFirmware when the device is in wrong state"""
         # PROTECTED REGION ID(CspSubelementMaster.test_LoadFirmware_when_in_wrong_state) ENABLED START #
         # Set the device in ON/ONLINE state
-        tango_context.device.Disable()
         tango_context.device.adminMode = AdminMode.ONLINE
-        tango_context.device.Off()
         tango_context.device.On()
-        with pytest.raises(DevFailed) as df:
+        with pytest.raises(DevFailed, match="LoadFirmwareCommand not allowed"):
             tango_context.device.LoadFirmware(['file', 'test/dev/b', '918698a7fea3'])
-        assert "LoadFirmwareCommand not allowed" in str(df.value.args[0].desc)
         # PROTECTED REGION END #    //  CspSubelementMaster.test_LoadFirmware_when_in_wrong_state
 
     # PROTECTED REGION ID(CspSubelementMaster.test_PowerOnDevices_decorators) ENABLED START #
@@ -304,9 +301,8 @@ class TestCspSubElementMaster(object):
     def test_PowerOnDevices_when_in_wrong_state(self, tango_context):
         """Test for PowerOnDevices when the Master is in wrong state"""
         # PROTECTED REGION ID(CspSubelementMaster.test_PowerOnDevices_when_in_wrong_state) ENABLED START #
-        with pytest.raises(DevFailed) as df:
+        with pytest.raises(DevFailed, match="PowerOnDevicesCommand not allowed"):
             tango_context.device.PowerOnDevices(['test/dev/1', 'test/dev/2'])
-        assert "PowerOnDevicesCommand not allowed" in str(df.value.args[0].desc)
         # PROTECTED REGION END #    //  CspSubelementMaster.test_PowerOnDevices_when_in_wrong_state
 
     # PROTECTED REGION ID(CspSubelementMaster.test_PowerOffDevices_decorators) ENABLED START #
@@ -326,9 +322,8 @@ class TestCspSubElementMaster(object):
     def test_PowerOffDevices_when_in_wrong_state(self, tango_context):
         """Test for PowerOffDevices when the Master is in wrong state"""
         # PROTECTED REGION ID(CspSubelementMaster.test_PowerOffDevices_when_in_wrong_state) ENABLED START #
-        with pytest.raises(DevFailed) as df:
+        with pytest.raises(DevFailed, match="PowerOffDevicesCommand not allowed"):
             tango_context.device.PowerOffDevices(['test/dev/1', 'test/dev/2'])
-        assert "PowerOffDevicesCommand not allowed" in str(df.value.args[0].desc)
         # PROTECTED REGION END #    //  CspSubelementMaster.test_PowerOffDevices_when_in_wrong_state
 
     # PROTECTED REGION ID(CspSubelementMaster.test_ReInitDevices_decorators) ENABLED START #
@@ -349,9 +344,8 @@ class TestCspSubElementMaster(object):
         """Test for ReInitDevices whe the device is in a wrong state"""
         # PROTECTED REGION ID(CspSubelementMaster.test_ReInitDevices_when_in_wrong_state) ENABLED START #
         # put it in ON state
-        with pytest.raises(DevFailed) as df:
+        with pytest.raises(DevFailed, match="ReInitDevicesCommand not allowed"):
             tango_context.device.ReInitDevices(['test/dev/1', 'test/dev/2'])
-        assert "ReInitDevicesCommand not allowed" in str(df.value.args[0].desc)
         # PROTECTED REGION END #    //  CspSubelementMaster.test_ReInitDevices_when_in_wrong_state
 
 

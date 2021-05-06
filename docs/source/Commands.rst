@@ -1,6 +1,9 @@
 
 Commands
-============================================
+========
+
+ska_tango_base.commands module
+------------------------------
 
 .. toctree::
    :maxdepth: 2

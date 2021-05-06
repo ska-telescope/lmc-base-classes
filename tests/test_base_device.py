@@ -30,13 +30,12 @@ from ska_tango_base.base_device import (
     _PYTHON_TO_TANGO_LOGGING_LEVEL,
     LoggingUtils,
     LoggingTargetError,
-    DeviceStateModel,
     TangoLoggingServiceHandler,
 )
 from ska_tango_base.faults import CommandError
+from ska_tango_base.state import OpStateModel
 
-from .conftest import load_state_machine_spec, ModelStateMachineTester
-
+from .state.conftest import load_state_machine_spec
 # PROTECTED REGION END #    //  SKABaseDevice.test_additional_imports
 # Device test case
 # PROTECTED REGION ID(SKABaseDevice.test_SKABaseDevice_decorators) ENABLED START #
@@ -329,47 +328,6 @@ class TestLoggingUtils:
             LoggingUtils.create_logging_handler = orig_create_logging_handler
 
 
-@pytest.fixture
-def device_state_model():
-    """
-    Yields a new DeviceStateModel for testing
-
-    :yields: a DeviceStateModel instance to be tested
-    """
-    yield DeviceStateModel(logging.getLogger())
-
-
-@pytest.mark.state_machine_tester(load_state_machine_spec("device_state_machine"))
-class TestDeviceStateModel(ModelStateMachineTester):
-    """
-    This class contains the test suite for the ska_tango_base.SKABaseDevice class.
-    """
-
-    @pytest.fixture
-    def machine(self, device_state_model):
-        """
-        Fixture that returns the state machine under test in this class
-
-        :yields: the state machine under test
-        """
-        yield device_state_model
-
-    def assert_state(self, machine, state):
-        """
-        Assert the current state of this state machine, based on the
-        values of the adminMode, opState and obsState attributes of this
-        model.
-
-        :param machine: the state machine under test
-        :type machine: state machine object instance
-        :param state: the state that we are asserting to be the current
-            state of the state machine under test
-        :type state: dict
-        """
-        assert machine.admin_mode == state["admin_mode"]
-        assert machine.op_state == state["op_state"]
-
-
 # PROTECTED REGION END #    //  SKABaseDevice.test_SKABaseDevice_decorators
 class TestSKABaseDevice(object):
     """
@@ -462,19 +420,6 @@ class TestSKABaseDevice(object):
         tango_context.device.On()
         state_callback.assert_not_called()
         status_callback.assert_not_called()
-
-    def test_Disable(self, tango_context):
-        """
-        Test for Disable command
-        """
-        assert tango_context.device.state() == DevState.OFF
-
-        # Check that we can disable it
-        tango_context.device.Disable()
-        assert tango_context.device.state() == DevState.DISABLE
-
-        # Check that we can disable it when it is already disabled
-        tango_context.device.Disable()
 
     def test_Standby(self, tango_context):
         """
@@ -606,8 +551,8 @@ class TestSKABaseDevice(object):
     def test_adminMode(self, tango_context, tango_change_event_helper):
         """Test for adminMode"""
         # PROTECTED REGION ID(SKABaseDevice.test_adminMode) ENABLED START #
-        tango_context.device.Disable()
         assert tango_context.device.adminMode == AdminMode.MAINTENANCE
+        assert tango_context.device.state() == DevState.OFF
 
         admin_mode_callback = tango_change_event_helper.subscribe("adminMode")
         admin_mode_callback.assert_call(AdminMode.MAINTENANCE)
@@ -615,14 +560,17 @@ class TestSKABaseDevice(object):
         tango_context.device.adminMode = AdminMode.OFFLINE
         assert tango_context.device.adminMode == AdminMode.OFFLINE
         admin_mode_callback.assert_call(AdminMode.OFFLINE)
+        assert tango_context.device.state() == DevState.DISABLE
 
         tango_context.device.adminMode = AdminMode.ONLINE
         assert tango_context.device.adminMode == AdminMode.ONLINE
         admin_mode_callback.assert_call(AdminMode.ONLINE)
+        assert tango_context.device.state() == DevState.OFF
 
         tango_context.device.adminMode = AdminMode.ONLINE
         assert tango_context.device.adminMode == AdminMode.ONLINE
         admin_mode_callback.assert_not_called()
+        assert tango_context.device.state() == DevState.OFF
 
         # PROTECTED REGION END #    //  SKABaseDevice.test_adminMode
 
@@ -680,42 +628,97 @@ class TestSKABaseDevice_commands:
     """
     This class contains tests of SKASubarray commands
     """
-
-    def test_ResetCommand(self, device_state_model):
+    @pytest.fixture
+    def op_state_model(self, logger):
         """
-        Test for SKBaseDevice.ResetCommand
+        Yields a new OpStateModel for testing
+
+        :yields: a OpStateModel instance to be tested
         """
-        mock_device = mock.Mock()
+        yield OpStateModel(logger)
 
-        reset_command = SKABaseDevice.ResetCommand(
-            mock_device,
-            device_state_model
-        )
+    @pytest.fixture
+    def command_factory(self, mocker, op_state_model):
+        """
+        Returns a factory that constructs a command object for a given
+        class
 
-        machine_spec = load_state_machine_spec("device_state_machine")
-        states = machine_spec["states"]
+        :returns: a factory that constructs a command object for a given
+        class
+        """
+        def _command_factory(command):
+            return command(mocker.Mock(), op_state_model)
 
-        transitions = {
-            "FAULT_MAINTENANCE": "OFF_MAINTENANCE",
-            "FAULT_ONLINE": "OFF_ONLINE",
+        return _command_factory
+
+    @pytest.fixture
+    def machine_spec(self):
+        return load_state_machine_spec("op_state_machine")
+
+    @pytest.fixture()
+    def op_state_mapping(self):
+        return {
+            "_UNINITIALISED": None,
+            "INIT_DISABLE": DevState.INIT,
+            "INIT_UNKNOWN": DevState.INIT,
+            "INIT_OFF": DevState.INIT,
+            "INIT_STANDBY": DevState.INIT,
+            "INIT_ON": DevState.INIT,
+            "INIT_FAULT": DevState.INIT,
+            "DISABLE": DevState.DISABLE,
+            "UNKNOWN": DevState.UNKNOWN,
+            "OFF": DevState.OFF,
+            "STANDBY": DevState.STANDBY,
+            "ON": DevState.ON,
+            "FAULT": DevState.FAULT,
         }
 
+    @pytest.mark.parametrize(
+        ("command_class", "slug"),
+        [
+            (SKABaseDevice.ResetCommand, "reset"),
+            (SKABaseDevice.OffCommand, "off"),
+            (SKABaseDevice.StandbyCommand, "standby"),
+            (SKABaseDevice.OnCommand, "on"),
+        ]
+    )
+    def test_Command(
+        self,
+        machine_spec,
+        op_state_mapping,
+        command_factory,
+        op_state_model,
+        command_class,
+        slug
+    ):
+        """
+        Test that certain commands can only be invoked in certain
+        states, and that the result of invoking the command is as
+        expected.
+        """
+        command = command_factory(command_class)
+
+        states = machine_spec["states"]
+        transitions = machine_spec["transitions"]
+        transitions = [t for t in transitions if t.get("trigger") == f"{slug}_invoked"]
+
         for state in states:
-            device_state_model._straight_to_state(**states[state])
-            if state in transitions:
-                # the reset command is permitted, should succeed.
-                assert reset_command.is_allowed()
-                assert reset_command() == (
-                    ResultCode.OK,
-                    "Reset command completed OK",
-                )
-                expected = transitions[state]
+            op_state_model._straight_to_state(state)
+
+            transitions_from_state = [t for t in transitions if t.get("from") == state]
+
+            if transitions_from_state:
+                # this command is permitted in the current state, should succeed,
+                # should result in the correct transition.
+                assert command.is_allowed()
+                (result_code, _) = command()
+                assert result_code == ResultCode.OK
+                expected = transitions_from_state[0]["to"]
             else:
-                # the reset command is not permitted, should not be allowed,
-                # should fail, should have no side-effect
-                assert not reset_command.is_allowed()
+                # this command is not permitted, should not be allowed,
+                # should fail, should have no side-effect.
+                assert not command.is_allowed()
                 with pytest.raises(CommandError):
-                    reset_command()
+                    command()
                 expected = state
-            assert device_state_model.admin_mode == states[expected]["admin_mode"]
-            assert device_state_model.op_state == states[expected]["op_state"]
+            assert op_state_model.op_state == op_state_mapping[expected]

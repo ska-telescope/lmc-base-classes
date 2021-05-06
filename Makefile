@@ -52,7 +52,7 @@ generate-diagrams-in-docker-internals:  ## Generate state machine diagrams (with
 	apt-get update
 	apt-get install --yes graphviz graphviz-dev gsfonts pkg-config
 	python3 -m pip install pygraphviz
-	cd /diagrams/docs/source && python3 draw_state_machines.py
+	cd /diagrams/docs/source && python3 scripts/draw_state_machines.py
 	ls -lo /diagrams/docs/source/images/
 
 docs-in-docker: ## Generate docs inside a container

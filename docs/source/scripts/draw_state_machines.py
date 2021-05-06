@@ -22,15 +22,13 @@ from transitions.extensions import GraphMachine
 
 # local import, so we can run this without installing the whole package
 sys.path.append("../../src/ska_tango_base")
-import state_machine
-import csp_subelement_state_machine
 
+with mock.patch("ska_tango_base"):
+    import state
 
 def patch_in_graph_machine():
     with mock.patch("transitions.extensions.LockedMachine", GraphMachine):
-        mod = sys.modules["state_machine"]
-        importlib.reload(mod)
-        mod = sys.modules["csp_subelement_state_machine"]
+        mod = sys.modules["state"]
         importlib.reload(mod)
 
 
@@ -48,7 +46,7 @@ def draw(machine_class):
 
 if __name__ == "__main__":
     patch_in_graph_machine()
-    draw(state_machine.OperationStateMachine)
-    draw(state_machine.AdminModeStateMachine)
-    draw(state_machine.ObservationStateMachine)
-    draw(csp_subelement_state_machine.CspSubElementObsDeviceStateMachine)
+    draw(state.op_state_model._OpStateMachine)
+    # draw(state_machine.AdminModeStateMachine)
+    # draw(state_machine.ObservationStateMachine)
+    # draw(csp_subelement_state_machine.CspSubElementObsDeviceStateMachine)

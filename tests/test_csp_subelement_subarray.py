@@ -24,7 +24,6 @@ from ska_tango_base.faults import StateModelError
 from ska_tango_base.control_model import (
     ObsState, AdminMode, ControlMode, HealthState, SimulationMode, TestMode
 )
-from .conftest import load_state_machine_spec, StateMachineTester
 # PROTECTED REGION END #    //  CspSubElementSubarray.test_additional_imports
 
 
@@ -148,7 +147,9 @@ class TestCspSubElementSubarray(object):
     def test_scanID(self, tango_context):
         """Test for scanID"""
         # PROTECTED REGION ID(CspSubelementSubarray.test_scanID) ENABLED START #
-        assert tango_context.device.scanID == 0
+        device_under_test = tango_context.device
+        device_under_test.On()
+        assert device_under_test.scanID == 0
         # PROTECTED REGION END #    //  CspSubelementSubarray.test_scanID
 
     # PROTECTED REGION ID(CspSubelementSubarray.test_sdpDestinationAddresses_decorators) ENABLED START #
@@ -289,7 +290,7 @@ class TestCspSubElementSubarray(object):
         """Test for ConfigureScan"""
         # PROTECTED REGION ID(CspSubelementSubarray.test_ConfigureScan) ENABLED START #
         tango_context.device.On()
-        tango_context.device.AssignResources('{"example": [1,2,3]}')
+        tango_context.device.AssignResources(json.dumps([1,2,3]))
         obs_state_callback = tango_change_event_helper.subscribe("obsState")
         scan_configuration = '{"id":"sbi-mvp01-20200325-00002"}'
         tango_context.device.command_inout(command_alias, (scan_configuration))
@@ -304,7 +305,7 @@ class TestCspSubElementSubarray(object):
         """Test for ConfigureScan when the device is in wrong state"""
         # PROTECTED REGION ID(CspSubelementSubarray.test_ConfigureScan_when_in_wrong_state) ENABLED START #
         # The device in in OFF/EMPTY state, not valid to invoke ConfigureScan.
-        with pytest.raises(DevFailed, match="Error executing command ConfigureScanCommand"):
+        with pytest.raises(DevFailed, match="Command not permitted"):
             tango_context.device.ConfigureScan('{"id":"sbi-mvp01-20200325-00002"}')
         # PROTECTED REGION END #    //  CspSubelementSubarray.test_ConfigureScan_when_in_wrong_state
 
@@ -316,7 +317,7 @@ class TestCspSubElementSubarray(object):
         """
         # PROTECTED REGION ID(CspSubelementSubarray.test_ConfigureScan_with_wrong_configId_key) ENABLED START #
         tango_context.device.On()
-        tango_context.device.AssignResources('{"example": [1,2,3]}')
+        tango_context.device.AssignResources(json.dumps([1,2,3]))
         # wrong configurationID key
         wrong_configuration = '{"subid":"sbi-mvp01-20200325-00002"}'
         result_code, msg = tango_context.device.ConfigureScan(wrong_configuration)
@@ -329,7 +330,7 @@ class TestCspSubElementSubarray(object):
         """Test for ConfigureScan when syntax error in json configuration """
         # PROTECTED REGION ID(CspSubelementSubarray.test_ConfigureScan_with_json_syntax_error) ENABLED START #
         tango_context.device.On()
-        tango_context.device.AssignResources('{"example": [1,2,3]}')
+        tango_context.device.AssignResources(json.dumps([1,2,3]))
         result_code, msg = tango_context.device.ConfigureScan('{"foo": 1,}')
         assert result_code == ResultCode.FAILED
         # PROTECTED REGION END #    //  CspSubelementSubarray.test_ConfigureScan_with_json_syntax_error
@@ -341,7 +342,7 @@ class TestCspSubElementSubarray(object):
         """Test for GoToIdle"""
         # PROTECTED REGION ID(CspSubelementSubarray.test_GoToIdle) ENABLED START #
         tango_context.device.On()
-        tango_context.device.AssignResources('{"example": [1,2,3]}')
+        tango_context.device.AssignResources(json.dumps([1,2,3]))
         obs_state_callback = tango_change_event_helper.subscribe("obsState")
         tango_context.device.ConfigureScan('{"id":"sbi-mvp01-20200325-00002"}')
         obs_state_callback.assert_calls(

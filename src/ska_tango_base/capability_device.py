@@ -33,7 +33,7 @@ class SKACapability(SKAObsDevice):
         super().init_command_objects()
         self.register_command_object(
             "ConfigureInstances", self.ConfigureInstancesCommand(
-                self, self.state_model, self.logger
+                self, self.op_state_model, self.logger
             )
         )
 

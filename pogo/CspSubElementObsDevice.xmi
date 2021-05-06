@@ -111,7 +111,7 @@
       </argout>
       <status abstract="false" inherited="false" concrete="true" concreteHere="true"/>
     </commands>
-    <commands name="ObsReset" description="Reset the observing device from a FAULT/ABORTED state to IDLE." execMethod="obs_reset" displayLevel="OPERATOR" polledPeriod="0" isDynamic="false">
+    <commands name="ObsReset" description="Reset the observing device from a FAULT/ABORTED state to IDLE." execMethod="obsreset" displayLevel="OPERATOR" polledPeriod="0" isDynamic="false">
       <argin description="">
         <type xsi:type="pogoDsl:VoidType"/>
       </argin>

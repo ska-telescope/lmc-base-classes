@@ -8,6 +8,7 @@
 #########################################################################################
 """Contain the tests for the SKASubarray."""
 
+import json
 import logging
 import re
 import pytest
@@ -15,7 +16,8 @@ import pytest
 from tango import DevState, DevFailed
 
 # PROTECTED REGION ID(SKASubarray.test_additional_imports) ENABLED START #
-from ska_tango_base import SKASubarray, SKASubarrayResourceManager, SKASubarrayStateModel
+from ska_tango_base import SKASubarray
+from ska_tango_base.state import OpStateModel, SubarrayObsStateModel
 from ska_tango_base.commands import ResultCode
 from ska_tango_base.control_model import (
     AdminMode,
@@ -27,48 +29,8 @@ from ska_tango_base.control_model import (
     TestMode,
 )
 from ska_tango_base.faults import CommandError
-
-from .conftest import load_state_machine_spec, ModelStateMachineTester
-
+from ska_tango_base.subarray_component_manager import SubarrayComponentManager
 # PROTECTED REGION END #    //  SKASubarray.test_additional_imports
-
-
-@pytest.fixture
-def subarray_state_model():
-    """
-    Yields a new SKASubarrayStateModel for testing
-    """
-    yield SKASubarrayStateModel(logging.getLogger())
-
-
-@pytest.mark.state_machine_tester(load_state_machine_spec("subarray_state_machine"))
-class TestSKASubarrayStateModel(ModelStateMachineTester):
-    """
-    This class contains the test for the SKASubarrayStateModel class.
-    """
-
-    @pytest.fixture
-    def machine(self, subarray_state_model):
-        """
-        Fixture that returns the state machine under test in this class
-        """
-        yield subarray_state_model
-
-    def assert_state(self, machine, state):
-        """
-        Assert the current state of this state machine, based on the
-        values of the adminMode, opState and obsState attributes of this
-        model.
-
-        :param machine: the state machine under test
-        :type machine: state machine object instance
-        :param state: the state that we are asserting to be the current
-            state of the state machine under test
-        :type state: str
-        """
-        assert machine.admin_mode == state["admin_mode"]
-        assert machine.op_state == state["op_state"]
-        assert machine.obs_state == state["obs_state"]
 
 
 class TestSKASubarray:
@@ -84,14 +46,6 @@ class TestSKASubarray:
         'SubID': '',
     }
 
-    @classmethod
-    def mocking(cls):
-        """Mock external libraries."""
-        # Example : Mock numpy
-        # cls.numpy = SKASubarray.numpy = MagicMock()
-        # PROTECTED REGION ID(SKASubarray.test_mocking) ENABLED START #
-        # PROTECTED REGION END #    //  SKASubarray.test_mocking
-
     @pytest.mark.skip(reason="Not implemented")
     def test_properties(self, tango_context):
         # Test the properties
@@ -106,7 +60,7 @@ class TestSKASubarray:
         # PROTECTED REGION ID(SKASubarray.test_Abort) ENABLED START #
 
         tango_context.device.On()
-        tango_context.device.AssignResources('{"example": ["BAND1"]}')
+        tango_context.device.AssignResources(json.dumps(["BAND1"]))
         tango_context.device.Configure('{"BAND1": 2}')
 
         obs_state_callback = tango_change_event_helper.subscribe("obsState")
@@ -126,7 +80,7 @@ class TestSKASubarray:
         """Test for Configure"""
         # PROTECTED REGION ID(SKASubarray.test_Configure) ENABLED START #
         tango_context.device.On()
-        tango_context.device.AssignResources('{"example": ["BAND1"]}')
+        tango_context.device.AssignResources(json.dumps(["BAND1"]))
 
         obs_state_callback = tango_change_event_helper.subscribe("obsState")
         obs_state_callback.assert_call(ObsState.IDLE)
@@ -178,13 +132,14 @@ class TestSKASubarray:
         obs_state_callback = tango_change_event_helper.subscribe("obsState")
         obs_state_callback.assert_call(ObsState.EMPTY)
 
-        tango_context.device.AssignResources('{"example": ["BAND1", "BAND2"]}')
+        resources_to_assign = ["BAND1", "BAND2"]
+        tango_context.device.AssignResources(json.dumps(resources_to_assign))
 
         obs_state_callback.assert_calls(
             [ObsState.RESOURCING, ObsState.IDLE]
         )
         assert tango_context.device.ObsState == ObsState.IDLE
-        assert tango_context.device.assignedResources == ('BAND1', 'BAND2')
+        assert list(tango_context.device.assignedResources) == resources_to_assign
 
         tango_context.device.ReleaseAllResources()
         obs_state_callback.assert_calls(
@@ -202,7 +157,7 @@ class TestSKASubarray:
         """Test for EndSB"""
         # PROTECTED REGION ID(SKASubarray.test_EndSB) ENABLED START #
         tango_context.device.On()
-        tango_context.device.AssignResources('{"example": ["BAND1"]}')
+        tango_context.device.AssignResources(json.dumps(["BAND1"]))
         tango_context.device.Configure('{"BAND1": 2}')
 
         obs_state_callback = tango_change_event_helper.subscribe("obsState")
@@ -221,7 +176,7 @@ class TestSKASubarray:
         """Test for EndScan"""
         # PROTECTED REGION ID(SKASubarray.test_EndScan) ENABLED START #
         tango_context.device.On()
-        tango_context.device.AssignResources('{"example": ["BAND1"]}')
+        tango_context.device.AssignResources(json.dumps(["BAND1"]))
         tango_context.device.Configure('{"BAND1": 2}')
         tango_context.device.Scan('{"id": 123}')
 
@@ -243,7 +198,7 @@ class TestSKASubarray:
         # PROTECTED REGION ID(SKASubarray.test_ReleaseAllResources) ENABLED START #
         # assert tango_context.device.ReleaseAllResources() == [""]
         tango_context.device.On()
-        tango_context.device.AssignResources('{"example": ["BAND1", "BAND2"]}')
+        tango_context.device.AssignResources(json.dumps(["BAND1", "BAND2"]))
 
         obs_state_callback = tango_change_event_helper.subscribe("obsState")
         obs_state_callback.assert_call(ObsState.IDLE)
@@ -262,12 +217,12 @@ class TestSKASubarray:
         """Test for ReleaseResources"""
         # PROTECTED REGION ID(SKASubarray.test_ReleaseResources) ENABLED START #
         tango_context.device.On()
-        tango_context.device.AssignResources('{"example": ["BAND1", "BAND2"]}')
+        tango_context.device.AssignResources(json.dumps(["BAND1", "BAND2"]))
 
         obs_state_callback = tango_change_event_helper.subscribe("obsState")
         obs_state_callback.assert_call(ObsState.IDLE)
 
-        tango_context.device.ReleaseResources('{"example": ["BAND1"]}')
+        tango_context.device.ReleaseResources(json.dumps(["BAND1"]))
 
         obs_state_callback.assert_calls(
             [ObsState.RESOURCING, ObsState.IDLE]
@@ -282,7 +237,7 @@ class TestSKASubarray:
         """Test for Reset"""
         # PROTECTED REGION ID(SKASubarray.test_Reset) ENABLED START #
         tango_context.device.On()
-        tango_context.device.AssignResources('{"example": ["BAND1"]}')
+        tango_context.device.AssignResources(json.dumps(["BAND1"]))
         tango_context.device.Configure('{"BAND1": 2}')
         tango_context.device.Abort()
 
@@ -305,14 +260,14 @@ class TestSKASubarray:
         """Test for Scan"""
         # PROTECTED REGION ID(SKASubarray.test_Scan) ENABLED START #
         tango_context.device.On()
-        tango_context.device.AssignResources('{"example": ["BAND1"]}')
+        tango_context.device.AssignResources(json.dumps(["BAND1"]))
         tango_context.device.Configure('{"BAND1": 2}')
 
         obs_state_callback = tango_change_event_helper.subscribe("obsState")
         obs_state_callback.assert_call(ObsState.READY)
 
         assert tango_context.device.Scan('{"id": 123}') == [
-            [ResultCode.STARTED], ["Scan command STARTED - config {'id': 123}"]
+            [ResultCode.STARTED], ["Scan command started"]
         ]
 
         obs_state_callback.assert_call(ObsState.SCANNING)
@@ -336,20 +291,26 @@ class TestSKASubarray:
     def test_adminMode(self, tango_context, tango_change_event_helper):
         """Test for adminMode"""
         # PROTECTED REGION ID(SKASubarray.test_adminMode) ENABLED START #
-        assert tango_context.device.adminMode == AdminMode.MAINTENANCE
-
-        tango_context.device.Disable()
-        assert tango_context.device.state() == DevState.DISABLE
+        device_under_test = tango_context.device
+        assert device_under_test.state() == DevState.OFF
+        assert device_under_test.adminMode == AdminMode.MAINTENANCE
 
         admin_mode_callback = tango_change_event_helper.subscribe("adminMode")
-        dev_state_callback = tango_change_event_helper.subscribe("state")
+        op_state_callback = tango_change_event_helper.subscribe("state")
         admin_mode_callback.assert_call(AdminMode.MAINTENANCE)
-        dev_state_callback.assert_call(DevState.DISABLE)
+        op_state_callback.assert_call(DevState.OFF)
 
         tango_context.device.adminMode = AdminMode.OFFLINE
-        assert tango_context.device.adminMode == AdminMode.OFFLINE
-        assert tango_context.device.state() == DevState.DISABLE
+        assert device_under_test.state() == DevState.DISABLE
+        assert device_under_test.adminMode == AdminMode.OFFLINE
         admin_mode_callback.assert_call(AdminMode.OFFLINE)
+        op_state_callback.assert_call(DevState.DISABLE)
+
+        tango_context.device.adminMode = AdminMode.ONLINE
+        assert device_under_test.state() == DevState.OFF
+        assert device_under_test.adminMode == AdminMode.ONLINE
+        admin_mode_callback.assert_call(AdminMode.ONLINE)
+        op_state_callback.assert_call(DevState.OFF)
 
         # PROTECTED REGION END #    //  SKASubarray.test_adminMode
 
@@ -442,6 +403,7 @@ class TestSKASubarray:
     def test_assignedResources(self, tango_context):
         """Test for assignedResources"""
         # PROTECTED REGION ID(SKASubarray.test_assignedResources) ENABLED START #
+        tango_context.device.On()
         assert tango_context.device.assignedResources is None
         # PROTECTED REGION END #    //  SKASubarray.test_assignedResources
 
@@ -450,148 +412,92 @@ class TestSKASubarray:
     def test_configuredCapabilities(self, tango_context):
         """Test for configuredCapabilities"""
         # PROTECTED REGION ID(SKASubarray.test_configuredCapabilities) ENABLED START #
+        tango_context.device.On()
         assert tango_context.device.configuredCapabilities == ("BAND1:0", "BAND2:0")
         # PROTECTED REGION END #    //  SKASubarray.test_configuredCapabilities
-
-
-@pytest.fixture
-def resource_manager():
-    """
-    Fixture that yields an SKASubarrayResourceManager
-
-    :yields: a SKASubarrayResourceManager instance
-    """
-    yield SKASubarrayResourceManager()
-
-
-class TestSKASubarrayResourceManager:
-    """
-    Test suite for SKASubarrayResourceManager class
-    """
-
-    def test_ResourceManager_assign(self, resource_manager):
-        """
-        Test that the ResourceManager assigns resource correctly.
-        """
-        # create a resource manager and check that it is empty
-        assert not len(resource_manager)
-        assert resource_manager.get() == set()
-
-        resource_manager.assign('{"example": ["A"]}')
-        assert len(resource_manager) == 1
-        assert resource_manager.get() == set(["A"])
-
-        resource_manager.assign('{"example": ["A"]}')
-        assert len(resource_manager) == 1
-        assert resource_manager.get() == set(["A"])
-
-        resource_manager.assign('{"example": ["A", "B"]}')
-        assert len(resource_manager) == 2
-        assert resource_manager.get() == set(["A", "B"])
-
-        resource_manager.assign('{"example": ["A"]}')
-        assert len(resource_manager) == 2
-        assert resource_manager.get() == set(["A", "B"])
-
-        resource_manager.assign('{"example": ["A", "C"]}')
-        assert len(resource_manager) == 3
-        assert resource_manager.get() == set(["A", "B", "C"])
-
-        resource_manager.assign('{"example": ["D"]}')
-        assert len(resource_manager) == 4
-        assert resource_manager.get() == set(["A", "B", "C", "D"])
-
-    def test_ResourceManager_release(self, resource_manager):
-        """
-        Test that the ResourceManager releases resource correctly.
-        """
-        resource_manager.assign('{"example": ["A", "B", "C", "D"]}')
-
-        # okay to release resources not assigned; does nothing
-        resource_manager.release('{"example": ["E"]}')
-        assert len(resource_manager) == 4
-        assert resource_manager.get() == set(["A", "B", "C", "D"])
-
-        # check release does what it should
-        resource_manager.release('{"example": ["D"]}')
-        assert len(resource_manager) == 3
-        assert resource_manager.get() == set(["A", "B", "C"])
-
-        # okay to release resources both assigned and not assigned
-        resource_manager.release('{"example": ["C", "D"]}')
-        assert len(resource_manager) == 2
-        assert resource_manager.get() == set(["A", "B"])
-
-        # check release all does what it should
-        resource_manager.release_all()
-        assert len(resource_manager) == 0
-        assert resource_manager.get() == set()
-
-        # okay to call release_all when already empty
-        resource_manager.release_all()
-        assert len(resource_manager) == 0
-        assert resource_manager.get() == set()
 
 
 class TestSKASubarray_commands:
     """
     This class contains tests of SKASubarray commands
     """
+    @pytest.fixture
+    def op_state_model(self, logger):
+        """
+        Yields a new SKASubarrayStateModel for testing
+        """
+        yield OpStateModel(logger)
 
-    def test_AssignCommand(self, resource_manager, subarray_state_model):
+    @pytest.fixture
+    def subarray_state_model(self, logger):
+        """
+        Yields a new SKASubarrayStateModel for testing
+        """
+        yield SubarrayObsStateModel(logger)
+
+    @pytest.fixture()
+    def component_manager(self, subarray_state_model, logger, mocker):
+        """
+        Fixture that returns the component manager under test
+
+        :param mock_op_state_model: a mock state model for testing
+        :param logger: a logger for the component manager
+
+        :return: the component manager under test
+        """
+        mock_op_state_model = mocker.Mock()
+        mock_capability_types = ["foo", "bah"]
+        return SubarrayComponentManager(mock_op_state_model, subarray_state_model, mock_capability_types, logger)
+
+    def test_AssignCommand(self, component_manager, op_state_model, subarray_state_model):
         """
         Test for SKASubarray.AssignResourcesCommand
         """
+        component_manager.connect()
+        component_manager.on()
+        op_state_model._straight_to_state("ON")
+
         assign_resources = SKASubarray.AssignResourcesCommand(
-            resource_manager,
-            subarray_state_model
+            component_manager,
+            op_state_model,
+            subarray_state_model,
         )
-
-        machine_spec = load_state_machine_spec("subarray_state_machine")
-        states = machine_spec["states"]
-        # in all states except EMPTY and IDLE, the assign resources command is
-        # not permitted, should not be allowed, should fail, should have no
-        # side-effect
-        for state in set(states) - {
-            "EMPTY_ONLINE",
-            "EMPTY_MAINTENANCE",
-            "IDLE_ONLINE",
-            "IDLE_MAINTENANCE",
-        }:
-
-            subarray_state_model._straight_to_state(**states[state])
+        for obs_state_name in [
+            "RESOURCING_EMPTY",
+            "RESOURCING_IDLE",
+            "CONFIGURING_IDLE",
+            "CONFIGURING_READY",
+            "READY",
+            "SCANNING",
+            "ABORTING",
+            "ABORTED",
+            "RESETTING",
+            "RESTARTING",
+            "FAULT",
+        ]:
+            subarray_state_model._straight_to_state(obs_state_name)
+            prior_obs_state = subarray_state_model.obs_state
             assert not assign_resources.is_allowed()
             with pytest.raises(CommandError):
-                assign_resources('{"example": ["foo"]}')
-            assert not len(resource_manager)
-            assert resource_manager.get() == set()
-            assert subarray_state_model.admin_mode == states[state]["admin_mode"]
-            assert subarray_state_model.op_state == states[state]["op_state"]
-            assert subarray_state_model.obs_state == states[state]["obs_state"]
+                assign_resources(json.dumps(["foo"]))
+            assert component_manager.assigned_resources == []
+            assert subarray_state_model.obs_state == prior_obs_state
 
         # now push to empty, a state in which is IS allowed
-        subarray_state_model._straight_to_state(**states["EMPTY_ONLINE"])
-        assert assign_resources.is_allowed()
-        assert assign_resources('{"example": ["foo"]}') == (
+        subarray_state_model._straight_to_state("EMPTY")
+        assert assign_resources.is_allowed(True)
+        assert assign_resources(json.dumps(["foo"])) == (
             ResultCode.OK,
             "AssignResources command completed OK",
         )
-        assert len(resource_manager) == 1
-        assert resource_manager.get() == set(["foo"])
-
-        assert subarray_state_model.admin_mode == states["IDLE_ONLINE"]["admin_mode"]
-        assert subarray_state_model.op_state == states["IDLE_ONLINE"]["op_state"]
-        assert subarray_state_model.obs_state == states["IDLE_ONLINE"]["obs_state"]
+        assert component_manager.assigned_resources == ["foo"]
+        assert subarray_state_model.obs_state == ObsState.IDLE
 
         # AssignResources is still allowed in IDLE
         assert assign_resources.is_allowed()
-        assert assign_resources('{"example": ["bar"]}') == (
+        assert assign_resources(json.dumps(["bar"])) == (
             ResultCode.OK,
             "AssignResources command completed OK",
         )
-        assert len(resource_manager) == 2
-        assert resource_manager.get() == set(["foo", "bar"])
-
-        assert subarray_state_model.admin_mode == states["IDLE_ONLINE"]["admin_mode"]
-        assert subarray_state_model.op_state == states["IDLE_ONLINE"]["op_state"]
-        assert subarray_state_model.obs_state == states["IDLE_ONLINE"]["obs_state"]
+        assert component_manager.assigned_resources == ["bar", "foo"]
+        assert subarray_state_model.obs_state == ObsState.IDLE

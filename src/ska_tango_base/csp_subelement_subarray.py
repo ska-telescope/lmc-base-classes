@@ -27,8 +27,9 @@ from tango import AttrWriteType, PipeWriteType
 
 # SKA import
 from ska_tango_base import SKASubarray
-from ska_tango_base.commands import ResultCode, ActionCommand
+from ska_tango_base.commands import CompletionCommand, ObservationCommand, ResponseCommand, ResultCode
 from ska_tango_base.control_model import ObsState
+from ska_tango_base.csp_subelement_subarray_component_manager import CspSubelementSubarrayComponentManager
 # Additional import
 # PROTECTED REGION END #    //  CspSubElementSubarray.additionnal_import
 
@@ -187,12 +188,21 @@ class CspSubElementSubarray(SKASubarray):
     # General methods
     # ---------------
 
+    def init_component_manager(self):
+        return CspSubelementSubarrayComponentManager(
+            self.op_state_model,
+            self.obs_state_model,
+            self.CapabilityTypes,
+            logger=self.logger
+        )
+
     def init_command_objects(self):
         """
         Sets up the command objects
         """
         super().init_command_objects()
-        device_args = (self, self.state_model, self.logger)
+
+        device_args = (self, self.op_state_model, self.obs_state_model, self.logger)
         self.register_command_object(
             "ConfigureScan", self.ConfigureScanCommand(*device_args)
         )
@@ -224,6 +234,8 @@ class CspSubElementSubarray(SKASubarray):
             device._sdp_output_data_rate = 0.
 
             device._config_id = ''
+
+            # JSON string, deliberately left in Tango layer
             device._last_scan_configuration = ''
 
             # _list_of_devices_completed_task: for each task/command reports
@@ -290,13 +302,13 @@ class CspSubElementSubarray(SKASubarray):
     def read_scanID(self):
         # PROTECTED REGION ID(CspSubElementSubarray.scanID_read) ENABLED START #
         """Return the scanID attribute."""
-        return self._scan_id
+        return self.component_manager.scan_id  #pylint: disable=no-member
         # PROTECTED REGION END #    //  CspSubElementSubarray.scanID_read
 
     def read_configurationID(self):
         # PROTECTED REGION ID(CspSubElementSubarray.configurationID_read) ENABLED START #
         """Return the configurationID attribute."""
-        return self._config_id
+        return self.component_manager.config_id  #pylint: disable=no-member
         # PROTECTED REGION END #    //  CspSubElementSubarray.configurationID_read
 
     def read_sdpDestinationAddresses(self):
@@ -412,30 +424,33 @@ class CspSubElementSubarray(SKASubarray):
     # Commands
     # --------
 
-    class ConfigureScanCommand(ActionCommand):
+    class ConfigureScanCommand(ObservationCommand, ResponseCommand, CompletionCommand):
         """
         A class for the CspSubElementObsDevices's ConfigureScan command.
         """
 
-        def __init__(self, target, state_model, logger=None):
+        def __init__(self, target, op_state_model, obs_state_model, logger=None):
             """
             Constructor for ConfigureScanCommand
 
             :param target: the object that this command acts upon; for
-                example, the CspSubElementObsDevice device for which this class
+                example, the CspSubElementSubarray device for which this class
                 implements the command
             :type target: object
-            :param state_model: the state model that this command uses
-                 to check that it is allowed to run, and that it drives
-                 with actions.
-            :type state_model: :py:class:`SKASubarrayStateModel`
+            :param op_state_model: the op state model that this command
+                uses to check that it is allowed to run
+            :type op_state_model: :py:class:`OpStateModel`
+            :param obs_state_model: the observation state model that
+                 this command uses to check that it is allowed to run,
+                 and that it drives with actions.
+            :type obs_state_model: :py:class:`SubarrayObsStateModel`
             :param logger: the logger to be used by this Command. If not
                 provided, then a default module logger will be used.
             :type logger: a logger that implements the standard library
                 logger interface
             """
             super().__init__(
-                target, state_model, "configure", start_action=True, logger=logger
+                target, obs_state_model, "configure", op_state_model, logger=logger
             )
 
         def do(self, argin):
@@ -451,12 +466,13 @@ class CspSubElementSubarray(SKASubarray):
             :rtype: (ResultCode, str)
             """
             device = self.target
-            result_code, msg = self.validate_input(argin)
-            if result_code == ResultCode.FAILED:
-                return (result_code, msg)
-            # store the configuration on command success
-            device._last_scan_configuration = argin
-            return (ResultCode.OK, "Configure command completed OK")
+            (configuration, result_code, msg) = self.validate_input(argin)
+            if result_code == ResultCode.OK:
+                # store the configuration on command success
+                device._last_scan_configuration = argin
+                device.component_manager.configure(configuration)
+                msg = "Configure command completed OK"
+            return (result_code, msg)
 
         def validate_input(self, argin):
             """
@@ -466,43 +482,47 @@ class CspSubElementSubarray(SKASubarray):
             :return: A tuple containing a return code and a string message.
             :rtype: (ResultCode, str)
             """
-            device = self.target
             try:
                 configuration_dict = json.loads(argin)
-                device._config_id = configuration_dict['id']
-                return (ResultCode.OK, "Configuration validated with success")
+                _ = configuration_dict["id"]
             except (KeyError, JSONDecodeError) as err:
-                msg = "Validate configuration failed with error:{}".format(err)
+                msg = f"Validate configuration failed with error:{err}"
+                self.logger.error(msg)
+                return (None, ResultCode.FAILED, msg)
             except Exception as other_errs:
-                msg = "Validate configuration failed with unknown error:{}".format(
-                    other_errs)
-            self.logger.error(msg)
-            return (ResultCode.FAILED, msg)
+                msg = f"Validate configuration failed with unknown error:{other_errs}"
+                self.logger.error(msg)
+                return (None, ResultCode.FAILED, msg)
 
-    class GoToIdleCommand(ActionCommand):
+            return (configuration_dict, ResultCode.OK, "ConfigureScan arguments validation successful")
+
+    class GoToIdleCommand(ObservationCommand, ResponseCommand):
         """
         A class for the CspSubElementObsDevices's GoToIdle command.
         """
 
-        def __init__(self, target, state_model, logger=None):
+        def __init__(self, target, op_state_model, obs_state_model, logger=None):
             """
-            Constructor for GoToIdle Command.
+            Constructor for EndCommand
 
             :param target: the object that this command acts upon; for
-                example, the CspSubElementObsDevice device for which this class
+                example, the SKASubarray device for which this class
                 implements the command
             :type target: object
-            :param state_model: the state model that this command uses
-                 to check that it is allowed to run, and that it drives
-                 with actions.
-            :type state_model: :py:class:`SKASubarrayStateModel`
+            :param op_state_model: the op state model that this command
+                uses to check that it is allowed to run
+            :type op_state_model: :py:class:`OpStateModel`
+            :param obs_state_model: the observation state model that
+                 this command uses to check that it is allowed to run,
+                 and that it drives with actions.
+            :type obs_state_model: :py:class:`SubarrayObsStateModel`
             :param logger: the logger to be used by this Command. If not
                 provided, then a default module logger will be used.
             :type logger: a logger that implements the standard library
                 logger interface
             """
             super().__init__(
-                target, state_model, "end", logger=logger
+                target, obs_state_model, "end", op_state_model, logger=logger
             )
 
         def do(self):
@@ -515,9 +535,8 @@ class CspSubElementSubarray(SKASubarray):
             :rtype: (ResultCode, str)
             """
             device = self.target
-            # reset to default values the configurationID and scanID
-            device._config_id = ''
-            device._scan_id = 0
+            device.component_manager.deconfigure()
+            device._last_scan_configuration = ''
             return (ResultCode.OK, "GoToIdle command completed OK")
 
     @command(
@@ -559,6 +578,8 @@ class CspSubElementSubarray(SKASubarray):
         """
         Redirect to ConfigureScan method.
         Configure a complete scan for the subarray.
+
+        :param argin: JSON configuration string
 
         :return:'DevVarLongStringArray'
             A tuple containing a return code and a string message indicating status.

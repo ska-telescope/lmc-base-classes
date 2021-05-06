@@ -38,7 +38,7 @@ class SKAMaster(SKABaseDevice):
         self.register_command_object(
             "IsCapabilityAchievable",
             self.IsCapabilityAchievableCommand(
-                self, self.state_model, self.logger
+                self, self.op_state_model, self.logger
             )
         )
 

@@ -326,3 +326,14 @@ class LoggingLevel(enum.IntEnum):
     WARNING = 3
     INFO = 4
     DEBUG = 5
+
+
+class PowerMode(enum.IntEnum):
+    """
+    Enumerated type for the power mode of components that rely upon a
+    power supply, such as hardware.
+    """
+    UNKNOWN = 0
+    OFF = 1
+    STANDBY = 2
+    ON = 3

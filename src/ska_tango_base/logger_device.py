@@ -49,7 +49,7 @@ class SKALogger(SKABaseDevice):
         super().init_command_objects()
         self.register_command_object(
             "SetLoggingLevel",
-            self.SetLoggingLevelCommand(self, self.state_model, self.logger)
+            self.SetLoggingLevelCommand(self, self.op_state_model, self.logger)
         )
 
     def always_executed_hook(self):

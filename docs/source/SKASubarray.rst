@@ -17,17 +17,3 @@ Device Class
 .. autoclass:: ska_tango_base.SKASubarray
    :members:
    :undoc-members:
-
-Device State Model
-------------------
-
-.. autoclass:: ska_tango_base.SKASubarrayStateModel
-   :members:
-   :undoc-members:
-
-Resource Manager
-----------------
-
-.. autoclass:: ska_tango_base.SKASubarrayResourceManager
-   :members:
-   :undoc-members:

@@ -44,16 +44,17 @@ test-in-docker: build ## Build the docker image and run tests inside it.
 lint-in-docker: build ## Build the docker image and run lint inside it.
 	@docker run --rm $(IMAGE):$(VERSION) make lint
 
-generate-diagrams-in-docker: ## Build the docker image and generate state machine diagrams inside it.
-	@docker run --rm -v $(PWD):/diagrams $(IMAGE_FOR_DIAGRAMS) bash -c "cd /diagrams && make generate-diagrams-in-docker-internals"
+generate-diagrams-in-docker: ## Generate state machine diagrams using a container.
+	@docker run --rm -v $(PWD):/project $(IMAGE_FOR_DIAGRAMS) bash -c "cd /project && make generate-diagrams-in-docker-internals"
 
 generate-diagrams-in-docker-internals:  ## Generate state machine diagrams (within a container!)
 	test -f /.dockerenv  # ensure running in docker container
 	apt-get update
 	apt-get install --yes graphviz graphviz-dev gsfonts pkg-config
 	python3 -m pip install pygraphviz
-	cd /diagrams/docs/source && python3 scripts/draw_state_machines.py
-	ls -lo /diagrams/docs/source/images/
+	cd /project && python3 -m pip install .
+	cd /project/docs/source && python3 scripts/draw_state_machines.py
+	ls -lo /project/docs/source/state/images/
 
 docs-in-docker: ## Generate docs inside a container
 	@docker build -t ska_tango_base_docs_builder  . -f docs/Dockerfile

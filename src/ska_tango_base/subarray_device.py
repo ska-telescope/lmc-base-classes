@@ -14,7 +14,7 @@ information like assigned resources, configured capabilities, etc.
 import json
 import warnings
 
-from tango import DebugIt, DevState
+from tango import DebugIt
 from tango.server import run, attribute, command
 from tango.server import device_property
 
@@ -22,10 +22,6 @@ from tango.server import device_property
 from ska_tango_base import SKAObsDevice
 from ska_tango_base.subarray_component_manager import SubarrayComponentManager
 from ska_tango_base.commands import CompletionCommand, ObservationCommand, ResponseCommand, ResultCode
-from ska_tango_base.control_model import AdminMode, ObsState
-from ska_tango_base.faults import (
-    CapabilityValidationError, CommandError, StateModelError
-)
 from ska_tango_base.state import SubarrayObsStateModel
 # PROTECTED REGION END #    //  SKASubarray.additionnal_imports
 

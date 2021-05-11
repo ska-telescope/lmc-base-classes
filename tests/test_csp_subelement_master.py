@@ -18,7 +18,6 @@ from tango.test_context import MultiDeviceTestContext
 # PROTECTED REGION ID(CspSubelementMaster.test_additional_imports) ENABLED START #
 from ska_tango_base import SKAMaster, CspSubElementMaster
 from ska_tango_base.commands import ResultCode
-from ska_tango_base.faults import CommandError
 from ska_tango_base.control_model import (
     AdminMode, ControlMode, HealthState, SimulationMode, TestMode
 )

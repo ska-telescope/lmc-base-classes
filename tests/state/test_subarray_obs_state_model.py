@@ -4,7 +4,6 @@ This module contains the tests for the
 """
 import pytest
 
-from ska_tango_base.control_model import ObsState
 from ska_tango_base.state.subarray_obs_state_model import _SubarrayObsStateMachine
 
 from .conftest import load_state_machine_spec, TransitionsStateMachineTester
@@ -17,7 +16,7 @@ class TestSubarrayObsStateMachine(TransitionsStateMachineTester):
     """
 
     @pytest.fixture
-    def machine_under_test(self, logger):
+    def machine_under_test(self):
         """
         Fixture that returns the state model under test in this class
 

@@ -8,7 +8,7 @@ from ska_tango_base.component_manager import (
     ComponentFault,
     ComponentManager,
 )
-from ska_tango_base.control_model import ObsState, PowerMode
+from ska_tango_base.control_model import PowerMode
 from ska_tango_base.faults import (
     CapabilityValidationError,
     ComponentError,

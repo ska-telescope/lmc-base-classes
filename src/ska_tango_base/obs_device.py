@@ -16,16 +16,12 @@ instead of just SKABaseDevice.
 import warnings
 
 # Tango imports
-from tango import DevState
 from tango.server import run, attribute
 
 # SKA specific imports
 from ska_tango_base import SKABaseDevice
 from ska_tango_base.commands import ResultCode
 from ska_tango_base.control_model import ObsMode, ObsState
-from ska_tango_base.faults import StateModelError
-from ska_tango_base.state import OpStateModel
-from ska_tango_base.utils import for_testing_only
 # PROTECTED REGION END #    //  SKAObsDevice.additionnal_imports
 
 __all__ = ["SKAObsDevice", "main"]

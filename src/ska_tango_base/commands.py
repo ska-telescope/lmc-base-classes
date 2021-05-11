@@ -8,7 +8,7 @@ Device commands are implement as a collection of mixins, as follows:
   implement the do() method, and invoke the command class by *calling*
   it.
 
-* **OperationCommand**: implements a command that drives the operation
+* **OperationalCommand**: implements a command that drives the operation
   state of the device; for example, "On()", "Standby()", "Off()".
 
 * **ObservationCommand**: implements a command that drives the
@@ -43,7 +43,7 @@ import logging
 
 from tango import DevState
 
-from ska_tango_base.faults import CommandError, ResultCodeError, StateModelError
+from ska_tango_base.faults import CommandError, StateModelError
 
 module_logger = logging.getLogger(__name__)
 
@@ -159,7 +159,7 @@ class BaseCommand:
         )
 
 
-class OperationCommand(BaseCommand):
+class OperationalCommand(BaseCommand):
     def __init__(self, target, state_model, action_slug, *args, logger=None, **kwargs):
         """
         A base command for commands that drive the operating state of
@@ -233,7 +233,7 @@ class OperationCommand(BaseCommand):
             ) from state_model_error
 
 
-class ObservationCommand(OperationCommand):
+class ObservationCommand(OperationalCommand):
     def __init__(
         self,
         target,

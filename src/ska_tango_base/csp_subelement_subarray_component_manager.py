@@ -1,14 +1,12 @@
 """
 This module models component management for CSP subelement observation devices.
 """
-from tango import DevState
-
 from ska_tango_base.subarray_component_manager import (
     check_connected,
     ComponentFault,
     SubarrayComponentManager,
 )
-from ska_tango_base.control_model import ObsState, PowerMode
+from ska_tango_base.control_model import PowerMode
 from ska_tango_base.faults import ComponentError, ComponentFault
 
 

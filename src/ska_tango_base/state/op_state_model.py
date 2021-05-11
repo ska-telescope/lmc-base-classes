@@ -1,5 +1,5 @@
 """
-This module specifies the operation state ("opState") model for SKA LMC
+This module specifies the operational state ("opState") model for SKA LMC
 Tango devices. It consists of:
 
 * an underlying state machine: :py:class:`._OpStateMachine`
@@ -9,7 +9,6 @@ Tango devices. It consists of:
   device's special ``state()`` method.
 """
 from tango import DevState
-from transitions import State
 from transitions.extensions import LockedMachine as Machine
 
 from ska_tango_base.faults import StateModelError
@@ -300,7 +299,7 @@ class _OpStateMachine(Machine):
 
 class OpStateModel:
     """
-    This class implements the state model for device operation state
+    This class implements the state model for device operational state
     ("opState").
 
     The model supports the following states, represented as values of
@@ -357,7 +356,7 @@ class OpStateModel:
 
     def __init__(self, logger, callback=None):
         """
-        Initialises the operation state model.
+        Initialises the operational state model.
 
         :param logger: the logger to be used by this state model.
         :type logger: a logger that implements the standard library
@@ -401,11 +400,11 @@ class OpStateModel:
 
     def _op_state_changed(self, machine_state):
         """
-        Helper method that updates admin_mode whenever the admin_mode
+        Helper method that updates op_state whenever the operational
         state machine reports a change of state, ensuring that the
         callback is called if one exists.
 
-        :param machine_state: the new state of the adminMode state
+        :param machine_state: the new state of the operational state
             machine
         :type machine_state: str
         """

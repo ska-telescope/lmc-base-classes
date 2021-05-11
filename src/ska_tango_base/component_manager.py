@@ -23,9 +23,6 @@ The basic model is:
   the component to change behaviour and/or state; and it *monitors* its
   component by keeping track of its state.
 """
-import enum
-from tango import DevState
-
 from ska_tango_base.control_model import PowerMode
 from ska_tango_base.faults import ComponentFault
 

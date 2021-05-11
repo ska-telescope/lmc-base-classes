@@ -35,7 +35,7 @@ import debugpy
 import ska_ser_logging
 from ska_tango_base import release
 from ska_tango_base.commands import (
-    BaseCommand, CompletionCommand, OperationCommand, ResponseCommand, ResultCode
+    BaseCommand, CompletionCommand, OperationalCommand, ResponseCommand, ResultCode
 )
 from ska_tango_base.component_manager import ComponentManager
 from ska_tango_base.control_model import (
@@ -326,7 +326,7 @@ class SKABaseDevice(Device):
 
     _global_debugger_listening = False
 
-    class InitCommand(OperationCommand, ResponseCommand, CompletionCommand):
+    class InitCommand(OperationalCommand, ResponseCommand, CompletionCommand):
         """
         A class for the SKABaseDevice's init_device() "command".
         """
@@ -1026,7 +1026,7 @@ class SKABaseDevice(Device):
         return command()
         # PROTECTED REGION END #    //  SKABaseDevice.GetVersionInfo
 
-    class ResetCommand(OperationCommand, ResponseCommand):
+    class ResetCommand(OperationalCommand, ResponseCommand):
         """
         A class for the SKABaseDevice's Reset() command.
         """
@@ -1097,7 +1097,7 @@ class SKABaseDevice(Device):
         (return_code, message) = command()
         return [[return_code], [message]]
 
-    class StandbyCommand(OperationCommand, ResponseCommand):
+    class StandbyCommand(OperationalCommand, ResponseCommand):
         """
         A class for the SKABaseDevice's Standby() command.
         """
@@ -1168,7 +1168,7 @@ class SKABaseDevice(Device):
         (return_code, message) = command()
         return [[return_code], [message]]
 
-    class OffCommand(OperationCommand, ResponseCommand):
+    class OffCommand(OperationalCommand, ResponseCommand):
         """
         A class for the SKABaseDevice's Off() command.
         """
@@ -1239,7 +1239,7 @@ class SKABaseDevice(Device):
         (return_code, message) = command()
         return [[return_code], [message]]
 
-    class OnCommand(OperationCommand, ResponseCommand):
+    class OnCommand(OperationalCommand, ResponseCommand):
         """
         A class for the SKABaseDevice's On() command.
         """

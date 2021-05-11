@@ -124,7 +124,7 @@ API
    :caption: State
    :maxdepth: 2
  
-   Operation State Model<state/op_state_model>
+   Operational State Model<state/op_state_model>
    Admin Mode Model<state/admin_mode_model>
    Observation State Model<state/obs_state_model>
    Subarray Observation State Model<state/subarray_obs_state_model>

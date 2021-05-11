@@ -86,6 +86,11 @@
             "trigger": "assign_invoked"
         },
         {
+            "from": "EMPTY",
+            "to": "RESOURCING_EMPTY",
+            "trigger": "release_invoked"
+        },
+        {
             "from": "IDLE",
             "to": "RESOURCING_IDLE",
             "trigger": "assign_invoked"
@@ -104,6 +109,11 @@
             "from": "RESOURCING_IDLE",
             "to": "RESOURCING_EMPTY",
             "trigger": "component_unresourced"
+        },
+        {
+            "from": "RESOURCING_EMPTY",
+            "to": "EMPTY",
+            "trigger": "assign_completed"
         },
         {
             "from": "RESOURCING_EMPTY",

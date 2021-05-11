@@ -7,13 +7,12 @@ subarray Tango devices. It consists of:
 * an :py:class:`.SubarrayObsStateModel` that maps the underlying state
   machine state to a value of the
   :py:class:`ska_tango_base.control_model.ObsState` enum.
+  
 """
-from transitions import State
 from transitions.extensions import LockedMachine as Machine
 
 from ska_tango_base.control_model import ObsState
 from ska_tango_base.state import ObsStateModel
-from ska_tango_base.utils import for_testing_only
 
 __all__ = ["SubarrayObsStateModel"]
 
@@ -166,6 +165,11 @@ class _SubarrayObsStateMachine(Machine):
                 "dest": "RESOURCING_EMPTY",
             },
             {
+                "source": "EMPTY",
+                "trigger": "release_invoked",
+                "dest": "RESOURCING_EMPTY",
+            },
+            {
                 "source": "IDLE",
                 "trigger": "assign_invoked",
                 "dest": "RESOURCING_IDLE",
@@ -184,6 +188,11 @@ class _SubarrayObsStateMachine(Machine):
                 "source": "RESOURCING_IDLE",
                 "trigger": "component_unresourced",
                 "dest": "RESOURCING_EMPTY",
+            },
+            {
+                "source": "RESOURCING_EMPTY",
+                "trigger": "assign_completed",
+                "dest": "EMPTY",
             },
             {
                 "source": "RESOURCING_EMPTY",
@@ -281,12 +290,12 @@ class _SubarrayObsStateMachine(Machine):
                 "dest": "ABORTING",
             },
             {
-                "source": ["ABORTING"],
+                "source": "ABORTING",
                 "trigger": "component_not_scanning",  # Aborting implies stopping scan
                 "dest": "ABORTING",
             },
             {
-                "source": ["ABORTING"],
+                "source": "ABORTING",
                 "trigger": "component_scanning",  # Abort() invoked as scan is starting
                 "dest": "ABORTING",
             },
@@ -413,11 +422,11 @@ class SubarrayObsStateModel(ObsStateModel):
 
     def _obs_state_changed(self, machine_state):
         """
-        Helper method that updates admin_mode whenever the admin_mode
+        Helper method that updates obs_state whenever the observation
         state machine reports a change of state, ensuring that the
         callback is called if one exists.
 
-        :param machine_state: the new state of the adminMode state
+        :param machine_state: the new state of the observation state
             machine
         :type machine_state: str
         """

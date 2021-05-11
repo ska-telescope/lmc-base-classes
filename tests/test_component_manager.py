@@ -4,8 +4,6 @@ Tests for the :py:mod:`skabase.component_manager` module.
 import contextlib
 import pytest
 
-from tango import DevState
-
 from ska_tango_base.component_manager import ComponentFault, ComponentManager
 from ska_tango_base.control_model import PowerMode
 

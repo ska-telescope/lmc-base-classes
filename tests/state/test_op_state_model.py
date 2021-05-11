@@ -3,10 +3,8 @@ This module contains the tests for the
 :py:mod:`ska_tango_base.state.device_state_model` module.
 """
 import pytest
-from tango import DevState
 
 from ska_tango_base.state.op_state_model import _OpStateMachine
-from ska_tango_base.state import OpStateModel
 
 from .conftest import load_state_machine_spec, TransitionsStateMachineTester
 

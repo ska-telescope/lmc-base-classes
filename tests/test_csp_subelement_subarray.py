@@ -10,7 +10,6 @@
    such device.
 """
 # Imports
-import logging
 import re
 import pytest
 import json
@@ -18,9 +17,7 @@ import json
 from tango import DevState, DevFailed
 
 # PROTECTED REGION ID(CspSubelementSubarray.test_additional_imports) ENABLED START #
-from ska_tango_base import SKASubarray, CspSubElementSubarray
 from ska_tango_base.commands import ResultCode
-from ska_tango_base.faults import StateModelError
 from ska_tango_base.control_model import (
     ObsState, AdminMode, ControlMode, HealthState, SimulationMode, TestMode
 )
@@ -320,7 +317,7 @@ class TestCspSubElementSubarray(object):
         tango_context.device.AssignResources(json.dumps([1,2,3]))
         # wrong configurationID key
         wrong_configuration = '{"subid":"sbi-mvp01-20200325-00002"}'
-        result_code, msg = tango_context.device.ConfigureScan(wrong_configuration)
+        result_code, _ = tango_context.device.ConfigureScan(wrong_configuration)
         assert result_code == ResultCode.FAILED
         # PROTECTED REGION END #    //  CspSubelementSubarray.test_ConfigureScan_with_wrong_configId_key
 
@@ -331,7 +328,7 @@ class TestCspSubElementSubarray(object):
         # PROTECTED REGION ID(CspSubelementSubarray.test_ConfigureScan_with_json_syntax_error) ENABLED START #
         tango_context.device.On()
         tango_context.device.AssignResources(json.dumps([1,2,3]))
-        result_code, msg = tango_context.device.ConfigureScan('{"foo": 1,}')
+        result_code, _ = tango_context.device.ConfigureScan('{"foo": 1,}')
         assert result_code == ResultCode.FAILED
         # PROTECTED REGION END #    //  CspSubelementSubarray.test_ConfigureScan_with_json_syntax_error
 

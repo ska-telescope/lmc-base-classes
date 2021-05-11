@@ -8,8 +8,8 @@ comprises:
 * a :py:class:`.CspSubElementObsStateModel` that maps the underlying
   state machine state to a value of the
   :py:class:`ska_tango_base.control_model.ObsState` enum.
+  
 """
-from transitions import State
 from transitions.extensions import LockedMachine as Machine
 
 from ska_tango_base.control_model import ObsState
@@ -286,6 +286,9 @@ class CspSubElementObsStateModel(ObsStateModel):
 
     * **ABORTED**: the device has completed the abort request.
 
+    * **RESETTING**: the device is resetting from an ABORTED or FAULT
+      state back to IDLE
+
     * **FAULT**: the device component has experienced an error from
       which it can be recovered only via manual intervention invoking a
       reset command that force the device to the base state (IDLE).
@@ -327,11 +330,11 @@ class CspSubElementObsStateModel(ObsStateModel):
 
     def _obs_state_changed(self, machine_state):
         """
-        Helper method that updates admin_mode whenever the admin_mode
+        Helper method that updates obs_state whenever the observation
         state machine reports a change of state, ensuring that the
         callback is called if one exists.
 
-        :param machine_state: the new state of the adminMode state
+        :param machine_state: the new state of the observation state
             machine
         :type machine_state: str
         """

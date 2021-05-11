@@ -5,7 +5,6 @@ uses a state machine to device device adminMode, represented as a
 :py:class:`ska_tango_base.control_model.AdminMode` enum value, and
 reported by Tango devices through the ``AdminMode`` attribute.
 """
-from transitions import State
 from transitions.extensions import LockedMachine as Machine
 
 from ska_tango_base.control_model import AdminMode
@@ -122,6 +121,7 @@ class AdminModeModel:
       diagnosis.)
 
     The actions supported are:
+    
     * **to_not_fitted**
     * **to_reserved**
     * **to_offline**

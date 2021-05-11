@@ -16,19 +16,14 @@ import json
 from json.decoder import JSONDecodeError
 from collections import defaultdict
 # Tango imports
-import tango
 from tango import DebugIt
 from tango.server import run
-from tango.server import Device
 from tango.server import attribute, command
-from tango.server import device_property
-from tango import AttrQuality, DispLevel, DevState
-from tango import AttrWriteType, PipeWriteType
+from tango import AttrWriteType
 
 # SKA import
 from ska_tango_base import SKASubarray
 from ska_tango_base.commands import CompletionCommand, ObservationCommand, ResponseCommand, ResultCode
-from ska_tango_base.control_model import ObsState
 from ska_tango_base.csp_subelement_subarray_component_manager import CspSubelementSubarrayComponentManager
 # Additional import
 # PROTECTED REGION END #    //  CspSubElementSubarray.additionnal_import

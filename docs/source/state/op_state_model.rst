@@ -1,10 +1,10 @@
-Operation state ("op state") model
-==================================
+Operational state ("op state") model
+====================================
 
 .. toctree::
    :maxdepth: 2
 
-The operation state model consists of a public model class that drives
+The operational state model consists of a public model class that drives
 an underlying state machine. The API of the model class is documented
 below. The underlying state machine is a private class, so the API is
 not documented here, but will be briefly described.

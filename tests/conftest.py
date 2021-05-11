@@ -1,19 +1,13 @@
 """
 A module defining a list of fixtures that are shared across all ska_tango_base tests.
 """
-from collections import defaultdict
 import importlib
-import itertools
-import json
 import logging
 from queue import Empty, Queue
 
 import pytest
-from tango import DevState, EventType
+from tango import EventType
 from tango.test_context import DeviceTestContext
-
-from ska_tango_base.control_model import AdminMode, ObsState
-from ska_tango_base.faults import StateModelError
 
 
 @pytest.fixture(scope="class")

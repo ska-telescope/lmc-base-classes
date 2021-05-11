@@ -9,7 +9,6 @@
 """Contain the tests for the SKASubarray."""
 
 import json
-import logging
 import re
 import pytest
 

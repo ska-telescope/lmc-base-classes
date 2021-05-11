@@ -10,21 +10,22 @@ General observing device for SKA CSP Subelement.
 
 # PROTECTED REGION ID(CspSubElementObsDevice.additionnal_import) ENABLED START #
 import json
-import warnings
-import numpy as np
 from json.decoder import JSONDecodeError
 
 # Tango imports
-import tango
-from tango import DebugIt, DevState, AttrWriteType
+from tango import DebugIt
 from tango.server import run, attribute, command, device_property
 
 # SKA specific imports
 from ska_tango_base import SKAObsDevice
-from ska_tango_base.commands import ResultCode, CompletionCommand, ObservationCommand, ResponseCommand
+from ska_tango_base.commands import (
+    ResultCode,
+    CompletionCommand,
+    ObservationCommand,
+    ResponseCommand,
+)
 from ska_tango_base.control_model import ObsState
 from ska_tango_base.csp_subelement_obs_component_manager import CspSubelementObsComponentManager
-from ska_tango_base.faults import CommandError
 from ska_tango_base.state import CspSubElementObsStateModel
 
 

@@ -174,6 +174,14 @@ class ResponseCommand(BaseCommand):
     tuple.
     """
 
+    RESULT_LOG_LEVEL = {
+        ResultCode.OK: logging.INFO,
+        ResultCode.STARTED: logging.INFO,
+        ResultCode.QUEUED: logging.INFO,
+        ResultCode.FAILED: logging.ERROR,
+        ResultCode.UNKNOWN: logging.WARNING
+    }
+
     def __call__(self, argin=None):
         """
         What to do when the command is called. This base class simply
@@ -208,7 +216,8 @@ class ResponseCommand(BaseCommand):
         else:
             (return_code, message) = self.do(argin=argin)
 
-        self.logger.info(
+        self.logger.log(
+            self.RESULT_LOG_LEVEL.get(return_code, logging.ERROR),
             f"Exiting command {self.name} with return_code {return_code!s}, "
             f"message: '{message}'"
         )

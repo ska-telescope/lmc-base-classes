@@ -23,7 +23,7 @@ Device commands are implement as a collection of mixins, as follows:
   with transitional states, such as AssignResources() and Configure().
 
 To use these commands: subclass from the mixins needed, then implement
-the ``__init__`` and ``do`` methods. For example::
+the ``__init__`` and ``do`` methods. For example:
 
 .. code-block:: py
 
@@ -37,6 +37,7 @@ the ``__init__`` and ``do`` methods. For example::
             # do stuff
             return (ResultCode.OK, "AssignResources command completed OK")
 
+So there.
 """
 import enum
 import logging

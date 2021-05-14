@@ -83,9 +83,9 @@ def tango_change_event_helper(tango_context):
     method with the name of the attribute for which you want change events.
     The returned value will be a callback handler that you can interrogate
     with ``assert_not_called``, ``assert_call``, ``assert_calls``, and
-    ``value`` methods.::
+    ``value`` methods.
 
-    .. code-block:: python
+    .. code-block:: py
 
         state_callback = tango_change_event_helper.subscribe("state")
         state_callback.assert_call(DevState.OFF)

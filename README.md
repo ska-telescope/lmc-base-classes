@@ -25,6 +25,13 @@ The ska-tango-base repository includes a set of eight classes as mentioned in SK
 
 ## Version History
 
+#### 0.11.0
+- Breaking change: state models and component managers
+  - Re-implementation of operational state model to better model
+    hardware and support device decoupling.
+  - Decoupling of state models from each other
+  - Introduction of component managers, to support component monitoring
+
 #### 0.10.1
 - Make dependency on `pytango` and `numpy` python packages explicit.
 - Add optional "key" parameter to `SKASubarrayResourceManager` to filter JSON for

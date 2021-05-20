@@ -67,8 +67,7 @@ class SKASubarray(SKAObsDevice):
             Constructor for AssignResourcesCommand
 
             :param target: the object that this command acts upon; for
-                example, the SKASubarray device for which this class
-                implements the command
+                example, the device's component manager
             :type target: object
             :param op_state_model: the op state model that this command
                 uses to check that it is allowed to run
@@ -97,8 +96,7 @@ class SKASubarray(SKAObsDevice):
             :rtype: (ResultCode, str)
             """
             component_manager = self.target
-            resources = json.loads(argin)
-            component_manager.assign(resources)
+            component_manager.assign(argin)
 
             message = "AssignResources command completed OK"
             self.logger.info(message)
@@ -114,8 +112,7 @@ class SKASubarray(SKAObsDevice):
             Constructor for ReleaseResourcesCommand
 
             :param target: the object that this command acts upon; for
-                example, the SKASubarray device for which this class
-                implements the command
+                example, the device's component manager
             :type target: object
             :param op_state_model: the op state model that this command
                 uses to check that it is allowed to run
@@ -144,8 +141,7 @@ class SKASubarray(SKAObsDevice):
             :rtype: (ResultCode, str)
             """
             component_manager = self.target
-            resources = json.loads(argin)
-            component_manager.release(resources)
+            component_manager.release(argin)
 
             message = "ReleaseResources command completed OK"
             self.logger.info(message)
@@ -160,8 +156,7 @@ class SKASubarray(SKAObsDevice):
             Constructor for ReleaseResourcesCommand
 
             :param target: the object that this command acts upon; for
-                example, the SKASubarray device for which this class
-                implements the command
+                example, the device's component manager
             :type target: object
             :param op_state_model: the op state model that this command
                 uses to check that it is allowed to run
@@ -203,8 +198,7 @@ class SKASubarray(SKAObsDevice):
             Constructor for ConfigureCommand
 
             :param target: the object that this command acts upon; for
-                example, the SKASubarray device for which this class
-                implements the command
+                example, the device's component manager
             :type target: object
             :param op_state_model: the op state model that this command
                 uses to check that it is allowed to run
@@ -235,9 +229,7 @@ class SKASubarray(SKAObsDevice):
             :rtype: (ResultCode, str)
             """
             component_manager = self.target
-            configuration = json.loads(argin)
-
-            component_manager.configure(configuration)
+            component_manager.configure(argin)
 
             message = "Configure command completed OK"
             self.logger.info(message)
@@ -253,8 +245,7 @@ class SKASubarray(SKAObsDevice):
             Constructor for ScanCommand
 
             :param target: the object that this command acts upon; for
-                example, the SKASubarray device for which this class
-                implements the command
+                example, the device's component manager
             :type target: object
             :param op_state_model: the op state model that this command
                 uses to check that it is allowed to run
@@ -284,9 +275,8 @@ class SKASubarray(SKAObsDevice):
                 information purpose only.
             :rtype: (ResultCode, str)
             """
-            args = json.loads(argin)
             component_manager = self.target
-            component_manager.scan(args)
+            component_manager.scan(argin)
 
             message = f"Scan command started"
             self.logger.info(message)
@@ -302,8 +292,7 @@ class SKASubarray(SKAObsDevice):
             Constructor for EndScanCommand
 
             :param target: the object that this command acts upon; for
-                example, the SKASubarray device for which this class
-                implements the command
+                example, the device's component manager
             :type target: object
             :param op_state_model: the op state model that this command
                 uses to check that it is allowed to run
@@ -347,8 +336,7 @@ class SKASubarray(SKAObsDevice):
             Constructor for EndCommand
 
             :param target: the object that this command acts upon; for
-                example, the SKASubarray device for which this class
-                implements the command
+                example, the device's component manager
             :type target: object
             :param op_state_model: the op state model that this command
                 uses to check that it is allowed to run
@@ -392,8 +380,7 @@ class SKASubarray(SKAObsDevice):
             Constructor for AbortCommand
 
             :param target: the object that this command acts upon; for
-                example, the SKASubarray device for which this class
-                implements the command
+                example, the device's component manager
             :type target: object
             :param op_state_model: the op state model that this command
                 uses to check that it is allowed to run
@@ -437,8 +424,7 @@ class SKASubarray(SKAObsDevice):
             Constructor for ObsResetCommand
 
             :param target: the object that this command acts upon; for
-                example, the SKASubarray device for which this class
-                implements the command
+                example, the device's component manager
             :type target: object
             :param op_state_model: the op state model that this command
                 uses to check that it is allowed to run
@@ -482,8 +468,7 @@ class SKASubarray(SKAObsDevice):
             Constructor for RestartCommand
 
             :param target: the object that this command acts upon; for
-                example, the SKASubarray device for which this class
-                implements the command
+                example, the device's component manager
             :type target: object
             :param op_state_model: the op state model that this command
                 uses to check that it is allowed to run
@@ -692,7 +677,8 @@ class SKASubarray(SKAObsDevice):
         :rtype: (ResultCode, str)
         """
         command = self.get_command_object("AssignResources")
-        (return_code, message) = command(argin)
+        args = json.loads(argin)
+        (return_code, message) = command(args)
         return [[return_code], [message]]
 
     def is_ReleaseResources_allowed(self):
@@ -729,7 +715,8 @@ class SKASubarray(SKAObsDevice):
         :rtype: (ResultCode, str)
         """
         command = self.get_command_object("ReleaseResources")
-        (return_code, message) = command(argin)
+        args = json.loads(argin)
+        (return_code, message) = command(args)
         return [[return_code], [message]]
 
     def is_ReleaseAllResources_allowed(self):
@@ -798,7 +785,8 @@ class SKASubarray(SKAObsDevice):
         :rtype: (ResultCode, str)
         """
         command = self.get_command_object("Configure")
-        (return_code, message) = command(argin)
+        args = json.loads(argin)
+        (return_code, message) = command(args)
         return [[return_code], [message]]
 
     def is_Scan_allowed(self):
@@ -834,7 +822,8 @@ class SKASubarray(SKAObsDevice):
         :rtype: (ResultCode, str)
         """
         command = self.get_command_object("Scan")
-        (return_code, message) = command(argin)
+        args = json.loads(argin)
+        (return_code, message) = command(args)
         return [[return_code], [message]]
 
     def is_EndScan_allowed(self):

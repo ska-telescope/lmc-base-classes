@@ -23,6 +23,8 @@ The basic model is:
   the component to change behaviour and/or state; and it *monitors* its
   component by keeping track of its state.
 """
+import functools
+
 from ska_tango_base.control_model import PowerMode
 from ska_tango_base.faults import ComponentFault
 
@@ -36,9 +38,10 @@ def check_connected(func):
 
     :return: the wrapped function
     """
+    @functools.wraps(func)
     def _wrapper(component_manager, *args, **kwargs):
         """
-        Wrapper function that checks that their is a connection to the
+        Wrapper function that checks that there is a connection to the
         component before invoking the wrapped function
 
         :param component_manager: the component_manager to check
@@ -60,8 +63,8 @@ class ComponentManager:
 
     * Maintaining a connection to its component
 
-    * Controling its component via commands like Off(), Standby(), On(),
-      etc
+    * Controlling its component via commands like Off(), Standby(),
+      On(), etc.
 
     * Monitoring its component, e.g. detect that it has been turned off
       or on
@@ -70,10 +73,10 @@ class ComponentManager:
 
     * illustrate the model
     
-    * enable testing of the base classes
+    * enable testing of these base classes
 
     It should not generally be used in concrete devices; instead, write
-    a subclass specific to the component managed by the device.
+    a component manager specific to the component managed by the device.
     """
 
     class _Component:
@@ -91,7 +94,7 @@ class ComponentManager:
         manager know by calling its ``component_off``,
         ``component_standby`` and ``component_on`` callback methods.
 
-        When a component starts simulating a fault, it lest the
+        When a component starts simulating a fault, it lets the
         component manager know by calling its ``component_fault``
         callback method.
         """
@@ -273,6 +276,14 @@ class ComponentManager:
         if self._connected:
             return
 
+        # trigger transition to UNKNOWN (e.g. from DISABLE) first,
+        # before trying to connect, because connection might take a
+        # little while, and we want to be in UNKNOWN state meanwhile.
+        self.op_state_model.perform_action("component_unknown")
+
+        # Now connect to the component. Here we simply consult the
+        # _fail_connect attribute and either pretend to fail or pretend
+        # to succeed.
         if self._fail_connect:
             raise ConnectionError("Failed to connect")
 

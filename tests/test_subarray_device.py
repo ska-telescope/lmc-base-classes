@@ -309,7 +309,7 @@ class TestSKASubarray:
         assert device_under_test.state() == DevState.OFF
         assert device_under_test.adminMode == AdminMode.ONLINE
         admin_mode_callback.assert_call(AdminMode.ONLINE)
-        op_state_callback.assert_call(DevState.OFF)
+        op_state_callback.assert_calls([DevState.UNKNOWN, DevState.OFF])
 
         # PROTECTED REGION END #    //  SKASubarray.test_adminMode
 
@@ -423,14 +423,14 @@ class TestSKASubarray_commands:
     @pytest.fixture
     def op_state_model(self, logger):
         """
-        Yields a new SKASubarrayStateModel for testing
+        Yields a new OpStateModel for testing
         """
         yield OpStateModel(logger)
 
     @pytest.fixture
     def subarray_state_model(self, logger):
         """
-        Yields a new SKASubarrayStateModel for testing
+        Yields a new SubarrayObsStateModel for testing
         """
         yield SubarrayObsStateModel(logger)
 
@@ -478,14 +478,14 @@ class TestSKASubarray_commands:
             prior_obs_state = subarray_state_model.obs_state
             assert not assign_resources.is_allowed()
             with pytest.raises(CommandError):
-                assign_resources(json.dumps(["foo"]))
+                assign_resources(["foo"])
             assert component_manager.assigned_resources == []
             assert subarray_state_model.obs_state == prior_obs_state
 
-        # now push to empty, a state in which is IS allowed
+        # now push to empty, a state in which the command IS allowed
         subarray_state_model._straight_to_state("EMPTY")
         assert assign_resources.is_allowed(True)
-        assert assign_resources(json.dumps(["foo"])) == (
+        assert assign_resources(["foo"]) == (
             ResultCode.OK,
             "AssignResources command completed OK",
         )
@@ -494,7 +494,7 @@ class TestSKASubarray_commands:
 
         # AssignResources is still allowed in IDLE
         assert assign_resources.is_allowed()
-        assert assign_resources(json.dumps(["bar"])) == (
+        assert assign_resources(["bar"]) == (
             ResultCode.OK,
             "AssignResources command completed OK",
         )

@@ -1,12 +1,12 @@
 """
-Tests for the :py:mod:`skabase.subarray_component_manager` module.
+Tests for the
+:py:mod:`ska_tango_base.csp_subelement_subarray_component_manager`
+module.
 """
 import contextlib
 import itertools
 
 import pytest
-
-# from tango import DevState
 
 from ska_tango_base.faults import ComponentError, ComponentFault
 from ska_tango_base.csp_subelement_subarray_component_manager import (
@@ -18,7 +18,7 @@ from ska_tango_base.control_model import PowerMode
 class TestCspSubelementSubarrayComponentManager:
     """
     Tests of the
-    :py:class:`ska_tango_base.subarray_component_manager.SubarrayComponentManager`
+    :py:class:`ska_tango_base.csp_subelement_subarray_component_manager.SubarrayComponentManager`
     class.
     """
 
@@ -125,7 +125,11 @@ class TestCspSubelementSubarrayComponentManager:
         assert not component_manager.is_connected
         component_manager.connect()
         assert component_manager.is_connected
-        mock_op_state_model.perform_action.assert_called_once_with(expected_action)
+        assert mock_op_state_model.perform_action.call_args_list == [
+            (("component_unknown",),),
+            ((expected_action,),),
+        ]
+
         mock_op_state_model.reset_mock()
 
         component_manager.disconnect()

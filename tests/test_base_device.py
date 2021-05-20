@@ -626,7 +626,7 @@ class TestSKABaseDevice(object):
 
 class TestSKABaseDevice_commands:
     """
-    This class contains tests of SKASubarray commands
+    This class contains tests of SKABaseDevice commands
     """
     @pytest.fixture
     def op_state_model(self, logger):

@@ -22,7 +22,7 @@ from tango.server import run, attribute, command, device_property
 # SKA specific imports
 
 from ska_tango_base import SKAMaster
-from ska_tango_base.commands import ResultCode, ResponseCommand
+from ska_tango_base.commands import ResultCode, ResponseCommand, StateModelCommand
 from ska_tango_base.control_model import AdminMode
 from ska_tango_base.faults import CommandError
 # PROTECTED REGION END #    //  CspSubElementMaster.additionnal_import
@@ -415,7 +415,7 @@ class CspSubElementMaster(SKAMaster):
     # --------
     # Commands
     # --------
-    class LoadFirmwareCommand(ResponseCommand):
+    class LoadFirmwareCommand(StateModelCommand, ResponseCommand):
         """
         A class for the LoadFirmware command.
         """
@@ -424,8 +424,7 @@ class CspSubElementMaster(SKAMaster):
             Creates a new BaseCommand object for a device.
 
             :param target: the object that this base command acts upon. For
-                example, the device that this BaseCommand implements the
-                command for.
+                example, the device's component manager.
             :type target: object
             :param op_state_model: the op state model that this command
                 uses.
@@ -441,7 +440,7 @@ class CspSubElementMaster(SKAMaster):
                 logger interface
             """
             self._admin_mode_model = admin_mode_model
-            super().__init__(target, op_state_model, *args, logger=logger, **kwargs)
+            super().__init__(target, op_state_model, None, *args, logger=logger, **kwargs)
 
         def do(self, argin):
             """
@@ -482,10 +481,13 @@ class CspSubElementMaster(SKAMaster):
                 )
             return False
 
-    class PowerOnDevicesCommand(ResponseCommand):
+    class PowerOnDevicesCommand(StateModelCommand, ResponseCommand):
         """
         A class for the CspSubElementMaster's PowerOnDevices command.
         """
+
+        def __init__(self, target, op_state_model, *args, logger=None, **kwargs):
+            super().__init__(target, op_state_model, None, *args, logger=logger, **kwargs)
 
         def do(self, argin):
             """
@@ -522,10 +524,13 @@ class CspSubElementMaster(SKAMaster):
                 )
             return False
 
-    class PowerOffDevicesCommand(ResponseCommand):
+    class PowerOffDevicesCommand(StateModelCommand, ResponseCommand):
         """
         A class for the CspSubElementMaster's PowerOffDevices command.
         """
+
+        def __init__(self, target, op_state_model, *args, logger=None, **kwargs):
+            super().__init__(target, op_state_model, None, *args, logger=logger, **kwargs)
 
         def do(self, argin):
             """
@@ -562,10 +567,13 @@ class CspSubElementMaster(SKAMaster):
                 )
             return False
 
-    class ReInitDevicesCommand(ResponseCommand):
+    class ReInitDevicesCommand(StateModelCommand, ResponseCommand):
         """
         A class for the CspSubElementMaster's ReInitDevices command.
         """
+
+        def __init__(self, target, op_state_model, *args, logger=None, **kwargs):
+            super().__init__(target, op_state_model, None, *args, logger=logger, **kwargs)
 
         def do(self, argin):
             """

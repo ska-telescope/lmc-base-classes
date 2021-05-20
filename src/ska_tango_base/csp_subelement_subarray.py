@@ -197,7 +197,7 @@ class CspSubElementSubarray(SKASubarray):
         """
         super().init_command_objects()
 
-        device_args = (self, self.op_state_model, self.obs_state_model, self.logger)
+        device_args = (self.component_manager, self.op_state_model, self.obs_state_model, self.logger)
         self.register_command_object(
             "ConfigureScan", self.ConfigureScanCommand(*device_args)
         )
@@ -428,9 +428,8 @@ class CspSubElementSubarray(SKASubarray):
             """
             Constructor for ConfigureScanCommand
 
-            :param target: the object that this command acts upon; for
-                example, the CspSubElementSubarray device for which this class
-                implements the command
+            :param target: the object that this base command acts upon. For
+                example, the device's component manager.
             :type target: object
             :param op_state_model: the op state model that this command
                 uses to check that it is allowed to run
@@ -452,22 +451,17 @@ class CspSubElementSubarray(SKASubarray):
             """
             Stateless hook for ConfigureScan() command functionality.
 
-            :param argin: The configuration as JSON formatted string
-            :type argin: str
+            :param argin: The configuration
+            :type argin: dict
 
             :return: A tuple containing a return code and a string
                 message indicating status. The message is for
                 information purpose only.
             :rtype: (ResultCode, str)
             """
-            device = self.target
-            (configuration, result_code, msg) = self.validate_input(argin)
-            if result_code == ResultCode.OK:
-                # store the configuration on command success
-                device._last_scan_configuration = argin
-                device.component_manager.configure(configuration)
-                msg = "Configure command completed OK"
-            return (result_code, msg)
+            component_manager = self.target
+            component_manager.configure(argin)
+            return (ResultCode.OK, "Configure command completed OK")
 
         def validate_input(self, argin):
             """
@@ -500,9 +494,8 @@ class CspSubElementSubarray(SKASubarray):
             """
             Constructor for EndCommand
 
-            :param target: the object that this command acts upon; for
-                example, the SKASubarray device for which this class
-                implements the command
+            :param target: the object that this base command acts upon. For
+                example, the device's component manager.
             :type target: object
             :param op_state_model: the op state model that this command
                 uses to check that it is allowed to run
@@ -529,9 +522,8 @@ class CspSubElementSubarray(SKASubarray):
                 information purpose only.
             :rtype: (ResultCode, str)
             """
-            device = self.target
-            device.component_manager.deconfigure()
-            device._last_scan_configuration = ''
+            component_manager = self.target
+            component_manager.deconfigure()
             return (ResultCode.OK, "GoToIdle command completed OK")
 
     @command(
@@ -556,8 +548,14 @@ class CspSubElementSubarray(SKASubarray):
         :rtype: (ResultCode, str)
         """
         command = self.get_command_object("ConfigureScan")
-        (return_code, message) = command(argin)
-        return [[return_code], [message]]
+
+        (configuration, result_code, message) = command.validate_input(argin)
+        if result_code == ResultCode.OK:
+            # store the configuration on command success
+            self._last_scan_configuration = argin
+            (result_code, message) = command(configuration)
+
+        return [[result_code], [message]]
         # PROTECTED REGION END #    //  CspSubElementSubarray.Configure
 
     @command(
@@ -580,9 +578,7 @@ class CspSubElementSubarray(SKASubarray):
             A tuple containing a return code and a string message indicating status.
             The message is for information purpose only.
         """
-        command = self.get_command_object("ConfigureScan")
-        (return_code, message) = command(argin)
-        return [[return_code], [message]]
+        return self.ConfigureScan(argin)
         # PROTECTED REGION END #    //  CspSubElementSubarray.Configure
 
     @command(
@@ -600,6 +596,8 @@ class CspSubElementSubarray(SKASubarray):
             A tuple containing a return code and a string  message indicating status.
             The message is for information purpose only.
         """
+        self._last_scan_configuration = ''
+
         command = self.get_command_object("GoToIdle")
         (return_code, message) = command()
         return [[return_code], [message]]
@@ -620,9 +618,7 @@ class CspSubElementSubarray(SKASubarray):
             A tuple containing a return code and a string  message indicating status.
             The message is for information purpose only.
         """
-        command = self.get_command_object("GoToIdle")
-        (return_code, message) = command()
-        return [[return_code], [message]]
+        return self.GoToIdle()
         # PROTECTED REGION END #    //  CspSubElementSubarray.End
 
 # ----------

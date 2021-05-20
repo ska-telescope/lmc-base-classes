@@ -1,11 +1,12 @@
 """
 This module models component management for CSP subelement observation devices.
 """
+import functools
+
 from tango import DevState
 
 from ska_tango_base.component_manager import (
     check_connected,
-    ComponentFault,
     ComponentManager,
 )
 from ska_tango_base.control_model import PowerMode
@@ -21,6 +22,7 @@ def check_on(func):
 
     :return: the wrapped function
     """
+    @functools.wraps(func)
     def _wrapper(component, *args, **kwargs):
         """
         Wrapper function that checks that the component is turned on and

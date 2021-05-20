@@ -145,18 +145,21 @@ class CspSubElementObsDevice(SKAObsDevice):
         """
         super().init_command_objects()
 
-        for (command_name, command_class, target) in [
-            ("ConfigureScan", self.ConfigureScanCommand, self),
-            ("Scan", self.ScanCommand, self.component_manager),
-            ("EndScan", self.EndScanCommand, self.component_manager),
-            ("GoToIdle", self.GoToIdleCommand, self),
-            ("Abort", self.AbortCommand, self),
-            ("ObsReset", self.ObsResetCommand, self),
+        for (command_name, command_class) in [
+            ("ConfigureScan", self.ConfigureScanCommand),
+            ("Scan", self.ScanCommand),
+            ("EndScan", self.EndScanCommand),
+            ("GoToIdle", self.GoToIdleCommand),
+            ("Abort", self.AbortCommand),
+            ("ObsReset", self.ObsResetCommand),
         ]:
             self.register_command_object(
                 command_name,
                 command_class(
-                    target, self.op_state_model, self.obs_state_model, self.logger
+                    self.component_manager,
+                    self.op_state_model,
+                    self.obs_state_model,
+                    self.logger,
                 )
             )
 
@@ -273,8 +276,7 @@ class CspSubElementObsDevice(SKAObsDevice):
             Constructor for ConfigureScanCommand
 
             :param target: the object that this command acts upon; for
-                example, the CspSubElementObsDevice device for which this class
-                implements the command
+                example, the device's component manager
             :type target: object
             :param op_state_model: the op state model that this command
                 uses to check that it is allowed to run
@@ -296,23 +298,17 @@ class CspSubElementObsDevice(SKAObsDevice):
             """
             Stateless hook for ConfigureScan() command functionality.
 
-            :param argin: The configuration as JSON formatted string
-            :type argin: str
+            :param argin: The configuration
+            :type argin: dict
 
             :return: A tuple containing a return code and a string
                 message indicating status. The message is for
                 information purpose only.
             :rtype: (ResultCode, str)
             """
-            device = self.target
-            # validate the input args
-            (configuration, result_code, msg) = self.validate_input(argin)
-            if result_code == ResultCode.OK:
-                # store the configuration on command success
-                device._last_scan_configuration = argin
-                device.component_manager.configure_scan(configuration)
-                msg = "Configure command completed OK"
-            return(result_code, msg)
+            component_manager = self.target
+            component_manager.configure_scan(argin)
+            return (ResultCode.OK, "Configure command completed OK")
 
         def validate_input(self, argin):
             """
@@ -346,8 +342,7 @@ class CspSubElementObsDevice(SKAObsDevice):
             Constructor for ScanCommand
 
             :param target: the object that this command acts upon; for
-                example, the CspSubElementObsDevice device for which this class
-                implements the command
+                example, the device's component manager
             :type target: object
             :param op_state_model: the op state model that this command
                 uses to check that it is allowed to run
@@ -411,8 +406,7 @@ class CspSubElementObsDevice(SKAObsDevice):
             Constructor for EndScanCommand
 
             :param target: the object that this command acts upon; for
-                example, the CspSubElementObsDevice device for which this class
-                implements the command
+                example, the device's component manager
             :type target: object
             :param op_state_model: the op state model that this command
                 uses to check that it is allowed to run
@@ -453,8 +447,7 @@ class CspSubElementObsDevice(SKAObsDevice):
             Constructor for EndCommand
 
             :param target: the object that this command acts upon; for
-                example, the SKASubarray device for which this class
-                implements the command
+                example, the device's component manager
             :type target: object
             :param op_state_model: the op state model that this command
                 uses to check that it is allowed to run
@@ -481,9 +474,8 @@ class CspSubElementObsDevice(SKAObsDevice):
                 information purpose only.
             :rtype: (ResultCode, str)
             """
-            device = self.target
-            device.component_manager.deconfigure()
-            device._last_scan_configuration = ''
+            component_manager = self.target
+            component_manager.deconfigure()
             return (ResultCode.OK, "GoToIdle command completed OK")
 
     class ObsResetCommand(ObservationCommand, ResponseCommand, CompletionCommand):
@@ -496,8 +488,7 @@ class CspSubElementObsDevice(SKAObsDevice):
             Constructor for ObsReset Command.
 
             :param target: the object that this command acts upon; for
-                example, the CspSubElementObsDevice device for which this class
-                implements the command
+                example, the device's component manager
             :type target: object
             :param op_state_model: the op state model that this command
                 uses to check that it is allowed to run
@@ -538,8 +529,7 @@ class CspSubElementObsDevice(SKAObsDevice):
             Constructor for Abort Command.
 
             :param target: the object that this command acts upon; for
-                example, the CspSubElementObsDevice device for which this class
-                implements the command
+                example, the device's component manager
             :type target: object
             :param op_state_model: the op state model that this command
                 uses to check that it is allowed to run
@@ -589,8 +579,14 @@ class CspSubElementObsDevice(SKAObsDevice):
         :rtype: (ResultCode, str)
         """
         command = self.get_command_object("ConfigureScan")
-        (return_code, message) = command(argin)
-        return [[return_code], [message]]
+
+        (configuration, result_code, message) = command.validate_input(argin)
+        if result_code == ResultCode.OK:
+            # store the configuration on command success
+            self._last_scan_configuration = argin
+            (result_code, message) = command(configuration)
+
+        return [[result_code], [message]]
         # PROTECTED REGION END #    //  CspSubElementObsDevice.ConfigureScan
 
     @command(
@@ -653,6 +649,8 @@ class CspSubElementObsDevice(SKAObsDevice):
             The message is for information purpose only.
         :rtype: (ResultCode, str)
         """
+        self._last_scan_configuration = ''
+
         command = self.get_command_object("GoToIdle")
         (return_code, message) = command()
         return [[return_code], [message]]

@@ -1,16 +1,18 @@
 """
-Tests for the :py:mod:`skabase.component_manager` module.
+Tests for the :py:mod:`ska_tango_base.component_manager` module.
 """
 import contextlib
 import pytest
 
-from ska_tango_base.component_manager import ComponentFault, ComponentManager
+from ska_tango_base.component_manager import ComponentManager
 from ska_tango_base.control_model import PowerMode
+from ska_tango_base.faults import ComponentFault
 
 
 class TestComponentManager:
     """
-    Tests of the :py:class:`skabase.component_manager.ComponentManager`
+    Tests of the
+    :py:class:`ska_tango_base.component_manager.ComponentManager`
     class.
     """
 
@@ -75,7 +77,11 @@ class TestComponentManager:
         assert not component_manager.is_connected
         component_manager.connect()
         assert component_manager.is_connected
-        mock_op_state_model.perform_action.assert_called_once_with(expected_action)
+        assert mock_op_state_model.perform_action.call_args_list == [
+            (("component_unknown",),),
+            ((expected_action,),),
+        ]
+
         mock_op_state_model.reset_mock()
 
         component_manager.disconnect()

@@ -1,11 +1,12 @@
 """
 This module models component management for SKA subarray devices.
 """
+import functools
+
 from tango import DevState
 
 from ska_tango_base.component_manager import (
     check_connected,
-    ComponentFault,
     ComponentManager,
 )
 from ska_tango_base.control_model import PowerMode
@@ -25,6 +26,7 @@ def check_on(func):
 
     :return: the wrapped function
     """
+    @functools.wraps(func)
     def _wrapper(component, *args, **kwargs):
         """
         Wrapper function that checks that the component is turned on and
@@ -70,7 +72,7 @@ class SubarrayComponentManager(ComponentManager):
         observation fault via simulate_obsfault() methods.
 
         When a component changes state, it lets the component manager
-        know by calling its ``component_unresources``,
+        know by calling its ``component_unresourced``,
         ``component_resourced``, ``component_unconfigured``,
         ``component_configured``, ``component_scanning``,
         ``component_not_scanning`` and ``component_obsfault`` methods.
@@ -507,7 +509,6 @@ class SubarrayComponentManager(ComponentManager):
         """
         if self._connected:
             return
-
         super().connect()
 
         self._component.set_obs_callbacks(
@@ -526,15 +527,15 @@ class SubarrayComponentManager(ComponentManager):
         # changes, so we need to check the component's state, and
         # make our state model correspond
         if self._component.obsfault:
-            self.op_state_model.to_OBSFAULT()
+            self.obs_state_model.to_OBSFAULT()
         if not self._component.resourced:
-            self.op_state_model.to_EMPTY()
+            self.obs_state_model.to_EMPTY()
         elif not self._component.configured:
-            self.op_state_model.to_IDLE()
+            self.obs_state_model.to_IDLE()
         elif not self._component.scanning:
-            self.op_state_model.to_READY()
+            self.obs_state_model.to_READY()
         else:
-            self.op_state_model.to_SCANNING()
+            self.obs_state_model.to_SCANNING()
 
     def disconnect(self):
         """

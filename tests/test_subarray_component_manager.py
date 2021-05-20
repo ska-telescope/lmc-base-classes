@@ -1,5 +1,6 @@
 """
-Tests for the :py:mod:`skabase.subarray_component_manager` module.
+Tests for the :py:mod:`ska_tango_base.subarray_component_manager`
+module.
 """
 import contextlib
 import itertools
@@ -180,7 +181,13 @@ class TestSubarrayComponentManager:
         )
 
     def test_state_changes_with_connect_and_disconnect(
-        self, component_manager, mock_op_state_model, initial_power_mode, initial_fault
+        self,
+        component,
+        component_manager,
+        mock_op_state_model,
+        mock_obs_state_model,
+        initial_power_mode,
+        initial_fault
     ):
         """
         Test that the state model is updated with state changes when the
@@ -200,9 +207,29 @@ class TestSubarrayComponentManager:
         )
 
         assert not component_manager.is_connected
+
+        # While disconnected, tell the component to simulate an obsfault
+        # (but only if it is turned on and not faulty)
+        if initial_power_mode == PowerMode.ON and not initial_fault:
+            component.simulate_obsfault(True)
+
+            # The component is disconnected, so the state model cannot
+            # know that it has changed obs state
+            mock_obs_state_model.to_OBSFAULT.assert_not_called()
+
         component_manager.connect()
         assert component_manager.is_connected
-        mock_op_state_model.perform_action.assert_called_once_with(expected_action)
+        assert mock_op_state_model.perform_action.call_args_list == [
+            (("component_unknown",),),
+            ((expected_action,),),
+        ]
+
+        if initial_power_mode == PowerMode.ON and not initial_fault:
+            # The component manager has noticed that it missed a change
+            # in the component while it was disconnected, and his
+            # updated the obs state model
+            mock_obs_state_model.to_OBSFAULT.assert_called_once_with()
+
         mock_op_state_model.reset_mock()
 
         component_manager.disconnect()
@@ -364,7 +391,6 @@ class TestSubarrayComponentManager:
     def test_assign(
         self,
         component_manager,
-        component,
         initial_power_mode,
         initial_fault,
         mock_obs_state_model,
@@ -416,7 +442,6 @@ class TestSubarrayComponentManager:
     def test_configure(
         self,
         component_manager,
-        component,
         initial_power_mode,
         initial_fault,
         mock_obs_state_model,

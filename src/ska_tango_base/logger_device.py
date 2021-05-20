@@ -78,9 +78,8 @@ class SKALogger(SKABaseDevice):
             """
             Constructor for SetLoggingLevelCommand
 
-            :param target: the object that this command acts upon; for
-                example, the SKASubarray device for which this class
-                implements the command
+            :param target: the object that this base command acts upon. For
+                example, the device's component manager.
             :type target: object
             :param state_model: the state model that this command uses
                  to check that it is allowed to run, and that it drives

@@ -2,28 +2,42 @@
 This module provides abstract base classes for device commands, and a
 ResultCode enum.
 
-Device commands are implement as a collection of mixins, as follows:
+The following command classes are provided:
 
 * **BaseCommand**: that implements the common pattern for commands;
   implement the do() method, and invoke the command class by *calling*
   it.
 
-* **OperationalCommand**: implements a command that drives the operation
-  state of the device; for example, "On()", "Standby()", "Off()".
+* **StateModelCommand**: implements a command that drives a state model.
+  For example, a command that drives the operational state of the
+  device, such as ``On()``, ``Standby()`` and ``Off()``, is a
+  ``StateModelCommand``.
 
 * **ObservationCommand**: implements a command that drives the
   observation state of an obsDevice, such as a subarray; for example,
-  AssignResources(), Configure(), Scan().
+  ``AssignResources()``, ``Configure()``, ``Scan()``.
 
-* **ResponseCommand**: for commands that return a (ResultCode, message)
-  tuple.
+* **ResponseCommand**: for commands that return a ``(ResultCode,
+  message)`` tuple.
   
 * **CompletionCommand**: for commands that need to let their state
   machine know when they have completed; that is, long-running commands
-  with transitional states, such as AssignResources() and Configure().
+  with transitional states, such as ``AssignResources()`` and
+  ``Configure()``.
 
-To use these commands: subclass from the mixins needed, then implement
-the ``__init__`` and ``do`` methods. For example:
+Multiple inheritance is supported, and it is expected that many commands
+will need to inherit from more than one command class. For example, a
+subarray's ``AssignResources`` command" would inherit from:
+
+* ``ObservationState``, because it drives observation state
+
+* ``ResponseCommand``, because it returns a `(ResultCode, message)`
+
+* ``CompletionCommand``, because it needs to let its state machine know
+  when it is completed.
+
+To use these commands: subclass from the command classes needed, then
+implement the ``__init__`` and ``do`` methods. For example:
 
 .. code-block:: py
 
@@ -37,7 +51,6 @@ the ``__init__`` and ``do`` methods. For example:
             # do stuff
             return (ResultCode.OK, "AssignResources command completed OK")
 
-So there.
 """
 import enum
 import logging
@@ -87,17 +100,13 @@ class BaseCommand:
     command.
     """
 
-    def __init__(self, target, state_model, *args, logger=None, **kwargs):
+    def __init__(self, target, *args, logger=None, **kwargs):
         """
         Creates a new BaseCommand object for a device.
 
-        :param target: the object that this base command acts upon. For
-            example, the device that this BaseCommand implements the
-            command for.
+        :param target: the object that this command acts upon; for
+            example, a component manager
         :type target: object
-        :param state_model: the state model that this command uses, for
-            example to raise a fatal error if the command errors out.
-        :type state_model: SKABaseClassStateModel or a subclass of same
         :param logger: the logger to be used by this Command. If not
             provided, then a default module logger will be used.
         :type logger: a logger that implements the standard library
@@ -105,7 +114,6 @@ class BaseCommand:
         """
         self.name = self.__class__.__name__
         self.target = target
-        self.state_model = state_model
         self.logger = logger or module_logger
 
     def __call__(self, argin=None):
@@ -160,24 +168,23 @@ class BaseCommand:
         )
 
 
-class OperationalCommand(BaseCommand):
+class StateModelCommand(BaseCommand):
     def __init__(self, target, state_model, action_slug, *args, logger=None, **kwargs):
         """
-        A base command for commands that drive the operating state of
-        the device.
+        A base command for commands that drive a state model.
 
-        :param target: the object that this base command acts upon. For
-            example, the device that this BaseCommand implements the
-            command for.
+        :param target: the object that this command acts upon; for
+            example, a component manager
         :type target: object
         :param state_model: the state model that this command uses, for
             example to raise a fatal error if the command errors out.
-        :type state_model: SKABaseClassStateModel or a subclass of same
+        :type state_model: a state model, such as an OperationStateModel
         :param action_slug: a slug for this command, used to construct
             actions on the state model corresponding to this command.
             For example, if we set the slug for the Scan() command to
             "scan", then invoking the command would correspond to the
-            "scan_invoked" action on the state model.
+            "scan_invoked" action on the state model. This can be set to
+            None, in which case no action is taken.
         :param args: additional positional arguments
         :param logger: the logger to be used by this Command. If not
             provided, then a default module logger will be used.
@@ -185,9 +192,15 @@ class OperationalCommand(BaseCommand):
             logger interface
         :param kwargs: additional keyword arguments
         """
-        super().__init__(target, state_model, action_slug, *args, logger=logger, **kwargs)
+        self.state_model = state_model
         self._action_slug = action_slug
-        self._invoked_action = f"{action_slug}_invoked"
+
+        if self._action_slug is None:
+            self._invoked_action = None
+        else:
+            self._invoked_action = f"{action_slug}_invoked"
+
+        super().__init__(target, *args, logger=logger, **kwargs)
 
     def __call__(self, argin=None):
         """
@@ -202,10 +215,11 @@ class OperationalCommand(BaseCommand):
 
         :raises CommandError: if the command is not allowed
         """
-        try:
-            self.state_model.perform_action(self._invoked_action)
-        except StateModelError as sme:
-            raise CommandError("Command not permitted") from sme
+        if self._invoked_action is not None:
+            try:
+                self.state_model.perform_action(self._invoked_action)
+            except StateModelError as sme:
+                raise CommandError("Command not permitted") from sme
 
         return super().__call__(argin)
 
@@ -223,6 +237,9 @@ class OperationalCommand(BaseCommand):
         :raises CommandError: if the command is not allowed and
             `raise_if_disallowed` is True
         """
+        if self._invoked_action is None:
+            return True
+
         try:
             return self.state_model.is_action_allowed(
                 self._invoked_action,
@@ -234,7 +251,7 @@ class OperationalCommand(BaseCommand):
             ) from state_model_error
 
 
-class ObservationCommand(OperationalCommand):
+class ObservationCommand(StateModelCommand):
     def __init__(
         self,
         target,
@@ -247,16 +264,18 @@ class ObservationCommand(OperationalCommand):
     ):
         """
         A base class for commands that drive the device's observing
-        state.
+        state. This is a special case of a ``StateModelCommand`` because
+        although it only drives the observation state model, it has to
+        check also the operational state model to determine whether it
+        is allowed to run.
 
-        :param target: the object that this base command acts upon. For
-            example, the device that this BaseCommand implements the
-            command for.
+        :param target: the object that this command acts upon; for
+            example, a component manager
         :type target: object
         :param obs_state_model: the observation state model that
                 this command uses to check that it is allowed to run,
                 and that it drives with actions.
-        :type obs_state_model: :py:class:`CspSubElementObsStateModel`
+        :type obs_state_model: :py:class:`ObsStateModel`
         :param action_slug: a slug for this command, used to construct
             actions on the state model corresponding to this command.
             For example, if we set the slug for the Scan() command to
@@ -344,7 +363,7 @@ class ResponseCommand(BaseCommand):
         return (return_code, message)
 
 
-class CompletionCommand(BaseCommand):
+class CompletionCommand(StateModelCommand):
     """
     Abstract base class for a command that sends a "completed" action to
     the state model at command completion.
@@ -356,13 +375,13 @@ class CompletionCommand(BaseCommand):
         """
         Create a new ActionCommand for a device.
 
-        :param target: the object that this base command acts upon. For
-            example, the device that this ActionCommand implements the
-            command for.
+        :param target: the object that this command acts upon; for
+            example, a component manager
         :type target: object
         :param state_model: the state model that this command uses, for
             example to raise a fatal error if the command errors out.
-        :type state_model: SKABaseClassStateModel or a subclass of same
+        :type state_model: a state model, such as
+            `OperationalStateModel`
         :param action_slug: a slug for this command, used to construct
             actions on the state model corresponding to this command.
             For example, if we set the slug for the Scan() command to

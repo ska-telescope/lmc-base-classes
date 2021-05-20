@@ -35,7 +35,7 @@ import debugpy
 import ska_ser_logging
 from ska_tango_base import release
 from ska_tango_base.commands import (
-    BaseCommand, CompletionCommand, OperationalCommand, ResponseCommand, ResultCode
+    BaseCommand, CompletionCommand, StateModelCommand, ResponseCommand, ResultCode
 )
 from ska_tango_base.component_manager import ComponentManager
 from ska_tango_base.control_model import (
@@ -326,7 +326,7 @@ class SKABaseDevice(Device):
 
     _global_debugger_listening = False
 
-    class InitCommand(OperationalCommand, ResponseCommand, CompletionCommand):
+    class InitCommand(ResponseCommand, CompletionCommand):
         """
         A class for the SKABaseDevice's init_device() "command".
         """
@@ -336,12 +336,12 @@ class SKABaseDevice(Device):
             Create a new InitCommand
 
             :param target: the object that this command acts upon; for
-                example, the SKASubarray device for which this class
+                example, the SKABaseDevice device for which this class
                 implements the command
             :type target: object
-            :param op_state_model: the state model that this command uses
-                 to check that it is allowed to run, and that it drives
-                 with actions.
+            :param op_state_model: the state model that this command
+                 uses to check that it is allowed to run, and that it
+                 drives with actions.
             :type op_state_model: :py:class:`OpStateModel`
             :param logger: the logger to be used by this Command. If not
                 provided, then a default module logger will be used.
@@ -1026,7 +1026,7 @@ class SKABaseDevice(Device):
         return command()
         # PROTECTED REGION END #    //  SKABaseDevice.GetVersionInfo
 
-    class ResetCommand(OperationalCommand, ResponseCommand):
+    class ResetCommand(StateModelCommand, ResponseCommand):
         """
         A class for the SKABaseDevice's Reset() command.
         """
@@ -1036,12 +1036,11 @@ class SKABaseDevice(Device):
             Create a new ResetCommand
 
             :param target: the object that this command acts upon; for
-                example, the SKASubarray device for which this class
-                implements the command
+                example, the device's component manager
             :type target: object
-            :param op_state_model: the state model that this command uses
-                 to check that it is allowed to run, and that it drives
-                 with actions.
+            :param op_state_model: the state model that this command
+                uses to check that it is allowed to run, and that it
+                drives with actions.
             :type op_state_model: :py:class:`OpStateModel`
             :param logger: the logger to be used by this Command. If not
                 provided, then a default module logger will be used.
@@ -1097,7 +1096,7 @@ class SKABaseDevice(Device):
         (return_code, message) = command()
         return [[return_code], [message]]
 
-    class StandbyCommand(OperationalCommand, ResponseCommand):
+    class StandbyCommand(StateModelCommand, ResponseCommand):
         """
         A class for the SKABaseDevice's Standby() command.
         """
@@ -1107,8 +1106,7 @@ class SKABaseDevice(Device):
             Constructor for StandbyCommand
 
             :param target: the object that this command acts upon; for
-                example, the SKABaseDevice for which this class
-                implements the command
+                example, the device's component manager
             :type target: object
             :param op_state_model: the state model that this command uses
                  to check that it is allowed to run, and that it drives
@@ -1131,7 +1129,7 @@ class SKABaseDevice(Device):
             :rtype: (ResultCode, str)
             """
             self.target.standby()
-            message = "Standby command completed_okay"
+            message = "Standby command completed OK"
             self.logger.info(message)
             return (ResultCode.OK, message)
 
@@ -1168,7 +1166,7 @@ class SKABaseDevice(Device):
         (return_code, message) = command()
         return [[return_code], [message]]
 
-    class OffCommand(OperationalCommand, ResponseCommand):
+    class OffCommand(StateModelCommand, ResponseCommand):
         """
         A class for the SKABaseDevice's Off() command.
         """
@@ -1178,8 +1176,7 @@ class SKABaseDevice(Device):
             Constructor for OffCommand
 
             :param target: the object that this command acts upon; for
-                example, the SKABaseDevice for which this class
-                implements the command
+                example, the device's component manager
             :type target: object
             :param op_state_model: the state model that this command uses
                  to check that it is allowed to run, and that it drives
@@ -1239,7 +1236,7 @@ class SKABaseDevice(Device):
         (return_code, message) = command()
         return [[return_code], [message]]
 
-    class OnCommand(OperationalCommand, ResponseCommand):
+    class OnCommand(StateModelCommand, ResponseCommand):
         """
         A class for the SKABaseDevice's On() command.
         """
@@ -1248,8 +1245,7 @@ class SKABaseDevice(Device):
             Constructor for OnCommand
 
             :param target: the object that this command acts upon; for
-                example, the SKABaseDevice for which this class
-                implements the command
+                example, the device's component manager
             :type target: object
             :param op_state_model: the state model that this command uses
                  to check that it is allowed to run, and that it drives

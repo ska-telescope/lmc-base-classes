@@ -286,12 +286,16 @@ class TestCspSubElementSubarray(object):
     def test_ConfigureScan(self, tango_context, tango_change_event_helper, command_alias):
         """Test for ConfigureScan"""
         # PROTECTED REGION ID(CspSubelementSubarray.test_ConfigureScan) ENABLED START #
-        tango_context.device.On()
-        tango_context.device.AssignResources(json.dumps([1,2,3]))
+        device_under_test = tango_context.device
+        device_under_test.On()
+        device_under_test.AssignResources(json.dumps([1,2,3]))
+        assert device_under_test.obsState == ObsState.IDLE
+
         obs_state_callback = tango_change_event_helper.subscribe("obsState")
         scan_configuration = '{"id":"sbi-mvp01-20200325-00002"}'
-        tango_context.device.command_inout(command_alias, (scan_configuration))
-        obs_state_callback.assert_calls([ObsState.IDLE, ObsState.CONFIGURING])
+        device_under_test.command_inout(command_alias, scan_configuration)
+        obs_state_callback.assert_calls([ObsState.IDLE, ObsState.CONFIGURING, ObsState.READY])
+        assert device_under_test.obsState == ObsState.READY
         assert tango_context.device.configurationID == "sbi-mvp01-20200325-00002"
         assert tango_context.device.lastScanConfiguration == scan_configuration
         # PROTECTED REGION END #    //  CspSubelementSubarray.test_ConfigureScan
@@ -316,9 +320,12 @@ class TestCspSubElementSubarray(object):
         tango_context.device.On()
         tango_context.device.AssignResources(json.dumps([1,2,3]))
         # wrong configurationID key
+        assert tango_context.device.obsState == ObsState.IDLE
+
         wrong_configuration = '{"subid":"sbi-mvp01-20200325-00002"}'
         result_code, _ = tango_context.device.ConfigureScan(wrong_configuration)
         assert result_code == ResultCode.FAILED
+        assert tango_context.device.obsState == ObsState.IDLE
         # PROTECTED REGION END #    //  CspSubelementSubarray.test_ConfigureScan_with_wrong_configId_key
 
     # PROTECTED REGION ID(CspSubelementSubarray.test_ConfigureScan_with_json_syntax_error) ENABLED START #
@@ -328,8 +335,11 @@ class TestCspSubElementSubarray(object):
         # PROTECTED REGION ID(CspSubelementSubarray.test_ConfigureScan_with_json_syntax_error) ENABLED START #
         tango_context.device.On()
         tango_context.device.AssignResources(json.dumps([1,2,3]))
+        assert tango_context.device.obsState == ObsState.IDLE
+
         result_code, _ = tango_context.device.ConfigureScan('{"foo": 1,}')
         assert result_code == ResultCode.FAILED
+        assert tango_context.device.obsState == ObsState.IDLE
         # PROTECTED REGION END #    //  CspSubelementSubarray.test_ConfigureScan_with_json_syntax_error
 
     # PROTECTED REGION ID(CspSubelementSubarray.test_GoToIdle_decorators) ENABLED START #

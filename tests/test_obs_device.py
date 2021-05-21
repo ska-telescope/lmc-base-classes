@@ -55,7 +55,7 @@ class TestSKAObsDevice(object):
     def test_State(self, tango_context):
         """Test for State"""
         # PROTECTED REGION ID(SKAObsDevice.test_State) ENABLED START #
-        assert tango_context.device.State() == DevState.OFF
+        assert tango_context.device.State() == DevState.DISABLE
         # PROTECTED REGION END #    //  SKAObsDevice.test_State
 
     # PROTECTED REGION ID(SKAObsDevice.test_Status_decorators) ENABLED START #
@@ -63,7 +63,7 @@ class TestSKAObsDevice(object):
     def test_Status(self, tango_context):
         """Test for Status"""
         # PROTECTED REGION ID(SKAObsDevice.test_Status) ENABLED START #
-        assert tango_context.device.Status() == "The device is in OFF state."
+        assert tango_context.device.Status() == "The device is in DISABLE state."
         # PROTECTED REGION END #    //  SKAObsDevice.test_Status
 
     # PROTECTED REGION ID(SKAObsDevice.test_GetVersionInfo_decorators) ENABLED START #
@@ -148,7 +148,7 @@ class TestSKAObsDevice(object):
     def test_adminMode(self, tango_context):
         """Test for adminMode"""
         # PROTECTED REGION ID(SKAObsDevice.test_adminMode) ENABLED START #
-        assert tango_context.device.adminMode == AdminMode.MAINTENANCE
+        assert tango_context.device.adminMode == AdminMode.OFFLINE
         # PROTECTED REGION END #    //  SKAObsDevice.test_adminMode
 
     # PROTECTED REGION ID(SKAObsDevice.test_controlMode_decorators) ENABLED START #
@@ -188,5 +188,5 @@ def test_multiple_devices_in_same_process():
     with MultiDeviceTestContext(devices_info, process=False) as context:
         proxy1 = context.get_device("test/obs/1")
         proxy2 = context.get_device("test/base/1")
-        assert proxy1.State() == DevState.OFF
-        assert proxy2.State() == DevState.OFF
+        assert proxy1.State() == DevState.DISABLE
+        assert proxy2.State() == DevState.DISABLE

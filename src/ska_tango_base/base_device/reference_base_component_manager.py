@@ -1,30 +1,11 @@
 """
-This module models component management for SKA Tango devices.
-
-The basic model is:
-
-* Every Tango device has a *component* that it monitors and/or
-  controls. That component could be:
-
-  * Hardware such as an antenna, APIU, TPM, switch, subrack, etc.
-
-  * An external software system such as a cluster manager
-
-  * A software routine, possibly implemented within the Tango device
-    itself
-    
-  * In a hierarchical system, a pool of lower-level Tango devices.
-
-* A Tango device will usually need to establish and maintain a
-  *connection* to its component. This connection may be deliberately
-  broken by the device, or it may fail.
-
-* A Tango device *controls* its component by issuing commands that cause
-  the component to change behaviour and/or state; and it *monitors* its
-  component by keeping track of its state.
+This module provided a reference implementation of a
+:py:class:`ska_tango_base.base_device.BaseComponentManager`, for
+explanatory purposes, and to support testing of this package.
 """
 import functools
 
+from ska_tango_base.base_device import BaseComponentManager
 from ska_tango_base.control_model import PowerMode
 from ska_tango_base.faults import ComponentFault
 
@@ -50,14 +31,13 @@ def check_connected(func):
 
         :return: whatever the wrapped function returns
         """
-        if not component_manager.is_connected:
+        if not component_manager.is_communicating:
             raise ConnectionError("Not connected")
         return func(component_manager, *args, **kwargs)
 
     return _wrapper
 
-
-class ComponentManager:
+class ReferenceBaseComponentManager(BaseComponentManager):
     """
     A component manager for Tango devices, supporting:
 
@@ -251,7 +231,7 @@ class ComponentManager:
                 self._faulty = faulty
                 self._invoke_fault_callback()
 
-    def __init__(self, op_state_model, logger, _component=None):
+    def __init__(self, op_state_model, *args, logger=None, _component=None, **kwargs):
         """
         Initialise a new ComponentManager instance
 
@@ -261,17 +241,19 @@ class ComponentManager:
         :param _component: allows setting of the component to be
             managed; for testing purposes only
         """
-        self.op_state_model = op_state_model
         self.logger = logger
 
         self._connected = False
-        self._fail_connect = False
+        self._fail_communicate = False
 
         self._component = _component or self._Component()
 
-    def connect(self):
+        super().__init__(op_state_model, *args, **kwargs)
+
+    def start_communicating(self):
         """
-        Establish a connection to the component
+        Establish communication with the component, then start
+        monitoring.
         """
         if self._connected:
             return
@@ -282,9 +264,9 @@ class ComponentManager:
         self.op_state_model.perform_action("component_unknown")
 
         # Now connect to the component. Here we simply consult the
-        # _fail_connect attribute and either pretend to fail or pretend
+        # _fail_communicate attribute and either pretend to fail or pretend
         # to succeed.
-        if self._fail_connect:
+        if self._fail_communicate:
             raise ConnectionError("Failed to connect")
 
         self._connected = True
@@ -299,9 +281,10 @@ class ComponentManager:
         else:
             self.component_power_mode_changed(self._component.power_mode)
 
-    def disconnect(self):
+    def stop_communicating(self):
         """
-        Disconnect from the component
+        Cease monitoring the component, and break off all communication
+        with it.
         """
         if not self._connected:
             return
@@ -311,7 +294,7 @@ class ComponentManager:
         self.op_state_model.perform_action("component_disconnected")
 
     @property
-    def is_connected(self):
+    def is_communicating(self):
         """
         Whether there is currently a connection to the component
 
@@ -321,15 +304,16 @@ class ComponentManager:
         """
         return self._connected
 
-    def simulate_connection_failure(self, fail_connect):
+    def simulate_communication_failure(self, fail_communicate):
         """
-        Simulate (or stop simulating) a component connection failure
+        Simulate (or stop simulating) a failure to communicate with the
+        component
 
-        :param fail_connect: whether the connection to the component
+        :param fail_communicate: whether the connection to the component
             is failing
         """
-        self._fail_connect = fail_connect
-        if fail_connect and self._connected:
+        self._fail_communicate = fail_communicate
+        if fail_communicate and self._connected:
             self._connected = False
             self._component.set_op_callbacks(None, None)
             self.op_state_model.perform_action("component_unknown")

@@ -24,7 +24,7 @@ from tango import AttrWriteType
 # SKA import
 from ska_tango_base import SKASubarray
 from ska_tango_base.commands import CompletionCommand, ObservationCommand, ResponseCommand, ResultCode
-from ska_tango_base.csp_subelement_subarray_component_manager import CspSubelementSubarrayComponentManager
+from ska_tango_base.csp import ReferenceCspSubarrayComponentManager
 # Additional import
 # PROTECTED REGION END #    //  CspSubElementSubarray.additionnal_import
 
@@ -184,7 +184,7 @@ class CspSubElementSubarray(SKASubarray):
     # ---------------
 
     def init_component_manager(self):
-        return CspSubelementSubarrayComponentManager(
+        return ReferenceCspSubarrayComponentManager(
             self.op_state_model,
             self.obs_state_model,
             self.CapabilityTypes,

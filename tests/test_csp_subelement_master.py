@@ -57,7 +57,7 @@ class TestCspSubElementMaster(object):
     def test_State(self, tango_context):
         """Test for State"""
         # PROTECTED REGION ID(CspSubelementMaster.test_State) ENABLED START #
-        assert tango_context.device.State() == DevState.OFF
+        assert tango_context.device.State() == DevState.DISABLE
         # PROTECTED REGION END #    //  CspSubelementMaster.test_State
 
     # PROTECTED REGION ID(CspSubelementMaster.test_Status_decorators) ENABLED START #
@@ -65,7 +65,7 @@ class TestCspSubElementMaster(object):
     def test_Status(self, tango_context):
         """Test for Status"""
         # PROTECTED REGION ID(CspSubelementMaster.test_Status) ENABLED START #
-        assert tango_context.device.Status() == "The device is in OFF state."
+        assert tango_context.device.Status() == "The device is in DISABLE state."
         # PROTECTED REGION END #    //  CspSubelementMaster.test_Status
 
     # PROTECTED REGION ID(CspSubelementMaster.test_GetVersionInfo_decorators) ENABLED START #
@@ -112,7 +112,7 @@ class TestCspSubElementMaster(object):
     def test_adminMode(self, tango_context):
         """Test for adminMode"""
         # PROTECTED REGION ID(CspSubelementMaster.test_adminMode) ENABLED START #
-        assert tango_context.device.adminMode == AdminMode.MAINTENANCE
+        assert tango_context.device.adminMode == AdminMode.OFFLINE
         # PROTECTED REGION END #    //  CspSubelementMaster.test_adminMode
 
     # PROTECTED REGION ID(CspSubelementMaster.test_controlMode_decorators) ENABLED START #
@@ -266,6 +266,7 @@ class TestCspSubElementMaster(object):
         # PROTECTED REGION ID(CspSubelementMaster.test_LoadFirmware) ENABLED START #
         # After initialization the device is in the right state (OFF/MAINTENANCE) to
         # execute the command.
+        tango_context.device.adminMode = AdminMode.MAINTENANCE
         assert tango_context.device.LoadFirmware(['file', 'test/dev/b', '918698a7fea3']) == [
             [ResultCode.OK], ["LoadFirmware command completed OK"]
         ]
@@ -289,6 +290,7 @@ class TestCspSubElementMaster(object):
         """Test for PowerOnDevices"""
         # PROTECTED REGION ID(CspSubelementMaster.test_PowerOnDevices) ENABLED START #
         # put it in ON state
+        tango_context.device.adminMode = AdminMode.ONLINE
         tango_context.device.On()
         assert tango_context.device.PowerOnDevices(['test/dev/1', 'test/dev/2']) == [
             [ResultCode.OK], ["PowerOnDevices command completed OK"]
@@ -310,6 +312,7 @@ class TestCspSubElementMaster(object):
         """Test for PowerOffDEvices"""
         # PROTECTED REGION ID(CspSubelementMaster.test_PowerOffDevices) ENABLED START #
         # put it in ON state
+        tango_context.device.adminMode = AdminMode.ONLINE
         tango_context.device.On()
         assert tango_context.device.PowerOffDevices(['test/dev/1', 'test/dev/2']) == [
             [ResultCode.OK], ["PowerOffDevices command completed OK"]
@@ -331,6 +334,7 @@ class TestCspSubElementMaster(object):
         """Test for ReInitDevices"""
         # PROTECTED REGION ID(CspSubelementMaster.test_ReInitDevices) ENABLED START #
         # put it in ON state
+        tango_context.device.adminMode = AdminMode.ONLINE
         tango_context.device.On()
         assert tango_context.device.ReInitDevices(['test/dev/1', 'test/dev/2']) == [
             [ResultCode.OK], ["ReInitDevices command completed OK"]
@@ -360,5 +364,5 @@ def test_multiple_devices_in_same_process():
     with MultiDeviceTestContext(devices_info, process=False) as context:
         proxy1 = context.get_device("test/se/1")
         proxy2 = context.get_device("test/master/1")
-        assert proxy1.State() == DevState.OFF
-        assert proxy2.State() == DevState.OFF
+        assert proxy1.State() == DevState.DISABLE
+        assert proxy2.State() == DevState.DISABLE

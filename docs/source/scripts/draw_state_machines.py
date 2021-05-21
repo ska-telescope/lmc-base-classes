@@ -25,10 +25,10 @@ from ska_tango_base import state
 
 def patch_in_graph_machine():
     module_names = [
-        "ska_tango_base.state.op_state_model",
-        "ska_tango_base.state.admin_mode_model",
-        "ska_tango_base.state.subarray_obs_state_model",
-        "ska_tango_base.state.csp_subelement_obs_state_model",
+        "ska_tango_base.base_device.op_state_model",
+        "ska_tango_base.base_device.admin_mode_model",
+        "ska_tango_base.subarray.subarray_obs_state_model",
+        "ska_tango_base.csp.csp_subelement_obs_state_model",
     ]
     with mock.patch("transitions.extensions.LockedMachine", GraphMachine):
         for module_name in module_names:

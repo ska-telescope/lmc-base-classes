@@ -5,10 +5,9 @@ import functools
 
 from tango import DevState
 
-from ska_tango_base.component_manager import (
-    check_connected,
-    ComponentManager,
-)
+from ska_tango_base.csp import CspObsComponentManager
+from ska_tango_base.base_device import check_connected, ReferenceBaseComponentManager
+
 from ska_tango_base.control_model import PowerMode
 from ska_tango_base.faults import ComponentError, ComponentFault
 
@@ -43,7 +42,7 @@ def check_on(func):
     return _wrapper
 
 
-class CspSubelementObsComponentManager(ComponentManager):
+class ReferenceCspObsComponentManager(CspObsComponentManager, ReferenceBaseComponentManager):
     """
     A component manager for SKA CSP subelement observation Tango devices:
 
@@ -55,7 +54,7 @@ class CspSubelementObsComponentManager(ComponentManager):
     a subclass specific to the component managed by the device.
     """
 
-    class _CspSubelementObsComponent(ComponentManager._Component):
+    class _Component(ReferenceBaseComponentManager._Component):
         """
         An example CSP subelement obs component for the component
         manager to work with.
@@ -196,20 +195,23 @@ class CspSubelementObsComponentManager(ComponentManager):
                 if obsfault:
                     self._invoke_obsfault_callback()
 
-    def __init__(self, op_state_model, obs_state_model, logger, _component=None):
-        self.obs_state_model = obs_state_model
-
+    def __init__(self, op_state_model, obs_state_model, logger=None, _component=None):
         super().__init__(
             op_state_model,
-            logger,
-            _component=_component or self._CspSubelementObsComponent(),
+            obs_state_model,
+            logger=logger,
+            _component=_component or self._Component(),
         )
 
-    def connect(self):
+    def start_communicating(self):
+        """
+        Establish communication with the component, then start
+        monitoring.
+        """
         if self._connected:
             return
 
-        super().connect()
+        super().start_communicating()
 
         self._component.set_obs_callbacks(
             self.component_configured,
@@ -234,20 +236,31 @@ class CspSubelementObsComponentManager(ComponentManager):
         else:
             self.op_state_model.to_SCANNING()
 
-    def disconnect(self):
+    def stop_communicating(self):
+        """
+        Cease monitoring the component, and break off all communication
+        with it.
+        """
         if not self._connected:
             return
 
         self._component.set_obs_callbacks(None, None, None, None)
-        super().disconnect()
+        super().stop_communicating()
 
-    def simulate_connection_failure(self, fail_connect):
+    def simulate_communication_failure(self, fail_communicate):
+        """
+        Simulate (or stop simulating) a failure to communicate with the
+        component
+
+        :param fail_communicate: whether the connection to the component
+            is failing
+        """
         # Pretend that we have either tried to connect a disconnected
         # device and failed; or realised that our connection to the
         # device has been broken
-        if fail_connect and self._connected:
+        if fail_communicate and self._connected:
             self._component.set_obs_callbacks(None, None, None, None)
-        super().simulate_connection_failure(fail_connect)
+        super().simulate_communication_failure(fail_communicate)
 
     @check_connected
     def configure_scan(self, configuration):

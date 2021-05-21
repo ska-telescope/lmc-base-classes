@@ -49,7 +49,7 @@ class TestSKATelState(object):
     def test_State(self, tango_context):
         """Test for State"""
         # PROTECTED REGION ID(SKATelState.test_State) ENABLED START #
-        assert tango_context.device.State() == DevState.OFF
+        assert tango_context.device.State() == DevState.DISABLE
         # PROTECTED REGION END #    //  SKATelState.test_State
 
     # PROTECTED REGION ID(SKATelState.test_Status_decorators) ENABLED START #
@@ -57,7 +57,7 @@ class TestSKATelState(object):
     def test_Status(self, tango_context):
         """Test for Status"""
         # PROTECTED REGION ID(SKATelState.test_Status) ENABLED START #
-        assert tango_context.device.Status() == "The device is in OFF state."
+        assert tango_context.device.Status() == "The device is in DISABLE state."
         # PROTECTED REGION END #    //  SKATelState.test_Status
 
     # PROTECTED REGION ID(SKATelState.test_GetVersionInfo_decorators) ENABLED START #
@@ -105,7 +105,7 @@ class TestSKATelState(object):
     def test_adminMode(self, tango_context):
         """Test for adminMode"""
         # PROTECTED REGION ID(SKATelState.test_adminMode) ENABLED START #
-        assert tango_context.device.adminMode == AdminMode.MAINTENANCE
+        assert tango_context.device.adminMode == AdminMode.OFFLINE
         # PROTECTED REGION END #    //  SKATelState.test_adminMode
 
     # PROTECTED REGION ID(SKATelState.test_controlMode_decorators) ENABLED START #

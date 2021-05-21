@@ -57,7 +57,7 @@ class TestCspSubElementSubarray(object):
     def test_State(self, tango_context):
         """Test for State"""
         # PROTECTED REGION ID(CspSubelementSubarray.test_State) ENABLED START #
-        assert tango_context.device.State() == DevState.OFF
+        assert tango_context.device.State() == DevState.DISABLE
         # PROTECTED REGION END #    //  CspSubelementSubarray.test_State
 
     # PROTECTED REGION ID(CspSubelementSubarray.test_Status_decorators) ENABLED START #
@@ -65,7 +65,7 @@ class TestCspSubElementSubarray(object):
     def test_Status(self, tango_context):
         """Test for Status"""
         # PROTECTED REGION ID(CspSubelementSubarray.test_Status) ENABLED START #
-        assert tango_context.device.Status() == "The device is in OFF state."
+        assert tango_context.device.Status() == "The device is in DISABLE state."
         # PROTECTED REGION END #    //  CspSubelementSubarray.test_Status
 
     # PROTECTED REGION ID(CspSubelementSubarray.test_GetVersionInfo_decorators) ENABLED START #
@@ -112,7 +112,7 @@ class TestCspSubElementSubarray(object):
     def test_adminMode(self, tango_context):
         """Test for adminMode"""
         # PROTECTED REGION ID(CspSubelementSubarray.test_adminMode) ENABLED START #
-        assert tango_context.device.adminMode == AdminMode.MAINTENANCE
+        assert tango_context.device.adminMode == AdminMode.OFFLINE
         # PROTECTED REGION END #    //  CspSubelementSubarray.test_adminMode
 
     # PROTECTED REGION ID(CspSubelementSubarray.test_controlMode_decorators) ENABLED START #
@@ -145,6 +145,7 @@ class TestCspSubElementSubarray(object):
         """Test for scanID"""
         # PROTECTED REGION ID(CspSubelementSubarray.test_scanID) ENABLED START #
         device_under_test = tango_context.device
+        device_under_test.adminMode = AdminMode.MAINTENANCE
         device_under_test.On()
         assert device_under_test.scanID == 0
         # PROTECTED REGION END #    //  CspSubelementSubarray.test_scanID
@@ -287,6 +288,7 @@ class TestCspSubElementSubarray(object):
         """Test for ConfigureScan"""
         # PROTECTED REGION ID(CspSubelementSubarray.test_ConfigureScan) ENABLED START #
         device_under_test = tango_context.device
+        device_under_test.adminMode = AdminMode.MAINTENANCE
         device_under_test.On()
         device_under_test.AssignResources(json.dumps([1,2,3]))
         assert device_under_test.obsState == ObsState.IDLE
@@ -317,6 +319,7 @@ class TestCspSubElementSubarray(object):
            configuration ID
         """
         # PROTECTED REGION ID(CspSubelementSubarray.test_ConfigureScan_with_wrong_configId_key) ENABLED START #
+        tango_context.device.adminMode = AdminMode.MAINTENANCE
         tango_context.device.On()
         tango_context.device.AssignResources(json.dumps([1,2,3]))
         # wrong configurationID key
@@ -333,6 +336,7 @@ class TestCspSubElementSubarray(object):
     def test_ConfigureScan_with_json_syntax_error(self, tango_context):
         """Test for ConfigureScan when syntax error in json configuration """
         # PROTECTED REGION ID(CspSubelementSubarray.test_ConfigureScan_with_json_syntax_error) ENABLED START #
+        tango_context.device.adminMode = AdminMode.MAINTENANCE
         tango_context.device.On()
         tango_context.device.AssignResources(json.dumps([1,2,3]))
         assert tango_context.device.obsState == ObsState.IDLE
@@ -348,6 +352,7 @@ class TestCspSubElementSubarray(object):
     def test_GoToIdle(self, tango_context, tango_change_event_helper, command_alias):
         """Test for GoToIdle"""
         # PROTECTED REGION ID(CspSubelementSubarray.test_GoToIdle) ENABLED START #
+        tango_context.device.adminMode = AdminMode.MAINTENANCE
         tango_context.device.On()
         tango_context.device.AssignResources(json.dumps([1,2,3]))
         obs_state_callback = tango_change_event_helper.subscribe("obsState")

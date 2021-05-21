@@ -50,10 +50,10 @@ demonstrates that the implementation is faithful to the design.
 API
 ---
 
-ska_tango_base.state.subarray_obs_state_model module
+ska_tango_base.subarray.subarray_obs_state_model module
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-.. automodule:: ska_tango_base.state.subarray_obs_state_model
+.. automodule:: ska_tango_base.subarray.subarray_obs_state_model
    :special-members: __init__
    :members:
    :undoc-members:

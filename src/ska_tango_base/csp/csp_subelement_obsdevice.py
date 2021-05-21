@@ -25,8 +25,9 @@ from ska_tango_base.commands import (
     ResponseCommand,
 )
 from ska_tango_base.control_model import ObsState
-from ska_tango_base.csp_subelement_obs_component_manager import CspSubelementObsComponentManager
-from ska_tango_base.state import CspSubElementObsStateModel
+from ska_tango_base.csp import (
+    CspSubElementObsStateModel, ReferenceCspObsComponentManager
+)
 
 
 __all__ = ["CspSubElementObsDevice", "main"]
@@ -133,7 +134,7 @@ class CspSubElementObsDevice(SKAObsDevice):
         )
 
     def init_component_manager(self):
-        return CspSubelementObsComponentManager(
+        return ReferenceCspObsComponentManager(
             self.op_state_model,
             self.obs_state_model,
             logger=self.logger

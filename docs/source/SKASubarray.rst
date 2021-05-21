@@ -9,7 +9,7 @@ Subarray
 .. toctree::
    :maxdepth: 2
 
-.. automodule:: ska_tango_base.subarray_device
+.. automodule:: ska_tango_base.subarray.subarray_device
 
 Device Class
 ------------

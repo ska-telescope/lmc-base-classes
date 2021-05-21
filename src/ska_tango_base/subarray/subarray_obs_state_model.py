@@ -1,69 +1,93 @@
 """
-This module specifies CSP SubElement Observing state machine. It
-comprises:
+This module specifies the observation state ("obs state") model for SKA
+subarray Tango devices. It consists of:
 
-* an underlying state machine:
-  :py:class:`._CspSubElementObsStateMachine`
+* an underlying state machine: :py:class:`._SubarrayObsStateMachine`
 
-* a :py:class:`.CspSubElementObsStateModel` that maps the underlying
-  state machine state to a value of the
+* an :py:class:`.SubarrayObsStateModel` that maps the underlying state
+  machine state to a value of the
   :py:class:`ska_tango_base.control_model.ObsState` enum.
   
 """
 from transitions.extensions import LockedMachine as Machine
 
 from ska_tango_base.control_model import ObsState
-from ska_tango_base.state import ObsStateModel
+from ska_tango_base.obs_device import ObsStateModel
 
-__all__ = ["CspSubElementObsStateModel"]
+__all__ = ["SubarrayObsStateModel"]
 
 
-class _CspSubElementObsStateMachine(Machine):
+class _SubarrayObsStateMachine(Machine):
     """
-    The observation state machine used by a generic CSP sub-element
-    ObsDevice (derived from SKAObsDevice).
+    State machine representing the observation state machine for
+    subarrays.
+    
+    The machine implemented is essentially as agreed in ADR-8, but with
+    some states broken down into sub-states to account for the
+    interactions between commands and monitoring of the underlying
+    component.
+    
+    For example, ADR-8 says that a configuring subarray moves from IDLE
+    to CONFIGURING to READY. But in a device model where the state
+    machine is responsive to both commands and changes to the monitored
+    component, the sequence is better represented as follows:
 
-    Compared to the SKA Observation State Machine, it implements a
-    smaller number of states, number that can be further decreased
-    depending on the necessities of the different sub-elements.
+    1. The Configure() command triggers the "configure_invoked" action
+       on the state machine, resulting in a transition from IDLE to
+       CONFIGURING_IDLE
+    2. The Configure() command invokes methods on its component in order
+       to effect configuration. At some point in this process, the
+       component triggers the "component_configured" action on the
+       state machine, resulting in a transition from CONFIGURING_IDLE to
+       CONFIGURING_READY.
+    3. At completion of configuration, the action "configure_completed"
+       is triggered on the state machine, resulting in a transition from
+       CONFIGURING_READY to READY.
 
-    The implemented states are:
+    Thus, this machine contains substates CONFIGURING_IDLE and
+    CONFIGURING_READY, rather than the ADR-8 state CONFIGURING
 
-    * **IDLE**: the device is unconfigured.
+    The full list of supported states are:
 
-    * **CONFIGURING_IDLE**: the device in unconfigured, but
-      configuration is in progress.
-
-    * **CONFIGURING_READY**: the device in configured, and configuration
-      is in progress.
-
-    * **READY**: the device is configured and is ready to perform
-      observations
-
-    * **SCANNING**: the device is performing the observation.
-
-    * **ABORTING**: the device is processing an abort.
-
-      TODO: Need to understand if this state is really required by the
-      observing devices of any CSP sub-element.
-
-    * **ABORTED**: the device has completed the abort request.
-
-    * **FAULT**: the device component has experienced an error from
-      which it can be recovered only via manual intervention invoking a
-      reset command that force the device to the base state (IDLE).
+    * **EMPTY**: the subarray is unresourced
+    * **RESOURCING_EMPTY**: the subarray is unresourced, but performing
+      a resourcing operation
+    * **RESOURCING_IDLE**: the subarray is resourced, and currently
+      performing a resourcing operation
+    * **IDLE**: the subarray is resourced but unconfigured
+    * **CONFIGURING_IDLE**: the subarray is resourced but unconfigured;
+      it is currently performing a configuring operation
+    * **CONFIGURING_READY**: the subarray is resourced and configured;
+      it is currently performing a configuring operation
+    * **READY**: the subarray is resourced and configured
+    * **SCANNING**: the subarray is scanning
+    * **ABORTING**: the subarray is aborting
+    * **ABORTED**: the subarray has aborted
+    * **RESETTING**: the subarray is resetting from an ABORTED or FAULT
+      state back to IDLE
+    * **RESTARTING**: the subarray is restarting from an ABORTED or
+      FAULT state back to EMPTY
+    * **FAULT**: the subarray has encountered a observation fault.
 
     The actions supported divide into command-oriented actions and
     component monitoring actions.
 
     The command-oriented actions are:
 
+    * **assign_invoked** and **assign_completed**: bookending the
+      AssignResources() command, and hence the RESOURCING transitional
+      state
+    * **release_invoked** and **release_completed**: bookending the
+      ReleaseResources() and ReleaseAllResources() commands, hence the
+      RESOURCING transitional state
     * **configure_invoked** and **configure_completed**: bookending the
       Configure() command, and hence the CONFIGURING state
     * **abort_invoked** and **abort_completed**: bookending the Abort()
       command, and hence the ABORTING state
     * **obsreset_invoked** and **obsreset_completed**: bookending the
       ObsReset() command, and hence the OBSRESETTING state
+    * **restart_invoked** and **restart_completed**: bookending the
+      Restart() command, and hence the RESTARTING state
     * **end_invoked**, **scan_invoked**, **end_scan_invoked**: these
       result in reflexive transitions, and are purely there to indicate
       states in which the End(), Scan() and EndScan() commands are
@@ -73,6 +97,10 @@ class _CspSubElementObsStateMachine(Machine):
 
     * **component_obsfault**: the monitored component has experienced an
       observation fault
+    * **component_unresourced**: the monitored component has become
+      unresourced
+    * **component_resourced**: the monitored component has become
+      resourced
     * **component_unconfigured**: the monitored component has become
       unconfigured
     * **component_configured**: the monitored component has become
@@ -86,15 +114,16 @@ class _CspSubElementObsStateMachine(Machine):
     and transitions to FAULT obs state are omitted to simplify the
     diagram.
 
-    .. uml:: diagrams/csp_subelement_obs_state_machine.uml
-       :caption: Diagram of the CSP subelement obs state machine
+    .. uml:: diagrams/subarray_obs_state_machine.uml
+      :caption: Diagram of the subarray obs state machine
 
     The following is a diagram of the state machine, automatically
     generated from the code. Its equivalence to the diagram above
     demonstrates that the implementation is faithful to the design.
 
-    .. figure:: images/_CspSubElementObsStateMachine_autogenerated.png
-      :alt: Diagram of the CSP subelement obs state machine, as implemented
+    .. figure:: images/_SubarrayObsStateMachine_autogenerated.png
+      :alt: Diagram of the subarray obs state machine, as implemented
+
 
     """
 
@@ -110,6 +139,9 @@ class _CspSubElementObsStateMachine(Machine):
         self._callback = callback
 
         states = [
+            "EMPTY",
+            "RESOURCING_EMPTY",  # device RESOURCING but component has not resources
+            "RESOURCING_IDLE",  # device RESOURCING and component has resources
             "IDLE",
             "CONFIGURING_IDLE",  # device CONFIGURING but component is unconfigured
             "CONFIGURING_READY",  # device CONFIGURING and component is configured
@@ -118,6 +150,7 @@ class _CspSubElementObsStateMachine(Machine):
             "ABORTING",
             "ABORTED",
             "RESETTING",
+            "RESTARTING",
             "FAULT",
         ]
         transitions = [
@@ -125,6 +158,56 @@ class _CspSubElementObsStateMachine(Machine):
                 "source": "*",
                 "trigger": "component_obsfault",
                 "dest": "FAULT",
+            },
+            {
+                "source": "EMPTY",
+                "trigger": "assign_invoked",
+                "dest": "RESOURCING_EMPTY",
+            },
+            {
+                "source": "EMPTY",
+                "trigger": "release_invoked",
+                "dest": "RESOURCING_EMPTY",
+            },
+            {
+                "source": "IDLE",
+                "trigger": "assign_invoked",
+                "dest": "RESOURCING_IDLE",
+            },
+            {
+                "source": "IDLE",
+                "trigger": "release_invoked",
+                "dest": "RESOURCING_IDLE",
+            },
+            {
+                "source": "RESOURCING_EMPTY",
+                "trigger": "component_resourced",
+                "dest": "RESOURCING_IDLE",
+            },
+            {
+                "source": "RESOURCING_IDLE",
+                "trigger": "component_unresourced",
+                "dest": "RESOURCING_EMPTY",
+            },
+            {
+                "source": "RESOURCING_EMPTY",
+                "trigger": "assign_completed",
+                "dest": "EMPTY",
+            },
+            {
+                "source": "RESOURCING_EMPTY",
+                "trigger": "release_completed",
+                "dest": "EMPTY",
+            },
+            {
+                "source": "RESOURCING_IDLE",
+                "trigger": "assign_completed",
+                "dest": "IDLE",
+            },
+            {
+                "source": "RESOURCING_IDLE",
+                "trigger": "release_completed",
+                "dest": "IDLE",
             },
             {
                 "source": "IDLE",
@@ -207,12 +290,12 @@ class _CspSubElementObsStateMachine(Machine):
                 "dest": "ABORTING",
             },
             {
-                "source": ["ABORTING"],
+                "source": "ABORTING",
                 "trigger": "component_not_scanning",  # Aborting implies stopping scan
                 "dest": "ABORTING",
             },
             {
-                "source": ["ABORTING"],
+                "source": "ABORTING",
                 "trigger": "component_scanning",  # Abort() invoked as scan is starting
                 "dest": "ABORTING",
             },
@@ -236,10 +319,31 @@ class _CspSubElementObsStateMachine(Machine):
                 "trigger": "obsreset_completed",
                 "dest": "IDLE",
             },
+            {
+                "source": ["ABORTED", "FAULT"],
+                "trigger": "restart_invoked",
+                "dest": "RESTARTING",
+            },
+            {
+                "source": "RESTARTING",
+                "trigger": "component_unconfigured",  # Restarting implies deconfiguring
+                "dest": "RESTARTING",
+            },
+            {
+                "source": "RESTARTING",
+                "trigger": "component_unresourced",  # Restarting implies releasing
+                "dest": "RESTARTING",
+            },
+            {
+                "source": "RESTARTING",
+                "trigger": "restart_completed",
+                "dest": "EMPTY",
+            },
         ]
+
         super().__init__(
             states=states,
-            initial="IDLE",
+            initial="EMPTY",
             transitions=transitions,
             after_state_change=self._state_changed,
             **extra_kwargs,
@@ -255,57 +359,41 @@ class _CspSubElementObsStateMachine(Machine):
             self._callback(self.state)
 
 
-class CspSubElementObsStateModel(ObsStateModel):
+class SubarrayObsStateModel(ObsStateModel):
     """
-    Implements the observation state model for a generic CSP sub-element
-    ObsDevice (derived from SKAObsDevice).
+    Implements the observation state model for subarray
 
-    Compared to the SKA observation state model, it implements a
-    smaller number of states, number that can be further decreased
-    depending on the necessities of the different sub-elements.
+    The model supports all of the states of the
+    :py:class:`ska_tango_base.control_model.ObsState` enum:
 
-    The implemented states are:
-
-    * **IDLE**: the device is unconfigured.
-
-    * **CONFIGURING**: transitional state to report device configuration
-      is in progress.
-      
-      TODO: Need to understand if this state is really required by the
-      observing devices of any CSP sub-element.
-
-    * **READY**: the device is configured and is ready to perform
-      observations
-
-    * **SCANNING**: the device is performing the observation.
-
-    * **ABORTING**: the device is processing an abort.
-
-      TODO: Need to understand if this state is really required by the
-      observing devices of any CSP sub-element.
-
-    * **ABORTED**: the device has completed the abort request.
-
-    * **RESETTING**: the device is resetting from an ABORTED or FAULT
+    * **EMPTY**: the subarray is unresourced
+    * **RESOURCING**: the subarray is performing a resourcing operation
+    * **IDLE**: the subarray is resourced but unconfigured
+    * **CONFIGURING**: the subarray is performing a configuring
+      operation
+    * **READY**: the subarray is resourced and configured
+    * **SCANNING**: the subarray is scanning
+    * **ABORTING**: the subarray is aborting
+    * **ABORTED**: the subarray has aborted
+    * **RESETTING**: the subarray is resetting from an ABORTED or FAULT
       state back to IDLE
+    * **RESTARTING**: the subarray is restarting from an ABORTED or
+      FAULT state back to EMPTY
+    * **FAULT**: the subarray has encountered a observation fault.
 
-    * **FAULT**: the device component has experienced an error from
-      which it can be recovered only via manual intervention invoking a
-      reset command that force the device to the base state (IDLE).
+    A diagram of the subarray observation state model is shown below.
+    This model is non-deterministic as diagrammed, but the underlying
+    state machines has extra states and transitions that render it
+    deterministic. This class simply maps those extra classes onto
+    valid ObsState values.
 
-    A diagram of the CSP subelement observation state model is shown
-    below. This model is non-deterministic as diagrammed, but the
-    underlying state machine has extra state and transitions that render
-    it deterministic. This model class simply maps those extra classes
-    onto valid ObsState values
-
-    .. uml:: diagrams/csp_subelement_obs_state_model.uml
+    .. uml:: diagrams/subarray_obs_state_model.uml
        :caption: Diagram of the subarray observation state model
     """
 
     def __init__(self, logger, callback=None):
         """
-        Initialise the model.
+        Initialises the model.
 
         :param logger: the logger to be used by this state model.
         :type logger: a logger that implements the standard library
@@ -314,9 +402,12 @@ class CspSubElementObsStateModel(ObsStateModel):
             causes a change to device obs_state
         :type callback: callable
         """
-        super().__init__(_CspSubElementObsStateMachine, logger, callback=callback)
+        super().__init__(_SubarrayObsStateMachine, logger, callback=callback)
 
     _obs_state_mapping = {
+        "EMPTY": ObsState.EMPTY,
+        "RESOURCING_EMPTY": ObsState.RESOURCING,
+        "RESOURCING_IDLE": ObsState.RESOURCING,
         "IDLE": ObsState.IDLE,
         "CONFIGURING_IDLE": ObsState.CONFIGURING,
         "CONFIGURING_READY": ObsState.CONFIGURING,
@@ -325,6 +416,7 @@ class CspSubElementObsStateModel(ObsStateModel):
         "ABORTING": ObsState.ABORTING,
         "ABORTED": ObsState.ABORTED,
         "RESETTING": ObsState.RESETTING,
+        "RESTARTING": ObsState.RESTARTING,
         "FAULT": ObsState.FAULT,
     }
 

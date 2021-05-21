@@ -118,7 +118,7 @@ class _OpStateMachine(Machine):
             {
                 "source": "_UNINITIALISED",
                 "trigger": "init_invoked",
-                "dest": "INIT_UNKNOWN",
+                "dest": "INIT_DISABLE",
             },
             # Changes in the state of the monitored component
             # while the device is initialising

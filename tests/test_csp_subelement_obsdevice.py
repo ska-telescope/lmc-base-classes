@@ -23,7 +23,7 @@ from ska_tango_base.commands import ResultCode
 from ska_tango_base.control_model import (
     ObsState, AdminMode, ControlMode, HealthState, SimulationMode, TestMode
 )
-from ska_tango_base.state import CspSubElementObsStateModel
+from ska_tango_base.csp import CspSubElementObsStateModel
 # PROTECTED REGION END #    //  CspSubElementObsDevice.test_additional_imports
 
 
@@ -56,7 +56,7 @@ class TestCspSubElementObsDevice(object):
     def test_State(self, tango_context):
         """Test for State"""
         # PROTECTED REGION ID(CspSubelementObsDevice.test_State) ENABLED START #
-        assert tango_context.device.State() == DevState.OFF
+        assert tango_context.device.State() == DevState.DISABLE
         # PROTECTED REGION END #    //  CspSubelementObsDevice.test_State
 
     # PROTECTED REGION ID(CspSubelementObsDevice.test_Status_decorators) ENABLED START #
@@ -64,7 +64,7 @@ class TestCspSubElementObsDevice(object):
     def test_Status(self, tango_context):
         """Test for Status"""
         # PROTECTED REGION ID(CspSubelementObsDevice.test_Status) ENABLED START #
-        assert tango_context.device.Status() == "The device is in OFF state."
+        assert tango_context.device.Status() == "The device is in DISABLE state."
         # PROTECTED REGION END #    //  CspSubelementObsDevice.test_Status
 
     # PROTECTED REGION ID(CspSubelementObsDevice.test_GetVersionInfo_decorators) ENABLED START #
@@ -112,7 +112,7 @@ class TestCspSubElementObsDevice(object):
     def test_adminMode(self, tango_context):
         """Test for adminMode"""
         # PROTECTED REGION ID(CspSubelementObsDevice.test_adminMode) ENABLED START #
-        assert tango_context.device.adminMode == AdminMode.MAINTENANCE
+        assert tango_context.device.adminMode == AdminMode.OFFLINE
         # PROTECTED REGION END #    //  CspSubelementObsDevice.test_adminMode
 
     # PROTECTED REGION ID(CspSubelementObsDevice.test_controlMode_decorators) ENABLED START #
@@ -145,6 +145,7 @@ class TestCspSubElementObsDevice(object):
         """Test for scanID"""
         # PROTECTED REGION ID(CspSubelementObsDevice.test_scanID) ENABLED START #
         device_under_test = tango_context.device
+        device_under_test.adminMode = AdminMode.MAINTENANCE
         device_under_test.On()
 
         assert device_under_test.scanID == 0
@@ -200,6 +201,7 @@ class TestCspSubElementObsDevice(object):
         """Test for ConfigureScan"""
         # PROTECTED REGION ID(CspSubelementObsDevice.test_ConfigureScan) ENABLED START #
         device_under_test = tango_context.device
+        device_under_test.adminMode = AdminMode.MAINTENANCE
         device_under_test.On()
         assert device_under_test.obsState == ObsState.IDLE
 
@@ -219,6 +221,7 @@ class TestCspSubElementObsDevice(object):
         # PROTECTED REGION ID(CspSubelementObsDevice.test_ConfigureScan_when_in_wrong_state) ENABLED START #
         # The device in in OFF/IDLE state, not valid to invoke ConfigureScan.
         device_under_test = tango_context.device
+        device_under_test.adminMode = AdminMode.MAINTENANCE
 
         with pytest.raises(DevFailed, match="Component is not ON"):
             device_under_test.ConfigureScan('{"id":"sbi-mvp01-20200325-00002"}')
@@ -231,6 +234,7 @@ class TestCspSubElementObsDevice(object):
            and the device is in IDLE state.
         """
         # PROTECTED REGION ID(CspSubelementObsDevice.test_ConfigureScan_with_wrong_input_args_when_idle) ENABLED START #
+        tango_context.device.adminMode = AdminMode.MAINTENANCE
         tango_context.device.On()
         # wrong configurationID key
         assert tango_context.device.obsState == ObsState.IDLE
@@ -246,6 +250,7 @@ class TestCspSubElementObsDevice(object):
     def test_ConfigureScan_with_json_syntax_error(self, tango_context):
         """Test for ConfigureScan when syntax error in json configuration """
         # PROTECTED REGION ID(CspSubelementObsDevice.test_ConfigureScan_with_json_syntax_error) ENABLED START #
+        tango_context.device.adminMode = AdminMode.MAINTENANCE
         tango_context.device.On()
         assert tango_context.device.obsState == ObsState.IDLE
 
@@ -259,6 +264,7 @@ class TestCspSubElementObsDevice(object):
     def test_GoToIdle(self, tango_context, tango_change_event_helper):
         """Test for GoToIdle"""
         # PROTECTED REGION ID(CspSubelementObsDevice.test_GoToIdle) ENABLED START #
+        tango_context.device.adminMode = AdminMode.MAINTENANCE
         tango_context.device.On()
         obs_state_callback = tango_change_event_helper.subscribe("obsState")
         tango_context.device.ConfigureScan('{"id":"sbi-mvp01-20200325-00002"}')
@@ -286,6 +292,7 @@ class TestCspSubElementObsDevice(object):
     def test_Scan(self, tango_context, tango_change_event_helper):
         """Test for Scan"""
         # PROTECTED REGION ID(CspSubelementObsDevice.test_Scan) ENABLED START #
+        tango_context.device.adminMode = AdminMode.MAINTENANCE
         tango_context.device.On()
         tango_context.device.ConfigureScan('{"id":"sbi-mvp01-20200325-00002"}')
         obs_state_callback = tango_change_event_helper.subscribe("obsState")
@@ -300,6 +307,7 @@ class TestCspSubElementObsDevice(object):
         """Test for Scan when the device is in wrong state"""
         # PROTECTED REGION ID(CspSubelementObsDevice.test_Scan_when_in_wrong_state) ENABLED START #
         # Set the device in ON/IDLE state
+        tango_context.device.adminMode = AdminMode.MAINTENANCE
         tango_context.device.On()
         with pytest.raises(DevFailed, match="Command not permitted"):
             tango_context.device.Scan('32')
@@ -311,6 +319,7 @@ class TestCspSubElementObsDevice(object):
         """Test for Scan when a wrong input argument is passed. """
         # PROTECTED REGION ID(CspSubelementObsDevice.test_Scan_with_wrong_argument) ENABLED START #
         # Set the device in ON/IDLE state
+        tango_context.device.adminMode = AdminMode.MAINTENANCE
         tango_context.device.On()
         tango_context.device.ConfigureScan('{"id":"sbi-mvp01-20200325-00002"}')
         (result_code, _) = tango_context.device.Scan('abc')
@@ -323,6 +332,7 @@ class TestCspSubElementObsDevice(object):
     def test_EndScan(self, tango_context, tango_change_event_helper):
         """Test for EndScan"""
         # PROTECTED REGION ID(CspSubelementObsDevice.test_EndScan) ENABLED START #
+        tango_context.device.adminMode = AdminMode.MAINTENANCE
         tango_context.device.On()
         tango_context.device.ConfigureScan('{"id":"sbi-mvp01-20200325-00002"}')
         obs_state_callback = tango_change_event_helper.subscribe("obsState")
@@ -339,6 +349,7 @@ class TestCspSubElementObsDevice(object):
         """Test for EndScan when the device is in wrong state"""
         # PROTECTED REGION ID(CspSubelementObsDevice.test_EndScan_when_in_wrong_state) ENABLED START #
         # Set the device in ON/READY state
+        tango_context.device.adminMode = AdminMode.MAINTENANCE
         tango_context.device.On()
         tango_context.device.ConfigureScan('{"id":"sbi-mvp01-20200325-00002"}')
         with pytest.raises(DevFailed, match="Command not permitted"):
@@ -351,6 +362,7 @@ class TestCspSubElementObsDevice(object):
     def test_ObsReset(self, tango_context, tango_change_event_helper):
         """Test for ObsReset"""
         # PROTECTED REGION ID(CspSubelementObsDevice.test_ObsReset) ENABLED START #
+        tango_context.device.adminMode = AdminMode.MAINTENANCE
         tango_context.device.On()
         tango_context.device.ConfigureScan('{"id":"sbi-mvp01-20200325-00002"}')
         obs_state_callback = tango_change_event_helper.subscribe("obsState")
@@ -367,6 +379,7 @@ class TestCspSubElementObsDevice(object):
         """Test for ObsReset when the device is in wrong state"""
         # PROTECTED REGION ID(CspSubelementObsDevice.test_ObsReset_when_in_wrong_state) ENABLED START #
         # Set the device in ON/IDLE state
+        tango_context.device.adminMode = AdminMode.MAINTENANCE
         tango_context.device.On()
         with pytest.raises(DevFailed, match="Command not permitted"):
             tango_context.device.ObsReset()
@@ -377,6 +390,7 @@ class TestCspSubElementObsDevice(object):
     def test_Abort(self, tango_context, tango_change_event_helper):
         """Test for Abort"""
         # PROTECTED REGION ID(CspSubelementObsDevice.test_Abort) ENABLED START #
+        tango_context.device.adminMode = AdminMode.MAINTENANCE
         tango_context.device.On()
         tango_context.device.ConfigureScan('{"id":"sbi-mvp01-20200325-00002"}')
         obs_state_callback = tango_change_event_helper.subscribe("obsState")
@@ -395,5 +409,5 @@ def test_multiple_devices_in_same_process():
     with MultiDeviceTestContext(devices_info, process=False) as context:
         proxy1 = context.get_device("test/se/1")
         proxy2 = context.get_device("test/obsdevice/1")
-        assert proxy1.State() == DevState.OFF
-        assert proxy2.State() == DevState.OFF
+        assert proxy1.State() == DevState.DISABLE
+        assert proxy2.State() == DevState.DISABLE

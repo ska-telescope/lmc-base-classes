@@ -9,9 +9,7 @@ import itertools
 import pytest
 
 from ska_tango_base.faults import ComponentError, ComponentFault
-from ska_tango_base.csp_subelement_subarray_component_manager import (
-    CspSubelementSubarrayComponentManager,
-)
+from ska_tango_base.csp import ReferenceCspSubarrayComponentManager
 from ska_tango_base.control_model import PowerMode
 
 
@@ -73,7 +71,7 @@ class TestCspSubelementSubarrayComponentManager:
 
     @pytest.fixture()
     def component(self, mock_capability_types, initial_power_mode, initial_fault):
-        return CspSubelementSubarrayComponentManager._CspSubelementSubarrayComponent(
+        return ReferenceCspSubarrayComponentManager._Component(
             mock_capability_types, _power_mode=initial_power_mode, _faulty=initial_fault
         )
 
@@ -94,11 +92,11 @@ class TestCspSubelementSubarrayComponentManager:
 
         :return: the component manager under test
         """
-        return CspSubelementSubarrayComponentManager(
+        return ReferenceCspSubarrayComponentManager(
             mock_op_state_model,
             mock_obs_state_model,
             mock_capability_types,
-            logger,
+            logger=logger,
             _component=component,
         )
 
@@ -122,9 +120,9 @@ class TestCspSubelementSubarrayComponentManager:
             "component_fault" if initial_fault else power_mode_map[initial_power_mode]
         )
 
-        assert not component_manager.is_connected
-        component_manager.connect()
-        assert component_manager.is_connected
+        assert not component_manager.is_communicating
+        component_manager.start_communicating()
+        assert component_manager.is_communicating
         assert mock_op_state_model.perform_action.call_args_list == [
             (("component_unknown",),),
             ((expected_action,),),
@@ -132,29 +130,29 @@ class TestCspSubelementSubarrayComponentManager:
 
         mock_op_state_model.reset_mock()
 
-        component_manager.disconnect()
-        assert not component_manager.is_connected
+        component_manager.stop_communicating()
+        assert not component_manager.is_communicating
         mock_op_state_model.perform_action.assert_called_once_with(
             "component_disconnected"
         )
 
-    def test_simulate_connection_failure(self, component_manager, mock_op_state_model):
+    def test_simulate_communication_failure(self, component_manager, mock_op_state_model):
         """
         Test that we can simulate connection failure.
 
         :param component_manager: the component manager under test
         :param mock_op_state_model: a mock state model for testing
         """
-        component_manager.connect()
-        assert component_manager.is_connected
+        component_manager.start_communicating()
+        assert component_manager.is_communicating
 
         mock_op_state_model.reset_mock()
-        component_manager.simulate_connection_failure(True)
-        assert not component_manager.is_connected
+        component_manager.simulate_communication_failure(True)
+        assert not component_manager.is_communicating
         mock_op_state_model.perform_action.assert_called_once_with("component_unknown")
 
         with pytest.raises(ConnectionError, match="Failed to connect"):
-            component_manager.connect()
+            component_manager.start_communicating()
 
     @pytest.mark.parametrize("command", ["off", "standby", "on"])
     def test_base_command_fails_when_disconnected(self, component_manager, command):
@@ -165,15 +163,15 @@ class TestCspSubelementSubarrayComponentManager:
         :param component_manager: the component manager under test
         :param command: the command under test
         """
-        assert not component_manager.is_connected
+        assert not component_manager.is_communicating
         with pytest.raises(ConnectionError, match="Not connected"):
             getattr(component_manager, command)()
 
-        component_manager.connect()
-        assert component_manager.is_connected
+        component_manager.start_communicating()
+        assert component_manager.is_communicating
 
-        component_manager.disconnect()
-        assert not component_manager.is_connected
+        component_manager.stop_communicating()
+        assert not component_manager.is_communicating
         with pytest.raises(ConnectionError, match="Not connected"):
             getattr(component_manager, command)()
 
@@ -210,7 +208,7 @@ class TestCspSubelementSubarrayComponentManager:
             PowerMode.ON: "component_on",
         }
 
-        component_manager.connect()
+        component_manager.start_communicating()
         mock_op_state_model.reset_mock()
 
         raise_context = (
@@ -261,7 +259,7 @@ class TestCspSubelementSubarrayComponentManager:
             PowerMode.ON: "component_on",
         }
 
-        component_manager.connect()
+        component_manager.start_communicating()
         mock_op_state_model.reset_mock()
 
         raise_context = (
@@ -280,7 +278,7 @@ class TestCspSubelementSubarrayComponentManager:
     def test_reset_from_fault(
         self, component_manager, mock_op_state_model, initial_fault
     ):
-        component_manager.connect()
+        component_manager.start_communicating()
         assert component_manager.faulty == initial_fault
         mock_op_state_model.reset_mock()
 
@@ -297,48 +295,39 @@ class TestCspSubelementSubarrayComponentManager:
         mock_obs_state_model,
         mock_resource_factory,
     ):
-        component_manager.connect()
+        component_manager.start_communicating()
 
         mock_resource_1 = mock_resource_factory()
         mock_resource_2 = mock_resource_factory()
 
-        raise_context = (
-            pytest.raises(ComponentFault, match="")
-            if initial_fault
-            else pytest.raises(ComponentError, match="Component is not ON")
-            if initial_power_mode != PowerMode.ON
-            else contextlib.nullcontext()
+        component_manager.assign([mock_resource_1])
+        mock_obs_state_model.perform_action.assert_called_once_with(
+            "component_resourced"
         )
+        mock_obs_state_model.reset_mock()
 
-        with raise_context:
-            component_manager.assign([mock_resource_1])
-            mock_obs_state_model.perform_action.assert_called_once_with(
-                "component_resourced"
-            )
-            mock_obs_state_model.reset_mock()
+        component_manager.assign([mock_resource_2])
+        mock_obs_state_model.perform_action.assert_not_called()
 
-            component_manager.assign([mock_resource_2])
-            mock_obs_state_model.perform_action.assert_not_called()
+        component_manager.release([mock_resource_1])
+        mock_obs_state_model.perform_action.assert_not_called()
 
-            component_manager.release([mock_resource_1])
-            mock_obs_state_model.perform_action.assert_not_called()
+        component_manager.release([mock_resource_2])
+        mock_obs_state_model.perform_action.assert_called_once_with(
+            "component_unresourced"
+        )
+        mock_obs_state_model.reset_mock()
 
-            component_manager.release([mock_resource_2])
-            mock_obs_state_model.perform_action.assert_called_once_with(
-                "component_unresourced"
-            )
-            mock_obs_state_model.reset_mock()
+        component_manager.assign([mock_resource_1, mock_resource_2])
+        mock_obs_state_model.perform_action.assert_called_once_with(
+            "component_resourced"
+        )
+        mock_obs_state_model.reset_mock()
 
-            component_manager.assign([mock_resource_1, mock_resource_2])
-            mock_obs_state_model.perform_action.assert_called_once_with(
-                "component_resourced"
-            )
-            mock_obs_state_model.reset_mock()
-
-            component_manager.release_all()
-            mock_obs_state_model.perform_action.assert_called_once_with(
-                "component_unresourced"
-            )
+        component_manager.release_all()
+        mock_obs_state_model.perform_action.assert_called_once_with(
+            "component_unresourced"
+        )
 
     def test_configure(
         self,
@@ -350,7 +339,7 @@ class TestCspSubelementSubarrayComponentManager:
         mock_resource_factory,
         mock_config_factory,
     ):
-        component_manager.connect()
+        component_manager.start_communicating()
 
         mock_resource = mock_resource_factory()
         mock_configuration_1 = mock_config_factory()
@@ -397,7 +386,7 @@ class TestCspSubelementSubarrayComponentManager:
         mock_config_factory,
         mock_scan_args,
     ):
-        component_manager.connect()
+        component_manager.start_communicating()
 
         mock_resource = mock_resource_factory()
         mock_configuration = mock_config_factory()
@@ -450,7 +439,7 @@ class TestCspSubelementSubarrayComponentManager:
         mock_config_factory,
         mock_scan_args,
     ):
-        component_manager.connect()
+        component_manager.start_communicating()
 
         mock_resource = mock_resource_factory()
         mock_configuration = mock_config_factory()

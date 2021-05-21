@@ -1,10 +1,10 @@
 """
 This module contains the tests for the
-:py:mod:`ska_tango_base.state.subarray_state_model` module.
+:py:mod:`ska_tango_base.subarray.subarray_state_model` module.
 """
 import pytest
 
-from ska_tango_base.state.subarray_obs_state_model import _SubarrayObsStateMachine
+from ska_tango_base.subarray.subarray_obs_state_model import _SubarrayObsStateMachine
 
 from .conftest import load_state_machine_spec, TransitionsStateMachineTester
 

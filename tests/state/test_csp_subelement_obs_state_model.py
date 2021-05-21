@@ -4,7 +4,7 @@ Module to test the transitions of a CSP SubElement ObsDevice
 """
 import pytest
 
-from ska_tango_base.state.csp_subelement_obs_state_model import (
+from ska_tango_base.csp.csp_subelement_obs_state_model import (
     _CspSubElementObsStateMachine,
 )
 

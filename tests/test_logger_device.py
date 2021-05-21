@@ -13,7 +13,7 @@ import pytest
 from tango import DevState
 from tango.test_context import MultiDeviceTestContext
 from ska_tango_base.logger_device import SKALogger
-from ska_tango_base.subarray_device import SKASubarray
+from ska_tango_base.subarray import SKASubarray
 import tango
 
 # PROTECTED REGION ID(SKALogger.test_additional_imports) ENABLED START #
@@ -59,7 +59,7 @@ class TestSKALogger(object):
     def test_State(self, tango_context):
         """Test for State"""
         # PROTECTED REGION ID(SKALogger.test_State) ENABLED START #
-        assert tango_context.device.State() == DevState.OFF
+        assert tango_context.device.State() == DevState.DISABLE
         # PROTECTED REGION END #    //  SKALogger.test_State
 
     # PROTECTED REGION ID(SKALogger.test_Status_decorators) ENABLED START #
@@ -67,7 +67,7 @@ class TestSKALogger(object):
     def test_Status(self, tango_context):
         """Test for Status"""
         # PROTECTED REGION ID(SKALogger.test_Status) ENABLED START #
-        assert tango_context.device.Status() == "The device is in OFF state."
+        assert tango_context.device.Status() == "The device is in DISABLE state."
         # PROTECTED REGION END #    //  SKALogger.test_Status
 
     # PROTECTED REGION ID(SKALogger.test_GetVersionInfo_decorators) ENABLED START #
@@ -125,7 +125,7 @@ class TestSKALogger(object):
     def test_adminMode(self, tango_context):
         """Test for adminMode"""
         # PROTECTED REGION ID(SKALogger.test_adminMode) ENABLED START #
-        assert tango_context.device.adminMode == AdminMode.MAINTENANCE
+        assert tango_context.device.adminMode == AdminMode.OFFLINE
         # PROTECTED REGION END #    //  SKALogger.test_adminMode
 
     # PROTECTED REGION ID(SKALogger.test_controlMode_decorators) ENABLED START #

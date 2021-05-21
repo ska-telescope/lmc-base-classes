@@ -27,9 +27,9 @@ from .tel_state_device import SKATelState
 # SKAObsDevice, and then classes that inherit from it
 from .obs_device import SKAObsDevice
 from .capability_device import SKACapability
-from .subarray_device import SKASubarray
+from .subarray import SKASubarray
 
 # CspSubElement classes
-from .csp_subelement_master import CspSubElementMaster
-from .csp_subelement_subarray import CspSubElementSubarray
-from .csp_subelement_obsdevice import CspSubElementObsDevice
+from .csp import CspSubElementMaster
+from .csp import CspSubElementSubarray
+from .csp import CspSubElementObsDevice

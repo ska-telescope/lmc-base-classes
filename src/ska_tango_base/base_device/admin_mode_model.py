@@ -72,7 +72,7 @@ class _AdminModeMachine(Machine):
 
         super().__init__(
             states=states,
-            initial="MAINTENANCE",
+            initial="OFFLINE",
             transitions=transitions,
             after_state_change=self._state_changed,
             **extra_kwargs,

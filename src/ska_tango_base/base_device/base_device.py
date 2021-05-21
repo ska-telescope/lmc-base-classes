@@ -34,17 +34,18 @@ from tango.server import run, Device, attribute, command, device_property
 import debugpy
 import ska_ser_logging
 from ska_tango_base import release
+from ska_tango_base.base_device import (
+    AdminModeModel, OpStateModel, ReferenceBaseComponentManager
+)
 from ska_tango_base.commands import (
     BaseCommand, CompletionCommand, StateModelCommand, ResponseCommand, ResultCode
 )
-from ska_tango_base.component_manager import ComponentManager
 from ska_tango_base.control_model import (
     AdminMode, ControlMode, SimulationMode, TestMode, HealthState,
     LoggingLevel
 )
-from ska_tango_base.state import AdminModeModel, OpStateModel
 
-from ska_tango_base.utils import get_groups_from_json, for_testing_only
+from ska_tango_base.utils import get_groups_from_json
 from ska_tango_base.faults import GroupDefinitionsError, LoggingTargetError, LoggingLevelError
 
 LOG_FILE_SIZE = 1024 * 1024  # Log file size 1MB.
@@ -379,8 +380,6 @@ class SKABaseDevice(Device):
             device._version_id = release.version
             device._methods_patched_for_debugger = False
 
-            device.component_manager.connect()
-
             try:
                 # create TANGO Groups dict, according to property
                 self.logger.debug(
@@ -599,6 +598,7 @@ class SKABaseDevice(Device):
         dtype=AdminMode,
         access=AttrWriteType.READ_WRITE,
         memorized=True,
+        hw_memorized=True,
         doc="The admin mode reported for this device. It may interpret the current "
             "device condition and condition of all managed devices to set this. "
             "Most possibly an aggregate attribute.",
@@ -609,6 +609,7 @@ class SKABaseDevice(Device):
         dtype=ControlMode,
         access=AttrWriteType.READ_WRITE,
         memorized=True,
+        hw_memorized=True,
         doc="The control mode of the device. REMOTE, LOCAL"
             "\nTANGO Device accepts only from a ‘local’ client and ignores commands and "
             "queries received from TM or any other ‘remote’ clients. The Local clients"
@@ -620,6 +621,7 @@ class SKABaseDevice(Device):
         dtype=SimulationMode,
         access=AttrWriteType.READ_WRITE,
         memorized=True,
+        hw_memorized=True,
         doc="Reports the simulation mode of the device. \nSome devices may implement "
             "both modes, while others will have simulators that set simulationMode "
             "to True while the real devices always set simulationMode to False.",
@@ -630,6 +632,7 @@ class SKABaseDevice(Device):
         dtype=TestMode,
         access=AttrWriteType.READ_WRITE,
         memorized=True,
+        hw_memorized=True,
         doc="The test mode of the device. \n"
             "Either no test mode or an "
             "indication of the test mode.",
@@ -727,7 +730,7 @@ class SKABaseDevice(Device):
         )
 
     def init_component_manager(self):
-        return ComponentManager(self.op_state_model, self.logger)
+        return ReferenceBaseComponentManager(self.op_state_model, logger=self.logger)
 
     def register_command_object(self, command_name, command_object):
         """
@@ -913,16 +916,16 @@ class SKABaseDevice(Device):
             self.admin_mode_model.perform_action("to_notfitted")
         elif value == AdminMode.OFFLINE:
             self.admin_mode_model.perform_action("to_offline")
-            if self.component_manager.is_connected:
-                self.component_manager.disconnect()
+            if self.component_manager.is_communicating:
+                self.component_manager.stop_communicating()
         elif value == AdminMode.MAINTENANCE:
             self.admin_mode_model.perform_action("to_maintenance")
-            if not self.component_manager.is_connected:
-                self.component_manager.connect()
+            if not self.component_manager.is_communicating:
+                self.component_manager.start_communicating()
         elif value == AdminMode.ONLINE:
             self.admin_mode_model.perform_action("to_online")
-            if not self.component_manager.is_connected:
-                self.component_manager.connect()
+            if not self.component_manager.is_communicating:
+                self.component_manager.start_communicating()
         elif value == AdminMode.RESERVED:
             self.admin_mode_model.perform_action("to_reserved")
         else:

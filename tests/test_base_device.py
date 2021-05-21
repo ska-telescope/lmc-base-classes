@@ -20,11 +20,8 @@ import tango
 from unittest import mock
 from tango import DevFailed, DevState
 from ska_tango_base import SKABaseDevice
-from ska_tango_base.commands import ResultCode
-from ska_tango_base.control_model import (
-    AdminMode, ControlMode, HealthState, LoggingLevel, SimulationMode, TestMode
-)
-from ska_tango_base.base_device import (
+from ska_tango_base.base_device import OpStateModel
+from ska_tango_base.base_device.base_device import (
     _DEBUGGER_PORT,
     _Log4TangoLoggingLevel,
     _PYTHON_TO_TANGO_LOGGING_LEVEL,
@@ -32,8 +29,11 @@ from ska_tango_base.base_device import (
     LoggingTargetError,
     TangoLoggingServiceHandler,
 )
+from ska_tango_base.commands import ResultCode
+from ska_tango_base.control_model import (
+    AdminMode, ControlMode, HealthState, LoggingLevel, SimulationMode, TestMode
+)
 from ska_tango_base.faults import CommandError
-from ska_tango_base.state import OpStateModel
 
 from .state.conftest import load_state_machine_spec
 # PROTECTED REGION END #    //  SKABaseDevice.test_additional_imports
@@ -204,7 +204,7 @@ class TestLoggingUtils:
         with pytest.raises(LoggingTargetError):
             LoggingUtils.get_syslog_address_and_socktype(bad_syslog_url)
 
-    @mock.patch('ska_tango_base.base_device.TangoLoggingServiceHandler')
+    @mock.patch('ska_tango_base.base_device.base_device.TangoLoggingServiceHandler')
     @mock.patch('logging.handlers.SysLogHandler')
     @mock.patch('logging.handlers.RotatingFileHandler')
     @mock.patch('logging.StreamHandler')
@@ -367,7 +367,7 @@ class TestSKABaseDevice(object):
     def test_State(self, tango_context):
         """Test for State"""
         # PROTECTED REGION ID(SKABaseDevice.test_State) ENABLED START #
-        assert tango_context.device.State() == DevState.OFF
+        assert tango_context.device.State() == DevState.DISABLE
         # PROTECTED REGION END #    //  SKABaseDevice.test_State
 
     # PROTECTED REGION ID(SKABaseDevice.test_Status_decorators) ENABLED START #
@@ -375,7 +375,7 @@ class TestSKABaseDevice(object):
     def test_Status(self, tango_context):
         """Test for Status"""
         # PROTECTED REGION ID(SKABaseDevice.test_Status) ENABLED START #
-        assert tango_context.device.Status() == "The device is in OFF state."
+        assert tango_context.device.Status() == "The device is in DISABLE state."
         # PROTECTED REGION END #    //  SKABaseDevice.test_Status
 
     # PROTECTED REGION ID(SKABaseDevice.test_GetVersionInfo_decorators) ENABLED START #
@@ -408,8 +408,14 @@ class TestSKABaseDevice(object):
 
         state_callback = tango_change_event_helper.subscribe("state")
         status_callback = tango_change_event_helper.subscribe("status")
-        state_callback.assert_call(DevState.OFF)
-        status_callback.assert_call("The device is in OFF state.")
+        state_callback.assert_call(DevState.DISABLE)
+        status_callback.assert_call("The device is in DISABLE state.")
+
+        tango_context.device.adminMode = AdminMode.MAINTENANCE
+        state_callback.assert_calls([DevState.UNKNOWN, DevState.OFF])
+        status_callback.assert_calls(
+            ["The device is in UNKNOWN state.", "The device is in OFF state."]
+        )
 
         # Check that we can turn a freshly initialised device on
         tango_context.device.On()
@@ -425,6 +431,7 @@ class TestSKABaseDevice(object):
         """
         Test for Standby command
         """
+        tango_context.device.adminMode = AdminMode.MAINTENANCE
         assert tango_context.device.state() == DevState.OFF
 
         # Check that we can put it on standby
@@ -438,6 +445,8 @@ class TestSKABaseDevice(object):
         """
         Test for Off command
         """
+        tango_context.device.adminMode = AdminMode.MAINTENANCE
+
         state_callback = tango_change_event_helper.subscribe("state")
         status_callback = tango_change_event_helper.subscribe("status")
         state_callback.assert_call(DevState.OFF)
@@ -493,7 +502,7 @@ class TestSKABaseDevice(object):
         assert tango_context.device.loggingTargets == ("tango::logger", )
 
         with mock.patch(
-            "ska_tango_base.base_device.LoggingUtils.create_logging_handler"
+            "ska_tango_base.base_device.base_device.LoggingUtils.create_logging_handler"
         ) as mocked_creator:
 
             def null_creator(target, tango_logger):
@@ -551,26 +560,26 @@ class TestSKABaseDevice(object):
     def test_adminMode(self, tango_context, tango_change_event_helper):
         """Test for adminMode"""
         # PROTECTED REGION ID(SKABaseDevice.test_adminMode) ENABLED START #
-        assert tango_context.device.adminMode == AdminMode.MAINTENANCE
-        assert tango_context.device.state() == DevState.OFF
+        assert tango_context.device.adminMode == AdminMode.OFFLINE
+        assert tango_context.device.state() == DevState.DISABLE
 
         admin_mode_callback = tango_change_event_helper.subscribe("adminMode")
-        admin_mode_callback.assert_call(AdminMode.MAINTENANCE)
-
-        tango_context.device.adminMode = AdminMode.OFFLINE
-        assert tango_context.device.adminMode == AdminMode.OFFLINE
         admin_mode_callback.assert_call(AdminMode.OFFLINE)
-        assert tango_context.device.state() == DevState.DISABLE
+
+        tango_context.device.adminMode = AdminMode.MAINTENANCE
+        assert tango_context.device.adminMode == AdminMode.MAINTENANCE
+        admin_mode_callback.assert_call(AdminMode.MAINTENANCE)
+        assert tango_context.device.state() == DevState.OFF
 
         tango_context.device.adminMode = AdminMode.ONLINE
         assert tango_context.device.adminMode == AdminMode.ONLINE
         admin_mode_callback.assert_call(AdminMode.ONLINE)
         assert tango_context.device.state() == DevState.OFF
 
-        tango_context.device.adminMode = AdminMode.ONLINE
-        assert tango_context.device.adminMode == AdminMode.ONLINE
-        admin_mode_callback.assert_not_called()
-        assert tango_context.device.state() == DevState.OFF
+        tango_context.device.adminMode = AdminMode.OFFLINE
+        assert tango_context.device.adminMode == AdminMode.OFFLINE
+        admin_mode_callback.assert_call(AdminMode.OFFLINE)
+        assert tango_context.device.state() == DevState.DISABLE
 
         # PROTECTED REGION END #    //  SKABaseDevice.test_adminMode
 
@@ -619,6 +628,8 @@ class TestSKABaseDevice(object):
 
     def test_DebugDevice_does_not_break_a_command(self, tango_context):
         tango_context.device.DebugDevice()
+        assert tango_context.device.State() == DevState.DISABLE
+        tango_context.device.adminMode = AdminMode.MAINTENANCE
         assert tango_context.device.State() == DevState.OFF
         tango_context.device.On()
         assert tango_context.device.State() == DevState.ON

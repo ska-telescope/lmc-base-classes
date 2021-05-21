@@ -5,9 +5,10 @@ import functools
 
 from tango import DevState
 
-from ska_tango_base.component_manager import (
+from ska_tango_base.subarray import SubarrayComponentManager
+from ska_tango_base.base_device import (
     check_connected,
-    ComponentManager,
+    ReferenceBaseComponentManager,
 )
 from ska_tango_base.control_model import PowerMode
 from ska_tango_base.faults import (
@@ -47,7 +48,9 @@ def check_on(func):
     return _wrapper
 
 
-class SubarrayComponentManager(ComponentManager):
+class ReferenceSubarrayComponentManager(
+    ReferenceBaseComponentManager, SubarrayComponentManager
+):
     """
     A component manager for SKA subarray Tango devices:
 
@@ -59,80 +62,108 @@ class SubarrayComponentManager(ComponentManager):
     a subclass specific to the component managed by the device.
     """
 
-    class _SubarrayComponent(ComponentManager._Component):
+    class _ResourcePool:
+        """
+        A simple class for managing subarray resources
+        """
+
+        def __init__(self, callback=None):
+            """
+            Initialise a new instance
+
+            :param callback: callback to call when the resource pool
+                goes from empty to non-empty or vice-versa
+            """
+            self._resources = set()
+
+            self._nonempty = False
+            self._callback = callback
+
+        def __len__(self):
+            """
+            Returns the number of resources currently assigned. Note that
+            this also functions as a boolean method for whether there are
+            any assigned resources: ``if len()``.
+
+            :return: number of resources assigned
+            :rtype: int
+            """
+            return len(self._resources)
+
+        def assign(self, resources):
+            """
+            Assign some resources
+
+            :param resources: resources to be assigned
+            :type resources: set(str)
+            """
+            self._resources |= set(resources)
+            self._update()
+
+        def release(self, resources):
+            """
+            Release some resources
+
+            :param resources: resources to be released
+            :type resources: set(str)
+            """
+            self._resources -= set(resources)
+            self._update()
+
+        def release_all(self):
+            """
+            Release all resources
+            """
+            self._resources.clear()
+            self._update()
+
+        def get(self):
+            """
+            Get current resources
+
+            :return: current resources.
+            :rtype: set(str)
+            """
+            return set(self._resources)
+
+        def check(self, resources):
+            """
+            Check that this pool contains specified resources.
+
+            This is useful for commands like configure(), which might
+            need to check that the subarray has the resources needed to
+            effect a configuration.
+
+            :return: whether this resource pool contains the specified
+                resources
+            :rtype bool
+            """
+            return resources in self._resources
+
+        def _update(self):
+            nonempty = bool(len(self))
+            if self._nonempty != nonempty:
+                self._nonempty = nonempty
+                if self._callback is not None:
+                    self._callback(nonempty)
+
+    class _Component(ReferenceBaseComponentManager._Component):
         """
         An example subarray component for the component manager to work
         with.
 
-        It can be directly controlled via assign(), release(),
-        configure(), scan(), end_scan(), end(), abort(), reset() and
-        restart() command methods.
+        It can be directly controlled via configure(), scan(),
+        end_scan(), end(), abort(), reset() and restart() command
+        methods.
 
         For testing purposes, it can also be told to simulate an
         observation fault via simulate_obsfault() methods.
 
         When a component changes state, it lets the component manager
-        know by calling its ``component_unresourced``,
-        ``component_resourced``, ``component_unconfigured``,
+        know by calling its ``component_unconfigured``,
         ``component_configured``, ``component_scanning``,
         ``component_not_scanning`` and ``component_obsfault`` methods.
         """
-
-        class _ResourceManager:
-            """
-            A simple class for managing subarray resources
-            """
-
-            def __init__(self):
-                """
-                Initialise a new instance
-                """
-                self._resources = set()
-
-            def __len__(self):
-                """
-                Returns the number of resources currently assigned. Note that
-                this also functions as a boolean method for whether there are
-                any assigned resources: ``if len()``.
-
-                :return: number of resources assigned
-                :rtype: int
-                """
-                return len(self._resources)
-
-            def assign(self, resources):
-                """
-                Assign some resources
-
-                :param resources: resources to be assigned
-                :type resources: set(str)
-                """
-                self._resources |= set(resources)
-
-            def release(self, resources):
-                """
-                Release some resources
-
-                :param resources: resources to be released
-                :type resources: set(str)
-                """
-                self._resources -= set(resources)
-
-            def release_all(self):
-                """
-                Release all resources
-                """
-                self._resources.clear()
-
-            def get(self):
-                """
-                Get current resources
-
-                :return: current resources.
-                :rtype: set(str)
-                """
-                return set(self._resources)
-
         def __init__(
             self,
             capability_types,
@@ -149,9 +180,6 @@ class SubarrayComponentManager(ComponentManager):
             :param _faulty: whether this component should initially
                 simulate a fault (for testing only)
             """
-            self._resourced = False
-            self._resourced_callback = None
-
             self._configured = False
 
             # self._configured_capabilities is kept as a
@@ -172,12 +200,10 @@ class SubarrayComponentManager(ComponentManager):
             self._obsfault = False
             self._obsfault_callback = None
 
-            self._resource_manager = self._ResourceManager()
             super().__init__(_power_mode=_power_mode, _faulty=_faulty)
 
         def set_obs_callbacks(
             self,
-            resourced_callback,
             configured_callback,
             scanning_callback,
             obsfault_callback,
@@ -185,8 +211,6 @@ class SubarrayComponentManager(ComponentManager):
             """
             Set callbacks for the underlying component
 
-            :param resourced_callback: a callback to call with a boolean
-                argument when whether the component is resourced changes
             :param configured_callback: a callback to call with a
                 boolean argument when whether the component is
                 configured changes
@@ -195,32 +219,9 @@ class SubarrayComponentManager(ComponentManager):
             :param obsfault_callback: a callback to call when the
                 component experiences an obs faults
             """
-            self._resourced_callback = resourced_callback
             self._configured_callback = configured_callback
             self._scanning_callback = scanning_callback
             self._obsfault_callback = obsfault_callback
-
-        @property
-        @check_on
-        def resourced(self):
-            """
-            Whether this component has any resources
-
-            :return: whether this component has any resources
-            :rtype: bool
-            """
-            return self._resourced
-
-        @property
-        @check_on
-        def assigned_resources(self):
-            """
-            Resources assigned to this component
-
-            :return: the resources assigned to this component
-            :rtype: list of str
-            """
-            return sorted(self._resource_manager.get())
 
         @property
         @check_on
@@ -273,39 +274,6 @@ class SubarrayComponentManager(ComponentManager):
             :rtype: bool
             """
             return self._obsfault
-
-        @check_on
-        def assign(self, resources):
-            """
-            Assign resources to the component
-
-            :param resources: resources to be assigned
-            :type resources: list(str)
-            """
-            self._resource_manager.assign(resources)
-            resourced = len(self._resource_manager) > 0
-            self._update_resourced(resourced)
-
-        @check_on
-        def release(self, resources):
-            """
-            Release resources from the component
-
-            :param resources: resources to be released
-            :type resources: list(str)
-            """
-            self._resource_manager.release(resources)
-            resourced = len(self._resource_manager) > 0
-            self._update_resourced(resourced)
-
-        @check_on
-        def release_all(self):
-            """
-            Release all resources
-            """
-            self._resource_manager.release_all()
-            resourced = len(self._resource_manager) > 0
-            self._update_resourced(resourced)
 
         def _validate_capability_types(self, capability_types):
             """
@@ -388,29 +356,6 @@ class SubarrayComponentManager(ComponentManager):
             """
             self._update_obsfault(obsfault)
 
-        def _invoke_resourced_callback(self):
-            """
-            Helper method that invokes the callback when whether the
-            component is resourced changes.
-            """
-            if not self.faulty:
-                if self._resourced_callback is not None:
-                    self._resourced_callback(self._resourced)
-
-        def _update_resourced(self, resourced):
-            """
-            Helper method that updates whether the component is
-            resourced or not, ensuring that callbacks are called as
-            required.
-
-            :param resourced: new value for whether the component is
-                resourced or not
-            :type resourced: bool
-            """
-            if self._resourced != resourced:
-                self._resourced = resourced
-                self._invoke_resourced_callback()
-
         def _invoke_configured_callback(self):
             """
             Helper method that invokes the callback when whether the
@@ -482,37 +427,41 @@ class SubarrayComponentManager(ComponentManager):
                     self._invoke_obsfault_callback()
 
     def __init__(
-        self, op_state_model, obs_state_model, capability_types, logger, _component=None
+        self, op_state_model, obs_state_model, capability_types, logger=None, _component=None
     ):
         """
-        Initialise a new SubarrayComponentManager instances
+        Initialise a new ReferenceSubarrayComponentManager instance
 
-        :param op_state_model: the op state model used by this component manager
-        :param obs_state_model: the obs state model used by this component manager
-        :param capability_types: types of capability supported by this component
+        :param op_state_model: the op state model used by this component
             manager
+        :param obs_state_model: the obs state model used by this
+            component manager
+        :param capability_types: types of capability supported by this
+            component manager
         :param logger: a logger for this component manager
-        :param _component: allows setting of the component to be managed; for testing
-            purposes only
+        :param _component: allows setting of the component to be
+            managed; for testing purposes only
         """
         self.obs_state_model = obs_state_model
+        self._resource_pool = self._ResourcePool(self.component_resourced)
 
         super().__init__(
             op_state_model,
-            logger,
-            _component=_component or self._SubarrayComponent(capability_types),
+            obs_state_model,
+            logger=logger,
+            _component=_component or self._Component(capability_types),
         )
 
-    def connect(self):
+    def start_communicating(self):
         """
-        Establish a connection to the component
+        Establish communication with the component, then start
+        monitoring.
         """
         if self._connected:
             return
-        super().connect()
+        super().start_communicating()
 
         self._component.set_obs_callbacks(
-            self.component_resourced,
             self.component_configured,
             self.component_scanning,
             self.component_obsfault,
@@ -528,8 +477,6 @@ class SubarrayComponentManager(ComponentManager):
         # make our state model correspond
         if self._component.obsfault:
             self.obs_state_model.to_OBSFAULT()
-        if not self._component.resourced:
-            self.obs_state_model.to_EMPTY()
         elif not self._component.configured:
             self.obs_state_model.to_IDLE()
         elif not self._component.scanning:
@@ -537,26 +484,27 @@ class SubarrayComponentManager(ComponentManager):
         else:
             self.obs_state_model.to_SCANNING()
 
-    def disconnect(self):
+    def stop_communicating(self):
         """
-        Disconnect from the component
+        Cease monitoring the component, and break off all communication
+        with it.
         """
         if not self._connected:
             return
 
-        self._component.set_obs_callbacks(None, None, None, None)
-        super().disconnect()
+        self._component.set_obs_callbacks(None, None, None)
+        super().stop_communicating()
 
-    def simulate_connection_failure(self, fail_connect):
+    def simulate_communication_failure(self, fail_communicate):
         """
         Simulate (or stop simulating) a component connection failure
 
-        :param fail_connect: whether the connection to the component
+        :param fail_communicate: whether the connection to the component
             is failing
         """
-        if fail_connect and self._connected:
-            self._component.set_obs_callbacks(None, None, None, None)
-        super().simulate_connection_failure(fail_connect)
+        if fail_communicate and self._connected:
+            self._component.set_obs_callbacks(None, None, None)
+        super().simulate_communication_failure(fail_communicate)
 
     @check_connected
     def assign(self, resources):
@@ -567,7 +515,7 @@ class SubarrayComponentManager(ComponentManager):
         :type resources: list(str)
         """
         self.logger.info("Assigning resources to component")
-        self._component.assign(resources)
+        self._resource_pool.assign(resources)
 
     @check_connected
     def release(self, resources):
@@ -578,7 +526,7 @@ class SubarrayComponentManager(ComponentManager):
         :type resources: list(str)
         """
         self.logger.info("Releasing resources in component")
-        self._component.release(resources)
+        self._resource_pool.release(resources)
 
     @check_connected
     def release_all(self):
@@ -586,7 +534,7 @@ class SubarrayComponentManager(ComponentManager):
         Release all resources
         """
         self.logger.info("Releasing all resources in component")
-        self._component.release_all()
+        self._resource_pool.release_all()
 
     @check_connected
     def configure(self, configuration):
@@ -651,8 +599,7 @@ class SubarrayComponentManager(ComponentManager):
         self.logger.info("Restarting component")
         if self._component.configured:
             self._component.deconfigure()
-        if self._component.resourced:
-            self._component.release_all()
+        self._resource_pool.release_all()
 
     @property
     @check_connected
@@ -663,7 +610,7 @@ class SubarrayComponentManager(ComponentManager):
         :return: the resources assigned to the component
         :rtype: list of str
         """
-        return self._component.assigned_resources
+        return sorted(self._resource_pool.get())
 
     @property
     @check_connected

@@ -39,9 +39,9 @@ demonstrates that the implementation is faithful to the design.
 API
 ---
 
-ska_tango_base.state.op_state_model module
+ska_tango_base.base_device.op_state_model module
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-.. automodule:: ska_tango_base.state.op_state_model
+.. automodule:: ska_tango_base.base_device.op_state_model
    :special-members: __init__
    :members:
    :undoc-members:

@@ -20,9 +20,11 @@ from tango.server import device_property
 
 # SKA specific imports
 from ska_tango_base import SKAObsDevice
-from ska_tango_base.subarray_component_manager import SubarrayComponentManager
 from ska_tango_base.commands import CompletionCommand, ObservationCommand, ResponseCommand, ResultCode
-from ska_tango_base.state import SubarrayObsStateModel
+from ska_tango_base.subarray import (
+    ReferenceSubarrayComponentManager, SubarrayObsStateModel
+)
+
 # PROTECTED REGION END #    //  SKASubarray.additionnal_imports
 
 __all__ = ["SKASubarray", "main"]
@@ -514,7 +516,7 @@ class SKASubarray(SKAObsDevice):
         )
 
     def init_component_manager(self):
-        return SubarrayComponentManager(
+        return ReferenceSubarrayComponentManager(
             self.op_state_model,
             self.obs_state_model,
             self.CapabilityTypes,

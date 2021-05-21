@@ -17,7 +17,7 @@
     "transitions": [
         {
             "from": "_UNINITIALISED",
-            "to": "INIT_UNKNOWN",
+            "to": "INIT_DISABLE",
             "trigger": "init_invoked"
         },
         {

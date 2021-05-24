@@ -65,12 +65,13 @@ class TestSKAMaster(object):
 
     # PROTECTED REGION ID(SKAMaster.test_GetVersionInfo_decorators) ENABLED START #
     # PROTECTED REGION END #    //  SKAMaster.test_GetVersionInfo_decorators
-    def test_GetVersionInfo(self, tango_context):
+    def test_GetVersionInfo(self, device_class_under_test, tango_context):
         """Test for GetVersionInfo"""
         # PROTECTED REGION ID(SKAMaster.test_GetVersionInfo) ENABLED START #
         versionPattern = re.compile(
-            r'SKAMaster, ska_tango_base, [0-9]+.[0-9]+.[0-9]+, '
-            r'A set of generic base devices for SKA Telescope.')
+            f'{device_class_under_test.__name__}, ska_tango_base, [0-9]+.[0-9]+.[0-9]+, '
+            'A set of generic base devices for SKA Telescope.'
+        )
         versionInfo = tango_context.device.GetVersionInfo()
         assert (re.match(versionPattern, versionInfo[0])) is not None
         # PROTECTED REGION END #    //  SKAMaster.test_GetVersionInfo

@@ -184,12 +184,7 @@ class CspSubElementSubarray(SKASubarray):
     # ---------------
 
     def init_component_manager(self):
-        return ReferenceCspSubarrayComponentManager(
-            self.op_state_model,
-            self.obs_state_model,
-            self.CapabilityTypes,
-            logger=self.logger
-        )
+        return CspSubarrayComponentManager(self.op_state_model, self.obs_state_model)
 
     def init_command_objects(self):
         """

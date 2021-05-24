@@ -11,7 +11,24 @@ from tango.test_context import DeviceTestContext
 
 
 @pytest.fixture(scope="class")
-def tango_context(request):
+def device_class_under_test(request):
+    """
+    Returns the device class to be tested, by extracting it from the
+    name of the test class. For example, if the test class is
+    "TestSkaBaseDevice", then the first "Test" will be dropped from the
+    string, and the device class to be tested will be
+    ``ska_tango_base.SKABaseDevice``.
+
+    Note: This is default behaviour that can be overridden in tests by
+    re-specifying this fixture.
+    """
+    test_class_name = request.cls.__name__
+    class_name = test_class_name.split('Test', 1)[-1]
+    module = importlib.import_module("ska_tango_base", class_name)
+    return getattr(module, class_name)
+
+@pytest.fixture(scope="class")
+def tango_context(device_class_under_test):
     """Creates and returns a TANGO DeviceTestContext object.
 
     Parameters
@@ -47,18 +64,14 @@ def tango_context(request):
         },
     }
 
-    # This fixture is used to decorate classes like "TestSKABaseDevice" or
-    # "TestSKALogger". We drop the first "Test" from the string to get the
-    # class name of the device under test.
-    # Similarly, the test module is like "test_base_device.py".  We drop the
-    # first "test_" to get the module name
-    test_class_name = request.cls.__name__
-    class_name = test_class_name.split('Test', 1)[-1]
-    module = importlib.import_module("ska_tango_base", class_name)
-    class_type = getattr(module, class_name)
+    properties_key = device_class_under_test.__name__
+    if properties_key.startswith("_Reference"):
+        properties_key = properties_key[len("_Reference"):]
 
     tango_context = DeviceTestContext(
-        class_type, properties=test_properties.get(class_name))
+        device_class_under_test,
+        properties=test_properties.get(properties_key)
+    )
     tango_context.start()
     yield tango_context
     tango_context.stop()

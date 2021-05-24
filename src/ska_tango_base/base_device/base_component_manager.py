@@ -60,7 +60,7 @@ class BaseComponentManager:
         * Start a polling loop to monitor the component (if using a
           "push" model)
         """
-        raise NotImplementedError("ComponentManager is abstract.")
+        raise NotImplementedError("BaseComponentManager is abstract.")
 
     def stop_communicating(self):
         """
@@ -71,7 +71,7 @@ class BaseComponentManager:
         * If you have subscribed to events, unsubscribe.
         * If you are running a polling loop, stop it.
         """
-        raise NotImplementedError("ComponentManager is abstract.")
+        raise NotImplementedError("BaseComponentManager is abstract.")
 
     @property
     def is_communicating(self):
@@ -90,7 +90,7 @@ class BaseComponentManager:
             component
         :rtype: bool
         """
-        raise NotImplementedError("ComponentManager is abstract.")
+        raise NotImplementedError("BaseComponentManager is abstract.")
 
     @property
     def power_mode(self):
@@ -99,7 +99,7 @@ class BaseComponentManager:
 
         :return: the power mode of the component
         """
-        raise NotImplementedError("ComponentManager is abstract.")
+        raise NotImplementedError("BaseComponentManager is abstract.")
 
     @property
     def faulty(self):
@@ -108,31 +108,31 @@ class BaseComponentManager:
 
         :return: whether the component is faulting
         """
-        raise NotImplementedError("ComponentManager is abstract.")
+        raise NotImplementedError("BaseComponentManager is abstract.")
 
     def off(self):
         """
         Turn the component off
         """
-        raise NotImplementedError("ComponentManager is abstract.")
+        raise NotImplementedError("BaseComponentManager is abstract.")
 
     def standby(self):
         """
         Put the component into low-power standby mode
         """
-        raise NotImplementedError("ComponentManager is abstract.")
+        raise NotImplementedError("BaseComponentManager is abstract.")
 
     def on(self):
         """
         Turn the component on
         """
-        raise NotImplementedError("ComponentManager is abstract.")
+        raise NotImplementedError("BaseComponentManager is abstract.")
 
     def reset(self):
         """
         Reset the component (from fault state)
         """
-        raise NotImplementedError("ComponentManager is abstract.")
+        raise NotImplementedError("BaseComponentManager is abstract.")
 
     action_map = {
         PowerMode.OFF: "component_off",

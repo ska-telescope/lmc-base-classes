@@ -20,7 +20,7 @@ import tango
 from unittest import mock
 from tango import DevFailed, DevState
 from ska_tango_base import SKABaseDevice
-from ska_tango_base.base_device import OpStateModel
+from ska_tango_base.base_device import OpStateModel, ReferenceBaseComponentManager
 from ska_tango_base.base_device.base_device import (
     _DEBUGGER_PORT,
     _Log4TangoLoggingLevel,
@@ -334,11 +334,26 @@ class TestSKABaseDevice(object):
     Test cases for SKABaseDevice.
     """
 
-    properties = {
-        'SkaLevel': '4',
-        'GroupDefinitions': '',
-        'LoggingTargetsDefault': ''
-    }
+    @pytest.fixture(scope="class")
+    def device_class_under_test(request):
+        """
+        Fixture that returns the device class to be tested here. This
+        overrides the default implementation to ensure we test against
+        a concrete subclass of base device (some functionality of the
+        SKABaseDevice is abstract).
+        """
+
+        class _ReferenceSKABaseDevice(SKABaseDevice):
+            """
+            A concrete subclass of SKABaseDevice, for testing
+            """
+            def init_component_manager(self):
+                return ReferenceBaseComponentManager(
+                    self.op_state_model, logger=self.logger
+                )
+
+        return _ReferenceSKABaseDevice
+
 
     @classmethod
     def mocking(cls):
@@ -380,12 +395,13 @@ class TestSKABaseDevice(object):
 
     # PROTECTED REGION ID(SKABaseDevice.test_GetVersionInfo_decorators) ENABLED START #
     # PROTECTED REGION END #    //  SKABaseDevice.test_GetVersionInfo_decorators
-    def test_GetVersionInfo(self, tango_context):
+    def test_GetVersionInfo(self, device_class_under_test, tango_context):
         """Test for GetVersionInfo"""
         # PROTECTED REGION ID(SKABaseDevice.test_GetVersionInfo) ENABLED START #
         versionPattern = re.compile(
-            r'SKABaseDevice, ska_tango_base, [0-9]+.[0-9]+.[0-9]+, '
-            r'A set of generic base devices for SKA Telescope.')
+            f'{device_class_under_test.__name__}, ska_tango_base, [0-9]+.[0-9]+.[0-9]+, '
+            'A set of generic base devices for SKA Telescope.'
+        )
         versionInfo = tango_context.device.GetVersionInfo()
         assert (re.match(versionPattern, versionInfo[0])) is not None
         # PROTECTED REGION END #    //  SKABaseDevice.test_GetVersionInfo

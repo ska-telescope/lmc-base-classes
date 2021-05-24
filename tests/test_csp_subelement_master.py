@@ -17,6 +17,7 @@ from tango.test_context import MultiDeviceTestContext
 
 # PROTECTED REGION ID(CspSubelementMaster.test_additional_imports) ENABLED START #
 from ska_tango_base import SKAMaster, CspSubElementMaster
+from ska_tango_base.base_device import ReferenceBaseComponentManager
 from ska_tango_base.commands import ResultCode
 from ska_tango_base.control_model import (
     AdminMode, ControlMode, HealthState, SimulationMode, TestMode
@@ -29,6 +30,26 @@ from ska_tango_base.control_model import (
 # PROTECTED REGION END #    // CspSubelementMaster.test_CspSubelementMaster_decorators
 class TestCspSubElementMaster(object):
     """Test case for CSP SubElement Master class."""
+
+    @pytest.fixture(scope="class")
+    def device_class_under_test(request):
+        """
+        Fixture that returns the device class to be tested here. This
+        overrides the default implementation to ensure we test against
+        a concrete subclass of base device (some functionality of the
+        SKABaseDevice is abstract).
+        """
+
+        class _ReferenceCspSubElementMaster(CspSubElementMaster):
+            """
+            A concrete subclass of SKABaseDevice, for testing
+            """
+            def init_component_manager(self):
+                return ReferenceBaseComponentManager(
+                    self.op_state_model, logger=self.logger
+                )
+
+        return _ReferenceCspSubElementMaster
 
     properties = {
         'SkaLevel': '4',
@@ -70,12 +91,13 @@ class TestCspSubElementMaster(object):
 
     # PROTECTED REGION ID(CspSubelementMaster.test_GetVersionInfo_decorators) ENABLED START #
     # PROTECTED REGION END #    //  CspSubelementMaster.test_GetVersionInfo_decorators
-    def test_GetVersionInfo(self, tango_context):
+    def test_GetVersionInfo(self, device_class_under_test, tango_context):
         """Test for GetVersionInfo"""
         # PROTECTED REGION ID(CspSubelementMaster.test_GetVersionInfo) ENABLED START #
         versionPattern = re.compile(
-            r'CspSubElementMaster, ska_tango_base, [0-9]+.[0-9]+.[0-9]+, '
-            r'A set of generic base devices for SKA Telescope.')
+            f'{device_class_under_test.__name__}, ska_tango_base, [0-9]+.[0-9]+.[0-9]+, '
+            'A set of generic base devices for SKA Telescope.'
+        )
         versionInfo = tango_context.device.GetVersionInfo()
         assert (re.match(versionPattern, versionInfo[0])) is not None
         # PROTECTED REGION END #    //  CspSubelementMaster.test_GetVersionInfo

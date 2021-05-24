@@ -4,6 +4,7 @@ This module models component management for CSP subelement observation devices.
 import functools
 
 from ska_tango_base.base_device import check_connected
+from ska_tango_base.csp.csp_subarray_component_manager import CspSubarrayComponentManager
 from ska_tango_base.subarray import ReferenceSubarrayComponentManager
 from ska_tango_base.control_model import PowerMode
 from ska_tango_base.faults import ComponentError, ComponentFault
@@ -39,7 +40,10 @@ def check_on(func):
     return _wrapper
 
 
-class ReferenceCspSubarrayComponentManager(ReferenceSubarrayComponentManager):
+class ReferenceCspSubarrayComponentManager(
+    CspSubarrayComponentManager,
+    ReferenceSubarrayComponentManager,
+):
     """
     A component manager for SKA CSP subelement observation Tango devices:
 

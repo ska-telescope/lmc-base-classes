@@ -35,7 +35,7 @@ import debugpy
 import ska_ser_logging
 from ska_tango_base import release
 from ska_tango_base.base_device import (
-    AdminModeModel, OpStateModel, ReferenceBaseComponentManager
+    AdminModeModel, OpStateModel, BaseComponentManager
 )
 from ska_tango_base.commands import (
     BaseCommand, CompletionCommand, StateModelCommand, ResponseCommand, ResultCode
@@ -730,7 +730,7 @@ class SKABaseDevice(Device):
         )
 
     def init_component_manager(self):
-        return ReferenceBaseComponentManager(self.op_state_model, logger=self.logger)
+        return BaseComponentManager(self.op_state_model)
 
     def register_command_object(self, command_name, command_object):
         """

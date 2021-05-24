@@ -1,5 +1,6 @@
 """
-This subpackage models a base SKA Tango device.
+This subpackage implements Tango device functionality common to all SKA
+Tango devices.
 """
 
 __all__ = (

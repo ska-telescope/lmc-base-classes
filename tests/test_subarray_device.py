@@ -47,6 +47,30 @@ class TestSKASubarray:
         'SubID': '',
     }
 
+    @pytest.fixture(scope="class")
+    def device_class_under_test(request):
+        """
+        Fixture that returns the device class to be tested here. This
+        overrides the default implementation to ensure we test against
+        a concrete subclass of base device (some functionality of the
+        SKASubarray is abstract).
+        """
+
+        class _ReferenceSKASubarray(SKASubarray):
+            """
+            A concrete subclass of SKABaseDevice, for testing
+            """
+            def init_component_manager(self):
+                return ReferenceSubarrayComponentManager(
+                    self.op_state_model,
+                    self.obs_state_model,
+                    self.CapabilityTypes,
+                    logger=self.logger
+                )
+
+        return _ReferenceSKASubarray
+
+
     @pytest.mark.skip(reason="Not implemented")
     def test_properties(self, tango_context):
         # Test the properties
@@ -99,12 +123,13 @@ class TestSKASubarray:
 
     # PROTECTED REGION ID(SKASubarray.test_GetVersionInfo_decorators) ENABLED START #
     # PROTECTED REGION END #    //  SKASubarray.test_GetVersionInfo_decorators
-    def test_GetVersionInfo(self, tango_context):
+    def test_GetVersionInfo(self, device_class_under_test, tango_context):
         """Test for GetVersionInfo"""
         # PROTECTED REGION ID(SKASubarray.test_GetVersionInfo) ENABLED START #
         versionPattern = re.compile(
-            r'SKASubarray, ska_tango_base, [0-9]+.[0-9]+.[0-9]+, '
-            r'A set of generic base devices for SKA Telescope.')
+            f'{device_class_under_test.__name__}, ska_tango_base, [0-9]+.[0-9]+.[0-9]+, '
+            'A set of generic base devices for SKA Telescope.'
+        )
         versionInfo = tango_context.device.GetVersionInfo()
         assert (re.match(versionPattern, versionInfo[0])) is not None
         # PROTECTED REGION END #    //  SKASubarray.test_GetVersionInfo

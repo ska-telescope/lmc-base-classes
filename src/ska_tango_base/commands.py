@@ -27,7 +27,7 @@ The following command classes are provided:
 
 Multiple inheritance is supported, and it is expected that many commands
 will need to inherit from more than one command class. For example, a
-subarray's ``AssignResources`` command" would inherit from:
+subarray's ``AssignResources`` command would inherit from:
 
 * ``ObservationState``, because it drives observation state
 
@@ -219,7 +219,7 @@ class StateModelCommand(BaseCommand):
             try:
                 self.state_model.perform_action(self._invoked_action)
             except StateModelError as sme:
-                raise CommandError("Command not permitted") from sme
+                raise CommandError("Command not permitted by state model.") from sme
 
         return super().__call__(argin)
 
@@ -373,7 +373,7 @@ class CompletionCommand(StateModelCommand):
         self, target, state_model, action_slug, *args, logger=None, **kwargs
     ):
         """
-        Create a new ActionCommand for a device.
+        Create a new CompletionCommand for a device.
 
         :param target: the object that this command acts upon; for
             example, a component manager

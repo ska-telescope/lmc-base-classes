@@ -5,6 +5,7 @@ This subpackage contains base devices specific to CSP.
 __all__ = (
     "CspSubElementObsStateModel",
     "CspObsComponentManager",
+    "CspSubarrayComponentManager",
     "ReferenceCspObsComponentManager",
     "ReferenceCspSubarrayComponentManager",
     "CspSubElementMaster",
@@ -16,6 +17,7 @@ __all__ = (
 from .csp_subelement_obs_state_model import CspSubElementObsStateModel
 
 from .csp_obs_component_manager import CspObsComponentManager
+from .csp_subarray_component_manager import CspSubarrayComponentManager
 
 from .reference_csp_obs_component_manager import ReferenceCspObsComponentManager
 from .reference_csp_subarray_component_manager import ReferenceCspSubarrayComponentManager

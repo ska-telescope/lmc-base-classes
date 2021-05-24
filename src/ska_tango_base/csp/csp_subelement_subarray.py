@@ -24,7 +24,7 @@ from tango import AttrWriteType
 # SKA import
 from ska_tango_base import SKASubarray
 from ska_tango_base.commands import CompletionCommand, ObservationCommand, ResponseCommand, ResultCode
-from ska_tango_base.csp import ReferenceCspSubarrayComponentManager
+from ska_tango_base.csp import CspSubarrayComponentManager
 # Additional import
 # PROTECTED REGION END #    //  CspSubElementSubarray.additionnal_import
 

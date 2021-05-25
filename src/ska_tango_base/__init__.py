@@ -1,6 +1,16 @@
 __all__ = (
+    # subpackages
+    "base"
+    "csp",
+    "obs",
+    "subarray",
+    # modules
     "commands",
     "control_model",
+    "faults",
+    "release",
+    "utils",
+    # direct imports
     "SKAAlarmHandler",
     "SKABaseDevice",
     "SKACapability",
@@ -17,14 +27,14 @@ __all__ = (
 # Note: order of imports is important - start with lowest in the hierarchy
 
 # SKABaseDevice, and then classes that inherit from it
-from .base_device import SKABaseDevice
+from .base import SKABaseDevice
 from .alarm_handler_device import SKAAlarmHandler
 from .logger_device import SKALogger
 from .master_device import SKAMaster
 from .tel_state_device import SKATelState
 
 # SKAObsDevice, and then classes that inherit from it
-from .obs_device import SKAObsDevice
+from .obs import SKAObsDevice
 from .capability_device import SKACapability
 from .subarray import SKASubarray
 

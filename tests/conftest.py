@@ -29,7 +29,7 @@ def device_class_under_test(request):
 
 @pytest.fixture(scope="class")
 def tango_context(device_class_under_test):
-    """Creates and returns a TANGO DeviceTestContext object.
+    """Creates and returns a Tango DeviceTestContext object.
 
     Parameters
     ----------

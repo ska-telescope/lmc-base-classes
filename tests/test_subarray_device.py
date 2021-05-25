@@ -16,7 +16,7 @@ from tango import DevState, DevFailed
 
 # PROTECTED REGION ID(SKASubarray.test_additional_imports) ENABLED START #
 from ska_tango_base import SKASubarray
-from ska_tango_base.base_device import OpStateModel
+from ska_tango_base.base import OpStateModel
 from ska_tango_base.commands import ResultCode
 from ska_tango_base.control_model import (
     AdminMode,
@@ -60,7 +60,7 @@ class TestSKASubarray:
             """
             A concrete subclass of SKABaseDevice, for testing
             """
-            def init_component_manager(self):
+            def create_component_manager(self):
                 return ReferenceSubarrayComponentManager(
                     self.op_state_model,
                     self.obs_state_model,

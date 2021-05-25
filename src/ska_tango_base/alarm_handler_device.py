@@ -6,10 +6,10 @@
 #
 """
 This module implements SKAAlarmHandler, a generic base device for Alarms
-for SKA. It exposes SKA alarms and SKA alerts as TANGO attributes. SKA
+for SKA. It exposes SKA alarms and SKA alerts as Tango attributes. SKA
 Alarms and SKA/Element Alerts are rules-based configurable conditions
 that can be defined over multiple attribute values and quality factors,
-and are separate from the "built-in" TANGO attribute alarms.
+and are separate from the "built-in" Tango attribute alarms.
 """
 # PROTECTED REGION ID(SKAAlarmHandler.additionnal_import) ENABLED START #
 # Tango imports

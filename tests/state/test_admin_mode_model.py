@@ -1,11 +1,11 @@
 """
 This module contains the tests for the
-:py:mod:`ska_tango_base.base_device.admin_mode_model` module.
+:py:mod:`ska_tango_base.base.admin_mode_model` module.
 """
 import pytest
 
 from ska_tango_base.control_model import AdminMode
-from ska_tango_base.base_device import AdminModeModel
+from ska_tango_base.base import AdminModeModel
 
 from .conftest import load_state_machine_spec, StateModelTester
 
@@ -25,7 +25,7 @@ class TestAdminModeModel(StateModelTester):
         :type logger: :py:class:`logging.Logger`
 
         :returns: the state model under test
-        :rtype: :py:class:`ska_tango_base.base_device.AdminModeModel`
+        :rtype: :py:class:`ska_tango_base.base.AdminModeModel`
         """
         return AdminModeModel(logger)
 

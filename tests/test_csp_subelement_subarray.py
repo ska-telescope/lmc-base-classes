@@ -47,7 +47,7 @@ class TestCspSubElementSubarray(object):
             """
             A concrete subclass of CspSubElementObsDevice, for testing
             """
-            def init_component_manager(self):
+            def create_component_manager(self):
                 return ReferenceCspSubarrayComponentManager(
                     self.op_state_model,
                     self.obs_state_model,

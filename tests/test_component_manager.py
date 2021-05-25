@@ -4,7 +4,7 @@ Tests for the :py:mod:`ska_tango_base.component_manager` module.
 import contextlib
 import pytest
 
-from ska_tango_base.base_device import ReferenceBaseComponentManager
+from ska_tango_base.base import ReferenceBaseComponentManager
 from ska_tango_base.control_model import PowerMode
 from ska_tango_base.faults import ComponentFault
 

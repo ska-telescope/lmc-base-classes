@@ -17,7 +17,7 @@ from tango.test_context import MultiDeviceTestContext
 
 # PROTECTED REGION ID(CspSubelementMaster.test_additional_imports) ENABLED START #
 from ska_tango_base import SKAMaster, CspSubElementMaster
-from ska_tango_base.base_device import ReferenceBaseComponentManager
+from ska_tango_base.base import ReferenceBaseComponentManager
 from ska_tango_base.commands import ResultCode
 from ska_tango_base.control_model import (
     AdminMode, ControlMode, HealthState, SimulationMode, TestMode
@@ -44,7 +44,7 @@ class TestCspSubElementMaster(object):
             """
             A concrete subclass of SKABaseDevice, for testing
             """
-            def init_component_manager(self):
+            def create_component_manager(self):
                 return ReferenceBaseComponentManager(
                     self.op_state_model, logger=self.logger
                 )

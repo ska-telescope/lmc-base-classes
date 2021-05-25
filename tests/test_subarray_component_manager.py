@@ -1,5 +1,5 @@
 """
-Tests for the :py:mod:`ska_tango_base.subarray_component_manager`
+Tests for the :py:mod:`ska_tango_base.component_manager`
 module.
 """
 import contextlib
@@ -115,7 +115,7 @@ class TestSubarrayComponentResourceManager:
 class TestSubarrayComponentManager:
     """
     Tests of the
-    :py:class:`ska_tango_base.subarray_component_manager.SubarrayComponentManager`
+    :py:class:`ska_tango_base.component_manager.SubarrayComponentManager`
     class.
     """
 

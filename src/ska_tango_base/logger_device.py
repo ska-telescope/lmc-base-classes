@@ -6,7 +6,7 @@
 #
 """
 This module implements SKALogger device, a generic base device for
-logging for SKA. It enables to view on-line logs through the TANGO
+logging for SKA. It enables to view on-line logs through the Tango
 Logging Services and to store logs using Python logging. It configures
 the log levels of remote logging for selected devices.
 """

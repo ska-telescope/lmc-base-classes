@@ -13,15 +13,17 @@ __all__ = (
     "CspSubElementSubarray",
 )
 
-# Note: order of imports is important - start with lowest in the hierarchy
-from .csp_subelement_obs_state_model import CspSubElementObsStateModel
+from .master_device import CspSubElementMaster
 
-from .csp_obs_component_manager import CspObsComponentManager
-from .csp_subarray_component_manager import CspSubarrayComponentManager
+from .obs import (
+    CspSubElementObsStateModel,
+    CspObsComponentManager,
+    ReferenceCspObsComponentManager,
+    CspSubElementObsDevice,
+)
 
-from .reference_csp_obs_component_manager import ReferenceCspObsComponentManager
-from .reference_csp_subarray_component_manager import ReferenceCspSubarrayComponentManager
-
-from .csp_subelement_master import CspSubElementMaster
-from .csp_subelement_obsdevice import CspSubElementObsDevice
-from .csp_subelement_subarray import CspSubElementSubarray
+from .subarray import (
+    CspSubarrayComponentManager,
+    ReferenceCspSubarrayComponentManager,
+    CspSubElementSubarray
+)

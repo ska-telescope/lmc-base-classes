@@ -513,7 +513,7 @@ class SKASubarray(SKAObsDevice):
             callback=self._update_obs_state
         )
 
-    def init_component_manager(self):
+    def create_component_manager(self):
         return SubarrayComponentManager(self.op_state_model, self.obs_state_model)
 
     def init_command_objects(self):

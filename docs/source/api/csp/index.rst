@@ -1,17 +1,20 @@
-CSP-specific Devices
-====================
+==============
+CSP subpackage
+==============
 
 .. automodule:: ska_tango_base.csp
 
 
 .. toctree::
+  :caption: Subpackages
+  :maxdepth: 2
 
-  CSP Subelement Obs State Model<csp_subelement_obs_state_model>
-  CSP Obs Component Manager<csp_obs_component_manager>
-  Reference CSP Obs Component Manager<reference_csp_obs_component_manager>
-  CSP Subelement Obsdevice<csp_subelement_obsdevice>
+  CSP Obs subpackage<obs/index>
+  CSP Subarray subpackage<subarray/index>
 
-  Reference CSP Subarray Component Manager<reference_csp_subarray_component_manager>
-  CSP Subelement Subarray<csp_subelement_subarray>
 
-  CSP Subelement Master<csp_subelement_master>
+.. toctree::
+  :caption: Other modules
+  :maxdepth: 2
+
+  Master device<master_device>

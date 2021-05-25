@@ -1,18 +1,25 @@
+===
 API
 ===
 
 .. toctree::
-  :caption: Device modules
+  :caption: Subpackages
   :maxdepth: 2
 
-  Base device<base_device/index>
+  Base subpackage<base/index>
+  Obs subpackage<obs/index>
+  CSP subpackage<csp/index>
+  Subarray subpackage<subarray/index>
+
+
+.. toctree::
+  :caption: Other devices
+  :maxdepth: 2
+
   Alarm Handler device<alarm_handler_device>
   Capability device<capability_device>
-  CSP-specific devices<csp/index>
   Logger device<logger_device>
   Master device<master_device>
-  Obs device<obs_device/index>
-  Subarray device<subarray/index>
   Tel State device<tel_state_device>
 
 

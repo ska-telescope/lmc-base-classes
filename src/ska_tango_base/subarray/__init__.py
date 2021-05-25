@@ -13,8 +13,8 @@ __all__ = (
 # Note: order of imports is important - start with lowest in the hierarchy
 from .subarray_obs_state_model import SubarrayObsStateModel
 
-from .subarray_component_manager import SubarrayComponentManager
-from .reference_subarray_component_manager import (
+from .component_manager import SubarrayComponentManager
+from .reference_component_manager import (
     ReferenceSubarrayComponentManager, check_on
 )
 from .subarray_device import SKASubarray

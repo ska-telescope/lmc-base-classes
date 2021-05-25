@@ -24,7 +24,7 @@ class HealthState(enum.IntEnum):
 
     OK = 0
     """
-    TANGO Device reports this state when ready for use, or when entity ``adminMode``
+    Tango Device reports this state when ready for use, or when entity ``adminMode``
     is ``NOT_FITTED`` or ``RESERVED``.
 
     The rationale for reporting health as OK when an entity is ``NOT_FITTED`` or
@@ -35,7 +35,7 @@ class HealthState(enum.IntEnum):
 
     DEGRADED = 1
     """
-    TANGO Device reports this state when only part of functionality is available. This
+    Tango Device reports this state when only part of functionality is available. This
     value is optional and shall be implemented only where it is useful.
 
     For example, a subarray may report healthState as ``DEGRADED`` if one of the dishes
@@ -45,12 +45,12 @@ class HealthState(enum.IntEnum):
     (quantified) and documented. For example, the difference between ``DEGRADED`` and ``FAILED``
     subarray can be defined as the number or percent of the dishes available, the number or
     percent of the baselines available,   sensitivity, or some other criterion. More than one
-    criteria may be defined for a TANGO Device.
+    criteria may be defined for a Tango Device.
     """
 
     FAILED = 2
     """
-    TANGO Device reports this state when unable to perform core functionality and
+    Tango Device reports this state when unable to perform core functionality and
     produce valid output.
     """
 
@@ -65,61 +65,54 @@ class AdminMode(enum.IntEnum):
 
     ONLINE = 0
     """
-    SKA operations declared that the entity can be used for observing (or other
-    function it implements). During normal operations Elements and subarrays
-    (and all other entities) shall be in this mode. TANGO Devices that implement
-    ``adminMode`` as read-only attribute shall always report ``adminMode=ONLINE``.
-    ``adminMode=ONLINE`` is also used to indicate active Subarrays or Capabilities.
+    The component can be used for normal operations, such as observing.
+    While in this mode, the Tango device is actively monitoring and
+    controlling its component. Tango devices that implement
+    ``adminMode`` as a read-only attribute shall always report
+    ``adminMode=ONLINE``.
     """
 
     OFFLINE = 1
-    """SKA operations declared that the entity is not used for observing or other function it
-    provides. A subset of the monitor and control functionality may be supported in this mode.
-    ``adminMode=OFFLINE`` is also used to indicate unused Subarrays and unused Capabilities.
-    TANGO devices report ``state=DISABLED`` when ``adminMode=OFFLINE``.
+    """
+    The component is not to be used for any operations. While in this
+    mode, Tango devices report ``state=DISABLE``, and do not communicate
+    with their component. Monitoring and control of the component does
+    not occur, so alarms, alerts and events are not received.
     """
 
     MAINTENANCE = 2
     """
-    SKA operations declared that the entity is reserved for maintenance and cannot
-    be part of scientific observations, but can be used for observing in a ‘Maintenance Subarray’.
+    SKA operations declares that the component cannot be used for normal
+    operations, but can be used for maintenance purposes such as testing
+    and debugging, as part of a "maintenance subarray". While in this
+    mode, Tango devices are actively monitoring and controlling their
+    component, but may only support a subset of normal functionality.
 
-    ``MAINTENANCE`` mode has different meaning for different entities, depending on the context
-    and functionality. Some entities may implement different behaviour when in ``MAINTENANCE``
-    mode.
-
-    For each TANGO Device, the difference in behaviour and functionality in ``MAINTENANCE`` mode
-    shall be documented. ``MAINTENANCE`` is the factory default for ``adminMode``. Transition
-    out of ``adminMode=NOT_FITTED`` is always via ``MAINTENANCE``; an engineer/operator has to
-    verify that the  entity is operational as expected before it is set to ``ONLINE``
-    (or ``OFFLINE``).
+    ``MAINTENANCE`` mode has different meaning for different components,
+    depending on the context and functionality. Some entities may
+    implement different behaviour when in ``MAINTENANCE`` mode. For each
+    Tango device, the difference in behaviour and functionality in
+    ``MAINTENANCE`` mode shall be documented.
     """
 
     NOT_FITTED = 3
     """
-    SKA operations declared the entity as ``NOT_FITTED`` (and therefore cannot be used for
-    observing or other function it provides). TM shall not send commands or queries to the
-    Element (entity) while in this mode.
-
-    TANGO devices shall report ``state=DISABLE`` when ``adminMode=NOT_FITTED``; higher level
-    entities (Element, Sub-element, component, Subarray and/or Capability) which ‘use’
-    ``NOT_FITTED`` equipment shall report operational ``state`` as ``DISABLE``.  If only a subset
-    of higher-level functionality is affected, overall ``state`` of the higher-level entity that
-    uses ``NOT_FITTED`` equipment may be reported as ``ON``, but with ``healthState=DEGRADED``.
-    Additional queries may be necessary to identify which functionality and capabilities are
-    available.
-
-    Higher-level entities shall intelligently exclude ``NOT_FITTED`` items from ``healthState`` and
-    Element Alerts/Telescope Alarms; e.g. if a receiver band in DSH is ``NOT_FITTED`` and there
-    is no communication to that receiver band, then DSH shall not raise Element Alerts for that
-    entity and it should not report ``healthState=FAILED`` because of an entity that is
-    ``NOT_FITTED``.
+    The component cannot be used for any purposes because it is not
+    fitted; for example, faulty equipment has been removed and not
+    yet replaced, leaving nothing `in situ` to monitor. While in this
+    mode, Tango devices report ``state=DISABLED``. All monitoring and
+    control functionality is disabled because there is no component to
+    monitor.
     """
 
     RESERVED = 4
-    """This mode is used to identify additional equipment that is ready to take over when the
-    operational equipment fails. This equipment does not take part in the operations at this
-    point in time. TANGO devices report ``state=DISABLED`` when ``adminMode=RESERVED``.
+    """
+    The component is fitted, but only for redundancy purposes. It is
+    additional equipment that does not take part in operations at this
+    time, but is ready to take over when the operational
+    equipment fails. While in this mode, Tango devices report
+    ``state=DISABLED``. All monitoring and control functionality is
+    disabled.
     """
 
 
@@ -258,12 +251,12 @@ class ControlMode(enum.IntEnum):
 
     REMOTE = 0
     """
-    TANGO Device accepts commands from all clients.
+    Tango Device accepts commands from all clients.
     """
 
     LOCAL = 1
     """
-    TANGO Device accepts only from a ‘local’ client and ignores commands and queries received
+    Tango Device accepts only from a ‘local’ client and ignores commands and queries received
     from TM or any other ‘remote’ clients. This is typically activated by a switch,
     or a connection on the local control interface. The intention is to support early
     integration of DISHes and stations. The equipment has to be put back in ``REMOTE``

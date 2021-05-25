@@ -12,9 +12,9 @@ A *component* could be (for example):
 * An external service such as a database or cluster workload
   manager
 
-* A software process or thread launched by the TANGO device.
+* A software process or thread launched by the Tango device.
 
-* In a hierarchical system, a group of subservient TANGO devices.
+* In a hierarchical system, a group of subservient Tango devices.
 
 By analogy, if the *component* is a television, the Tango device would
 be the remote control for that television.
@@ -43,7 +43,7 @@ are largely independent of each other:
   component continues to run; the only impact is it can no longer be
   monitored or controlled.
   
-  By analogy: when the batteries in your TV remote control got flat, the
+  By analogy: when the batteries in your TV remote control go flat, the
   TV continues to run.
 
 * We should not assume that a component's state is governed solely by
@@ -51,19 +51,19 @@ are largely independent of each other:
   wide range of factors. For example, the following are ways in which a
   component might be switched off:
 
-  * Its Tango device switched it off via its software interface;
+  * Its Tango device switches it off via its software interface;
 
-  * Some other software entity switched it off via its software
+  * Some other software entity switches it off via its software
     interface;
 
-  * The hardware switched itself off, or its firmware switched it off,
+  * The hardware switches itself off, or its firmware switches it off,
     because it detected a critical fault.
 
-  * The equipment's power button was pressed;
+  * The equipment's power button is pressed;
 
-  * An upstream power supply device denied it power.
+  * An upstream power supply device denies it power.
 
-  A TANGO device therefore must not treat its component as under its
+  A Tango device therefore must not treat its component as under its
   sole control. For example, having turned its component on, it must not
   assume that the component will remain on. Rather, it must continually
   *monitor* its component, and update its state to reflect changes in
@@ -74,9 +74,9 @@ Component monitoring
 Component *monitoring* is the main mechanism by which a Tango device
 maintains and updates its state:
   
-* A TANGO device should not make assumptions about component state after
+* A Tango device should not make assumptions about component state after
   issuing a command. For example, after successfully telling its
-  component to turn on, a TANGO device should not assume that the
+  component to turn on, a Tango device should not assume that the
   component is on, and transition immediately to ON state. Rather, it
   should wait for its monitoring of the component to provide
   confirmation that the component is on; only then should it transition
@@ -84,22 +84,22 @@ maintains and updates its state:
   complete successfully, yet the device's ``state()`` might not report
   ``ON`` state immediately, or for some seconds, or indeed at all.
 
-* A TANGO device also should not make assumptions about component state
-  when the TANGO device is *initialising*. For example, in a normal
-  controlled startup of a telescope, an initialising TANGO device might
+* A Tango device also should not make assumptions about component state
+  when the Tango device is *initialising*. For example, in a normal
+  controlled startup of a telescope, an initialising Tango device might
   expect to find its component switched off, and to be itself
   responsible for switching the component on at the proper time.
-  However, this is not the only circumstance in which a TANGO device
-  might initialise; the TANGO device would also have to initialise
+  However, this is not the only circumstance in which a Tango device
+  might initialise; the Tango device would also have to initialise
   following a reboot of the server on which it runs. In such a case, the
   component might already be switched on. Thus, at initialisation, a
-  TANGO device should merely launch the component monitoring that will
-  allows the device to retectthe state of the component.
+  Tango device should merely launch the component monitoring that will
+  allows the device to detect the state of the component.
 
 Component managers
 ------------------
-A TANGO device's responsibility to monitor and control its component is
-largely separate from its interface to the TANGO subsystem. Therefore,
+A Tango device's responsibility to monitor and control its component is
+largely separate from its interface to the Tango subsystem. Therefore,
 devices in this package implement component monitoring and control in a
 separate *component manager*.
 
@@ -121,11 +121,10 @@ A component manager is responsible for:
 
   * implementing monitoring of the component so that changes in
     component state trigger callbacks that report those changes up to
-    the TANGO device;
+    the Tango device;
     
   * implementing commands such as ``off()``, ``on()``, etc., so that
     they actually tell the component to turn off, turn on, etc.
 
-.. note:: Component managers should be independent of TANGO.
-   It is highly recommended to implement your component manager, and
-   thoroughly test it, *before* embedding it in a TANGO device.
+.. note:: It is highly recommended to implement your component manager,
+   and thoroughly test it, *before* embedding it in a Tango device.

@@ -1,6 +1,6 @@
 """
 Tests for the
-:py:mod:`ska_tango_base.csp_subelement_subarray_component_manager`
+:py:mod:`ska_tango_base.csp_subelement_component_manager`
 module.
 """
 import contextlib
@@ -16,7 +16,7 @@ from ska_tango_base.control_model import PowerMode
 class TestCspSubelementSubarrayComponentManager:
     """
     Tests of the
-    :py:class:`ska_tango_base.csp_subelement_subarray_component_manager.SubarrayComponentManager`
+    :py:class:`ska_tango_base.csp_subelement_component_manager.SubarrayComponentManager`
     class.
     """
 

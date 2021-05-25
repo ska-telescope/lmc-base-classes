@@ -126,7 +126,7 @@ if __name__ == '__main__':
         psr = sim_xmi_parser.XmiParser()
         psr.parse(filepath)
 
-        # Get all the features of the TANGO class
+        # Get all the features of the Tango class
         attr_qualities = psr.get_device_attribute_metadata()
         cmd_qualities = psr.get_device_command_metadata()
         devprop_qualities = psr.get_device_properties_metadata('deviceProperties')

@@ -1,6 +1,6 @@
 Getting started
 ===============
-This page will guide you through the steps to writing a SKA TANGO device
+This page will guide you through the steps to writing a SKA Tango device
 based on the ``ska-tango-base`` package.
 
 Prerequisites
@@ -15,29 +15,28 @@ installed from the EngageSKA Nexus repository:
 
 Basic steps
 -----------
-The recommended basic steps to writing a SKA TANGO device based on the
+The recommended basic steps to writing a SKA Tango device based on the
 ``ska-tango-base`` package are:
 
 1. Write a component manager.
 
 2. Implement command class objects.
 
-3. Write your TANGO device.
+3. Write your Tango device.
 
 Detailed steps
 --------------
 
 Write a component manager
 ^^^^^^^^^^^^^^^^^^^^^^^^^
-A fundamental assumption of this package is that each TANGO device
+A fundamental assumption of this package is that each Tango device
 exists to provide monitoring and control of some *component* of a SKA
 telescope. That *component* could be some hardware, a software service
-or process, or even a group of subservient TANGO devices.
+or process, or even a group of subservient Tango devices.
 
 A *component manager* provides for monitoring and control of a
-component. This functionality is independent of TANGO. It is *highly
-recommended* to implement and thoroughly test your component manager
-*before* embedding it in its TANGO device.
+component. It is *highly recommended* to implement and thoroughly test
+your component manager *before* embedding it in a Tango device.
 
 For more information on components and component managers, see
 :doc:`component_managers`.
@@ -48,11 +47,11 @@ Writing a component manager involves the following steps.
    component manager base classes, each associated with a device class.
    For example,
    
-   * If your TANGO device will inherit from ``SKABaseDevice``, then you
+   * If your Tango device will inherit from ``SKABaseDevice``, then you
      will probably want to base your component manager on the
-     ``BaseComponentManager`` class
+     ``BaseComponentManager`` class.
 
-   * If your TANGO device is a subarray, then you will want to base your
+   * If your Tango device is a subarray, then you will want to base your
      component manager on ``SubarrayComponentManager``.
 
    These component managers are abstract. They specify an interface, but
@@ -72,9 +71,10 @@ Writing a component manager involves the following steps.
       addition to an abstract ``BaseComponentManager``, there is also a
       concrete ``ReferenceBaseComponentManager``. These reference
       implementations are provided for explanatory purposes: they
-      illustrate a concrete subclass. You are encouraged to review the
-      reference implementations, and adapt their implementations to your
-      own purposes; but it is not recommended to subclass from them.
+      illustrate how a concrete component manager might be implemented.
+      You are encouraged to review the reference implementations, and
+      adapt them to your own needs; but it is not recommended to
+      subclass from them.
 
 2. **Establish communication with your component.** How you do this will
    depend on the capabilities and interface of your component. for
@@ -94,28 +94,29 @@ Writing a component manager involves the following steps.
 4. **Implement component monitoring.** Whenever your component changes
    its state, your component manager needs to become reliably aware of
    that change within a reasonable timeframe, so that it can pass this
-   on to the TANGO device.
+   on to the Tango device.
    
-   The base component manager already contains some helper methods to
-   trigger device callbacks. For example, ``BaseComponentManager``
-   provides a ``component_fault`` method that lets the device know that
-   the component is in fault. You need to implement component monitoring
-   so that, if the component experiences a fault, this is detected, and
-   results in the ``component_fault`` helper method being called.
+   The abstract component managers provided already contain some helper
+   methods to trigger device callbacks. For example,
+   ``BaseComponentManager`` provides a ``component_fault`` method that
+   lets the device know that the component has experienced a fault. You
+   need to implement component monitoring so that, if the component
+   experiences a fault, this is detected, and results in the
+   ``component_fault`` helper method being called.
 
    For component-specific functionality, you will need to implement the
    corresponding helper methods. For example, if your component reports
    its temperature, then your component manager will need to
 
-   1. Implement a mechanism by which it can let its TANGO device know
+   1. Implement a mechanism by which it can let its Tango device know
       that the component temperature has changed, such as a callback;
 
    2. Implement monitoring so that this mechanism is triggered whenever
       a change in component temperature is detected.
 
-5. **Implement component control** Methods to control the component must
-   be implemented; for example the component manager's ``on()`` method
-   must be implemented to actually tell the component to turn on.
+5. **Implement component control.** Methods to control the component
+   must be implemented; for example the component manager's ``on()``
+   method must be implemented to actually tell the component to turn on.
 
    Note that component *control* and component *monitoring* are
    decoupled from each other. So, for example, a component manager's
@@ -129,17 +130,18 @@ Writing a component manager involves the following steps.
    
    1. The ``on()`` command should be implemented to tell the component
       to power up. If the component accepts this command without
-      complaint, then the on() command should return success. The
+      complaint, then the ``on()`` command should return success. The
       component manager should not, however, assume that the component
       is now on.
    2. After ten seconds, the component has powered up, and the component
       manager's monitoring detects that the component is on. Only then
       should the callback be called to let the device know that the
-      component has changed state.
+      component has changed state, resulting in a change of device state
+      to ``ON``.
 
 .. note:: A component manager may maintain additional state, and support
    additional commands, that do not map to its component. That is, a
-   call to a component manager may not always result in a call to the
+   call to a component manager needs not always result in a call to the
    underlying component. For example, a subarray's component manager may
    implement its ``assign_resources`` method simply to maintain a record
    (within the component manager itself) of what resources it has, so
@@ -153,7 +155,7 @@ Writing a component manager involves the following steps.
 
 Implement command class objects
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-TANGO device command functionality is implemented in command *classes*
+Tango device command functionality is implemented in command *classes*
 rather than methods. This allows for:
    
 * functionality common to many classes to be abstracted out and
@@ -161,19 +163,19 @@ rather than methods. This allows for:
   associated with transitional states (*e.g.* ``Configure()`` command
   and ``CONFIGURING`` state, ``Scan()`` command and ``SCANNING`` state,
   *etc.*). Command classes allow us to implement this association once
-  for all, and to protect it from accidental overriding by command
-  subclasses
-* testing of commands independently of TANGO. For example, a TANGO
-  device's ``On()`` command might only need to interactive with the
+  for all, and to protect that implementation from accidental overriding
+  by command subclasses.
+* testing of commands independently of Tango. For example, a Tango
+  device's ``On()`` command might only need to interact with the
   device's component manager and its operational state model. As such,
-  in order to test the correct implementation of that command, we need
-  only a component manager and an operational state model. Thus, we can
-  test the command without actually instantiating the TANGO device.
+  in order to test the correct implementation of that command, we only
+  need a component manager and an operational state model. Thus, we can
+  test the command without actually instantiating the Tango device.
 
 Writing a command class involves the following steps.
 
 1. **Do you really need to implement the command?** If the command to be
-   implemented is part of the TANGO device you will inherit from,
+   implemented is part of the Tango device you will inherit from,
    perhaps the current implementation is exactly what you need.
 
    For example, the ``SKABaseDevice`` class's implementation of the
@@ -191,7 +193,7 @@ Writing a command class involves the following steps.
 
    * If the command is a new command, not present in the base device
      class, then you will want to inherit from one or more command
-     classes in the :py:mod:``ska_tango_base.commands`` module. 
+     classes in the :py:mod:`ska_tango_base.commands` module. 
 
 3. **Implement class methods.**
    
@@ -201,31 +203,31 @@ Writing a command class involves the following steps.
      the ``is_allowed()`` method.
 
 
-Write your TANGO device
+Write your Tango device
 ^^^^^^^^^^^^^^^^^^^^^^^
 
-Writing the TANGO device involves the following steps:
+Writing the Tango device involves the following steps:
 
 1. **Select a device class to subclass.**
 
 2. **Register your component manager.** This is done by overriding the
-   ``init_component_manager`` class to return your component manager
+   ``create_component_manager`` class to return your component manager
    object:
 
    .. code-block:: py
 
-     def init_component_manager(self):
-         return MyDeviceComponentManager(
+     def create_component_manager(self):
+         return AntennaComponentManager(
              self.op_state_model, logger=self.logger
          )
 
 3. **Implement commands.** You've already written the command classes.
-   There is some boilerplate to ensure that the TANGO command methods
+   There is some boilerplate to ensure that the Tango command methods
    invoke the command classes:
 
-   1. Registration occurs in the ``init_command_objects`` method, via
+   1. Registration occurs in the ``init_command_objects`` method, using
       calls to the ``register_command_object`` helper method. Implement
-      the ``init_command_object`` method:
+      the ``init_command_objects`` method:
 
       .. code-block:: py
 
@@ -262,22 +264,22 @@ Writing the TANGO device involves the following steps:
       Note that these two examples deliberately push all SKA business
       logic down to the command class (at least) or even the component
       manager. It is highly recommended not to include SKA business
-      logic in TANGO devices. However, TANGO-specific functionality can
+      logic in Tango devices. However, Tango-specific functionality can
       and should be implemented directly into the command method. For
       example, many SKA commands accept a JSON string as argument, as a
-      workaround for the fact that TANGO commands cannot accept more
+      workaround for the fact that Tango commands cannot accept more
       than one argument. Since this use of JSON is closely associated
-      with TANGO, we might choose to unpack our JSON strings in the
+      with Tango, we might choose to unpack our JSON strings in the
       command method itself, thus leaving our command objects free of
       JSON:
 
       .. code-block:: py
 
          @command(dtype_in=..., dtype_out=...)
-             def DoStuff(self, argin):
-                 arg = json.loads(argin)
-                 command = self.get_command_object("DoStuff")
-                 return command(args)
+         def DoStuff(self, argin):
+             args = json.loads(argin)
+             command = self.get_command_object("DoStuff")
+             return command(args)
 
 
 .. _set up your development environment: https://developer.skatelescope.org/en/latest/tools/tango-devenv-setup.html

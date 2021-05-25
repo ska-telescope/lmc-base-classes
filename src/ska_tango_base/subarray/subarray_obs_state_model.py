@@ -12,7 +12,7 @@ subarray Tango devices. It consists of:
 from transitions.extensions import LockedMachine as Machine
 
 from ska_tango_base.control_model import ObsState
-from ska_tango_base.obs_device import ObsStateModel
+from ska_tango_base.obs import ObsStateModel
 
 __all__ = ["SubarrayObsStateModel"]
 

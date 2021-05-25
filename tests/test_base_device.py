@@ -20,8 +20,8 @@ import tango
 from unittest import mock
 from tango import DevFailed, DevState
 from ska_tango_base import SKABaseDevice
-from ska_tango_base.base_device import OpStateModel, ReferenceBaseComponentManager
-from ska_tango_base.base_device.base_device import (
+from ska_tango_base.base import OpStateModel, ReferenceBaseComponentManager
+from ska_tango_base.base.base_device import (
     _DEBUGGER_PORT,
     _Log4TangoLoggingLevel,
     _PYTHON_TO_TANGO_LOGGING_LEVEL,
@@ -204,7 +204,7 @@ class TestLoggingUtils:
         with pytest.raises(LoggingTargetError):
             LoggingUtils.get_syslog_address_and_socktype(bad_syslog_url)
 
-    @mock.patch('ska_tango_base.base_device.base_device.TangoLoggingServiceHandler')
+    @mock.patch('ska_tango_base.base.base_device.TangoLoggingServiceHandler')
     @mock.patch('logging.handlers.SysLogHandler')
     @mock.patch('logging.handlers.RotatingFileHandler')
     @mock.patch('logging.StreamHandler')
@@ -347,7 +347,7 @@ class TestSKABaseDevice(object):
             """
             A concrete subclass of SKABaseDevice, for testing
             """
-            def init_component_manager(self):
+            def create_component_manager(self):
                 return ReferenceBaseComponentManager(
                     self.op_state_model, logger=self.logger
                 )
@@ -518,7 +518,7 @@ class TestSKABaseDevice(object):
         assert tango_context.device.loggingTargets == ("tango::logger", )
 
         with mock.patch(
-            "ska_tango_base.base_device.base_device.LoggingUtils.create_logging_handler"
+            "ska_tango_base.base.base_device.LoggingUtils.create_logging_handler"
         ) as mocked_creator:
 
             def null_creator(target, tango_logger):

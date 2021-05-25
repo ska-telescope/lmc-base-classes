@@ -31,3 +31,9 @@ class CommandError(RuntimeError):
 
 class CapabilityValidationError(ValueError):
     """Error in validating capability input against capability types."""
+
+class ComponentError(Exception):
+    """Component cannot perform as requested."""
+
+class ComponentFault(ComponentError):
+    """Component is in FAULT state and cannot perform as requested."""

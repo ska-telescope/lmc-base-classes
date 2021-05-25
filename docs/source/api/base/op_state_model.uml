@@ -1,0 +1,49 @@
+INIT: The Tango device is initialising.
+UNKNOWN: The Tango device cannot determine\nthe state of its telescope component.
+DISABLE: The Tango device is not monitoring\nits telescope component.
+OFF: The telescope component is turned off
+STANDBY: The telescope component is standing by
+ON: The telescope component is turned on
+FAULT: The telescope component has faulted
+
+INIT --down--> DISABLE
+INIT --down--> UNKNOWN
+INIT --down--> OFF
+INIT --down--> STANDBY
+INIT --down--> ON
+INIT --down--> FAULT
+DISABLE -> UNKNOWN
+DISABLE -> OFF
+DISABLE -> STANDBY
+DISABLE -> ON
+DISABLE -> FAULT
+
+UNKNOWN -> DISABLE
+UNKNOWN -> OFF
+UNKNOWN -> STANDBY
+UNKNOWN -> ON
+UNKNOWN -> FAULT
+
+OFF -> DISABLE
+OFF -> UNKNOWN
+OFF -> STANDBY
+OFF -> ON
+OFF -> FAULT
+
+STANDBY -> DISABLE
+STANDBY -> UNKNOWN
+STANDBY -> OFF
+STANDBY -> ON
+STANDBY -> FAULT
+
+ON -> DISABLE
+ON -> UNKNOWN
+ON -> OFF
+ON -> STANDBY
+ON -> FAULT
+
+FAULT -> DISABLE
+FAULT -> UNKNOWN
+FAULT -> OFF
+FAULT -> STANDBY
+FAULT -> ON

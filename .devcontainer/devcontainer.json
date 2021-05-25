@@ -1,0 +1,30 @@
+{
+    "name": "ska_tango_base vscode development container",
+    "context": "..",
+    "dockerFile": "Dockerfile",
+    "settings": {
+        "terminal.integrated.shell.linux": "/bin/bash",
+        "python.pythonPath": "/usr/bin/python3",
+        "files.exclude": {
+            ".coverage*": true,
+            "**/*.egg*": true,
+            "**/__pycache__": true
+        },
+        "files.watcherExclude": {
+            ".coverage*": true,
+            "**/*.egg*": true,
+            "**/__pycache__": true
+        }
+    },
+    "extensions": [
+        "ms-python.python",
+        "lextudio.restructuredtext",
+        "davidanson.vscode-markdownlint",
+        "alexkrechik.cucumberautocomplete",
+    ],
+    "postCreateCommand": "python3 -m pip install -e /workspaces/ska-tango-base --extra-index-url https://nexus.engageska-portugal.pt/repository/pypi/simple",
+    "remoteUser": "tango",
+    "remoteEnv": {
+        "PATH": "/home/tango/.local/bin:${containerEnv:PATH}",
+    }
+}

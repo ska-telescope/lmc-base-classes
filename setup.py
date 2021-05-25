@@ -46,13 +46,13 @@ setuptools.setup(
     entry_points={
         "console_scripts": [
             "SKAAlarmHandler=ska_tango_base.alarm_handler_device:main",
-            "SKABaseDevice=ska_tango_base.base_device:main",
+            "SKABaseDevice=ska_tango_base.base.base_device:main",
             "SKACapability=ska_tango_base.capability_device:main",
             "SKAExampleDevice=ska_tango_base.example_device:main",
             "SKALogger=ska_tango_base.logger_device:main",
             "SKAMaster=ska_tango_base.master_device:main",
-            "SKAObsDevice=ska_tango_base.obs_device:main",
-            "SKASubarray=ska_tango_base.subarray_device:main",
+            "SKAObsDevice=ska_tango_base.obs.obs_device:main",
+            "SKASubarray=ska_tango_base.subarray.subarray_device:main",
             "SKATelState=ska_tango_base.tel_state_device:main",
             "CspSubelementMaster=ska_tango_base.csp_subelement_master:main",
             "CspSubelementObsDevice=ska_tango_base.csp_subelement_obsdevice:main",

@@ -6,7 +6,7 @@
 #
 """
 This module implements SKALogger device, a generic base device for
-logging for SKA. It enables to view on-line logs through the TANGO
+logging for SKA. It enables to view on-line logs through the Tango
 Logging Services and to store logs using Python logging. It configures
 the log levels of remote logging for selected devices.
 """
@@ -49,7 +49,7 @@ class SKALogger(SKABaseDevice):
         super().init_command_objects()
         self.register_command_object(
             "SetLoggingLevel",
-            self.SetLoggingLevelCommand(self, self.state_model, self.logger)
+            self.SetLoggingLevelCommand(self, self.op_state_model, self.logger)
         )
 
     def always_executed_hook(self):
@@ -78,9 +78,8 @@ class SKALogger(SKABaseDevice):
             """
             Constructor for SetLoggingLevelCommand
 
-            :param target: the object that this command acts upon; for
-                example, the SKASubarray device for which this class
-                implements the command
+            :param target: the object that this base command acts upon. For
+                example, the device's component manager.
             :type target: object
             :param state_model: the state model that this command uses
                  to check that it is allowed to run, and that it drives

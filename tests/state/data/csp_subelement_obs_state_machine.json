@@ -1,0 +1,190 @@
+{
+    "states": {
+        "IDLE": {},
+        "CONFIGURING_IDLE": {},
+        "CONFIGURING_READY": {},
+        "READY": {},
+        "SCANNING": {},
+        "ABORTING": {},
+        "ABORTED": {},
+        "RESETTING": {},
+        "FAULT": {}
+    },
+    "transitions": [
+        {
+            "from": "IDLE",
+            "to": "FAULT",
+            "trigger": "component_obsfault"
+        },
+        {
+            "from": "CONFIGURING_IDLE",
+            "to": "FAULT",
+            "trigger": "component_obsfault"
+        },
+        {
+            "from": "CONFIGURING_READY",
+            "to": "FAULT",
+            "trigger": "component_obsfault"
+        },
+        {
+            "from": "READY",
+            "to": "FAULT",
+            "trigger": "component_obsfault"
+        },
+        {
+            "from": "SCANNING",
+            "to": "FAULT",
+            "trigger": "component_obsfault"
+        },
+        {
+            "from": "ABORTING",
+            "to": "FAULT",
+            "trigger": "component_obsfault"
+        },
+        {
+            "from": "ABORTED",
+            "to": "FAULT",
+            "trigger": "component_obsfault"
+        },
+        {
+            "from": "FAULT",
+            "to": "FAULT",
+            "trigger": "component_obsfault"
+        },
+        {
+            "from": "RESETTING",
+            "to": "FAULT",
+            "trigger": "component_obsfault"
+        },
+        {
+            "from": "IDLE",
+            "to": "CONFIGURING_IDLE",
+            "trigger": "configure_invoked"
+        },
+        {
+            "from": "CONFIGURING_IDLE",
+            "to": "IDLE",
+            "trigger": "configure_completed"
+        },
+        {
+            "from": "READY",
+            "to": "CONFIGURING_READY",
+            "trigger": "configure_invoked"
+        },
+        {
+            "from": "CONFIGURING_IDLE",
+            "to": "CONFIGURING_READY",
+            "trigger": "component_configured"
+        },
+        {
+            "from": "CONFIGURING_READY",
+            "to": "READY",
+            "trigger": "configure_completed"
+        },
+        {
+            "from": "READY",
+            "to": "READY",
+            "trigger": "end_invoked"
+        },
+        {
+            "from": "READY",
+            "to": "IDLE",
+            "trigger": "component_unconfigured"
+        },
+        {
+            "from": "READY",
+            "to": "READY",
+            "trigger": "scan_invoked"
+        },
+        {
+            "from": "READY",
+            "to": "SCANNING",
+            "trigger": "component_scanning"
+        },
+        {
+            "from": "SCANNING",
+            "to": "SCANNING",
+            "trigger": "end_scan_invoked"
+        },
+        {
+            "from": "SCANNING",
+            "to": "READY",
+            "trigger": "component_not_scanning"
+        },
+        {
+            "from": "IDLE",
+            "to": "ABORTING",
+            "trigger": "abort_invoked"
+        },
+        {
+            "from": "CONFIGURING_IDLE",
+            "to": "ABORTING",
+            "trigger": "abort_invoked"
+        },
+        {
+            "from": "CONFIGURING_READY",
+            "to": "ABORTING",
+            "trigger": "abort_invoked"
+        },
+        {
+            "from": "READY",
+            "to": "ABORTING",
+            "trigger": "abort_invoked"
+        },
+        {
+            "from": "SCANNING",
+            "to": "ABORTING",
+            "trigger": "abort_invoked"
+        },
+        {
+            "from": "RESETTING",
+            "to": "ABORTING",
+            "trigger": "abort_invoked"
+        },
+        {
+            "from": "ABORTING",
+            "to": "ABORTING",
+            "trigger": "component_unconfigured"
+        },
+        {
+            "from": "ABORTING",
+            "to": "ABORTING",
+            "trigger": "component_configured"
+        },
+        {
+            "from": "ABORTING",
+            "to": "ABORTING",
+            "trigger": "component_not_scanning"
+        },
+        {
+            "from": "ABORTING",
+            "to": "ABORTING",
+            "trigger": "component_scanning"
+        },
+        {
+            "from": "ABORTING",
+            "to": "ABORTED",
+            "trigger": "abort_completed"
+        },
+        {
+            "from": "ABORTED",
+            "to": "RESETTING",
+            "trigger": "obsreset_invoked"
+        },
+        {
+            "from": "FAULT",
+            "to": "RESETTING",
+            "trigger": "obsreset_invoked"
+        },
+        {
+            "from": "RESETTING",
+            "to": "RESETTING",
+            "trigger": "component_unconfigured"
+        },
+        {
+            "from": "RESETTING",
+            "to": "IDLE",
+            "trigger": "obsreset_completed"
+        }
+    ]
+}

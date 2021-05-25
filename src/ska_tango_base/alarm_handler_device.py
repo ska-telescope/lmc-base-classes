@@ -6,10 +6,10 @@
 #
 """
 This module implements SKAAlarmHandler, a generic base device for Alarms
-for SKA. It exposes SKA alarms and SKA alerts as TANGO attributes. SKA
+for SKA. It exposes SKA alarms and SKA alerts as Tango attributes. SKA
 Alarms and SKA/Element Alerts are rules-based configurable conditions
 that can be defined over multiple attribute values and quality factors,
-and are separate from the "built-in" TANGO attribute alarms.
+and are separate from the "built-in" Tango attribute alarms.
 """
 # PROTECTED REGION ID(SKAAlarmHandler.additionnal_import) ENABLED START #
 # Tango imports
@@ -103,23 +103,23 @@ class SKAAlarmHandler(SKABaseDevice):
         super().init_command_objects()
         self.register_command_object(
             "GetAlarmRule",
-            self.GetAlarmRuleCommand(self, self.state_model, self.logger)
+            self.GetAlarmRuleCommand(self, self.op_state_model, self.logger)
         )
         self.register_command_object(
             "GetAlarmData",
-            self.GetAlarmDataCommand(self, self.state_model, self.logger)
+            self.GetAlarmDataCommand(self, self.op_state_model, self.logger)
         )
         self.register_command_object(
             "GetAlarmAdditionalInfo",
-            self.GetAlarmAdditionalInfoCommand(self, self.state_model, self.logger)
+            self.GetAlarmAdditionalInfoCommand(self, self.op_state_model, self.logger)
         )
         self.register_command_object(
             "GetAlarmStats",
-            self.GetAlarmStatsCommand(self, self.state_model, self.logger)
+            self.GetAlarmStatsCommand(self, self.op_state_model, self.logger)
         )
         self.register_command_object(
             "GetAlertStats",
-            self.GetAlertStatsCommand(self, self.state_model, self.logger)
+            self.GetAlertStatsCommand(self, self.op_state_model, self.logger)
         )
 
     def always_executed_hook(self):

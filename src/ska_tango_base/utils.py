@@ -288,53 +288,73 @@ def get_groups_from_json(json_definitions):
 
     The general format of the list is as follows, with optional "devices" and
     "subgroups" keys:
-        [ {"group_name": "<name>",
-           "devices": ["<dev name>", ...]},
-          {"group_name": "<name>",
-           "devices": ["<dev name>", "<dev name>", ...],
-           "subgroups" : [{<nested group>},
-                          {<nested group>}, ...]},
-          ...
-          ]
+
+    .. code-block:: py
+
+        [
+            {"group_name": "<name>", "devices": ["<dev name>", ...]},
+            {
+                "group_name": "<name>",
+                "devices": ["<dev name>", "<dev name>", ...],
+                "subgroups" : [{<nested group>}, {<nested group>}, ...]
+            },
+            ...
+        ]
 
     For example, a hierarchy of racks, servers and switches:
-    [ {"group_name": "servers",
-       "devices": ["elt/server/1", "elt/server/2",
-                   "elt/server/3", "elt/server/4"]},
-      {"group_name": "switches",
-       "devices": ["elt/switch/A", "elt/switch/B"]},
-      {"group_name": "pdus",
-       "devices": ["elt/pdu/rackA", "elt/pdu/rackB"]},
-      {"group_name": "racks",
-       "subgroups": [
-            {"group_name": "rackA",
-             "devices": ["elt/server/1", "elt/server/2",
-                         "elt/switch/A", "elt/pdu/rackA"]},
-            {"group_name": "rackB",
-             "devices": ["elt/server/3", "elt/server/4",
-                         "elt/switch/B", "elt/pdu/rackB"],
-             "subgroups": []}
-       ]} ]
 
+    .. code-block:: py
 
-    Parameters
-    ----------
-    json_definitions: sequence of str
-        Sequence of strings, each one a JSON dict with keys "group_name", and
-        one or both of:  "devices" and "subgroups", recursively defining
-        the hierarchy.
+        [
+            {
+                "group_name": "servers",
+                "devices": [
+                    "elt/server/1", "elt/server/2", "elt/server/3", "elt/server/4"
+                ]
+            },
+            {
+                "group_name": "switches",
+                "devices": ["elt/switch/A", "elt/switch/B"]
+            },
+            {
+                "group_name": "pdus",
+                "devices": ["elt/pdu/rackA", "elt/pdu/rackB"]
+            },
+            {
+                "group_name": "racks",
+                "subgroups": [
+                    {
+                        "group_name": "rackA",
+                        "devices": [
+                            "elt/server/1", "elt/server/2", "elt/switch/A", "elt/pdu/rackA"
+                        ]
+                    },
+                    {
+                        "group_name": "rackB",
+                        "devices": [
+                            "elt/server/3",
+                            "elt/server/4",
+                            "elt/switch/B",
+                            "elt/pdu/rackB"
+                        ],
+                        "subgroups": []
+                    }
+                ]
+            }
+        ]
 
-    Returns
-    -------
-    groups: dict
-        The keys of the dict are the names of the groups, in the following form:
-            {"<group name 1>": <tango.Group>,
-             "<group name 2>": <tango.Group>, ...}.
-        Will be an empty dict if no groups were specified.
+    :param json_definitions: Sequence of strings, each one a JSON dict
+        with keys "group_name", and one or both of:  "devices" and
+        "subgroups", recursively defining the hierarchy.
+    :type json_definitions: sequence of str
 
-    Raises
-    ------
-    GroupDefinitionsError:
+    :return: A dictionary, the keys of which are the names of the
+        groups, in the following form: {"<group name 1>": <tango.Group>,
+        "<group name 2>": <tango.Group>, ...}. Will be an empty dict if
+        no groups were specified.
+    :rtype: dict
+
+    :raises GroupDefinitionsError:
         - If error parsing JSON string.
         - If missing keys in the JSON definition.
         - If invalid device name.
@@ -411,22 +431,19 @@ def _build_group(definition):
     return group
 
 
-def validate_capability_types(
-        command_name, requested_capabilities, valid_capabilities):
-    """Check the validity of the input parameter passed on to the command specified
-    by the command_name parameter.
+def validate_capability_types(command_name, requested_capabilities, valid_capabilities):
+    """
+    Check the validity of the input parameter passed on to the command
+    specified by the command_name parameter.
 
-    Parameters
-    ----------
-    command_name: str
-        The name of the command which is to be executed.
-    requested_capabilities: list
-        A list of strings representing capability types.
-    valid_capabilities: list
-        A list of strings representing capability types.
-    Raises
-    ------
-    tango.DevFailed: If any of the capabilities requested are not valid.
+    :param command_name: The name of the command to be executed.
+    :type command_name: str
+    :param requested_capabilities: A list of strings representing
+        capability types.
+    :type requested_capabilities: list(str)
+    :param valid_capabilities: A list of strings representing capability
+        types.
+    :type valid_capabilities: list(str)
     """
     invalid_capabilities = list(
         set(requested_capabilities) - set(valid_capabilities))
@@ -438,23 +455,18 @@ def validate_capability_types(
 
 
 def validate_input_sizes(command_name, argin):
-    """Check the validity of the input parameters passed on to the command specified
-    by the command_name parameter.
+    """
+    Check the validity of the input parameters passed on to the command
+    specified by the command_name parameter.
 
-    Parameters
-    ----------
-    command_name: str
-        The name of the command which is to be executed.
-    argin: tango.DevVarLongStringArray
-        A tuple of two lists.
-
-    Raises
-    ------
-    tango.DevFailed: If the two lists are not equal in length.
+    :param command_name: The name of the command which is to be executed.
+    :type command_name: str
+    :param argin: A tuple of two lists
+    :type argin: tango.DevVarLongStringArray
     """
     capabilities_instances, capability_types = argin
     if len(capabilities_instances) != len(capability_types):
-        Except.throw_exception("Command failed!", "Argin value lists size mismatch.",
+        Except.throw_exception("Command failed!", "Argin value lists size mismatch.", 
                                command_name, ErrSeverity.ERR)
 
 
@@ -479,11 +491,12 @@ def for_testing_only(func, _testing_check=lambda: 'pytest' in sys.modules):
     argument is inaccessible via the @-syntax, which is a nice bonus.)
     """
     @functools.wraps(func)
-    def wrapper(*args, **kwargs):
+    def _wrapper(*args, **kwargs):
         """
         Function wrapper for `testing_only` decorator.
         """
         if not _testing_check():
             warnings.warn(f"{func.__name__} should only be used for testing purposes.")
         return func(*args, **kwargs)
-    return wrapper
+    
+    return _wrapper

@@ -17,7 +17,7 @@ SHELL = /bin/bash
 #
 DOCKER_REGISTRY_USER:=ska-telescope
 PROJECT = ska_tango_base
-IMAGE_FOR_DIAGRAMS = nexus.engageska-portugal.pt/ska-docker/ska-python-buildenv:9.3.3.1
+IMAGE_FOR_DIAGRAMS = nexus.engageska-portugal.pt/ska-tango-images/pytango-builder:9.3.3.3
 #
 # include makefile to pick up the standard Make targets, e.g., 'make build'
 # build, 'make push' docker push procedure, etc. The other Make targets

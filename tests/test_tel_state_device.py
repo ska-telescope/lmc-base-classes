@@ -13,6 +13,8 @@ import pytest
 from tango import DevState
 
 # PROTECTED REGION ID(SKATelState.test_additional_imports) ENABLED START #
+from ska_tango_base import SKATelState
+from ska_tango_base.base import ReferenceBaseComponentManager
 from ska_tango_base.control_model import AdminMode, ControlMode, HealthState, SimulationMode, TestMode
 # PROTECTED REGION END #    //  SKATelState.test_additional_imports
 
@@ -21,23 +23,27 @@ from ska_tango_base.control_model import AdminMode, ControlMode, HealthState, Si
 @pytest.mark.usefixtures("tango_context", "initialize_device")
 # PROTECTED REGION END #    //  SKATelState.test_SKATelState_decorators
 class TestSKATelState(object):
-    """Test case for packet generation."""
+    """
+    Test class for tests of the SKATelState device class.
+    """
 
-    properties = {
-        'TelStateConfigFile': '',
-        'SkaLevel': '4',
-        'GroupDefinitions': '',
-        'LoggingTargetsDefault': '',
-    }
+    @pytest.fixture(scope="class")
+    def device_test_config(self, device_properties):
+        """
+        Fixture that specifies the device to be tested, along with its
+        properties and memorized attributes.
+        """
+        return {
+            "device": SKATelState,
+            "component_manager_patch": lambda self: ReferenceBaseComponentManager(
+                self.op_state_model, logger=self.logger
+            ),
+            "properties": device_properties,
+            "memorized": {"adminMode": str(AdminMode.ONLINE.value)},
+        }
 
-    @classmethod
-    def mocking(cls):
-        """Mock external libraries."""
-        # Example : Mock numpy
-        # cls.numpy = SKATelState.numpy = MagicMock()
-        # PROTECTED REGION ID(SKATelState.test_mocking) ENABLED START #
-        # PROTECTED REGION END #    //  SKATelState.test_mocking
 
+    @pytest.mark.skip("Not implemented")
     def test_properties(self, tango_context):
         # Test the properties
         # PROTECTED REGION ID(SKATelState.test_properties) ENABLED START #
@@ -49,7 +55,7 @@ class TestSKATelState(object):
     def test_State(self, tango_context):
         """Test for State"""
         # PROTECTED REGION ID(SKATelState.test_State) ENABLED START #
-        assert tango_context.device.State() == DevState.DISABLE
+        assert tango_context.device.State() == DevState.OFF
         # PROTECTED REGION END #    //  SKATelState.test_State
 
     # PROTECTED REGION ID(SKATelState.test_Status_decorators) ENABLED START #
@@ -57,16 +63,16 @@ class TestSKATelState(object):
     def test_Status(self, tango_context):
         """Test for Status"""
         # PROTECTED REGION ID(SKATelState.test_Status) ENABLED START #
-        assert tango_context.device.Status() == "The device is in DISABLE state."
+        assert tango_context.device.Status() == "The device is in OFF state."
         # PROTECTED REGION END #    //  SKATelState.test_Status
 
     # PROTECTED REGION ID(SKATelState.test_GetVersionInfo_decorators) ENABLED START #
     # PROTECTED REGION END #    //  SKATelState.test_GetVersionInfo_decorators
-    def test_GetVersionInfo(self, device_class_under_test, tango_context):
+    def test_GetVersionInfo(self, tango_context):
         """Test for GetVersionInfo"""
         # PROTECTED REGION ID(SKATelState.test_GetVersionInfo) ENABLED START #
         versionPattern = re.compile(
-            f'{device_class_under_test.__name__}, ska_tango_base, [0-9]+.[0-9]+.[0-9]+, '
+            f'{tango_context.device.info().dev_class}, ska_tango_base, [0-9]+.[0-9]+.[0-9]+, '
             'A set of generic base devices for SKA Telescope.'
         )
         versionInfo = tango_context.device.GetVersionInfo()
@@ -106,7 +112,7 @@ class TestSKATelState(object):
     def test_adminMode(self, tango_context):
         """Test for adminMode"""
         # PROTECTED REGION ID(SKATelState.test_adminMode) ENABLED START #
-        assert tango_context.device.adminMode == AdminMode.OFFLINE
+        assert tango_context.device.adminMode == AdminMode.ONLINE
         # PROTECTED REGION END #    //  SKATelState.test_adminMode
 
     # PROTECTED REGION ID(SKATelState.test_controlMode_decorators) ENABLED START #

@@ -12,6 +12,7 @@ import re
 import pytest
 from tango import DevState
 from tango.test_context import MultiDeviceTestContext
+from ska_tango_base.base import ReferenceBaseComponentManager
 from ska_tango_base.logger_device import SKALogger
 from ska_tango_base.subarray import SKASubarray
 import tango
@@ -33,21 +34,26 @@ from ska_tango_base.control_model import (
 @pytest.mark.usefixtures("tango_context", "initialize_device")
 # PROTECTED REGION END #    //  SKALogger.test_SKALogger_decorators
 class TestSKALogger(object):
-    """Test case for packet generation."""
+    """
+    Test class for tests of the SKALogger device class.
+    """
 
-    properties = {
-        "SkaLevel": "1",
-        "GroupDefinitions": "",
-    }
+    @pytest.fixture(scope="class")
+    def device_test_config(self, device_properties):
+        """
+        Fixture that specifies the device to be tested, along with its
+        properties and memorized attributes.
+        """
+        return {
+            "device": SKALogger,
+            "component_manager_patch": lambda self: ReferenceBaseComponentManager(
+                self.op_state_model, logger=self.logger
+            ),
+            "properties": device_properties,
+            "memorized": {"adminMode": str(AdminMode.ONLINE.value)},
+        }
 
-    @classmethod
-    def mocking(cls):
-        """Mock external libraries."""
-        # Example : Mock numpy
-        # cls.numpy = SKALogger.numpy = MagicMock()
-        # PROTECTED REGION ID(SKALogger.test_mocking) ENABLED START #
-        # PROTECTED REGION END #    //  SKALogger.test_mocking
-
+    @pytest.mark.skip("Not implemented")
     def test_properties(self, tango_context):
         # test the properties
         # PROTECTED REGION ID(SKALogger.test_properties) ENABLED START #
@@ -59,7 +65,7 @@ class TestSKALogger(object):
     def test_State(self, tango_context):
         """Test for State"""
         # PROTECTED REGION ID(SKALogger.test_State) ENABLED START #
-        assert tango_context.device.State() == DevState.DISABLE
+        assert tango_context.device.State() == DevState.OFF
         # PROTECTED REGION END #    //  SKALogger.test_State
 
     # PROTECTED REGION ID(SKALogger.test_Status_decorators) ENABLED START #
@@ -67,16 +73,16 @@ class TestSKALogger(object):
     def test_Status(self, tango_context):
         """Test for Status"""
         # PROTECTED REGION ID(SKALogger.test_Status) ENABLED START #
-        assert tango_context.device.Status() == "The device is in DISABLE state."
+        assert tango_context.device.Status() == "The device is in OFF state."
         # PROTECTED REGION END #    //  SKALogger.test_Status
 
     # PROTECTED REGION ID(SKALogger.test_GetVersionInfo_decorators) ENABLED START #
     # PROTECTED REGION END #    //  SKALogger.test_GetVersionInfo_decorators
-    def test_GetVersionInfo(self, device_class_under_test, tango_context):
+    def test_GetVersionInfo(self, tango_context):
         """Test for GetVersionInfo"""
         # PROTECTED REGION ID(SKALogger.test_GetVersionInfo) ENABLED START #
         versionPattern = re.compile(
-            f'{device_class_under_test.__name__}, ska_tango_base, [0-9]+.[0-9]+.[0-9]+, '
+            f'{tango_context.device.info().dev_class}, ska_tango_base, [0-9]+.[0-9]+.[0-9]+, '
             'A set of generic base devices for SKA Telescope.'
         )
         versionInfo = tango_context.device.GetVersionInfo()
@@ -125,7 +131,7 @@ class TestSKALogger(object):
     def test_adminMode(self, tango_context):
         """Test for adminMode"""
         # PROTECTED REGION ID(SKALogger.test_adminMode) ENABLED START #
-        assert tango_context.device.adminMode == AdminMode.OFFLINE
+        assert tango_context.device.adminMode == AdminMode.ONLINE
         # PROTECTED REGION END #    //  SKALogger.test_adminMode
 
     # PROTECTED REGION ID(SKALogger.test_controlMode_decorators) ENABLED START #

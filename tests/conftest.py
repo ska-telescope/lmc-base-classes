@@ -11,67 +11,25 @@ from tango.test_context import DeviceTestContext
 
 
 @pytest.fixture(scope="class")
-def device_class_under_test(request):
+def device_properties():
     """
-    Returns the device class to be tested, by extracting it from the
-    name of the test class. For example, if the test class is
-    "TestSkaBaseDevice", then the first "Test" will be dropped from the
-    string, and the device class to be tested will be
-    ``ska_tango_base.SKABaseDevice``.
-
-    Note: This is default behaviour that can be overridden in tests by
-    re-specifying this fixture.
+    Fixture that returns device_properties to be provided to the
+    device under test. This is a default implementiong that provides
+    no properties.
     """
-    test_class_name = request.cls.__name__
-    class_name = test_class_name.split('Test', 1)[-1]
-    module = importlib.import_module("ska_tango_base", class_name)
-    return getattr(module, class_name)
+    return {}
 
 @pytest.fixture(scope="class")
-def tango_context(device_class_under_test):
-    """Creates and returns a Tango DeviceTestContext object.
-
-    Parameters
-    ----------
-    request: _pytest.fixtures.SubRequest
-        A request object gives access to the requesting test context.
+def tango_context(device_test_config):
     """
-    test_properties = {
-        'SKAMaster': {
-            'SkaLevel': '4',
-            'LoggingTargetsDefault': '',
-            'GroupDefinitions': '',
-            'NrSubarrays': '16',
-            'CapabilityTypes': '',
-            'MaxCapabilities': ['BAND1:1', 'BAND2:1']
-        },
-        'SKASubarray': {
-            "CapabilityTypes": ["BAND1", "BAND2"],
-            'LoggingTargetsDefault': '',
-            'GroupDefinitions': '',
-            'SkaLevel': '4',
-            'SubID': '1',
-        },
-        'CspSubElementMaster': {
-            'PowerDelayStandbyOn': '1.5',
-            'PowerDelayStandbyOff': '1.0',
-        },
-        'CspSubElementObsDevice': {
-            'DeviceID': '11',
-        },
-        'CspSubElementSubarray': {
-            "CapabilityTypes": ["id"],
-        },
-    }
+    Fixture that returns a Tango DeviceTestContext object, in which the
+    device under test is running.
+    """
+    component_manager_patch = device_test_config.pop("component_manager_patch", None)
+    if component_manager_patch is not None:
+        device_test_config["device"].create_component_manager = component_manager_patch
 
-    properties_key = device_class_under_test.__name__
-    if properties_key.startswith("_Reference"):
-        properties_key = properties_key[len("_Reference"):]
-
-    tango_context = DeviceTestContext(
-        device_class_under_test,
-        properties=test_properties.get(properties_key)
-    )
+    tango_context = DeviceTestContext(**device_test_config)
     tango_context.start()
     yield tango_context
     tango_context.stop()

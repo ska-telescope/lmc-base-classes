@@ -10,6 +10,10 @@
 import re
 import pytest
 
+from ska_tango_base import SKACapability
+from ska_tango_base.base import ReferenceBaseComponentManager
+from ska_tango_base.control_model import AdminMode
+
 
 # PROTECTED REGION ID(SKACapability.test_additional_imports) ENABLED START #
 # PROTECTED REGION END #    //  SKACapability.test_additional_imports
@@ -20,23 +24,22 @@ import pytest
 class TestSKACapability(object):
     """Test case for packet generation."""
 
-    properties = {
-        'SkaLevel': '4',
-        'LoggingTargetsDefault': '',
-        'GroupDefinitions': '',
-        'CapType': '',
-        'CapID': '',
-        'subID': '',
+    @pytest.fixture(scope="class")
+    def device_test_config(self, device_properties):
+        """
+        Fixture that specifies the device to be tested, along with its
+        properties and memorized attributes.
+        """
+        return {
+            "device": SKACapability,
+            "component_manager_patch": lambda self: ReferenceBaseComponentManager(
+                self.op_state_model, logger=self.logger
+            ),
+            "properties": device_properties,
+            "memorized": {"adminMode": str(AdminMode.ONLINE.value)},
         }
 
-    @classmethod
-    def mocking(cls):
-        """Mock external libraries."""
-        # Example : Mock numpy
-        # cls.numpy = SKACapability.numpy = MagicMock()
-        # PROTECTED REGION ID(SKACapability.test_mocking) ENABLED START #
-        # PROTECTED REGION END #    //  SKACapability.test_mocking
-
+    @pytest.mark.skip("Not implemented")
     def test_properties(self, tango_context):
         """Test device properties"""
         # Test the properties

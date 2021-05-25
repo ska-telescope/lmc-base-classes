@@ -1,6 +1,6 @@
 # Use SKA python image as base image
-FROM nexus.engageska-portugal.pt/ska-docker/ska-python-buildenv:9.3.3.1 AS buildenv
-FROM nexus.engageska-portugal.pt/ska-docker/ska-python-runtime:9.3.3.1 AS runtime
+FROM nexus.engageska-portugal.pt/ska-tango-images/pytango-builder:9.3.3.3 AS buildenv
+FROM nexus.engageska-portugal.pt/ska-tango-images/pytango-runtime:9.3.3.3 AS runtime
 
 ARG IMAGE_VERSION=0.0.1
 

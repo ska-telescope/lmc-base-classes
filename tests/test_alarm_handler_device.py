@@ -10,8 +10,12 @@
 
 # Imports
 import re
+
 import pytest
 
+from ska_tango_base import SKAAlarmHandler
+from ska_tango_base.base import ReferenceBaseComponentManager
+from ska_tango_base.control_model import AdminMode
 
 # PROTECTED REGION ID(SKAAlarmHandler.test_additional_imports) ENABLED START #
 # PROTECTED REGION END #    //  SKAAlarmHandler.test_additional_imports
@@ -20,24 +24,26 @@ import pytest
 @pytest.mark.usefixtures("tango_context", "initialize_device")
 # PROTECTED REGION END #    //  SKAAlarmHandler.test_SKAAlarmHandler_decorators
 class TestSKAAlarmHandler(object):
-    """Test case for packet generation."""
+    """
+    Test class for tests of the SKAAlarmHander device class.
+    """
 
-    properties = {
-        'SubAlarmHandlers': '',
-        'AlarmConfigFile': '',
-        'SkaLevel': '4',
-        'GroupDefinitions': '',
-        'LoggingTargetsDefault': ''
+    @pytest.fixture(scope="class")
+    def device_test_config(self, device_properties):
+        """
+        Fixture that specifies the device to be tested, along with its
+        properties and memorized attributes.
+        """
+        return {
+            "device": SKAAlarmHandler,
+            "component_manager_patch": lambda self: ReferenceBaseComponentManager(
+                self.op_state_model, logger=self.logger
+            ),
+            "properties": device_properties,
+            "memorized": {"adminMode": str(AdminMode.ONLINE.value)},
         }
 
-    @classmethod
-    def mocking(cls):
-        """Mock external libraries."""
-        # Example : Mock numpy
-        # cls.numpy = SKAAlarmHandler.numpy = MagicMock()
-        # PROTECTED REGION ID(SKAAlarmHandler.test_mocking) ENABLED START #
-        # PROTECTED REGION END #    //  SKAAlarmHandler.test_mocking
-
+    @pytest.mark.skip("Not implemented")
     def test_properties(self, tango_context):
         """Test the device properties"""
         # Test the properties
@@ -86,11 +92,11 @@ class TestSKAAlarmHandler(object):
 
     # PROTECTED REGION ID(SKAAlarmHandler.test_GetVersionInfo_decorators) ENABLED START #
     # PROTECTED REGION END #    //  SKAAlarmHandler.test_GetVersionInfo_decorators
-    def test_GetVersionInfo(self, device_class_under_test, tango_context):
+    def test_GetVersionInfo(self, tango_context):
         """Test for GetVersionInfo"""
         # PROTECTED REGION ID(SKAAlarmHandler.test_GetVersionInfo) ENABLED START #
         versionPattern = re.compile(
-            f'{device_class_under_test.__name__}, ska_tango_base, [0-9]+.[0-9]+.[0-9]+, '
+            f'{tango_context.device.info().dev_class}, ska_tango_base, [0-9]+.[0-9]+.[0-9]+, '
             'A set of generic base devices for SKA Telescope.'
         )
         versionInfo = tango_context.device.GetVersionInfo()

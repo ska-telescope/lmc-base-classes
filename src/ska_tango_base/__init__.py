@@ -1,6 +1,6 @@
 __all__ = (
     # subpackages
-    "base"
+    "base",
     "csp",
     "obs",
     "subarray",

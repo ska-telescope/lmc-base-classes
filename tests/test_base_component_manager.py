@@ -9,7 +9,7 @@ from ska_tango_base.control_model import PowerMode
 from ska_tango_base.faults import ComponentFault
 
 
-class TestComponentManager:
+class TestBaseComponentManager:
     """
     Tests of the
     :py:class:`ska_tango_base.component_manager.ComponentManager`

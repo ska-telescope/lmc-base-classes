@@ -253,6 +253,8 @@ Tango devices can be launched with a `-v` parameter to set the logging level. Fo
     hardware and support device decoupling.
   - Decoupling of state models from each other
   - Introduction of component managers, to support component monitoring
+- Update to latest containers
+- Add developer guide to documentation
 
 #### 0.10.1
 - Make dependency on `pytango` and `numpy` python packages explicit.

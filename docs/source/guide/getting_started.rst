@@ -54,6 +54,14 @@ Writing a component manager involves the following steps.
    * If your Tango device is a subarray, then you will want to base your
      component manager on ``SubarrayComponentManager``.
 
+   .. inheritance-diagram::
+      ska_tango_base.base.component_manager
+      ska_tango_base.subarray.component_manager
+      ska_tango_base.csp.obs.component_manager
+      ska_tango_base.csp.subarray.component_manager
+      :parts: 1
+  
+
    These component managers are abstract. They specify an interface, but
    leave it up to you to implement the functionality. For example,
    ``BaseComponentManager``'s ``on()`` command looks like this:
@@ -195,6 +203,14 @@ Writing a command class involves the following steps.
      class, then you will want to inherit from one or more command
      classes in the :py:mod:`ska_tango_base.commands` module. 
 
+     .. inheritance-diagram::
+        ska_tango_base.commands.BaseCommand
+        ska_tango_base.commands.StateModelCommand
+        ska_tango_base.commands.ResponseCommand
+        ska_tango_base.commands.CompletionCommand
+        ska_tango_base.commands.ObservationCommand
+        :parts: 1
+
 3. **Implement class methods.**
    
    * In many cases, you only need to implement the ``do()`` method.
@@ -209,6 +225,21 @@ Write your Tango device
 Writing the Tango device involves the following steps:
 
 1. **Select a device class to subclass.**
+
+   .. inheritance-diagram::
+      ska_tango_base.SKAAlarmHandler
+      ska_tango_base.SKACapability
+      ska_tango_base.SKALogger
+      ska_tango_base.SKAMaster
+      ska_tango_base.SKATelState
+      ska_tango_base.base.SKABaseDevice
+      ska_tango_base.obs.SKAObsDevice
+      ska_tango_base.subarray.SKASubarray
+      ska_tango_base.csp.CspSubElementMaster
+      ska_tango_base.csp.CspSubElementObsDevice
+      ska_tango_base.csp.CspSubElementSubarray
+      :top-classes: ska_tango_base.base.SKABaseDevice
+      :parts: 1
 
 2. **Register your component manager.** This is done by overriding the
    ``create_component_manager`` class to return your component manager

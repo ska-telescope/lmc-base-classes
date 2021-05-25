@@ -99,6 +99,7 @@ extensions = [
     'sphinx.ext.doctest',
     'sphinx.ext.todo',
     'sphinx.ext.coverage',
+    "sphinx.ext.inheritance_diagram",
     'sphinx.ext.viewcode',
     'sphinxcontrib.plantuml'
 ]

@@ -25,6 +25,14 @@ The following command classes are provided:
   with transitional states, such as ``AssignResources()`` and
   ``Configure()``.
 
+.. inheritance-diagram::
+   ska_tango_base.commands.BaseCommand
+   ska_tango_base.commands.StateModelCommand
+   ska_tango_base.commands.ResponseCommand
+   ska_tango_base.commands.CompletionCommand
+   ska_tango_base.commands.ObservationCommand
+   :parts: 1
+
 Multiple inheritance is supported, and it is expected that many commands
 will need to inherit from more than one command class. For example, a
 subarray's ``AssignResources`` command would inherit from:

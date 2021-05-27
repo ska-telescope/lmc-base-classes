@@ -18,6 +18,7 @@ from .op_state_model import OpStateModel
 
 from .component_manager import BaseComponentManager
 from .reference_component_manager import (
-    ReferenceBaseComponentManager, check_communicating
+    ReferenceBaseComponentManager,
+    check_communicating,
 )
 from .base_device import SKABaseDevice

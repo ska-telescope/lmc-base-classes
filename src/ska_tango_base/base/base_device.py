@@ -34,19 +34,29 @@ from tango.server import run, Device, attribute, command, device_property
 import debugpy
 import ska_ser_logging
 from ska_tango_base import release
-from ska_tango_base.base import (
-    AdminModeModel, OpStateModel, BaseComponentManager
-)
+from ska_tango_base.base import AdminModeModel, OpStateModel, BaseComponentManager
 from ska_tango_base.commands import (
-    BaseCommand, CompletionCommand, StateModelCommand, ResponseCommand, ResultCode
+    BaseCommand,
+    CompletionCommand,
+    StateModelCommand,
+    ResponseCommand,
+    ResultCode,
 )
 from ska_tango_base.control_model import (
-    AdminMode, ControlMode, SimulationMode, TestMode, HealthState,
-    LoggingLevel
+    AdminMode,
+    ControlMode,
+    SimulationMode,
+    TestMode,
+    HealthState,
+    LoggingLevel,
 )
 
 from ska_tango_base.utils import get_groups_from_json
-from ska_tango_base.faults import GroupDefinitionsError, LoggingTargetError, LoggingLevelError
+from ska_tango_base.faults import (
+    GroupDefinitionsError,
+    LoggingTargetError,
+    LoggingLevelError,
+)
 
 LOG_FILE_SIZE = 1024 * 1024  # Log file size 1MB.
 _DEBUGGER_PORT = 5678
@@ -126,8 +136,9 @@ class TangoLoggingServiceHandler(logging.Handler):
         else:
             tango_level = "UNKNOWN"
             name = "!No Tango logger!"
-        return '<{} {} (Python {}, Tango {})>'.format(
-            self.__class__.__name__, name, python_level, tango_level)
+        return "<{} {} (Python {}, Tango {})>".format(
+            self.__class__.__name__, name, python_level, tango_level
+        )
 
 
 class LoggingUtils:
@@ -174,12 +185,15 @@ class LoggingUtils:
                 if target_type not in default_target_names:
                     raise LoggingTargetError(
                         "Invalid target type: {} - options are {}".format(
-                            target_type, list(default_target_names.keys())))
+                            target_type, list(default_target_names.keys())
+                        )
+                    )
                 if not target_name:
                     target_name = default_target_names[target_type]
                 if not target_name:
                     raise LoggingTargetError(
-                        "Target name required for type {}".format(target_type))
+                        "Target name required for type {}".format(target_type)
+                    )
                 valid_target = "{}::{}".format(target_type, target_name)
                 valid_targets.append(valid_target)
 
@@ -232,7 +246,8 @@ class LoggingUtils:
             if not parsed.hostname:
                 raise LoggingTargetError(
                     "Invalid syslog URL - could not extract hostname from '{}'".format(
-                        url)
+                        url
+                    )
                 )
             try:
                 port = int(parsed.port)
@@ -243,11 +258,14 @@ class LoggingUtils:
                     )
                 )
             address = (parsed.hostname, port)
-            socktype = socket.SOCK_DGRAM if parsed.scheme == "udp" else socket.SOCK_STREAM
+            socktype = (
+                socket.SOCK_DGRAM if parsed.scheme == "udp" else socket.SOCK_STREAM
+            )
         else:
             raise LoggingTargetError(
                 "Invalid syslog URL - expected file, udp or tcp protocol scheme in '{}'".format(
-                    url)
+                    url
+                )
             )
         return address, socktype
 
@@ -270,28 +288,37 @@ class LoggingUtils:
             target_type, target_name = target.split("::", 1)
         else:
             raise LoggingTargetError(
-                "Invalid target requested - missing '::' separator: {}".format(target))
+                "Invalid target requested - missing '::' separator: {}".format(target)
+            )
         if target_type == "console":
             handler = logging.StreamHandler(sys.stdout)
         elif target_type == "file":
             log_file_name = target_name
             handler = logging.handlers.RotatingFileHandler(
-                log_file_name, 'a', LOG_FILE_SIZE, 2, None, False)
+                log_file_name, "a", LOG_FILE_SIZE, 2, None, False
+            )
         elif target_type == "syslog":
-            address, socktype = LoggingUtils.get_syslog_address_and_socktype(target_name)
+            address, socktype = LoggingUtils.get_syslog_address_and_socktype(
+                target_name
+            )
             handler = logging.handlers.SysLogHandler(
                 address=address,
                 facility=logging.handlers.SysLogHandler.LOG_SYSLOG,
-                socktype=socktype)
+                socktype=socktype,
+            )
         elif target_type == "tango":
             if tango_logger:
                 handler = TangoLoggingServiceHandler(tango_logger)
             else:
                 raise LoggingTargetError(
-                    "Missing tango_logger instance for 'tango' target type")
+                    "Missing tango_logger instance for 'tango' target type"
+                )
         else:
             raise LoggingTargetError(
-                "Invalid target type requested: '{}' in '{}'".format(target_type, target))
+                "Invalid target type requested: '{}' in '{}'".format(
+                    target_type, target
+                )
+            )
         formatter = ska_ser_logging.get_default_formatter(tags=True)
         handler.setFormatter(formatter)
         handler.name = target
@@ -308,10 +335,12 @@ class LoggingUtils:
                 logger.removeHandler(handler)
         for target in targets:
             if target in added_targets:
-                handler = LoggingUtils.create_logging_handler(target, logger.tango_logger)
+                handler = LoggingUtils.create_logging_handler(
+                    target, logger.tango_logger
+                )
                 logger.addHandler(handler)
 
-        logger.info('Logging targets set to %s', targets)
+        logger.info("Logging targets set to %s", targets)
 
 
 # PROTECTED REGION END #    //  SKABaseDevice.additionnal_import
@@ -375,32 +404,24 @@ class SKABaseDevice(Device):
             device._simulation_mode = SimulationMode.FALSE
             device._test_mode = TestMode.NONE
 
-            device._build_state = '{}, {}, {}'.format(release.name,
-                                                      release.version,
-                                                      release.description)
+            device._build_state = "{}, {}, {}".format(
+                release.name, release.version, release.description
+            )
             device._version_id = release.version
             device._methods_patched_for_debugger = False
 
             try:
                 # create Tango Groups dict, according to property
                 self.logger.debug(
-                    "Groups definitions: {}".format(
-                        device.GroupDefinitions
-                    )
+                    "Groups definitions: {}".format(device.GroupDefinitions)
                 )
-                device.groups = get_groups_from_json(
-                    device.GroupDefinitions
-                )
+                device.groups = get_groups_from_json(device.GroupDefinitions)
                 self.logger.info(
-                    "Groups loaded: {}".format(
-                        sorted(device.groups.keys())
-                    )
+                    "Groups loaded: {}".format(sorted(device.groups.keys()))
                 )
             except GroupDefinitionsError:
                 self.logger.debug(
-                    "No Groups loaded for device: {}".format(
-                        device.get_name()
-                    )
+                    "No Groups loaded for device: {}".format(device.get_name())
                 )
 
             message = "SKABaseDevice Init command completed OK"
@@ -458,7 +479,7 @@ class SKABaseDevice(Device):
         self._logging_level = None
         self.write_loggingLevel(self.LoggingLevelDefault)
         self.write_loggingTargets(self.LoggingTargetsDefault)
-        self.logger.debug('Logger initialised')
+        self.logger.debug("Logger initialised")
 
         # monkey patch Tango Logging Service streams so they go to the Python
         # logger instead
@@ -474,9 +495,7 @@ class SKABaseDevice(Device):
     # Device Properties
     # -----------------
 
-    SkaLevel = device_property(
-        dtype='int16', default_value=4
-    )
+    SkaLevel = device_property(dtype="int16", default_value=4)
     """
     Device property.
        
@@ -485,7 +504,7 @@ class SKABaseDevice(Device):
     """
 
     GroupDefinitions = device_property(
-        dtype=('str',),
+        dtype=("str",),
     )
     """
     Device property.
@@ -530,7 +549,7 @@ class SKABaseDevice(Device):
     """
 
     LoggingLevelDefault = device_property(
-        dtype='uint16', default_value=LoggingLevel.INFO
+        dtype="uint16", default_value=LoggingLevel.INFO
     )
     """
     Device property.
@@ -540,7 +559,7 @@ class SKABaseDevice(Device):
     """
 
     LoggingTargetsDefault = device_property(
-        dtype='DevVarStringArray', default_value=["tango::logger"]
+        dtype="DevVarStringArray", default_value=["tango::logger"]
     )
     """
     Device property.
@@ -554,13 +573,13 @@ class SKABaseDevice(Device):
     # ----------
 
     buildState = attribute(
-        dtype='str',
+        dtype="str",
         doc="Build state of this device",
     )
     """Device attribute."""
 
     versionId = attribute(
-        dtype='str',
+        dtype="str",
         doc="Version Id of this device",
     )
     """Device attribute."""
@@ -569,7 +588,7 @@ class SKABaseDevice(Device):
         dtype=LoggingLevel,
         access=AttrWriteType.READ_WRITE,
         doc="Current logging level for this device - "
-            "initialises to LoggingLevelDefault on startup",
+        "initialises to LoggingLevelDefault on startup",
     )
     """
     Device attribute.
@@ -578,20 +597,20 @@ class SKABaseDevice(Device):
     """
 
     loggingTargets = attribute(
-        dtype=('str',),
+        dtype=("str",),
         access=AttrWriteType.READ_WRITE,
         max_dim_x=4,
         doc="Logging targets for this device, excluding ska_ser_logging defaults"
-            " - initialises to LoggingTargetsDefault on startup",
+        " - initialises to LoggingTargetsDefault on startup",
     )
     """Device attribute."""
 
     healthState = attribute(
         dtype=HealthState,
         doc="The health state reported for this device. "
-            "It interprets the current device"
-            " condition and condition of all managed devices to set this. "
-            "Most possibly an aggregate attribute.",
+        "It interprets the current device"
+        " condition and condition of all managed devices to set this. "
+        "Most possibly an aggregate attribute.",
     )
     """Device attribute."""
 
@@ -601,8 +620,8 @@ class SKABaseDevice(Device):
         memorized=True,
         hw_memorized=True,
         doc="The admin mode reported for this device. It may interpret the current "
-            "device condition and condition of all managed devices to set this. "
-            "Most possibly an aggregate attribute.",
+        "device condition and condition of all managed devices to set this. "
+        "Most possibly an aggregate attribute.",
     )
     """Device attribute."""
 
@@ -612,9 +631,9 @@ class SKABaseDevice(Device):
         memorized=True,
         hw_memorized=True,
         doc="The control mode of the device. REMOTE, LOCAL"
-            "\nTango Device accepts only from a ‘local’ client and ignores commands and "
-            "queries received from TM or any other ‘remote’ clients. The Local clients"
-            " has to release LOCAL control before REMOTE clients can take control again.",
+        "\nTango Device accepts only from a ‘local’ client and ignores commands and "
+        "queries received from TM or any other ‘remote’ clients. The Local clients"
+        " has to release LOCAL control before REMOTE clients can take control again.",
     )
     """Device attribute."""
 
@@ -624,8 +643,8 @@ class SKABaseDevice(Device):
         memorized=True,
         hw_memorized=True,
         doc="Reports the simulation mode of the device. \nSome devices may implement "
-            "both modes, while others will have simulators that set simulationMode "
-            "to True while the real devices always set simulationMode to False.",
+        "both modes, while others will have simulators that set simulationMode "
+        "to True while the real devices always set simulationMode to False.",
     )
     """Device attribute."""
 
@@ -635,8 +654,8 @@ class SKABaseDevice(Device):
         memorized=True,
         hw_memorized=True,
         doc="The test mode of the device. \n"
-            "Either no test mode or an "
-            "indication of the test mode.",
+        "Either no test mode or an "
+        "indication of the test mode.",
     )
     """Device attribute."""
 
@@ -727,7 +746,7 @@ class SKABaseDevice(Device):
         )
         self.admin_mode_model = AdminModeModel(
             logger=self.logger,
-            callback = self._update_admin_mode,
+            callback=self._update_admin_mode,
         )
 
     def create_component_manager(self):
@@ -777,7 +796,9 @@ class SKABaseDevice(Device):
         self.register_command_object(
             "GetVersionInfo", self.GetVersionInfoCommand(*device_args)
         )
-        self.register_command_object("DebugDevice", self.DebugDeviceCommand(*device_args))
+        self.register_command_object(
+            "DebugDevice", self.DebugDeviceCommand(*device_args)
+        )
 
     def always_executed_hook(self):
         # PROTECTED REGION ID(SKABaseDevice.always_executed_hook) ENABLED START #
@@ -842,15 +863,18 @@ class SKABaseDevice(Device):
         except ValueError:
             raise LoggingLevelError(
                 "Invalid level - {} - must be one of {} ".format(
-                    value, [v for v in LoggingLevel.__members__.values()]))
+                    value, [v for v in LoggingLevel.__members__.values()]
+                )
+            )
 
         self._logging_level = lmc_logging_level
         self.logger.setLevel(_LMC_TO_PYTHON_LOGGING_LEVEL[lmc_logging_level])
         self.logger.tango_logger.set_level(
             _LMC_TO_TANGO_LOGGING_LEVEL[lmc_logging_level]
         )
-        self.logger.info('Logging level set to %s on Python and Tango loggers',
-                         lmc_logging_level)
+        self.logger.info(
+            "Logging level set to %s on Python and Tango loggers", lmc_logging_level
+        )
         # PROTECTED REGION END #    //  SKABaseDevice.loggingLevel_write
 
     def read_loggingTargets(self):
@@ -877,8 +901,7 @@ class SKABaseDevice(Device):
         :param value: Logging targets for logger
         """
         device_name = self.get_name()
-        valid_targets = LoggingUtils.sanitise_logging_targets(value,
-                                                              device_name)
+        valid_targets = LoggingUtils.sanitise_logging_targets(value, device_name)
         LoggingUtils.update_logging_handlers(valid_targets, self.logger)
         # PROTECTED REGION END #    //  SKABaseDevice.loggingTargets_write
 
@@ -1014,7 +1037,10 @@ class SKABaseDevice(Device):
             device = self.target
             return [f"{device.__class__.__name__}, {device.read_buildState()}"]
 
-    @command(dtype_out=('str',), doc_out="Version strings",)
+    @command(
+        dtype_out=("str",),
+        doc_out="Version strings",
+    )
     @DebugIt()
     def GetVersionInfo(self):
         # PROTECTED REGION ID(SKABaseDevice.GetVersionInfo) ENABLED START #
@@ -1080,7 +1106,7 @@ class SKABaseDevice(Device):
         return command.is_allowed(raise_if_disallowed=True)
 
     @command(
-        dtype_out='DevVarLongStringArray',
+        dtype_out="DevVarLongStringArray",
         doc_out="(ReturnType, 'informational message')",
     )
     @DebugIt()
@@ -1150,7 +1176,7 @@ class SKABaseDevice(Device):
         return command.is_allowed(raise_if_disallowed=True)
 
     @command(
-        dtype_out='DevVarLongStringArray',
+        dtype_out="DevVarLongStringArray",
         doc_out="(ReturnType, 'informational message')",
     )
     @DebugIt()
@@ -1220,7 +1246,7 @@ class SKABaseDevice(Device):
         return command.is_allowed(raise_if_disallowed=True)
 
     @command(
-        dtype_out='DevVarLongStringArray',
+        dtype_out="DevVarLongStringArray",
         doc_out="(ReturnType, 'informational message')",
     )
     @DebugIt()
@@ -1244,6 +1270,7 @@ class SKABaseDevice(Device):
         """
         A class for the SKABaseDevice's On() command.
         """
+
         def __init__(self, target, op_state_model, logger=None):
             """
             Constructor for OnCommand
@@ -1261,7 +1288,6 @@ class SKABaseDevice(Device):
                 logger interface
             """
             super().__init__(target, op_state_model, "on", logger=logger)
-
 
         def do(self):
             """
@@ -1369,7 +1395,9 @@ class SKABaseDevice(Device):
             for name, method in inspect.getmembers(device, inspect.ismethod):
                 methods.append((device, name, method))
             for command_object in device._command_objects.values():
-                for name, method in inspect.getmembers(command_object, inspect.ismethod):
+                for name, method in inspect.getmembers(
+                    command_object, inspect.ismethod
+                ):
                     methods.append((command_object, name, method))
             return methods
 
@@ -1405,8 +1433,7 @@ class SKABaseDevice(Device):
             setattr(owner, name, patched_method)
 
     @command(
-        dtype_out="DevUShort",
-        doc_out="The TCP port the debugger is listening on."
+        dtype_out="DevUShort", doc_out="The TCP port the debugger is listening on."
     )
     @DebugIt()
     def DebugDevice(self):
@@ -1437,5 +1464,5 @@ def main(args=None, **kwargs):
     # PROTECTED REGION END #    //  SKABaseDevice.main
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

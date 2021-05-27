@@ -19,6 +19,7 @@ def check_on(func):
 
     :return: the wrapped function
     """
+
     @functools.wraps(func)
     def _wrapper(component, *args, **kwargs):
         """
@@ -131,8 +132,7 @@ class ReferenceCspSubarrayComponentManager(
             obs_state_model,
             capability_types,
             logger,
-            _component=_component
-            or self._Component(capability_types),
+            _component=_component or self._Component(capability_types),
         )
 
     @property

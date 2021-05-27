@@ -20,7 +20,12 @@ from tango.server import device_property
 
 # SKA specific imports
 from ska_tango_base import SKAObsDevice
-from ska_tango_base.commands import CompletionCommand, ObservationCommand, ResponseCommand, ResultCode
+from ska_tango_base.commands import (
+    CompletionCommand,
+    ObservationCommand,
+    ResponseCommand,
+    ResultCode,
+)
 from ska_tango_base.subarray import SubarrayComponentManager, SubarrayObsStateModel
 
 # PROTECTED REGION END #    //  SKASubarray.additionnal_imports
@@ -56,8 +61,9 @@ class SKASubarray(SKAObsDevice):
             self.logger.info(message)
             return (ResultCode.OK, message)
 
-
-    class AssignResourcesCommand(ObservationCommand, ResponseCommand, CompletionCommand):
+    class AssignResourcesCommand(
+        ObservationCommand, ResponseCommand, CompletionCommand
+    ):
         """
         A class for SKASubarray's AssignResources() command.
         """
@@ -81,7 +87,9 @@ class SKASubarray(SKAObsDevice):
             :type logger: a logger that implements the standard library
                 logger interface
             """
-            super().__init__(target, obs_state_model, "assign", op_state_model, logger=logger)
+            super().__init__(
+                target, obs_state_model, "assign", op_state_model, logger=logger
+            )
 
         def do(self, argin):
             """
@@ -102,7 +110,9 @@ class SKASubarray(SKAObsDevice):
             self.logger.info(message)
             return (ResultCode.OK, message)
 
-    class ReleaseResourcesCommand(ObservationCommand, ResponseCommand, CompletionCommand):
+    class ReleaseResourcesCommand(
+        ObservationCommand, ResponseCommand, CompletionCommand
+    ):
         """
         A class for SKASubarray's ReleaseResources() command.
         """
@@ -126,7 +136,9 @@ class SKASubarray(SKAObsDevice):
             :type logger: a logger that implements the standard library
                 logger interface
             """
-            super().__init__(target, obs_state_model, "release", op_state_model, logger=logger)
+            super().__init__(
+                target, obs_state_model, "release", op_state_model, logger=logger
+            )
 
         def do(self, argin):
             """
@@ -147,10 +159,13 @@ class SKASubarray(SKAObsDevice):
             self.logger.info(message)
             return (ResultCode.OK, message)
 
-    class ReleaseAllResourcesCommand(ObservationCommand, ResponseCommand, CompletionCommand):
+    class ReleaseAllResourcesCommand(
+        ObservationCommand, ResponseCommand, CompletionCommand
+    ):
         """
         A class for SKASubarray's ReleaseAllResources() command.
         """
+
         def __init__(self, target, op_state_model, obs_state_model, logger=None):
             """
             Constructor for ReleaseResourcesCommand
@@ -170,7 +185,9 @@ class SKASubarray(SKAObsDevice):
             :type logger: a logger that implements the standard library
                 logger interface
             """
-            super().__init__(target, obs_state_model, "release", op_state_model, logger=logger)
+            super().__init__(
+                target, obs_state_model, "release", op_state_model, logger=logger
+            )
 
         def do(self):
             """
@@ -509,8 +526,7 @@ class SKASubarray(SKAObsDevice):
         """
         super()._init_state_model()
         self.obs_state_model = SubarrayObsStateModel(
-            logger=self.logger,
-            callback=self._update_obs_state
+            logger=self.logger, callback=self._update_obs_state
         )
 
     def create_component_manager(self):
@@ -537,26 +553,29 @@ class SKASubarray(SKAObsDevice):
             self.register_command_object(
                 command_name,
                 command_class(
-                    self.component_manager, self.op_state_model, self.obs_state_model, self.logger
-                )
+                    self.component_manager,
+                    self.op_state_model,
+                    self.obs_state_model,
+                    self.logger,
+                ),
             )
 
     # -----------------
     # Device Properties
     # -----------------
     CapabilityTypes = device_property(
-        dtype=('str',),
+        dtype=("str",),
     )
 
     SubID = device_property(
-        dtype='str',
+        dtype="str",
     )
 
     # ----------
     # Attributes
     # ----------
     activationTime = attribute(
-        dtype='double',
+        dtype="double",
         unit="s",
         standard_unit="s",
         display_unit="s",
@@ -565,19 +584,19 @@ class SKASubarray(SKAObsDevice):
     """Device attribute."""
 
     assignedResources = attribute(
-        dtype=('str',),
+        dtype=("str",),
         max_dim_x=100,
         doc="The list of resources assigned to the subarray.",
     )
     """Device attribute."""
 
     configuredCapabilities = attribute(
-        dtype=('str',),
+        dtype=("str",),
         max_dim_x=10,
         doc="A list of capability types with no. of instances "
-            "in use on this subarray; "
-            "e.g.\nCorrelators:512, PssBeams:4, "
-            "PstBeams:4, VlbiBeams:0.",
+        "in use on this subarray; "
+        "e.g.\nCorrelators:512, PssBeams:4, "
+        "PstBeams:4, VlbiBeams:0.",
     )
     """Device attribute."""
 
@@ -620,7 +639,7 @@ class SKASubarray(SKAObsDevice):
 
         :return: Resources assigned to the device.
         """
-        return self.component_manager.assigned_resources  #pylint: disable=no-member
+        return self.component_manager.assigned_resources  # pylint: disable=no-member
         # PROTECTED REGION END #    //  SKASubarray.assignedResources_read
 
     def read_configuredCapabilities(self):
@@ -631,7 +650,9 @@ class SKASubarray(SKAObsDevice):
         :return: A list of capability types with no. of instances used
             in the Subarray
         """
-        return self.component_manager.configured_capabilities  #pylint: disable=no-member
+        return (
+            self.component_manager.configured_capabilities  # pylint: disable=no-member
+        )
         # PROTECTED REGION END #    //  SKASubarray.configuredCapabilities_read
 
     # --------
@@ -652,7 +673,7 @@ class SKASubarray(SKAObsDevice):
     @command(
         dtype_in="DevString",
         doc_in="JSON-encoded string with the resources to add to subarray",
-        dtype_out='DevVarLongStringArray',
+        dtype_out="DevVarLongStringArray",
         doc_out="(ReturnType, 'informational message')",
     )
     @DebugIt()
@@ -690,7 +711,7 @@ class SKASubarray(SKAObsDevice):
     @command(
         dtype_in="DevString",
         doc_in="JSON-encoded string with the resources to remove from the subarray",
-        dtype_out='DevVarLongStringArray',
+        dtype_out="DevVarLongStringArray",
         doc_out="(ReturnType, 'informational message')",
     )
     @DebugIt()
@@ -726,7 +747,7 @@ class SKASubarray(SKAObsDevice):
         return command.is_allowed(raise_if_disallowed=True)
 
     @command(
-        dtype_out='DevVarLongStringArray',
+        dtype_out="DevVarLongStringArray",
         doc_out="(ReturnType, 'informational message')",
     )
     @DebugIt()
@@ -760,7 +781,7 @@ class SKASubarray(SKAObsDevice):
     @command(
         dtype_in="DevString",
         doc_in="JSON-encoded string with the scan configuration",
-        dtype_out='DevVarLongStringArray',
+        dtype_out="DevVarLongStringArray",
         doc_out="(ReturnType, 'informational message')",
     )
     @DebugIt()
@@ -832,7 +853,7 @@ class SKASubarray(SKAObsDevice):
         return command.is_allowed(raise_if_disallowed=True)
 
     @command(
-        dtype_out='DevVarLongStringArray',
+        dtype_out="DevVarLongStringArray",
         doc_out="(ReturnType, 'informational message')",
     )
     @DebugIt()
@@ -863,7 +884,7 @@ class SKASubarray(SKAObsDevice):
         return command.is_allowed(raise_if_disallowed=True)
 
     @command(
-        dtype_out='DevVarLongStringArray',
+        dtype_out="DevVarLongStringArray",
         doc_out="(ReturnType, 'informational message')",
     )
     @DebugIt()
@@ -895,7 +916,7 @@ class SKASubarray(SKAObsDevice):
         return command.is_allowed(raise_if_disallowed=True)
 
     @command(
-        dtype_out='DevVarLongStringArray',
+        dtype_out="DevVarLongStringArray",
         doc_out="(ReturnType, 'informational message')",
     )
     @DebugIt()
@@ -928,7 +949,7 @@ class SKASubarray(SKAObsDevice):
         return command.is_allowed(raise_if_disallowed=True)
 
     @command(
-        dtype_out='DevVarLongStringArray',
+        dtype_out="DevVarLongStringArray",
         doc_out="(ReturnType, 'informational message')",
     )
     @DebugIt()
@@ -960,7 +981,7 @@ class SKASubarray(SKAObsDevice):
         return command.is_allowed(raise_if_disallowed=True)
 
     @command(
-        dtype_out='DevVarLongStringArray',
+        dtype_out="DevVarLongStringArray",
         doc_out="(ReturnType, 'informational message')",
     )
     @DebugIt()
@@ -999,5 +1020,5 @@ def main(args=None, **kwargs):
     # PROTECTED REGION END #    //  SKASubarray.main
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

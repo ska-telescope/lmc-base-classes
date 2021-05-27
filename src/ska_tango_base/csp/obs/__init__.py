@@ -17,4 +17,3 @@ from .component_manager import CspObsComponentManager
 from .reference_component_manager import ReferenceCspObsComponentManager
 
 from .obs_device import CspSubElementObsDevice
-

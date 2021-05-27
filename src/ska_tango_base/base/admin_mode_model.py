@@ -121,7 +121,7 @@ class AdminModeModel:
       diagnosis.)
 
     The actions supported are:
-    
+
     * **to_not_fitted**
     * **to_reserved**
     * **to_offline**

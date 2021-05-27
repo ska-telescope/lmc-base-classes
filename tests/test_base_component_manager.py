@@ -52,7 +52,9 @@ class TestBaseComponentManager:
 
         :return: the component manager under test
         """
-        return ReferenceBaseComponentManager(mock_op_state_model, logger=logger, _component=component)
+        return ReferenceBaseComponentManager(
+            mock_op_state_model, logger=logger, _component=component
+        )
 
     def test_state_changes_with_start_and_stop(
         self, component_manager, mock_op_state_model, initial_power_mode, initial_fault
@@ -90,7 +92,9 @@ class TestBaseComponentManager:
             "component_disconnected"
         )
 
-    def test_simulate_communication_failure(self, component_manager, mock_op_state_model):
+    def test_simulate_communication_failure(
+        self, component_manager, mock_op_state_model
+    ):
         """
         Test that we can simulate connection failure.
 

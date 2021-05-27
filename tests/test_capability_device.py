@@ -91,8 +91,9 @@ class TestSKACapability(object):
         """Test for buildState"""
         # PROTECTED REGION ID(SKACapability.test_buildState) ENABLED START #
         buildPattern = re.compile(
-            r'ska_tango_base, [0-9]+.[0-9]+.[0-9]+, '
-            r'A set of generic base devices for SKA Telescope')
+            r"ska_tango_base, [0-9]+.[0-9]+.[0-9]+, "
+            r"A set of generic base devices for SKA Telescope"
+        )
         assert (re.match(buildPattern, tango_context.device.buildState)) is not None
         # PROTECTED REGION END #    //  SKACapability.test_buildState
 
@@ -101,7 +102,7 @@ class TestSKACapability(object):
     def test_versionId(self, tango_context):
         """Test for versionId"""
         # PROTECTED REGION ID(SKACapability.test_versionId) ENABLED START #
-        versionIdPattern = re.compile(r'[0-9]+.[0-9]+.[0-9]+')
+        versionIdPattern = re.compile(r"[0-9]+.[0-9]+.[0-9]+")
         assert (re.match(versionIdPattern, tango_context.device.versionId)) is not None
         # PROTECTED REGION END #    //  SKACapability.test_versionId
 
@@ -118,5 +119,5 @@ class TestSKACapability(object):
     def test_usedComponents(self, tango_context):
         """Test for usedComponents"""
         # PROTECTED REGION ID(SKACapability.test_usedComponents) ENABLED START #
-        assert tango_context.device.usedComponents == ('',)
+        assert tango_context.device.usedComponents == ("",)
         # PROTECTED REGION END #    //  SKACapability.test_usedComponents

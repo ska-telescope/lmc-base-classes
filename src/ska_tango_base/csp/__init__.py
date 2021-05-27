@@ -25,5 +25,5 @@ from .obs import (
 from .subarray import (
     CspSubarrayComponentManager,
     ReferenceCspSubarrayComponentManager,
-    CspSubElementSubarray
+    CspSubElementSubarray,
 )

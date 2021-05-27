@@ -15,6 +15,7 @@ Subarray device for SKA CSP SubElement
 import json
 from json.decoder import JSONDecodeError
 from collections import defaultdict
+
 # Tango imports
 from tango import DebugIt
 from tango.server import run
@@ -23,8 +24,14 @@ from tango import AttrWriteType
 
 # SKA import
 from ska_tango_base import SKASubarray
-from ska_tango_base.commands import CompletionCommand, ObservationCommand, ResponseCommand, ResultCode
+from ska_tango_base.commands import (
+    CompletionCommand,
+    ObservationCommand,
+    ResponseCommand,
+    ResultCode,
+)
 from ska_tango_base.csp.subarray import CspSubarrayComponentManager
+
 # Additional import
 # PROTECTED REGION END #    //  CspSubElementSubarray.additionnal_import
 
@@ -35,6 +42,7 @@ class CspSubElementSubarray(SKASubarray):
     """
     Subarray device for SKA CSP SubElement
     """
+
     # PROTECTED REGION ID(CspSubElementSubarray.class_variable) ENABLED START #
     # PROTECTED REGION END #    //  CspSubElementSubarray.class_variable
 
@@ -47,21 +55,21 @@ class CspSubElementSubarray(SKASubarray):
     # ----------
 
     scanID = attribute(
-        dtype='DevULong64',
+        dtype="DevULong64",
         label="scanID",
         doc="The scan identification number to be inserted in the output products.",
     )
     """Device attribute."""
 
     configurationID = attribute(
-        dtype='DevString',
+        dtype="DevString",
         label="configurationID",
         doc="The configuration ID specified into the JSON configuration.",
     )
     """Device attribute."""
 
     sdpDestinationAddresses = attribute(
-        dtype='DevString',
+        dtype="DevString",
         access=AttrWriteType.READ_WRITE,
         label="sdpDestinationAddresses",
         doc="JSON formatted string.\nReport the list of all the SDP addresses provided by SDP to receive the output products.\nSpecifies the Mac, IP, Port for each resource:CBF visibility channels, Pss pipelines, PSTBeam",
@@ -69,7 +77,7 @@ class CspSubElementSubarray(SKASubarray):
     """Device attribute."""
 
     outputDataRateToSdp = attribute(
-        dtype='DevFloat',
+        dtype="DevFloat",
         label="outputDataRateToSdp",
         unit="GB/s",
         doc="The output data rate (GB/s) on the link for each scan.",
@@ -77,14 +85,14 @@ class CspSubElementSubarray(SKASubarray):
     """Device attribute."""
 
     lastScanConfiguration = attribute(
-        dtype='DevString',
+        dtype="DevString",
         label="lastScanConfiguration",
         doc="The last valid scan configuration.",
     )
     """Device attribute."""
 
     sdpLinkActive = attribute(
-        dtype=('DevBoolean',),
+        dtype=("DevBoolean",),
         max_dim_x=100,
         label="sdpLinkActive",
         doc="Flag reporting if the SDP links are active.",
@@ -92,14 +100,14 @@ class CspSubElementSubarray(SKASubarray):
     """Device attribute."""
 
     listOfDevicesCompletedTasks = attribute(
-        dtype='DevString',
+        dtype="DevString",
         label="listOfDevicesCompletedTasks",
         doc="JSON formatted string reporting for each task/command the list of devices\nthat completed successfully the task.\nEx.\n{``cmd1``: [``device1``, ``device2``], ``cmd2``: [``device2``, ``device3``]}",
     )
     """Device attribute."""
 
     configureScanMeasuredDuration = attribute(
-        dtype='DevFloat',
+        dtype="DevFloat",
         label="configureScanMeasuredDuration",
         unit="sec",
         doc="The measured time (sec) taken to execute the command",
@@ -107,14 +115,14 @@ class CspSubElementSubarray(SKASubarray):
     """Device attribute."""
 
     configureScanTimeoutExpiredFlag = attribute(
-        dtype='DevBoolean',
+        dtype="DevBoolean",
         label="configureScanTimeoutExpiredFlag",
         doc="Flag reporting  ConfigureScan command timeout expiration.",
     )
     """Device attribute."""
 
     assignResourcesMaximumDuration = attribute(
-        dtype='DevFloat',
+        dtype="DevFloat",
         access=AttrWriteType.READ_WRITE,
         label="assignResourcesMaximumDuration",
         unit="sec",
@@ -123,7 +131,7 @@ class CspSubElementSubarray(SKASubarray):
     """Device attribute."""
 
     assignResourcesMeasuredDuration = attribute(
-        dtype='DevFloat',
+        dtype="DevFloat",
         label="assignResourcesMeasuredDuration",
         unit="sec",
         doc="The measured command execution duration.",
@@ -131,7 +139,7 @@ class CspSubElementSubarray(SKASubarray):
     """Device attribute."""
 
     assignResourcesProgress = attribute(
-        dtype='DevUShort',
+        dtype="DevUShort",
         label="assignResourcesProgress",
         max_value=100,
         min_value=0,
@@ -140,14 +148,14 @@ class CspSubElementSubarray(SKASubarray):
     """Device attribute."""
 
     assignResourcesTimeoutExpiredFlag = attribute(
-        dtype='DevBoolean',
+        dtype="DevBoolean",
         label="assignResourcesTimeoutExpiredFlag",
         doc="Flag reporting  AssignResources command timeout expiration.",
     )
     """Device attribute."""
 
     releaseResourcesMaximumDuration = attribute(
-        dtype='DevFloat',
+        dtype="DevFloat",
         access=AttrWriteType.READ_WRITE,
         label="releaseResourcesMaximumDuration",
         unit="sec",
@@ -156,7 +164,7 @@ class CspSubElementSubarray(SKASubarray):
     """Device attribute."""
 
     releaseResourcesMeasuredDuration = attribute(
-        dtype='DevFloat',
+        dtype="DevFloat",
         label="releaseResourcesMeasuredDuration",
         unit="sec",
         doc="The measured command execution duration.",
@@ -164,7 +172,7 @@ class CspSubElementSubarray(SKASubarray):
     """Device attribute."""
 
     releaseResourcesProgress = attribute(
-        dtype='DevUShort',
+        dtype="DevUShort",
         label="releaseResourcesProgress",
         max_value=100,
         min_value=0,
@@ -173,7 +181,7 @@ class CspSubElementSubarray(SKASubarray):
     """Device attribute."""
 
     releaseResourcesTimeoutExpiredFlag = attribute(
-        dtype='DevBoolean',
+        dtype="DevBoolean",
         label="timeoutExpiredFlag",
         doc="Flag reporting  command timeout expiration.",
     )
@@ -192,13 +200,16 @@ class CspSubElementSubarray(SKASubarray):
         """
         super().init_command_objects()
 
-        device_args = (self.component_manager, self.op_state_model, self.obs_state_model, self.logger)
+        device_args = (
+            self.component_manager,
+            self.op_state_model,
+            self.obs_state_model,
+            self.logger,
+        )
         self.register_command_object(
             "ConfigureScan", self.ConfigureScanCommand(*device_args)
         )
-        self.register_command_object(
-            "GoToIdle", self.GoToIdleCommand(*device_args)
-        )
+        self.register_command_object("GoToIdle", self.GoToIdleCommand(*device_args))
 
     class InitCommand(SKASubarray.InitCommand):
         """
@@ -219,14 +230,20 @@ class CspSubElementSubarray(SKASubarray):
             device = self.target
             device._scan_id = 0
 
-            device._sdp_addresses = {"outputHost": [], "outputMac": [], "outputPort": []}
-            device._sdp_links_active = [False, ]
-            device._sdp_output_data_rate = 0.
+            device._sdp_addresses = {
+                "outputHost": [],
+                "outputMac": [],
+                "outputPort": [],
+            }
+            device._sdp_links_active = [
+                False,
+            ]
+            device._sdp_output_data_rate = 0.0
 
-            device._config_id = ''
+            device._config_id = ""
 
             # JSON string, deliberately left in Tango layer
-            device._last_scan_configuration = ''
+            device._last_scan_configuration = ""
 
             # _list_of_devices_completed_task: for each task/command reports
             # the list of the devices that successfully completed the task.
@@ -259,12 +276,12 @@ class CspSubElementSubarray(SKASubarray):
             # values: True/False
             device._timeout_expired = defaultdict(bool)
             # configure the flags to push event from the device server
-            device.set_change_event('configureScanTimeoutExpiredFlag', True, True)
-            device.set_archive_event('configureScanTimeoutExpiredFlag', True, True)
-            device.set_change_event('assignResourcesTimeoutExpiredFlag', True, True)
-            device.set_archive_event('assignResourcesTimeoutExpiredFlag', True, True)
-            device.set_change_event('releaseResourcesTimeoutExpiredFlag', True, True)
-            device.set_archive_event('releaseResourcesTimeoutExpiredFlag', True, True)
+            device.set_change_event("configureScanTimeoutExpiredFlag", True, True)
+            device.set_archive_event("configureScanTimeoutExpiredFlag", True, True)
+            device.set_change_event("assignResourcesTimeoutExpiredFlag", True, True)
+            device.set_archive_event("assignResourcesTimeoutExpiredFlag", True, True)
+            device.set_change_event("releaseResourcesTimeoutExpiredFlag", True, True)
+            device.set_archive_event("releaseResourcesTimeoutExpiredFlag", True, True)
 
             message = "CspSubElementSubarray Init command completed OK"
             device.logger.info(message)
@@ -292,13 +309,13 @@ class CspSubElementSubarray(SKASubarray):
     def read_scanID(self):
         # PROTECTED REGION ID(CspSubElementSubarray.scanID_read) ENABLED START #
         """Return the scanID attribute."""
-        return self.component_manager.scan_id  #pylint: disable=no-member
+        return self.component_manager.scan_id  # pylint: disable=no-member
         # PROTECTED REGION END #    //  CspSubElementSubarray.scanID_read
 
     def read_configurationID(self):
         # PROTECTED REGION ID(CspSubElementSubarray.configurationID_read) ENABLED START #
         """Return the configurationID attribute."""
-        return self.component_manager.config_id  #pylint: disable=no-member
+        return self.component_manager.config_id  # pylint: disable=no-member
         # PROTECTED REGION END #    //  CspSubElementSubarray.configurationID_read
 
     def read_sdpDestinationAddresses(self):
@@ -328,13 +345,13 @@ class CspSubElementSubarray(SKASubarray):
     def read_configureScanMeasuredDuration(self):
         # PROTECTED REGION ID(CspSubElementSubarray.configureScanMeasuredDuration_read) ENABLED START #
         """Return the configureScanMeasuredDuration attribute."""
-        return self._cmd_measured_duration['configurescan']
+        return self._cmd_measured_duration["configurescan"]
         # PROTECTED REGION END #    //  CspSubElementSubarray.configureScanMeasuredDuration_read
 
     def read_configureScanTimeoutExpiredFlag(self):
         # PROTECTED REGION ID(CspSubElementSubarray.configureScanTimeoutExpiredFlag_read) ENABLED START #
         """Return the configureScanTimeoutExpiredFlag attribute."""
-        return self._timeout_expired['configurescan']
+        return self._timeout_expired["configurescan"]
         # PROTECTED REGION END #    //  CspSubElementSubarray.configureScanTimeoutExpiredFlag_read
 
     def read_listOfDevicesCompletedTasks(self):
@@ -347,61 +364,61 @@ class CspSubElementSubarray(SKASubarray):
     def read_assignResourcesMaximumDuration(self):
         # PROTECTED REGION ID(CspSubElementSubarray.assignResourcesMaximumDuration_read) ENABLED START #
         """Return the assignResourcesMaximumDuration attribute."""
-        return self._cmd_maximum_duration['assignresources']
+        return self._cmd_maximum_duration["assignresources"]
         # PROTECTED REGION END #    //  CspSubElementSubarray.assignResourcesMaximumDuration_read
 
     def write_assignResourcesMaximumDuration(self, value):
         # PROTECTED REGION ID(CspSubElementSubarray.assignResourcesMaximumDuration_write) ENABLED START #
         """Set the assignResourcesMaximumDuration attribute."""
-        self._cmd_maximum_duration['assignresources'] = value
+        self._cmd_maximum_duration["assignresources"] = value
         # PROTECTED REGION END #    //  CspSubElementSubarray.assignResourcesMaximumDuration_write
 
     def read_assignResourcesMeasuredDuration(self):
         # PROTECTED REGION ID(CspSubElementSubarray.assignResourcesMeasuredDuration_read) ENABLED START #
         """Return the assignResourcesMeasuredDuration attribute."""
-        return self._cmd_measured_duration['assignresources']
+        return self._cmd_measured_duration["assignresources"]
         # PROTECTED REGION END #    //  CspSubElementSubarray.assignResourcesMeasuredDuration_read
 
     def read_assignResourcesProgress(self):
         # PROTECTED REGION ID(CspSubElementSubarray.assignResourcesProgress_read) ENABLED START #
         """Return the assignResourcesProgress attribute."""
-        return self._cmd_progress['assignresources']
+        return self._cmd_progress["assignresources"]
         # PROTECTED REGION END #    //  CspSubElementSubarray.assignResourcesProgress_read
 
     def read_assignResourcesTimeoutExpiredFlag(self):
         # PROTECTED REGION ID(CspSubElementSubarray.assignResourcesTimeoutExpiredFlag_read) ENABLED START #
         """Return the assignResourcesTimeoutExpiredFlag attribute."""
-        return self._timeout_expired['assignresources']
+        return self._timeout_expired["assignresources"]
         # PROTECTED REGION END #    //  CspSubElementSubarray.assignResourcesTimeoutExpiredFlag_read
 
     def read_releaseResourcesMaximumDuration(self):
         # PROTECTED REGION ID(CspSubElementSubarray.releaseResourcesMaximumDuration_read) ENABLED START #
         """Return the releaseResourcesMaximumDuration attribute."""
-        return self._cmd_maximum_duration['releaseresources']
+        return self._cmd_maximum_duration["releaseresources"]
         # PROTECTED REGION END #    //  CspSubElementSubarray.releaseResourcesMaximumDuration_read
 
     def write_releaseResourcesMaximumDuration(self, value):
         # PROTECTED REGION ID(CspSubElementSubarray.releaseResourcesMaximumDuration_write) ENABLED START #
         """Set the releaseResourcesMaximumDuration attribute."""
-        self._cmd_maximum_duration['releaseresources'] = value
+        self._cmd_maximum_duration["releaseresources"] = value
         # PROTECTED REGION END #    //  CspSubElementSubarray.releaseResourcesMaximumDuration_write
 
     def read_releaseResourcesMeasuredDuration(self):
         # PROTECTED REGION ID(CspSubElementSubarray.releaseResourcesMeasuredDuration_read) ENABLED START #
         """Return the releaseResourcesMeasuredDuration attribute."""
-        return self._cmd_measured_duration['releaseresources']
+        return self._cmd_measured_duration["releaseresources"]
         # PROTECTED REGION END #    //  CspSubElementSubarray.releaseResourcesMeasuredDuration_read
 
     def read_releaseResourcesProgress(self):
         # PROTECTED REGION ID(CspSubElementSubarray.releaseResourcesProgress_read) ENABLED START #
         """Return the releaseResourcesProgress attribute."""
-        return self._cmd_progress['releaseresources']
+        return self._cmd_progress["releaseresources"]
         # PROTECTED REGION END #    //  CspSubElementSubarray.releaseResourcesProgress_read
 
     def read_releaseResourcesTimeoutExpiredFlag(self):
         # PROTECTED REGION ID(CspSubElementSubarray.releaseResourcesTimeoutExpiredFlag_read) ENABLED START #
         """Return the releaseResourcesTimeoutExpiredFlag attribute."""
-        return self._timeout_expired['releaseresources']
+        return self._timeout_expired["releaseresources"]
         # PROTECTED REGION END #    //  CspSubElementSubarray.releaseResourcesTimeoutExpiredFlag_read
 
     def read_sdpLinkActive(self):
@@ -478,7 +495,11 @@ class CspSubElementSubarray(SKASubarray):
                 self.logger.error(msg)
                 return (None, ResultCode.FAILED, msg)
 
-            return (configuration_dict, ResultCode.OK, "ConfigureScan arguments validation successful")
+            return (
+                configuration_dict,
+                ResultCode.OK,
+                "ConfigureScan arguments validation successful",
+            )
 
     class GoToIdleCommand(ObservationCommand, ResponseCommand):
         """
@@ -522,11 +543,11 @@ class CspSubElementSubarray(SKASubarray):
             return (ResultCode.OK, "GoToIdle command completed OK")
 
     @command(
-        dtype_in='DevString',
+        dtype_in="DevString",
         doc_in="A Json-encoded string with the scan configuration.",
-        dtype_out='DevVarLongStringArray',
+        dtype_out="DevVarLongStringArray",
         doc_out="A tuple containing a return code and a string message indicating status."
-                "The message is for information purpose only.",
+        "The message is for information purpose only.",
     )
     @DebugIt()
     def ConfigureScan(self, argin):
@@ -554,11 +575,11 @@ class CspSubElementSubarray(SKASubarray):
         # PROTECTED REGION END #    //  CspSubElementSubarray.Configure
 
     @command(
-        dtype_in='DevString',
+        dtype_in="DevString",
         doc_in="A Json-encoded string with the scan configuration.",
-        dtype_out='DevVarLongStringArray',
+        dtype_out="DevVarLongStringArray",
         doc_out="A tuple containing a return code and a string message indicating status."
-                "The message is for information purpose only.",
+        "The message is for information purpose only.",
     )
     @DebugIt()
     def Configure(self, argin):
@@ -577,9 +598,9 @@ class CspSubElementSubarray(SKASubarray):
         # PROTECTED REGION END #    //  CspSubElementSubarray.Configure
 
     @command(
-        dtype_out='DevVarLongStringArray',
+        dtype_out="DevVarLongStringArray",
         doc_out="A tuple containing a return code and a string  message indicating status."
-                "The message is for information purpose only.",
+        "The message is for information purpose only.",
     )
     @DebugIt()
     def GoToIdle(self):
@@ -591,16 +612,16 @@ class CspSubElementSubarray(SKASubarray):
             A tuple containing a return code and a string  message indicating status.
             The message is for information purpose only.
         """
-        self._last_scan_configuration = ''
+        self._last_scan_configuration = ""
 
         command = self.get_command_object("GoToIdle")
         (return_code, message) = command()
         return [[return_code], [message]]
 
     @command(
-        dtype_out='DevVarLongStringArray',
+        dtype_out="DevVarLongStringArray",
         doc_out="A tuple containing a return code and a string  message indicating status."
-                "The message is for information purpose only.",
+        "The message is for information purpose only.",
     )
     @DebugIt()
     def End(self):
@@ -616,6 +637,7 @@ class CspSubElementSubarray(SKASubarray):
         return self.GoToIdle()
         # PROTECTED REGION END #    //  CspSubElementSubarray.End
 
+
 # ----------
 # Run server
 # ----------
@@ -628,5 +650,5 @@ def main(args=None, **kwargs):
     # PROTECTED REGION END #    //  CspSubElementSubarray.main
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

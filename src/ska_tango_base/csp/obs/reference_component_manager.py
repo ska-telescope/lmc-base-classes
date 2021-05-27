@@ -21,6 +21,7 @@ def check_on(func):
 
     :return: the wrapped function
     """
+
     @functools.wraps(func)
     def _wrapper(component, *args, **kwargs):
         """
@@ -42,7 +43,9 @@ def check_on(func):
     return _wrapper
 
 
-class ReferenceCspObsComponentManager(CspObsComponentManager, ReferenceBaseComponentManager):
+class ReferenceCspObsComponentManager(
+    CspObsComponentManager, ReferenceBaseComponentManager
+):
     """
     A component manager for SKA CSP subelement observation Tango devices:
 
@@ -77,14 +80,14 @@ class ReferenceCspObsComponentManager(CspObsComponentManager, ReferenceBaseCompo
             _faulty=False,
         ):
             """
-            Initialise a new instance
-   State Machine<State_Machine>
+                     Initialise a new instance
+            State Machine<State_Machine>
 
 
-            :param _power_mode: initial power mode of this component
-                (for testing only)
-            :param _faulty: whether this component should initially
-                simulate a fault (for testing only)
+                     :param _power_mode: initial power mode of this component
+                         (for testing only)
+                     :param _faulty: whether this component should initially
+                         simulate a fault (for testing only)
             """
             self._configured = False
             self._configured_callback = None

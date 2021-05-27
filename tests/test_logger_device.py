@@ -82,8 +82,8 @@ class TestSKALogger(object):
         """Test for GetVersionInfo"""
         # PROTECTED REGION ID(SKALogger.test_GetVersionInfo) ENABLED START #
         versionPattern = re.compile(
-            f'{tango_context.device.info().dev_class}, ska_tango_base, [0-9]+.[0-9]+.[0-9]+, '
-            'A set of generic base devices for SKA Telescope.'
+            f"{tango_context.device.info().dev_class}, ska_tango_base, [0-9]+.[0-9]+.[0-9]+, "
+            "A set of generic base devices for SKA Telescope."
         )
         versionInfo = tango_context.device.GetVersionInfo()
         assert (re.match(versionPattern, versionInfo[0])) is not None

@@ -270,7 +270,7 @@ class CspSubElementObsStateModel(ObsStateModel):
 
     * **CONFIGURING**: transitional state to report device configuration
       is in progress.
-      
+
       TODO: Need to understand if this state is really required by the
       observing devices of any CSP sub-element.
 

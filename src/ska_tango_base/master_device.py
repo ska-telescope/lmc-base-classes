@@ -17,7 +17,11 @@ from tango.server import run, attribute, command, device_property
 # SKA specific imports
 from ska_tango_base import SKABaseDevice
 from ska_tango_base.commands import BaseCommand, ResultCode
-from ska_tango_base.utils import validate_capability_types, validate_input_sizes, convert_dict_to_list
+from ska_tango_base.utils import (
+    validate_capability_types,
+    validate_input_sizes,
+    convert_dict_to_list,
+)
 
 
 # PROTECTED REGION END #    //  SKAMaster.additionnal_imports
@@ -37,9 +41,7 @@ class SKAMaster(SKABaseDevice):
         super().init_command_objects()
         self.register_command_object(
             "IsCapabilityAchievable",
-            self.IsCapabilityAchievableCommand(
-                self, self.op_state_model, self.logger
-            )
+            self.IsCapabilityAchievableCommand(self, self.op_state_model, self.logger),
         )
 
     class InitCommand(SKABaseDevice.InitCommand):
@@ -69,9 +71,12 @@ class SKAMaster(SKABaseDevice):
             device._max_capabilities = {}
             if device.MaxCapabilities:
                 for max_capability in device.MaxCapabilities:
-                    capability_type, max_capability_instances = max_capability.split(":")
+                    capability_type, max_capability_instances = max_capability.split(
+                        ":"
+                    )
                     device._max_capabilities[capability_type] = int(
-                        max_capability_instances)
+                        max_capability_instances
+                    )
             device._available_capabilities = device._max_capabilities.copy()
 
             message = "SKAMaster Init command completed OK"
@@ -89,7 +94,7 @@ class SKAMaster(SKABaseDevice):
     # CORRELATOR=512, PSS-BEAMS=4, PST-BEAMS=6, VLBI-BEAMS=4  or for DSH it can be:
     # BAND-1=1, BAND-2=1, BAND3=0, BAND-4=0, BAND-5=0 (if only bands 1&amp;2 is installed)
     MaxCapabilities = device_property(
-        dtype=('str',),
+        dtype=("str",),
     )
 
     # ----------
@@ -97,42 +102,44 @@ class SKAMaster(SKABaseDevice):
     # ----------
 
     elementLoggerAddress = attribute(
-        dtype='str',
+        dtype="str",
         doc="FQDN of Element Logger",
     )
     """Device attribute."""
 
     elementAlarmAddress = attribute(
-        dtype='str',
+        dtype="str",
         doc="FQDN of Element Alarm Handlers",
     )
     """Device attribute."""
 
     elementTelStateAddress = attribute(
-        dtype='str',
+        dtype="str",
         doc="FQDN of Element TelState device",
     )
     """Device attribute."""
 
     elementDatabaseAddress = attribute(
-        dtype='str',
+        dtype="str",
         doc="FQDN of Element Database device",
     )
     """Device attribute."""
 
     maxCapabilities = attribute(
-        dtype=('str',),
+        dtype=("str",),
         max_dim_x=20,
-        doc=("Maximum number of instances of each capability type,"
-             " e.g. 'CORRELATOR:512', 'PSS-BEAMS:4'."),
+        doc=(
+            "Maximum number of instances of each capability type,"
+            " e.g. 'CORRELATOR:512', 'PSS-BEAMS:4'."
+        ),
     )
     """Device attribute."""
 
     availableCapabilities = attribute(
-        dtype=('str',),
+        dtype=("str",),
         max_dim_x=20,
         doc="A list of available number of instances of each capability type, "
-            "e.g. 'CORRELATOR:512', 'PSS-BEAMS:4'.",
+        "e.g. 'CORRELATOR:512', 'PSS-BEAMS:4'.",
     )
     """Device attribute."""
 
@@ -207,25 +214,27 @@ class SKAMaster(SKABaseDevice):
             :rtype: bool
             """
             device = self.target
-            command_name = 'isCapabilityAchievable'
+            command_name = "isCapabilityAchievable"
             capabilities_instances, capability_types = argin
             validate_input_sizes(command_name, argin)
-            validate_capability_types(command_name, capability_types,
-                                      list(device._max_capabilities.keys()))
+            validate_capability_types(
+                command_name, capability_types, list(device._max_capabilities.keys())
+            )
 
             for capability_type, capability_instances in zip(
                 capability_types, capabilities_instances
             ):
-                if not device._available_capabilities[
-                    capability_type
-                ] >= capability_instances:
+                if (
+                    not device._available_capabilities[capability_type]
+                    >= capability_instances
+                ):
                     return False
             return True
 
     @command(
-        dtype_in='DevVarLongStringArray',
+        dtype_in="DevVarLongStringArray",
         doc_in="[nrInstances][Capability types]",
-        dtype_out='bool',
+        dtype_out="bool",
     )
     @DebugIt()
     def isCapabilityAchievable(self, argin):
@@ -260,5 +269,5 @@ def main(args=None, **kwargs):
     # PROTECTED REGION END #    //  SKAMaster.main
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

@@ -136,7 +136,9 @@ class TestCspSubelementSubarrayComponentManager:
             "component_disconnected"
         )
 
-    def test_simulate_communication_failure(self, component_manager, mock_op_state_model):
+    def test_simulate_communication_failure(
+        self, component_manager, mock_op_state_model
+    ):
         """
         Test that we can simulate connection failure.
 

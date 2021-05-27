@@ -27,6 +27,7 @@ def check_on(func):
 
     :return: the wrapped function
     """
+
     @functools.wraps(func)
     def _wrapper(component, *args, **kwargs):
         """
@@ -164,6 +165,7 @@ class ReferenceSubarrayComponentManager(
         ``component_configured``, ``component_scanning``,
         ``component_not_scanning`` and ``component_obsfault`` methods.
         """
+
         def __init__(
             self,
             capability_types,
@@ -427,7 +429,12 @@ class ReferenceSubarrayComponentManager(
                     self._invoke_obsfault_callback()
 
     def __init__(
-        self, op_state_model, obs_state_model, capability_types, logger=None, _component=None
+        self,
+        op_state_model,
+        obs_state_model,
+        capability_types,
+        logger=None,
+        _component=None,
     ):
         """
         Initialise a new ReferenceSubarrayComponentManager instance

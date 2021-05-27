@@ -29,8 +29,10 @@ from ska_tango_base.control_model import (
 )
 from ska_tango_base.faults import CommandError
 from ska_tango_base.subarray import (
-    ReferenceSubarrayComponentManager, SubarrayObsStateModel
+    ReferenceSubarrayComponentManager,
+    SubarrayObsStateModel,
 )
+
 # PROTECTED REGION END #    //  SKASubarray.test_additional_imports
 
 
@@ -47,10 +49,10 @@ class TestSKASubarray:
         """
         return {
             "CapabilityTypes": ["BAND1", "BAND2"],
-            'LoggingTargetsDefault': '',
-            'GroupDefinitions': '',
-            'SkaLevel': '4',
-            'SubID': '1',
+            "LoggingTargetsDefault": "",
+            "GroupDefinitions": "",
+            "SkaLevel": "4",
+            "SubID": "1",
         }
 
     @pytest.fixture(scope="class")
@@ -96,11 +98,10 @@ class TestSKASubarray:
         obs_state_callback.assert_call(ObsState.READY)
 
         assert tango_context.device.Abort() == [
-            [ResultCode.OK], ["Abort command completed OK"]
+            [ResultCode.OK],
+            ["Abort command completed OK"],
         ]
-        obs_state_callback.assert_calls(
-            [ObsState.ABORTING, ObsState.ABORTED]
-        )
+        obs_state_callback.assert_calls([ObsState.ABORTING, ObsState.ABORTED])
         # PROTECTED REGION END #    //  SKASubarray.test_Abort
 
     # PROTECTED REGION ID(SKASubarray.test_Configure_decorators) ENABLED START #
@@ -116,9 +117,7 @@ class TestSKASubarray:
 
         tango_context.device.Configure('{"BAND1": 2}')
 
-        obs_state_callback.assert_calls(
-            [ObsState.CONFIGURING, ObsState.READY]
-        )
+        obs_state_callback.assert_calls([ObsState.CONFIGURING, ObsState.READY])
         assert tango_context.device.obsState == ObsState.READY
         assert tango_context.device.configuredCapabilities == ("BAND1:2", "BAND2:0")
         # PROTECTED REGION END #    //  SKASubarray.test_Configure
@@ -129,8 +128,8 @@ class TestSKASubarray:
         """Test for GetVersionInfo"""
         # PROTECTED REGION ID(SKASubarray.test_GetVersionInfo) ENABLED START #
         versionPattern = re.compile(
-            f'{tango_context.device.info().dev_class}, ska_tango_base, [0-9]+.[0-9]+.[0-9]+, '
-            'A set of generic base devices for SKA Telescope.'
+            f"{tango_context.device.info().dev_class}, ska_tango_base, [0-9]+.[0-9]+.[0-9]+, "
+            "A set of generic base devices for SKA Telescope."
         )
         versionInfo = tango_context.device.GetVersionInfo()
         assert (re.match(versionPattern, versionInfo[0])) is not None
@@ -165,20 +164,16 @@ class TestSKASubarray:
         resources_to_assign = ["BAND1", "BAND2"]
         tango_context.device.AssignResources(json.dumps(resources_to_assign))
 
-        obs_state_callback.assert_calls(
-            [ObsState.RESOURCING, ObsState.IDLE]
-        )
+        obs_state_callback.assert_calls([ObsState.RESOURCING, ObsState.IDLE])
         assert tango_context.device.ObsState == ObsState.IDLE
         assert list(tango_context.device.assignedResources) == resources_to_assign
 
         tango_context.device.ReleaseAllResources()
-        obs_state_callback.assert_calls(
-            [ObsState.RESOURCING, ObsState.EMPTY]
-        )
+        obs_state_callback.assert_calls([ObsState.RESOURCING, ObsState.EMPTY])
         assert tango_context.device.ObsState == ObsState.EMPTY
 
         with pytest.raises(DevFailed):
-            tango_context.device.AssignResources('Invalid JSON')
+            tango_context.device.AssignResources("Invalid JSON")
         # PROTECTED REGION END #    //  SKASubarray.test_AssignResources
 
     # PROTECTED REGION ID(SKASubarray.test_EndSB_decorators) ENABLED START #
@@ -194,7 +189,8 @@ class TestSKASubarray:
         obs_state_callback.assert_call(ObsState.READY)
 
         assert tango_context.device.End() == [
-            [ResultCode.OK], ["End command completed OK"]
+            [ResultCode.OK],
+            ["End command completed OK"],
         ]
         obs_state_callback.assert_call(ObsState.IDLE)
 
@@ -214,7 +210,8 @@ class TestSKASubarray:
         obs_state_callback.assert_call(ObsState.SCANNING)
 
         assert tango_context.device.EndScan() == [
-            [ResultCode.OK], ["EndScan command completed OK"]
+            [ResultCode.OK],
+            ["EndScan command completed OK"],
         ]
 
         obs_state_callback.assert_call(ObsState.READY)
@@ -235,9 +232,7 @@ class TestSKASubarray:
 
         tango_context.device.ReleaseAllResources()
 
-        obs_state_callback.assert_calls(
-            [ObsState.RESOURCING, ObsState.EMPTY]
-        )
+        obs_state_callback.assert_calls([ObsState.RESOURCING, ObsState.EMPTY])
         assert tango_context.device.assignedResources is None
         # PROTECTED REGION END #    //  SKASubarray.test_ReleaseAllResources
 
@@ -254,11 +249,9 @@ class TestSKASubarray:
 
         tango_context.device.ReleaseResources(json.dumps(["BAND1"]))
 
-        obs_state_callback.assert_calls(
-            [ObsState.RESOURCING, ObsState.IDLE]
-        )
+        obs_state_callback.assert_calls([ObsState.RESOURCING, ObsState.IDLE])
         assert tango_context.device.ObsState == ObsState.IDLE
-        assert tango_context.device.assignedResources == ('BAND2',)
+        assert tango_context.device.assignedResources == ("BAND2",)
         # PROTECTED REGION END #    //  SKASubarray.test_ReleaseResources
 
     # PROTECTED REGION ID(SKASubarray.test_Reset_decorators) ENABLED START #
@@ -275,12 +268,11 @@ class TestSKASubarray:
         obs_state_callback.assert_call(ObsState.ABORTED)
 
         assert tango_context.device.ObsReset() == [
-            [ResultCode.OK], ["ObsReset command completed OK"]
+            [ResultCode.OK],
+            ["ObsReset command completed OK"],
         ]
 
-        obs_state_callback.assert_calls(
-            [ObsState.RESETTING, ObsState.IDLE]
-        )
+        obs_state_callback.assert_calls([ObsState.RESETTING, ObsState.IDLE])
         assert tango_context.device.obsState == ObsState.IDLE
         # PROTECTED REGION END #    //  SKASubarray.test_Reset
 
@@ -297,7 +289,8 @@ class TestSKASubarray:
         obs_state_callback.assert_call(ObsState.READY)
 
         assert tango_context.device.Scan('{"id": 123}') == [
-            [ResultCode.STARTED], ["Scan command started"]
+            [ResultCode.STARTED],
+            ["Scan command started"],
         ]
 
         obs_state_callback.assert_call(ObsState.SCANNING)
@@ -305,7 +298,7 @@ class TestSKASubarray:
 
         tango_context.device.EndScan()
         with pytest.raises(DevFailed):
-            tango_context.device.Scan('Invalid JSON')
+            tango_context.device.Scan("Invalid JSON")
         # PROTECTED REGION END #    //  SKASubarray.test_Scan
 
     # PROTECTED REGION ID(SKASubarray.test_activationTime_decorators) ENABLED START #
@@ -349,8 +342,9 @@ class TestSKASubarray:
         """Test for buildState"""
         # PROTECTED REGION ID(SKASubarray.test_buildState) ENABLED START #
         buildPattern = re.compile(
-            r'ska_tango_base, [0-9]+.[0-9]+.[0-9]+, '
-            r'A set of generic base devices for SKA Telescope')
+            r"ska_tango_base, [0-9]+.[0-9]+.[0-9]+, "
+            r"A set of generic base devices for SKA Telescope"
+        )
         assert (re.match(buildPattern, tango_context.device.buildState)) is not None
         # PROTECTED REGION END #    //  SKASubarray.test_buildState
 
@@ -423,7 +417,7 @@ class TestSKASubarray:
     def test_versionId(self, tango_context):
         """Test for versionId"""
         # PROTECTED REGION ID(SKASubarray.test_versionId) ENABLED START #
-        versionIdPattern = re.compile(r'[0-9]+.[0-9]+.[0-9]+')
+        versionIdPattern = re.compile(r"[0-9]+.[0-9]+.[0-9]+")
         assert (re.match(versionIdPattern, tango_context.device.versionId)) is not None
         # PROTECTED REGION END #    //  SKASubarray.test_versionId
 
@@ -450,6 +444,7 @@ class TestSKASubarray_commands:
     """
     This class contains tests of SKASubarray commands
     """
+
     @pytest.fixture
     def op_state_model(self, logger):
         """
@@ -476,13 +471,12 @@ class TestSKASubarray_commands:
         """
         mock_capability_types = ["foo", "bah"]
         return ReferenceSubarrayComponentManager(
-            op_state_model,
-            subarray_state_model,
-            mock_capability_types,
-            logger=logger
+            op_state_model, subarray_state_model, mock_capability_types, logger=logger
         )
 
-    def test_AssignCommand(self, component_manager, op_state_model, subarray_state_model):
+    def test_AssignCommand(
+        self, component_manager, op_state_model, subarray_state_model
+    ):
         """
         Test for SKASubarray.AssignResourcesCommand
         """

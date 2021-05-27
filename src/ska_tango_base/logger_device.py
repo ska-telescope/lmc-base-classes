@@ -19,6 +19,7 @@ from tango.server import run, command
 from ska_tango_base import SKABaseDevice
 from ska_tango_base.commands import ResponseCommand, ResultCode
 from ska_tango_base.control_model import LoggingLevel
+
 # PROTECTED REGION END #    //  SKALogger.additionnal_import
 
 __all__ = ["SKALogger", "main"]
@@ -28,6 +29,7 @@ class SKALogger(SKABaseDevice):
     """
     A generic base device for Logging for SKA.
     """
+
     # PROTECTED REGION ID(SKALogger.class_variable) ENABLED START #
     # PROTECTED REGION END #    //  SKALogger.class_variable
 
@@ -49,7 +51,7 @@ class SKALogger(SKABaseDevice):
         super().init_command_objects()
         self.register_command_object(
             "SetLoggingLevel",
-            self.SetLoggingLevelCommand(self, self.op_state_model, self.logger)
+            self.SetLoggingLevelCommand(self, self.op_state_model, self.logger),
         )
 
     def always_executed_hook(self):
@@ -107,23 +109,26 @@ class SKALogger(SKABaseDevice):
             for level, device in zip(logging_levels, logging_devices):
                 try:
                     new_level = LoggingLevel(level)
-                    self.logger.info("Setting logging level %s for %s", new_level, device)
+                    self.logger.info(
+                        "Setting logging level %s for %s", new_level, device
+                    )
                     dev_proxy = DeviceProxy(device)
                     dev_proxy.loggingLevel = new_level
                 except DevFailed:
                     self.logger.exception(
-                        "Failed to set logging level %s for %s", level, device)
+                        "Failed to set logging level %s for %s", level, device
+                    )
 
             message = "SetLoggingLevel command completed OK"
             self.logger.info(message)
             return (ResultCode.OK, message)
 
     @command(
-        dtype_in='DevVarLongStringArray',
+        dtype_in="DevVarLongStringArray",
         doc_in="Logging level for selected devices:"
-               "(0=OFF, 1=FATAL, 2=ERROR, 3=WARNING, 4=INFO, 5=DEBUG)."
-               "Example: [[4, 5], ['my/dev/1', 'my/dev/2']].",
-        dtype_out='DevVarLongStringArray',
+        "(0=OFF, 1=FATAL, 2=ERROR, 3=WARNING, 4=INFO, 5=DEBUG)."
+        "Example: [[4, 5], ['my/dev/1', 'my/dev/2']].",
+        dtype_out="DevVarLongStringArray",
         doc_out="(ReturnType, 'informational message')",
     )
     @DebugIt()
@@ -150,6 +155,7 @@ class SKALogger(SKABaseDevice):
 
         # PROTECTED REGION END #    //  SKALogger.SetLoggingLevel
 
+
 # ----------
 # Run server
 # ----------
@@ -164,5 +170,5 @@ def main(args=None, **kwargs):
     # PROTECTED REGION END #    //  SKALogger.main
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

@@ -618,21 +618,22 @@ class TestSKABaseDevice(object):
             s.connect(("localhost", _DEBUGGER_PORT))
         assert tango_context.device.state
 
+    @pytest.mark.usefixtures("patch_debugger_to_start_on_ephemeral_port")
     def test_DebugDevice_twice_does_not_raise(self, tango_context):
-        patch_debugger_to_start_on_ephermal_port()
         tango_context.device.DebugDevice()
         tango_context.device.DebugDevice()
         assert SKABaseDevice._global_debugger_listening
 
+    @pytest.mark.usefixtures("patch_debugger_to_start_on_ephemeral_port")
     def test_DebugDevice_does_not_break_a_command(self, tango_context):
-        patch_debugger_to_start_on_ephermal_port()
         tango_context.device.DebugDevice()
         assert tango_context.device.State() == DevState.OFF
         tango_context.device.On()
         assert tango_context.device.State() == DevState.ON
 
 
-def patch_debugger_to_start_on_ephermal_port():
+@pytest.fixture()
+def patch_debugger_to_start_on_ephemeral_port():
     ska_tango_base.base.base_device._DEBUGGER_PORT = 0
 
 

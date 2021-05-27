@@ -18,25 +18,20 @@ SHELL = /bin/bash
 DOCKER_REGISTRY_USER:=ska-telescope
 PROJECT = ska_tango_base
 IMAGE_FOR_DIAGRAMS = nexus.engageska-portugal.pt/ska-tango-images/pytango-builder:9.3.3.3
-#
-# include makefile to pick up the standard Make targets, e.g., 'make build'
-# build, 'make push' docker push procedure, etc. The other Make targets
-# ('make lint', 'make test', etc.) are defined in this file.
-#
+
+
+# import some standard Make targets e.g. `make build` (for building
+# docker images), ``make push` (docker push procedure), etc.
 include .make/Makefile.mk
+
+# import make targets for code linting e.g. `make lint`
+include .make/lint.mk
 
 .DEFAULT_GOAL := help
 
 test: ## test ska_tango_base Python code
 	mkdir -p build/reports
 	python3 setup.py test | tee build/setup_py_test.stdout
-
-lint: ## lint ska_tango_base Python code
-	python3 -m pip install -U pylint==2.4.4
-	python3 -m pip install pylint2junit
-	mkdir -p build/reports
-	pylint --output-format=parseable src/ska_tango_base | tee build/code_analysis.stdout
-	pylint --output-format=pylint2junit.JunitReporter src/ska_tango_base > build/reports/linting.xml
 
 test-in-docker: build ## Build the docker image and run tests inside it.
 	@docker run --rm $(IMAGE):$(VERSION) make test
@@ -63,4 +58,4 @@ docs-in-docker: ## Generate docs inside a container
 help:  ## show this help.
 	@grep -hE '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'
 
-.PHONY: test lint test-in-docker lint-in-docker help
+.PHONY: test test-in-docker lint-in-docker help

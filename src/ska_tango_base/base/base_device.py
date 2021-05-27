@@ -326,6 +326,7 @@ class SKABaseDevice(Device):
     """
 
     _global_debugger_listening = False
+    _global_debugger_allocated_port = 0
 
     class InitCommand(ResponseCommand, CompletionCommand):
         """
@@ -1330,8 +1331,9 @@ class SKABaseDevice(Device):
             :rtype: DevUShort
             """
             if not SKABaseDevice._global_debugger_listening:
-                self.start_debugger(_DEBUGGER_PORT)
+                allocated_port = self.start_debugger_and_get_port(_DEBUGGER_PORT)
                 SKABaseDevice._global_debugger_listening = True
+                SKABaseDevice._global_debugger_allocated_port = allocated_port
             device = self.target
             if not device._methods_patched_for_debugger:
                 self.monkey_patch_all_methods_for_debugger()
@@ -1339,14 +1341,15 @@ class SKABaseDevice(Device):
             else:
                 self.logger.warning("Triggering debugger breakpoint...")
                 debugpy.breakpoint()
-            return _DEBUGGER_PORT
+            return SKABaseDevice._global_debugger_allocated_port
 
-        def start_debugger(self, port):
+        def start_debugger_and_get_port(self, port):
             self.logger.warning("Starting debugger...")
-            debugpy.listen(("0.0.0.0", port))
+            interface, allocated_port = debugpy.listen(("0.0.0.0", port))
             self.logger.warning(
-                f"Debugger listening on port {port}. Performance may be degraded."
+                f"Debugger listening on {interface}:{allocated_port}. Performance may be degraded."
             )
+            return allocated_port
 
         def monkey_patch_all_methods_for_debugger(self):
             all_methods = self.get_all_methods()

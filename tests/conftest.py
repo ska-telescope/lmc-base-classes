@@ -34,6 +34,10 @@ def tango_context(device_test_config):
     yield tango_context
     tango_context.stop()
 
+def pytest_itemcollected(item):
+    """Make Tango-related tests run in forked mode"""
+    if "tango_context" in item.fixturenames:
+        item.add_marker("forked")
 
 @pytest.fixture(scope="function")
 def initialize_device(tango_context):

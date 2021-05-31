@@ -366,6 +366,7 @@ class TestCspSubElementMaster(object):
         # PROTECTED REGION END #    //  CspSubelementMaster.test_ReInitDevices_when_in_wrong_state
 
 
+@pytest.mark.forked
 def test_multiple_devices_in_same_process():
 
     # The order here is important - base class last, so that we can

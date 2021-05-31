@@ -19,7 +19,7 @@ API
   Alarm Handler device<alarm_handler_device>
   Capability device<capability_device>
   Logger device<logger_device>
-  Master device<master_device>
+  Controller device<controller_device>
   Tel State device<tel_state_device>
 
 

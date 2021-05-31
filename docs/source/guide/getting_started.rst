@@ -231,12 +231,12 @@ Writing the Tango device involves the following steps:
       ska_tango_base.SKAAlarmHandler
       ska_tango_base.SKACapability
       ska_tango_base.SKALogger
-      ska_tango_base.SKAMaster
+      ska_tango_base.SKAController
       ska_tango_base.SKATelState
       ska_tango_base.base.SKABaseDevice
       ska_tango_base.obs.SKAObsDevice
       ska_tango_base.subarray.SKASubarray
-      ska_tango_base.csp.CspSubElementMaster
+      ska_tango_base.csp.CspSubElementController
       ska_tango_base.csp.CspSubElementObsDevice
       ska_tango_base.csp.CspSubElementSubarray
       :top-classes: ska_tango_base.base.SKABaseDevice

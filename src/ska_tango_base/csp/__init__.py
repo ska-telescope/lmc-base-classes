@@ -8,12 +8,12 @@ __all__ = (
     "CspSubarrayComponentManager",
     "ReferenceCspObsComponentManager",
     "ReferenceCspSubarrayComponentManager",
-    "CspSubElementMaster",
+    "CspSubElementController",
     "CspSubElementObsDevice",
     "CspSubElementSubarray",
 )
 
-from .master_device import CspSubElementMaster
+from .controller_device import CspSubElementController
 
 from .obs import (
     CspSubElementObsStateModel,

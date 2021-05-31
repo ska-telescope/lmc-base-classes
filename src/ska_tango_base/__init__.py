@@ -15,11 +15,11 @@ __all__ = (
     "SKABaseDevice",
     "SKACapability",
     "SKALogger",
-    "SKAMaster",
+    "SKAController",
     "SKAObsDevice",
     "SKASubarray",
     "SKATelState",
-    "CspSubElementMaster",
+    "CspSubElementController",
     "CspSubElementObsDevice",
     "CspSubElementSubarray",
 )
@@ -30,7 +30,7 @@ __all__ = (
 from .base import SKABaseDevice
 from .alarm_handler_device import SKAAlarmHandler
 from .logger_device import SKALogger
-from .master_device import SKAMaster
+from .controller_device import SKAController
 from .tel_state_device import SKATelState
 
 # SKAObsDevice, and then classes that inherit from it
@@ -39,6 +39,6 @@ from .capability_device import SKACapability
 from .subarray import SKASubarray
 
 # CspSubElement classes
-from .csp import CspSubElementMaster
+from .csp import CspSubElementController
 from .csp import CspSubElementSubarray
 from .csp import CspSubElementObsDevice

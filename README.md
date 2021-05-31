@@ -13,7 +13,7 @@ The ska-tango-base repository includes a set of eight classes as mentioned in SK
 - SKACapability: This is generic base class for any element to provide common functionality of a capability of an SKA device.
 - SKAAlarmHandler: This is the generic class meant to handle the alarms and alerts.
 - SKALogger: This is the generic class for logging.
-- SKAMaster: This is the generic base class to provide common functionality required for any SKA Element Master device.
+- SKAController: This is the generic base class to provide common functionality required for any SKA Element Controller device.
 - SKAObsDevice: This is the generic base classs meant to provide common functionality of a device which is directly going to be a part of an observation.
 - SKASubarray: This is the generic base class which provides common functionality required in a subarray device.
 - SKATelState: This is the generic base class to provide common functionality of a TelState device of any SKA Element.
@@ -246,6 +246,9 @@ Yes, you could use f-strings. `f"I have a message for {someone}"`.  The only ben
 Tango devices can be launched with a `-v` parameter to set the logging level. For example, 'MyDeviceServer instance -v5' for debug level.  Currently, the `SKABaseDevice` does not consider this command line option, so it will just use the Tango device property instead. In future, it would be useful to override the property with the command line option.
 
 ## Version History
+
+#### 0.11.1
+- Minor breaking change: rename of "Master" devices to "Controller"
 
 #### 0.11.0
 - Breaking change: state models and component managers

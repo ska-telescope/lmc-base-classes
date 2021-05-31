@@ -15,6 +15,7 @@ from tango.server import run, device_property
 
 # SKA specific imports
 from ska_tango_base import SKABaseDevice
+
 # PROTECTED REGION END #    //  SKATelState.additionnal_imports
 
 __all__ = ["SKATelState", "main"]
@@ -24,6 +25,7 @@ class SKATelState(SKABaseDevice):
     """
     A generic base device for Telescope State for SKA.
     """
+
     # PROTECTED REGION ID(SKATelState.class_variable) ENABLED START #
     # PROTECTED REGION END #    //  SKATelState.class_variable
 
@@ -32,7 +34,7 @@ class SKATelState(SKABaseDevice):
     # -----------------
 
     TelStateConfigFile = device_property(
-        dtype='str',
+        dtype="str",
     )
 
     # ----------
@@ -60,6 +62,7 @@ class SKATelState(SKABaseDevice):
     # Commands
     # --------
 
+
 # ----------
 # Run server
 # ----------
@@ -80,5 +83,5 @@ def main(args=None, **kwargs):
     # PROTECTED REGION END #    //  SKATelState.main
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

@@ -1,7 +1,6 @@
 """
 A module defining a list of fixtures that are shared across all ska_tango_base tests.
 """
-import importlib
 import logging
 from queue import Empty, Queue
 
@@ -19,6 +18,7 @@ def device_properties():
     """
     return {}
 
+
 @pytest.fixture(scope="class")
 def tango_context(device_test_config):
     """
@@ -34,10 +34,12 @@ def tango_context(device_test_config):
     yield tango_context
     tango_context.stop()
 
+
 def pytest_itemcollected(item):
     """Make Tango-related tests run in forked mode"""
     if "tango_context" in item.fixturenames:
         item.add_marker("forked")
+
 
 @pytest.fixture(scope="function")
 def initialize_device(tango_context):
@@ -139,7 +141,8 @@ def tango_change_event_helper(tango_context):
             if event_data.err:
                 error = event_data.errors[0]
                 self._errors.append(
-                    "Event callback error: [%s] %s" % (error.reason, error.desc))
+                    "Event callback error: [%s] %s" % (error.reason, error.desc)
+                )
             else:
                 self._values_queue.put(event_data.attr_value.value)
 

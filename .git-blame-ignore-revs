@@ -1,0 +1,8 @@
+# To ignore the commits below when using git blame:
+#     git blame --ignore-revs-file .git-blame-ignore-revs src/ska_tango_base/commands.py
+# or
+#     git config blame.ignoreRevsFile .git-blame-ignore-revs
+#     git blame src/ska_tango_base/commands.py
+
+# black entire repo
+4402797422cf9e01687e34786b94cbf2674f05e1

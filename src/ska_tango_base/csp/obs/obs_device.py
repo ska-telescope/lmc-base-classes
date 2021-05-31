@@ -42,6 +42,7 @@ class CspSubElementObsDevice(SKAObsDevice):
             - Identification number of the observing device.
             - Type:'DevUShort'
     """
+
     # PROTECTED REGION ID(CspSubElementObsDevice.class_variable) ENABLED START #
     # PROTECTED REGION END #    //  CspSubElementObsDevice.class_variable
 
@@ -49,61 +50,59 @@ class CspSubElementObsDevice(SKAObsDevice):
     # Device Properties
     # -----------------
 
-    DeviceID = device_property(
-        dtype='DevUShort', default_value=1
-    )
+    DeviceID = device_property(dtype="DevUShort", default_value=1)
 
     # ----------
     # Attributes
     # ----------
 
     scanID = attribute(
-        dtype='DevULong64',
+        dtype="DevULong64",
         label="scanID",
         doc="The scan identification number to be inserted in the output\nproducts.",
     )
     """Device attribute."""
 
     configurationID = attribute(
-        dtype='DevString',
+        dtype="DevString",
         label="configurationID",
         doc="The configuration ID specified into the JSON configuration.",
     )
     """Device attribute."""
 
     deviceID = attribute(
-        dtype='DevUShort',
+        dtype="DevUShort",
         label="deviceID",
         doc="The observing device ID.",
     )
     """Device attribute."""
 
     lastScanConfiguration = attribute(
-        dtype='DevString',
+        dtype="DevString",
         label="lastScanConfiguration",
         doc="The last valid scan configuration.",
     )
     """Device attribute."""
 
     sdpDestinationAddresses = attribute(
-        dtype='DevString',
+        dtype="DevString",
         label="sdpDestinationAddresses",
         doc="JSON formatted string\nReport the list of all the SDP addresses provided by SDP"
-            " to receive the output products.\nSpecifies the Mac, IP, Port for each resource:\nCBF:"
-            " visibility channels\nPSS ? Pss pipelines\nPST ? PSTBeam\nNot used by al CSP Sub-element"
-            " observing device (for ex. Mid CBF VCCs)",
+        " to receive the output products.\nSpecifies the Mac, IP, Port for each resource:\nCBF:"
+        " visibility channels\nPSS ? Pss pipelines\nPST ? PSTBeam\nNot used by al CSP Sub-element"
+        " observing device (for ex. Mid CBF VCCs)",
     )
     """Device attribute."""
 
     sdpLinkCapacity = attribute(
-        dtype='DevFloat',
+        dtype="DevFloat",
         label="sdpLinkCapacity",
         doc="The SDP link capavity in GB/s.",
     )
     """Device attribute."""
 
     sdpLinkActive = attribute(
-        dtype=('DevBoolean',),
+        dtype=("DevBoolean",),
         max_dim_x=100,
         label="sdpLinkActive",
         doc="Flag reporting if the SDP link is active.\nTrue: active\nFalse:down",
@@ -111,7 +110,7 @@ class CspSubElementObsDevice(SKAObsDevice):
     """Device attribute."""
 
     healthFailureMessage = attribute(
-        dtype='DevString',
+        dtype="DevString",
         label="healthFailureMessage",
         doc="Message providing info about device health failure.",
     )
@@ -155,7 +154,7 @@ class CspSubElementObsDevice(SKAObsDevice):
                     self.op_state_model,
                     self.obs_state_model,
                     self.logger,
-                )
+                ),
             )
 
     class InitCommand(SKAObsDevice.InitCommand):
@@ -177,15 +176,21 @@ class CspSubElementObsDevice(SKAObsDevice):
             device = self.target
             device._obs_state = ObsState.IDLE
 
-            device._sdp_addresses = {"outputHost": [], "outputMac": [], "outputPort": []}
+            device._sdp_addresses = {
+                "outputHost": [],
+                "outputMac": [],
+                "outputPort": [],
+            }
             # a sub-element obsdevice can have more than one link to the SDP
             # (for ex. Mid.CBF FSP)
-            device._sdp_links_active = [False, ]
-            device._sdp_links_capacity = 0.
+            device._sdp_links_active = [
+                False,
+            ]
+            device._sdp_links_capacity = 0.0
 
             # JSON string, deliberately left in Tango layer
-            device._last_scan_configuration = ''
-            device._health_failure_msg = ''
+            device._last_scan_configuration = ""
+            device._health_failure_msg = ""
 
             message = "CspSubElementObsDevice Init command completed OK"
             device.logger.info(message)
@@ -205,6 +210,7 @@ class CspSubElementObsDevice(SKAObsDevice):
         """
         # PROTECTED REGION ID(CspSubElementObsDevice.delete_device) ENABLED START #
         # PROTECTED REGION END #    //  CspSubElementObsDevice.delete_device
+
     # ------------------
     # Attributes methods
     # ------------------
@@ -212,13 +218,13 @@ class CspSubElementObsDevice(SKAObsDevice):
     def read_scanID(self):
         # PROTECTED REGION ID(CspSubElementObsDevice.scanID_read) ENABLED START #
         """Return the scanID attribute."""
-        return self.component_manager.scan_id  #pylint: disable=no-member
+        return self.component_manager.scan_id
         # PROTECTED REGION END #    //  CspSubElementObsDevice.scanID_read
 
     def read_configurationID(self):
         # PROTECTED REGION ID(CspSubElementObsDevice.configurationID_read) ENABLED START #
         """Return the configurationID attribute."""
-        return self.component_manager.config_id  #pylint: disable=no-member
+        return self.component_manager.config_id
         # PROTECTED REGION END #    //  CspSubElementObsDevice.configurationID_read
 
     def read_deviceID(self):
@@ -325,7 +331,11 @@ class CspSubElementObsDevice(SKAObsDevice):
                 msg = f"Validate configuration failed with unknown error: {other_errs}"
                 return (None, ResultCode.FAILED, msg)
 
-            return (configuration_dict, ResultCode.OK, "ConfigureScan arguments validation successful")
+            return (
+                configuration_dict,
+                ResultCode.OK,
+                "ConfigureScan arguments validation successful",
+            )
 
     class ScanCommand(ObservationCommand, ResponseCommand):
         """
@@ -372,7 +382,7 @@ class CspSubElementObsDevice(SKAObsDevice):
             if result_code == ResultCode.OK:
                 component_manager.scan(int(argin))
                 return (ResultCode.STARTED, "Scan command started")
-            return(result_code, msg)
+            return (result_code, msg)
 
         def validate_input(self, argin):
             """
@@ -554,11 +564,11 @@ class CspSubElementObsDevice(SKAObsDevice):
             return (ResultCode.OK, "Abort command completed OK")
 
     @command(
-        dtype_in='DevString',
+        dtype_in="DevString",
         doc_in="JSON formatted string with the scan configuration.",
-        dtype_out='DevVarLongStringArray',
+        dtype_out="DevVarLongStringArray",
         doc_out="A tuple containing a return code and a string message indicating status. "
-                "The message is for information purpose only.",
+        "The message is for information purpose only.",
     )
     @DebugIt()
     def ConfigureScan(self, argin):
@@ -585,11 +595,11 @@ class CspSubElementObsDevice(SKAObsDevice):
         # PROTECTED REGION END #    //  CspSubElementObsDevice.ConfigureScan
 
     @command(
-        dtype_in='DevString',
+        dtype_in="DevString",
         doc_in="A string with the scan ID",
-        dtype_out='DevVarLongStringArray',
+        dtype_out="DevVarLongStringArray",
         doc_out="A tuple containing a return code and a string message indicating status."
-                "The message is for information purpose only.",
+        "The message is for information purpose only.",
     )
     @DebugIt()
     def Scan(self, argin):
@@ -610,9 +620,9 @@ class CspSubElementObsDevice(SKAObsDevice):
         # PROTECTED REGION END #    //  CspSubElementObsDevice.Scan
 
     @command(
-        dtype_out='DevVarLongStringArray',
+        dtype_out="DevVarLongStringArray",
         doc_out="A tuple containing a return code and a string message indicating status."
-                "The message is for information purpose only.",
+        "The message is for information purpose only.",
     )
     @DebugIt()
     def EndScan(self):
@@ -630,9 +640,9 @@ class CspSubElementObsDevice(SKAObsDevice):
         # PROTECTED REGION END #    //  CspSubElementObsDevice.EndScan
 
     @command(
-        dtype_out='DevVarLongStringArray',
+        dtype_out="DevVarLongStringArray",
         doc_out="A tuple containing a return code and a string  message indicating status."
-                "The message is for information purpose only.",
+        "The message is for information purpose only.",
     )
     @DebugIt()
     def GoToIdle(self):
@@ -644,7 +654,7 @@ class CspSubElementObsDevice(SKAObsDevice):
             The message is for information purpose only.
         :rtype: (ResultCode, str)
         """
-        self._last_scan_configuration = ''
+        self._last_scan_configuration = ""
 
         command = self.get_command_object("GoToIdle")
         (return_code, message) = command()
@@ -652,9 +662,9 @@ class CspSubElementObsDevice(SKAObsDevice):
         # PROTECTED REGION END #    //  CspSubElementObsDevice.GoToIdle
 
     @command(
-        dtype_out='DevVarLongStringArray',
+        dtype_out="DevVarLongStringArray",
         doc_out="A tuple containing a return code and a string message indicating status."
-                "The message is for information purpose only.",
+        "The message is for information purpose only.",
     )
     @DebugIt()
     def ObsReset(self):
@@ -672,9 +682,9 @@ class CspSubElementObsDevice(SKAObsDevice):
         # PROTECTED REGION END #    //  CspSubElementObsDevice.ObsReset
 
     @command(
-        dtype_out='DevVarLongStringArray',
+        dtype_out="DevVarLongStringArray",
         doc_out="A tuple containing a return code and a string message indicating status."
-                "The message is for information purpose only.",
+        "The message is for information purpose only.",
     )
     @DebugIt()
     def Abort(self):
@@ -692,6 +702,7 @@ class CspSubElementObsDevice(SKAObsDevice):
         return [[return_code], [message]]
         # PROTECTED REGION END #    //  CspSubElementObsDevice.Abort
 
+
 # ----------
 # Run server
 # ----------
@@ -704,5 +715,5 @@ def main(args=None, **kwargs):
     # PROTECTED REGION END #    //  CspSubElementObsDevice.main
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

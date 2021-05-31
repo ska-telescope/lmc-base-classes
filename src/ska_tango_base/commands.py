@@ -19,7 +19,7 @@ The following command classes are provided:
 
 * **ResponseCommand**: for commands that return a ``(ResultCode,
   message)`` tuple.
-  
+
 * **CompletionCommand**: for commands that need to let their state
   machine know when they have completed; that is, long-running commands
   with transitional states, such as ``AssignResources()`` and
@@ -156,9 +156,7 @@ class BaseCommand:
         else:
             returned = self.do(argin=argin)
 
-        self.logger.info(
-            f"Exiting command {self.name}"
-        )
+        self.logger.info(f"Exiting command {self.name}")
         return returned
 
     def do(self, argin=None):
@@ -250,8 +248,7 @@ class StateModelCommand(BaseCommand):
 
         try:
             return self.state_model.is_action_allowed(
-                self._invoked_action,
-                raise_if_disallowed=raise_if_disallowed
+                self._invoked_action, raise_if_disallowed=raise_if_disallowed
             )
         except StateModelError as state_model_error:
             raise CommandError(
@@ -268,7 +265,7 @@ class ObservationCommand(StateModelCommand):
         op_state_model,
         *args,
         logger=None,
-        **kwargs
+        **kwargs,
     ):
         """
         A base class for commands that drive the device's observing
@@ -327,7 +324,7 @@ class ObservationCommand(StateModelCommand):
                 return False
 
         return super().is_allowed(raise_if_disallowed=raise_if_disallowed)
-    
+
 
 class ResponseCommand(BaseCommand):
     """
@@ -341,7 +338,7 @@ class ResponseCommand(BaseCommand):
         ResultCode.STARTED: logging.INFO,
         ResultCode.QUEUED: logging.INFO,
         ResultCode.FAILED: logging.ERROR,
-        ResultCode.UNKNOWN: logging.WARNING
+        ResultCode.UNKNOWN: logging.WARNING,
     }
 
     def _call_do(self, argin=None):
@@ -366,7 +363,7 @@ class ResponseCommand(BaseCommand):
         self.logger.log(
             self.RESULT_LOG_LEVEL.get(return_code, logging.ERROR),
             f"Exiting command {self.name} with return_code "
-            f"{return_code!s}, message: '{message}'."
+            f"{return_code!s}, message: '{message}'.",
         )
         return (return_code, message)
 
@@ -377,9 +374,7 @@ class CompletionCommand(StateModelCommand):
     the state model at command completion.
     """
 
-    def __init__(
-        self, target, state_model, action_slug, *args, logger=None, **kwargs
-    ):
+    def __init__(self, target, state_model, action_slug, *args, logger=None, **kwargs):
         """
         Create a new CompletionCommand for a device.
 
@@ -404,7 +399,9 @@ class CompletionCommand(StateModelCommand):
             logger interface
         :param kwargs: additional keyword arguments
         """
-        super().__init__(target, state_model, action_slug, *args, logger=logger, **kwargs)
+        super().__init__(
+            target, state_model, action_slug, *args, logger=logger, **kwargs
+        )
         self._completed_hook = f"{action_slug}_completed"
 
     def __call__(self, argin=None):

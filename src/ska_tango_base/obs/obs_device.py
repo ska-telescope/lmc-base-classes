@@ -13,8 +13,6 @@ instead of just SKABaseDevice.
 
 # Additional import
 # PROTECTED REGION ID(SKAObsDevice.additionnal_import) ENABLED START #
-import warnings
-
 # Tango imports
 from tango.server import run, attribute
 
@@ -22,6 +20,7 @@ from tango.server import run, attribute
 from ska_tango_base import SKABaseDevice
 from ska_tango_base.commands import ResultCode
 from ska_tango_base.control_model import ObsMode, ObsState
+
 # PROTECTED REGION END #    //  SKAObsDevice.additionnal_imports
 
 __all__ = ["SKAObsDevice", "main"]
@@ -31,6 +30,7 @@ class SKAObsDevice(SKABaseDevice):
     """
     A generic base device for Observations for SKA.
     """
+
     class InitCommand(SKABaseDevice.InitCommand):
         """
         A class for the SKAObsDevice's init_device() "command".
@@ -85,7 +85,7 @@ class SKAObsDevice(SKABaseDevice):
     """Device attribute."""
 
     configurationProgress = attribute(
-        dtype='uint16',
+        dtype="uint16",
         unit="%",
         max_value=100,
         min_value=0,
@@ -94,7 +94,7 @@ class SKAObsDevice(SKABaseDevice):
     """Device attribute."""
 
     configurationDelayExpected = attribute(
-        dtype='uint16',
+        dtype="uint16",
         unit="seconds",
         doc="Configuration delay expected in seconds",
     )
@@ -167,6 +167,7 @@ class SKAObsDevice(SKABaseDevice):
     # Commands
     # --------
 
+
 # ----------
 # Run server
 # ----------
@@ -184,5 +185,5 @@ def main(args=None, **kwargs):
     # PROTECTED REGION END #    //  SKAObsDevice.main
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

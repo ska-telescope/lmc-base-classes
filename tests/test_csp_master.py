@@ -20,8 +20,13 @@ from ska_tango_base import SKAMaster, CspSubElementMaster
 from ska_tango_base.base import ReferenceBaseComponentManager
 from ska_tango_base.commands import ResultCode
 from ska_tango_base.control_model import (
-    AdminMode, ControlMode, HealthState, SimulationMode, TestMode
+    AdminMode,
+    ControlMode,
+    HealthState,
+    SimulationMode,
+    TestMode,
 )
+
 # PROTECTED REGION END #    //  CspSubElementMaster.test_additional_imports
 
 
@@ -37,7 +42,7 @@ class TestCspSubElementMaster(object):
         Fixture that returns device_properties to be provided to the
         device under test.
         """
-        return {'PowerDelayStandbyOn': '1.5', 'PowerDelayStandbyOff': '1.0'}
+        return {"PowerDelayStandbyOn": "1.5", "PowerDelayStandbyOff": "1.0"}
 
     @pytest.fixture(scope="class")
     def device_test_config(self, device_properties):
@@ -87,8 +92,8 @@ class TestCspSubElementMaster(object):
         """Test for GetVersionInfo"""
         # PROTECTED REGION ID(CspSubelementMaster.test_GetVersionInfo) ENABLED START #
         versionPattern = re.compile(
-            f'{tango_context.device.info().dev_class}, ska_tango_base, [0-9]+.[0-9]+.[0-9]+, '
-            'A set of generic base devices for SKA Telescope.'
+            f"{tango_context.device.info().dev_class}, ska_tango_base, [0-9]+.[0-9]+.[0-9]+, "
+            "A set of generic base devices for SKA Telescope."
         )
         versionInfo = tango_context.device.GetVersionInfo()
         assert (re.match(versionPattern, versionInfo[0])) is not None
@@ -99,8 +104,9 @@ class TestCspSubElementMaster(object):
         """Test for buildState"""
         # PROTECTED REGION ID(CspSubelementMaster.test_buildState) ENABLED START #
         buildPattern = re.compile(
-            r'ska_tango_base, [0-9]+.[0-9]+.[0-9]+, '
-            r'A set of generic base devices for SKA Telescope')
+            r"ska_tango_base, [0-9]+.[0-9]+.[0-9]+, "
+            r"A set of generic base devices for SKA Telescope"
+        )
         assert (re.match(buildPattern, tango_context.device.buildState)) is not None
         # PROTECTED REGION END #    //  CspSubelementMaster.test_buildState
 
@@ -109,7 +115,7 @@ class TestCspSubElementMaster(object):
     def test_versionId(self, tango_context):
         """Test for versionId"""
         # PROTECTED REGION ID(CspSubelementMaster.test_versionId) ENABLED START #
-        versionIdPattern = re.compile(r'[0-9]+.[0-9]+.[0-9]+')
+        versionIdPattern = re.compile(r"[0-9]+.[0-9]+.[0-9]+")
         assert (re.match(versionIdPattern, tango_context.device.versionId)) is not None
         # PROTECTED REGION END #    //  CspSubelementMaster.test_versionId
 
@@ -159,7 +165,7 @@ class TestCspSubElementMaster(object):
         """Test for powerDelayStandbyOn"""
         # PROTECTED REGION ID(CspSubelementMaster.test_testMode) ENABLED START #
         assert tango_context.device.powerDelayStandbyOn == pytest.approx(
-            float(device_properties['PowerDelayStandbyOn'])
+            float(device_properties["PowerDelayStandbyOn"])
         )
         tango_context.device.powerDelayStandbyOn = 3
         assert tango_context.device.powerDelayStandbyOn == 3
@@ -171,7 +177,7 @@ class TestCspSubElementMaster(object):
         """Test for powerDelayStandbyOff"""
         # PROTECTED REGION ID(CspSubelementMaster.test_testMode) ENABLED START #
         assert tango_context.device.powerDelayStandbyOff == pytest.approx(
-            float(device_properties['PowerDelayStandbyOff'])
+            float(device_properties["PowerDelayStandbyOff"])
         )
         tango_context.device.powerDelayStandbyOff = 2
         assert tango_context.device.powerDelayStandbyOff == 2
@@ -285,9 +291,9 @@ class TestCspSubElementMaster(object):
         # After initialization the device is in the right state (OFF/MAINTENANCE) to
         # execute the command.
         tango_context.device.adminMode = AdminMode.MAINTENANCE
-        assert tango_context.device.LoadFirmware(['file', 'test/dev/b', '918698a7fea3']) == [
-            [ResultCode.OK], ["LoadFirmware command completed OK"]
-        ]
+        assert tango_context.device.LoadFirmware(
+            ["file", "test/dev/b", "918698a7fea3"]
+        ) == [[ResultCode.OK], ["LoadFirmware command completed OK"]]
         # PROTECTED REGION END #    //  CspSubelementMaster.test_LoadFirmware
 
     # PROTECTED REGION ID(CspSubelementMaster.test_LoadFirmware_when_in_wrong_state_decorators) ENABLED START #
@@ -298,7 +304,7 @@ class TestCspSubElementMaster(object):
         # Set the device in ON/ONLINE state
         tango_context.device.On()
         with pytest.raises(DevFailed, match="LoadFirmwareCommand not allowed"):
-            tango_context.device.LoadFirmware(['file', 'test/dev/b', '918698a7fea3'])
+            tango_context.device.LoadFirmware(["file", "test/dev/b", "918698a7fea3"])
         # PROTECTED REGION END #    //  CspSubelementMaster.test_LoadFirmware_when_in_wrong_state
 
     # PROTECTED REGION ID(CspSubelementMaster.test_PowerOnDevices_decorators) ENABLED START #
@@ -308,8 +314,9 @@ class TestCspSubElementMaster(object):
         # PROTECTED REGION ID(CspSubelementMaster.test_PowerOnDevices) ENABLED START #
         # put it in ON state
         tango_context.device.On()
-        assert tango_context.device.PowerOnDevices(['test/dev/1', 'test/dev/2']) == [
-            [ResultCode.OK], ["PowerOnDevices command completed OK"]
+        assert tango_context.device.PowerOnDevices(["test/dev/1", "test/dev/2"]) == [
+            [ResultCode.OK],
+            ["PowerOnDevices command completed OK"],
         ]
         # PROTECTED REGION END #    //  CspSubelementMaster.test_PowerOnDevices
 
@@ -319,7 +326,7 @@ class TestCspSubElementMaster(object):
         """Test for PowerOnDevices when the Master is in wrong state"""
         # PROTECTED REGION ID(CspSubelementMaster.test_PowerOnDevices_when_in_wrong_state) ENABLED START #
         with pytest.raises(DevFailed, match="PowerOnDevicesCommand not allowed"):
-            tango_context.device.PowerOnDevices(['test/dev/1', 'test/dev/2'])
+            tango_context.device.PowerOnDevices(["test/dev/1", "test/dev/2"])
         # PROTECTED REGION END #    //  CspSubelementMaster.test_PowerOnDevices_when_in_wrong_state
 
     # PROTECTED REGION ID(CspSubelementMaster.test_PowerOffDevices_decorators) ENABLED START #
@@ -329,8 +336,9 @@ class TestCspSubElementMaster(object):
         # PROTECTED REGION ID(CspSubelementMaster.test_PowerOffDevices) ENABLED START #
         # put it in ON state
         tango_context.device.On()
-        assert tango_context.device.PowerOffDevices(['test/dev/1', 'test/dev/2']) == [
-            [ResultCode.OK], ["PowerOffDevices command completed OK"]
+        assert tango_context.device.PowerOffDevices(["test/dev/1", "test/dev/2"]) == [
+            [ResultCode.OK],
+            ["PowerOffDevices command completed OK"],
         ]
         # PROTECTED REGION END #    //  CspSubelementMaster.test_PowerOffDevices
 
@@ -340,7 +348,7 @@ class TestCspSubElementMaster(object):
         """Test for PowerOffDevices when the Master is in wrong state"""
         # PROTECTED REGION ID(CspSubelementMaster.test_PowerOffDevices_when_in_wrong_state) ENABLED START #
         with pytest.raises(DevFailed, match="PowerOffDevicesCommand not allowed"):
-            tango_context.device.PowerOffDevices(['test/dev/1', 'test/dev/2'])
+            tango_context.device.PowerOffDevices(["test/dev/1", "test/dev/2"])
         # PROTECTED REGION END #    //  CspSubelementMaster.test_PowerOffDevices_when_in_wrong_state
 
     # PROTECTED REGION ID(CspSubelementMaster.test_ReInitDevices_decorators) ENABLED START #
@@ -350,8 +358,9 @@ class TestCspSubElementMaster(object):
         # PROTECTED REGION ID(CspSubelementMaster.test_ReInitDevices) ENABLED START #
         # put it in ON state
         tango_context.device.On()
-        assert tango_context.device.ReInitDevices(['test/dev/1', 'test/dev/2']) == [
-            [ResultCode.OK], ["ReInitDevices command completed OK"]
+        assert tango_context.device.ReInitDevices(["test/dev/1", "test/dev/2"]) == [
+            [ResultCode.OK],
+            ["ReInitDevices command completed OK"],
         ]
         # PROTECTED REGION END #    //  CspSubelementMaster.test_ReInitDevices
 
@@ -362,7 +371,7 @@ class TestCspSubElementMaster(object):
         # PROTECTED REGION ID(CspSubelementMaster.test_ReInitDevices_when_in_wrong_state) ENABLED START #
         # put it in ON state
         with pytest.raises(DevFailed, match="ReInitDevicesCommand not allowed"):
-            tango_context.device.ReInitDevices(['test/dev/1', 'test/dev/2'])
+            tango_context.device.ReInitDevices(["test/dev/1", "test/dev/2"])
         # PROTECTED REGION END #    //  CspSubelementMaster.test_ReInitDevices_when_in_wrong_state
 
 

@@ -7,7 +7,7 @@ subarray Tango devices. It consists of:
 * an :py:class:`.SubarrayObsStateModel` that maps the underlying state
   machine state to a value of the
   :py:class:`ska_tango_base.control_model.ObsState` enum.
-  
+
 """
 from transitions.extensions import LockedMachine as Machine
 
@@ -21,12 +21,12 @@ class _SubarrayObsStateMachine(Machine):
     """
     State machine representing the observation state machine for
     subarrays.
-    
+
     The machine implemented is essentially as agreed in ADR-8, but with
     some states broken down into sub-states to account for the
     interactions between commands and monitoring of the underlying
     component.
-    
+
     For example, ADR-8 says that a configuring subarray moves from IDLE
     to CONFIGURING to READY. But in a device model where the state
     machine is responsive to both commands and changes to the monitored

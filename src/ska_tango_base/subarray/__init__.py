@@ -14,7 +14,5 @@ __all__ = (
 from .subarray_obs_state_model import SubarrayObsStateModel
 
 from .component_manager import SubarrayComponentManager
-from .reference_component_manager import (
-    ReferenceSubarrayComponentManager, check_on
-)
+from .reference_component_manager import ReferenceSubarrayComponentManager, check_on
 from .subarray_device import SKASubarray

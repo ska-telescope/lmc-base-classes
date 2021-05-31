@@ -206,7 +206,7 @@ class TestSubarrayComponentManager:
         mock_op_state_model,
         mock_obs_state_model,
         initial_power_mode,
-        initial_fault
+        initial_fault,
     ):
         """
         Test that the state model is updated with state changes when the
@@ -257,7 +257,9 @@ class TestSubarrayComponentManager:
             "component_disconnected"
         )
 
-    def test_simulate_communication_failure(self, component_manager, mock_op_state_model):
+    def test_simulate_communication_failure(
+        self, component_manager, mock_op_state_model
+    ):
         """
         Test that we can simulate connection failure.
 

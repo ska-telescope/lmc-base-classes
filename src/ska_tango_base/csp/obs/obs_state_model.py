@@ -8,7 +8,7 @@ comprises:
 * a :py:class:`.CspSubElementObsStateModel` that maps the underlying
   state machine state to a value of the
   :py:class:`ska_tango_base.control_model.ObsState` enum.
-  
+
 """
 from transitions.extensions import LockedMachine as Machine
 
@@ -270,7 +270,7 @@ class CspSubElementObsStateModel(ObsStateModel):
 
     * **CONFIGURING**: transitional state to report device configuration
       is in progress.
-      
+
       TODO: Need to understand if this state is really required by the
       observing devices of any CSP sub-element.
 

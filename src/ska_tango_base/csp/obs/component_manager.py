@@ -3,6 +3,7 @@ This module models component management for CSP subelement observation devices.
 """
 from ska_tango_base.base import BaseComponentManager
 
+
 class CspObsComponentManager(BaseComponentManager):
     """
     A component manager for SKA CSP subelement observation Tango devices:

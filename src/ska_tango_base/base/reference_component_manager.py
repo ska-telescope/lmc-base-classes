@@ -19,6 +19,7 @@ def check_communicating(func):
 
     :return: the wrapped function
     """
+
     @functools.wraps(func)
     def _wrapper(component_manager, *args, **kwargs):
         """
@@ -37,6 +38,7 @@ def check_communicating(func):
 
     return _wrapper
 
+
 class ReferenceBaseComponentManager(BaseComponentManager):
     """
     A component manager for Tango devices, supporting:
@@ -52,7 +54,7 @@ class ReferenceBaseComponentManager(BaseComponentManager):
     The current implementation is intended to
 
     * illustrate the model
-    
+
     * enable testing of these base classes
 
     It should not generally be used in concrete devices; instead, write

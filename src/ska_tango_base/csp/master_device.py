@@ -14,6 +14,7 @@ Master device for SKA CSP Subelement.
 # PROTECTED REGION ID(CspSubElementMaster.additionnal_import) ENABLED START #
 # Python standard library
 from collections import defaultdict
+
 # Tango imports
 import tango
 from tango import DebugIt, AttrWriteType
@@ -25,6 +26,7 @@ from ska_tango_base import SKAMaster
 from ska_tango_base.commands import ResultCode, ResponseCommand, StateModelCommand
 from ska_tango_base.control_model import AdminMode
 from ska_tango_base.faults import CommandError
+
 # PROTECTED REGION END #    //  CspSubElementMaster.additionnal_import
 
 __all__ = ["CspSubElementMaster", "main"]
@@ -53,20 +55,16 @@ class CspSubElementMaster(SKAMaster):
     # Device Properties
     # -----------------
 
-    PowerDelayStandbyOn = device_property(
-        dtype='DevFloat', default_value=2.0
-    )
+    PowerDelayStandbyOn = device_property(dtype="DevFloat", default_value=2.0)
 
-    PowerDelayStandbyOff = device_property(
-        dtype='DevFloat', default_value=1.5
-    )
+    PowerDelayStandbyOff = device_property(dtype="DevFloat", default_value=1.5)
 
     # ----------
     # Attributes
     # ----------
 
     powerDelayStandbyOn = attribute(
-        dtype='DevFloat',
+        dtype="DevFloat",
         access=AttrWriteType.READ_WRITE,
         label="powerDelayStandbyOn",
         unit="sec.",
@@ -75,7 +73,7 @@ class CspSubElementMaster(SKAMaster):
     """Device attribute."""
 
     powerDelayStandbyOff = attribute(
-        dtype='DevFloat',
+        dtype="DevFloat",
         access=AttrWriteType.READ_WRITE,
         label="powerDelayStandbyOff",
         unit="sec",
@@ -84,7 +82,7 @@ class CspSubElementMaster(SKAMaster):
     """Device attribute."""
 
     onProgress = attribute(
-        dtype='DevUShort',
+        dtype="DevUShort",
         label="onProgress",
         max_value=100,
         min_value=0,
@@ -93,7 +91,7 @@ class CspSubElementMaster(SKAMaster):
     """Device attribute."""
 
     onMaximumDuration = attribute(
-        dtype='DevFloat',
+        dtype="DevFloat",
         access=AttrWriteType.READ_WRITE,
         label="onMaximumDuration",
         unit="sec.",
@@ -102,7 +100,7 @@ class CspSubElementMaster(SKAMaster):
     """Device attribute."""
 
     onMeasuredDuration = attribute(
-        dtype='DevFloat',
+        dtype="DevFloat",
         label="onMeasuredDuration",
         unit="sec",
         doc="The measured time (sec) taken to execute the command.",
@@ -110,7 +108,7 @@ class CspSubElementMaster(SKAMaster):
     """Device attribute."""
 
     standbyProgress = attribute(
-        dtype='DevUShort',
+        dtype="DevUShort",
         label="standbyProgress",
         max_value=100,
         min_value=0,
@@ -119,7 +117,7 @@ class CspSubElementMaster(SKAMaster):
     """Device attribute."""
 
     standbyMaximumDuration = attribute(
-        dtype='DevFloat',
+        dtype="DevFloat",
         access=AttrWriteType.READ_WRITE,
         label="standbyMaximumDuration",
         unit="sec.",
@@ -128,7 +126,7 @@ class CspSubElementMaster(SKAMaster):
     """Device attribute."""
 
     standbyMeasuredDuration = attribute(
-        dtype='DevFloat',
+        dtype="DevFloat",
         label="standbyMeasuredDuration",
         unit="sec",
         doc="The measured time (sec) taken to execute the Standby command.",
@@ -136,7 +134,7 @@ class CspSubElementMaster(SKAMaster):
     """Device attribute."""
 
     offProgress = attribute(
-        dtype='DevUShort',
+        dtype="DevUShort",
         label="offProgress",
         max_value=100,
         min_value=0,
@@ -145,7 +143,7 @@ class CspSubElementMaster(SKAMaster):
     """Device attribute."""
 
     offMaximumDuration = attribute(
-        dtype='DevFloat',
+        dtype="DevFloat",
         access=AttrWriteType.READ_WRITE,
         label="offMaximumDuration",
         unit="sec.",
@@ -154,7 +152,7 @@ class CspSubElementMaster(SKAMaster):
     """Device attribute."""
 
     offMeasuredDuration = attribute(
-        dtype='DevFloat',
+        dtype="DevFloat",
         label="offMeasuredDuration",
         unit="sec",
         doc="The measured time (sec) taken to execute the Off command.",
@@ -162,7 +160,7 @@ class CspSubElementMaster(SKAMaster):
     """Device attribute."""
 
     totalOutputDataRateToSdp = attribute(
-        dtype='DevFloat',
+        dtype="DevFloat",
         label="totalOutputDataRateToSdp",
         unit="GB/s",
         doc="Report the total link expected  output data rate.",
@@ -170,7 +168,7 @@ class CspSubElementMaster(SKAMaster):
     """Device attribute."""
 
     loadFirmwareProgress = attribute(
-        dtype='DevUShort',
+        dtype="DevUShort",
         label="loadFirmwareProgress",
         max_value=100,
         min_value=0,
@@ -179,7 +177,7 @@ class CspSubElementMaster(SKAMaster):
     """Device attribute."""
 
     loadFirmwareMaximumDuration = attribute(
-        dtype='DevFloat',
+        dtype="DevFloat",
         access=AttrWriteType.READ_WRITE,
         label="loadFirmwareMaximumDuration",
         unit="sec",
@@ -188,7 +186,7 @@ class CspSubElementMaster(SKAMaster):
     """Device attribute."""
 
     loadFirmwareMeasuredDuration = attribute(
-        dtype='DevFloat',
+        dtype="DevFloat",
         label="loadFirmwareMeasuredDuration",
         unit="sec",
         doc="The command execution measured duration (in sec).",
@@ -208,7 +206,7 @@ class CspSubElementMaster(SKAMaster):
             "LoadFirmware",
             self.LoadFirmwareCommand(
                 self, self.op_state_model, self.admin_mode_model, self.logger
-            )
+            ),
         )
         device_args = (self, self.op_state_model, self.logger)
         self.register_command_object(
@@ -301,73 +299,73 @@ class CspSubElementMaster(SKAMaster):
     def read_onProgress(self):
         # PROTECTED REGION ID(CspSubElementMaster.onProgress_read) ENABLED START #
         """Return the onProgress attribute."""
-        return self._cmd_progress['on']
+        return self._cmd_progress["on"]
         # PROTECTED REGION END #    //  CspSubElementMaster.onProgress_read
 
     def read_onMaximumDuration(self):
         # PROTECTED REGION ID(CspSubElementMaster.onMaximumDuration_read) ENABLED START #
         """Return the onMaximumDuration attribute."""
-        return self._cmd_maximum_duration['on']
+        return self._cmd_maximum_duration["on"]
         # PROTECTED REGION END #    //  CspSubElementMaster.onMaximumDuration_read
 
     def write_onMaximumDuration(self, value):
         # PROTECTED REGION ID(CspSubElementMaster.onMaximumDuration_write) ENABLED START #
         """Set the onMaximumDuration attribute."""
-        self._cmd_maximum_duration['on'] = value
+        self._cmd_maximum_duration["on"] = value
         # PROTECTED REGION END #    //  CspSubElementMaster.onMaximumDuration_write
 
     def read_onMeasuredDuration(self):
         # PROTECTED REGION ID(CspSubElementMaster.onMeasuredDuration_read) ENABLED START #
         """Return the onMeasuredDuration attribute."""
-        return self._cmd_measured_duration['on']
+        return self._cmd_measured_duration["on"]
         # PROTECTED REGION END #    //  CspSubElementMaster.onMeasuredDuration_read
 
     def read_standbyProgress(self):
         # PROTECTED REGION ID(CspSubElementMaster.standbyProgress_read) ENABLED START #
         """Return the standbyProgress attribute."""
-        return self._cmd_progress['standby']
+        return self._cmd_progress["standby"]
         # PROTECTED REGION END #    //  CspSubElementMaster.standbyProgress_read
 
     def read_standbyMaximumDuration(self):
         # PROTECTED REGION ID(CspSubElementMaster.standbyMaximumDuration_read) ENABLED START #
         """Return the standbyMaximumDuration attribute."""
-        return self._cmd_maximum_duration['standby']
+        return self._cmd_maximum_duration["standby"]
         # PROTECTED REGION END #    //  CspSubElementMaster.standbyMaximumDuration_read
 
     def write_standbyMaximumDuration(self, value):
         # PROTECTED REGION ID(CspSubElementMaster.standbyMaximumDuration_write) ENABLED START #
         """Set the standbyMaximumDuration attribute."""
-        self._cmd_maximum_duration['standby'] = value
+        self._cmd_maximum_duration["standby"] = value
         # PROTECTED REGION END #    //  CspSubElementMaster.standbyMaximumDuration_write
 
     def read_standbyMeasuredDuration(self):
         # PROTECTED REGION ID(CspSubElementMaster.standbyMeasuredDuration_read) ENABLED START #
         """Return the standbyMeasuredDuration attribute."""
-        return self._cmd_measured_duration['standby']
+        return self._cmd_measured_duration["standby"]
         # PROTECTED REGION END #    //  CspSubElementMaster.standbyMeasuredDuration_read
 
     def read_offProgress(self):
         # PROTECTED REGION ID(CspSubElementMaster.offProgress_read) ENABLED START #
         """Return the offProgress attribute."""
-        return self._cmd_progress['off']
+        return self._cmd_progress["off"]
         # PROTECTED REGION END #    //  CspSubElementMaster.offProgress_read
 
     def read_offMaximumDuration(self):
         # PROTECTED REGION ID(CspSubElementMaster.offMaximumDuration_read) ENABLED START #
         """Return the offMaximumDuration attribute."""
-        return self._cmd_maximum_duration['off']
+        return self._cmd_maximum_duration["off"]
         # PROTECTED REGION END #    //  CspSubElementMaster.offMaximumDuration_read
 
     def write_offMaximumDuration(self, value):
         # PROTECTED REGION ID(CspSubElementMaster.offMaximumDuration_write) ENABLED START #
         """Set the offMaximumDuration attribute."""
-        self._cmd_maximum_duration['off'] = value
+        self._cmd_maximum_duration["off"] = value
         # PROTECTED REGION END #    //  CspSubElementMaster.offMaximumDuration_write
 
     def read_offMeasuredDuration(self):
         # PROTECTED REGION ID(CspSubElementMaster.offMeasuredDuration_read) ENABLED START #
         """Return the offMeasuredDuration attribute."""
-        return self._cmd_measured_duration['off']
+        return self._cmd_measured_duration["off"]
         # PROTECTED REGION END #    //  CspSubElementMaster.offMeasuredDuration_read
 
     def read_totalOutputDataRateToSdp(self):
@@ -391,25 +389,25 @@ class CspSubElementMaster(SKAMaster):
     def read_loadFirmwareProgress(self):
         # PROTECTED REGION ID(CspSubElementMaster.loadFirmwareProgress_read) ENABLED START #
         """Return the loadFirmwareProgress attribute."""
-        return self._cmd_progress['loadfirmware']
+        return self._cmd_progress["loadfirmware"]
         # PROTECTED REGION END #    //  CspSubElementMaster.loadFirmwareProgress_read
 
     def read_loadFirmwareMaximumDuration(self):
         # PROTECTED REGION ID(CspSubElementMaster.loadFirmwareMaximumDuration_read) ENABLED START #
         """Return the loadFirmwareMaximumDuration attribute."""
-        return self._cmd_maximum_duration['loadfirmware']
+        return self._cmd_maximum_duration["loadfirmware"]
         # PROTECTED REGION END #    //  CspSubElementMaster.loadFirmwareMaximumDuration_read
 
     def write_loadFirmwareMaximumDuration(self, value):
         # PROTECTED REGION ID(CspSubElementMaster.loadFirmwareMaximumDuration_write) ENABLED START #
         """Set the loadFirmwareMaximumDuration attribute."""
-        self._cmd_maximum_duration['loadfirmware'] = value
+        self._cmd_maximum_duration["loadfirmware"] = value
         # PROTECTED REGION END #    //  CspSubElementMaster.loadFirmwareMaximumDuration_write
 
     def read_loadFirmwareMeasuredDuration(self):
         # PROTECTED REGION ID(CspSubElementMaster.loadFirmwareMeasuredDuration_read) ENABLED START #
         """Return the loadFirmwareMeasuredDuration attribute."""
-        return self._cmd_measured_duration['loadfirmware']
+        return self._cmd_measured_duration["loadfirmware"]
         # PROTECTED REGION END #    //  CspSubElementMaster.loadFirmwareMeasuredDuration_read
 
     # --------
@@ -419,7 +417,10 @@ class CspSubElementMaster(SKAMaster):
         """
         A class for the LoadFirmware command.
         """
-        def __init__(self, target, op_state_model, admin_mode_model, *args, logger=None, **kwargs):
+
+        def __init__(
+            self, target, op_state_model, admin_mode_model, *args, logger=None, **kwargs
+        ):
             """
             Creates a new BaseCommand object for a device.
 
@@ -440,7 +441,9 @@ class CspSubElementMaster(SKAMaster):
                 logger interface
             """
             self._admin_mode_model = admin_mode_model
-            super().__init__(target, op_state_model, None, *args, logger=logger, **kwargs)
+            super().__init__(
+                target, op_state_model, None, *args, logger=logger, **kwargs
+            )
 
         def do(self, argin):
             """
@@ -470,8 +473,10 @@ class CspSubElementMaster(SKAMaster):
             :return: ``True`` if the command is allowed.
             :rtype: boolean
             """
-            allowed = (self.state_model.op_state == tango.DevState.OFF and
-                       self._admin_mode_model.admin_mode == AdminMode.MAINTENANCE)
+            allowed = (
+                self.state_model.op_state == tango.DevState.OFF
+                and self._admin_mode_model.admin_mode == AdminMode.MAINTENANCE
+            )
             if allowed:
                 return True
             if raise_if_disallowed:
@@ -487,7 +492,9 @@ class CspSubElementMaster(SKAMaster):
         """
 
         def __init__(self, target, op_state_model, *args, logger=None, **kwargs):
-            super().__init__(target, op_state_model, None, *args, logger=logger, **kwargs)
+            super().__init__(
+                target, op_state_model, None, *args, logger=logger, **kwargs
+            )
 
         def do(self, argin):
             """
@@ -530,7 +537,9 @@ class CspSubElementMaster(SKAMaster):
         """
 
         def __init__(self, target, op_state_model, *args, logger=None, **kwargs):
-            super().__init__(target, op_state_model, None, *args, logger=logger, **kwargs)
+            super().__init__(
+                target, op_state_model, None, *args, logger=logger, **kwargs
+            )
 
         def do(self, argin):
             """
@@ -573,7 +582,9 @@ class CspSubElementMaster(SKAMaster):
         """
 
         def __init__(self, target, op_state_model, *args, logger=None, **kwargs):
-            super().__init__(target, op_state_model, None, *args, logger=logger, **kwargs)
+            super().__init__(
+                target, op_state_model, None, *args, logger=logger, **kwargs
+            )
 
         def do(self, argin):
             """
@@ -622,11 +633,11 @@ class CspSubElementMaster(SKAMaster):
         return command.is_allowed(True)
 
     @command(
-        dtype_in='DevVarStringArray',
+        dtype_in="DevVarStringArray",
         doc_in="The file name or a pointer to the filename , "
-               "the list of components that use software or firmware package (file),"
-               "checksum or signing",
-        dtype_out='DevVarLongStringArray',
+        "the list of components that use software or firmware package (file),"
+        "checksum or signing",
+        dtype_out="DevVarLongStringArray",
     )
     @DebugIt()
     def LoadFirmware(self, argin):
@@ -665,9 +676,9 @@ class CspSubElementMaster(SKAMaster):
         return command.is_allowed(True)
 
     @command(
-        dtype_in='DevVarStringArray',
+        dtype_in="DevVarStringArray",
         doc_in="The list of FQDNs to power-up",
-        dtype_out='DevVarLongStringArray',
+        dtype_out="DevVarLongStringArray",
         doc_out="ReturnType, `informational message`",
     )
     @DebugIt()
@@ -701,9 +712,9 @@ class CspSubElementMaster(SKAMaster):
         return command.is_allowed(True)
 
     @command(
-        dtype_in='DevVarStringArray',
+        dtype_in="DevVarStringArray",
         doc_in="List of FQDNs to power-off",
-        dtype_out='DevVarLongStringArray',
+        dtype_out="DevVarLongStringArray",
         doc_out="ReturnType, `informational message`",
     )
     @DebugIt()
@@ -738,9 +749,9 @@ class CspSubElementMaster(SKAMaster):
         return command.is_allowed(True)
 
     @command(
-        dtype_in='DevVarStringArray',
+        dtype_in="DevVarStringArray",
         doc_in="List of devices to re-initialize",
-        dtype_out='DevVarLongStringArray',
+        dtype_out="DevVarLongStringArray",
         doc_out="ReturnType, `informational message`",
     )
     @DebugIt()
@@ -769,6 +780,7 @@ class CspSubElementMaster(SKAMaster):
         return [[return_code], [message]]
         # PROTECTED REGION END #    //  CspSubElementMaster.ReInitDevices
 
+
 # ----------
 # Run server
 # ----------
@@ -788,5 +800,5 @@ def main(args=None, **kwargs):
     # PROTECTED REGION END #    //  CspSubElementMaster.main
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

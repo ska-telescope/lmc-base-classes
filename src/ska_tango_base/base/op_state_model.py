@@ -343,7 +343,7 @@ class OpStateModel:
 
     A diagram of the operational state model, as implemented, is shown
     below.
-    
+
     .. uml:: op_state_model.uml
        :caption: Diagram of the operational state model
 

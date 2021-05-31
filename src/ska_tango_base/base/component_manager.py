@@ -12,7 +12,7 @@ The basic model is:
 
   * A software routine, possibly implemented within the Tango device
     itself
-    
+
   * In a hierarchical system, a pool of lower-level Tango devices.
 
 * A Tango device will usually need to establish and maintain a
@@ -53,7 +53,7 @@ class BaseComponentManager:
         """
         Establish communication with the component, then start
         monitoring. This is the place to do things like:
-        
+
         * Initiate a connection to the component (if your communication
           is connection-oriented)
         * Subscribe to component events (if using "pull" model)
@@ -79,7 +79,7 @@ class BaseComponentManager:
         Whether communication with the component is established and
         active, allowing monitoring and control of the component. For
         example:
-        
+
         * If communication is over a connection, are you connected?
         * If communication is via event subscription, are you
           subscribed, and is the event subsystem healthy?

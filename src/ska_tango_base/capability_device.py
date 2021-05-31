@@ -16,6 +16,7 @@ from tango.server import run, attribute, command, device_property
 # SKA specific imports
 from ska_tango_base import SKAObsDevice
 from ska_tango_base.commands import ResponseCommand, ResultCode
+
 # PROTECTED REGION END #    //  SKACapability.additionnal_imports
 
 __all__ = ["SKACapability", "main"]
@@ -32,9 +33,8 @@ class SKACapability(SKAObsDevice):
         """
         super().init_command_objects()
         self.register_command_object(
-            "ConfigureInstances", self.ConfigureInstancesCommand(
-                self, self.op_state_model, self.logger
-            )
+            "ConfigureInstances",
+            self.ConfigureInstancesCommand(self, self.op_state_model, self.logger),
         )
 
     class InitCommand(SKAObsDevice.InitCommand):
@@ -66,15 +66,15 @@ class SKACapability(SKAObsDevice):
     # -----------------
 
     CapType = device_property(
-        dtype='str',
+        dtype="str",
     )
 
     CapID = device_property(
-        dtype='str',
+        dtype="str",
     )
 
     subID = device_property(
-        dtype='str',
+        dtype="str",
     )
 
     # ----------
@@ -82,7 +82,7 @@ class SKACapability(SKAObsDevice):
     # ----------
 
     activationTime = attribute(
-        dtype='double',
+        dtype="double",
         unit="s",
         standard_unit="s",
         display_unit="s",
@@ -91,13 +91,13 @@ class SKACapability(SKAObsDevice):
     """Device attribute."""
 
     configuredInstances = attribute(
-        dtype='uint16',
+        dtype="uint16",
         doc="Number of instances of this Capability Type currently in use on this subarray.",
     )
     """Device attribute."""
 
     usedComponents = attribute(
-        dtype=('str',),
+        dtype=("str",),
         max_dim_x=100,
         doc="A list of components with no. of instances in use on this Capability.",
     )
@@ -175,9 +175,9 @@ class SKACapability(SKAObsDevice):
             return (ResultCode.OK, message)
 
     @command(
-        dtype_in='uint16',
+        dtype_in="uint16",
         doc_in="The number of instances to configure for this Capability.",
-        dtype_out='DevVarLongStringArray',
+        dtype_out="DevVarLongStringArray",
         doc_out="(ReturnType, 'informational message')",
     )
     @DebugIt()
@@ -203,6 +203,7 @@ class SKACapability(SKAObsDevice):
 # Run server
 # ----------
 
+
 def main(args=None, **kwargs):
     # PROTECTED REGION ID(SKACapability.main) ENABLED START #
     """Main function of the SKACapability module."""
@@ -210,5 +211,5 @@ def main(args=None, **kwargs):
     # PROTECTED REGION END #    //  SKACapability.main
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

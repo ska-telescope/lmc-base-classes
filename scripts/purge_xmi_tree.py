@@ -4,8 +4,8 @@ Utility to purge orphaned elements from the XMI file tree.
 
 The base classes have a hierarchy.  If the API in a parent device
 is changed (e.g., removing a command from SKABaseDevice), child classes,
-e.g., SKAMaster, need to change too.  However, after regenerating the
-Pogo XMI file for SKAMaster, it will still have the old command in its
+e.g., SKAController, need to change too.  However, after regenerating the
+Pogo XMI file for SKAController, it will still have the old command in its
 XMI file, even though it no longer exists in the parent.  This tool runs
 through all the XMI files and find elements that are marked as "inherited",
 but no longer exist higher up in the hierarchy.

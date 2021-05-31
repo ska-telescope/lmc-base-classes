@@ -24,7 +24,7 @@
       <type xsi:type="pogoDsl:StringVectorType"/>
       <status abstract="false" inherited="true" concrete="true"/>
     </deviceProperties>
-    <deviceProperties name="SkaLevel" description="Indication of importance of the device in the SKA hierarchy &#xA;to support drill-down navigation: 1..6, with 1 highest.&#xA;Default is 4, making provision for &#xA;EltMaster, EltAlarms, EltTelState = 1&#xA;SubEltMaster = 2&#xA;Subarray, Capability = 2/3&#xA;Others = 4 (or 5 or 6)">
+    <deviceProperties name="SkaLevel" description="Indication of importance of the device in the SKA hierarchy &#xA;to support drill-down navigation: 1..6, with 1 highest.&#xA;Default is 4, making provision for &#xA;EltController, EltAlarms, EltTelState = 1&#xA;SubEltController = 2&#xA;Subarray, Capability = 2/3&#xA;Others = 4 (or 5 or 6)">
       <type xsi:type="pogoDsl:ShortType"/>
       <status abstract="false" inherited="true" concrete="true"/>
       <DefaultPropValue>4</DefaultPropValue>

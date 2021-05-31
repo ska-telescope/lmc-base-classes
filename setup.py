@@ -50,11 +50,11 @@ setuptools.setup(
             "SKACapability=ska_tango_base.capability_device:main",
             "SKAExampleDevice=ska_tango_base.example_device:main",
             "SKALogger=ska_tango_base.logger_device:main",
-            "SKAMaster=ska_tango_base.master_device:main",
+            "SKAController=ska_tango_base.controller_device:main",
             "SKAObsDevice=ska_tango_base.obs.obs_device:main",
             "SKASubarray=ska_tango_base.subarray.subarray_device:main",
             "SKATelState=ska_tango_base.tel_state_device:main",
-            "CspSubelementMaster=ska_tango_base.csp_subelement_master:main",
+            "CspSubelementController=ska_tango_base.csp_subelement_controller:main",
             "CspSubelementObsDevice=ska_tango_base.csp_subelement_obsdevice:main",
             "CspSubelementSubarray=ska_tango_base.csp_subelement_subarray:main",
         ]

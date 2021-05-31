@@ -17,4 +17,4 @@ CSP subpackage
   :caption: Other modules
   :maxdepth: 2
 
-  Master device<master_device>
+  Controller device<controller_device>

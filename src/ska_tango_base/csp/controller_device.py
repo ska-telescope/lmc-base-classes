@@ -1,17 +1,17 @@
 # -*- coding: utf-8 -*-
 #
-# This file is part of the CspSubElementMaster project
+# This file is part of the CspSubElementController project
 #
 #
 #
 # Distributed under the terms of the GPL license.
 # See LICENSE.txt for more info.
 
-""" CspSubElementMaster
+""" CspSubElementController
 
-Master device for SKA CSP Subelement.
+Controller device for SKA CSP Subelement.
 """
-# PROTECTED REGION ID(CspSubElementMaster.additionnal_import) ENABLED START #
+# PROTECTED REGION ID(CspSubElementController.additionnal_import) ENABLED START #
 # Python standard library
 from collections import defaultdict
 
@@ -22,19 +22,19 @@ from tango.server import run, attribute, command, device_property
 
 # SKA specific imports
 
-from ska_tango_base import SKAMaster
+from ska_tango_base import SKAController
 from ska_tango_base.commands import ResultCode, ResponseCommand, StateModelCommand
 from ska_tango_base.control_model import AdminMode
 from ska_tango_base.faults import CommandError
 
-# PROTECTED REGION END #    //  CspSubElementMaster.additionnal_import
+# PROTECTED REGION END #    //  CspSubElementController.additionnal_import
 
-__all__ = ["CspSubElementMaster", "main"]
+__all__ = ["CspSubElementController", "main"]
 
 
-class CspSubElementMaster(SKAMaster):
+class CspSubElementController(SKAController):
     """
-    Master device for SKA CSP Subelement.
+    Controller device for SKA CSP Subelement.
 
      **Properties:**
 
@@ -48,8 +48,8 @@ class CspSubElementMaster(SKAMaster):
             - Type:'DevFloat'
     """
 
-    # PROTECTED REGION ID(CspSubElementMaster.class_variable) ENABLED START #
-    # PROTECTED REGION END #    //  CspSubElementMaster.class_variable
+    # PROTECTED REGION ID(CspSubElementController.class_variable) ENABLED START #
+    # PROTECTED REGION END #    //  CspSubElementController.class_variable
 
     # -----------------
     # Device Properties
@@ -219,9 +219,9 @@ class CspSubElementMaster(SKAMaster):
             "ReInitDevices", self.ReInitDevicesCommand(*device_args)
         )
 
-    class InitCommand(SKAMaster.InitCommand):
+    class InitCommand(SKAController.InitCommand):
         """
-        A class for the CspSubElementMaster's init_device() "command".
+        A class for the CspSubElementController's init_device() "command".
         """
 
         def do(self):
@@ -261,14 +261,14 @@ class CspSubElementMaster(SKAMaster):
             device._power_delay_standy_on = device.PowerDelayStandbyOn
             device._power_delay_standy_off = device.PowerDelayStandbyOff
 
-            message = "CspSubElementMaster Init command completed OK"
+            message = "CspSubElementController Init command completed OK"
             device.logger.info(message)
             return (ResultCode.OK, message)
 
     def always_executed_hook(self):
         """Method always executed before any Tango command is executed."""
-        # PROTECTED REGION ID(CspSubElementMaster.always_executed_hook) ENABLED START #
-        # PROTECTED REGION END #    //  CspSubElementMaster.always_executed_hook
+        # PROTECTED REGION ID(CspSubElementController.always_executed_hook) ENABLED START #
+        # PROTECTED REGION END #    //  CspSubElementController.always_executed_hook
 
     def delete_device(self):
         """Hook to delete resources allocated in init_device.
@@ -277,138 +277,138 @@ class CspSubElementMaster(SKAMaster):
         init_device method to be released.  This method is called by the device
         destructor and by the device Init command.
         """
-        # PROTECTED REGION ID(CspSubElementMaster.delete_device) ENABLED START #
-        # PROTECTED REGION END #    //  CspSubElementMaster.delete_device
+        # PROTECTED REGION ID(CspSubElementController.delete_device) ENABLED START #
+        # PROTECTED REGION END #    //  CspSubElementController.delete_device
 
     # ------------------
     # Attributes methods
     # ------------------
 
     def read_powerDelayStandbyOn(self):
-        # PROTECTED REGION ID(CspSubElementMaster.powerDelayStandbyOn_read) ENABLED START #
+        # PROTECTED REGION ID(CspSubElementController.powerDelayStandbyOn_read) ENABLED START #
         """Return the powerDelayStandbyOn attribute."""
         return self._power_delay_standy_on
-        # PROTECTED REGION END #    //  CspSubElementMaster.powerDelayStandbyOn_read
+        # PROTECTED REGION END #    //  CspSubElementController.powerDelayStandbyOn_read
 
     def write_powerDelayStandbyOn(self, value):
-        # PROTECTED REGION ID(CspSubElementMaster.powerDelayStandbyOn_write) ENABLED START #
+        # PROTECTED REGION ID(CspSubElementController.powerDelayStandbyOn_write) ENABLED START #
         """Set the powerDelayStandbyOn attribute."""
         self._power_delay_standy_on = value
-        # PROTECTED REGION END #    //  CspSubElementMaster.powerDelayStandbyOn_write
+        # PROTECTED REGION END #    //  CspSubElementController.powerDelayStandbyOn_write
 
     def read_onProgress(self):
-        # PROTECTED REGION ID(CspSubElementMaster.onProgress_read) ENABLED START #
+        # PROTECTED REGION ID(CspSubElementController.onProgress_read) ENABLED START #
         """Return the onProgress attribute."""
         return self._cmd_progress["on"]
-        # PROTECTED REGION END #    //  CspSubElementMaster.onProgress_read
+        # PROTECTED REGION END #    //  CspSubElementController.onProgress_read
 
     def read_onMaximumDuration(self):
-        # PROTECTED REGION ID(CspSubElementMaster.onMaximumDuration_read) ENABLED START #
+        # PROTECTED REGION ID(CspSubElementController.onMaximumDuration_read) ENABLED START #
         """Return the onMaximumDuration attribute."""
         return self._cmd_maximum_duration["on"]
-        # PROTECTED REGION END #    //  CspSubElementMaster.onMaximumDuration_read
+        # PROTECTED REGION END #    //  CspSubElementController.onMaximumDuration_read
 
     def write_onMaximumDuration(self, value):
-        # PROTECTED REGION ID(CspSubElementMaster.onMaximumDuration_write) ENABLED START #
+        # PROTECTED REGION ID(CspSubElementController.onMaximumDuration_write) ENABLED START #
         """Set the onMaximumDuration attribute."""
         self._cmd_maximum_duration["on"] = value
-        # PROTECTED REGION END #    //  CspSubElementMaster.onMaximumDuration_write
+        # PROTECTED REGION END #    //  CspSubElementController.onMaximumDuration_write
 
     def read_onMeasuredDuration(self):
-        # PROTECTED REGION ID(CspSubElementMaster.onMeasuredDuration_read) ENABLED START #
+        # PROTECTED REGION ID(CspSubElementController.onMeasuredDuration_read) ENABLED START #
         """Return the onMeasuredDuration attribute."""
         return self._cmd_measured_duration["on"]
-        # PROTECTED REGION END #    //  CspSubElementMaster.onMeasuredDuration_read
+        # PROTECTED REGION END #    //  CspSubElementController.onMeasuredDuration_read
 
     def read_standbyProgress(self):
-        # PROTECTED REGION ID(CspSubElementMaster.standbyProgress_read) ENABLED START #
+        # PROTECTED REGION ID(CspSubElementController.standbyProgress_read) ENABLED START #
         """Return the standbyProgress attribute."""
         return self._cmd_progress["standby"]
-        # PROTECTED REGION END #    //  CspSubElementMaster.standbyProgress_read
+        # PROTECTED REGION END #    //  CspSubElementController.standbyProgress_read
 
     def read_standbyMaximumDuration(self):
-        # PROTECTED REGION ID(CspSubElementMaster.standbyMaximumDuration_read) ENABLED START #
+        # PROTECTED REGION ID(CspSubElementController.standbyMaximumDuration_read) ENABLED START #
         """Return the standbyMaximumDuration attribute."""
         return self._cmd_maximum_duration["standby"]
-        # PROTECTED REGION END #    //  CspSubElementMaster.standbyMaximumDuration_read
+        # PROTECTED REGION END #    //  CspSubElementController.standbyMaximumDuration_read
 
     def write_standbyMaximumDuration(self, value):
-        # PROTECTED REGION ID(CspSubElementMaster.standbyMaximumDuration_write) ENABLED START #
+        # PROTECTED REGION ID(CspSubElementController.standbyMaximumDuration_write) ENABLED START #
         """Set the standbyMaximumDuration attribute."""
         self._cmd_maximum_duration["standby"] = value
-        # PROTECTED REGION END #    //  CspSubElementMaster.standbyMaximumDuration_write
+        # PROTECTED REGION END #    //  CspSubElementController.standbyMaximumDuration_write
 
     def read_standbyMeasuredDuration(self):
-        # PROTECTED REGION ID(CspSubElementMaster.standbyMeasuredDuration_read) ENABLED START #
+        # PROTECTED REGION ID(CspSubElementController.standbyMeasuredDuration_read) ENABLED START #
         """Return the standbyMeasuredDuration attribute."""
         return self._cmd_measured_duration["standby"]
-        # PROTECTED REGION END #    //  CspSubElementMaster.standbyMeasuredDuration_read
+        # PROTECTED REGION END #    //  CspSubElementController.standbyMeasuredDuration_read
 
     def read_offProgress(self):
-        # PROTECTED REGION ID(CspSubElementMaster.offProgress_read) ENABLED START #
+        # PROTECTED REGION ID(CspSubElementController.offProgress_read) ENABLED START #
         """Return the offProgress attribute."""
         return self._cmd_progress["off"]
-        # PROTECTED REGION END #    //  CspSubElementMaster.offProgress_read
+        # PROTECTED REGION END #    //  CspSubElementController.offProgress_read
 
     def read_offMaximumDuration(self):
-        # PROTECTED REGION ID(CspSubElementMaster.offMaximumDuration_read) ENABLED START #
+        # PROTECTED REGION ID(CspSubElementController.offMaximumDuration_read) ENABLED START #
         """Return the offMaximumDuration attribute."""
         return self._cmd_maximum_duration["off"]
-        # PROTECTED REGION END #    //  CspSubElementMaster.offMaximumDuration_read
+        # PROTECTED REGION END #    //  CspSubElementController.offMaximumDuration_read
 
     def write_offMaximumDuration(self, value):
-        # PROTECTED REGION ID(CspSubElementMaster.offMaximumDuration_write) ENABLED START #
+        # PROTECTED REGION ID(CspSubElementController.offMaximumDuration_write) ENABLED START #
         """Set the offMaximumDuration attribute."""
         self._cmd_maximum_duration["off"] = value
-        # PROTECTED REGION END #    //  CspSubElementMaster.offMaximumDuration_write
+        # PROTECTED REGION END #    //  CspSubElementController.offMaximumDuration_write
 
     def read_offMeasuredDuration(self):
-        # PROTECTED REGION ID(CspSubElementMaster.offMeasuredDuration_read) ENABLED START #
+        # PROTECTED REGION ID(CspSubElementController.offMeasuredDuration_read) ENABLED START #
         """Return the offMeasuredDuration attribute."""
         return self._cmd_measured_duration["off"]
-        # PROTECTED REGION END #    //  CspSubElementMaster.offMeasuredDuration_read
+        # PROTECTED REGION END #    //  CspSubElementController.offMeasuredDuration_read
 
     def read_totalOutputDataRateToSdp(self):
-        # PROTECTED REGION ID(CspSubElementMaster.totalOutputDataRateToSdp_read) ENABLED START #
+        # PROTECTED REGION ID(CspSubElementController.totalOutputDataRateToSdp_read) ENABLED START #
         """Return the totalOutputDataRateToSdp attribute."""
         return self._total_output_rate_to_sdp
-        # PROTECTED REGION END #    //  CspSubElementMaster.totalOutputDataRateToSdp_read
+        # PROTECTED REGION END #    //  CspSubElementController.totalOutputDataRateToSdp_read
 
     def read_powerDelayStandbyOff(self):
-        # PROTECTED REGION ID(CspSubElementMaster.powerDelayStandbyOff_read) ENABLED START #
+        # PROTECTED REGION ID(CspSubElementController.powerDelayStandbyOff_read) ENABLED START #
         """Return the powerDelayStandbyOff attribute."""
         return self._power_delay_standy_off
-        # PROTECTED REGION END #    //  CspSubElementMaster.powerDelayStandbyOff_read
+        # PROTECTED REGION END #    //  CspSubElementController.powerDelayStandbyOff_read
 
     def write_powerDelayStandbyOff(self, value):
-        # PROTECTED REGION ID(CspSubElementMaster.powerDelayStandbyOff_write) ENABLED START #
+        # PROTECTED REGION ID(CspSubElementController.powerDelayStandbyOff_write) ENABLED START #
         """Set the powerDelayStandbyOff attribute."""
         self._power_delay_standy_off = value
-        # PROTECTED REGION END #    //  CspSubElementMaster.powerDelayStandbyOff_write
+        # PROTECTED REGION END #    //  CspSubElementController.powerDelayStandbyOff_write
 
     def read_loadFirmwareProgress(self):
-        # PROTECTED REGION ID(CspSubElementMaster.loadFirmwareProgress_read) ENABLED START #
+        # PROTECTED REGION ID(CspSubElementController.loadFirmwareProgress_read) ENABLED START #
         """Return the loadFirmwareProgress attribute."""
         return self._cmd_progress["loadfirmware"]
-        # PROTECTED REGION END #    //  CspSubElementMaster.loadFirmwareProgress_read
+        # PROTECTED REGION END #    //  CspSubElementController.loadFirmwareProgress_read
 
     def read_loadFirmwareMaximumDuration(self):
-        # PROTECTED REGION ID(CspSubElementMaster.loadFirmwareMaximumDuration_read) ENABLED START #
+        # PROTECTED REGION ID(CspSubElementController.loadFirmwareMaximumDuration_read) ENABLED START #
         """Return the loadFirmwareMaximumDuration attribute."""
         return self._cmd_maximum_duration["loadfirmware"]
-        # PROTECTED REGION END #    //  CspSubElementMaster.loadFirmwareMaximumDuration_read
+        # PROTECTED REGION END #    //  CspSubElementController.loadFirmwareMaximumDuration_read
 
     def write_loadFirmwareMaximumDuration(self, value):
-        # PROTECTED REGION ID(CspSubElementMaster.loadFirmwareMaximumDuration_write) ENABLED START #
+        # PROTECTED REGION ID(CspSubElementController.loadFirmwareMaximumDuration_write) ENABLED START #
         """Set the loadFirmwareMaximumDuration attribute."""
         self._cmd_maximum_duration["loadfirmware"] = value
-        # PROTECTED REGION END #    //  CspSubElementMaster.loadFirmwareMaximumDuration_write
+        # PROTECTED REGION END #    //  CspSubElementController.loadFirmwareMaximumDuration_write
 
     def read_loadFirmwareMeasuredDuration(self):
-        # PROTECTED REGION ID(CspSubElementMaster.loadFirmwareMeasuredDuration_read) ENABLED START #
+        # PROTECTED REGION ID(CspSubElementController.loadFirmwareMeasuredDuration_read) ENABLED START #
         """Return the loadFirmwareMeasuredDuration attribute."""
         return self._cmd_measured_duration["loadfirmware"]
-        # PROTECTED REGION END #    //  CspSubElementMaster.loadFirmwareMeasuredDuration_read
+        # PROTECTED REGION END #    //  CspSubElementController.loadFirmwareMeasuredDuration_read
 
     # --------
     # Commands
@@ -463,7 +463,7 @@ class CspSubElementMaster(SKAMaster):
             """
             Check if the command is in the proper state (State/adminMode)
             to be executed.
-            The master device has to be in OFF/MAINTENACE to process the
+            The controller device has to be in OFF/MAINTENACE to process the
             LoadFirmware command.
 
             :param raise_if_disallowed: whether to raise an error or
@@ -488,7 +488,7 @@ class CspSubElementMaster(SKAMaster):
 
     class PowerOnDevicesCommand(StateModelCommand, ResponseCommand):
         """
-        A class for the CspSubElementMaster's PowerOnDevices command.
+        A class for the CspSubElementController's PowerOnDevices command.
         """
 
         def __init__(self, target, op_state_model, *args, logger=None, **kwargs):
@@ -513,7 +513,7 @@ class CspSubElementMaster(SKAMaster):
         def is_allowed(self, raise_if_disallowed=False):
             """
             Check if the command is in the proper state to be executed.
-            The master device has to be in ON to process the
+            The controller device has to be in ON to process the
             PowerOnDevices command.
 
             :param raise_if_disallowed: whether to raise an error or
@@ -533,7 +533,7 @@ class CspSubElementMaster(SKAMaster):
 
     class PowerOffDevicesCommand(StateModelCommand, ResponseCommand):
         """
-        A class for the CspSubElementMaster's PowerOffDevices command.
+        A class for the CspSubElementController's PowerOffDevices command.
         """
 
         def __init__(self, target, op_state_model, *args, logger=None, **kwargs):
@@ -558,7 +558,7 @@ class CspSubElementMaster(SKAMaster):
         def is_allowed(self, raise_if_disallowed=False):
             """
             Check if the command is in the proper state to be executed.
-            The master device has to be in ON to process the
+            The controller device has to be in ON to process the
             PowerOffDevices command.
 
             :param raise_if_disallowed: whether to raise an error or
@@ -578,7 +578,7 @@ class CspSubElementMaster(SKAMaster):
 
     class ReInitDevicesCommand(StateModelCommand, ResponseCommand):
         """
-        A class for the CspSubElementMaster's ReInitDevices command.
+        A class for the CspSubElementController's ReInitDevices command.
         """
 
         def __init__(self, target, op_state_model, *args, logger=None, **kwargs):
@@ -603,7 +603,7 @@ class CspSubElementMaster(SKAMaster):
         def is_allowed(self, raise_if_disallowed=False):
             """
             Check if the command is in the proper state to be executed.
-            The master device has to be in ON to process the
+            The controller device has to be in ON to process the
             ReInitDevices command.
 
             :param raise_if_disallowed: whether to raise an error or
@@ -641,7 +641,7 @@ class CspSubElementMaster(SKAMaster):
     )
     @DebugIt()
     def LoadFirmware(self, argin):
-        # PROTECTED REGION ID(CspSubElementMaster.LoadFirmware) ENABLED START #
+        # PROTECTED REGION ID(CspSubElementController.LoadFirmware) ENABLED START #
         """
         Deploy new versions of software and firmware and trigger
         a restart so that a Component initializes using a newly
@@ -662,7 +662,7 @@ class CspSubElementMaster(SKAMaster):
         command = self.get_command_object("LoadFirmware")
         (return_code, message) = command(argin)
         return [[return_code], [message]]
-        # PROTECTED REGION END #    //  CspSubElementMaster.LoadFirmware
+        # PROTECTED REGION END #    //  CspSubElementController.LoadFirmware
 
     def is_PowerOnDevices_allowed(self):
         """
@@ -683,7 +683,7 @@ class CspSubElementMaster(SKAMaster):
     )
     @DebugIt()
     def PowerOnDevices(self, argin):
-        # PROTECTED REGION ID(CspSubElementMaster.PowerOnDevices) ENABLED START #
+        # PROTECTED REGION ID(CspSubElementController.PowerOnDevices) ENABLED START #
         """
         Power-on a selected list of devices.
 
@@ -698,7 +698,7 @@ class CspSubElementMaster(SKAMaster):
         command = self.get_command_object("PowerOnDevices")
         (return_code, message) = command(argin)
         return [[return_code], [message]]
-        # PROTECTED REGION END #    //  CspSubElementMaster.PowerOnDevices
+        # PROTECTED REGION END #    //  CspSubElementController.PowerOnDevices
 
     def is_PowerOffDevices_allowed(self):
         """
@@ -719,7 +719,7 @@ class CspSubElementMaster(SKAMaster):
     )
     @DebugIt()
     def PowerOffDevices(self, argin):
-        # PROTECTED REGION ID(CspSubElementMaster.PowerOffDevices) ENABLED START #
+        # PROTECTED REGION ID(CspSubElementController.PowerOffDevices) ENABLED START #
         """
         Power-off a selected list of devices.
 
@@ -735,7 +735,7 @@ class CspSubElementMaster(SKAMaster):
         (return_code, message) = command(argin)
         return [[return_code], [message]]
 
-        # PROTECTED REGION END #    //  CspSubElementMaster.PowerOffDevices
+        # PROTECTED REGION END #    //  CspSubElementController.PowerOffDevices
 
     def is_ReInitDevices_allowed(self):
         """
@@ -756,7 +756,7 @@ class CspSubElementMaster(SKAMaster):
     )
     @DebugIt()
     def ReInitDevices(self, argin):
-        # PROTECTED REGION ID(CspSubElementMaster.ReInitDevices) ENABLED START #
+        # PROTECTED REGION ID(CspSubElementController.ReInitDevices) ENABLED START #
         """
         Reinitialize the devices passed in the input argument.
         The exact functionality may vary for different devices
@@ -764,7 +764,7 @@ class CspSubElementMaster(SKAMaster):
         what does ReInitDevices means.
         Ex:
         ReInitDevices FPGA -> reset
-        ReInitDevices Master -> Restart
+        ReInitDevices Controller -> Restart
         ReInitDevices Leaf PC -> reboot
 
         :param argin: List of devices (FQDNs) to re-initialize.
@@ -778,7 +778,7 @@ class CspSubElementMaster(SKAMaster):
         command = self.get_command_object("ReInitDevices")
         (return_code, message) = command(argin)
         return [[return_code], [message]]
-        # PROTECTED REGION END #    //  CspSubElementMaster.ReInitDevices
+        # PROTECTED REGION END #    //  CspSubElementController.ReInitDevices
 
 
 # ----------
@@ -788,16 +788,16 @@ class CspSubElementMaster(SKAMaster):
 
 def main(args=None, **kwargs):
     """
-    Entry point for the CspSubElementMaster module.
+    Entry point for the CspSubElementController module.
 
     :param args: str
     :param kwargs: str
 
     :return: exit code
     """
-    # PROTECTED REGION ID(CspSubElementMaster.main) ENABLED START #
-    return run((CspSubElementMaster,), args=args, **kwargs)
-    # PROTECTED REGION END #    //  CspSubElementMaster.main
+    # PROTECTED REGION ID(CspSubElementController.main) ENABLED START #
+    return run((CspSubElementController,), args=args, **kwargs)
+    # PROTECTED REGION END #    //  CspSubElementController.main
 
 
 if __name__ == "__main__":

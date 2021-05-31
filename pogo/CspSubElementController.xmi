@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="ASCII"?>
 <pogoDsl:PogoSystem xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:pogoDsl="http://www.esrf.fr/tango/pogo/PogoDsl">
-  <classes name="CspSubElementMaster" pogoRevision="9.6">
-    <description description="Master device for SKA CSP Subelement." title="CspSubElementMaster" sourcePath="/home/toor/ska-git/ska-tango-base/pogo" language="PythonHL" filestogenerate="XMI   file,Code files,Protected Regions" license="BSD3" copyright="" hasMandatoryProperty="false" hasConcreteProperty="true" hasAbstractCommand="false" hasAbstractAttribute="false">
+  <classes name="CspSubElementController" pogoRevision="9.6">
+    <description description="Controller device for SKA CSP Subelement." title="CspSubElementController" sourcePath="/home/toor/ska-git/ska-tango-base/pogo" language="PythonHL" filestogenerate="XMI   file,Code files,Protected Regions" license="BSD3" copyright="" hasMandatoryProperty="false" hasConcreteProperty="true" hasAbstractCommand="false" hasAbstractAttribute="false">
       <inheritances classname="Device_Impl" sourcePath=""/>
       <inheritances classname="SKABaseDevice" sourcePath="./"/>
-      <inheritances classname="SKAMaster" sourcePath="/home/toor/ska-git/ska-tango-base/pogo"/>
+      <inheritances classname="SKAController" sourcePath="/home/toor/ska-git/ska-tango-base/pogo"/>
       <identification contact="at inaf.it - elisabetta.giani" author="elisabetta.giani" emailDomain="inaf.it" classFamily="SkaBase" siteSpecific="" platform="All Platforms" bus="Not Applicable" manufacturer="none" reference=""/>
     </description>
-    <deviceProperties name="SkaLevel" description="Indication of importance of the device in the SKA hierarchy &#xA;to support drill-down navigation: 1..6, with 1 highest.&#xA;Default is 4, making provision for &#xA;EltMaster, EltAlarms, EltTelState = 1&#xA;SubEltMaster = 2&#xA;Subarray, Capability = 2/3&#xA;Others = 4 (or 5 or 6)">
+    <deviceProperties name="SkaLevel" description="Indication of importance of the device in the SKA hierarchy &#xA;to support drill-down navigation: 1..6, with 1 highest.&#xA;Default is 4, making provision for &#xA;EltController, EltAlarms, EltTelState = 1&#xA;SubEltController = 2&#xA;Subarray, Capability = 2/3&#xA;Others = 4 (or 5 or 6)">
       <type xsi:type="pogoDsl:ShortType"/>
       <status abstract="false" inherited="true" concrete="true"/>
       <DefaultPropValue>4</DefaultPropValue>
@@ -129,7 +129,7 @@
       </argout>
       <status abstract="false" inherited="false" concrete="true" concreteHere="true"/>
     </commands>
-    <commands name="ReInitDevices" description="The exact functionality may vary for different devices &#xA;and sub-systems, each Tango Device/Server&#xA;should define what does ReinitDevices means.&#xA;Ex:&#xA;ReInitDevices FPGA &#x2192; reset&#xA;ReInitDevices Master &#x2192; Restart&#xA;ReInitDevices Leaf PC &#x2192; reboot" execMethod="re_init_devices" displayLevel="OPERATOR" polledPeriod="0" isDynamic="false">
+    <commands name="ReInitDevices" description="The exact functionality may vary for different devices &#xA;and sub-systems, each Tango Device/Server&#xA;should define what does ReinitDevices means.&#xA;Ex:&#xA;ReInitDevices FPGA &#x2192; reset&#xA;ReInitDevices Controller &#x2192; Restart&#xA;ReInitDevices Leaf PC &#x2192; reboot" execMethod="re_init_devices" displayLevel="OPERATOR" polledPeriod="0" isDynamic="false">
       <argin description="List of devices to re-initialize">
         <type xsi:type="pogoDsl:StringArrayType"/>
       </argin>

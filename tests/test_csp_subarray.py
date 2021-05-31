@@ -294,7 +294,7 @@ class TestCspSubElementSubarray(object):
     def test_configureScanTimeoutExpiredFlag(self, tango_context):
         """Test for timeoutExpiredFlag"""
         # PROTECTED REGION ID(CspSubelementSubarray.test_timeoutExpiredFlag) ENABLED START #
-        assert tango_context.device.configureScanTimeoutExpiredFlag == False
+        assert not tango_context.device.configureScanTimeoutExpiredFlag
         # PROTECTED REGION END #    //  CspSubelementSubarray.test_timeoutExpiredFlag
 
     # PROTECTED REGION ID(CspSubelementSubarray.test_timeoutExpiredFlag_decorators) ENABLED START #
@@ -302,7 +302,7 @@ class TestCspSubElementSubarray(object):
     def test_assignResourcesTimeoutExpiredFlag(self, tango_context):
         """Test for timeoutExpiredFlag"""
         # PROTECTED REGION ID(CspSubelementSubarray.test_timeoutExpiredFlag) ENABLED START #
-        assert tango_context.device.assignResourcesTimeoutExpiredFlag == False
+        assert not tango_context.device.assignResourcesTimeoutExpiredFlag
         # PROTECTED REGION END #    //  CspSubelementSubarray.test_timeoutExpiredFlag
 
     # PROTECTED REGION ID(CspSubelementSubarray.test_timeoutExpiredFlag_decorators) ENABLED START #
@@ -310,7 +310,7 @@ class TestCspSubElementSubarray(object):
     def test_releaseResourcesTimeoutExpiredFlag(self, tango_context):
         """Test for timeoutExpiredFlag"""
         # PROTECTED REGION ID(CspSubelementSubarray.test_timeoutExpiredFlag) ENABLED START #
-        assert tango_context.device.releaseResourcesTimeoutExpiredFlag == False
+        assert not tango_context.device.releaseResourcesTimeoutExpiredFlag
         # PROTECTED REGION END #    //  CspSubelementSubarray.test_timeoutExpiredFlag
 
     # PROTECTED REGION ID(CspSubelementSubarray.test_ConfigureScan_decorators) ENABLED START #

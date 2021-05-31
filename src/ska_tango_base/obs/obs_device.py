@@ -13,8 +13,6 @@ instead of just SKABaseDevice.
 
 # Additional import
 # PROTECTED REGION ID(SKAObsDevice.additionnal_import) ENABLED START #
-import warnings
-
 # Tango imports
 from tango.server import run, attribute
 

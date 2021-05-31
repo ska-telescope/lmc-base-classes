@@ -12,7 +12,6 @@ information like assigned resources, configured capabilities, etc.
 """
 # PROTECTED REGION ID(SKASubarray.additionnal_import) ENABLED START #
 import json
-import warnings
 
 from tango import DebugIt
 from tango.server import run, attribute, command
@@ -295,7 +294,7 @@ class SKASubarray(SKAObsDevice):
             component_manager = self.target
             component_manager.scan(argin)
 
-            message = f"Scan command started"
+            message = "Scan command started"
             self.logger.info(message)
             return (ResultCode.STARTED, message)
 
@@ -639,7 +638,7 @@ class SKASubarray(SKAObsDevice):
 
         :return: Resources assigned to the device.
         """
-        return self.component_manager.assigned_resources  # pylint: disable=no-member
+        return self.component_manager.assigned_resources
         # PROTECTED REGION END #    //  SKASubarray.assignedResources_read
 
     def read_configuredCapabilities(self):
@@ -650,9 +649,7 @@ class SKASubarray(SKAObsDevice):
         :return: A list of capability types with no. of instances used
             in the Subarray
         """
-        return (
-            self.component_manager.configured_capabilities  # pylint: disable=no-member
-        )
+        return self.component_manager.configured_capabilities
         # PROTECTED REGION END #    //  SKASubarray.configuredCapabilities_read
 
     # --------

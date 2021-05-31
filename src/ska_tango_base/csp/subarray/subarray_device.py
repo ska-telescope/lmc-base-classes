@@ -72,7 +72,9 @@ class CspSubElementSubarray(SKASubarray):
         dtype="DevString",
         access=AttrWriteType.READ_WRITE,
         label="sdpDestinationAddresses",
-        doc="JSON formatted string.\nReport the list of all the SDP addresses provided by SDP to receive the output products.\nSpecifies the Mac, IP, Port for each resource:CBF visibility channels, Pss pipelines, PSTBeam",
+        doc="JSON formatted string.\nReport the list of all the SDP addresses provided "
+        "by SDP to receive the output products.\nSpecifies the Mac, IP, Port for each "
+        "resource:CBF visibility channels, Pss pipelines, PSTBeam",
     )
     """Device attribute."""
 
@@ -102,7 +104,9 @@ class CspSubElementSubarray(SKASubarray):
     listOfDevicesCompletedTasks = attribute(
         dtype="DevString",
         label="listOfDevicesCompletedTasks",
-        doc="JSON formatted string reporting for each task/command the list of devices\nthat completed successfully the task.\nEx.\n{``cmd1``: [``device1``, ``device2``], ``cmd2``: [``device2``, ``device3``]}",
+        doc="JSON formatted string reporting for each task/command the list of devices"
+        "\nthat completed successfully the task.\nEx.\n{``cmd1``: [``device1``, "
+        "``device2``], ``cmd2``: [``device2``, ``device3``]}",
     )
     """Device attribute."""
 
@@ -309,13 +313,13 @@ class CspSubElementSubarray(SKASubarray):
     def read_scanID(self):
         # PROTECTED REGION ID(CspSubElementSubarray.scanID_read) ENABLED START #
         """Return the scanID attribute."""
-        return self.component_manager.scan_id  # pylint: disable=no-member
+        return self.component_manager.scan_id
         # PROTECTED REGION END #    //  CspSubElementSubarray.scanID_read
 
     def read_configurationID(self):
         # PROTECTED REGION ID(CspSubElementSubarray.configurationID_read) ENABLED START #
         """Return the configurationID attribute."""
-        return self.component_manager.config_id  # pylint: disable=no-member
+        return self.component_manager.config_id
         # PROTECTED REGION END #    //  CspSubElementSubarray.configurationID_read
 
     def read_sdpDestinationAddresses(self):

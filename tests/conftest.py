@@ -1,7 +1,6 @@
 """
 A module defining a list of fixtures that are shared across all ska_tango_base tests.
 """
-import importlib
 import logging
 from queue import Empty, Queue
 

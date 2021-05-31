@@ -3,8 +3,6 @@ This module models component management for SKA subarray devices.
 """
 import functools
 
-from tango import DevState
-
 from ska_tango_base.subarray import SubarrayComponentManager
 from ska_tango_base.base import (
     check_communicating,

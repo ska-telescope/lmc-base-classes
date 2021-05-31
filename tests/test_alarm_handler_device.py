@@ -17,12 +17,15 @@ from ska_tango_base import SKAAlarmHandler
 from ska_tango_base.base import ReferenceBaseComponentManager
 from ska_tango_base.control_model import AdminMode
 
+
 # PROTECTED REGION ID(SKAAlarmHandler.test_additional_imports) ENABLED START #
 # PROTECTED REGION END #    //  SKAAlarmHandler.test_additional_imports
 # Device test case
 # PROTECTED REGION ID(SKAAlarmHandler.test_SKAAlarmHandler_decorators) ENABLED START #
-@pytest.mark.usefixtures("tango_context", "initialize_device")
 # PROTECTED REGION END #    //  SKAAlarmHandler.test_SKAAlarmHandler_decorators
+
+
+@pytest.mark.usefixtures("tango_context", "initialize_device")
 class TestSKAAlarmHandler(object):
     """
     Test class for tests of the SKAAlarmHander device class.

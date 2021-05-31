@@ -498,7 +498,7 @@ class SKABaseDevice(Device):
     SkaLevel = device_property(dtype="int16", default_value=4)
     """
     Device property.
-       
+
     Indication of importance of the device in the SKA hierarchy
     to support drill-down navigation: 1..6, with 1 highest.
     """
@@ -508,15 +508,15 @@ class SKABaseDevice(Device):
     )
     """
     Device property.
-       
+
     Each string in the list is a JSON serialised dict defining the ``group_name``,
     ``devices`` and ``subgroups`` in the group.  A Tango Group object is created
     for each item in the list, according to the hierarchy defined.  This provides
     easy access to the managed devices in bulk, or individually.
-    
+
     The general format of the list is as follows, with optional ``devices`` and
     ``subgroups`` keys::
-    
+
         [ {"group_name": "<name>",
            "devices": ["<dev name>", ...]},
           {"group_name": "<name>",
@@ -525,9 +525,9 @@ class SKABaseDevice(Device):
                             {<nested group>}, ...]},
           ...
           ]
-    
+
     For example, a hierarchy of racks, servers and switches::
-    
+
         [ {"group_name": "servers",
            "devices": ["elt/server/1", "elt/server/2",
                          "elt/server/3", "elt/server/4"]},
@@ -553,7 +553,7 @@ class SKABaseDevice(Device):
     )
     """
     Device property.
-       
+
     Default logging level at device startup.
     See :py:class:`~ska_tango_base.control_model.LoggingLevel`
     """
@@ -563,7 +563,7 @@ class SKABaseDevice(Device):
     )
     """
     Device property.
-       
+
     Default logging targets at device startup.
     See the project readme for details.
     """
@@ -592,7 +592,7 @@ class SKABaseDevice(Device):
     )
     """
     Device attribute.
-    
+
     See :py:class:`~ska_tango_base.control_model.LoggingLevel`
     """
 

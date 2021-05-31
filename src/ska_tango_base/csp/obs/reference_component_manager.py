@@ -3,8 +3,6 @@ This module models component management for CSP subelement observation devices.
 """
 import functools
 
-from tango import DevState
-
 from ska_tango_base.csp.obs import CspObsComponentManager
 from ska_tango_base.base import check_communicating, ReferenceBaseComponentManager
 

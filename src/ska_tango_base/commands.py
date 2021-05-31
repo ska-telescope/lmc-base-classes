@@ -19,7 +19,7 @@ The following command classes are provided:
 
 * **ResponseCommand**: for commands that return a ``(ResultCode,
   message)`` tuple.
-  
+
 * **CompletionCommand**: for commands that need to let their state
   machine know when they have completed; that is, long-running commands
   with transitional states, such as ``AssignResources()`` and

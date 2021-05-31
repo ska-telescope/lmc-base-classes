@@ -8,7 +8,7 @@ comprises:
 * a :py:class:`.CspSubElementObsStateModel` that maps the underlying
   state machine state to a value of the
   :py:class:`ska_tango_base.control_model.ObsState` enum.
-  
+
 """
 from transitions.extensions import LockedMachine as Machine
 

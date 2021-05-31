@@ -218,13 +218,13 @@ class CspSubElementObsDevice(SKAObsDevice):
     def read_scanID(self):
         # PROTECTED REGION ID(CspSubElementObsDevice.scanID_read) ENABLED START #
         """Return the scanID attribute."""
-        return self.component_manager.scan_id  # pylint: disable=no-member
+        return self.component_manager.scan_id
         # PROTECTED REGION END #    //  CspSubElementObsDevice.scanID_read
 
     def read_configurationID(self):
         # PROTECTED REGION ID(CspSubElementObsDevice.configurationID_read) ENABLED START #
         """Return the configurationID attribute."""
-        return self.component_manager.config_id  # pylint: disable=no-member
+        return self.component_manager.config_id
         # PROTECTED REGION END #    //  CspSubElementObsDevice.configurationID_read
 
     def read_deviceID(self):

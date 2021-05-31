@@ -12,7 +12,7 @@ The basic model is:
 
   * A software routine, possibly implemented within the Tango device
     itself
-    
+
   * In a hierarchical system, a pool of lower-level Tango devices.
 
 * A Tango device will usually need to establish and maintain a

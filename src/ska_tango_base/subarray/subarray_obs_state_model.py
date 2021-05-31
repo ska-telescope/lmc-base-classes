@@ -7,7 +7,7 @@ subarray Tango devices. It consists of:
 * an :py:class:`.SubarrayObsStateModel` that maps the underlying state
   machine state to a value of the
   :py:class:`ska_tango_base.control_model.ObsState` enum.
-  
+
 """
 from transitions.extensions import LockedMachine as Machine
 

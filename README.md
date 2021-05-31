@@ -247,6 +247,9 @@ Tango devices can be launched with a `-v` parameter to set the logging level. Fo
 
 ## Version History
 
+#### 0.11.1
+- Minor breaking change: rename of "Master" devices to "Controller"
+
 #### 0.11.0
 - Breaking change: state models and component managers
   - Re-implementation of operational state model to better model

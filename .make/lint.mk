@@ -1,25 +1,19 @@
 
-_lint-install:  # install requirements for linting
+_format-lint-install:  # install requirements for code formatting and checking
 	python3 -m pip install -r requirements-lint.txt
 
-_lint-format-apply: _lint-install  # apply code formatting
+.PHONY: _format-lint-install
+
+
+format: _format-lint-install  # apply code formatting
 	black src/ tests/
 
-_lint-format-check: _lint-install  # check code has been formatted
-	black --check src/ tests/
-
-_lint-other-checks: _lint-install  # all other checks
+lint: _format-lint-install
 	mkdir -p build/reports
-	pylint --output-format=parseable src/ska_tango_base | tee build/code_analysis.stdout
-	pylint --output-format=pylint2junit.JunitReporter src/ska_tango_base > build/reports/linting.xml
+	- python3 -m flake8 --format=junit-xml --output-file=build/reports/linting.xml src/ tests/
+	python3 -m flake8 --statistics --show-source src/ tests/
 
-.PHONY: _lint-install _lint-format-apply _lint-format-check _lint-other-checks
+# Format code then lint it
+format-lint: format lint
 
-
-# Check code has been formatted, then check everything else
-lint-check: _lint-format-check _lint-other-checks
-
-# Actively format code, then check everything else
-lint: _lint-format-apply _lint-other-checks
-
-.PHONY: lint-check lint
+.PHONY: format lint format-lint

@@ -159,6 +159,7 @@ class TestSKALogger(object):
         # PROTECTED REGION END #    //  SKALogger.test_testMode
 
 
+@pytest.mark.forked
 def test_SetLoggingLevel():
     """Test for SetLoggingLevel"""
     logging_level = int(tango.LogLevel.LOG_ERROR)

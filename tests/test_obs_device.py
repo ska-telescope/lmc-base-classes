@@ -187,6 +187,7 @@ class TestSKAObsDevice(object):
         # PROTECTED REGION END #    //  SKAObsDevice.test_testMode
 
 
+@pytest.mark.forked
 def test_multiple_devices_in_same_process():
 
     # The order here is important - base class last, so that we can

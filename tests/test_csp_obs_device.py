@@ -410,6 +410,7 @@ class TestCspSubElementObsDevice(object):
         # PROTECTED REGION END #    //  CspSubelementObsDevice.test_Abort
 
 
+@pytest.mark.forked
 def test_multiple_devices_in_same_process():
     devices_info = (
         {"class": CspSubElementObsDevice, "devices": [{"name": "test/se/1"}]},

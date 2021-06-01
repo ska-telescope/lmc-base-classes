@@ -216,7 +216,7 @@ html_context = {
     "theme_logo_only": True,
     "gitlab_user": "ska-telescope",  # Username
     "gitlab_repo": "ska-tango-base",  # Repo name
-    "gitlab_version": "master",  # Version
+    "gitlab_version": "main",  # Version
     "conf_py_path": "/docs/source/",  # Path in the checkout to the docs root
 }
 

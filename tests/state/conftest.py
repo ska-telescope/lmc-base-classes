@@ -1,6 +1,4 @@
-"""
-A module defining a list of fixtures that are shared across all ska_tango_base tests.
-"""
+"""This module defines the test harness for all ska_tango_base tests."""
 from collections import defaultdict
 import itertools
 import json
@@ -15,7 +13,10 @@ from ska_tango_base.faults import StateModelError
 
 def pytest_configure(config):
     """
-    pytest hook, used here to register custom "state_machine_tester" marks
+    Configure pytest to register custom "state_machine_tester" marks.
+
+    :param config: the pytest config object
+    :type config: :py:class:`pytest.config.Config`
     """
     config.addinivalue_line(
         "markers",
@@ -27,10 +28,12 @@ def pytest_configure(config):
 
 def pytest_generate_tests(metafunc):
     """
-    pytest hook that generates tests; this hook ensures that any test
-    class that is marked with the `state_machine_tester` custom marker
-    will have its tests parameterised by the states and actions in the
-    specification provided by that mark
+    Modify how pytest generates tests to support state machine testing.
+
+    This implementation of this pytest hook ensures that any test class
+    that is marked with the `state_machine_tester` custom marker will
+    have its tests parameterised by the states and actions in the
+    specification provided by that mark.
     """
     mark = metafunc.definition.get_closest_marker("state_machine_tester")
     if mark:
@@ -59,9 +62,7 @@ def pytest_generate_tests(metafunc):
 
 
 class StateMachineTester:
-    """
-    Abstract base class for a class for testing state machines
-    """
+    """Abstract base class for a class for testing state machines."""
 
     def test_state_machine(
         self,
@@ -71,13 +72,17 @@ class StateMachineTester:
         expected_state,
     ):
         """
-        Implements the unit test for a state machine: for a given
-        initial state and an action, does execution of that action, from
-        that state, yield the expected results? If the action was
-        allowed from that state, does the machine transition to the
-        correct state? If the action was not allowed from that state,
-        does the machine reject the action (e.g. raise an exception or
-        return an error code) and remain in the current state?
+        Implements the unit test for a state machine.
+
+        For a given initial state and an action, does execution of that
+        action, from that state, yield the expected results?
+
+        * If the action was allowed from that state, does the machine
+          transition to the correct state?
+
+        * If the action was not allowed from that state, does the
+          machine reject the action (e.g. raise an exception or return
+          an error code) and remain in the current state?
 
         :param machine_under_test: the state machine under test
         :type machine_under_test: state machine object instance
@@ -93,7 +98,6 @@ class StateMachineTester:
             the action should be disallowed and result in no change of
             state.
         :type expected_state: string
-
         """
         # Put the device into the state under test
         self.to_state(machine_under_test, state_under_test)
@@ -115,8 +119,7 @@ class StateMachineTester:
 
     def assert_state(self, machine_under_test, state):
         """
-        Abstract method for asserting the current state of the state
-        machine under test
+        Assert the current state of the state machine.
 
         :param machine_under_test: the state machine under test
         :type machine_under_test: state machine object instance
@@ -128,8 +131,7 @@ class StateMachineTester:
 
     def is_action_allowed(self, machine_under_test, action):
         """
-        Abstract method for checking whether the action under test is
-        allowed from the current state.
+        Check whether an action on the state machine is allowed in the current state.
 
         :param machine_under_test: the state machine under test
         :type machine_under_test: state machine object instance
@@ -140,7 +142,7 @@ class StateMachineTester:
 
     def perform_action(self, machine_under_test, action):
         """
-        Abstract method for performing an action on the state machine
+        Perform an action on the state machine.
 
         :param machine_under_test: the state machine under test
         :type machine_under_test: state machine object instance
@@ -151,8 +153,7 @@ class StateMachineTester:
 
     def check_action_fails(self, machine_under_test, action):
         """
-        Abstract method for asserting that an action fails if performed
-        on the state machine under test in its current state.
+        Check that an action on the state machine fails in its current state.
 
         :param machine_under_test: the state machine under test
         :type machine_under_test: state machine object instance
@@ -163,8 +164,7 @@ class StateMachineTester:
 
     def to_state(self, machine_under_test, target_state):
         """
-        Abstract method for getting the state machine into a target
-        state.
+        Abstract method for getting the state machine into a target state.
 
         :param machine_under_test: the state machine under test
         :type machine_under_test: state machine object instance
@@ -177,10 +177,11 @@ class StateMachineTester:
 
 class TransitionsStateMachineTester(StateMachineTester):
     """
-    Concrete implementation of a StateMachineTester for a pytransitions
-    state machine (with autotransitions turned on). The states and
-    actions in the state machine specification must correspond exactly
-    with the machine's states and triggers.
+    Concrete ``StateMachineTester`` class for a pytransitions state machine.
+
+    This class assumes pytransitions has autotransitions turned on. The
+    states and actions in the state machine specification must
+    correspond exactly with the machine's states and triggers.
     """
 
     def assert_state(self, machine_under_test, state):
@@ -197,8 +198,7 @@ class TransitionsStateMachineTester(StateMachineTester):
 
     def is_action_allowed(self, machine_under_test, action):
         """
-        Check whether the action under test is allowed from the current
-        state.
+        Check whether the action under test is allowed from the current state.
 
         :param machine_under_test: the state machine under test
         :type machine_under_test: state machine object instance
@@ -220,8 +220,7 @@ class TransitionsStateMachineTester(StateMachineTester):
 
     def check_action_fails(self, machine_under_test, action):
         """
-        Check that attempting a given action on the state machine under
-        test fails in its current state.
+        Check that the action on the state machine fails in its current state.
 
         :param machine_under_test: the state machine under test
         :type machine_under_test: state machine object instance
@@ -233,10 +232,11 @@ class TransitionsStateMachineTester(StateMachineTester):
 
     def to_state(self, machine_under_test, target_state):
         """
-        Transition the state machine to a target state. This
-        implementation uses autotransitions. If the pytransitions state
-        machine under test has autotransitions turned off, then this
-        method will need to be overridden by some other method of
+        Transition the state machine to a target state.
+
+        This implementation uses autotransitions. If the pytransitions
+        state machine under test has autotransitions turned off, then
+        this method will need to be overridden by some other method of
         putting the machine into the state under test.
 
         :param machine: the state machine under test
@@ -252,8 +252,8 @@ class StateModelTester(StateMachineTester):
     """
     Abstract base class for testing state models using state machines.
 
-    The ``assert_state`` method has to be implemented in concrete classes,
-    and the `machine_under_test` fixture must also be provided.
+    The ``assert_state`` method has to be implemented in concrete
+    classes, and the `machine_under_test` fixture must also be provided.
     """
 
     def assert_state(self, machine_under_test, state):
@@ -270,8 +270,7 @@ class StateModelTester(StateMachineTester):
 
     def is_action_allowed(self, machine_under_test, action):
         """
-        Returns whether the state machine under test thinks an action
-        is permitted in its current state
+        Return whether the state machine allows a given action in its current state.
 
         :param machine_under_test: the state model under test
         :type machine_under_test: object
@@ -293,8 +292,7 @@ class StateModelTester(StateMachineTester):
 
     def check_action_fails(self, machine_under_test, action):
         """
-        Assert that performing a given action on the state maching under
-        test fails in its current state.
+        Check that an action is not permitted in the current state machine state.
 
         :param machine_under_test: the state model under test
         :type machine_under_test: object
@@ -319,8 +317,10 @@ class StateModelTester(StateMachineTester):
 
 def load_data(name):
     """
-    Loads a dataset by name. This implementation uses the name to find a
-    JSON file containing the data to be loaded.
+    Load a dataset by name.
+
+    This implementation uses the name to find a JSON file containing the
+    data to be loaded.
 
     :param name: name of the dataset to be loaded; this implementation
         uses the name to find a JSON file containing the data to be
@@ -333,7 +333,7 @@ def load_data(name):
 
 def load_state_machine_spec(name):
     """
-    Loads a state machine specification by name.
+    Load a state machine specification by name.
 
     :param name: name of the dataset to be loaded; this implementation
         uses the name to find a JSON file containing the data to be

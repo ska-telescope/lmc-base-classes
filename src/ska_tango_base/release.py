@@ -4,7 +4,7 @@
 #
 #
 #
-"""Release information for ska_tango_base Python Package"""
+"""Release information for ska_tango_base Python Package."""
 
 name = """ska_tango_base"""
 version = "0.11.1"

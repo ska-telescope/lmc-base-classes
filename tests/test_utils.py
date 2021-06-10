@@ -117,7 +117,7 @@ BAD_GROUP_KEYS = [
 
 
 def _jsonify_group_configs(group_configs):
-    """Returns list of JSON definitions for groups."""
+    """Return a list of JSON definitions for groups."""
     definitions = []
     for group_config in group_configs:
         definitions.append(json.dumps(group_config))
@@ -125,7 +125,7 @@ def _jsonify_group_configs(group_configs):
 
 
 def _get_group_configs_from_keys(group_keys):
-    """Provides list of group configs based on keys for TEST_GROUPS."""
+    """Provide list of group configs based on keys for TEST_GROUPS."""
     group_configs = []
     for group_key in group_keys:
         group_config = TEST_GROUPS[group_key]
@@ -134,23 +134,28 @@ def _get_group_configs_from_keys(group_keys):
 
 
 def _group_id_name(keys):
-    """Helper function to give tests nicer names."""
+    """
+    Return a comma-separated string of keys.
+
+    This is a helper function to give tests nicer names.
+    """
     return ",".join(keys)
 
 
 @pytest.fixture(scope="module", params=VALID_GROUP_KEYS, ids=_group_id_name)
 def valid_group_configs(request):
-    """Provides valid lists of groups configs, one at a time."""
+    """Provide valid lists of groups configs, one at a time."""
     return _get_group_configs_from_keys(request.param)
 
 
 @pytest.fixture(scope="module", params=BAD_GROUP_KEYS, ids=_group_id_name)
 def bad_group_configs(request):
-    """Provides bad lists of groups configs, one at a time."""
+    """Provide bad lists of groups configs, one at a time."""
     return _get_group_configs_from_keys(request.param)
 
 
 def test_get_groups_from_json_empty_list():
+    """Test the ``get_groups_from_json`` helper functions handling of empty input."""
     groups = get_groups_from_json([])
     assert groups == {}
     # empty or whitespace strings should also be ignored
@@ -181,6 +186,7 @@ def _validate_group(definition, group):
 
 
 def test_get_groups_from_json_valid(valid_group_configs):
+    """Test the ``get_groups_from_json`` helper function's handling of valid input."""
     json_definitions = _jsonify_group_configs(valid_group_configs)
     groups = get_groups_from_json(json_definitions)
 
@@ -193,12 +199,14 @@ def test_get_groups_from_json_valid(valid_group_configs):
 
 
 def test_get_groups_from_json_invalid(bad_group_configs):
+    """Test the ``get_groups_from_json`` helper function's handling of invalid input."""
     json_definitions = _jsonify_group_configs(bad_group_configs)
     with pytest.raises(GroupDefinitionsError):
         get_groups_from_json(json_definitions)
 
 
 def test_get_tango_device_type_id():
+    """Test the ``get_tango_device_type_id`` helper function."""
     device_name = "domain/family/member"
     result = get_tango_device_type_id(device_name)
     assert result == ["family", "member"]
@@ -218,13 +226,19 @@ def test_get_tango_device_type_id():
 )
 def test_for_testing_only(in_test, context):
     """
-    Test the @for_testing_only decorator, to ensure that a warning is raised if and only
-    if we are NOT testing. This is achieved by patching the test, which cannot be done
-    using the @decorator syntax.
+    Test the @for_testing_only decorator.
+
+    Test that a warning is raised if and only if we are NOT testing.
+    This is achieved by patching the test, which cannot be done using
+    the ``@decorator`` syntax.
     """
 
     def foo():
-        """Dummy function for wrapping by decorator under test."""
+        """
+        Return a known value.
+
+        This is a dummy function for the decorator under test to wrap.
+        """
         return "foo"
 
     foo = for_testing_only(foo, _testing_check=lambda: in_test)
@@ -234,13 +248,15 @@ def test_for_testing_only(in_test, context):
 
 
 def test_for_testing_only_decorator():
-    """
-    Test the unpatched for_testing_only decorator using the usual @decorator syntax
-    """
+    """Test the for_testing_only decorator using the usual @decorator syntax."""
 
     @for_testing_only
     def bah():
-        """Dummy function for wrapping by decorator under test."""
+        """
+        Return a known value.
+
+        This is a dummy function for the decorator under test to wrap.
+        """
         return "bah"
 
     with pytest.warns(None) as warning_record:

@@ -1,7 +1,4 @@
-"""
-This subpackage implements Tango device functionality common to all SKA
-Tango devices.
-"""
+"""This subpackage implements functionality common to all SKA Tango devices."""
 
 __all__ = (
     "AdminModeModel",

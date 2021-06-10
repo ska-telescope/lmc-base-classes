@@ -5,10 +5,11 @@
 #
 #
 """
-This module implements SKALogger device, a generic base device for
-logging for SKA. It enables to view on-line logs through the Tango
-Logging Services and to store logs using Python logging. It configures
-the log levels of remote logging for selected devices.
+This module implements SKALogger device, a generic base device for logging for SKA.
+
+It enables to view on-line logs through the Tango Logging Services and
+to store logs using Python logging. It configures the log levels of
+remote logging for selected devices.
 """
 # PROTECTED REGION ID(SKALogger.additionnal_import) ENABLED START #
 # Tango imports
@@ -26,9 +27,7 @@ __all__ = ["SKALogger", "main"]
 
 
 class SKALogger(SKABaseDevice):
-    """
-    A generic base device for Logging for SKA.
-    """
+    """A generic base device for Logging for SKA."""
 
     # PROTECTED REGION ID(SKALogger.class_variable) ENABLED START #
     # PROTECTED REGION END #    //  SKALogger.class_variable
@@ -45,9 +44,7 @@ class SKALogger(SKABaseDevice):
     # General methods
     # ---------------
     def init_command_objects(self):
-        """
-        Sets up the command objects
-        """
+        """Set up the command objects."""
         super().init_command_objects()
         self.register_command_object(
             "SetLoggingLevel",
@@ -56,11 +53,24 @@ class SKALogger(SKABaseDevice):
 
     def always_executed_hook(self):
         # PROTECTED REGION ID(SKALogger.always_executed_hook) ENABLED START #
+        """
+        Perform actions that are executed before every device command.
+
+        This is a Tango hook.
+        """
         pass
         # PROTECTED REGION END #    //  SKALogger.always_executed_hook
 
     def delete_device(self):
         # PROTECTED REGION ID(SKALogger.delete_device) ENABLED START #
+        """
+        Clean up any resources prior to device deletion.
+
+        This method is a Tango hook that is called by the device
+        destructor and by the device Init command. It allows for any
+        memory or other resources allocated in the init_device method to
+        be released prior to device deletion.
+        """
         pass
         # PROTECTED REGION END #    //  SKALogger.delete_device
 
@@ -72,13 +82,11 @@ class SKALogger(SKABaseDevice):
     # Commands
     # --------
     class SetLoggingLevelCommand(ResponseCommand):
-        """
-        A class for the SKALoggerDevice's SetLoggingLevel() command.
-        """
+        """A class for the SKALoggerDevice's SetLoggingLevel() command."""
 
         def __init__(self, target, state_model, logger=None):
             """
-            Constructor for SetLoggingLevelCommand
+            Initialise a new SetLoggingLevelCommand instance.
 
             :param target: the object that this base command acts upon. For
                 example, the device's component manager.
@@ -135,7 +143,7 @@ class SKALogger(SKABaseDevice):
     def SetLoggingLevel(self, argin):
         # PROTECTED REGION ID(SKALogger.SetLoggingLevel) ENABLED START #
         """
-        Sets logging level of the specified devices.
+        Set the logging level of the specified devices.
 
         To modify behaviour for this command, modify the do() method of
         the command class.
@@ -163,9 +171,7 @@ class SKALogger(SKABaseDevice):
 
 def main(args=None, **kwargs):
     # PROTECTED REGION ID(SKALogger.main) ENABLED START #
-    """
-    Main entry point of the module.
-    """
+    """Launch an SKALogger device."""
     return run((SKALogger,), args=args, **kwargs)
     # PROTECTED REGION END #    //  SKALogger.main
 

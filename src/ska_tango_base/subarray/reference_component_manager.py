@@ -1,6 +1,4 @@
-"""
-This module models component management for SKA subarray devices.
-"""
+"""This module models component management for SKA subarray devices."""
 import functools
 
 from ska_tango_base.subarray import SubarrayComponentManager
@@ -18,8 +16,18 @@ from ska_tango_base.faults import (
 
 def check_on(func):
     """
-    Decorator that makes a method first checks that the component is
-    turned on and not faulty before allowing the command to proceed
+    Return a function that checks the component state then calls another function.
+
+    The component needs to be turned on, and not faulty, in order for
+    the function to be called.
+
+    This function is intended to be used as a decorator:
+
+    .. code-block:: python
+
+        @check_on
+        def scan(self):
+            ...
 
     :param func: the wrapped function
 
@@ -29,8 +37,10 @@ def check_on(func):
     @functools.wraps(func)
     def _wrapper(component, *args, **kwargs):
         """
-        Wrapper function that checks that the component is turned on and
-        not faulty before invoking the wrapped function
+        Check that the component is on and not faulty before calling the function.
+
+        This is a wrapper function that implements the functionality of
+        the decorator.
 
         :param component: the component to check
         :param args: positional arguments to the wrapped function
@@ -51,7 +61,7 @@ class ReferenceSubarrayComponentManager(
     ReferenceBaseComponentManager, SubarrayComponentManager
 ):
     """
-    A component manager for SKA subarray Tango devices:
+    A component manager for SKA subarray Tango devices.
 
     The current implementation is intended to
     * illustrate the model
@@ -62,13 +72,11 @@ class ReferenceSubarrayComponentManager(
     """
 
     class _ResourcePool:
-        """
-        A simple class for managing subarray resources
-        """
+        """A simple class for managing subarray resources."""
 
         def __init__(self, callback=None):
             """
-            Initialise a new instance
+            Initialise a new instance.
 
             :param callback: callback to call when the resource pool
                 goes from empty to non-empty or vice-versa
@@ -80,9 +88,10 @@ class ReferenceSubarrayComponentManager(
 
         def __len__(self):
             """
-            Returns the number of resources currently assigned. Note that
-            this also functions as a boolean method for whether there are
-            any assigned resources: ``if len()``.
+            Return the number of resources currently assigned.
+
+            Note that this also functions as a boolean method for
+            whether there are any assigned resources: ``if len()``.
 
             :return: number of resources assigned
             :rtype: int
@@ -91,7 +100,7 @@ class ReferenceSubarrayComponentManager(
 
         def assign(self, resources):
             """
-            Assign some resources
+            Assign some resources.
 
             :param resources: resources to be assigned
             :type resources: set(str)
@@ -101,7 +110,7 @@ class ReferenceSubarrayComponentManager(
 
         def release(self, resources):
             """
-            Release some resources
+            Release some resources.
 
             :param resources: resources to be released
             :type resources: set(str)
@@ -110,15 +119,13 @@ class ReferenceSubarrayComponentManager(
             self._update()
 
         def release_all(self):
-            """
-            Release all resources
-            """
+            """Release all resources."""
             self._resources.clear()
             self._update()
 
         def get(self):
             """
-            Get current resources
+            Get current resources.
 
             :return: current resources.
             :rtype: set(str)
@@ -148,8 +155,7 @@ class ReferenceSubarrayComponentManager(
 
     class _Component(ReferenceBaseComponentManager._Component):
         """
-        An example subarray component for the component manager to work
-        with.
+        An example subarray component for the component manager to work with.
 
         It can be directly controlled via configure(), scan(),
         end_scan(), end(), abort(), reset() and restart() command
@@ -171,7 +177,7 @@ class ReferenceSubarrayComponentManager(
             _faulty=False,
         ):
             """
-            Initialise a new instance
+            Initialise a new instance.
 
             :param capability_types: a list strings representing
                 capability types.
@@ -209,7 +215,7 @@ class ReferenceSubarrayComponentManager(
             obsfault_callback,
         ):
             """
-            Set callbacks for the underlying component
+            Set callbacks for the underlying component.
 
             :param configured_callback: a callback to call with a
                 boolean argument when whether the component is
@@ -227,7 +233,7 @@ class ReferenceSubarrayComponentManager(
         @check_on
         def configured(self):
             """
-            Whether this component is configured
+            Return whether this component is configured.
 
             :return: whether this component is configured
             :rtype: bool
@@ -238,7 +244,7 @@ class ReferenceSubarrayComponentManager(
         @check_on
         def configured_capabilities(self):
             """
-            Configured capabilities of this component
+            Return the configured capabilities of this component.
 
             :return: list of strings indicating number of configured
                 instances of each capability type
@@ -257,7 +263,7 @@ class ReferenceSubarrayComponentManager(
         @check_on
         def scanning(self):
             """
-            Whether this component is scanning
+            Return whether this component is scanning.
 
             :return: whether this component is scanning
             :rtype: bool
@@ -268,7 +274,7 @@ class ReferenceSubarrayComponentManager(
         @check_on
         def obsfault(self):
             """
-            Whether this component is obsfaulting
+            Return whether this component is obsfaulting.
 
             :return: whether this component is obsfaulting
             :rtype: bool
@@ -277,8 +283,7 @@ class ReferenceSubarrayComponentManager(
 
         def _validate_capability_types(self, capability_types):
             """
-            Check the validity of the input parameter passed to the
-            Configure command.
+            Check the validity of the input parameter passed to the Configure command.
 
             :param capability_types: a list strings representing
                 capability types.
@@ -299,7 +304,7 @@ class ReferenceSubarrayComponentManager(
         @check_on
         def configure(self, configuration):
             """
-            Configure the component
+            Configure the component.
 
             :param configuration: the configuration to be configured
             :type configuration: dict
@@ -319,9 +324,7 @@ class ReferenceSubarrayComponentManager(
 
         @check_on
         def deconfigure(self):
-            """
-            Deconfigure this component.
-            """
+            """Deconfigure this component."""
             self._configured_capabilities = {
                 k: 0 for k in self._configured_capabilities
             }
@@ -329,47 +332,36 @@ class ReferenceSubarrayComponentManager(
 
         @check_on
         def scan(self, args):
-            """
-            Start scanning
-            """
+            """Start scanning."""
             self._update_scanning(True)
 
         @check_on
         def end_scan(self):
-            """
-            End scanning
-            """
+            """End scanning."""
             self.simulate_scan_stopped()
 
         @check_on
         def simulate_scan_stopped(self):
-            """
-            Tell the component to simulate spontaneous stopping its
-            scan.
-            """
+            """Tell the component to simulate spontaneous stopping its scan."""
             self._update_scanning(False)
 
         @check_on
         def simulate_obsfault(self, obsfault):
-            """
-            Tell the component to simulate an obsfault
-            """
+            """Tell the component to simulate an obsfault."""
             self._update_obsfault(obsfault)
 
         def _invoke_configured_callback(self):
-            """
-            Helper method that invokes the callback when whether the
-            component is configured changes.
-            """
+            """Invoke the callback when whether the component is configured changes."""
             if not self.faulty:
                 if self._configured_callback is not None:
                     self._configured_callback(self._configured)
 
         def _update_configured(self, configured):
             """
-            Helper method that updates whether the component is
-            configured or not, ensuring that callbacks are called as
-            required.
+            Update whether the component is configured or not.
+
+            This helper method will also ensure that callbacks are
+            called as required.
 
             :param configured: new value for whether the component is
                 configured or not
@@ -380,19 +372,17 @@ class ReferenceSubarrayComponentManager(
                 self._invoke_configured_callback()
 
         def _invoke_scanning_callback(self):
-            """
-            Helper method that invokes the callback when whether the
-            component is scanning changes.
-            """
+            """Invoke the callback when whether the component is scanning changes."""
             if not self.faulty:
                 if self._scanning_callback is not None:
                     self._scanning_callback(self._scanning)
 
         def _update_scanning(self, scanning):
             """
-            Helper method that updates whether the component is
-            scanning or not, ensuring that callbacks are called as
-            required.
+            Update whether the component is scanning or not.
+
+            This helper method will also ensure that callbacks are
+            called as required.
 
             :param scanning: new value for whether the component is
                 scanning or not
@@ -403,19 +393,17 @@ class ReferenceSubarrayComponentManager(
                 self._invoke_scanning_callback()
 
         def _invoke_obsfault_callback(self):
-            """
-            Helper method that invokes the callback when the component
-            experiences an obsfault.
-            """
+            """Invoke the callback when the component experiences an obsfault."""
             if not self.faulty:
                 if self.obsfault and self._obsfault_callback is not None:
                     self._obsfault_callback()
 
         def _update_obsfault(self, obsfault):
             """
-            Helper method that updates whether the component is
-            obsfaulting or not, ensuring that callbacks are called as
-            required.
+            Update whether the component is obsfaulting or not.
+
+            This helper method will also ensure that callbacks are
+            called as required.
 
             :param obsfault: new value for whether the component is
                 obsfaulting or not
@@ -435,7 +423,7 @@ class ReferenceSubarrayComponentManager(
         _component=None,
     ):
         """
-        Initialise a new ReferenceSubarrayComponentManager instance
+        Initialise a new ReferenceSubarrayComponentManager instance.
 
         :param op_state_model: the op state model used by this component
             manager
@@ -458,10 +446,7 @@ class ReferenceSubarrayComponentManager(
         )
 
     def start_communicating(self):
-        """
-        Establish communication with the component, then start
-        monitoring.
-        """
+        """Establish communication with the component, then start monitoring."""
         if self._connected:
             return
         super().start_communicating()
@@ -490,10 +475,7 @@ class ReferenceSubarrayComponentManager(
             self.obs_state_model.to_SCANNING()
 
     def stop_communicating(self):
-        """
-        Cease monitoring the component, and break off all communication
-        with it.
-        """
+        """Cease monitoring the component, and break off all communication with it."""
         if not self._connected:
             return
 
@@ -502,7 +484,7 @@ class ReferenceSubarrayComponentManager(
 
     def simulate_communication_failure(self, fail_communicate):
         """
-        Simulate (or stop simulating) a component connection failure
+        Simulate (or stop simulating) a component connection failure.
 
         :param fail_communicate: whether the connection to the component
             is failing
@@ -514,7 +496,7 @@ class ReferenceSubarrayComponentManager(
     @check_communicating
     def assign(self, resources):
         """
-        Assign resources to the component
+        Assign resources to the component.
 
         :param resources: resources to be assigned
         :type resources: list(str)
@@ -525,7 +507,7 @@ class ReferenceSubarrayComponentManager(
     @check_communicating
     def release(self, resources):
         """
-        Release resources from the component
+        Release resources from the component.
 
         :param resources: resources to be released
         :type resources: list(str)
@@ -535,16 +517,14 @@ class ReferenceSubarrayComponentManager(
 
     @check_communicating
     def release_all(self):
-        """
-        Release all resources
-        """
+        """Release all resources."""
         self.logger.info("Releasing all resources in component")
         self._resource_pool.release_all()
 
     @check_communicating
     def configure(self, configuration):
         """
-        Configure the component
+        Configure the component.
 
         :param configuration: the configuration to be configured
         :type configuration: dict
@@ -554,43 +534,32 @@ class ReferenceSubarrayComponentManager(
 
     @check_communicating
     def deconfigure(self):
-        """
-        Deconfigure this component.
-        """
+        """Deconfigure this component."""
         self.logger.info("Deconfiguring component")
         self._component.deconfigure()
 
     @check_communicating
     def scan(self, args):
-        """
-        Start scanning
-        """
+        """Start scanning."""
         self.logger.info("Starting scan in component")
         self._component.scan(args)
 
     @check_communicating
     def end_scan(self):
-        """
-        End scanning
-        """
+        """End scanning."""
         self.logger.info("Stopping scan in component")
         self._component.end_scan()
 
     @check_communicating
     def abort(self):
-        """
-        Tell the component to abort whatever it was doing
-        """
+        """Tell the component to abort whatever it was doing."""
         self.logger.info("Aborting component")
         if self._component.scanning:
             self._component.end_scan()
 
     @check_communicating
     def obsreset(self):
-        """
-        Tell the component to reset to an unconfigured state (but
-        without releasing any assigned resources)
-        """
+        """Deconfigure the component but do not release resources."""
         self.logger.info("Resetting component")
         if self._component.configured:
             self._component.deconfigure()
@@ -598,8 +567,10 @@ class ReferenceSubarrayComponentManager(
     @check_communicating
     def restart(self):
         """
-        Tell the component to return to an empty state (unconfigured and
-        without any assigned resources)
+        Tell the component to restart.
+
+        It will return to a state in which it is is unconfigured and
+        empty of assigned resources.
         """
         self.logger.info("Restarting component")
         if self._component.configured:
@@ -610,7 +581,7 @@ class ReferenceSubarrayComponentManager(
     @check_communicating
     def assigned_resources(self):
         """
-        Resources assigned to the component
+        Return the resources assigned to the component.
 
         :return: the resources assigned to the component
         :rtype: list of str
@@ -621,7 +592,7 @@ class ReferenceSubarrayComponentManager(
     @check_communicating
     def configured_capabilities(self):
         """
-        Configured capabilities of the component
+        Return the configured capabilities of the component.
 
         :return: list of strings indicating number of configured
             instances of each capability type
@@ -631,8 +602,9 @@ class ReferenceSubarrayComponentManager(
 
     def component_resourced(self, resourced):
         """
-        Callback hook, called when whether the component has any
-        resources changes
+        Handle notification that the component's resources have changed.
+
+        This is a callback hook.
 
         :param resourced: whether this component has any resources
         :type resourced: bool
@@ -644,8 +616,9 @@ class ReferenceSubarrayComponentManager(
 
     def component_configured(self, configured):
         """
-        Callback hook, called when whether the component is configured
-        changes
+        Handle notification that the component has started or stopped configuring.
+
+        This is a callback hook.
 
         :param configured: whether this component is configured
         :type configured: bool
@@ -657,8 +630,9 @@ class ReferenceSubarrayComponentManager(
 
     def component_scanning(self, scanning):
         """
-        Callback hook, called when whether the component is scanning
-        changes
+        Handle notification that the component has started or stopped scanning.
+
+        This is a callback hook.
 
         :param scanning: whether this component is scanning
         :type scanning: bool
@@ -670,6 +644,8 @@ class ReferenceSubarrayComponentManager(
 
     def component_obsfault(self):
         """
-        Callback hook, called when the component obsfaults
+        Handle notification that the component has obsfaulted.
+
+        This is a callback hook.
         """
         self.obs_state_model.perform_action("component_obsfault")

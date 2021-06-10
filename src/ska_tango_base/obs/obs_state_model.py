@@ -1,9 +1,10 @@
 """
-This module defines a basic state model for SKA LMC devices that manage
-observations. It consists of a single :py:class:`.ObsStateModel` class,
-which drives a state machine to manage device "obs state", represented
-by the :py:class:`ska_tango_base.control_model.ObsState` enum, and
-published by Tango devices via the ``obsState`` attribute.
+This module defines a basic state model for SKA LMC devices that manage observations.
+
+It consists of a single :py:class:`.ObsStateModel` class, which drives a
+state machine to manage device "obs state", represented by the
+:py:class:`ska_tango_base.control_model.ObsState` enum, and published by
+Tango devices via the ``obsState`` attribute.
 """
 from ska_tango_base.control_model import ObsState
 from ska_tango_base.faults import StateModelError
@@ -15,8 +16,7 @@ __all__ = ["ObsStateModel"]
 
 class ObsStateModel:
     """
-    This class implements the state model for observation state
-    ("obsState").
+    This class implements the state model for observation state ("obsState").
 
     The model supports states that are values of the
     :py:class:`ska_tango_base.control_model.ObsState` enum. Rather than
@@ -32,7 +32,7 @@ class ObsStateModel:
         callback=None,
     ):
         """
-        Initialises the model.
+        Initialise the model.
 
         :param state_machine_factory: a callable that returns a
             state machine for this model to use
@@ -56,7 +56,7 @@ class ObsStateModel:
     @property
     def obs_state(self):
         """
-        Returns the obs_state
+        Return the obs_state.
 
         :returns: obs_state of this state model
         :rtype: ObsState
@@ -65,9 +65,10 @@ class ObsStateModel:
 
     def _obs_state_changed(self, machine_state):
         """
-        Helper method that updates obs_state whenever the observation
-        state machine reports a change of state, ensuring that the
-        callback is called if one exists.
+        Handle notification that the observation state machine has changed state.
+
+        This is a helper method that updates obs_state, ensuring that
+        the callback is called if one exists.
 
         :param machine_state: the new state of the observation state
             machine
@@ -81,7 +82,7 @@ class ObsStateModel:
 
     def is_action_allowed(self, action, raise_if_disallowed=False):
         """
-        Whether a given action is allowed in the current state.
+        Return whether a given action is allowed in the current state.
 
         :param action: an action, as given in the transitions table
         :type action: str
@@ -110,7 +111,7 @@ class ObsStateModel:
 
     def perform_action(self, action):
         """
-        Performs an action on the state model
+        Perform an action on the state model.
 
         :param action: an action, as given in the transitions table
         :type action: ANY
@@ -121,24 +122,25 @@ class ObsStateModel:
     @for_testing_only
     def _straight_to_state(self, obs_state_name):
         """
-        Takes this model straight to the specified state. This method
-        exists to simplify testing; for example, if testing that a
-        command may be run in a given ObsState, one can push this state
-        model straight to that ObsState, rather than having to drive it
-        to that state through a sequence of actions. It is not intended
-        that this method would be called outside of test setups. A
-        warning will be raised if it is.
+        Take this model straight to the specified state.
+
+        This method exists to simplify testing; for example, if testing
+        that a command may be run in a given ObsState, one can push this
+        state model straight to that ObsState, rather than having to
+        drive it to that state through a sequence of actions. It is not
+        intended that this method would be called outside of test
+        setups. A warning will be raised if it is.
 
         For example, to test that a device transitions from SCANNING to
         ABORTING when the Abort() command is called:
 
         .. code-block:: py
 
-          model = ObservationStateModel(logger)
-          model._straight_to_state("SCANNING")
-          assert model.obs_state == ObsState.SCANNING
-          model.perform_action("abort_invoked")
-          assert model.obs_state == ObsState.ABORTING
+            model = ObservationStateModel(logger)
+            model._straight_to_state("SCANNING")
+            assert model.obs_state == ObsState.SCANNING
+            model.perform_action("abort_invoked")
+            assert model.obs_state == ObsState.ABORTING
 
         :param obs_state_name: the target obs_state
         :type obs_state_name:

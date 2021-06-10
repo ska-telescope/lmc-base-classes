@@ -1,3 +1,5 @@
+"""This package provides shared functionality and patterns for SKA TANGO devices."""
+
 __all__ = (
     # subpackages
     "base",

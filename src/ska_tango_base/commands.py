@@ -1,6 +1,5 @@
 """
-This module provides abstract base classes for device commands, and a
-ResultCode enum.
+This module provides abstract base classes for device commands, and a ResultCode enum.
 
 The following command classes are provided:
 
@@ -58,7 +57,6 @@ implement the ``__init__`` and ``do`` methods. For example:
         def do(self, argin):
             # do stuff
             return (ResultCode.OK, "AssignResources command completed OK")
-
 """
 import enum
 import logging
@@ -71,9 +69,7 @@ module_logger = logging.getLogger(__name__)
 
 
 class ResultCode(enum.IntEnum):
-    """
-    Python enumerated type for command return codes.
-    """
+    """Python enumerated type for command return codes."""
 
     OK = 0
     """
@@ -103,14 +99,15 @@ class ResultCode(enum.IntEnum):
 
 class BaseCommand:
     """
-    Abstract base class for Tango device server commands. Checks that
-    the command is allowed to run in the current state, and runs the
-    command.
+    Abstract base class for Tango device server commands.
+
+    Checks that the command is allowed to run in the current state, and
+    runs the command.
     """
 
     def __init__(self, target, *args, logger=None, **kwargs):
         """
-        Creates a new BaseCommand object for a device.
+        Initialise a new BaseCommand instance.
 
         :param target: the object that this command acts upon; for
             example, a component manager
@@ -126,9 +123,10 @@ class BaseCommand:
 
     def __call__(self, argin=None):
         """
-        What to do when the command is called. This base class simply
-        calls ``do()`` or ``do(argin)``, depending on whether the
-        ``argin`` argument is provided.
+        Invoke the command.
+
+        This is implemented to simply call the do() hook, thus running
+        the user-specified functionality therein.
 
         :param argin: the argument passed to the Tango command, if
             present
@@ -144,8 +142,7 @@ class BaseCommand:
 
     def _call_do(self, argin=None):
         """
-        Helper method that ensures the ``do`` method is called with the
-        right arguments, and that the call is logged.
+        Call the ``do`` method with the right arguments, and log the call.
 
         :param argin: the argument passed to the Tango command, if
             present
@@ -161,9 +158,10 @@ class BaseCommand:
 
     def do(self, argin=None):
         """
-        Hook for the functionality that the command implements. This
-        class provides stub functionality; subclasses should subclass
-        this method with their command functionality.
+        Perform the user-specified functionality of the command.
+
+        This class provides stub functionality; subclasses should
+        subclass this method with their command functionality.
 
         :param argin: the argument passed to the Tango command, if
             present
@@ -175,9 +173,11 @@ class BaseCommand:
 
 
 class StateModelCommand(BaseCommand):
+    """A base class for commands that drive a state model."""
+
     def __init__(self, target, state_model, action_slug, *args, logger=None, **kwargs):
         """
-        A base command for commands that drive a state model.
+        Initialise a new command object.
 
         :param target: the object that this command acts upon; for
             example, a component manager
@@ -210,8 +210,7 @@ class StateModelCommand(BaseCommand):
 
     def __call__(self, argin=None):
         """
-        What to do when the command is called. Ensures that we perform
-        the "invoked" action on the state machine.
+        Let the state model know that the command is starting, then invoke the command.
 
         :param argin: the argument passed to the Tango command, if
             present
@@ -231,8 +230,7 @@ class StateModelCommand(BaseCommand):
 
     def is_allowed(self, raise_if_disallowed=False):
         """
-        Whether this command is allowed to run in the current state of
-        the state model.
+        Whether this command is allowed to run in the current state of the state model.
 
         :param raise_if_disallowed: whether to raise an error or
             simply return False if the command is disallowed
@@ -257,6 +255,14 @@ class StateModelCommand(BaseCommand):
 
 
 class ObservationCommand(StateModelCommand):
+    """
+    A base class for commands that drive the device's observing state.
+
+    This is a special case of a ``StateModelCommand`` because although
+    it only drives the observation state model, it has to check also the
+    operational state model to determine whether it is allowed to run.
+    """
+
     def __init__(
         self,
         target,
@@ -268,11 +274,7 @@ class ObservationCommand(StateModelCommand):
         **kwargs,
     ):
         """
-        A base class for commands that drive the device's observing
-        state. This is a special case of a ``StateModelCommand`` because
-        although it only drives the observation state model, it has to
-        check also the operational state model to determine whether it
-        is allowed to run.
+        Initialise a new ``ObservationCommand`` object.
 
         :param target: the object that this command acts upon; for
             example, a component manager
@@ -303,8 +305,7 @@ class ObservationCommand(StateModelCommand):
 
     def is_allowed(self, raise_if_disallowed=False):
         """
-        Whether this command is allowed to run in the current state of
-        the state model.
+        Whether this command is allowed to run in the current state of the state model.
 
         :param raise_if_disallowed: whether to raise an error or
             simply return False if the command is disallowed
@@ -328,9 +329,10 @@ class ObservationCommand(StateModelCommand):
 
 class ResponseCommand(BaseCommand):
     """
-    Abstract base class for a tango command handler, for commands that
-    execute a procedure/operation and return a (ResultCode, message)
-    tuple.
+    A command returns a (ResultCode, message) tuple.
+
+    This is an Abstract base class for commands that execute a procedure
+    or operation, then return a (ResultCode, message) tuple.
     """
 
     RESULT_LOG_LEVEL = {
@@ -343,8 +345,7 @@ class ResponseCommand(BaseCommand):
 
     def _call_do(self, argin=None):
         """
-        Helper method that ensures the ``do`` method is called with the
-        right arguments, and that the call is logged.
+        Call the ``do`` method with the right arguments, and log the call.
 
         :param argin: the argument passed to the Tango command, if
             present
@@ -370,8 +371,10 @@ class ResponseCommand(BaseCommand):
 
 class CompletionCommand(StateModelCommand):
     """
-    Abstract base class for a command that sends a "completed" action to
-    the state model at command completion.
+    A command that triggers an action on the state model at completion.
+
+    This is an abstract base class for commands that need to signal
+    completion by triggering a "completed" action on the state model.
     """
 
     def __init__(self, target, state_model, action_slug, *args, logger=None, **kwargs):
@@ -406,10 +409,11 @@ class CompletionCommand(StateModelCommand):
 
     def __call__(self, argin=None):
         """
-        What to do when the command is called. This is implemented to
-        check that the command is allowed to run, then run the command,
-        then send an action to the state model advising whether the
-        command succeeded or failed.
+        Invoke the command.
+
+        This is implemented to check that the command is allowed to run,
+        then run the command, then send an action to the state model
+        advising that the command has completed.
 
         :param argin: the argument passed to the Tango command, if
             present
@@ -422,7 +426,5 @@ class CompletionCommand(StateModelCommand):
         return result
 
     def completed(self):
-        """
-        Callback for the completion of the command.
-        """
+        """Let the state model know that the command has completed."""
         self.state_model.perform_action(self._completed_hook)

@@ -1,7 +1,8 @@
 """
-This module provided a reference implementation of a
-:py:class:`ska_tango_base.base.BaseComponentManager`, for
-explanatory purposes, and to support testing of this package.
+This module provided a reference implementation of a BaseComponentManager.
+
+It is provided for explanatory purposes, and to support testing of this
+package.
 """
 import functools
 
@@ -12,8 +13,18 @@ from ska_tango_base.faults import ComponentFault
 
 def check_communicating(func):
     """
-    Decorator that makes a method first check that there is a connection
-    to the component, before allowing the wrapped function to proceed
+    Return a function that checks component communication before calling a function.
+
+    The component manager needs to have established communications with
+    the component, in order for the function to be called.
+
+    This function is intended to be used as a decorator:
+
+    .. code-block:: python
+
+        @check_communicating
+        def scan(self):
+            ...
 
     :param func: the wrapped function
 
@@ -23,10 +34,12 @@ def check_communicating(func):
     @functools.wraps(func)
     def _wrapper(component_manager, *args, **kwargs):
         """
-        Wrapper function that checks that there is a connection to the
-        component before invoking the wrapped function
+        Check for component communication before calling the function.
 
-        :param component_manager: the component_manager to check
+        This is a wrapper function that implements the functionality of
+        the decorator.
+
+        :param component: the component to check
         :param args: positional arguments to the wrapped function
         :param kwargs: keyword arguments to the wrapped function
 
@@ -41,7 +54,9 @@ def check_communicating(func):
 
 class ReferenceBaseComponentManager(BaseComponentManager):
     """
-    A component manager for Tango devices, supporting:
+    A component manager for Tango devices.
+
+    It supports:
 
     * Maintaining a connection to its component
 
@@ -83,7 +98,7 @@ class ReferenceBaseComponentManager(BaseComponentManager):
 
         def __init__(self, _power_mode=PowerMode.OFF, _faulty=False):
             """
-            Initialise a new instance
+            Initialise a new instance.
 
             :param _power_mode: initial power mode of this component
                 (for testing only)
@@ -98,7 +113,7 @@ class ReferenceBaseComponentManager(BaseComponentManager):
 
         def set_op_callbacks(self, power_mode_callback, fault_callback):
             """
-            Set callbacks for the underlying component
+            Set callbacks for the underlying component.
 
             :param power_mode_callback: a callback to call when the
                 power mode of the component changes
@@ -111,7 +126,7 @@ class ReferenceBaseComponentManager(BaseComponentManager):
         @property
         def faulty(self):
             """
-            Whether this component is currently experiencing a fault
+            Return whether this component is currently experiencing a fault.
 
             :return: whether this component is faulting
             :rtype: bool
@@ -121,7 +136,7 @@ class ReferenceBaseComponentManager(BaseComponentManager):
         @property
         def power_mode(self):
             """
-            Current power mode of the component
+            Return the current power mode of the component.
 
             :return: power mode of the component
             :rtype: :py:class:`ska_tango_base.control_model.PowerMode`
@@ -131,33 +146,27 @@ class ReferenceBaseComponentManager(BaseComponentManager):
             return self._power_mode
 
         def off(self):
-            """
-            Turn the component off
-            """
+            """Turn the component off."""
             self.simulate_off()
 
         def standby(self):
-            """
-            Put the component into low-power standby mode
-            """
+            """Put the component into low-power standby mode."""
             self.simulate_standby()
 
         def on(self):
-            """
-            Turn the component on
-            """
+            """Turn the component on."""
             self.simulate_on()
 
         def reset(self):
-            """
-            Reset the component (from fault state)
-            """
+            """Reset the component (from fault state)."""
             self._update_faulty(False)
 
         def simulate_off(self):
             """
-            Simulate the component being turned off, either
-            spontaneously or as a result of the Off command.
+            Simulate the component being turned off.
+
+            This could occur as a result of the Off command, or because
+            of some external event/action.
             """
             if self.faulty:
                 raise ComponentFault()
@@ -165,8 +174,10 @@ class ReferenceBaseComponentManager(BaseComponentManager):
 
         def simulate_standby(self):
             """
-            Simulate the component going into low-power standby mode,
-            either spontaneously or as a result of the Standby command.
+            Simulate the component going into low-power standby mode.
+
+            This could occur as a result of the Standby command, or
+            because of some external event/action.
             """
             if self.faulty:
                 raise ComponentFault()
@@ -174,56 +185,51 @@ class ReferenceBaseComponentManager(BaseComponentManager):
 
         def simulate_on(self):
             """
-            Simulate the component being turned on, either spontaneously
-            or as a result of the On command.
+            Simulate the component being turned on.
+
+            This could occur as a result of the On command, or because
+            of some external event/action.
             """
             if self.faulty:
                 raise ComponentFault()
             self._update_power_mode(PowerMode.ON)
 
         def _invoke_power_callback(self):
-            """
-            Helper method that invokes the callback when the power mode
-            of the component changes.
-            """
+            """Invoke the callback when the power mode of the component changes."""
             if not self.faulty:
                 if self._power_callback is not None:
                     self._power_callback(self._power_mode)
 
         def _update_power_mode(self, power_mode):
             """
-            Helper method that updates the power mode of the component,
-            ensuring that callbacks are called as
-            required.
+            Update the power mode of the component.
 
-            :param power_mode: new value for the power mode of the
-                component
-            :type power_mode:
-                :py:class:`ska_tango_base.control_model.PowerMode`
+            This helper method will also ensure that callbacks are
+            called as required.
+
+            :param configured: new value for whether the component is
+                configured or not
+            :type configured: bool
             """
             if self._power_mode != power_mode:
                 self._power_mode = power_mode
                 self._invoke_power_callback()
 
         def simulate_fault(self):
-            """
-            Tell the component to simulate a fault
-            """
+            """Tell the component to simulate a fault."""
             self._update_faulty(True)
 
         def _invoke_fault_callback(self):
-            """
-            Helper method that invokes the callback when the component
-            experiences a fault.
-            """
+            """Invoke the callback when the component experiences a fault."""
             if self.faulty and self._fault_callback is not None:
                 self._fault_callback()
 
         def _update_faulty(self, faulty):
             """
-            Helper method that updates whether the component is
-            faulting or not, ensuring that callbacks are called as
-            required.
+            Update whether the component is faulty or not.
+
+            This helper method will also ensure that callbacks are
+            called as required.
 
             :param fault: new value for whether the component is
                 faulting or not
@@ -235,7 +241,7 @@ class ReferenceBaseComponentManager(BaseComponentManager):
 
     def __init__(self, op_state_model, *args, logger=None, _component=None, **kwargs):
         """
-        Initialise a new ComponentManager instance
+        Initialise a new ComponentManager instance.
 
         :param op_state_model: the op state model used by this component
             manager
@@ -253,10 +259,7 @@ class ReferenceBaseComponentManager(BaseComponentManager):
         super().__init__(op_state_model, *args, **kwargs)
 
     def start_communicating(self):
-        """
-        Establish communication with the component, then start
-        monitoring.
-        """
+        """Establish communication with the component, then start monitoring."""
         if self._connected:
             return
 
@@ -284,10 +287,7 @@ class ReferenceBaseComponentManager(BaseComponentManager):
             self.component_power_mode_changed(self._component.power_mode)
 
     def stop_communicating(self):
-        """
-        Cease monitoring the component, and break off all communication
-        with it.
-        """
+        """Cease monitoring the component, and break off all communication with it."""
         if not self._connected:
             return
 
@@ -298,7 +298,7 @@ class ReferenceBaseComponentManager(BaseComponentManager):
     @property
     def is_communicating(self):
         """
-        Whether there is currently a connection to the component
+        Whether there is currently a connection to the component.
 
         :return: whether there is currently a connection to the
             component
@@ -308,8 +308,7 @@ class ReferenceBaseComponentManager(BaseComponentManager):
 
     def simulate_communication_failure(self, fail_communicate):
         """
-        Simulate (or stop simulating) a failure to communicate with the
-        component
+        Simulate (or stop simulating) a failure to communicate with the component.
 
         :param fail_communicate: whether the connection to the component
             is failing
@@ -324,7 +323,7 @@ class ReferenceBaseComponentManager(BaseComponentManager):
     @check_communicating
     def power_mode(self):
         """
-        Power mode of the component
+        Power mode of the component.
 
         :return: the power mode of the component
         """
@@ -334,7 +333,7 @@ class ReferenceBaseComponentManager(BaseComponentManager):
     @check_communicating
     def faulty(self):
         """
-        Whether the component is currently faulting
+        Whether the component is currently faulting.
 
         :return: whether the component is faulting
         """
@@ -342,33 +341,25 @@ class ReferenceBaseComponentManager(BaseComponentManager):
 
     @check_communicating
     def off(self):
-        """
-        Turn the component off
-        """
+        """Turn the component off."""
         self.logger.info("Turning component off")
         self._component.off()
 
     @check_communicating
     def standby(self):
-        """
-        Put the component into low-power standby mode
-        """
+        """Put the component into low-power standby mode."""
         self.logger.info("Putting component into standby mode")
         self._component.standby()
 
     @check_communicating
     def on(self):
-        """
-        Turn the component on
-        """
+        """Turn the component on."""
         self.logger.info("Turning component on")
         self._component.on()
 
     @check_communicating
     def reset(self):
-        """
-        Reset the component (from fault state)
-        """
+        """Reset the component (from fault state)."""
         self.logger.info("Resetting component")
         self._component.reset()
 
@@ -380,8 +371,9 @@ class ReferenceBaseComponentManager(BaseComponentManager):
 
     def component_power_mode_changed(self, power_mode):
         """
-        Callback hook, called when whether the component power mode
-        changes
+        Handle notification that the component's power mode has changed.
+
+        This is a callback hook.
 
         :param power_mode: the new power mode of the component
         :type power_mode:
@@ -392,6 +384,8 @@ class ReferenceBaseComponentManager(BaseComponentManager):
 
     def component_fault(self):
         """
-        Callback hook, called when the component faults
+        Handle notification that the component has faulted.
+
+        This is a callback hook.
         """
         self.op_state_model.perform_action("component_fault")

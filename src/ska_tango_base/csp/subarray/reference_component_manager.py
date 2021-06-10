@@ -1,6 +1,4 @@
-"""
-This module models component management for CSP subelement observation devices.
-"""
+"""This module models component management for CSP subelement observation devices."""
 import functools
 
 from ska_tango_base.base import check_communicating
@@ -12,8 +10,18 @@ from ska_tango_base.faults import ComponentError, ComponentFault
 
 def check_on(func):
     """
-    Decorator that makes a method first checks that the component is
-    turned on and not faulty before allowing the command to proceed
+    Return a function that checks the component state then calls another function.
+
+    The component needs to be turned on, and not faulty, in order for
+    the function to be called.
+
+    This function is intended to be used as a decorator:
+
+    .. code-block:: python
+
+        @check_on
+        def scan(self):
+            ...
 
     :param func: the wrapped function
 
@@ -23,8 +31,10 @@ def check_on(func):
     @functools.wraps(func)
     def _wrapper(component, *args, **kwargs):
         """
-        Wrapper function that checks that the component is turned on and
-        not faulty before invoking the wrapped function
+        Check that the component is on and not faulty before calling the function.
+
+        This is a wrapper function that implements the functionality of
+        the decorator.
 
         :param component: the component to check
         :param args: positional arguments to the wrapped function
@@ -46,7 +56,7 @@ class ReferenceCspSubarrayComponentManager(
     ReferenceSubarrayComponentManager,
 ):
     """
-    A component manager for SKA CSP subelement observation Tango devices:
+    A component manager for SKA CSP subelement observation Tango devices.
 
     The current implementation is intended to
     * illustrate the model
@@ -58,8 +68,7 @@ class ReferenceCspSubarrayComponentManager(
 
     class _Component(ReferenceSubarrayComponentManager._Component):
         """
-        An example CSP subelement obs component for the component
-        manager to work with.
+        An example CSP subelement obs component for the component manager to work with.
 
         It can be directly controlled via configure(), scan(),
         end_scan(), go_to_idle(), abort() and reset()  command methods.
@@ -80,7 +89,7 @@ class ReferenceCspSubarrayComponentManager(
             _faulty=False,
         ):
             """
-            Initialise a new instance
+            Initialise a new instance.
 
             :param capability_types: a list strings representing
                 capability types.
@@ -127,6 +136,7 @@ class ReferenceCspSubarrayComponentManager(
     def __init__(
         self, op_state_model, obs_state_model, capability_types, logger, _component=None
     ):
+        """Initialise a new ``ReferenceCspSubarrayComponentManager`` instance."""
         super().__init__(
             op_state_model,
             obs_state_model,
@@ -138,9 +148,11 @@ class ReferenceCspSubarrayComponentManager(
     @property
     @check_communicating
     def config_id(self):
+        """Return the configuration id."""
         return self._component.config_id
 
     @property
     @check_on
     def scan_id(self):
+        """Return the scan id."""
         return self._component.scan_id

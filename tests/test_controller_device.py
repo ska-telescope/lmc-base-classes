@@ -30,18 +30,13 @@ from ska_tango_base.control_model import (
 @pytest.mark.usefixtures("tango_context")
 # PROTECTED REGION END #    //  SKAController.test_SKAController_decorators
 class TestSKAController(object):
-    """
-    Test class for tests of the SKAController device class.
-    """
+    """Test class for tests of the SKAController device class."""
 
     # capabilities = ['BAND1:1', 'BAND2:1', 'BAND3:0', 'BAND4:0', 'BAND5:0']
 
     @pytest.fixture(scope="class")
     def device_properties(self):
-        """
-        Fixture that returns device_properties to be provided to the
-        device under test.
-        """
+        """Fixture that returns properties of the device under test."""
         return {
             "SkaLevel": "4",
             "LoggingTargetsDefault": "",
@@ -54,8 +49,10 @@ class TestSKAController(object):
     @pytest.fixture(scope="class")
     def device_test_config(self, device_properties):
         """
-        Fixture that specifies the device to be tested, along with its
-        properties and memorized attributes.
+        Specification of the device under test.
+
+        The specification includes the device's properties and
+        memorized attributes.
 
         This implementation provides a concrete subclass of the device
         class under test, some properties, and a memorized value for
@@ -72,7 +69,7 @@ class TestSKAController(object):
 
     @pytest.mark.skip("Not implemented")
     def test_properties(self, tango_context):
-        # Test the properties
+        """Test device properties."""
         # PROTECTED REGION ID(SKAController.test_properties) ENABLED START #
         # PROTECTED REGION END #    //  SKAController.test_properties
         pass
@@ -80,7 +77,7 @@ class TestSKAController(object):
     # PROTECTED REGION ID(SKAController.test_State_decorators) ENABLED START #
     # PROTECTED REGION END #    //  SKAController.test_State_decorators
     def test_State(self, tango_context):
-        """Test for State"""
+        """Test for State."""
         # PROTECTED REGION ID(SKAController.test_State) ENABLED START #
         assert tango_context.device.State() == DevState.OFF
         # PROTECTED REGION END #    //  SKAController.test_State
@@ -88,7 +85,7 @@ class TestSKAController(object):
     # PROTECTED REGION ID(SKAController.test_Status_decorators) ENABLED START #
     # PROTECTED REGION END #    //  SKAController.test_Status_decorators
     def test_Status(self, tango_context):
-        """Test for Status"""
+        """Test for Status."""
         # PROTECTED REGION ID(SKAController.test_Status) ENABLED START #
         assert tango_context.device.Status() == "The device is in OFF state."
         # PROTECTED REGION END #    //  SKAController.test_Status
@@ -96,7 +93,7 @@ class TestSKAController(object):
     # PROTECTED REGION ID(SKAController.test_GetVersionInfo_decorators) ENABLED START #
     # PROTECTED REGION END #    //  SKAController.test_GetVersionInfo_decorators
     def test_GetVersionInfo(self, tango_context):
-        """Test for GetVersionInfo"""
+        """Test for GetVersionInfo."""
         # PROTECTED REGION ID(SKAController.test_GetVersionInfo) ENABLED START #
         versionPattern = re.compile(
             f"{tango_context.device.info().dev_class}, ska_tango_base, [0-9]+.[0-9]+.[0-9]+, "
@@ -109,7 +106,7 @@ class TestSKAController(object):
     # PROTECTED REGION ID(SKAController.test_isCapabilityAchievable_failure_decorators) ENABLED START #
     # PROTECTED REGION END #    //  SKAController.test_isCapabilityAchievable_failure_decorators
     def test_isCapabilityAchievable_failure(self, tango_context):
-        """Test for isCapabilityAchievable to test failure condition"""
+        """Test for isCapabilityAchievable to test failure condition."""
         # PROTECTED REGION ID(SKAController.test_isCapabilityAchievable_failure) ENABLED START #
         assert tango_context.device.isCapabilityAchievable([[2], ["BAND1"]]) is False
         # PROTECTED REGION END #    //  SKAController.test_isCapabilityAchievable_failure
@@ -118,7 +115,7 @@ class TestSKAController(object):
         # PROTECTED REGION END #    //  SKAController.test_isCapabilityAchievable_success_decorators
 
     def test_isCapabilityAchievable_success(self, tango_context):
-        """Test for isCapabilityAchievable to test success condition"""
+        """Test for isCapabilityAchievable to test success condition."""
         # PROTECTED REGION ID(SKAController.test_isCapabilityAchievable_success) ENABLED START #
         assert tango_context.device.isCapabilityAchievable([[1], ["BAND1"]]) is True
         # PROTECTED REGION END #    //  SKAController.test_isCapabilityAchievable_success
@@ -126,7 +123,7 @@ class TestSKAController(object):
     # PROTECTED REGION ID(SKAController.test_elementLoggerAddress_decorators) ENABLED START #
     # PROTECTED REGION END #    //  SKAController.test_elementLoggerAddress_decorators
     def test_elementLoggerAddress(self, tango_context):
-        """Test for elementLoggerAddress"""
+        """Test for elementLoggerAddress."""
         # PROTECTED REGION ID(SKAController.test_elementLoggerAddress) ENABLED START #
         assert tango_context.device.elementLoggerAddress == ""
         # PROTECTED REGION END #    //  SKAController.test_elementLoggerAddress
@@ -134,7 +131,7 @@ class TestSKAController(object):
     # PROTECTED REGION ID(SKAController.test_elementAlarmAddress_decorators) ENABLED START #
     # PROTECTED REGION END #    //  SKAController.test_elementAlarmAddress_decorators
     def test_elementAlarmAddress(self, tango_context):
-        """Test for elementAlarmAddress"""
+        """Test for elementAlarmAddress."""
         # PROTECTED REGION ID(SKAController.test_elementAlarmAddress) ENABLED START #
         assert tango_context.device.elementAlarmAddress == ""
         # PROTECTED REGION END #    //  SKAController.test_elementAlarmAddress
@@ -142,7 +139,7 @@ class TestSKAController(object):
     # PROTECTED REGION ID(SKAController.test_elementTelStateAddress_decorators) ENABLED START #
     # PROTECTED REGION END #    //  SKAController.test_elementTelStateAddress_decorators
     def test_elementTelStateAddress(self, tango_context):
-        """Test for elementTelStateAddress"""
+        """Test for elementTelStateAddress."""
         # PROTECTED REGION ID(SKAController.test_elementTelStateAddress) ENABLED START #
         assert tango_context.device.elementTelStateAddress == ""
         # PROTECTED REGION END #    //  SKAController.test_elementTelStateAddress
@@ -150,7 +147,7 @@ class TestSKAController(object):
     # PROTECTED REGION ID(SKAController.test_elementDatabaseAddress_decorators) ENABLED START #
     # PROTECTED REGION END #    //  SKAController.test_elementDatabaseAddress_decorators
     def test_elementDatabaseAddress(self, tango_context):
-        """Test for elementDatabaseAddress"""
+        """Test for elementDatabaseAddress."""
         # PROTECTED REGION ID(SKAController.test_elementDatabaseAddress) ENABLED START #
         assert tango_context.device.elementDatabaseAddress == ""
         # PROTECTED REGION END #    //  SKAController.test_elementDatabaseAddress
@@ -158,7 +155,7 @@ class TestSKAController(object):
     # PROTECTED REGION ID(SKAController.test_buildState_decorators) ENABLED START #
     # PROTECTED REGION END #    //  SKAController.test_buildState_decorators
     def test_buildState(self, tango_context):
-        """Test for buildState"""
+        """Test for buildState."""
         # PROTECTED REGION ID(SKAController.test_buildState) ENABLED START #
         buildPattern = re.compile(
             r"ska_tango_base, [0-9]+.[0-9]+.[0-9]+, "
@@ -170,7 +167,7 @@ class TestSKAController(object):
     # PROTECTED REGION ID(SKAController.test_versionId_decorators) ENABLED START #
     # PROTECTED REGION END #    //  SKAController.test_versionId_decorators
     def test_versionId(self, tango_context):
-        """Test for versionId"""
+        """Test for versionId."""
         # PROTECTED REGION ID(SKAController.test_versionId) ENABLED START #
         versionIdPattern = re.compile(r"[0-9]+.[0-9]+.[0-9]+")
         assert (re.match(versionIdPattern, tango_context.device.versionId)) is not None
@@ -179,7 +176,7 @@ class TestSKAController(object):
     # PROTECTED REGION ID(SKAController.test_healthState_decorators) ENABLED START #
     # PROTECTED REGION END #    //  SKAController.test_healthState_decorators
     def test_healthState(self, tango_context):
-        """Test for healthState"""
+        """Test for healthState."""
         # PROTECTED REGION ID(SKAController.test_healthState) ENABLED START #
         assert tango_context.device.healthState == HealthState.OK
         # PROTECTED REGION END #    //  SKAController.test_healthState
@@ -187,7 +184,7 @@ class TestSKAController(object):
     # PROTECTED REGION ID(SKAController.test_adminMode_decorators) ENABLED START #
     # PROTECTED REGION END #    //  SKAController.test_adminMode_decorators
     def test_adminMode(self, tango_context):
-        """Test for adminMode"""
+        """Test for adminMode."""
         # PROTECTED REGION ID(SKAController.test_adminMode) ENABLED START #
         assert tango_context.device.adminMode == AdminMode.ONLINE
         # PROTECTED REGION END #    //  SKAController.test_adminMode
@@ -195,7 +192,7 @@ class TestSKAController(object):
     # PROTECTED REGION ID(SKAController.test_controlMode_decorators) ENABLED START #
     # PROTECTED REGION END #    //  SKAController.test_controlMode_decorators
     def test_controlMode(self, tango_context):
-        """Test for controlMode"""
+        """Test for controlMode."""
         # PROTECTED REGION ID(SKAController.test_controlMode) ENABLED START #
         assert tango_context.device.controlMode == ControlMode.REMOTE
         # PROTECTED REGION END #    //  SKAController.test_controlMode
@@ -203,7 +200,7 @@ class TestSKAController(object):
     # PROTECTED REGION ID(SKAController.test_simulationMode_decorators) ENABLED START #
     # PROTECTED REGION END #    //  SKAController.test_simulationMode_decorators
     def test_simulationMode(self, tango_context):
-        """Test for simulationMode"""
+        """Test for simulationMode."""
         # PROTECTED REGION ID(SKAController.test_simulationMode) ENABLED START #
         assert tango_context.device.simulationMode == SimulationMode.FALSE
         # PROTECTED REGION END #    //  SKAController.test_simulationMode
@@ -211,7 +208,7 @@ class TestSKAController(object):
     # PROTECTED REGION ID(SKAController.test_testMode_decorators) ENABLED START #
     # PROTECTED REGION END #    //  SKAController.test_testMode_decorators
     def test_testMode(self, tango_context):
-        """Test for testMode"""
+        """Test for testMode."""
         # PROTECTED REGION ID(SKAController.test_testMode) ENABLED START #
         assert tango_context.device.testMode == TestMode.NONE
         # PROTECTED REGION END #    //  SKAController.test_testMode
@@ -219,7 +216,7 @@ class TestSKAController(object):
     # PROTECTED REGION ID(SKAController.test_maxCapabilities_decorators) ENABLED START #
     # PROTECTED REGION END #    //  SKAController.test_maxCapabilities_decorators
     def test_maxCapabilities(self, tango_context):
-        """Test for maxCapabilities"""
+        """Test for maxCapabilities."""
         # PROTECTED REGION ID(SKAController.test_maxCapabilities) ENABLED START #
         assert tango_context.device.maxCapabilities == ("BAND1:1", "BAND2:1")
         # PROTECTED REGION END #    //  SKAController.test_maxCapabilities
@@ -227,7 +224,7 @@ class TestSKAController(object):
     # PROTECTED REGION ID(SKAController.test_availableCapabilities_decorators) ENABLED START #
     # PROTECTED REGION END #    //  SKAController.test_availableCapabilities_decorators
     def test_availableCapabilities(self, tango_context):
-        """Test for availableCapabilities"""
+        """Test for availableCapabilities."""
         # PROTECTED REGION ID(SKAController.test_availableCapabilities) ENABLED START #
         assert tango_context.device.availableCapabilities == ("BAND1:1", "BAND2:1")
         # PROTECTED REGION END #    //  SKAController.test_availableCapabilities

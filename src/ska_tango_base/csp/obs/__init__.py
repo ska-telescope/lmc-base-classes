@@ -1,6 +1,4 @@
-"""
-This subpackage contains obs device functionality specific to CSP.
-"""
+"""This subpackage contains obs device functionality specific to CSP."""
 
 __all__ = (
     "CspSubElementObsStateModel",

@@ -4,7 +4,8 @@
 #
 #
 #
-""" SKACapability
+"""
+SKACapability.
 
 Capability handling device
 """
@@ -24,13 +25,13 @@ __all__ = ["SKACapability", "main"]
 
 class SKACapability(SKAObsDevice):
     """
-    A Subarray handling device. It exposes the instances of configured capabilities.
+    A Subarray handling device.
+
+    It exposes the instances of configured capabilities.
     """
 
     def init_command_objects(self):
-        """
-        Sets up the command objects
-        """
+        """Set up the command objects."""
         super().init_command_objects()
         self.register_command_object(
             "ConfigureInstances",
@@ -38,6 +39,8 @@ class SKACapability(SKAObsDevice):
         )
 
     class InitCommand(SKAObsDevice.InitCommand):
+        """A class for the CapabilityDevice's init_device() "command"."""
+
         def do(self):
             """
             Stateless hook for device initialisation.
@@ -109,11 +112,24 @@ class SKACapability(SKAObsDevice):
 
     def always_executed_hook(self):
         # PROTECTED REGION ID(SKACapability.always_executed_hook) ENABLED START #
+        """
+        Perform actions that are executed before every device command.
+
+        This is a Tango hook.
+        """
         pass
         # PROTECTED REGION END #    //  SKACapability.always_executed_hook
 
     def delete_device(self):
         # PROTECTED REGION ID(SKACapability.delete_device) ENABLED START #
+        """
+        Clean up any resources prior to device deletion.
+
+        This method is a Tango hook that is called by the device
+        destructor and by the device Init command. It allows for any
+        memory or other resources allocated in the init_device method to
+        be released prior to device deletion.
+        """
         pass
         # PROTECTED REGION END #    //  SKACapability.delete_device
 
@@ -124,7 +140,8 @@ class SKACapability(SKAObsDevice):
     def read_activationTime(self):
         # PROTECTED REGION ID(SKACapability.activationTime_read) ENABLED START #
         """
-        Reads time of activation since Unix epoch.
+        Read time of activation since Unix epoch.
+
         :return: Activation time in seconds
         """
         return self._activation_time
@@ -133,7 +150,8 @@ class SKACapability(SKAObsDevice):
     def read_configuredInstances(self):
         # PROTECTED REGION ID(SKACapability.configuredInstances_read) ENABLED START #
         """
-        Reads the number of instances of a capability in the subarray
+        Read the number of instances of a capability in the subarray.
+
         :return: The number of configured instances of a capability in a subarray
         """
         return self._configured_instances
@@ -142,7 +160,9 @@ class SKACapability(SKAObsDevice):
     def read_usedComponents(self):
         # PROTECTED REGION ID(SKACapability.usedComponents_read) ENABLED START #
         """
-        Reads the list of components with no. of instances in use on this Capability
+        Read the list of components with no.
+
+        of instances in use on this Capability
         :return: The number of components currently in use.
         """
         return self._used_components
@@ -153,14 +173,11 @@ class SKACapability(SKAObsDevice):
     # --------
 
     class ConfigureInstancesCommand(ResponseCommand):
-        """
-        A class for the SKALoggerDevice's SetLoggingLevel() command.
-        """
+        """A class for the SKALoggerDevice's SetLoggingLevel() command."""
 
         def do(self, argin):
             """
-            Stateless hook for ConfigureInstances()) command
-            functionality.
+            Stateless hook for ConfigureInstances()) command functionality.
 
             :return: A tuple containing a return code and a string
                 message indicating status. The message is for
@@ -184,8 +201,7 @@ class SKACapability(SKAObsDevice):
     def ConfigureInstances(self, argin):
         # PROTECTED REGION ID(SKACapability.ConfigureInstances) ENABLED START #
         """
-        This function indicates how many number of instances of the current capacity
-        should to be configured.
+        Specify the number of instances of the current capacity to be configured.
 
         To modify behaviour for this command, modify the do() method of
         the command class.
@@ -206,7 +222,7 @@ class SKACapability(SKAObsDevice):
 
 def main(args=None, **kwargs):
     # PROTECTED REGION ID(SKACapability.main) ENABLED START #
-    """Main function of the SKACapability module."""
+    """Launch an SKACapability device."""
     return run((SKACapability,), args=args, **kwargs)
     # PROTECTED REGION END #    //  SKACapability.main
 

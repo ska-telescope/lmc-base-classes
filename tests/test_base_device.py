@@ -6,9 +6,7 @@
 #
 #
 #########################################################################################
-"""
-This module contains the tests for the SKABaseDevice.
-"""
+"""This module contains the tests for the SKABaseDevice."""
 
 # PROTECTED REGION ID(SKABaseDevice.test_additional_imports) ENABLED START #
 import logging
@@ -51,8 +49,11 @@ from .state.conftest import load_state_machine_spec
 
 
 class TestTangoLoggingServiceHandler:
+    """This class contains tests of the TangoLoggingServiceHandler class."""
+
     @pytest.fixture()
     def tls_handler(self):
+        """Return a logging service handler."""
         self.tango_logger = mock.MagicMock(spec=tango.Logger)
         # setup methods used for handler __repr__
         self.tango_logger.get_name.return_value = "unit/test/dev"
@@ -69,9 +70,11 @@ class TestTangoLoggingServiceHandler:
         ]
     )
     def python_log_level(self, request):
+        """Return a python logging level."""
         return request.param
 
     def test_emit_message_at_correct_level(self, tls_handler, python_log_level):
+        """Test that emitted messages are logged at the right level."""
         # arrange
         record = logging.LogRecord("test", python_log_level, "", 1, "message", (), None)
         # act
@@ -82,6 +85,7 @@ class TestTangoLoggingServiceHandler:
         assert self.tango_logger.log.call_args_list == expected_calls
 
     def test_emit_message_is_formatted(self, tls_handler):
+        """Test that emitted messages are formatted as specified."""
         # arrange
         record = logging.LogRecord(
             "test", logging.INFO, "", 1, "message %s", ("param",), None
@@ -100,6 +104,7 @@ class TestTangoLoggingServiceHandler:
         assert self.tango_logger.log.call_args_list == expected_calls
 
     def test_emit_exception_error_handled(self, tls_handler):
+        """Test exception handling when a record is emitted."""
         # arrange
         record = logging.LogRecord("test", logging.INFO, "", 1, "message", (), None)
 
@@ -114,18 +119,22 @@ class TestTangoLoggingServiceHandler:
         assert tls_handler.handleError.call_args_list == [mock.call(record)]
 
     def test_repr_normal(self, tls_handler):
+        """Test the string representation of a handler under normal conditions."""
         expected = (
             "<TangoLoggingServiceHandler unit/test/dev (Python NOTSET, Tango DEBUG)>"
         )
         assert repr(tls_handler) == expected
 
     def test_repr_tango_logger_none(self, tls_handler):
+        """Test the string representation of a handler with no logger."""
         tls_handler.tango_logger = None
         expected = "<TangoLoggingServiceHandler !No Tango logger! (Python NOTSET, Tango UNKNOWN)>"
         assert repr(tls_handler) == expected
 
 
 class TestLoggingUtils:
+    """This class contains tests of the LoggingUtils class."""
+
     @pytest.fixture(
         params=[
             (None, []),
@@ -152,6 +161,7 @@ class TestLoggingUtils:
         ]
     )
     def good_logging_targets(self, request):
+        """Return some good logging targets for use in testing."""
         targets_in, expected = request.param
         dev_name = "my/dev/name"
         return targets_in, dev_name, expected
@@ -165,16 +175,19 @@ class TestLoggingUtils:
         ]
     )
     def bad_logging_targets(self, request):
+        """Return some bad logging targets for use in testing."""
         targets_in = request.param
         dev_name = "my/dev/name"
         return targets_in, dev_name
 
     def test_sanitise_logging_targets_success(self, good_logging_targets):
+        """Test that good logging targets can be sanitised."""
         targets_in, dev_name, expected = good_logging_targets
         actual = LoggingUtils.sanitise_logging_targets(targets_in, dev_name)
         assert actual == expected
 
     def test_sanitise_logging_targets_fail(self, bad_logging_targets):
+        """Test that bad logging targets cannot be sanitised."""
         targets_in, dev_name = bad_logging_targets
         with pytest.raises(LoggingTargetError):
             LoggingUtils.sanitise_logging_targets(targets_in, dev_name)
@@ -195,6 +208,7 @@ class TestLoggingUtils:
         ]
     )
     def good_syslog_url(self, request):
+        """Return a good logging target URL."""
         url, (expected_address, expected_socktype) = request.param
         return url, (expected_address, expected_socktype)
 
@@ -217,9 +231,11 @@ class TestLoggingUtils:
         ]
     )
     def bad_syslog_url(self, request):
+        """Return a bad logging target URL."""
         return request.param
 
     def test_get_syslog_address_and_socktype_success(self, good_syslog_url):
+        """Test that logging successfully accepts a good target."""
         url, (expected_address, expected_socktype) = good_syslog_url
         actual_address, actual_socktype = LoggingUtils.get_syslog_address_and_socktype(
             url
@@ -228,6 +244,7 @@ class TestLoggingUtils:
         assert actual_socktype == expected_socktype
 
     def test_get_syslog_address_and_socktype_fail(self, bad_syslog_url):
+        """Test that logging raises an error when given a bad target."""
         with pytest.raises(LoggingTargetError):
             LoggingUtils.get_syslog_address_and_socktype(bad_syslog_url)
 
@@ -244,6 +261,7 @@ class TestLoggingUtils:
         mock_syslog_handler,
         mock_tango_handler,
     ):
+        """Test that logging handlers can be created."""
         # Expect formatter be created using `get_default_formatter(tags=True)`
         # Use some mocks to check this.
         mock_formatter = mock.MagicMock()
@@ -297,6 +315,7 @@ class TestLoggingUtils:
             LoggingUtils.create_logging_handler("tango::logger", tango_logger=None)
 
     def test_update_logging_handlers(self):
+        """Test that logging handlers can be updated."""
         logger = logging.getLogger("testing")
         logger.tango_logger = mock.MagicMock(spec=tango.Logger)
 
@@ -365,15 +384,12 @@ class TestLoggingUtils:
 
 # PROTECTED REGION END #    //  SKABaseDevice.test_SKABaseDevice_decorators
 class TestSKABaseDevice(object):
-    """
-    Test cases for SKABaseDevice.
-    """
+    """Test cases for SKABaseDevice."""
 
     @pytest.fixture(scope="class")
     def device_test_config(self, device_properties):
         """
-        Fixture that specifies the device to be tested, along with its
-        properties and memorized attributes.
+        Specify device configuration, including properties and memorized attributes.
 
         This implementation provides a concrete subclass of
         SKABaseDevice, and a memorized value for adminMode.
@@ -389,7 +405,7 @@ class TestSKABaseDevice(object):
 
     @pytest.mark.skip("Not implemented")
     def test_properties(self, tango_context):
-        # Test the properties
+        """Test device properties."""
         # PROTECTED REGION ID(SKABaseDevice.test_properties) ENABLED START #
         """
         Test device properties.
@@ -405,7 +421,7 @@ class TestSKABaseDevice(object):
     # PROTECTED REGION ID(SKABaseDevice.test_State_decorators) ENABLED START #
     # PROTECTED REGION END #    //  SKABaseDevice.test_State_decorators
     def test_State(self, tango_context):
-        """Test for State"""
+        """Test for State."""
         # PROTECTED REGION ID(SKABaseDevice.test_State) ENABLED START #
         assert tango_context.device.State() == DevState.OFF
         # PROTECTED REGION END #    //  SKABaseDevice.test_State
@@ -413,7 +429,7 @@ class TestSKABaseDevice(object):
     # PROTECTED REGION ID(SKABaseDevice.test_Status_decorators) ENABLED START #
     # PROTECTED REGION END #    //  SKABaseDevice.test_Status_decorators
     def test_Status(self, tango_context):
-        """Test for Status"""
+        """Test for Status."""
         # PROTECTED REGION ID(SKABaseDevice.test_Status) ENABLED START #
         assert tango_context.device.Status() == "The device is in OFF state."
         # PROTECTED REGION END #    //  SKABaseDevice.test_Status
@@ -421,7 +437,7 @@ class TestSKABaseDevice(object):
     # PROTECTED REGION ID(SKABaseDevice.test_GetVersionInfo_decorators) ENABLED START #
     # PROTECTED REGION END #    //  SKABaseDevice.test_GetVersionInfo_decorators
     def test_GetVersionInfo(self, tango_context):
-        """Test for GetVersionInfo"""
+        """Test for GetVersionInfo."""
         # PROTECTED REGION ID(SKABaseDevice.test_GetVersionInfo) ENABLED START #
         versionPattern = re.compile(
             f"{tango_context.device.info().dev_class}, ska_tango_base, [0-9]+.[0-9]+.[0-9]+, "
@@ -434,7 +450,7 @@ class TestSKABaseDevice(object):
     # PROTECTED REGION ID(SKABaseDevice.test_Reset_decorators) ENABLED START #
     # PROTECTED REGION END #    //  SKABaseDevice.test_Reset_decorators
     def test_Reset(self, tango_context):
-        """Test for Reset"""
+        """Test for Reset."""
         # PROTECTED REGION ID(SKABaseDevice.test_Reset) ENABLED START #
         # The main test of this command is
         # TestSKABaseDevice_commands::test_ResetCommand
@@ -443,9 +459,7 @@ class TestSKABaseDevice(object):
         # PROTECTED REGION END #    //  SKABaseDevice.test_Reset
 
     def test_On(self, tango_context, tango_change_event_helper):
-        """
-        Test for On command
-        """
+        """Test for On command."""
         state_callback = tango_change_event_helper.subscribe("state")
         status_callback = tango_change_event_helper.subscribe("status")
         state_callback.assert_call(DevState.OFF)
@@ -462,9 +476,7 @@ class TestSKABaseDevice(object):
         status_callback.assert_not_called()
 
     def test_Standby(self, tango_context):
-        """
-        Test for Standby command
-        """
+        """Test for Standby command."""
         # Check that we can put it on standby
         tango_context.device.Standby()
         assert tango_context.device.state() == DevState.STANDBY
@@ -473,9 +485,7 @@ class TestSKABaseDevice(object):
         tango_context.device.Standby()
 
     def test_Off(self, tango_context, tango_change_event_helper):
-        """
-        Test for Off command
-        """
+        """Test for Off command."""
         state_callback = tango_change_event_helper.subscribe("state")
         status_callback = tango_change_event_helper.subscribe("status")
         state_callback.assert_call(DevState.OFF)
@@ -489,7 +499,7 @@ class TestSKABaseDevice(object):
     # PROTECTED REGION ID(SKABaseDevice.test_buildState_decorators) ENABLED START #
     # PROTECTED REGION END #    //  SKABaseDevice.test_buildState_decorators
     def test_buildState(self, tango_context):
-        """Test for buildState"""
+        """Test for buildState."""
         # PROTECTED REGION ID(SKABaseDevice.test_buildState) ENABLED START #
         buildPattern = re.compile(
             r"ska_tango_base, [0-9]+.[0-9]+.[0-9]+, "
@@ -501,7 +511,7 @@ class TestSKABaseDevice(object):
     # PROTECTED REGION ID(SKABaseDevice.test_versionId_decorators) ENABLED START #
     # PROTECTED REGION END #    //  SKABaseDevice.test_versionId_decorators
     def test_versionId(self, tango_context):
-        """Test for versionId"""
+        """Test for versionId."""
         # PROTECTED REGION ID(SKABaseDevice.test_versionId) ENABLED START #
         versionIdPattern = re.compile(r"[0-9]+.[0-9]+.[0-9]+")
         assert (re.match(versionIdPattern, tango_context.device.versionId)) is not None
@@ -510,7 +520,7 @@ class TestSKABaseDevice(object):
     # PROTECTED REGION ID(SKABaseDevice.test_loggingLevel_decorators) ENABLED START #
     # PROTECTED REGION END #    //  SKABaseDevice.test_loggingLevel_decorators
     def test_loggingLevel(self, tango_context):
-        """Test for loggingLevel"""
+        """Test for loggingLevel."""
         # PROTECTED REGION ID(SKABaseDevice.test_loggingLevel) ENABLED START #
         assert tango_context.device.loggingLevel == LoggingLevel.INFO
 
@@ -526,7 +536,7 @@ class TestSKABaseDevice(object):
     # PROTECTED REGION ID(SKABaseDevice.test_loggingTargets_decorators) ENABLED START #
     # PROTECTED REGION END #    //  SKABaseDevice.test_loggingTargets_decorators
     def test_loggingTargets(self, tango_context):
-        """Test for loggingTargets"""
+        """Test for loggingTargets."""
         # PROTECTED REGION ID(SKABaseDevice.test_loggingTargets) ENABLED START #
         # tango logging target must be enabled by default
         assert tango_context.device.loggingTargets == ("tango::logger",)
@@ -589,7 +599,7 @@ class TestSKABaseDevice(object):
     # PROTECTED REGION ID(SKABaseDevice.test_healthState_decorators) ENABLED START #
     # PROTECTED REGION END #    //  SKABaseDevice.test_healthState_decorators
     def test_healthState(self, tango_context):
-        """Test for healthState"""
+        """Test for healthState."""
         # PROTECTED REGION ID(SKABaseDevice.test_healthState) ENABLED START #
         assert tango_context.device.healthState == HealthState.OK
         # PROTECTED REGION END #    //  SKABaseDevice.test_healthState
@@ -597,7 +607,7 @@ class TestSKABaseDevice(object):
     # PROTECTED REGION ID(SKABaseDevice.test_adminMode_decorators) ENABLED START #
     # PROTECTED REGION END #    //  SKABaseDevice.test_adminMode_decorators
     def test_adminMode(self, tango_context, tango_change_event_helper):
-        """Test for adminMode"""
+        """Test for adminMode."""
         # PROTECTED REGION ID(SKABaseDevice.test_adminMode) ENABLED START #
         assert tango_context.device.adminMode == AdminMode.ONLINE
         assert tango_context.device.state() == DevState.OFF
@@ -624,7 +634,7 @@ class TestSKABaseDevice(object):
     # PROTECTED REGION ID(SKABaseDevice.test_controlMode_decorators) ENABLED START #
     # PROTECTED REGION END #    //  SKABaseDevice.test_controlMode_decorators
     def test_controlMode(self, tango_context):
-        """Test for controlMode"""
+        """Test for controlMode."""
         # PROTECTED REGION ID(SKABaseDevice.test_controlMode) ENABLED START #
         assert tango_context.device.controlMode == ControlMode.REMOTE
         # PROTECTED REGION END #    //  SKABaseDevice.test_controlMode
@@ -632,7 +642,7 @@ class TestSKABaseDevice(object):
     # PROTECTED REGION ID(SKABaseDevice.test_simulationMode_decorators) ENABLED START #
     # PROTECTED REGION END #    //  SKABaseDevice.test_simulationMode_decorators
     def test_simulationMode(self, tango_context):
-        """Test for simulationMode"""
+        """Test for simulationMode."""
         # PROTECTED REGION ID(SKABaseDevice.test_simulationMode) ENABLED START #
         assert tango_context.device.simulationMode == SimulationMode.FALSE
         # PROTECTED REGION END #    //  SKABaseDevice.test_simulationMode
@@ -640,18 +650,20 @@ class TestSKABaseDevice(object):
     # PROTECTED REGION ID(SKABaseDevice.test_testMode_decorators) ENABLED START #
     # PROTECTED REGION END #    //  SKABaseDevice.test_testMode_decorators
     def test_testMode(self, tango_context):
-        """Test for testMode"""
+        """Test for testMode."""
         # PROTECTED REGION ID(SKABaseDevice.test_testMode) ENABLED START #
         assert tango_context.device.testMode == TestMode.NONE
         # PROTECTED REGION END #    //  SKABaseDevice.test_testMode
 
     def test_debugger_not_listening_by_default(self, tango_context):
+        """Test that DebugDevice is not active until enabled."""
         assert not SKABaseDevice._global_debugger_listening
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
             with pytest.raises(ConnectionRefusedError):
                 s.connect(("localhost", _DEBUGGER_PORT))
 
     def test_DebugDevice_starts_listening_on_default_port(self, tango_context):
+        """Test that enabling DebugDevice makes it listen on its default port."""
         port = tango_context.device.DebugDevice()
         assert port == _DEBUGGER_PORT
         assert SKABaseDevice._global_debugger_listening
@@ -661,12 +673,14 @@ class TestSKABaseDevice(object):
 
     @pytest.mark.usefixtures("patch_debugger_to_start_on_ephemeral_port")
     def test_DebugDevice_twice_does_not_raise(self, tango_context):
+        """Test that it is safe to enable the DebugDevice when it is already enabled."""
         tango_context.device.DebugDevice()
         tango_context.device.DebugDevice()
         assert SKABaseDevice._global_debugger_listening
 
     @pytest.mark.usefixtures("patch_debugger_to_start_on_ephemeral_port")
     def test_DebugDevice_does_not_break_a_command(self, tango_context):
+        """Test that enabling the DebugDevice feature does not break device commands."""
         tango_context.device.DebugDevice()
         assert tango_context.device.State() == DevState.OFF
         tango_context.device.On()
@@ -675,18 +689,24 @@ class TestSKABaseDevice(object):
 
 @pytest.fixture()
 def patch_debugger_to_start_on_ephemeral_port():
+    """
+    Patch the debugger to that it starts on an ephemeral port.
+
+    This is necessary because of intermittent debugger test failures: if
+    the previous test has used the debugger port, then when the test
+    tries to bind to that port, it may find that the OS has not made it
+    available for use yet.
+    """
     ska_tango_base.base.base_device._DEBUGGER_PORT = 0
 
 
 class TestSKABaseDevice_commands:
-    """
-    This class contains tests of SKABaseDevice commands
-    """
+    """This class contains tests of SKABaseDevice commands."""
 
     @pytest.fixture
     def op_state_model(self, logger):
         """
-        Yields a new OpStateModel for testing
+        Yield a new OpStateModel for testing.
 
         :yields: a OpStateModel instance to be tested
         """
@@ -695,8 +715,7 @@ class TestSKABaseDevice_commands:
     @pytest.fixture
     def command_factory(self, mocker, op_state_model):
         """
-        Returns a factory that constructs a command object for a given
-        class
+        Return a factory that constructs a command object for a given class.
 
         :returns: a factory that constructs a command object for a given
         class
@@ -709,10 +728,12 @@ class TestSKABaseDevice_commands:
 
     @pytest.fixture
     def machine_spec(self):
+        """Return a state machine specification."""
         return load_state_machine_spec("op_state_machine")
 
     @pytest.fixture()
     def op_state_mapping(self):
+        """Return a mapping from state machine state to model state."""
         return {
             "_UNINITIALISED": None,
             "INIT_DISABLE": DevState.INIT,
@@ -748,9 +769,11 @@ class TestSKABaseDevice_commands:
         slug,
     ):
         """
-        Test that certain commands can only be invoked in certain
-        states, and that the result of invoking the command is as
-        expected.
+        Test command invokation.
+
+        Specifically, test that certain commands can only be invoked in
+        certain states, and that the result of invoking the command is
+        as expected.
         """
         command = command_factory(command_class)
 

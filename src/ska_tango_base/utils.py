@@ -81,6 +81,7 @@ tango_type_conversion = {
 
 @contextmanager
 def exception_manager(cls, callback=None):
+    """Return a context manager that manages exceptions."""
     try:
         yield
     except tango.DevFailed:
@@ -140,6 +141,7 @@ def exception_manager(cls, callback=None):
 
 
 def get_dev_info(domain_name, device_server_name, device_ref):
+    """Get device info."""
     dev_info = DbDevInfo()
     dev_info._class = device_server_name
     dev_info.server = "%s/%s" % (device_server_name, domain_name)
@@ -149,6 +151,7 @@ def get_dev_info(domain_name, device_server_name, device_ref):
 
 
 def dp_set_property(device_name, property_name, property_value):
+    """Use a DeviceProxy to set a device property."""
     dp = DeviceProxy(device_name)
     db_datum = DbDatum()
     db_datum.name = property_name
@@ -161,13 +164,15 @@ def dp_set_property(device_name, property_name, property_value):
 
 
 def get_device_group_and_id(device_name):
+    """Return the group and id part of a device name."""
     device_name = device_name
     return device_name.split("/")[1:]
 
 
 def convert_api_value(param_dict):
     """
-    Used to validate tango command parameters which are passed via json
+    Validate tango command parameters which are passed via json.
+
     :param param_dict:
     :return:
     """
@@ -190,6 +195,7 @@ def convert_api_value(param_dict):
 
 
 def coerce_value(value):
+    """Coerce tango.DevState values to string, leaving other values alone."""
     # Enum is not serialised correctly as json
     # _DevState  is tango._tango.DevState
     # because DevState  is tango._tango.DevState != tango.DevState
@@ -199,6 +205,7 @@ def coerce_value(value):
 
 
 def get_dp_attribute(device_proxy, attribute, with_value=False, with_context=False):
+    """Get an attribute from a DeviceProxy."""
     attr_dict = {
         "name": attribute.name,
         "polling_frequency": attribute.events.per_event.period,
@@ -255,10 +262,7 @@ def get_dp_attribute(device_proxy, attribute, with_value=False, with_context=Fal
 
 
 def get_dp_command(device_name, command, with_context=False):
-    """
-    :param command:
-    :return:
-    """
+    """Get a command from a DeviceProxy."""
 
     def command_parameters(command_desc):
         try:
@@ -286,11 +290,13 @@ def get_dp_command(device_name, command, with_context=False):
 
 
 def get_tango_device_type_id(tango_address):
+    """Return the type id of a TANGO device."""
     return tango_address.split("/")[1:3]
 
 
 def get_groups_from_json(json_definitions):
-    """Return a dict of tango.Group objects matching the JSON definitions.
+    """
+    Return a dict of tango.Group objects matching the JSON definitions.
 
     Extracts the definitions of groups of devices and builds up matching
     tango.Group objects.  Some minimal validation is done - if the definition
@@ -385,7 +391,6 @@ def get_groups_from_json(json_definitions):
         - If a group has multiple parent groups.
         - If a device is included multiple time in a hierarchy.
           E.g. g1:[a,b] g2:[a,c] g3:[g1,g2]
-
     """
     try:
         # Parse and validate user's definitions
@@ -406,10 +411,10 @@ def get_groups_from_json(json_definitions):
 
 
 def _validate_group(definition):
-    """Validate and clean up groups definition, raise AssertError if invalid.
+    """
+    Validate and clean up groups definition, raise AssertError if invalid.
 
     Used internally by `get_groups_from_json`.
-
     """
     error_message = "Missing 'group_name' key - {}".format(definition)
     assert "group_name" in definition, error_message
@@ -435,10 +440,10 @@ def _validate_group(definition):
 
 
 def _build_group(definition):
-    """Returns tango.Group object according to defined hierarchy.
+    """
+    Return tango.Group object according to defined hierarchy.
 
     Used internally by `get_groups_from_json`.
-
     """
     group_name = definition["group_name"]
     devices = definition.get("devices", [])
@@ -456,8 +461,7 @@ def _build_group(definition):
 
 def validate_capability_types(command_name, requested_capabilities, valid_capabilities):
     """
-    Check the validity of the input parameter passed on to the command
-    specified by the command_name parameter.
+    Check the validity of the capability types passed to the specified command.
 
     :param command_name: The name of the command to be executed.
     :type command_name: str
@@ -481,8 +485,7 @@ def validate_capability_types(command_name, requested_capabilities, valid_capabi
 
 def validate_input_sizes(command_name, argin):
     """
-    Check the validity of the input parameters passed on to the command
-    specified by the command_name parameter.
+    Check the validity of the input parameters passed to the specified command.
 
     :param command_name: The name of the command which is to be executed.
     :type command_name: str
@@ -500,6 +503,7 @@ def validate_input_sizes(command_name, argin):
 
 
 def convert_dict_to_list(dictionary):
+    """Convert a dictionary to a list of "key:value" strings."""
     the_list = []
     for key, value in list(dictionary.items()):
         the_list.append("{}:{}".format(key, value))
@@ -509,21 +513,26 @@ def convert_dict_to_list(dictionary):
 
 def for_testing_only(func, _testing_check=lambda: "pytest" in sys.modules):
     """
-    A decorator that marks a function as available for testing purposes only.
-    If the decorated function is called outside of testing, a warning is raised.
+    Return a function that warns if called outside of testing, then calls a function.
 
-    Testing this decorator leads to a Godelian paradox: how to test that a
-    warning is raised when we are not testing. Monkeypatching sys.modules would
-    break everything, so instead, the condition that we evaluate to decide
-    whether we are testing or not is exposed through a `_testing_check`
-    argument, allowing for it to be replaced in testing. (The `_testing_check`
-    argument is inaccessible via the @-syntax, which is a nice bonus.)
+    This is intended to be used as a decorator that marks a function as
+    available for testing purposes only. If the decorated function is
+    called outside of testing, a warning is raised.
+
+    .. code-block:: python
+
+        @for_testing_only
+        def _straight_to_state(self, state):
+            ...
     """
 
     @functools.wraps(func)
     def _wrapper(*args, **kwargs):
         """
-        Function wrapper for `testing_only` decorator.
+        Raise a warning if not testing, then call the function.
+
+        This is a wrapper function that implements the functionality of
+        the decorator.
         """
         if not _testing_check():
             warnings.warn(f"{func.__name__} should only be used for testing purposes.")

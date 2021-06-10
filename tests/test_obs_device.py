@@ -36,15 +36,12 @@ from ska_tango_base.control_model import (
 @pytest.mark.usefixtures("tango_context", "initialize_device")
 # PROTECTED REGION END #    //  SKAObsDevice.test_SKAObsDevice_decorators
 class TestSKAObsDevice(object):
-    """
-    Test class for tests of the SKAObsDevice device class.
-    """
+    """Test class for tests of the SKAObsDevice device class."""
 
     @pytest.fixture(scope="class")
     def device_test_config(self, device_properties):
         """
-        Fixture that specifies the device to be tested, along with its
-        properties and memorized attributes.
+        Specify device configuration, including properties and memorized attributes.
 
         This implementation provides a concrete subclass of the device
         class under test, some properties, and a memorized value for
@@ -61,7 +58,7 @@ class TestSKAObsDevice(object):
 
     @pytest.mark.skip("Not implemented")
     def test_properties(self, tango_context):
-        # Test the properties
+        """Test device properties."""
         # PROTECTED REGION ID(SKAObsDevice.test_properties) ENABLED START #
         # PROTECTED REGION END #    //  SKAObsDevice.test_properties
         pass
@@ -69,7 +66,7 @@ class TestSKAObsDevice(object):
     # PROTECTED REGION ID(SKAObsDevice.test_State_decorators) ENABLED START #
     # PROTECTED REGION END #    //  SKAObsDevice.test_State_decorators
     def test_State(self, tango_context):
-        """Test for State"""
+        """Test for State."""
         # PROTECTED REGION ID(SKAObsDevice.test_State) ENABLED START #
         assert tango_context.device.State() == DevState.OFF
         # PROTECTED REGION END #    //  SKAObsDevice.test_State
@@ -77,7 +74,7 @@ class TestSKAObsDevice(object):
     # PROTECTED REGION ID(SKAObsDevice.test_Status_decorators) ENABLED START #
     # PROTECTED REGION END #    //  SKAObsDevice.test_Status_decorators
     def test_Status(self, tango_context):
-        """Test for Status"""
+        """Test for Status."""
         # PROTECTED REGION ID(SKAObsDevice.test_Status) ENABLED START #
         assert tango_context.device.Status() == "The device is in OFF state."
         # PROTECTED REGION END #    //  SKAObsDevice.test_Status
@@ -85,7 +82,7 @@ class TestSKAObsDevice(object):
     # PROTECTED REGION ID(SKAObsDevice.test_GetVersionInfo_decorators) ENABLED START #
     # PROTECTED REGION END #    //  SKAObsDevice.test_GetVersionInfo_decorators
     def test_GetVersionInfo(self, tango_context):
-        """Test for GetVersionInfo"""
+        """Test for GetVersionInfo."""
         # PROTECTED REGION ID(SKAObsDevice.test_GetVersionInfo) ENABLED START #
         versionPattern = re.compile(
             f"{tango_context.device.info().dev_class}, ska_tango_base, [0-9]+.[0-9]+.[0-9]+, "
@@ -98,7 +95,7 @@ class TestSKAObsDevice(object):
     # PROTECTED REGION ID(SKAObsDevice.test_obsState_decorators) ENABLED START #
     # PROTECTED REGION END #    //  SKAObsDevice.test_obsState_decorators
     def test_obsState(self, tango_context, tango_change_event_helper):
-        """Test for obsState"""
+        """Test for obsState."""
         # PROTECTED REGION ID(SKAObsDevice.test_obsState) ENABLED START #
         assert tango_context.device.obsState == ObsState.EMPTY
 
@@ -111,7 +108,7 @@ class TestSKAObsDevice(object):
     # PROTECTED REGION ID(SKAObsDevice.test_obsMode_decorators) ENABLED START #
     # PROTECTED REGION END #    //  SKAObsDevice.test_obsMode_decorators
     def test_obsMode(self, tango_context):
-        """Test for obsMode"""
+        """Test for obsMode."""
         # PROTECTED REGION ID(SKAObsDevice.test_obsMode) ENABLED START #
         assert tango_context.device.obsMode == ObsMode.IDLE
         # PROTECTED REGION END #    //  SKAObsDevice.test_obsMode
@@ -119,7 +116,7 @@ class TestSKAObsDevice(object):
     # PROTECTED REGION ID(SKAObsDevice.test_configurationProgress_decorators) ENABLED START #
     # PROTECTED REGION END #    //  SKAObsDevice.test_configurationProgress_decorators
     def test_configurationProgress(self, tango_context):
-        """Test for configurationProgress"""
+        """Test for configurationProgress."""
         # PROTECTED REGION ID(SKAObsDevice.test_configurationProgress) ENABLED START #
         assert tango_context.device.configurationProgress == 0
         # PROTECTED REGION END #    //  SKAObsDevice.test_configurationProgress
@@ -127,7 +124,7 @@ class TestSKAObsDevice(object):
     # PROTECTED REGION ID(SKAObsDevice.test_configurationDelayExpected_decorators) ENABLED START #
     # PROTECTED REGION END #    //  SKAObsDevice.test_configurationDelayExpected_decorators
     def test_configurationDelayExpected(self, tango_context):
-        """Test for configurationDelayExpected"""
+        """Test for configurationDelayExpected."""
         # PROTECTED REGION ID(SKAObsDevice.test_configurationDelayExpected) ENABLED START #
         assert tango_context.device.configurationDelayExpected == 0
         # PROTECTED REGION END #    //  SKAObsDevice.test_configurationDelayExpected
@@ -135,7 +132,7 @@ class TestSKAObsDevice(object):
     # PROTECTED REGION ID(SKAObsDevice.test_buildState_decorators) ENABLED START #
     # PROTECTED REGION END #    //  SKAObsDevice.test_buildState_decorators
     def test_buildState(self, tango_context):
-        """Test for buildState"""
+        """Test for buildState."""
         # PROTECTED REGION ID(SKAObsDevice.test_buildState) ENABLED START #
         buildPattern = re.compile(
             r"ska_tango_base, [0-9]+.[0-9]+.[0-9]+, "
@@ -147,7 +144,7 @@ class TestSKAObsDevice(object):
     # PROTECTED REGION ID(SKAObsDevice.test_versionId_decorators) ENABLED START #
     # PROTECTED REGION END #    //  SKAObsDevice.test_versionId_decorators
     def test_versionId(self, tango_context):
-        """Test for versionId"""
+        """Test for versionId."""
         # PROTECTED REGION ID(SKAObsDevice.test_versionId) ENABLED START #
         versionIdPattern = re.compile(r"[0-9]+.[0-9]+.[0-9]+")
         assert (re.match(versionIdPattern, tango_context.device.versionId)) is not None
@@ -156,7 +153,7 @@ class TestSKAObsDevice(object):
     # PROTECTED REGION ID(SKAObsDevice.test_healthState_decorators) ENABLED START #
     # PROTECTED REGION END #    //  SKAObsDevice.test_healthState_decorators
     def test_healthState(self, tango_context):
-        """Test for healthState"""
+        """Test for healthState."""
         # PROTECTED REGION ID(SKAObsDevice.test_healthState) ENABLED START #
         assert tango_context.device.healthState == HealthState.OK
         # PROTECTED REGION END #    //  SKAObsDevice.test_healthState
@@ -164,7 +161,7 @@ class TestSKAObsDevice(object):
     # PROTECTED REGION ID(SKAObsDevice.test_adminMode_decorators) ENABLED START #
     # PROTECTED REGION END #    //  SKAObsDevice.test_adminMode_decorators
     def test_adminMode(self, tango_context):
-        """Test for adminMode"""
+        """Test for adminMode."""
         # PROTECTED REGION ID(SKAObsDevice.test_adminMode) ENABLED START #
         assert tango_context.device.adminMode == AdminMode.ONLINE
         # PROTECTED REGION END #    //  SKAObsDevice.test_adminMode
@@ -172,7 +169,7 @@ class TestSKAObsDevice(object):
     # PROTECTED REGION ID(SKAObsDevice.test_controlMode_decorators) ENABLED START #
     # PROTECTED REGION END #    //  SKAObsDevice.test_controlMode_decorators
     def test_controlMode(self, tango_context):
-        """Test for controlMode"""
+        """Test for controlMode."""
         # PROTECTED REGION ID(SKAObsDevice.test_controlMode) ENABLED START #
         assert tango_context.device.controlMode == ControlMode.REMOTE
         # PROTECTED REGION END #    //  SKAObsDevice.test_controlMode
@@ -180,7 +177,7 @@ class TestSKAObsDevice(object):
     # PROTECTED REGION ID(SKAObsDevice.test_simulationMode_decorators) ENABLED START #
     # PROTECTED REGION END #    //  SKAObsDevice.test_simulationMode_decorators
     def test_simulationMode(self, tango_context):
-        """Test for simulationMode"""
+        """Test for simulationMode."""
         # PROTECTED REGION ID(SKAObsDevice.test_simulationMode) ENABLED START #
         assert tango_context.device.simulationMode == SimulationMode.FALSE
         # PROTECTED REGION END #    //  SKAObsDevice.test_simulationMode
@@ -188,7 +185,7 @@ class TestSKAObsDevice(object):
     # PROTECTED REGION ID(SKAObsDevice.test_testMode_decorators) ENABLED START #
     # PROTECTED REGION END #    //  SKAObsDevice.test_testMode_decorators
     def test_testMode(self, tango_context):
-        """Test for testMode"""
+        """Test for testMode."""
         # PROTECTED REGION ID(SKAObsDevice.test_testMode) ENABLED START #
         assert tango_context.device.testMode == TestMode.NONE
         # PROTECTED REGION END #    //  SKAObsDevice.test_testMode
@@ -196,7 +193,7 @@ class TestSKAObsDevice(object):
 
 @pytest.mark.forked
 def test_multiple_devices_in_same_process():
-
+    """Test that we can run this device with other devices in a single process."""
     # The order here is important - base class last, so that we can
     # test that the subclass isn't breaking anything.
     devices_info = (

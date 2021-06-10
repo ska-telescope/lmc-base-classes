@@ -28,8 +28,9 @@ from ska_tango_base.control_model import PowerMode
 
 class BaseComponentManager:
     """
-    An abstract base class for a component manager for SKA Tango
-    devices, supporting:
+    An abstract base class for a component manager for SKA Tango devices.
+
+    It supports:
 
     * Maintaining a connection to its component
 
@@ -42,7 +43,7 @@ class BaseComponentManager:
 
     def __init__(self, op_state_model, *args, **kwargs):
         """
-        Initialise a new ComponentManager instance
+        Initialise a new ComponentManager instance.
 
         :param op_state_model: the op state model used by this component
             manager
@@ -51,8 +52,9 @@ class BaseComponentManager:
 
     def start_communicating(self):
         """
-        Establish communication with the component, then start
-        monitoring. This is the place to do things like:
+        Establish communication with the component, then start monitoring.
+
+        This is the place to do things like:
 
         * Initiate a connection to the component (if your communication
           is connection-oriented)
@@ -64,8 +66,9 @@ class BaseComponentManager:
 
     def stop_communicating(self):
         """
-        Cease monitoring the component, and break off all communication
-        with it. For example,
+        Cease monitoring the component, and break off all communication with it.
+
+        For example,
 
         * If you are communicating over a connection, disconnect.
         * If you have subscribed to events, unsubscribe.
@@ -76,9 +79,9 @@ class BaseComponentManager:
     @property
     def is_communicating(self):
         """
-        Whether communication with the component is established and
-        active, allowing monitoring and control of the component. For
-        example:
+        Return whether communication with the component is established.
+
+        For example:
 
         * If communication is over a connection, are you connected?
         * If communication is via event subscription, are you
@@ -95,7 +98,7 @@ class BaseComponentManager:
     @property
     def power_mode(self):
         """
-        Power mode of the component
+        Power mode of the component.
 
         :return: the power mode of the component
         """
@@ -104,34 +107,26 @@ class BaseComponentManager:
     @property
     def faulty(self):
         """
-        Whether the component is currently faulting
+        Whether the component is currently faulting.
 
         :return: whether the component is faulting
         """
         raise NotImplementedError("BaseComponentManager is abstract.")
 
     def off(self):
-        """
-        Turn the component off
-        """
+        """Turn the component off."""
         raise NotImplementedError("BaseComponentManager is abstract.")
 
     def standby(self):
-        """
-        Put the component into low-power standby mode
-        """
+        """Put the component into low-power standby mode."""
         raise NotImplementedError("BaseComponentManager is abstract.")
 
     def on(self):
-        """
-        Turn the component on
-        """
+        """Turn the component on."""
         raise NotImplementedError("BaseComponentManager is abstract.")
 
     def reset(self):
-        """
-        Reset the component (from fault state)
-        """
+        """Reset the component (from fault state)."""
         raise NotImplementedError("BaseComponentManager is abstract.")
 
     action_map = {
@@ -142,8 +137,9 @@ class BaseComponentManager:
 
     def component_power_mode_changed(self, power_mode):
         """
-        Callback hook, called when whether the component power mode
-        changes
+        Handle notification that the component's power mode has changed.
+
+        This is a callback hook.
 
         :param power_mode: the new power mode of the component
         :type power_mode:
@@ -154,6 +150,8 @@ class BaseComponentManager:
 
     def component_fault(self):
         """
-        Callback hook, called when the component faults
+        Handle notification that the component has faulted.
+
+        This is a callback hook.
         """
         self.op_state_model.perform_action("component_fault")

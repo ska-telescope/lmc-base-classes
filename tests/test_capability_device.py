@@ -27,8 +27,10 @@ class TestSKACapability(object):
     @pytest.fixture(scope="class")
     def device_test_config(self, device_properties):
         """
-        Fixture that specifies the device to be tested, along with its
-        properties and memorized attributes.
+        Specification of the device under test.
+
+        The specification includes the device's properties and memorized
+        attributes.
         """
         return {
             "device": SKACapability,
@@ -41,13 +43,12 @@ class TestSKACapability(object):
 
     @pytest.mark.skip("Not implemented")
     def test_properties(self, tango_context):
-        """Test device properties"""
-        # Test the properties
+        """Test device properties."""
         # PROTECTED REGION ID(SKACapability.test_properties) ENABLED START #
         # PROTECTED REGION END #    //  SKACapability.test_properties
 
     def test_ConfigureInstances(self, tango_context):
-        """Test for ConfigureInstances"""
+        """Test for ConfigureInstances."""
         # PROTECTED REGION ID(SKACapability.test_ConfigureInstances) ENABLED START #
         tango_context.device.ConfigureInstances(1)
         assert tango_context.device.configuredInstances == 1
@@ -64,7 +65,7 @@ class TestSKACapability(object):
     # PROTECTED REGION ID(SKACapability.test_activationTime_decorators) ENABLED START #
     # PROTECTED REGION END #    //  SKACapability.test_activationTime_decorators
     def test_activationTime(self, tango_context):
-        """Test for activationTime"""
+        """Test for activationTime."""
         # PROTECTED REGION ID(SKACapability.test_activationTime) ENABLED START #
         assert tango_context.device.activationTime == 0.0
         # PROTECTED REGION END #    //  SKACapability.test_activationTime
@@ -88,7 +89,7 @@ class TestSKACapability(object):
     # PROTECTED REGION ID(SKACapability.test_buildState_decorators) ENABLED START #
     # PROTECTED REGION END #    //  SKACapability.test_buildState_decorators
     def test_buildState(self, tango_context):
-        """Test for buildState"""
+        """Test for buildState."""
         # PROTECTED REGION ID(SKACapability.test_buildState) ENABLED START #
         buildPattern = re.compile(
             r"ska_tango_base, [0-9]+.[0-9]+.[0-9]+, "
@@ -100,7 +101,7 @@ class TestSKACapability(object):
     # PROTECTED REGION ID(SKACapability.test_versionId_decorators) ENABLED START #
     # PROTECTED REGION END #    //  SKACapability.test_versionId_decorators
     def test_versionId(self, tango_context):
-        """Test for versionId"""
+        """Test for versionId."""
         # PROTECTED REGION ID(SKACapability.test_versionId) ENABLED START #
         versionIdPattern = re.compile(r"[0-9]+.[0-9]+.[0-9]+")
         assert (re.match(versionIdPattern, tango_context.device.versionId)) is not None
@@ -109,7 +110,7 @@ class TestSKACapability(object):
     # PROTECTED REGION ID(SKACapability.test_configuredInstances_decorators) ENABLED START #
     # PROTECTED REGION END #    //  SKACapability.test_configuredInstances_decorators
     def test_configuredInstances(self, tango_context):
-        """Test for configuredInstances"""
+        """Test for configuredInstances."""
         # PROTECTED REGION ID(SKACapability.test_configuredInstances) ENABLED START #
         assert tango_context.device.configuredInstances == 0
         # PROTECTED REGION END #    //  SKACapability.test_configuredInstances
@@ -117,7 +118,7 @@ class TestSKACapability(object):
     # PROTECTED REGION ID(SKACapability.test_usedComponents_decorators) ENABLED START #
     # PROTECTED REGION END #    //  SKACapability.test_usedComponents_decorators
     def test_usedComponents(self, tango_context):
-        """Test for usedComponents"""
+        """Test for usedComponents."""
         # PROTECTED REGION ID(SKACapability.test_usedComponents) ENABLED START #
         assert tango_context.device.usedComponents == ("",)
         # PROTECTED REGION END #    //  SKACapability.test_usedComponents

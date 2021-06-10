@@ -6,8 +6,9 @@
 #
 
 """
-This module implements a generic base model and device for SKA. It
-exposes the generic attributes, properties and commands of an SKA
+This module implements a generic base model and device for SKA.
+
+It exposes the generic attributes, properties and commands of an SKA
 device.
 """
 # PROTECTED REGION ID(SKABaseDevice.additionnal_import) ENABLED START #
@@ -63,7 +64,8 @@ _DEBUGGER_PORT = 5678
 
 
 class _Log4TangoLoggingLevel(enum.IntEnum):
-    """Python enumerated type for Tango log4tango logging levels.
+    """
+    Python enumerated type for Tango log4tango logging levels.
 
     This is different to tango.LogLevel, and is required if using
     a device's set_log_level() method.  It is not currently exported
@@ -142,7 +144,8 @@ class TangoLoggingServiceHandler(logging.Handler):
 
 
 class LoggingUtils:
-    """Utility functions to aid logger configuration.
+    """
+    Utility functions to aid logger configuration.
 
     These functions are encapsulated in class to aid testing - it
     allows dependent functions to be mocked.
@@ -150,7 +153,8 @@ class LoggingUtils:
 
     @staticmethod
     def sanitise_logging_targets(targets, device_name):
-        """Validate and return logging targets '<type>::<name>' strings.
+        """
+        Validate and return logging targets '<type>::<name>' strings.
 
         :param targets:
             List of candidate logging target strings, like '<type>[::<name>]'
@@ -201,7 +205,8 @@ class LoggingUtils:
 
     @staticmethod
     def get_syslog_address_and_socktype(url):
-        """Parse syslog URL and extract address and socktype parameters for SysLogHandler.
+        """
+        Parse syslog URL and extract address and socktype parameters for SysLogHandler.
 
         :param url:
             Universal resource locator string for syslog target.  Three types are supported:
@@ -271,7 +276,10 @@ class LoggingUtils:
 
     @staticmethod
     def create_logging_handler(target, tango_logger=None):
-        """Create a Python log handler based on the target type (console, file, syslog, tango)
+        """
+        Create a Python log handler based on the target type.
+
+        Supported target types are "console", "file", "syslog", "tango".
 
         :param target:
             Logging target for logger, <type>::<name>
@@ -350,21 +358,17 @@ __all__ = ["SKABaseDevice", "main"]
 
 
 class SKABaseDevice(Device):
-    """
-    A generic base device for SKA.
-    """
+    """A generic base device for SKA."""
 
     _global_debugger_listening = False
     _global_debugger_allocated_port = 0
 
     class InitCommand(ResponseCommand, CompletionCommand):
-        """
-        A class for the SKABaseDevice's init_device() "command".
-        """
+        """A class for the SKABaseDevice's init_device() "command"."""
 
         def __init__(self, target, op_state_model, logger=None):
             """
-            Create a new InitCommand
+            Create a new InitCommand.
 
             :param target: the object that this command acts upon; for
                 example, the SKABaseDevice device for which this class
@@ -432,10 +436,7 @@ class SKABaseDevice(Device):
     _logging_configured = False
 
     def _init_logging(self):
-        """
-        This method initializes the logging mechanism, based on default
-        properties.
-        """
+        """Initialize the logging mechanism, using default properties."""
 
         class EnsureTagsFilter(logging.Filter):
             """Ensure all records have a "tags" field - empty string, if not provided."""
@@ -665,8 +666,11 @@ class SKABaseDevice(Device):
 
     def _update_admin_mode(self, admin_mode):
         """
-        Helper method for changing admin_mode; passed to the state model as a
-        callback
+        Perform Tango operations in response to a change in admin mode.
+
+        This helper method is passed to the admin mode model as a
+        callback, so that the model can trigger actions in the Tango
+        device.
 
         :param admin_mode: the new admin_mode value
         :type admin_mode: :py:class:`~ska_tango_base.control_model.AdminMode`
@@ -676,8 +680,11 @@ class SKABaseDevice(Device):
 
     def _update_state(self, state):
         """
-        Helper method for changing state; passed to the state model as a
-        callback
+        Perform Tango operations in response to a change in op state.
+
+        This helper method is passed to the op state model as a
+        callback, so that the model can trigger actions in the Tango
+        device.
 
         :param state: the new state value
         :type state: :py:class:`tango.DevState`
@@ -689,8 +696,7 @@ class SKABaseDevice(Device):
 
     def set_state(self, state):
         """
-        Helper method for setting device state, ensuring that change
-        events are pushed.
+        Set the device state, ensuring that change events are pushed.
 
         :param state: the new state
         :type state: :py:class:`tango.DevState`
@@ -701,8 +707,7 @@ class SKABaseDevice(Device):
 
     def set_status(self, status):
         """
-        Helper method for setting device status, ensuring that change
-        events are pushed.
+        Set the device status, ensuring that change events are pushed.
 
         :param status: the new status
         :type status: str
@@ -713,12 +718,12 @@ class SKABaseDevice(Device):
 
     def init_device(self):
         """
-        Initializes the tango device after startup.
+        Initialise the tango device after startup.
 
-        Subclasses that have no need to override the default
-        default implementation of state management may leave
-        ``init_device()`` alone.  Override the ``do()`` method
-        on the nested class ``InitCommand`` instead.
+        Subclasses that have no need to override the default default
+        implementation of state management may leave ``init_device()``
+        alone.  Override the ``do()`` method on the nested class
+        ``InitCommand`` instead.
         """
         try:
             super().init_device()
@@ -737,9 +742,7 @@ class SKABaseDevice(Device):
                 print(f"ERROR: init_device failed, and no logger: {exc}.")
 
     def _init_state_model(self):
-        """
-        Creates the state model for the device
-        """
+        """Initialise the state model for the device."""
         self.op_state_model = OpStateModel(
             logger=self.logger,
             callback=self._update_state,
@@ -750,12 +753,12 @@ class SKABaseDevice(Device):
         )
 
     def create_component_manager(self):
+        """Create and return a component manager for this device."""
         return BaseComponentManager(self.op_state_model)
 
     def register_command_object(self, command_name, command_object):
         """
-        Registers a command object as the object to handle invocations
-        of a given command
+        Register a object as a handler for a command.
 
         :param command_name: name of the command for which the object is
             being registered
@@ -768,7 +771,7 @@ class SKABaseDevice(Device):
 
     def get_command_object(self, command_name):
         """
-        Returns the command object (handler) for a given command.
+        Return the command object (handler) for a given command.
 
         :param command_name: name of the command for which a command
             object (handler) is sought
@@ -780,10 +783,7 @@ class SKABaseDevice(Device):
         return self._command_objects[command_name]
 
     def init_command_objects(self):
-        """
-        Creates and registers command objects (handlers) for the
-        commands supported by this device.
-        """
+        """Register command objects (handlers) for this device's commands."""
         self._command_objects = {}
 
         component_args = (self.component_manager, self.op_state_model, self.logger)
@@ -803,14 +803,21 @@ class SKABaseDevice(Device):
     def always_executed_hook(self):
         # PROTECTED REGION ID(SKABaseDevice.always_executed_hook) ENABLED START #
         """
-        Method that is always executed before any device command gets executed.
+        Perform actions that are executed before every device command.
+
+        This is a Tango hook.
         """
         # PROTECTED REGION END #    //  SKABaseDevice.always_executed_hook
 
     def delete_device(self):
         # PROTECTED REGION ID(SKABaseDevice.delete_device) ENABLED START #
         """
-        Method to cleanup when device is stopped.
+        Clean up any resources prior to device deletion.
+
+        This method is a Tango hook that is called by the device
+        destructor and by the device Init command. It allows for any
+        memory or other resources allocated in the init_device method to
+        be released prior to device deletion.
         """
         # PROTECTED REGION END #    //  SKABaseDevice.delete_device
 
@@ -821,7 +828,7 @@ class SKABaseDevice(Device):
     def read_buildState(self):
         # PROTECTED REGION ID(SKABaseDevice.buildState_read) ENABLED START #
         """
-        Reads the Build State of the device.
+        Read the Build State of the device.
 
         :return: the build state of the device
         """
@@ -831,7 +838,7 @@ class SKABaseDevice(Device):
     def read_versionId(self):
         # PROTECTED REGION ID(SKABaseDevice.versionId_read) ENABLED START #
         """
-        Reads the Version Id of the device.
+        Read the Version Id of the device.
 
         :return: the version id of the device
         """
@@ -841,7 +848,7 @@ class SKABaseDevice(Device):
     def read_loggingLevel(self):
         # PROTECTED REGION ID(SKABaseDevice.loggingLevel_read) ENABLED START #
         """
-        Reads logging level of the device.
+        Read the logging level of the device.
 
         :return:  Logging level of the device.
         """
@@ -851,8 +858,9 @@ class SKABaseDevice(Device):
     def write_loggingLevel(self, value):
         # PROTECTED REGION ID(SKABaseDevice.loggingLevel_write) ENABLED START #
         """
-        Sets logging level for the device.  Both the Python logger and the
-        Tango logger are updated.
+        Set the logging level for the device.
+
+        Both the Python logger and the Tango logger are updated.
 
         :param value: Logging level for logger
 
@@ -880,7 +888,7 @@ class SKABaseDevice(Device):
     def read_loggingTargets(self):
         # PROTECTED REGION ID(SKABaseDevice.loggingTargets_read) ENABLED START #
         """
-        Reads the additional logging targets of the device.
+        Read the additional logging targets of the device.
 
         Note that this excludes the handlers provided by the ska_ser_logging
         library defaults.
@@ -893,7 +901,7 @@ class SKABaseDevice(Device):
     def write_loggingTargets(self, value):
         # PROTECTED REGION ID(SKABaseDevice.loggingTargets_write) ENABLED START #
         """
-        Sets the additional logging targets for the device.
+        Set the additional logging targets for the device.
 
         Note that this excludes the handlers provided by the ska_ser_logging
         library defaults.
@@ -908,7 +916,7 @@ class SKABaseDevice(Device):
     def read_healthState(self):
         # PROTECTED REGION ID(SKABaseDevice.healthState_read) ENABLED START #
         """
-        Reads Health State of the device.
+        Read the Health State of the device.
 
         :return: Health State of the device
         """
@@ -918,7 +926,7 @@ class SKABaseDevice(Device):
     def read_adminMode(self):
         # PROTECTED REGION ID(SKABaseDevice.adminMode_read) ENABLED START #
         """
-        Reads Admin Mode of the device.
+        Read the Admin Mode of the device.
 
         :return: Admin Mode of the device
         :rtype: AdminMode
@@ -929,7 +937,7 @@ class SKABaseDevice(Device):
     def write_adminMode(self, value):
         # PROTECTED REGION ID(SKABaseDevice.adminMode_write) ENABLED START #
         """
-        Sets Admin Mode of the device.
+        Set the Admin Mode of the device.
 
         :param value: Admin Mode of the device.
         :type value: :py:class:`~ska_tango_base.control_model.AdminMode`
@@ -959,7 +967,7 @@ class SKABaseDevice(Device):
     def read_controlMode(self):
         # PROTECTED REGION ID(SKABaseDevice.controlMode_read) ENABLED START #
         """
-        Reads Control Mode of the device.
+        Read the Control Mode of the device.
 
         :return: Control Mode of the device
         """
@@ -969,7 +977,7 @@ class SKABaseDevice(Device):
     def write_controlMode(self, value):
         # PROTECTED REGION ID(SKABaseDevice.controlMode_write) ENABLED START #
         """
-        Sets Control Mode of the device.
+        Set the Control Mode of the device.
 
         :param value: Control mode value
         """
@@ -979,7 +987,7 @@ class SKABaseDevice(Device):
     def read_simulationMode(self):
         # PROTECTED REGION ID(SKABaseDevice.simulationMode_read) ENABLED START #
         """
-        Reads Simulation Mode of the device.
+        Read the Simulation Mode of the device.
 
         :return: Simulation Mode of the device.
         """
@@ -989,7 +997,7 @@ class SKABaseDevice(Device):
     def write_simulationMode(self, value):
         # PROTECTED REGION ID(SKABaseDevice.simulationMode_write) ENABLED START #
         """
-        Sets Simulation Mode of the device
+        Set the Simulation Mode of the device.
 
         :param value: SimulationMode
         """
@@ -999,7 +1007,7 @@ class SKABaseDevice(Device):
     def read_testMode(self):
         # PROTECTED REGION ID(SKABaseDevice.testMode_read) ENABLED START #
         """
-        Reads Test Mode of the device.
+        Read the Test Mode of the device.
 
         :return: Test Mode of the device
         """
@@ -1009,7 +1017,7 @@ class SKABaseDevice(Device):
     def write_testMode(self, value):
         # PROTECTED REGION ID(SKABaseDevice.testMode_write) ENABLED START #
         """
-        Sets Test Mode of the device.
+        Set the Test Mode of the device.
 
         :param value: Test Mode
         """
@@ -1021,9 +1029,7 @@ class SKABaseDevice(Device):
     # --------
 
     class GetVersionInfoCommand(BaseCommand):
-        """
-        A class for the SKABaseDevice's GetVersionInfo() command.
-        """
+        """A class for the SKABaseDevice's GetVersionInfo() command."""
 
         def do(self):
             """
@@ -1045,7 +1051,7 @@ class SKABaseDevice(Device):
     def GetVersionInfo(self):
         # PROTECTED REGION ID(SKABaseDevice.GetVersionInfo) ENABLED START #
         """
-        Returns the version information of the device.
+        Return the version information of the device.
 
         To modify behaviour for this command, modify the do() method of
         the command class.
@@ -1057,13 +1063,11 @@ class SKABaseDevice(Device):
         # PROTECTED REGION END #    //  SKABaseDevice.GetVersionInfo
 
     class ResetCommand(StateModelCommand, ResponseCommand):
-        """
-        A class for the SKABaseDevice's Reset() command.
-        """
+        """A class for the SKABaseDevice's Reset() command."""
 
         def __init__(self, target, op_state_model, logger=None):
             """
-            Create a new ResetCommand
+            Create a new ResetCommand.
 
             :param target: the object that this command acts upon; for
                 example, the device's component manager
@@ -1095,8 +1099,7 @@ class SKABaseDevice(Device):
 
     def is_Reset_allowed(self):
         """
-        Whether the ``Reset()`` command is allowed to be run in the
-        current state
+        Whether the ``Reset()`` command is allowed to be run in the current state.
 
         :returns: whether the ``Reset()`` command is allowed to be run in the
             current state
@@ -1127,13 +1130,11 @@ class SKABaseDevice(Device):
         return [[return_code], [message]]
 
     class StandbyCommand(StateModelCommand, ResponseCommand):
-        """
-        A class for the SKABaseDevice's Standby() command.
-        """
+        """A class for the SKABaseDevice's Standby() command."""
 
         def __init__(self, target, op_state_model, logger=None):
             """
-            Constructor for StandbyCommand
+            Initialise a new StandbyCommand instance.
 
             :param target: the object that this command acts upon; for
                 example, the device's component manager
@@ -1182,7 +1183,7 @@ class SKABaseDevice(Device):
     @DebugIt()
     def Standby(self):
         """
-        Put the device into standby mode
+        Put the device into standby mode.
 
         To modify behaviour for this command, modify the do() method of
         the command class.
@@ -1197,13 +1198,11 @@ class SKABaseDevice(Device):
         return [[return_code], [message]]
 
     class OffCommand(StateModelCommand, ResponseCommand):
-        """
-        A class for the SKABaseDevice's Off() command.
-        """
+        """A class for the SKABaseDevice's Off() command."""
 
         def __init__(self, target, op_state_model, logger=None):
             """
-            Constructor for OffCommand
+            Initialise a new OffCommand instance.
 
             :param target: the object that this command acts upon; for
                 example, the device's component manager
@@ -1252,7 +1251,7 @@ class SKABaseDevice(Device):
     @DebugIt()
     def Off(self):
         """
-        Turn the device off
+        Turn the device off.
 
         To modify behaviour for this command, modify the do() method of
         the command class.
@@ -1267,13 +1266,11 @@ class SKABaseDevice(Device):
         return [[return_code], [message]]
 
     class OnCommand(StateModelCommand, ResponseCommand):
-        """
-        A class for the SKABaseDevice's On() command.
-        """
+        """A class for the SKABaseDevice's On() command."""
 
         def __init__(self, target, op_state_model, logger=None):
             """
-            Constructor for OnCommand
+            Initialise a new OnCommand instance.
 
             :param target: the object that this command acts upon; for
                 example, the device's component manager
@@ -1323,7 +1320,7 @@ class SKABaseDevice(Device):
     @DebugIt()
     def On(self):
         """
-        Turn device on
+        Turn device on.
 
         To modify behaviour for this command, modify the do() method of
         the command class.
@@ -1338,9 +1335,7 @@ class SKABaseDevice(Device):
         return [[return_code], [message]]
 
     class DebugDeviceCommand(BaseCommand):
-        """
-        A class for the SKABaseDevice's DebugDevice() command.
-        """
+        """A class for the SKABaseDevice's DebugDevice() command."""
 
         def do(self):
             """
@@ -1370,6 +1365,7 @@ class SKABaseDevice(Device):
             return SKABaseDevice._global_debugger_allocated_port
 
         def start_debugger_and_get_port(self, port):
+            """Start the debugger and return the allocated port."""
             self.logger.warning("Starting debugger...")
             interface, allocated_port = debugpy.listen(("0.0.0.0", port))
             self.logger.warning(
@@ -1378,6 +1374,7 @@ class SKABaseDevice(Device):
             return allocated_port
 
         def monkey_patch_all_methods_for_debugger(self):
+            """Monkeypatch methods that need to be patched for the debugger."""
             all_methods = self.get_all_methods()
             patched = []
             for owner, name, method in all_methods:
@@ -1390,6 +1387,7 @@ class SKABaseDevice(Device):
             self.logger.debug("Patched methods: %s", sorted(patched))
 
         def get_all_methods(self):
+            """Return a list of the device's methods."""
             methods = []
             device = self.target
             for name, method in inspect.getmembers(device, inspect.ismethod):
@@ -1403,11 +1401,13 @@ class SKABaseDevice(Device):
 
         @staticmethod
         def method_must_be_patched_for_debugger(owner, method):
-            """Determine if methods are worth debugging.
+            """
+            Determine if methods are worth debugging.
 
-            The goal is to find all the user's Python methods, but not the
-            lower level PyTango device and Boost extension methods.  The
-            `typing.types.FunctionType` check excludes the Boost methods.
+            The goal is to find all the user's Python methods, but not
+            the lower level PyTango device and Boost extension methods.
+            The `typing.types.FunctionType` check excludes the Boost
+            methods.
             """
             skip_module_names = ["tango.device_server", "tango.server", "logging"]
             skip_owner_types = [SKABaseDevice.DebugDeviceCommand]
@@ -1418,11 +1418,13 @@ class SKABaseDevice(Device):
             )
 
         def patch_method_for_debugger(self, owner, name, method):
-            """Ensure method calls trigger the debugger.
+            """
+            Ensure method calls trigger the debugger.
 
-            Most methods in a device are executed by calls from threads spawned
-            by the cppTango layer.  These threads are not known to Python, so
-            we have to explicitly inform the debugger about them.
+            Most methods in a device are executed by calls from threads
+            spawned by the cppTango layer.  These threads are not known
+            to Python, so we have to explicitly inform the debugger
+            about them.
             """
 
             def debug_thread_wrapper(orig_method, *args, **kwargs):
@@ -1438,7 +1440,7 @@ class SKABaseDevice(Device):
     @DebugIt()
     def DebugDevice(self):
         """
-        Enables remote debugging of this device.
+        Enable remote debugging of this device.
 
         To modify behaviour for this command, modify the do() method of
         the command class: :class:`.DebugDeviceCommand`.
@@ -1455,7 +1457,7 @@ class SKABaseDevice(Device):
 def main(args=None, **kwargs):
     # PROTECTED REGION ID(SKABaseDevice.main) ENABLED START #
     """
-    Main function of the SKABaseDevice module.
+    Launch an SKABaseDevice device.
 
     :param args: positional args to tango.server.run
     :param kwargs: named args to tango.server.run

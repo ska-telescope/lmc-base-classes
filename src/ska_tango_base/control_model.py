@@ -10,7 +10,6 @@ https://confluence.skatelescope.org/pages/viewpage.action?pageId=105416556
 
 The enumerated types mapping to the states and modes are included here, as well as
 other useful enumerations.
-
 """
 
 import enum
@@ -283,11 +282,12 @@ class SimulationMode(enum.IntEnum):
 
 
 class TestMode(enum.IntEnum):
-    """Python enumerated type for ``testMode`` attribute.
+    """
+    Python enumerated type for ``testMode`` attribute.
 
     This enumeration may be replaced and extended in derived classes to
-    add additional custom test modes.  That would require overriding the base
-    class ``testMode`` attribute definition.
+    add additional custom test modes.  That would require overriding the
+    base class ``testMode`` attribute definition.
     """
 
     __test__ = False  # disable pytest discovery for this class
@@ -323,8 +323,9 @@ class LoggingLevel(enum.IntEnum):
 
 class PowerMode(enum.IntEnum):
     """
-    Enumerated type for the power mode of components that rely upon a
-    power supply, such as hardware.
+    Enumerated type for power mode.
+
+    Used by components that rely upon a power supply, such as hardware.
     """
 
     UNKNOWN = 0

@@ -6,9 +6,7 @@
 #
 #
 #########################################################################################
-"""Contain the tests for the CspSubelementSubarray and the State model implemented by
-   such device.
-"""
+"""This module tests the :py:mod:``ska_tango_base.csp.subarray_device`` module."""
 # Imports
 import re
 import pytest
@@ -44,17 +42,16 @@ class TestCspSubElementSubarray(object):
 
     @pytest.fixture(scope="class")
     def device_properties(self):
-        """
-        Fixture that returns device_properties to be provided to the
-        device under test.
-        """
+        """Fixture that returns device properties of the device under test."""
         return {"CapabilityTypes": ["id"]}
 
     @pytest.fixture(scope="class")
     def device_test_config(self, device_properties):
         """
-        Fixture that specifies the device to be tested, along with its
-        properties and memorized attributes.
+        Return a specification of the device to be tested.
+
+        The specification includes the device's properties and memorized
+        attributes.
 
         This implementation provides a concrete subclass of the device
         class under test, some properties, and a memorized value for
@@ -74,7 +71,7 @@ class TestCspSubElementSubarray(object):
 
     @pytest.mark.skip(reason="Not implemented")
     def test_properties(self, tango_context):
-        # Test the properties
+        """Test the device properties."""
         # PROTECTED REGION ID(CspSubelementSubarray.test_properties) ENABLED START #
         # PROTECTED REGION END #    //  CspSubelementSubarray.test_properties
         pass
@@ -82,7 +79,7 @@ class TestCspSubElementSubarray(object):
     # PROTECTED REGION ID(CspSubelementSubarray.test_State_decorators) ENABLED START #
     # PROTECTED REGION END #    //  CspSubelementSubarray.test_State_decorators
     def test_State(self, tango_context):
-        """Test for State"""
+        """Test for State."""
         # PROTECTED REGION ID(CspSubelementSubarray.test_State) ENABLED START #
         assert tango_context.device.State() == DevState.OFF
         # PROTECTED REGION END #    //  CspSubelementSubarray.test_State
@@ -90,7 +87,7 @@ class TestCspSubElementSubarray(object):
     # PROTECTED REGION ID(CspSubelementSubarray.test_Status_decorators) ENABLED START #
     # PROTECTED REGION END #    //  CspSubelementSubarray.test_Status_decorators
     def test_Status(self, tango_context):
-        """Test for Status"""
+        """Test for Status."""
         # PROTECTED REGION ID(CspSubelementSubarray.test_Status) ENABLED START #
         assert tango_context.device.Status() == "The device is in OFF state."
         # PROTECTED REGION END #    //  CspSubelementSubarray.test_Status
@@ -98,7 +95,7 @@ class TestCspSubElementSubarray(object):
     # PROTECTED REGION ID(CspSubelementSubarray.test_GetVersionInfo_decorators) ENABLED START #
     # PROTECTED REGION END #    //  CspSubelementSubarray.test_GetVersionInfo_decorators
     def test_GetVersionInfo(self, tango_context):
-        """Test for GetVersionInfo"""
+        """Test for GetVersionInfo."""
         # PROTECTED REGION ID(CspSubelementSubarray.test_GetVersionInfo) ENABLED START #
         versionPattern = re.compile(
             f"{tango_context.device.info().dev_class}, ska_tango_base, [0-9]+.[0-9]+.[0-9]+, "
@@ -110,7 +107,7 @@ class TestCspSubElementSubarray(object):
 
     # PROTECTED REGION ID(CspSubelementSubarray.test_configurationProgress_decorators) ENABLED START #
     def test_buildState(self, tango_context):
-        """Test for buildState"""
+        """Test for buildState."""
         # PROTECTED REGION ID(CspSubelementSubarray.test_buildState) ENABLED START #
         buildPattern = re.compile(
             r"ska_tango_base, [0-9]+.[0-9]+.[0-9]+, "
@@ -122,7 +119,7 @@ class TestCspSubElementSubarray(object):
     # PROTECTED REGION ID(CspSubelementSubarray.test_versionId_decorators) ENABLED START #
     # PROTECTED REGION END #    //  CspSubelementSubarray.test_versionId_decorators
     def test_versionId(self, tango_context):
-        """Test for versionId"""
+        """Test for versionId."""
         # PROTECTED REGION ID(CspSubelementSubarray.test_versionId) ENABLED START #
         versionIdPattern = re.compile(r"[0-9]+.[0-9]+.[0-9]+")
         assert (re.match(versionIdPattern, tango_context.device.versionId)) is not None
@@ -131,7 +128,7 @@ class TestCspSubElementSubarray(object):
     # PROTECTED REGION ID(CspSubelementSubarray.test_healthState_decorators) ENABLED START #
     # PROTECTED REGION END #    //  CspSubelementSubarray.test_healthState_decorators
     def test_healthState(self, tango_context):
-        """Test for healthState"""
+        """Test for healthState."""
         # PROTECTED REGION ID(CspSubelementSubarray.test_healthState) ENABLED START #
         assert tango_context.device.healthState == HealthState.OK
         # PROTECTED REGION END #    //  CspSubelementSubarray.test_healthState
@@ -139,7 +136,7 @@ class TestCspSubElementSubarray(object):
     # PROTECTED REGION ID(CspSubelementSubarray.test_adminMode_decorators) ENABLED START #
     # PROTECTED REGION END #    //  CspSubelementSubarray.test_adminMode_decorators
     def test_adminMode(self, tango_context):
-        """Test for adminMode"""
+        """Test for adminMode."""
         # PROTECTED REGION ID(CspSubelementSubarray.test_adminMode) ENABLED START #
         assert tango_context.device.adminMode == AdminMode.ONLINE
         # PROTECTED REGION END #    //  CspSubelementSubarray.test_adminMode
@@ -147,7 +144,7 @@ class TestCspSubElementSubarray(object):
     # PROTECTED REGION ID(CspSubelementSubarray.test_controlMode_decorators) ENABLED START #
     # PROTECTED REGION END #    //  CspSubelementSubarray.test_controlMode_decorators
     def test_controlMode(self, tango_context):
-        """Test for controlMode"""
+        """Test for controlMode."""
         # PROTECTED REGION ID(CspSubelementSubarray.test_controlMode) ENABLED START #
         assert tango_context.device.controlMode == ControlMode.REMOTE
         # PROTECTED REGION END #    //  CspSubelementSubarray.test_controlMode
@@ -155,7 +152,7 @@ class TestCspSubElementSubarray(object):
     # PROTECTED REGION ID(CspSubelementSubarray.test_simulationMode_decorators) ENABLED START #
     # PROTECTED REGION END #    //  CspSubelementSubarray.test_simulationMode_decorators
     def test_simulationMode(self, tango_context):
-        """Test for simulationMode"""
+        """Test for simulationMode."""
         # PROTECTED REGION ID(CspSubelementSubarray.test_simulationMode) ENABLED START #
         assert tango_context.device.simulationMode == SimulationMode.FALSE
         # PROTECTED REGION END #    //  CspSubelementSubarray.test_simulationMode
@@ -163,7 +160,7 @@ class TestCspSubElementSubarray(object):
     # PROTECTED REGION ID(CspSubelementSubarray.test_testMode_decorators) ENABLED START #
     # PROTECTED REGION END #    //  CspSubelementSubarray.test_testMode_decorators
     def test_testMode(self, tango_context):
-        """Test for testMode"""
+        """Test for testMode."""
         # PROTECTED REGION ID(CspSubelementSubarray.test_testMode) ENABLED START #
         assert tango_context.device.testMode == TestMode.NONE
         # PROTECTED REGION END #    //  CspSubelementSubarray.test_testMode
@@ -171,7 +168,7 @@ class TestCspSubElementSubarray(object):
     # PROTECTED REGION ID(CspSubelementSubarray.test_scanID_decorators) ENABLED START #
     # PROTECTED REGION END #    //  CspSubelementSubarray.test_scanID_decorators
     def test_scanID(self, tango_context):
-        """Test for scanID"""
+        """Test for scanID."""
         # PROTECTED REGION ID(CspSubelementSubarray.test_scanID) ENABLED START #
         device_under_test = tango_context.device
         device_under_test.On()
@@ -181,7 +178,7 @@ class TestCspSubElementSubarray(object):
     # PROTECTED REGION ID(CspSubelementSubarray.test_sdpDestinationAddresses_decorators) ENABLED START #
     # PROTECTED REGION END #    //  CspSubelementSubarray.test_sdpDestinationAddresses_decorators
     def test_sdpDestinationAddresses(self, tango_context):
-        """Test for sdpDestinationAddresses"""
+        """Test for sdpDestinationAddresses."""
         # PROTECTED REGION ID(CspSubelementSubarray.test_sdpDestinationAddresses) ENABLED START #
         addresses_dict = {"outputHost": [], "outputMac": [], "outputPort": []}
         tango_context.device.sdpDestinationAddresses = json.dumps(addresses_dict)
@@ -193,7 +190,7 @@ class TestCspSubElementSubarray(object):
     # PROTECTED REGION ID(CspSubelementSubarray.test_sdpLinkActive_decorators) ENABLED START #
     # PROTECTED REGION END #    //  CspSubelementSubarray.test_sdpLinkActive_decorators
     def test_sdpLinkActivity(self, tango_context):
-        """Test for sdpLinkActive"""
+        """Test for sdpLinkActive."""
         # PROTECTED REGION ID(CspSubelementSubarray.test_sdpLinkActive) ENABLED START #
         actual = tango_context.device.sdpLinkActive
         n_links = len(actual)
@@ -204,7 +201,7 @@ class TestCspSubElementSubarray(object):
     # PROTECTED REGION ID(CspSubelementSubarray.test_outputDataRateToSdp_decorators) ENABLED START #
     # PROTECTED REGION END #    //  CspSubelementSubarray.test_outputDataRateToSdp_decorators
     def test_outputDataRateToSdp(self, tango_context):
-        """Test for outputDataRateToSdp"""
+        """Test for outputDataRateToSdp."""
         # PROTECTED REGION ID(CspSubelementSubarray.test_outputDataRateToSdp) ENABLED START #
         assert tango_context.device.outputDataRateToSdp == 0
         # PROTECTED REGION END #    //  CspSubelementSubarray.test_outputDataRateToSdp
@@ -212,7 +209,7 @@ class TestCspSubElementSubarray(object):
     # PROTECTED REGION ID(CspSubelementSubarray.test_listOfDevicesCompletedTasks_decorators) ENABLED START #
     # PROTECTED REGION END #    //  CspSubelementSubarray.test_listOfDevicesCompletedTasks_decorators
     def test_listOfDevicesCompletedTasks(self, tango_context):
-        """Test for listOfDevicesCompletedTasks"""
+        """Test for listOfDevicesCompletedTasks."""
         # PROTECTED REGION ID(CspSubelementSubarray.test_listOfDevicesCompletedTasks) ENABLED START #
         attr_value_as_dict = json.loads(
             tango_context.device.listOfDevicesCompletedTasks
@@ -226,7 +223,7 @@ class TestCspSubElementSubarray(object):
     # PROTECTED REGION ID(CspSubelementSubarray.test_assignResourcesMaximumDuration_decorators) ENABLED START #
     # PROTECTED REGION END #    //  CspSubelementSubarray.test_assignResourcesMaximumDuration_decorators
     def test_assignResourcesMaximumDuration(self, tango_context):
-        """Test for assignResourcesMaximumDuration"""
+        """Test for assignResourcesMaximumDuration."""
         # PROTECTED REGION ID(CspSubelementSubarray.test_assignResourcesMaximumDuration) ENABLED START #
         tango_context.device.assignResourcesMaximumDuration = 5
         assert tango_context.device.assignResourcesMaximumDuration == 5
@@ -235,7 +232,7 @@ class TestCspSubElementSubarray(object):
     # PROTECTED REGION ID(CspSubelementSubarray.test_configureScanMeasuredDuration_decorators) ENABLED START #
     # PROTECTED REGION END #    //  CspSubelementSubarray.test_configureScanMeasuredDuration_decorators
     def test_configureScanMeasuredDuration(self, tango_context):
-        """Test for configureScanMeasuredDuration"""
+        """Test for configureScanMeasuredDuration."""
         # PROTECTED REGION ID(CspSubelementSubarray.test_configureScanMeasuredDuration) ENABLED START #
         assert tango_context.device.configureScanMeasuredDuration == 0
         # PROTECTED REGION END #    //  CspSubelementSubarray.test_configureScanMeasuredDuration
@@ -243,7 +240,7 @@ class TestCspSubElementSubarray(object):
     # PROTECTED REGION ID(CspSubelementSubarray.test_configurationProgress_decorators) ENABLED START #
     # PROTECTED REGION END #    //  CspSubelementSubarray.test_configurationProgress_decorators
     def test_configurationProgress(self, tango_context):
-        """Test for configurationProgress"""
+        """Test for configurationProgress."""
         # PROTECTED REGION ID(CspSubelementSubarray.test_configurationProgress) ENABLED START #
         assert tango_context.device.configurationProgress == 0
         # PROTECTED REGION END #    //  CspSubelementSubarray.test_configurationProgress
@@ -251,7 +248,7 @@ class TestCspSubElementSubarray(object):
     # PROTECTED REGION ID(CspSubelementSubarray.test_assignResourcesMeasuredDuration_decorators) ENABLED START #
     # PROTECTED REGION END #    //  CspSubelementSubarray.test_assignResourcesMeasuredDuration_decorators
     def test_assignResourcesMeasuredDuration(self, tango_context):
-        """Test for assignResourcesMeasuredDuration"""
+        """Test for assignResourcesMeasuredDuration."""
         # PROTECTED REGION ID(CspSubelementSubarray.test_assignResourcesMeasuredDuration) ENABLED START #
         assert tango_context.device.assignResourcesMeasuredDuration == 0
         # PROTECTED REGION END #    //  CspSubelementSubarray.test_assignResourcesMeasuredDuration
@@ -259,7 +256,7 @@ class TestCspSubElementSubarray(object):
     # PROTECTED REGION ID(CspSubelementSubarray.test_assignResourcesProgress_decorators) ENABLED START #
     # PROTECTED REGION END #    //  CspSubelementSubarray.test_assignResourcesProgress_decorators
     def test_assignResourcesProgress(self, tango_context):
-        """Test for assignResourcesProgress"""
+        """Test for assignResourcesProgress."""
         # PROTECTED REGION ID(CspSubelementSubarray.test_assignResourcesProgress) ENABLED START #
         assert tango_context.device.assignResourcesProgress == 0
         # PROTECTED REGION END #    //  CspSubelementSubarray.test_assignResourcesProgress
@@ -267,7 +264,7 @@ class TestCspSubElementSubarray(object):
     # PROTECTED REGION ID(CspSubelementSubarray.test_releaseResourcesMaximumDuration_decorators) ENABLED START #
     # PROTECTED REGION END #    //  CspSubelementSubarray.test_releaseResourcesMaximumDuration_decorators
     def test_releaseResourcesMaximumDuration(self, tango_context):
-        """Test for releaseResourcesMaximumDuration"""
+        """Test for releaseResourcesMaximumDuration."""
         # PROTECTED REGION ID(CspSubelementSubarray.test_releaseResourcesMaximumDuration) ENABLED START #
         tango_context.device.releaseResourcesMaximumDuration = 5
         assert tango_context.device.releaseResourcesMaximumDuration == 5
@@ -276,7 +273,7 @@ class TestCspSubElementSubarray(object):
     # PROTECTED REGION ID(CspSubelementSubarray.test_releaseResourcesMeasuredDuration_decorators) ENABLED START #
     # PROTECTED REGION END #    //  CspSubelementSubarray.test_releaseResourcesMeasuredDuration_decorators
     def test_releaseResourcesMeasuredDuration(self, tango_context):
-        """Test for releaseResourcesMeasuredDuration"""
+        """Test for releaseResourcesMeasuredDuration."""
         # PROTECTED REGION ID(CspSubelementSubarray.test_releaseResourcesMeasuredDuration) ENABLED START #
         assert tango_context.device.releaseResourcesMeasuredDuration == 0
         # PROTECTED REGION END #    //  CspSubelementSubarray.test_releaseResourcesMeasuredDuration
@@ -284,7 +281,7 @@ class TestCspSubElementSubarray(object):
     # PROTECTED REGION ID(CspSubelementSubarray.test_releaseResourcesProgress_decorators) ENABLED START #
     # PROTECTED REGION END #    //  CspSubelementSubarray.test_releaseResourcesProgress_decorators
     def test_releaseResourcesProgress(self, tango_context):
-        """Test for releaseResourcesProgress"""
+        """Test for releaseResourcesProgress."""
         # PROTECTED REGION ID(CspSubelementSubarray.test_releaseResourcesProgress) ENABLED START #
         assert tango_context.device.releaseResourcesProgress == 0
         # PROTECTED REGION END #    //  CspSubelementSubarray.test_releaseResourcesProgress
@@ -292,7 +289,7 @@ class TestCspSubElementSubarray(object):
     # PROTECTED REGION ID(CspSubelementSubarray.test_timeoutExpiredFlag_decorators) ENABLED START #
     # PROTECTED REGION END #    //  CspSubelementSubarray.test_timeoutExpiredFlag_decorators
     def test_configureScanTimeoutExpiredFlag(self, tango_context):
-        """Test for timeoutExpiredFlag"""
+        """Test for timeoutExpiredFlag."""
         # PROTECTED REGION ID(CspSubelementSubarray.test_timeoutExpiredFlag) ENABLED START #
         assert not tango_context.device.configureScanTimeoutExpiredFlag
         # PROTECTED REGION END #    //  CspSubelementSubarray.test_timeoutExpiredFlag
@@ -300,7 +297,7 @@ class TestCspSubElementSubarray(object):
     # PROTECTED REGION ID(CspSubelementSubarray.test_timeoutExpiredFlag_decorators) ENABLED START #
     # PROTECTED REGION END #    //  CspSubelementSubarray.test_timeoutExpiredFlag_decorators
     def test_assignResourcesTimeoutExpiredFlag(self, tango_context):
-        """Test for timeoutExpiredFlag"""
+        """Test for timeoutExpiredFlag."""
         # PROTECTED REGION ID(CspSubelementSubarray.test_timeoutExpiredFlag) ENABLED START #
         assert not tango_context.device.assignResourcesTimeoutExpiredFlag
         # PROTECTED REGION END #    //  CspSubelementSubarray.test_timeoutExpiredFlag
@@ -308,7 +305,7 @@ class TestCspSubElementSubarray(object):
     # PROTECTED REGION ID(CspSubelementSubarray.test_timeoutExpiredFlag_decorators) ENABLED START #
     # PROTECTED REGION END #    //  CspSubelementSubarray.test_timeoutExpiredFlag_decorators
     def test_releaseResourcesTimeoutExpiredFlag(self, tango_context):
-        """Test for timeoutExpiredFlag"""
+        """Test for timeoutExpiredFlag."""
         # PROTECTED REGION ID(CspSubelementSubarray.test_timeoutExpiredFlag) ENABLED START #
         assert not tango_context.device.releaseResourcesTimeoutExpiredFlag
         # PROTECTED REGION END #    //  CspSubelementSubarray.test_timeoutExpiredFlag
@@ -319,7 +316,7 @@ class TestCspSubElementSubarray(object):
     def test_ConfigureScan(
         self, tango_context, tango_change_event_helper, command_alias
     ):
-        """Test for ConfigureScan"""
+        """Test for ConfigureScan."""
         # PROTECTED REGION ID(CspSubelementSubarray.test_ConfigureScan) ENABLED START #
         device_under_test = tango_context.device
         device_under_test.On()
@@ -340,7 +337,7 @@ class TestCspSubElementSubarray(object):
     # PROTECTED REGION ID(CspSubelementSubarray.test_ConfigureScan_when_in_wrong_state_decorators) ENABLED START #
     # PROTECTED REGION END #    //  CspSubelementSubarray.test_ConfigureScan_when_in_wrong_state_decorators
     def test_ConfigureScan_when_in_wrong_state(self, tango_context):
-        """Test for ConfigureScan when the device is in wrong state"""
+        """Test for ConfigureScan when the device is in wrong state."""
         # PROTECTED REGION ID(CspSubelementSubarray.test_ConfigureScan_when_in_wrong_state) ENABLED START #
         # The device in in OFF/EMPTY state, not valid to invoke ConfigureScan.
         with pytest.raises(DevFailed, match="Command not permitted by state model."):
@@ -350,9 +347,7 @@ class TestCspSubElementSubarray(object):
     # PROTECTED REGION ID(CspSubelementSubarray.test_ConfigureScan_with_wrong_configId_key_decorators) ENABLED START #
     # PROTECTED REGION END #    //  CspSubelementSubarray.test_ConfigureScan_with_wrong_configId_key_decorators
     def test_ConfigureScan_with_wrong_configId_key(self, tango_context):
-        """Test for ConfigureScan when json configuration specifies a wrong key for
-        configuration ID
-        """
+        """Test that ConfigureScan handles a wrong configuration id key."""
         # PROTECTED REGION ID(CspSubelementSubarray.test_ConfigureScan_with_wrong_configId_key) ENABLED START #
         tango_context.device.On()
         tango_context.device.AssignResources(json.dumps([1, 2, 3]))
@@ -368,7 +363,7 @@ class TestCspSubElementSubarray(object):
     # PROTECTED REGION ID(CspSubelementSubarray.test_ConfigureScan_with_json_syntax_error) ENABLED START #
     # PROTECTED REGION END #    //  CspSubelementSubarray.test_ConfigureScan_with_json_syntax_error_decorators
     def test_ConfigureScan_with_json_syntax_error(self, tango_context):
-        """Test for ConfigureScan when syntax error in json configuration"""
+        """Test for ConfigureScan when syntax error in json configuration."""
         # PROTECTED REGION ID(CspSubelementSubarray.test_ConfigureScan_with_json_syntax_error) ENABLED START #
         tango_context.device.On()
         tango_context.device.AssignResources(json.dumps([1, 2, 3]))
@@ -383,7 +378,7 @@ class TestCspSubElementSubarray(object):
     # PROTECTED REGION END #    //  CspSubelementSubarray.test_GoToIdle_decorators
     @pytest.mark.parametrize("command_alias", ["GoToIdle", "End"])
     def test_GoToIdle(self, tango_context, tango_change_event_helper, command_alias):
-        """Test for GoToIdle"""
+        """Test for GoToIdle."""
         # PROTECTED REGION ID(CspSubelementSubarray.test_GoToIdle) ENABLED START #
         tango_context.device.On()
         tango_context.device.AssignResources(json.dumps([1, 2, 3]))

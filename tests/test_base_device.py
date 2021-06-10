@@ -690,7 +690,7 @@ class TestSKABaseDevice(object):
 @pytest.fixture()
 def patch_debugger_to_start_on_ephemeral_port():
     """
-    Patch the debugger to that it starts on an ephemeral port.
+    Patch the debugger so that it starts on an ephemeral port.
 
     This is necessary because of intermittent debugger test failures: if
     the previous test has used the debugger port, then when the test

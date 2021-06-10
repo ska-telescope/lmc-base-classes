@@ -159,7 +159,7 @@ class SKASubarray(SKAObsDevice):
 
         def __init__(self, target, op_state_model, obs_state_model, logger=None):
             """
-            Initialise a new ReleaseResourcesCommand instance.
+            Initialise a new ReleaseAllResourcesCommand instance.
 
             :param target: the object that this command acts upon; for
                 example, the device's component manager

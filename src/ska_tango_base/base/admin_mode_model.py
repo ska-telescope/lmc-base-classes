@@ -1,8 +1,7 @@
 """
 This module specifies the admin mode model for SKA LMC Tango devices.
 
-It
-consists of a single public class: :py:class:`.AdminModeModel`. This
+It consists of a single public class: :py:class:`.AdminModeModel`. This
 uses a state machine to device device adminMode, represented as a
 :py:class:`ska_tango_base.control_model.AdminMode` enum value, and
 reported by Tango devices through the ``AdminMode`` attribute.
@@ -180,8 +179,7 @@ class AdminModeModel:
         This is a helper method that updates admin mode, ensuring that
         the callback is called if one exists.
 
-        :param machine_state: the new state of the observation state
-            machine
+        :param machine_state: the new state of the admin mode machine
         :type machine_state: str
         """
         admin_mode = AdminMode[machine_state]

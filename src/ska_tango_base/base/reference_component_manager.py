@@ -39,7 +39,7 @@ def check_communicating(func):
         This is a wrapper function that implements the functionality of
         the decorator.
 
-        :param component: the component to check
+        :param component_manager: the component manager to check
         :param args: positional arguments to the wrapped function
         :param kwargs: keyword arguments to the wrapped function
 
@@ -207,9 +207,9 @@ class ReferenceBaseComponentManager(BaseComponentManager):
             This helper method will also ensure that callbacks are
             called as required.
 
-            :param configured: new value for whether the component is
-                configured or not
-            :type configured: bool
+            :param power_mode: new value for the power mode
+            :type power_mode:
+                :py:class:`ska_tango_base.control_model.PowerMode`
             """
             if self._power_mode != power_mode:
                 self._power_mode = power_mode

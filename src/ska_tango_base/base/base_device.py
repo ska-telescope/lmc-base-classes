@@ -737,7 +737,7 @@ class SKABaseDevice(Device):
         """
         Initialise the tango device after startup.
 
-        Subclasses that have no need to override the default default
+        Subclasses that have no need to override the default
         implementation of state management may leave ``init_device()``
         alone.  Override the ``do()`` method on the nested class
         ``InitCommand`` instead.
@@ -775,7 +775,7 @@ class SKABaseDevice(Device):
 
     def register_command_object(self, command_name, command_object):
         """
-        Register a object as a handler for a command.
+        Register an object as a handler for a command.
 
         :param command_name: name of the command for which the object is
             being registered

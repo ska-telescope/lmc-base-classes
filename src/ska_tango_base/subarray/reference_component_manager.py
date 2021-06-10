@@ -569,8 +569,8 @@ class ReferenceSubarrayComponentManager(
         """
         Tell the component to restart.
 
-        It will return to a state in which it is is unconfigured and
-        empty of assigned resources.
+        It will return to a state in which it is unconfigured and empty
+        of assigned resources.
         """
         self.logger.info("Restarting component")
         if self._component.configured:

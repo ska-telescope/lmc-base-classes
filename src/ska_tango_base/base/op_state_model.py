@@ -408,7 +408,7 @@ class OpStateModel:
         This is a helper method that updates op_state, ensuring that the
         callback is called if one exists.
 
-        :param machine_state: the new state of the observation state
+        :param machine_state: the new state of the operation state
             machine
         :type machine_state: str
         """

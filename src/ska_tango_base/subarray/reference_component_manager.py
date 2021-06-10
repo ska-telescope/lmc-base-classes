@@ -142,7 +142,7 @@ class ReferenceSubarrayComponentManager(
 
             :return: whether this resource pool contains the specified
                 resources
-            :rtype bool
+            :rtype: bool
             """
             return resources in self._resources
 

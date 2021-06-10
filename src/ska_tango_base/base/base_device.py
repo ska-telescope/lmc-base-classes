@@ -208,26 +208,43 @@ class LoggingUtils:
         """
         Parse syslog URL and extract address and socktype parameters for SysLogHandler.
 
-        :param url:
-            Universal resource locator string for syslog target.  Three types are supported:
-            file path, remote UDP server, remote TCP server.
-            - Output to a file:  'file://<path to file>'
-              Example:  'file:///dev/log' will write to '/dev/log'
-            - Output to remote server over UDP:  'udp://<hostname>:<port>'
-              Example:  'udp://syslog.com:514' will send to host 'syslog.com' on UDP port 514
-            - Output to remote server over TCP:  'tcp://<hostname>:<port>'
-              Example:  'tcp://rsyslog.com:601' will send to host 'rsyslog.com' on TCP port 601
-            For backwards compatibility, if the protocol prefix is missing, the type is
-            interpreted as file.  This is deprecated.
-            - Example:  '/dev/log' is equivalent to 'file:///dev/log'
+        :param url: Universal resource locator string for syslog target.
+            Three types are supported: file path, remote UDP server,
+            remote TCP server.
 
-        :return: (address, socktype)
+            - Output to a file: 'file://<path to file>'. For example,
+              'file:///dev/log' will write to '/dev/log'.
+
+            - Output to remote server over UDP:
+              'udp://<hostname>:<port>'. For example,
+              'udp://syslog.com:514' will send to host 'syslog.com' on
+              UDP port 514
+
+            - Output to remote server over TCP:
+              'tcp://<hostname>:<port>'. For example,
+              'tcp://rsyslog.com:601' will send to host 'rsyslog.com' on
+              TCP port 601
+
+            For backwards compatibility, if the protocol prefix is
+            missing, the type is interpreted as file. This is
+            deprecated. For example, '/dev/log' is equivalent to
+            'file:///dev/log'.
+
+        :return: An (address, socktype) tuple.
+
             For file types:
-            - address is the file path as as string
+
+            - the address is the file path as as string
+
             - socktype is None
+
             For UDP and TCP:
-            - address is tuple of (hostname, port), with hostname a string, and port an integer.
-            - socktype is socket.SOCK_DGRAM for UDP, or socket.SOCK_STREAM for TCP.
+
+            - the address is tuple of (hostname, port), with hostname a
+              string, and port an integer.
+
+            - socktype is socket.SOCK_DGRAM for UDP, or
+              socket.SOCK_STREAM for TCP.
 
         :raises LoggingTargetError: for invalid url string
         """
@@ -1443,7 +1460,7 @@ class SKABaseDevice(Device):
         Enable remote debugging of this device.
 
         To modify behaviour for this command, modify the do() method of
-        the command class: :class:`.DebugDeviceCommand`.
+        the command class: :py:class:`.DebugDeviceCommand`.
         """
         command = self.get_command_object("DebugDevice")
         return command()

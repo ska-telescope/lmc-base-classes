@@ -718,7 +718,7 @@ class TestSKABaseDevice_commands:
         Return a factory that constructs a command object for a given class.
 
         :returns: a factory that constructs a command object for a given
-        class
+            class
         """
 
         def _command_factory(command):

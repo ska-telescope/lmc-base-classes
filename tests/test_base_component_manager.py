@@ -1,6 +1,4 @@
-"""
-Tests for the :py:mod:`ska_tango_base.component_manager` module.
-"""
+"""Tests for the :py:mod:`ska_tango_base.component_manager` module."""
 import contextlib
 import pytest
 
@@ -10,16 +8,12 @@ from ska_tango_base.faults import ComponentFault
 
 
 class TestBaseComponentManager:
-    """
-    Tests of the
-    :py:class:`ska_tango_base.component_manager.ComponentManager`
-    class.
-    """
+    """This class contains tests of the base component manager."""
 
     @pytest.fixture()
     def mock_op_state_model(self, mocker):
         """
-        Fixture that returns a mock state model
+        Fixture that returns a mock state model.
 
         :param mocker: pytest fixture that wraps
             :py:mod:`unittest.mock`.
@@ -30,14 +24,17 @@ class TestBaseComponentManager:
 
     @pytest.fixture(params=[PowerMode.OFF, PowerMode.STANDBY, PowerMode.ON])
     def initial_power_mode(self, request):
+        """Return the initial power mode of the component under test."""
         return request.param
 
     @pytest.fixture(params=[False, True])
     def initial_fault(self, request):
+        """Return whether the component under test should initially be faulty."""
         return request.param
 
     @pytest.fixture()
     def component(self, initial_power_mode, initial_fault):
+        """Return a component for testing."""
         return ReferenceBaseComponentManager._Component(
             _power_mode=initial_power_mode, _faulty=initial_fault
         )
@@ -45,7 +42,7 @@ class TestBaseComponentManager:
     @pytest.fixture()
     def component_manager(self, mock_op_state_model, logger, component):
         """
-        Fixture that returns the component manager under test
+        Fixture that returns the component manager under test.
 
         :param mock_op_state_model: a mock state model for testing
         :param logger: a logger for the component manager
@@ -56,13 +53,11 @@ class TestBaseComponentManager:
             mock_op_state_model, logger=logger, _component=component
         )
 
-    def test_state_changes_with_start_and_stop(
+    def test_state_changes_with_start_and_stop_communicating(
         self, component_manager, mock_op_state_model, initial_power_mode, initial_fault
     ):
         """
-        Test that the state model is updated with state changes when the
-        component manager connects to and disconnects from its
-        component.
+        Test that state is updated when the component is connected / disconnected.
 
         :param component_manager: the component manager under test
         :param mock_op_state_model: a mock state model for testing
@@ -115,8 +110,7 @@ class TestBaseComponentManager:
     @pytest.mark.parametrize("command", ["off", "standby", "on"])
     def test_command_fails_when_disconnected(self, component_manager, command):
         """
-        Test that component commands fail when the component manager
-        isn't connected to the component.
+        Test that commands fail when there is not connection to the component.
 
         :param component_manager: the component manager under test
         :param command: the command under test
@@ -151,8 +145,7 @@ class TestBaseComponentManager:
         action,
     ):
         """
-        Test that component commands succeed when the component manager
-        is connected to the component.
+        Test that commands succeed when there is a connection to the component.
 
         :param component_manager: the component manager under test
         :param mock_op_state_model: a mock state model for testing
@@ -202,8 +195,11 @@ class TestBaseComponentManager:
         action,
     ):
         """
-        Test that spontaneous changes to the state of the component
-        result in the correct action being performed on the state model.
+        Test how changes to the components result in actions on the state model.
+
+        For example, when we tell the component to simulate power off,
+        does the state model receive an action that informs it that the
+        component is off?
 
         :param component_manager: the component manager under test
         :param mock_op_state_model: a mock state model for testing
@@ -236,6 +232,7 @@ class TestBaseComponentManager:
     def test_reset_from_fault(
         self, component_manager, mock_op_state_model, initial_fault
     ):
+        """Test that the component manager can reset a faulty component."""
         component_manager.start_communicating()
         assert component_manager.faulty == initial_fault
         mock_op_state_model.reset_mock()

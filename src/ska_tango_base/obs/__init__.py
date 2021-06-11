@@ -1,6 +1,4 @@
-"""
-This subpackage models a SKA Tango observing device.
-"""
+"""This subpackage models a SKA Tango observing device."""
 
 __all__ = (
     "ObsStateModel",

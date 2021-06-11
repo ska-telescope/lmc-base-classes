@@ -4,11 +4,13 @@
 #
 #
 #
-""" SKASubarray
+"""
+SKASubarray.
 
-A SubArray handling device. It allows the assigning/releasing of resources
-into/from Subarray, configuring capabilities, and exposes the related
-information like assigned resources, configured capabilities, etc.
+A SubArray handling device. It allows the assigning/releasing of
+resources into/from Subarray, configuring capabilities, and exposes the
+related information like assigned resources, configured capabilities,
+etc.
 """
 # PROTECTED REGION ID(SKASubarray.additionnal_import) ENABLED START #
 import json
@@ -33,14 +35,10 @@ __all__ = ["SKASubarray", "main"]
 
 
 class SKASubarray(SKAObsDevice):
-    """
-    Implements the SKA SubArray device
-    """
+    """Implements the SKA SubArray device."""
 
     class InitCommand(SKAObsDevice.InitCommand):
-        """
-        A class for the SKASubarray's init_device() "command".
-        """
+        """A class for the SKASubarray's init_device() "command"."""
 
         def do(self):
             """
@@ -63,13 +61,11 @@ class SKASubarray(SKAObsDevice):
     class AssignResourcesCommand(
         ObservationCommand, ResponseCommand, CompletionCommand
     ):
-        """
-        A class for SKASubarray's AssignResources() command.
-        """
+        """A class for SKASubarray's AssignResources() command."""
 
         def __init__(self, target, op_state_model, obs_state_model, logger=None):
             """
-            Constructor for AssignResourcesCommand
+            Initialise a new AssignResourcesCommand instance.
 
             :param target: the object that this command acts upon; for
                 example, the device's component manager
@@ -112,13 +108,11 @@ class SKASubarray(SKAObsDevice):
     class ReleaseResourcesCommand(
         ObservationCommand, ResponseCommand, CompletionCommand
     ):
-        """
-        A class for SKASubarray's ReleaseResources() command.
-        """
+        """A class for SKASubarray's ReleaseResources() command."""
 
         def __init__(self, target, op_state_model, obs_state_model, logger=None):
             """
-            Constructor for ReleaseResourcesCommand
+            Initialise a new ReleaseResourcesCommand instance.
 
             :param target: the object that this command acts upon; for
                 example, the device's component manager
@@ -161,13 +155,11 @@ class SKASubarray(SKAObsDevice):
     class ReleaseAllResourcesCommand(
         ObservationCommand, ResponseCommand, CompletionCommand
     ):
-        """
-        A class for SKASubarray's ReleaseAllResources() command.
-        """
+        """A class for SKASubarray's ReleaseAllResources() command."""
 
         def __init__(self, target, op_state_model, obs_state_model, logger=None):
             """
-            Constructor for ReleaseResourcesCommand
+            Initialise a new ReleaseAllResourcesCommand instance.
 
             :param target: the object that this command acts upon; for
                 example, the device's component manager
@@ -205,13 +197,11 @@ class SKASubarray(SKAObsDevice):
             return (ResultCode.OK, message)
 
     class ConfigureCommand(ObservationCommand, ResponseCommand, CompletionCommand):
-        """
-        A class for SKASubarray's Configure() command.
-        """
+        """A class for SKASubarray's Configure() command."""
 
         def __init__(self, target, op_state_model, obs_state_model, logger=None):
             """
-            Constructor for ConfigureCommand
+            Initialise a new ConfigureCommand instance.
 
             :param target: the object that this command acts upon; for
                 example, the device's component manager
@@ -252,13 +242,11 @@ class SKASubarray(SKAObsDevice):
             return (ResultCode.OK, message)
 
     class ScanCommand(ObservationCommand, ResponseCommand):
-        """
-        A class for SKASubarray's Scan() command.
-        """
+        """A class for SKASubarray's Scan() command."""
 
         def __init__(self, target, op_state_model, obs_state_model, logger=None):
             """
-            Constructor for ScanCommand
+            Initialise a new ScanCommand instance.
 
             :param target: the object that this command acts upon; for
                 example, the device's component manager
@@ -299,13 +287,11 @@ class SKASubarray(SKAObsDevice):
             return (ResultCode.STARTED, message)
 
     class EndScanCommand(ObservationCommand, ResponseCommand):
-        """
-        A class for SKASubarray's EndScan() command.
-        """
+        """A class for SKASubarray's EndScan() command."""
 
         def __init__(self, target, op_state_model, obs_state_model, logger=None):
             """
-            Constructor for EndScanCommand
+            Initialise a new EndScanCommand instance.
 
             :param target: the object that this command acts upon; for
                 example, the device's component manager
@@ -343,13 +329,11 @@ class SKASubarray(SKAObsDevice):
             return (ResultCode.OK, message)
 
     class EndCommand(ObservationCommand, ResponseCommand):
-        """
-        A class for SKASubarray's End() command.
-        """
+        """A class for SKASubarray's End() command."""
 
         def __init__(self, target, op_state_model, obs_state_model, logger=None):
             """
-            Constructor for EndCommand
+            Initialise a new EndCommand instance.
 
             :param target: the object that this command acts upon; for
                 example, the device's component manager
@@ -387,13 +371,11 @@ class SKASubarray(SKAObsDevice):
             return (ResultCode.OK, message)
 
     class AbortCommand(ObservationCommand, ResponseCommand, CompletionCommand):
-        """
-        A class for SKASubarray's Abort() command.
-        """
+        """A class for SKASubarray's Abort() command."""
 
         def __init__(self, target, op_state_model, obs_state_model, logger=None):
             """
-            Constructor for AbortCommand
+            Initialise a new AbortCommand instance.
 
             :param target: the object that this command acts upon; for
                 example, the device's component manager
@@ -431,13 +413,11 @@ class SKASubarray(SKAObsDevice):
             return (ResultCode.OK, message)
 
     class ObsResetCommand(ObservationCommand, ResponseCommand, CompletionCommand):
-        """
-        A class for SKASubarray's ObsReset() command.
-        """
+        """A class for SKASubarray's ObsReset() command."""
 
         def __init__(self, target, op_state_model, obs_state_model, logger=None):
             """
-            Constructor for ObsResetCommand
+            Initialise a new ObsResetCommand instance.
 
             :param target: the object that this command acts upon; for
                 example, the device's component manager
@@ -475,13 +455,11 @@ class SKASubarray(SKAObsDevice):
             return (ResultCode.OK, message)
 
     class RestartCommand(ObservationCommand, ResponseCommand, CompletionCommand):
-        """
-        A class for SKASubarray's Restart() command.
-        """
+        """A class for SKASubarray's Restart() command."""
 
         def __init__(self, target, op_state_model, obs_state_model, logger=None):
             """
-            Constructor for RestartCommand
+            Initialise a new RestartCommand instance.
 
             :param target: the object that this command acts upon; for
                 example, the device's component manager
@@ -504,7 +482,7 @@ class SKASubarray(SKAObsDevice):
 
         def do(self):
             """
-            Stateless hook for Restart() command functionality.
+            Execute the functionality of the Restart() command.
 
             :return: A tuple containing a return code and a string
                 message indicating status. The message is for
@@ -520,21 +498,18 @@ class SKASubarray(SKAObsDevice):
 
     # PROTECTED REGION ID(SKASubarray.class_variable) ENABLED START #
     def _init_state_model(self):
-        """
-        Sets up the state model for the device
-        """
+        """Set up the state model for the device."""
         super()._init_state_model()
         self.obs_state_model = SubarrayObsStateModel(
             logger=self.logger, callback=self._update_obs_state
         )
 
     def create_component_manager(self):
+        """Create and return a component manager for this device."""
         return SubarrayComponentManager(self.op_state_model, self.obs_state_model)
 
     def init_command_objects(self):
-        """
-        Sets up the command objects
-        """
+        """Set up the command objects."""
         super().init_command_objects()
 
         for (command_name, command_class) in [
@@ -605,7 +580,9 @@ class SKASubarray(SKAObsDevice):
     def always_executed_hook(self):
         # PROTECTED REGION ID(SKASubarray.always_executed_hook) ENABLED START #
         """
-        Method that is always executed before any device command gets executed.
+        Perform actions that are executed before every device command.
+
+        This is a Tango hook.
         """
         pass
         # PROTECTED REGION END #    //  SKASubarray.always_executed_hook
@@ -613,7 +590,12 @@ class SKASubarray(SKAObsDevice):
     def delete_device(self):
         # PROTECTED REGION ID(SKASubarray.delete_device) ENABLED START #
         """
-        Method to cleanup when device is stopped.
+        Clean up any resources prior to device deletion.
+
+        This method is a Tango hook that is called by the device
+        destructor and by the device Init command. It allows for any
+        memory or other resources allocated in the init_device method to
+        be released prior to device deletion.
         """
         pass
         # PROTECTED REGION END #    //  SKASubarray.delete_device
@@ -624,7 +606,7 @@ class SKASubarray(SKAObsDevice):
     def read_activationTime(self):
         # PROTECTED REGION ID(SKASubarray.activationTime_read) ENABLED START #
         """
-        Reads the time since device is activated.
+        Read the time since device is activated.
 
         :return: Time of activation in seconds since Unix epoch.
         """
@@ -634,7 +616,7 @@ class SKASubarray(SKAObsDevice):
     def read_assignedResources(self):
         # PROTECTED REGION ID(SKASubarray.assignedResources_read) ENABLED START #
         """
-        Reads the resources assigned to the device.
+        Read the resources assigned to the device.
 
         :return: Resources assigned to the device.
         """
@@ -644,7 +626,7 @@ class SKASubarray(SKAObsDevice):
     def read_configuredCapabilities(self):
         # PROTECTED REGION ID(SKASubarray.configuredCapabilities_read) ENABLED START #
         """
-        Reads capabilities configured in the Subarray.
+        Read capabilities configured in the Subarray.
 
         :return: A list of capability types with no. of instances used
             in the Subarray
@@ -658,8 +640,7 @@ class SKASubarray(SKAObsDevice):
 
     def is_AssignResources_allowed(self):
         """
-        Check if command `AssignResources` is allowed in the current
-        device state.
+        Check if command `AssignResources` is allowed in the current device state.
 
         :return: ``True`` if the command is allowed
         :rtype: boolean
@@ -676,7 +657,7 @@ class SKASubarray(SKAObsDevice):
     @DebugIt()
     def AssignResources(self, argin):
         """
-        Assign resources to this subarray
+        Assign resources to this subarray.
 
         To modify behaviour for this command, modify the do() method of
         the command class.
@@ -696,8 +677,7 @@ class SKASubarray(SKAObsDevice):
 
     def is_ReleaseResources_allowed(self):
         """
-        Check if command `ReleaseResources` is allowed in the current
-        device state
+        Check if command `ReleaseResources` is allowed in the current device state.
 
         :return: ``True`` if the command is allowed
         :rtype: boolean
@@ -734,8 +714,7 @@ class SKASubarray(SKAObsDevice):
 
     def is_ReleaseAllResources_allowed(self):
         """
-        Check if command `ReleaseAllResources` is allowed in the current
-        device state.
+        Check if command `ReleaseAllResources` is allowed in the current device state.
 
         :return: ``True`` if the command is allowed
         :rtype: boolean
@@ -766,8 +745,7 @@ class SKASubarray(SKAObsDevice):
 
     def is_Configure_allowed(self):
         """
-        Check if command `Configure` is allowed in the current
-        device state.
+        Check if command `Configure` is allowed in the current device state.
 
         :return: ``True`` if the command is allowed
         :rtype: boolean
@@ -784,7 +762,7 @@ class SKASubarray(SKAObsDevice):
     @DebugIt()
     def Configure(self, argin):
         """
-        Configures the capabilities of this subarray
+        Configure the capabilities of this subarray.
 
         To modify behaviour for this command, modify the do() method of
         the command class.
@@ -821,7 +799,7 @@ class SKASubarray(SKAObsDevice):
     @DebugIt()
     def Scan(self, argin):
         """
-        Start scanning
+        Start scanning.
 
         To modify behaviour for this command, modify the do() method of
         the command class.
@@ -856,7 +834,7 @@ class SKASubarray(SKAObsDevice):
     @DebugIt()
     def EndScan(self):
         """
-        End the scan
+        End the scan.
 
         To modify behaviour for this command, modify the do() method of
         the command class.
@@ -919,8 +897,7 @@ class SKASubarray(SKAObsDevice):
     @DebugIt()
     def Abort(self):
         """
-        Abort any long-running command such as ``Configure()`` or
-        ``Scan()``.
+        Abort any long-running command such as ``Configure()`` or ``Scan()``.
 
         To modify behaviour for this command, modify the do() method of
         the command class.
@@ -936,8 +913,7 @@ class SKASubarray(SKAObsDevice):
 
     def is_ObsReset_allowed(self):
         """
-        Check if command `ObsReset` is allowed in the current device
-        state.
+        Check if command `ObsReset` is allowed in the current device state.
 
         :return: ``True`` if the command is allowed
         :rtype: boolean
@@ -968,8 +944,7 @@ class SKASubarray(SKAObsDevice):
 
     def is_Restart_allowed(self):
         """
-        Check if command `Restart` is allowed in the current device
-        state.
+        Check if command `Restart` is allowed in the current device state.
 
         :return: ``True`` if the command is allowed
         :rtype: boolean
@@ -984,8 +959,7 @@ class SKASubarray(SKAObsDevice):
     @DebugIt()
     def Restart(self):
         """
-        Restart the subarray. That is, deconfigure and release
-        all resources.
+        Restart the subarray. That is, deconfigure and release all resources.
 
         To modify behaviour for this command, modify the do() method of
         the command class.
@@ -1006,7 +980,7 @@ class SKASubarray(SKAObsDevice):
 def main(args=None, **kwargs):
     # PROTECTED REGION ID(SKASubarray.main) ENABLED START #
     """
-    Main entry point of the module.
+    Launch an SKASubarray device.
 
     :param args: positional args to tango.server.run
     :param kwargs: named args to tango.server.run

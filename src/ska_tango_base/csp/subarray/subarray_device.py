@@ -6,7 +6,8 @@
 # Distributed under the terms of the BSD3 license.
 # See LICENSE.txt for more info.
 
-""" CspSubElementSubarray
+"""
+CspSubElementSubarray.
 
 Subarray device for SKA CSP SubElement
 """
@@ -39,9 +40,7 @@ __all__ = ["CspSubElementSubarray", "main"]
 
 
 class CspSubElementSubarray(SKASubarray):
-    """
-    Subarray device for SKA CSP SubElement
-    """
+    """Subarray device for SKA CSP SubElement."""
 
     # PROTECTED REGION ID(CspSubElementSubarray.class_variable) ENABLED START #
     # PROTECTED REGION END #    //  CspSubElementSubarray.class_variable
@@ -196,12 +195,11 @@ class CspSubElementSubarray(SKASubarray):
     # ---------------
 
     def create_component_manager(self):
+        """Create and return the component manager for this device."""
         return CspSubarrayComponentManager(self.op_state_model, self.obs_state_model)
 
     def init_command_objects(self):
-        """
-        Sets up the command objects
-        """
+        """Set up the command objects."""
         super().init_command_objects()
 
         device_args = (
@@ -216,9 +214,7 @@ class CspSubElementSubarray(SKASubarray):
         self.register_command_object("GoToIdle", self.GoToIdleCommand(*device_args))
 
     class InitCommand(SKASubarray.InitCommand):
-        """
-        A class for the CspSubElementObsDevice's init_device() "command".
-        """
+        """A class for the CspSubElementObsDevice's init_device() "command"."""
 
         def do(self):
             """
@@ -292,16 +288,22 @@ class CspSubElementSubarray(SKASubarray):
             return (ResultCode.OK, message)
 
     def always_executed_hook(self):
-        """Method always executed before any Tango command is executed."""
+        """
+        Perform actions that are executed before every device command.
+
+        This is a Tango hook.
+        """
         # PROTECTED REGION ID(CspSubElementSubarray.always_executed_hook) ENABLED START #
         # PROTECTED REGION END #    //  CspSubElementSubarray.always_executed_hook
 
     def delete_device(self):
-        """Hook to delete resources allocated in init_device.
+        """
+        Clean up any resources prior to device deletion.
 
-        This method allows for any memory or other resources allocated in the
-        init_device method to be released.  This method is called by the device
-        destructor and by the device Init command.
+        This method is a Tango hook that is called by the device
+        destructor and by the device Init command. It allows for any
+        memory or other resources allocated in the init_device method to
+        be released prior to device deletion.
         """
         # PROTECTED REGION ID(CspSubElementSubarray.delete_device) ENABLED START #
         # PROTECTED REGION END #    //  CspSubElementSubarray.delete_device
@@ -436,13 +438,11 @@ class CspSubElementSubarray(SKASubarray):
     # --------
 
     class ConfigureScanCommand(ObservationCommand, ResponseCommand, CompletionCommand):
-        """
-        A class for the CspSubElementObsDevices's ConfigureScan command.
-        """
+        """A class for the CspSubElementObsDevices's ConfigureScan command."""
 
         def __init__(self, target, op_state_model, obs_state_model, logger=None):
             """
-            Constructor for ConfigureScanCommand
+            Initialise a new ConfigureScanCommand instance.
 
             :param target: the object that this base command acts upon. For
                 example, the device's component manager.
@@ -482,6 +482,7 @@ class CspSubElementSubarray(SKASubarray):
         def validate_input(self, argin):
             """
             Validate the configuration parameters against allowed values, as needed.
+
             :param argin: The JSON formatted string with configuration for the device.
             :type argin: 'DevString'
             :return: A tuple containing a return code and a string message.
@@ -506,13 +507,11 @@ class CspSubElementSubarray(SKASubarray):
             )
 
     class GoToIdleCommand(ObservationCommand, ResponseCommand):
-        """
-        A class for the CspSubElementObsDevices's GoToIdle command.
-        """
+        """A class for the CspSubElementObsDevices's GoToIdle command."""
 
         def __init__(self, target, op_state_model, obs_state_model, logger=None):
             """
-            Constructor for EndCommand
+            Initialise a new GoToIdleCommand instance.
 
             :param target: the object that this base command acts upon. For
                 example, the device's component manager.
@@ -589,8 +588,7 @@ class CspSubElementSubarray(SKASubarray):
     def Configure(self, argin):
         # PROTECTED REGION ID(CspSubElementSubarray.Configure) ENABLED START #
         """
-        Redirect to ConfigureScan method.
-        Configure a complete scan for the subarray.
+        Redirect to ConfigureScan method. Configure a complete scan for the subarray.
 
         :param argin: JSON configuration string
 
@@ -631,8 +629,7 @@ class CspSubElementSubarray(SKASubarray):
     def End(self):
         # PROTECTED REGION ID(CspSubElementSubarray.End) ENABLED START #
         """
-        Transit the subarray from READY to IDLE obsState.
-        Redirect to GoToIdle command.
+        Transit the subarray from READY to IDLE obsState. Redirect to GoToIdle command.
 
         :return:'DevVarLongStringArray'
             A tuple containing a return code and a string  message indicating status.
@@ -648,7 +645,7 @@ class CspSubElementSubarray(SKASubarray):
 
 
 def main(args=None, **kwargs):
-    """Main function of the CspSubElementSubarray module."""
+    """Run the CspSubElementSubarray module."""
     # PROTECTED REGION ID(CspSubElementSubarray.main) ENABLED START #
     return run((CspSubElementSubarray,), args=args, **kwargs)
     # PROTECTED REGION END #    //  CspSubElementSubarray.main

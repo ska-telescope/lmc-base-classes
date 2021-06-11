@@ -7,6 +7,7 @@ _format-lint-install:  # install requirements for code formatting and checking
 
 format: _format-lint-install  # apply code formatting
 	black src/ tests/
+	docformatter -r -i --wrap-summaries 88 --pre-summary-newline src/ tests/
 
 lint: _format-lint-install
 	mkdir -p build/reports

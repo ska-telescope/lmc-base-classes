@@ -3,7 +3,8 @@
 # This file is part of the CspSubElementObsDevice project
 #
 
-""" CspSubElementObsDevice
+"""
+CspSubElementObsDevice.
 
 General observing device for SKA CSP Subelement.
 """
@@ -121,9 +122,7 @@ class CspSubElementObsDevice(SKAObsDevice):
     # ---------------
 
     def _init_state_model(self):
-        """
-        Sets up the state model for the device
-        """
+        """Set up the state model for the device."""
         super()._init_state_model()
         self.obs_state_model = CspSubElementObsStateModel(
             logger=self.logger,
@@ -131,12 +130,11 @@ class CspSubElementObsDevice(SKAObsDevice):
         )
 
     def create_component_manager(self):
+        """Create and return the component manager for this device."""
         return CspObsComponentManager(self.op_state_model, self.obs_state_model)
 
     def init_command_objects(self):
-        """
-        Sets up the command objects
-        """
+        """Set up the command objects."""
         super().init_command_objects()
 
         for (command_name, command_class) in [
@@ -158,9 +156,7 @@ class CspSubElementObsDevice(SKAObsDevice):
             )
 
     class InitCommand(SKAObsDevice.InitCommand):
-        """
-        A class for the CspSubElementObsDevice's init_device() "command".
-        """
+        """A class for the CspSubElementObsDevice's init_device() "command"."""
 
         def do(self):
             """
@@ -197,16 +193,22 @@ class CspSubElementObsDevice(SKAObsDevice):
             return (ResultCode.OK, message)
 
     def always_executed_hook(self):
-        """Method always executed before any Tango command is executed."""
+        """
+        Perform actions before any Tango command is executed.
+
+        This is a Tango hook.
+        """
         # PROTECTED REGION ID(CspSubElementObsDevice.always_executed_hook) ENABLED START #
         # PROTECTED REGION END #    //  CspSubElementObsDevice.always_executed_hook
 
     def delete_device(self):
-        """Hook to delete resources allocated in init_device.
+        """
+        Clean up any resources prior to device deletion.
 
-        This method allows for any memory or other resources allocated in the
-        init_device method to be released.  This method is called by the device
-        destructor and by the device Init command.
+        This method is a Tango hook that is called by the device
+        destructor and by the device Init command. It allows for any
+        memory or other resources allocated in the init_device method to
+        be released prior to device deletion.
         """
         # PROTECTED REGION ID(CspSubElementObsDevice.delete_device) ENABLED START #
         # PROTECTED REGION END #    //  CspSubElementObsDevice.delete_device
@@ -268,13 +270,11 @@ class CspSubElementObsDevice(SKAObsDevice):
     # --------
 
     class ConfigureScanCommand(ObservationCommand, ResponseCommand, CompletionCommand):
-        """
-        A class for the CspSubElementObsDevices's ConfigureScan command.
-        """
+        """A class for the CspSubElementObsDevices's ConfigureScan command."""
 
         def __init__(self, target, op_state_model, obs_state_model, logger=None):
             """
-            Constructor for ConfigureScanCommand
+            Initialise a new ConfigureScanCommand instance.
 
             :param target: the object that this command acts upon; for
                 example, the device's component manager
@@ -338,13 +338,11 @@ class CspSubElementObsDevice(SKAObsDevice):
             )
 
     class ScanCommand(ObservationCommand, ResponseCommand):
-        """
-        A class for the CspSubElementObsDevices's Scan command.
-        """
+        """A class for the CspSubElementObsDevices's Scan command."""
 
         def __init__(self, target, op_state_model, obs_state_model, logger=None):
             """
-            Constructor for ScanCommand
+            Initialise a new ScanCommand instance.
 
             :param target: the object that this command acts upon; for
                 example, the device's component manager
@@ -402,13 +400,11 @@ class CspSubElementObsDevice(SKAObsDevice):
             return (ResultCode.OK, "Scan arguments validation successfull")
 
     class EndScanCommand(ObservationCommand, ResponseCommand):
-        """
-        A class for the CspSubElementObsDevices's EndScan command.
-        """
+        """A class for the CspSubElementObsDevices's EndScan command."""
 
         def __init__(self, target, op_state_model, obs_state_model, logger=None):
             """
-            Constructor for EndScanCommand
+            Initialise a new EndScanCommand instance.
 
             :param target: the object that this command acts upon; for
                 example, the device's component manager
@@ -443,13 +439,11 @@ class CspSubElementObsDevice(SKAObsDevice):
             return (ResultCode.OK, "EndScan command completed OK")
 
     class GoToIdleCommand(ObservationCommand, ResponseCommand):
-        """
-        A class for the CspSubElementObsDevices's GoToIdle command.
-        """
+        """A class for the CspSubElementObsDevices's GoToIdle command."""
 
         def __init__(self, target, op_state_model, obs_state_model, logger=None):
             """
-            Constructor for EndCommand
+            Initialise a new EndCommand instance.
 
             :param target: the object that this command acts upon; for
                 example, the device's component manager
@@ -484,13 +478,11 @@ class CspSubElementObsDevice(SKAObsDevice):
             return (ResultCode.OK, "GoToIdle command completed OK")
 
     class ObsResetCommand(ObservationCommand, ResponseCommand, CompletionCommand):
-        """
-        A class for the CspSubElementObsDevices's ObsReset command.
-        """
+        """A class for the CspSubElementObsDevices's ObsReset command."""
 
         def __init__(self, target, op_state_model, obs_state_model, logger=None):
             """
-            Constructor for ObsReset Command.
+            Initialise a new ObsResetCommand instance.
 
             :param target: the object that this command acts upon; for
                 example, the device's component manager
@@ -525,13 +517,11 @@ class CspSubElementObsDevice(SKAObsDevice):
             return (ResultCode.OK, message)
 
     class AbortCommand(ObservationCommand, ResponseCommand, CompletionCommand):
-        """
-        A class for the CspSubElementObsDevices's Abort command.
-        """
+        """A class for the CspSubElementObsDevices's Abort command."""
 
         def __init__(self, target, op_state_model, obs_state_model, logger=None):
             """
-            Constructor for Abort Command.
+            Initialise a new AbortCommand instance.
 
             :param target: the object that this command acts upon; for
                 example, the device's component manager
@@ -690,8 +680,7 @@ class CspSubElementObsDevice(SKAObsDevice):
     def Abort(self):
         # PROTECTED REGION ID(CspSubElementObsDevice.Abort) ENABLED START #
         """
-        Abort the current observing process and move the device
-        to ABORTED obsState.
+        Abort the current observing process and move the device to ABORTED obsState.
 
         :return: A tuple containing a return code and a string message indicating status.
             The message is for information purpose only.
@@ -709,7 +698,7 @@ class CspSubElementObsDevice(SKAObsDevice):
 
 
 def main(args=None, **kwargs):
-    """Main function of the CspSubElementObsDevice module."""
+    """Run the CspSubElementObsDevice module."""
     # PROTECTED REGION ID(CspSubElementObsDevice.main) ENABLED START #
     return run((CspSubElementObsDevice,), args=args, **kwargs)
     # PROTECTED REGION END #    //  CspSubElementObsDevice.main

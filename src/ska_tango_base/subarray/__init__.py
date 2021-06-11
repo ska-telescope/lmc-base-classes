@@ -1,6 +1,4 @@
-"""
-This subpackage models a SKA subarray Tango device.
-"""
+"""This subpackage models a SKA subarray Tango device."""
 
 __all__ = (
     "SubarrayObsStateModel",

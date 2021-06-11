@@ -1,6 +1,4 @@
-"""
-A module defining a list of fixtures that are shared across all ska_tango_base tests.
-"""
+"""This module defines elements of the pytest test harness shared by all tests."""
 import logging
 from queue import Empty, Queue
 
@@ -12,19 +10,16 @@ from tango.test_context import DeviceTestContext
 @pytest.fixture(scope="class")
 def device_properties():
     """
-    Fixture that returns device_properties to be provided to the
-    device under test. This is a default implementiong that provides
-    no properties.
+    Fixture that returns device_properties to be provided to the device under test.
+
+    This is a default implementiong that provides no properties.
     """
     return {}
 
 
 @pytest.fixture(scope="class")
 def tango_context(device_test_config):
-    """
-    Fixture that returns a Tango DeviceTestContext object, in which the
-    device under test is running.
-    """
+    """Return a Tango test context object, in which the device under test is running."""
     component_manager_patch = device_test_config.pop("component_manager_patch", None)
     if component_manager_patch is not None:
         device_test_config["device"].create_component_manager = component_manager_patch
@@ -36,14 +31,15 @@ def tango_context(device_test_config):
 
 
 def pytest_itemcollected(item):
-    """Make Tango-related tests run in forked mode"""
+    """Make Tango-related tests run in forked mode."""
     if "tango_context" in item.fixturenames:
         item.add_marker("forked")
 
 
 @pytest.fixture(scope="function")
 def initialize_device(tango_context):
-    """Re-initializes the device.
+    """
+    Re-initializes the device.
 
     Parameters
     ----------
@@ -56,10 +52,12 @@ def initialize_device(tango_context):
 @pytest.fixture(scope="function")
 def tango_change_event_helper(tango_context):
     """
-    Helper for testing tango change events. To use it, call the subscribe
-    method with the name of the attribute for which you want change events.
-    The returned value will be a callback handler that you can interrogate
-    with ``assert_not_called``, ``assert_call``, ``assert_calls``, and
+    Return a helper for testing tango change events.
+
+    To use it, call the subscribe method with the name of the attribute
+    for which you want change events. The returned value will be a
+    callback handler that you can interrogate with
+    ``assert_not_called``, ``assert_call``, ``assert_calls``, and
     ``value`` methods.
 
     .. code-block:: py
@@ -80,21 +78,20 @@ def tango_change_event_helper(tango_context):
         tango_context.device.Off()
         tango_context.device.On()
         state_callback.assert_calls([DevState.OFF, DevState.ON])
-
     """
 
     class _Callback:
         """
-        Private callback handler class, an instance of which is returned
-        by the tango_change_event_helper each time it is used to
-        subscribe to a change event.
+        Private callback handler class.
+
+        An instance is returned by the tango_change_event_helper each
+        time it is used to subscribe to a change event.
         """
 
         @staticmethod
         def subscribe(attribute_name):
             """
-            Returns an event subscriber helper object that is subscribed
-            to change events on the named attribute.
+            Return an instance that is subscribed to change events on a named attribute.
 
             :param attribute_name: name of the attribute for which
                 change events will be subscribed
@@ -106,8 +103,10 @@ def tango_change_event_helper(tango_context):
 
         def __init__(self, attribute_name):
             """
-            Creates an event subscriber helper object that is subscribed
-            to change events on the name attribute
+            Initialise a new instance.
+
+            The instance will be subscribed to change events on the
+            named attribute.
 
             :param attribute_name: name of the attribute for which
                 change events will be subscribed
@@ -125,15 +124,13 @@ def tango_change_event_helper(tango_context):
             )
 
         def __del__(self):
-            """
-            Unsubscribe from events before object is destroyed
-            """
+            """Unsubscribe from events before object is destroyed."""
             if hasattr(self, "_id"):
                 tango_context.device.unsubscribe_event(self._id)
 
         def __call__(self, event_data):
             """
-            Event subscription callback
+            Event subscription callback.
 
             :param event_data: data about the change events
             :type event_data: :py:class:`tango.EventData`
@@ -148,8 +145,10 @@ def tango_change_event_helper(tango_context):
 
         def _next(self):
             """
-            Gets the attribute value from the next event if there is
-            one or if it arrives in time.
+            Get the attribute value from the next event.
+
+            A value is returned if there is already one,  or if it
+            arrives in time.
 
             :return: the attribute value reported in next change event,
                 or None if there is no event
@@ -163,16 +162,20 @@ def tango_change_event_helper(tango_context):
 
         def assert_not_called(self):
             """
-            Assert that there are no new callbacks calls. (That is,
-            there are no callback calls that have not already been
-            consumed by an ``assert_call`` or ``assert_calls``.)
+            Assert that there are no new callbacks calls.
+
+            (That is, there are no callback calls that have not already
+            been consumed by an ``assert_call`` or ``assert_calls``.)
             """
             assert self._values_queue.empty()
 
         def assert_call(self, value):
             """
-            Asserts that this callback has been called with a change
-            event that updates the attribute value to a given value.
+            Assert a call that has been made on this callback.
+
+            Specifically, asserts that this callback has been called
+            with a change event that updates the attribute value to a
+            given value.
 
             Note that this method consumes a single event, but may leave
             other events unconsumed.
@@ -185,9 +188,11 @@ def tango_change_event_helper(tango_context):
 
         def assert_calls(self, values):
             """
-            Asserts that this callback has been called with a sequence
-            of change events that update the attribute values to the
-            given sequence of values.
+            Assert a sequence of calls that have been made on this callback.
+
+            Specifically, assert that this callback has been called with
+            a sequence of change events that update the attribute values
+            to the given sequence of values.
 
             Note that this method consumes the events associated with
             the given values, but may leave subsequent events
@@ -205,7 +210,5 @@ def tango_change_event_helper(tango_context):
 
 @pytest.fixture()
 def logger():
-    """
-    Fixture that returns a default logger for tests
-    """
+    """Fixture that returns a default logger for tests."""
     return logging.Logger("Test logger")

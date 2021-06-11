@@ -37,16 +37,11 @@ from ska_tango_base.subarray import (
 
 
 class TestSKASubarray:
-    """
-    Test cases for SKASubarray device.
-    """
+    """Test cases for SKASubarray device."""
 
     @pytest.fixture(scope="class")
     def device_properties(self):
-        """
-        Fixture that returns device_properties to be provided to the
-        device under test.
-        """
+        """Fixture that returns properties of the device under test."""
         return {
             "CapabilityTypes": ["BAND1", "BAND2"],
             "LoggingTargetsDefault": "",
@@ -58,8 +53,7 @@ class TestSKASubarray:
     @pytest.fixture(scope="class")
     def device_test_config(self, device_properties):
         """
-        Fixture that specifies the device to be tested, along with its
-        properties and memorized attributes.
+        Specify device configuration, including properties and memorized attributes.
 
         This implementation provides a concrete subclass of the device
         class under test, some properties, and a memorized value for
@@ -79,15 +73,15 @@ class TestSKASubarray:
 
     @pytest.mark.skip(reason="Not implemented")
     def test_properties(self, tango_context):
-        # Test the properties
+        """Test device properties."""
         # PROTECTED REGION ID(SKASubarray.test_properties) ENABLED START #
         # PROTECTED REGION END #    //  SKASubarray.test_properties
-        """Test the Tango device properties of this subarray device"""
+        """Test the Tango device properties of this subarray device."""
 
     # PROTECTED REGION ID(SKASubarray.test_Abort_decorators) ENABLED START #
     # PROTECTED REGION END #    //  SKASubarray.test_Abort_decorators
     def test_Abort(self, tango_context, tango_change_event_helper):
-        """Test for Abort"""
+        """Test for Abort."""
         # PROTECTED REGION ID(SKASubarray.test_Abort) ENABLED START #
 
         tango_context.device.On()
@@ -107,7 +101,7 @@ class TestSKASubarray:
     # PROTECTED REGION ID(SKASubarray.test_Configure_decorators) ENABLED START #
     # PROTECTED REGION END #    //  SKASubarray.test_Configure_decorators
     def test_Configure(self, tango_context, tango_change_event_helper):
-        """Test for Configure"""
+        """Test for Configure."""
         # PROTECTED REGION ID(SKASubarray.test_Configure) ENABLED START #
         tango_context.device.On()
         tango_context.device.AssignResources(json.dumps(["BAND1"]))
@@ -125,7 +119,7 @@ class TestSKASubarray:
     # PROTECTED REGION ID(SKASubarray.test_GetVersionInfo_decorators) ENABLED START #
     # PROTECTED REGION END #    //  SKASubarray.test_GetVersionInfo_decorators
     def test_GetVersionInfo(self, tango_context):
-        """Test for GetVersionInfo"""
+        """Test for GetVersionInfo."""
         # PROTECTED REGION ID(SKASubarray.test_GetVersionInfo) ENABLED START #
         versionPattern = re.compile(
             f"{tango_context.device.info().dev_class}, ska_tango_base, [0-9]+.[0-9]+.[0-9]+, "
@@ -138,7 +132,7 @@ class TestSKASubarray:
     # PROTECTED REGION ID(SKASubarray.test_Status_decorators) ENABLED START #
     # PROTECTED REGION END #    //  SKASubarray.test_Status_decorators
     def test_Status(self, tango_context):
-        """Test for Status"""
+        """Test for Status."""
         # PROTECTED REGION ID(SKASubarray.test_Status) ENABLED START #
         assert tango_context.device.Status() == "The device is in OFF state."
         # PROTECTED REGION END #    //  SKASubarray.test_Status
@@ -146,7 +140,7 @@ class TestSKASubarray:
     # PROTECTED REGION ID(SKASubarray.test_State_decorators) ENABLED START #
     # PROTECTED REGION END #    //  SKASubarray.test_State_decorators
     def test_State(self, tango_context):
-        """Test for State"""
+        """Test for State."""
         # PROTECTED REGION ID(SKASubarray.test_State) ENABLED START #
         assert tango_context.device.State() == DevState.OFF
         # PROTECTED REGION END #    //  SKASubarray.test_State
@@ -154,7 +148,7 @@ class TestSKASubarray:
     # PROTECTED REGION ID(SKASubarray.test_AssignResources_decorators) ENABLED START #
     # PROTECTED REGION END #    //  SKASubarray.test_AssignResources_decorators
     def test_AssignResources(self, tango_context, tango_change_event_helper):
-        """Test for AssignResources"""
+        """Test for AssignResources."""
         # PROTECTED REGION ID(SKASubarray.test_AssignResources) ENABLED START #
         tango_context.device.On()
 
@@ -179,7 +173,7 @@ class TestSKASubarray:
     # PROTECTED REGION ID(SKASubarray.test_EndSB_decorators) ENABLED START #
     # PROTECTED REGION END #    //  SKASubarray.test_EndSB_decorators
     def test_End(self, tango_context, tango_change_event_helper):
-        """Test for EndSB"""
+        """Test for EndSB."""
         # PROTECTED REGION ID(SKASubarray.test_EndSB) ENABLED START #
         tango_context.device.On()
         tango_context.device.AssignResources(json.dumps(["BAND1"]))
@@ -199,7 +193,7 @@ class TestSKASubarray:
     # PROTECTED REGION ID(SKASubarray.test_EndScan_decorators) ENABLED START #
     # PROTECTED REGION END #    //  SKASubarray.test_EndScan_decorators
     def test_EndScan(self, tango_context, tango_change_event_helper):
-        """Test for EndScan"""
+        """Test for EndScan."""
         # PROTECTED REGION ID(SKASubarray.test_EndScan) ENABLED START #
         tango_context.device.On()
         tango_context.device.AssignResources(json.dumps(["BAND1"]))
@@ -221,7 +215,7 @@ class TestSKASubarray:
     # PROTECTED REGION ID(SKASubarray.test_ReleaseAllResources_decorators) ENABLED START #
     # PROTECTED REGION END #    //  SKASubarray.test_ReleaseAllResources_decorators
     def test_ReleaseAllResources(self, tango_context, tango_change_event_helper):
-        """Test for ReleaseAllResources"""
+        """Test for ReleaseAllResources."""
         # PROTECTED REGION ID(SKASubarray.test_ReleaseAllResources) ENABLED START #
         # assert tango_context.device.ReleaseAllResources() == [""]
         tango_context.device.On()
@@ -239,7 +233,7 @@ class TestSKASubarray:
     # PROTECTED REGION ID(SKASubarray.test_ReleaseResources_decorators) ENABLED START #
     # PROTECTED REGION END #    //  SKASubarray.test_ReleaseResources_decorators
     def test_ReleaseResources(self, tango_context, tango_change_event_helper):
-        """Test for ReleaseResources"""
+        """Test for ReleaseResources."""
         # PROTECTED REGION ID(SKASubarray.test_ReleaseResources) ENABLED START #
         tango_context.device.On()
         tango_context.device.AssignResources(json.dumps(["BAND1", "BAND2"]))
@@ -257,7 +251,7 @@ class TestSKASubarray:
     # PROTECTED REGION ID(SKASubarray.test_Reset_decorators) ENABLED START #
     # PROTECTED REGION END #    //  SKASubarray.test_Reset_decorators
     def test_ObsReset(self, tango_context, tango_change_event_helper):
-        """Test for Reset"""
+        """Test for Reset."""
         # PROTECTED REGION ID(SKASubarray.test_Reset) ENABLED START #
         tango_context.device.On()
         tango_context.device.AssignResources(json.dumps(["BAND1"]))
@@ -279,7 +273,7 @@ class TestSKASubarray:
     # PROTECTED REGION ID(SKASubarray.test_Scan_decorators) ENABLED START #
     # PROTECTED REGION END #    //  SKASubarray.test_Scan_decorators
     def test_Scan(self, tango_context, tango_change_event_helper):
-        """Test for Scan"""
+        """Test for Scan."""
         # PROTECTED REGION ID(SKASubarray.test_Scan) ENABLED START #
         tango_context.device.On()
         tango_context.device.AssignResources(json.dumps(["BAND1"]))
@@ -304,7 +298,7 @@ class TestSKASubarray:
     # PROTECTED REGION ID(SKASubarray.test_activationTime_decorators) ENABLED START #
     # PROTECTED REGION END #    //  SKASubarray.test_activationTime_decorators
     def test_activationTime(self, tango_context):
-        """Test for activationTime"""
+        """Test for activationTime."""
         # PROTECTED REGION ID(SKASubarray.test_activationTime) ENABLED START #
         assert tango_context.device.activationTime == 0.0
         # PROTECTED REGION END #    //  SKASubarray.test_activationTime
@@ -312,7 +306,7 @@ class TestSKASubarray:
     # PROTECTED REGION ID(SKASubarray.test_adminMode_decorators) ENABLED START #
     # PROTECTED REGION END #    //  SKASubarray.test_adminMode_decorators
     def test_adminMode(self, tango_context, tango_change_event_helper):
-        """Test for adminMode"""
+        """Test for adminMode."""
         # PROTECTED REGION ID(SKASubarray.test_adminMode) ENABLED START #
         device_under_test = tango_context.device
         assert device_under_test.state() == DevState.OFF
@@ -339,7 +333,7 @@ class TestSKASubarray:
     # PROTECTED REGION ID(SKASubarray.test_buildState_decorators) ENABLED START #
     # PROTECTED REGION END #    //  SKASubarray.test_buildState_decorators
     def test_buildState(self, tango_context):
-        """Test for buildState"""
+        """Test for buildState."""
         # PROTECTED REGION ID(SKASubarray.test_buildState) ENABLED START #
         buildPattern = re.compile(
             r"ska_tango_base, [0-9]+.[0-9]+.[0-9]+, "
@@ -351,7 +345,7 @@ class TestSKASubarray:
     # PROTECTED REGION ID(SKASubarray.test_configurationDelayExpected_decorators) ENABLED START #
     # PROTECTED REGION END #    //  SKASubarray.test_configurationDelayExpected_decorators
     def test_configurationDelayExpected(self, tango_context):
-        """Test for configurationDelayExpected"""
+        """Test for configurationDelayExpected."""
         # PROTECTED REGION ID(SKASubarray.test_configurationDelayExpected) ENABLED START #
         assert tango_context.device.configurationDelayExpected == 0
         # PROTECTED REGION END #    //  SKASubarray.test_configurationDelayExpected
@@ -359,7 +353,7 @@ class TestSKASubarray:
     # PROTECTED REGION ID(SKASubarray.test_configurationProgress_decorators) ENABLED START #
     # PROTECTED REGION END #    //  SKASubarray.test_configurationProgress_decorators
     def test_configurationProgress(self, tango_context):
-        """Test for configurationProgress"""
+        """Test for configurationProgress."""
         # PROTECTED REGION ID(SKASubarray.test_configurationProgress) ENABLED START #
         assert tango_context.device.configurationProgress == 0
         # PROTECTED REGION END #    //  SKASubarray.test_configurationProgress
@@ -367,7 +361,7 @@ class TestSKASubarray:
     # PROTECTED REGION ID(SKASubarray.test_controlMode_decorators) ENABLED START #
     # PROTECTED REGION END #    //  SKASubarray.test_controlMode_decorators
     def test_controlMode(self, tango_context):
-        """Test for controlMode"""
+        """Test for controlMode."""
         # PROTECTED REGION ID(SKASubarray.test_controlMode) ENABLED START #
         assert tango_context.device.controlMode == ControlMode.REMOTE
         # PROTECTED REGION END #    //  SKASubarray.test_controlMode
@@ -375,7 +369,7 @@ class TestSKASubarray:
     # PROTECTED REGION ID(SKASubarray.test_healthState_decorators) ENABLED START #
     # PROTECTED REGION END #    //  SKASubarray.test_healthState_decorators
     def test_healthState(self, tango_context):
-        """Test for healthState"""
+        """Test for healthState."""
         # PROTECTED REGION ID(SKASubarray.test_healthState) ENABLED START #
         assert tango_context.device.healthState == HealthState.OK
         # PROTECTED REGION END #    //  SKASubarray.test_healthState
@@ -383,7 +377,7 @@ class TestSKASubarray:
     # PROTECTED REGION ID(SKASubarray.test_obsMode_decorators) ENABLED START #
     # PROTECTED REGION END #    //  SKASubarray.test_obsMode_decorators
     def test_obsMode(self, tango_context):
-        """Test for obsMode"""
+        """Test for obsMode."""
         # PROTECTED REGION ID(SKASubarray.test_obsMode) ENABLED START #
         assert tango_context.device.obsMode == ObsMode.IDLE
         # PROTECTED REGION END #    //  SKASubarray.test_obsMode
@@ -391,7 +385,7 @@ class TestSKASubarray:
     # PROTECTED REGION ID(SKASubarray.test_obsState_decorators) ENABLED START #
     # PROTECTED REGION END #    //  SKASubarray.test_obsState_decorators
     def test_obsState(self, tango_context):
-        """Test for obsState"""
+        """Test for obsState."""
         # PROTECTED REGION ID(SKASubarray.test_obsState) ENABLED START #
         assert tango_context.device.obsState == ObsState.EMPTY
         # PROTECTED REGION END #    //  SKASubarray.test_obsState
@@ -399,7 +393,7 @@ class TestSKASubarray:
     # PROTECTED REGION ID(SKASubarray.test_simulationMode_decorators) ENABLED START #
     # PROTECTED REGION END #    //  SKASubarray.test_simulationMode_decorators
     def test_simulationMode(self, tango_context):
-        """Test for simulationMode"""
+        """Test for simulationMode."""
         # PROTECTED REGION ID(SKASubarray.test_simulationMode) ENABLED START #
         assert tango_context.device.simulationMode == SimulationMode.FALSE
         # PROTECTED REGION END #    //  SKASubarray.test_simulationMode
@@ -407,7 +401,7 @@ class TestSKASubarray:
     # PROTECTED REGION ID(SKASubarray.test_testMode_decorators) ENABLED START #
     # PROTECTED REGION END #    //  SKASubarray.test_testMode_decorators
     def test_testMode(self, tango_context):
-        """Test for testMode"""
+        """Test for testMode."""
         # PROTECTED REGION ID(SKASubarray.test_testMode) ENABLED START #
         assert tango_context.device.testMode == TestMode.NONE
         # PROTECTED REGION END #    //  SKASubarray.test_testMode
@@ -415,7 +409,7 @@ class TestSKASubarray:
     # PROTECTED REGION ID(SKASubarray.test_versionId_decorators) ENABLED START #
     # PROTECTED REGION END #    //  SKASubarray.test_versionId_decorators
     def test_versionId(self, tango_context):
-        """Test for versionId"""
+        """Test for versionId."""
         # PROTECTED REGION ID(SKASubarray.test_versionId) ENABLED START #
         versionIdPattern = re.compile(r"[0-9]+.[0-9]+.[0-9]+")
         assert (re.match(versionIdPattern, tango_context.device.versionId)) is not None
@@ -424,7 +418,7 @@ class TestSKASubarray:
     # PROTECTED REGION ID(SKASubarray.test_assignedResources_decorators) ENABLED START #
     # PROTECTED REGION END #    //  SKASubarray.test_assignedResources_decorators
     def test_assignedResources(self, tango_context):
-        """Test for assignedResources"""
+        """Test for assignedResources."""
         # PROTECTED REGION ID(SKASubarray.test_assignedResources) ENABLED START #
         tango_context.device.On()
         assert tango_context.device.assignedResources is None
@@ -433,7 +427,7 @@ class TestSKASubarray:
     # PROTECTED REGION ID(SKASubarray.test_configuredCapabilities_decorators) ENABLED START #
     # PROTECTED REGION END #    //  SKASubarray.test_configuredCapabilities_decorators
     def test_configuredCapabilities(self, tango_context):
-        """Test for configuredCapabilities"""
+        """Test for configuredCapabilities."""
         # PROTECTED REGION ID(SKASubarray.test_configuredCapabilities) ENABLED START #
         tango_context.device.On()
         assert tango_context.device.configuredCapabilities == ("BAND1:0", "BAND2:0")
@@ -441,28 +435,22 @@ class TestSKASubarray:
 
 
 class TestSKASubarray_commands:
-    """
-    This class contains tests of SKASubarray commands
-    """
+    """This class contains tests of SKASubarray commands."""
 
     @pytest.fixture
     def op_state_model(self, logger):
-        """
-        Yields a new OpStateModel for testing
-        """
+        """Yield a new OpStateModel for testing."""
         yield OpStateModel(logger)
 
     @pytest.fixture
     def subarray_state_model(self, logger):
-        """
-        Yields a new SubarrayObsStateModel for testing
-        """
+        """Yield a new SubarrayObsStateModel for testing."""
         yield SubarrayObsStateModel(logger)
 
     @pytest.fixture()
     def component_manager(self, op_state_model, subarray_state_model, logger, mocker):
         """
-        Fixture that returns the component manager under test
+        Fixture that returns the component manager under test.
 
         :param mock_op_state_model: a mock state model for testing
         :param logger: a logger for the component manager
@@ -477,9 +465,7 @@ class TestSKASubarray_commands:
     def test_AssignCommand(
         self, component_manager, op_state_model, subarray_state_model
     ):
-        """
-        Test for SKASubarray.AssignResourcesCommand
-        """
+        """Test for SKASubarray.AssignResourcesCommand."""
         op_state_model._straight_to_state("DISABLE")
         component_manager.start_communicating()
         component_manager.on()

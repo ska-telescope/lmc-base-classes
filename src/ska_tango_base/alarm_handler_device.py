@@ -5,11 +5,12 @@
 #
 #
 """
-This module implements SKAAlarmHandler, a generic base device for Alarms
-for SKA. It exposes SKA alarms and SKA alerts as Tango attributes. SKA
-Alarms and SKA/Element Alerts are rules-based configurable conditions
-that can be defined over multiple attribute values and quality factors,
-and are separate from the "built-in" Tango attribute alarms.
+This module implements SKAAlarmHandler, a generic base device for Alarms for SKA.
+
+It exposes SKA alarms and SKA alerts as Tango attributes. SKA Alarms and
+SKA/Element Alerts are rules-based configurable conditions that can be
+defined over multiple attribute values and quality factors, and are
+separate from the "built-in" Tango attribute alarms.
 """
 # PROTECTED REGION ID(SKAAlarmHandler.additionnal_import) ENABLED START #
 # Tango imports
@@ -26,9 +27,7 @@ __all__ = ["SKAAlarmHandler", "main"]
 
 
 class SKAAlarmHandler(SKABaseDevice):
-    """
-    A generic base device for Alarms for SKA.
-    """
+    """A generic base device for Alarms for SKA."""
 
     # PROTECTED REGION ID(SKAAlarmHandler.class_variable) ENABLED START #
     # PROTECTED REGION END #    //  SKAAlarmHandler.class_variable
@@ -98,9 +97,7 @@ class SKAAlarmHandler(SKABaseDevice):
     # ---------------
 
     def init_command_objects(self):
-        """
-        Sets up the command objects
-        """
+        """Set up the command objects."""
         super().init_command_objects()
         self.register_command_object(
             "GetAlarmRule",
@@ -125,11 +122,24 @@ class SKAAlarmHandler(SKABaseDevice):
 
     def always_executed_hook(self):
         # PROTECTED REGION ID(SKAAlarmHandler.always_executed_hook) ENABLED START #
+        """
+        Perform actions that are executed before every device command.
+
+        This is a Tango hook.
+        """
         pass
         # PROTECTED REGION END #    //  SKAAlarmHandler.always_executed_hook
 
     def delete_device(self):
         # PROTECTED REGION ID(SKAAlarmHandler.delete_device) ENABLED START #
+        """
+        Clean up any resources prior to device deletion.
+
+        This method is a Tango hook that is called by the device
+        destructor and by the device Init command. It allows for any
+        memory or other resources allocated in the init_device method to
+        be released prior to device deletion.
+        """
         pass
         # PROTECTED REGION END #    //  SKAAlarmHandler.delete_device
 
@@ -140,7 +150,8 @@ class SKAAlarmHandler(SKABaseDevice):
     def read_statsNrAlerts(self):
         # PROTECTED REGION ID(SKAAlarmHandler.statsNrAlerts_read) ENABLED START #
         """
-        Reads number of active alerts.
+        Read number of active alerts.
+
         :return: Number of active alerts
         """
         return 0
@@ -149,7 +160,8 @@ class SKAAlarmHandler(SKABaseDevice):
     def read_statsNrAlarms(self):
         # PROTECTED REGION ID(SKAAlarmHandler.statsNrAlarms_read) ENABLED START #
         """
-        Reads number of active alarms.
+        Read number of active alarms.
+
         :return: Number of active alarms
         """
         return 0
@@ -158,7 +170,8 @@ class SKAAlarmHandler(SKABaseDevice):
     def read_statsNrNewAlarms(self):
         # PROTECTED REGION ID(SKAAlarmHandler.statsNrNewAlarms_read) ENABLED START #
         """
-        Reads number of new active alarms.
+        Read number of new active alarms.
+
         :return: Number of new active alarms
         """
         return 0
@@ -167,7 +180,8 @@ class SKAAlarmHandler(SKABaseDevice):
     def read_statsNrUnackAlarms(self):
         # PROTECTED REGION ID(SKAAlarmHandler.statsNrUnackAlarms_read) ENABLED START #
         """
-        Reads number of unacknowledged alarms.
+        Read number of unacknowledged alarms.
+
         :return: Number of unacknowledged alarms.
         """
         return 0.0
@@ -176,7 +190,8 @@ class SKAAlarmHandler(SKABaseDevice):
     def read_statsNrRtnAlarms(self):
         # PROTECTED REGION ID(SKAAlarmHandler.statsNrRtnAlarms_read) ENABLED START #
         """
-        Reads number of returned alarms.
+        Read number of returned alarms.
+
         :return: Number of returned alarms
         """
         return 0.0
@@ -185,7 +200,8 @@ class SKAAlarmHandler(SKABaseDevice):
     def read_activeAlerts(self):
         # PROTECTED REGION ID(SKAAlarmHandler.activeAlerts_read) ENABLED START #
         """
-        Reads list of active alerts.
+        Read list of active alerts.
+
         :return: List of active alerts
         """
         return [""]
@@ -194,7 +210,8 @@ class SKAAlarmHandler(SKABaseDevice):
     def read_activeAlarms(self):
         # PROTECTED REGION ID(SKAAlarmHandler.activeAlarms_read) ENABLED START #
         """
-        Reads list of active alarms.
+        Read list of active alarms.
+
         :return: List of active alarms
         """
         return [""]
@@ -205,9 +222,7 @@ class SKAAlarmHandler(SKABaseDevice):
     # --------
 
     class GetAlarmRuleCommand(BaseCommand):
-        """
-        A class for the SKAAlarmHandler's GetAlarmRule() command.
-        """
+        """A class for the SKAAlarmHandler's GetAlarmRule() command."""
 
         def do(self, argin):
             """
@@ -219,9 +234,7 @@ class SKAAlarmHandler(SKABaseDevice):
             return ""
 
     class GetAlarmDataCommand(BaseCommand):
-        """
-        A class for the SKAAlarmHandler's GetAlarmData() command.
-        """
+        """A class for the SKAAlarmHandler's GetAlarmData() command."""
 
         def do(self, argin):
             """
@@ -233,15 +246,11 @@ class SKAAlarmHandler(SKABaseDevice):
             return ""
 
     class GetAlarmAdditionalInfoCommand(BaseCommand):
-        """
-        A class for the SKAAlarmHandler's GetAlarmAdditionalInfo()
-        command.
-        """
+        """A class for the SKAAlarmHandler's GetAlarmAdditionalInfo() command."""
 
         def do(self, argin):
             """
-            Stateless hook for SKAAlarmHandler GetAlarmAdditionalInfo()
-            command.
+            Stateless hook for SKAAlarmHandler GetAlarmAdditionalInfo() command.
 
             :return: Alarm additional info
             :rtype: JSON string
@@ -249,9 +258,7 @@ class SKAAlarmHandler(SKABaseDevice):
             return ""
 
     class GetAlarmStatsCommand(BaseCommand):
-        """
-        A class for the SKAAlarmHandler's GetAlarmStats() command.
-        """
+        """A class for the SKAAlarmHandler's GetAlarmStats() command."""
 
         def do(self):
             """
@@ -263,9 +270,7 @@ class SKAAlarmHandler(SKABaseDevice):
             return ""
 
     class GetAlertStatsCommand(BaseCommand):
-        """
-        A class for the SKAAlarmHandler's GetAlertStats() command.
-        """
+        """A class for the SKAAlarmHandler's GetAlertStats() command."""
 
         def do(self):
             """
@@ -308,8 +313,9 @@ class SKAAlarmHandler(SKABaseDevice):
     def GetAlarmData(self, argin):
         # PROTECTED REGION ID(SKAAlarmHandler.GetAlarmData) ENABLED START #
         """
-        Get list of current value, quality factor and status of
-        all attributes participating in the alarm rule.
+        Get data on all attributes participating in the alarm rule.
+
+        The data includes current value, quality factor and status.
 
         To modify behaviour for this command, modify the do() method of
         the command class.
@@ -389,12 +395,7 @@ class SKAAlarmHandler(SKABaseDevice):
 
 def main(args=None, **kwargs):
     # PROTECTED REGION ID(SKAAlarmHandler.main) ENABLED START #
-    """
-    Main function of the SKAAlarmHandler module.
-    :param args:
-    :param kwargs:
-    :return:
-    """
+    """Launch an SKAAlarmHandler device."""
     return run((SKAAlarmHandler,), args=args, **kwargs)
     # PROTECTED REGION END #    //  SKAAlarmHandler.main
 

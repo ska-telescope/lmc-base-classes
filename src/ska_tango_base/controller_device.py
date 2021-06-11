@@ -5,7 +5,8 @@
 #
 #
 
-""" SKAController
+"""
+SKAController.
 
 Controller device
 """
@@ -30,14 +31,10 @@ __all__ = ["SKAController", "main"]
 
 
 class SKAController(SKABaseDevice):
-    """
-    Controller device
-    """
+    """Controller device."""
 
     def init_command_objects(self):
-        """
-        Sets up the command objects
-        """
+        """Set up the command objects."""
         super().init_command_objects()
         self.register_command_object(
             "IsCapabilityAchievable",
@@ -45,9 +42,7 @@ class SKAController(SKABaseDevice):
         )
 
     class InitCommand(SKABaseDevice.InitCommand):
-        """
-        A class for the SKAController's init_device() "command".
-        """
+        """A class for the SKAController's init_device() "command"."""
 
         def do(self):
             """
@@ -149,11 +144,24 @@ class SKAController(SKABaseDevice):
 
     def always_executed_hook(self):
         # PROTECTED REGION ID(SKAController.always_executed_hook) ENABLED START #
+        """
+        Perform actions that are executed before every device command.
+
+        This is a Tango hook.
+        """
         pass
         # PROTECTED REGION END #    //  SKAController.always_executed_hook
 
     def delete_device(self):
         # PROTECTED REGION ID(SKAController.delete_device) ENABLED START #
+        """
+        Clean up any resources prior to device deletion.
+
+        This method is a Tango hook that is called by the device
+        destructor and by the device Init command. It allows for any
+        memory or other resources allocated in the init_device method to
+        be released prior to device deletion.
+        """
         pass
         # PROTECTED REGION END #    //  SKAController.delete_device
 
@@ -163,37 +171,37 @@ class SKAController(SKABaseDevice):
 
     def read_elementLoggerAddress(self):
         # PROTECTED REGION ID(SKAController.elementLoggerAddress_read) ENABLED START #
-        """Reads FQDN of Element Logger device"""
+        """Read FQDN of Element Logger device."""
         return self._element_logger_address
         # PROTECTED REGION END #    //  SKAController.elementLoggerAddress_read
 
     def read_elementAlarmAddress(self):
         # PROTECTED REGION ID(SKAController.elementAlarmAddress_read) ENABLED START #
-        """Reads FQDN of Element Alarm device"""
+        """Read FQDN of Element Alarm device."""
         return self._element_alarm_address
         # PROTECTED REGION END #    //  SKAController.elementAlarmAddress_read
 
     def read_elementTelStateAddress(self):
         # PROTECTED REGION ID(SKAController.elementTelStateAddress_read) ENABLED START #
-        """Reads FQDN of Element TelState device"""
+        """Read FQDN of Element TelState device."""
         return self._element_tel_state_address
         # PROTECTED REGION END #    //  SKAController.elementTelStateAddress_read
 
     def read_elementDatabaseAddress(self):
         # PROTECTED REGION ID(SKAController.elementDatabaseAddress_read) ENABLED START #
-        """Reads FQDN of Element Database device"""
+        """Read FQDN of Element Database device."""
         return self._element_database_address
         # PROTECTED REGION END #    //  SKAController.elementDatabaseAddress_read
 
     def read_maxCapabilities(self):
         # PROTECTED REGION ID(SKAController.maxCapabilities_read) ENABLED START #
-        """Reads maximum number of instances of each capability type"""
+        """Read maximum number of instances of each capability type."""
         return convert_dict_to_list(self._max_capabilities)
         # PROTECTED REGION END #    //  SKAController.maxCapabilities_read
 
     def read_availableCapabilities(self):
         # PROTECTED REGION ID(SKAController.availableCapabilities_read) ENABLED START #
-        """Reads list of available number of instances of each capability type"""
+        """Read list of available number of instances of each capability type."""
         return convert_dict_to_list(self._available_capabilities)
         # PROTECTED REGION END #    //  SKAController.availableCapabilities_read
 
@@ -202,9 +210,7 @@ class SKAController(SKABaseDevice):
     # --------
 
     class IsCapabilityAchievableCommand(BaseCommand):
-        """
-        A class for the SKAController's IsCapabilityAchievable() command.
-        """
+        """A class for the SKAController's IsCapabilityAchievable() command."""
 
         def do(self, argin):
             """
@@ -240,7 +246,7 @@ class SKAController(SKABaseDevice):
     def isCapabilityAchievable(self, argin):
         # PROTECTED REGION ID(SKAController.isCapabilityAchievable) ENABLED START #
         """
-        Checks of provided capabilities can be achieved by the resource(s).
+        Check if provided capabilities can be achieved by the resource(s).
 
         To modify behaviour for this command, modify the do() method of
         the command class.
@@ -264,6 +270,7 @@ class SKAController(SKABaseDevice):
 # Run server
 # ----------
 def main(args=None, **kwargs):
+    """Launch an SKAController Tango device."""
     # PROTECTED REGION ID(SKAController.main) ENABLED START #
     return run((SKAController,), args=args, **kwargs)
     # PROTECTED REGION END #    //  SKAController.main

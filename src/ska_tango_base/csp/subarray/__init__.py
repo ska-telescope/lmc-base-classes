@@ -1,6 +1,4 @@
-"""
-This subpackage contains subarray device functionality specific to CSP.
-"""
+"""This subpackage contains subarray device functionality specific to CSP."""
 
 __all__ = (
     "CspSubarrayComponentManager",

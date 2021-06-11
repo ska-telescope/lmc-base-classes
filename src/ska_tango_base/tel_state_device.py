@@ -4,7 +4,8 @@
 #
 #
 #
-""" SKATelState
+"""
+SKATelState.
 
 A generic base device for Telescope State for SKA.
 """
@@ -22,9 +23,7 @@ __all__ = ["SKATelState", "main"]
 
 
 class SKATelState(SKABaseDevice):
-    """
-    A generic base device for Telescope State for SKA.
-    """
+    """A generic base device for Telescope State for SKA."""
 
     # PROTECTED REGION ID(SKATelState.class_variable) ENABLED START #
     # PROTECTED REGION END #    //  SKATelState.class_variable
@@ -46,11 +45,24 @@ class SKATelState(SKABaseDevice):
     # ---------------
     def always_executed_hook(self):
         # PROTECTED REGION ID(SKATelState.always_executed_hook) ENABLED START #
+        """
+        Perform actions that are executed before every device command.
+
+        This is a Tango hook.
+        """
         pass
         # PROTECTED REGION END #    //  SKATelState.always_executed_hook
 
     def delete_device(self):
         # PROTECTED REGION ID(SKATelState.delete_device) ENABLED START #
+        """
+        Clean up any resources prior to device deletion.
+
+        This method is a Tango hook that is called by the device
+        destructor and by the device Init command. It allows for any
+        memory or other resources allocated in the init_device method to
+        be released prior to device deletion.
+        """
         pass
         # PROTECTED REGION END #    //  SKATelState.delete_device
 
@@ -70,15 +82,7 @@ class SKATelState(SKABaseDevice):
 
 def main(args=None, **kwargs):
     # PROTECTED REGION ID(SKATelState.main) ENABLED START #
-    """
-    Main function of the module
-
-    :param args: None by default.
-
-    :param kwargs:
-
-    :return:
-    """
+    """Launch an SKATelState device."""
     return run((SKATelState,), args=args, **kwargs)
     # PROTECTED REGION END #    //  SKATelState.main
 

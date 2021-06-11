@@ -1,7 +1,4 @@
-"""
-Tests for the :py:mod:`ska_tango_base.component_manager`
-module.
-"""
+"""Tests for the :py:mod:`ska_tango_base.component_manager` module."""
 import contextlib
 import itertools
 
@@ -15,18 +12,17 @@ from ska_tango_base.control_model import PowerMode
 
 
 class TestSubarrayComponentResourceManager:
-    """
-    Test suite for the Subarray._Component._ResourceManager
-    """
+    """Test suite for the Subarray._Component._ResourceManager."""
 
     @pytest.fixture
     def mock_callback(self, mocker):
+        """Return a mock that can be used as a callback."""
         return mocker.Mock()
 
     @pytest.fixture
     def resource_pool(self, mock_callback):
         """
-        Fixture that yields the component's resource manager
+        Fixture that yields the component's resource manager.
 
         :return:
             :py:class:`SubarrayComponentManager._ResourcePool`
@@ -34,9 +30,7 @@ class TestSubarrayComponentResourceManager:
         return ReferenceSubarrayComponentManager._ResourcePool(mock_callback)
 
     def test_ResourceManager_assign(self, resource_pool, mock_callback):
-        """
-        Test that the ResourceManager assigns resource correctly.
-        """
+        """Test that the ResourceManager assigns resource correctly."""
         # create a resource manager and check that it is empty
         assert not len(resource_pool)
         assert resource_pool.get() == set()
@@ -73,9 +67,7 @@ class TestSubarrayComponentResourceManager:
         mock_callback.assert_not_called()
 
     def test_ResourceManager_release(self, resource_pool, mock_callback):
-        """
-        Test that the ResourceManager releases resource correctly.
-        """
+        """Test that the ResourceManager releases resource correctly."""
         resource_pool.assign(["A", "B", "C", "D"])
         mock_callback.assert_called_once_with(True)
         mock_callback.reset_mock()
@@ -113,16 +105,12 @@ class TestSubarrayComponentResourceManager:
 
 
 class TestSubarrayComponentManager:
-    """
-    Tests of the
-    :py:class:`ska_tango_base.component_manager.SubarrayComponentManager`
-    class.
-    """
+    """Tests of the ``SubarrayComponentManager`` class."""
 
     @pytest.fixture()
     def mock_op_state_model(self, mocker):
         """
-        Fixture that returns a mock op state model
+        Fixture that returns a mock op state model.
 
         :param mocker: pytest fixture that wraps
             :py:mod:`unittest.mock`.
@@ -134,7 +122,7 @@ class TestSubarrayComponentManager:
     @pytest.fixture()
     def mock_obs_state_model(self, mocker):
         """
-        Fixture that returns a mock observation state model
+        Fixture that returns a mock observation state model.
 
         :param mocker: pytest fixture that wraps
             :py:mod:`unittest.mock`.
@@ -145,31 +133,38 @@ class TestSubarrayComponentManager:
 
     @pytest.fixture()
     def mock_resource_factory(self, mocker):
+        """Return a factory that provides mock resources."""
         return mocker.Mock
 
     @pytest.fixture()
     def mock_capability_types(self, mocker):
+        """Return some mock capability types."""
         return ["foo", "bah"]
 
     @pytest.fixture()
     def mock_config_factory(self):
+        """Return a factory that provides mock arguments to the configure() method."""
         mock_config_generator = ({"foo": i, "bah": i} for i in itertools.count(1))
         return lambda: next(mock_config_generator)
 
     @pytest.fixture()
     def mock_scan_args(self, mocker):
+        """Return mock arguments to the scan() method."""
         return mocker.Mock()
 
     @pytest.fixture(params=[PowerMode.OFF, PowerMode.STANDBY, PowerMode.ON])
     def initial_power_mode(self, request):
+        """Return the initial power mode of the component under test."""
         return request.param
 
     @pytest.fixture(params=[False, True])
     def initial_fault(self, request):
+        """Return whether the component under test should initially be faulty."""
         return request.param
 
     @pytest.fixture()
     def component(self, mock_capability_types, initial_power_mode, initial_fault):
+        """Return a component for use in testing."""
         return ReferenceSubarrayComponentManager._Component(
             mock_capability_types, _power_mode=initial_power_mode, _faulty=initial_fault
         )
@@ -184,7 +179,7 @@ class TestSubarrayComponentManager:
         component,
     ):
         """
-        Fixture that returns the component manager under test
+        Fixture that returns the component manager under test.
 
         :param mock_op_state_model: a mock state model for testing
         :param logger: a logger for the component manager
@@ -209,9 +204,7 @@ class TestSubarrayComponentManager:
         initial_fault,
     ):
         """
-        Test that the state model is updated with state changes when the
-        component manager connects to and disconnects from its
-        component.
+        Test that the state model updates with component connection and disconnection.
 
         :param component_manager: the component manager under test
         :param mock_op_state_model: a mock state model for testing
@@ -280,8 +273,7 @@ class TestSubarrayComponentManager:
     @pytest.mark.parametrize("command", ["off", "standby", "on"])
     def test_base_command_fails_when_disconnected(self, component_manager, command):
         """
-        Test that component commands fail when the component manager
-        isn't connected to the component.
+        Test that component commands fail when there's no connection to the component.
 
         :param component_manager: the component manager under test
         :param command: the command under test
@@ -316,8 +308,7 @@ class TestSubarrayComponentManager:
         action,
     ):
         """
-        Test that component commands succeed when the component manager
-        is connected to the component.
+        Test that component commands succeed when there's a connection to the component.
 
         :param component_manager: the component manager under test
         :param mock_op_state_model: a mock state model for testing
@@ -367,8 +358,11 @@ class TestSubarrayComponentManager:
         action,
     ):
         """
-        Test that spontaneous changes to the state of the component
-        result in the correct action being performed on the state model.
+        Test that component changes propagate up to the state model.
+
+        Specifically, test that spontaneous changes to the state of the
+        component result in the correct action being performed on the
+        state model.
 
         :param component_manager: the component manager under test
         :param mock_op_state_model: a mock state model for testing
@@ -401,6 +395,7 @@ class TestSubarrayComponentManager:
     def test_reset_from_fault(
         self, component_manager, mock_op_state_model, initial_fault
     ):
+        """Test that the component manager can reset a faulty component."""
         component_manager.start_communicating()
         assert component_manager.faulty == initial_fault
         mock_op_state_model.reset_mock()
@@ -417,6 +412,7 @@ class TestSubarrayComponentManager:
         mock_obs_state_model,
         mock_resource_factory,
     ):
+        """Test management of a component during assignment of resources."""
         component_manager.start_communicating()
 
         mock_resource_1 = mock_resource_factory()
@@ -460,6 +456,7 @@ class TestSubarrayComponentManager:
         mock_resource_factory,
         mock_config_factory,
     ):
+        """Test management of a component through configuration."""
         component_manager.start_communicating()
 
         mock_resource = mock_resource_factory()
@@ -507,6 +504,7 @@ class TestSubarrayComponentManager:
         mock_config_factory,
         mock_scan_args,
     ):
+        """Test management of a scanning component."""
         component_manager.start_communicating()
 
         mock_resource = mock_resource_factory()
@@ -560,6 +558,7 @@ class TestSubarrayComponentManager:
         mock_config_factory,
         mock_scan_args,
     ):
+        """Test management of a faulting component."""
         component_manager.start_communicating()
 
         mock_resource = mock_resource_factory()

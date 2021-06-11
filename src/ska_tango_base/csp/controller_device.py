@@ -7,7 +7,8 @@
 # Distributed under the terms of the GPL license.
 # See LICENSE.txt for more info.
 
-""" CspSubElementController
+"""
+CspSubElementController.
 
 Controller device for SKA CSP Subelement.
 """
@@ -198,9 +199,7 @@ class CspSubElementController(SKAController):
     # ---------------
 
     def init_command_objects(self):
-        """
-        Sets up the command objects
-        """
+        """Set up the command objects."""
         super().init_command_objects()
         self.register_command_object(
             "LoadFirmware",
@@ -220,9 +219,7 @@ class CspSubElementController(SKAController):
         )
 
     class InitCommand(SKAController.InitCommand):
-        """
-        A class for the CspSubElementController's init_device() "command".
-        """
+        """A class for the CspSubElementController's init_device() "command"."""
 
         def do(self):
             """
@@ -266,16 +263,22 @@ class CspSubElementController(SKAController):
             return (ResultCode.OK, message)
 
     def always_executed_hook(self):
-        """Method always executed before any Tango command is executed."""
+        """
+        Perform actions always executed before any Tango command is executed.
+
+        This is a Tango hook.
+        """
         # PROTECTED REGION ID(CspSubElementController.always_executed_hook) ENABLED START #
         # PROTECTED REGION END #    //  CspSubElementController.always_executed_hook
 
     def delete_device(self):
-        """Hook to delete resources allocated in init_device.
+        """
+        Clean up any resources prior to device deletion.
 
-        This method allows for any memory or other resources allocated in the
-        init_device method to be released.  This method is called by the device
-        destructor and by the device Init command.
+        This method is a Tango hook that is called by the device
+        destructor and by the device Init command. It allows for any
+        memory or other resources allocated in the init_device method to
+        be released prior to device deletion.
         """
         # PROTECTED REGION ID(CspSubElementController.delete_device) ENABLED START #
         # PROTECTED REGION END #    //  CspSubElementController.delete_device
@@ -414,15 +417,13 @@ class CspSubElementController(SKAController):
     # Commands
     # --------
     class LoadFirmwareCommand(StateModelCommand, ResponseCommand):
-        """
-        A class for the LoadFirmware command.
-        """
+        """A class for the LoadFirmware command."""
 
         def __init__(
             self, target, op_state_model, admin_mode_model, *args, logger=None, **kwargs
         ):
             """
-            Creates a new BaseCommand object for a device.
+            Initialise a new LoadFirmwareCommand instance.
 
             :param target: the object that this base command acts upon. For
                 example, the device's component manager.
@@ -461,10 +462,10 @@ class CspSubElementController(SKAController):
 
         def is_allowed(self, raise_if_disallowed=False):
             """
-            Check if the command is in the proper state (State/adminMode)
-            to be executed.
-            The controller device has to be in OFF/MAINTENACE to process the
-            LoadFirmware command.
+            Check if the command is in the proper state to be executed.
+
+            The controller device has to be in op state OFF and admin
+            mode MAINTENACE to process the LoadFirmware command.
 
             :param raise_if_disallowed: whether to raise an error or
                 simply return False if the command is disallowed
@@ -487,11 +488,10 @@ class CspSubElementController(SKAController):
             return False
 
     class PowerOnDevicesCommand(StateModelCommand, ResponseCommand):
-        """
-        A class for the CspSubElementController's PowerOnDevices command.
-        """
+        """A class for the CspSubElementController's PowerOnDevices command."""
 
         def __init__(self, target, op_state_model, *args, logger=None, **kwargs):
+            """Initialise a new `PowerOnDevicesCommand``` instance."""
             super().__init__(
                 target, op_state_model, None, *args, logger=logger, **kwargs
             )
@@ -513,6 +513,7 @@ class CspSubElementController(SKAController):
         def is_allowed(self, raise_if_disallowed=False):
             """
             Check if the command is in the proper state to be executed.
+
             The controller device has to be in ON to process the
             PowerOnDevices command.
 
@@ -532,11 +533,10 @@ class CspSubElementController(SKAController):
             return False
 
     class PowerOffDevicesCommand(StateModelCommand, ResponseCommand):
-        """
-        A class for the CspSubElementController's PowerOffDevices command.
-        """
+        """A class for the CspSubElementController's PowerOffDevices command."""
 
         def __init__(self, target, op_state_model, *args, logger=None, **kwargs):
+            """Initialise a new ``PowerOffDevicesCommand`` instance."""
             super().__init__(
                 target, op_state_model, None, *args, logger=logger, **kwargs
             )
@@ -558,6 +558,7 @@ class CspSubElementController(SKAController):
         def is_allowed(self, raise_if_disallowed=False):
             """
             Check if the command is in the proper state to be executed.
+
             The controller device has to be in ON to process the
             PowerOffDevices command.
 
@@ -577,11 +578,10 @@ class CspSubElementController(SKAController):
             return False
 
     class ReInitDevicesCommand(StateModelCommand, ResponseCommand):
-        """
-        A class for the CspSubElementController's ReInitDevices command.
-        """
+        """A class for the CspSubElementController's ReInitDevices command."""
 
         def __init__(self, target, op_state_model, *args, logger=None, **kwargs):
+            """Initialise a new ``ReInitDevicesCommand`` instance."""
             super().__init__(
                 target, op_state_model, None, *args, logger=logger, **kwargs
             )
@@ -603,6 +603,7 @@ class CspSubElementController(SKAController):
         def is_allowed(self, raise_if_disallowed=False):
             """
             Check if the command is in the proper state to be executed.
+
             The controller device has to be in ON to process the
             ReInitDevices command.
 
@@ -623,8 +624,7 @@ class CspSubElementController(SKAController):
 
     def is_LoadFirmware_allowed(self):
         """
-        Check if the LoadFirmware command is allowed in the current
-        state.
+        Check if the LoadFirmware command is allowed in the current state.
 
         :return: ``True`` if command is allowed
         :rtype: boolean
@@ -643,9 +643,10 @@ class CspSubElementController(SKAController):
     def LoadFirmware(self, argin):
         # PROTECTED REGION ID(CspSubElementController.LoadFirmware) ENABLED START #
         """
-        Deploy new versions of software and firmware and trigger
-        a restart so that a Component initializes using a newly
-        deployed version.
+        Deploy new versions of software and firmware.
+
+        After deployment, a restart is triggers so that a Component
+        initializes using a newly deployed version.
 
         :param argin: A list of three strings:
             - The file name or a pointer to the filename specified as URL.
@@ -666,8 +667,7 @@ class CspSubElementController(SKAController):
 
     def is_PowerOnDevices_allowed(self):
         """
-        Check if the PowerOnDevice command is allowed in the current
-        state.
+        Check if the PowerOnDevice command is allowed in the current state.
 
         :return: ``True`` if command is allowed
         :rtype: boolean
@@ -702,8 +702,7 @@ class CspSubElementController(SKAController):
 
     def is_PowerOffDevices_allowed(self):
         """
-        Check if the PowerOffDevices command is allowed in the current
-        state.
+        Check if the PowerOffDevices command is allowed in the current state.
 
         :return: ``True`` if command is allowed
         :rtype: boolean
@@ -739,8 +738,7 @@ class CspSubElementController(SKAController):
 
     def is_ReInitDevices_allowed(self):
         """
-        Check if the ReInitDevices command is allowed in the current
-        state.
+        Check if the ReInitDevices command is allowed in the current state.
 
         :return: ``True`` if command is allowed
         :rtype: boolean
@@ -759,6 +757,7 @@ class CspSubElementController(SKAController):
         # PROTECTED REGION ID(CspSubElementController.ReInitDevices) ENABLED START #
         """
         Reinitialize the devices passed in the input argument.
+
         The exact functionality may vary for different devices
         and sub-systems, each Tango Device/Server should define
         what does ReInitDevices means.

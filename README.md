@@ -247,6 +247,9 @@ Tango devices can be launched with a `-v` parameter to set the logging level. Fo
 
 ## Version History
 
+#### 0.11.2
+- Update docstrings for 100% coverage and PEP257 compliance
+
 #### 0.11.1
 - Minor breaking change: rename of "Master" devices to "Controller"
 

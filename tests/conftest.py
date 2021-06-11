@@ -17,7 +17,7 @@ def device_properties():
     return {}
 
 
-@pytest.fixture(scope="class")
+@pytest.fixture()
 def tango_context(device_test_config):
     """Return a Tango test context object, in which the device under test is running."""
     component_manager_patch = device_test_config.pop("component_manager_patch", None)
@@ -30,27 +30,29 @@ def tango_context(device_test_config):
     tango_context.stop()
 
 
+@pytest.fixture()
+def device_under_test(tango_context):
+    """
+    Return a device proxy to the device under test.
+
+    :param tango_context: a Tango test context with the specified device
+        running
+    :type tango_context: :py:class:`tango.DeviceTestContext`
+
+    :return: a proxy to the device under test
+    :rtype: :py:class:`tango.DeviceProxy`
+    """
+    return tango_context.device
+
+
 def pytest_itemcollected(item):
     """Make Tango-related tests run in forked mode."""
-    if "tango_context" in item.fixturenames:
+    if "device_under_test" in item.fixturenames:
         item.add_marker("forked")
 
 
 @pytest.fixture(scope="function")
-def initialize_device(tango_context):
-    """
-    Re-initializes the device.
-
-    Parameters
-    ----------
-    tango_context: tango.test_context.DeviceTestContext
-        Context to run a device without a database.
-    """
-    yield tango_context.device.Init()
-
-
-@pytest.fixture(scope="function")
-def tango_change_event_helper(tango_context):
+def tango_change_event_helper(device_under_test):
     """
     Return a helper for testing tango change events.
 
@@ -67,17 +69,22 @@ def tango_change_event_helper(tango_context):
 
         # Check that we can't turn off a device that isn't on
         with pytest.raises(DevFailed):
-            tango_context.device.Off()
+            device_under_test.Off()
         state_callback.assert_not_called()
 
         # Now turn it on and check that we can turn it off
-        tango_context.device.On()
+        device_under_test.On()
         state_callback.assert_call(DevState.ON)
 
         # Or we can test a sequence of events
-        tango_context.device.Off()
-        tango_context.device.On()
+        device_under_test.Off()
+        device_under_test.On()
         state_callback.assert_calls([DevState.OFF, DevState.ON])
+
+    :param device_under_test: a :py:class:`tango.DeviceProxy` to the
+        device under test, running in a
+        :py:class:`tango.test_context.DeviceTestContext`.
+    :type device_under_test: :py:class:`tango.DeviceProxy`
     """
 
     class _Callback:
@@ -119,14 +126,14 @@ def tango_change_event_helper(tango_context):
             # Subscription will result in an immediate
             # synchronous callback with the current value,
             # so keep this as the last step in __init__.
-            self._id = tango_context.device.subscribe_event(
+            self._id = device_under_test.subscribe_event(
                 attribute_name, EventType.CHANGE_EVENT, self
             )
 
         def __del__(self):
             """Unsubscribe from events before object is destroyed."""
             if hasattr(self, "_id"):
-                tango_context.device.unsubscribe_event(self._id)
+                device_under_test.unsubscribe_event(self._id)
 
         def __call__(self, event_data):
             """

@@ -33,11 +33,14 @@ def tango_context(device_test_config):
 @pytest.fixture()
 def device_under_test(tango_context):
     """
-    Return the device from a tango DeviceTestContext.
+    Return a device proxy to the device under test.
 
-    :param tango_context: a Tango test context with specified device/s
+    :param tango_context: a Tango test context with the specified device
         running
     :type tango_context: :py:class:`tango.DeviceTestContext`
+
+    :return: a proxy to the device under test
+    :rtype: :py:class:`tango.DeviceProxy`
     """
     return tango_context.device
 

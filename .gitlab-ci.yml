@@ -55,22 +55,6 @@ linting:
     paths:
       - ./build
 
-release docker image:
-  stage: release
-  image: nexus.engageska-portugal.pt/ska-docker/tango-builder:latest
-  before_script:
-  - docker login -u $DOCKER_REGISTRY_USERNAME -p $DOCKER_REGISTRY_PASSWORD $DOCKER_REGISTRY_HOST
-  tags:
-    - k8srunner
-  script:
-    - make build
-    - make push
-  rules:
-    # Images only allow manual run on tags, and confirm semantic versioning of tag
-    - if: '$CI_COMMIT_TAG && $CI_COMMIT_TAG =~ /^((([0-9]+)\.([0-9]+)\.([0-9]+)(?:-([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?)(?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?)$/'
-      when: manual
-      allow_failure: true
-
 pages:
   stage: pages
   tags:
@@ -94,3 +78,7 @@ include:
   # https://developer.skao.int/en/latest/tools/software-package-release-procedure.html#building-and-publishing-python-packages
   - project: 'ska-telescope/templates-repository'
     file: 'gitlab-ci/includes/build_wheel.yml'
+  # Publish OCI images
+  # https://developer.skao.int/en/latest/tools/software-package-release-procedure.html#oci-image
+  - project: 'ska-telescope/templates-repository'
+    file: 'gitlab-ci/includes/build_push.yml'

@@ -36,7 +36,7 @@ unit tests:
     - k8srunner
   script:
     - echo $(ls -d ./dist/*.whl | grep $CI_COMMIT_SHORT_SHA)
-    - python3 -m pip install --extra-index-url https://nexus.engageska-portugal.pt/repository/pypi/simple -U $(ls -d ./dist/*.whl | grep $CI_COMMIT_SHORT_SHA)
+    - python3 -m pip install --extra-index-url https://artefact.skao.int/repository/pypi-all/simple -U $(ls -d ./dist/*.whl | grep $CI_COMMIT_SHORT_SHA)
     - make test
     - scripts/validate-metadata.sh
   artifacts:
@@ -49,7 +49,7 @@ linting:
     - k8srunner
   script:
     - echo $(ls -d ./dist/*.whl | grep $CI_COMMIT_SHORT_SHA)
-    - python3 -m pip install --extra-index-url https://nexus.engageska-portugal.pt/repository/pypi/simple -U $(ls -d ./dist/*.whl | grep $CI_COMMIT_SHORT_SHA)
+    - python3 -m pip install --extra-index-url https://artefact.skao.int/repository/pypi-all/simple -U $(ls -d ./dist/*.whl | grep $CI_COMMIT_SHORT_SHA)
     - make lint
   artifacts:
     paths:

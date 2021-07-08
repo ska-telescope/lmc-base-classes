@@ -12,7 +12,7 @@ installed from the EngageSKA Nexus repository:
 
 .. code-block:: shell-session
 
-   me@local:~$ python3 -m pip install --extra-index-url https://nexus.engageska-portugal.pt/repository/pypi/simple ska-tango-base
+   me@local:~$ python3 -m pip install --extra-index-url https://artefact.skao.int/repository/pypi/simple ska-tango-base
 
 Basic steps
 -----------

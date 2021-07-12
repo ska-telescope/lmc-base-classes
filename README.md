@@ -247,6 +247,9 @@ Tango devices can be launched with a `-v` parameter to set the logging level. Fo
 
 ## Version History
 
+#### 0.11.3
+- No change, moving artefacts to a new repository https://artefact.skao.int/.
+
 #### 0.11.2
 - Update docstrings for 100% coverage and PEP257 compliance
 

@@ -1,6 +1,6 @@
 #
 # Project makefile for a SKA Tango Base project. You should normally only need to modify
-# CAR_OCI_REGISTRY_USERNAME and PROJECT below.
+# PROJECT below.
 
 # Use bash shell with pipefail option enabled so that the return status of a
 # piped command is the value of the last (rightmost) command to exit with a
@@ -9,14 +9,11 @@
 SHELL = /bin/bash
 .SHELLFLAGS = -o pipefail -c
 
-# CAR_OCI_REGISTRY_HOST, CAR_OCI_REGISTRY_USERNAME and PROJECT are combined to define
+# CAR_OCI_REGISTRY_HOST, and PROJECT are combined to define
 # the Docker tag for this project. The definition below inherits the standard
 # value for CAR_OCI_REGISTRY_HOST (=artefact.skao.int) and overwrites
-# CAR_OCI_REGISTRY_USERNAME and PROJECT to give a final Docker tag of
-# artefact.skao.int/ska-telescope/ska_tango_base
-#
-CAR_OCI_REGISTRY_USERNAME:=ska-telescope
-PROJECT = ska_tango_base
+# PROJECT to give a final Docker tag of artefact.skao.int/ska-tango-base
+PROJECT = ska-tango-base
 IMAGE_FOR_DIAGRAMS = artefact.skao.int/ska-tango-images-pytango-builder:9.3.10
 
 

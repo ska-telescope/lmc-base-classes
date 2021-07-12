@@ -25,11 +25,7 @@ ifeq ($(strip $(CAR_OCI_REGISTRY_HOST)),)
   CAR_OCI_REGISTRY_HOST = artefact.skao.int
 endif
 
-ifeq ($(strip $(CAR_OCI_REGISTRY_USERNAME)),)
-  CAR_OCI_REGISTRY_USERNAME = ska-telescope
-endif
-
-IMAGE=$(CAR_OCI_REGISTRY_HOST)/$(CAR_OCI_REGISTRY_USERNAME)/$(NAME)
+IMAGE=$(CAR_OCI_REGISTRY_HOST)/$(NAME)
 
 VERSION=$(shell . $(RELEASE_SUPPORT) ; getVersion)
 TAG=$(shell . $(RELEASE_SUPPORT); getTag)
@@ -53,7 +49,7 @@ pre-push:
 post-push:
 
 docker-build: .release
-	docker build $(DOCKER_BUILD_ARGS) -t $(IMAGE):$(VERSION) $(DOCKER_BUILD_CONTEXT) -f $(DOCKER_FILE_PATH) --build-arg CAR_OCI_REGISTRY_HOST=$(CAR_OCI_REGISTRY_HOST) --build-arg CAR_OCI_REGISTRY_USERNAME=$(CAR_OCI_REGISTRY_USERNAME) --build-arg IMAGE_VERSION=$(VERSION)
+	docker build $(DOCKER_BUILD_ARGS) -t $(IMAGE):$(VERSION) $(DOCKER_BUILD_CONTEXT) -f $(DOCKER_FILE_PATH) --build-arg CAR_OCI_REGISTRY_HOST=$(CAR_OCI_REGISTRY_HOST) --build-arg IMAGE_VERSION=$(VERSION)
 	@DOCKER_MAJOR=$(shell docker -v | sed -e 's/.*version //' -e 's/,.*//' | cut -d\. -f1) ; \
 	DOCKER_MINOR=$(shell docker -v | sed -e 's/.*version //' -e 's/,.*//' | cut -d\. -f2) ; \
 	if [ $$DOCKER_MAJOR -eq 1 ] && [ $$DOCKER_MINOR -lt 10 ] ; then \

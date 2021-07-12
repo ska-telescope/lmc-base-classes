@@ -61,7 +61,7 @@ class DishLeafNode(SKABaseDevice):
 
 #### PyCharm
 
-The Docker integration is recommended.  For development, use the `artefact.skao.int/ska-telescope/ska_tango_base:latest` image as the Python Interpreter for the project.  Note that if `make` is run with targets like `build`, `up`, or `test`, that image will be rebuilt by Docker using the local code, and tagged as `latest`.
+The Docker integration is recommended.  For development, use the `artefact.skao.int/ska-tango-base:latest` image as the Python Interpreter for the project.  Note that if `make` is run with targets like `build`, `up`, or `test`, that image will be rebuilt by Docker using the local code, and tagged as `latest`.
 
 As this project uses a `src` [folder structure](https://blog.ionelmc.ro/2014/05/25/python-packaging/#the-structure), so under _Preferences > Project Structure_, the `src` folder needs to be marked as "Sources".  That will allow the interpreter to be aware of the package from folders like `tests` that are outside of `src`. When adding Run/Debug configurations, make sure "Add content roots to PYTHONPATH" and "Add source roots to PYTHONPATH" are checked.
 

@@ -22,7 +22,7 @@
         "davidanson.vscode-markdownlint",
         "alexkrechik.cucumberautocomplete",
     ],
-    "postCreateCommand": "python3 -m pip install -e /workspaces/ska-tango-base --extra-index-url https://nexus.engageska-portugal.pt/repository/pypi/simple",
+    "postCreateCommand": "python3 -m pip install -e /workspaces/ska-tango-base --extra-index-url https://artefact.skao.int/repository/pypi/simple",
     "remoteUser": "tango",
     "remoteEnv": {
         "PATH": "/home/tango/.local/bin:${containerEnv:PATH}",

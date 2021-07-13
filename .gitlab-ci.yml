@@ -1,11 +1,7 @@
 # GitLab CI in conjunction with GitLab Runner can use Docker Engine to test and build any application.
 # Docker, when used with GitLab CI, runs each job in a separate and isolated container using the predefined image that is set up in .gitlab-ci.yml.
 # In this case we use the latest python docker image to build and test this project.
-image: nexus.engageska-portugal.pt/ska-tango-images/pytango-builder:9.3.3.3
-
-include:
-  - project: 'ska-telescope/templates-repository'
-    file: 'gitlab-ci/includes/post_step.yml'
+image: artefact.skao.int/ska-tango-images-pytango-builder:9.3.10
 
 # cache is used to specify a list of files and directories which should be cached between jobs. You can only use paths that are within the project workspace.
 # If cache is defined outside the scope of jobs, it means it is set globally and all jobs will use that definition
@@ -34,37 +30,13 @@ clean shell runner:
     # Gitlab CI badges creation
     - rm -rf build/*
 
-build wheel for publication: # Executed on a tag
-  stage: build
-  tags:
-    - k8srunner
-  script:
-    - python3 setup.py egg_info -b+$CI_COMMIT_SHORT_SHA sdist bdist_wheel
-  rules:
-    - if: '$CI_COMMIT_TAG'
-  artifacts:
-    paths:
-      - ./dist/
-
-build wheel for development: # Executed on non-tagged commit
-  stage: build
-  tags:
-    - k8srunner
-  script:
-    - python3 setup.py egg_info -b+dev.$CI_COMMIT_SHORT_SHA sdist bdist_wheel
-  rules:
-    - if: '$CI_COMMIT_TAG == null || $CI_COMMIT_TAG == ""'
-  artifacts:
-    paths:
-      - ./dist/
-
 unit tests:
   stage: test
   tags:
     - k8srunner
   script:
     - echo $(ls -d ./dist/*.whl | grep $CI_COMMIT_SHORT_SHA)
-    - python3 -m pip install --extra-index-url https://nexus.engageska-portugal.pt/repository/pypi/simple -U $(ls -d ./dist/*.whl | grep $CI_COMMIT_SHORT_SHA)
+    - python3 -m pip install --extra-index-url https://artefact.skao.int/repository/pypi-all/simple -U $(ls -d ./dist/*.whl | grep $CI_COMMIT_SHORT_SHA)
     - make test
     - scripts/validate-metadata.sh
   artifacts:
@@ -77,43 +49,11 @@ linting:
     - k8srunner
   script:
     - echo $(ls -d ./dist/*.whl | grep $CI_COMMIT_SHORT_SHA)
-    - python3 -m pip install --extra-index-url https://nexus.engageska-portugal.pt/repository/pypi/simple -U $(ls -d ./dist/*.whl | grep $CI_COMMIT_SHORT_SHA)
+    - python3 -m pip install --extra-index-url https://artefact.skao.int/repository/pypi-all/simple -U $(ls -d ./dist/*.whl | grep $CI_COMMIT_SHORT_SHA)
     - make lint
   artifacts:
     paths:
       - ./build
-
-publish to nexus:
-  stage: publish
-  tags:
-    - k8srunner
-  variables:
-    TWINE_USERNAME: $TWINE_USERNAME
-    TWINE_PASSWORD: $TWINE_PASSWORD
-  script:
-    # check metadata requirements
-    - scripts/validate-metadata.sh
-    - python3 -m pip install twine
-    - twine upload --repository-url $PYPI_REPOSITORY_URL dist/*
-  rules:
-    # PyPI package release only on tags, and confirm semantic versioning of tag
-    - if: '$CI_COMMIT_TAG && $CI_COMMIT_TAG =~ /^((([0-9]+)\.([0-9]+)\.([0-9]+)(?:-([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?)(?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?)$/'
-
-release docker image:
-  stage: release
-  image: nexus.engageska-portugal.pt/ska-docker/tango-builder:latest
-  before_script:
-  - docker login -u $DOCKER_REGISTRY_USERNAME -p $DOCKER_REGISTRY_PASSWORD $DOCKER_REGISTRY_HOST
-  tags:
-    - k8srunner
-  script:
-    - make build
-    - make push
-  rules:
-    # Images only allow manual run on tags, and confirm semantic versioning of tag
-    - if: '$CI_COMMIT_TAG && $CI_COMMIT_TAG =~ /^((([0-9]+)\.([0-9]+)\.([0-9]+)(?:-([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?)(?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?)$/'
-      when: manual
-      allow_failure: true
 
 pages:
   stage: pages
@@ -128,4 +68,17 @@ pages:
       - public
   only:
   - master
-  
+
+include:
+  # Create Gitlab CI badges from CI metrics
+  # https://developer.skatelescope.org/en/latest/tools/continuousintegration.html#automated-collection-of-ci-health-metrics-as-part-of-the-ci-pipeline
+  - project: 'ska-telescope/templates-repository'
+    file: 'gitlab-ci/includes/post_step.yml'
+  # Publish Python packages
+  # https://developer.skao.int/en/latest/tools/software-package-release-procedure.html#building-and-publishing-python-packages
+  - project: 'ska-telescope/templates-repository'
+    file: 'gitlab-ci/includes/build_wheel.yml'
+  # Publish OCI images
+  # https://developer.skao.int/en/latest/tools/software-package-release-procedure.html#oci-image
+  - project: 'ska-telescope/templates-repository'
+    file: 'gitlab-ci/includes/build_push.yml'

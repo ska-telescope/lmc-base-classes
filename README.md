@@ -41,7 +41,7 @@ The requirements for testing are:
 #### Installation steps
 1. Clone the repository on local machine.
 2. Navigate to the root directory of the repository from terminal
-3. Run 'python3 -m pip install . --extra-index-url https://nexus.engageska-portugal.pt/repository/pypi/simple'
+3. Run 'python3 -m pip install . --extra-index-url https://artefact.skao.int/repository/pypi/simple'
 
 ### Testing
 The project can be tested locally my invoking *make CI_JOB_ID=some_id test* command. This invokes a chain of commands from the makefile which builds the project's python package, creates a docker image with the project, instantiates separate container for each of the base class and runs unit test cases of each class. Additionally, code analysis is also done and code coverage report is prepared. After testing is done, the containers are taken down.
@@ -61,7 +61,7 @@ class DishLeafNode(SKABaseDevice):
 
 #### PyCharm
 
-The Docker integration is recommended.  For development, use the `nexus.engageska-portugal.pt/ska-telescope/ska_tango_base:latest` image as the Python Interpreter for the project.  Note that if `make` is run with targets like `build`, `up`, or `test`, that image will be rebuilt by Docker using the local code, and tagged as `latest`.
+The Docker integration is recommended.  For development, use the `artefact.skao.int/ska-tango-base:latest` image as the Python Interpreter for the project.  Note that if `make` is run with targets like `build`, `up`, or `test`, that image will be rebuilt by Docker using the local code, and tagged as `latest`.
 
 As this project uses a `src` [folder structure](https://blog.ionelmc.ro/2014/05/25/python-packaging/#the-structure), so under _Preferences > Project Structure_, the `src` folder needs to be marked as "Sources".  That will allow the interpreter to be aware of the package from folders like `tests` that are outside of `src`. When adding Run/Debug configurations, make sure "Add content roots to PYTHONPATH" and "Add source roots to PYTHONPATH" are checked.
 
@@ -246,6 +246,9 @@ Yes, you could use f-strings. `f"I have a message for {someone}"`.  The only ben
 Tango devices can be launched with a `-v` parameter to set the logging level. For example, 'MyDeviceServer instance -v5' for debug level.  Currently, the `SKABaseDevice` does not consider this command line option, so it will just use the Tango device property instead. In future, it would be useful to override the property with the command line option.
 
 ## Version History
+
+#### 0.11.3
+- No change, moving artefacts to a new repository https://artefact.skao.int/.
 
 #### 0.11.2
 - Update docstrings for 100% coverage and PEP257 compliance

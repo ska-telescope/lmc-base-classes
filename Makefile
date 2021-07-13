@@ -1,6 +1,6 @@
 #
 # Project makefile for a SKA Tango Base project. You should normally only need to modify
-# DOCKER_REGISTRY_USER and PROJECT below.
+# PROJECT below.
 
 # Use bash shell with pipefail option enabled so that the return status of a
 # piped command is the value of the last (rightmost) command to exit with a
@@ -9,15 +9,12 @@
 SHELL = /bin/bash
 .SHELLFLAGS = -o pipefail -c
 
-# DOCKER_REGISTRY_HOST, DOCKER_REGISTRY_USER and PROJECT are combined to define
+# CAR_OCI_REGISTRY_HOST, and PROJECT are combined to define
 # the Docker tag for this project. The definition below inherits the standard
-# value for DOCKER_REGISTRY_HOST (=rnexus.engageska-portugal.pt) and overwrites
-# DOCKER_REGISTRY_USER and PROJECT to give a final Docker tag of
-# nexus.engageska-portugal.pt/ska-telescope/ska_tango_base
-#
-DOCKER_REGISTRY_USER:=ska-telescope
-PROJECT = ska_tango_base
-IMAGE_FOR_DIAGRAMS = nexus.engageska-portugal.pt/ska-tango-images/pytango-builder:9.3.3.3
+# value for CAR_OCI_REGISTRY_HOST (=artefact.skao.int) and overwrites
+# PROJECT to give a final Docker tag of artefact.skao.int/ska-tango-base
+PROJECT = ska-tango-base
+IMAGE_FOR_DIAGRAMS = artefact.skao.int/ska-tango-images-pytango-builder:9.3.10
 
 
 # import some standard Make targets e.g. `make build` (for building

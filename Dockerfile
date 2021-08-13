@@ -8,7 +8,7 @@ LABEL \
       author="SKA India and SARAO and CSIRO and INAF" \
       description="A set of generic base devices for SKA Telescope" \
       license="BSD-3-Clause" \
-      registry="nexus.engageska-portugal.pt/ska-telescope/ska_tango_base" \
+      registry="artefact.skao.int/ska-tango-base" \
       vendor="SKA Telescope" \
       org.skatelescope.team="NCRA, Karoo, MCCS, CREAM" \
       org.skatelescope.version="${IMAGE_VERSION}" \

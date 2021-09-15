@@ -431,6 +431,15 @@ class SKABaseDevice(Device):
             device._version_id = release.version
             device._methods_patched_for_debugger = False
 
+            device._commands_in_queue = []
+            device._command_ids_in_queue = []
+            device._command_status = []
+            device._command_progress = []
+            device._command_result = []
+
+            # Qn: should this be implemented like the logging lock? see 461
+            device.command_queue_lock = threading.Lock()
+
             try:
                 # create Tango Groups dict, according to property
                 self.logger.debug(
@@ -676,6 +685,56 @@ class SKABaseDevice(Device):
         "indication of the test mode.",
     )
     """Device attribute."""
+
+    longRunningCommandsInQueue = attribute(
+        dtype=("str",),
+        max_dim_x=98,
+        polling_period=1000,
+        access=AttrWriteType.READ,
+        doc="Keep track of which commands are in the queue. \n"
+        "Pop off from front as they complete.",
+    )
+    """Device attribute for long running commands."""
+
+    longRunningCommandIDsInQueue = attribute(
+        dtype=("str",),
+        max_dim_x=98,
+        polling_period=1000,
+        access=AttrWriteType.READ,
+        doc="Every client that executes a command will receive a command ID as response. \n"
+        "Keep track of IDs in the queue. Pop off from front as they complete.",
+    )
+    """Device attribute for long running commands."""
+
+    longRunningCommandStatus = attribute(
+        dtype=("str",),
+        max_dim_x=2,
+        polling_period=1000,
+        access=AttrWriteType.READ,
+        doc="ID, status pair of the currently executing command. \n"
+        "Clients can subscribe to on_change event and wait for the ID they are interested in.",
+    )
+    """Device attribute for long running commands."""
+
+    longRunningCommandProgress = attribute(
+        dtype=("str",),
+        max_dim_x=2,
+        polling_period=1000,
+        access=AttrWriteType.READ,
+        doc="ID, progress of the currently executing command. \n"
+        "Clients can subscribe to on_change event and wait for the ID they are interested in..",
+    )
+    """Device attribute for long running commands."""
+
+    longRunningCommandResult = attribute(
+        dtype=("str",),
+        max_dim_x=2,
+        polling_period=1000,
+        access=AttrWriteType.READ,
+        doc="ID, result pair. \n"
+        "Clients can subscribe to on_change event and wait for the ID they are interested in.",
+    )
+    """Device attribute for long running commands."""
 
     # ---------------
     # General methods
@@ -1040,6 +1099,52 @@ class SKABaseDevice(Device):
         """
         self._test_mode = value
         # PROTECTED REGION END #    //  SKABaseDevice.testMode_write
+
+    def read_longRunningCommandsInQueue(self):
+        # PROTECTED REGION ID(SKABaseDevice.longRunningCommandsInQueue_read) ENABLED START #
+        """
+        Read the long running commands in the queue.
+
+        :return: commands in the device queue
+        """
+        return self._commands_in_queue
+
+    def read_longRunningCommandIDsInQueue(self):
+        # PROTECTED REGION ID(SKABaseDevice.longRunningCommandIDsInQueue_read) ENABLED START #
+        """
+        Read the IDs of the long running commands in the queue.
+
+        :return: unique ids for the enqueued commands
+        """
+        return self._command_ids_in_queue
+
+    def read_longRunningCommandStatus(self):
+        # PROTECTED REGION ID(SKABaseDevice.longRunningCommandStatus_read) ENABLED START #
+        """
+        Read the status of the currently executing long running command.
+
+        :return: ID, status pair of the currently executing command
+        """
+        return self._command_status
+
+    def read_longRunningCommandProgress(self):
+        # PROTECTED REGION ID(SKABaseDevice.longRunningCommandProgress_read) ENABLED START #
+        """
+        Read the progress of the currently executing long running command.
+
+        :return: ID, progress of the currently executing command.
+        """
+        return self._command_progress
+
+    def read_longRunningCommandResult(self):
+        # PROTECTED REGION ID(SKABaseDevice.longRunningCommandResult_read) ENABLED START #
+        """
+        Read the result of the completed long running command.
+
+        :return: ID, result pair.
+        """
+        return self._command_result
+
 
     # --------
     # Commands

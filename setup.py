@@ -42,7 +42,7 @@ setuptools.setup(
         "ska_ser_logging",
         "transitions",
     ],
-    tests_require=["pytest", "coverage", "pytest-json-report", "pytest-forked"],
+    tests_require=["pytest", "coverage", "pytest-json-report", "pytest-forked", "pytest-timeout"],
     entry_points={
         "console_scripts": [
             "SKAAlarmHandler=ska_tango_base.alarm_handler_device:main",

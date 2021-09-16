@@ -96,6 +96,21 @@ class ResultCode(enum.IntEnum):
     The status of the command is not known.
     """
 
+    REJECTED = 5
+    """
+    The command execution has been rejected.
+    """
+
+    NOT_ALLOWED = 6
+    """
+    The command is not allowed to be executed
+    """
+
+    ABORTED = 7
+    """
+    The command in progress has been aborted
+    """
+
 
 class BaseCommand:
     """

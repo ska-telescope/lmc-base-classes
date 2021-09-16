@@ -84,6 +84,22 @@ class _Log4TangoLoggingLevel(enum.IntEnum):
     DEBUG = 600
 
 
+class LongRunningCommandState(enum.IntEnum):
+    """The state of the long running command."""
+
+    QUEUED = 0
+    IN_PROGRESS = 1
+    ABORTED = 2
+    NOT_FOUND = 3
+    OK = 4
+    FAILED = 5
+    NOT_ALLOWED = 6
+
+
+class QueueManager:
+    """Manages the worker thread and the state of the queue."""
+
+
 _PYTHON_TO_TANGO_LOGGING_LEVEL = {
     logging.CRITICAL: _Log4TangoLoggingLevel.FATAL,
     logging.ERROR: _Log4TangoLoggingLevel.ERROR,
@@ -436,8 +452,7 @@ class SKABaseDevice(Device):
             device._command_status = []
             device._command_progress = []
             device._command_result = []
-
-            # Qn: should this be implemented like the logging lock? see 461
+            device.queue_manager = QueueManager()
             device.command_queue_lock = threading.Lock()
 
             try:
@@ -863,10 +878,16 @@ class SKABaseDevice(Device):
         self._command_objects = {}
 
         component_args = (self.component_manager, self.op_state_model, self.logger)
+        lrc_args = (self.queue_manager, self.logger)
         self.register_command_object("Standby", self.StandbyCommand(*component_args))
         self.register_command_object("Off", self.OffCommand(*component_args))
         self.register_command_object("On", self.OnCommand(*component_args))
         self.register_command_object("Reset", self.ResetCommand(*component_args))
+        self.register_command_object("AbortCommands", self.AbortCommandsCommand(*lrc_args))
+        self.register_command_object(
+            "CheckLongRunningCommandStatus",
+            self.CheckLongRunningCommandStatusCommand(*lrc_args)
+        )
 
         device_args = (self, self.op_state_model, self.logger)
         self.register_command_object(
@@ -1454,6 +1475,85 @@ class SKABaseDevice(Device):
         command = self.get_command_object("On")
         (return_code, message) = command()
         return [[return_code], [message]]
+
+    class AbortCommandsCommand(ResponseCommand):
+        """The command class for the AbortCommand command."""
+
+        def __init__(self, queue_manager, logger=None):
+            """Initialise a new AbortCommandsCommand instance.
+
+            :param queue_manager: the object manages the worker
+                thread and the LRC attributes
+            :type queue_manager: object
+            :param logger: the logger to be used by this Command. If not
+                provided, then a default module logger will be used.
+            :type logger: a logger that implements the standard library
+                logger interface
+            """
+            self.queue_manager = queue_manager
+            super().__init__(target=None, logger=logger)
+
+        def do(self):
+            """Abort long running commands.
+
+            Abort the currently executing LRC and remove all enqueued LRCs.
+            """
+            # implementation details to be added
+            return (ResultCode.OK, "Aborting")
+
+    @command(
+        dtype_out="DevVarLongStringArray",
+    )
+    @DebugIt()
+    def AbortCommands(self):
+        """Empty out long running comands in queue."""
+        handler = self.get_command_object("AbortCommands")
+        (return_code, message) = handler()
+        return [[return_code], [message]]
+
+    class CheckLongRunningCommandStatusCommand(ResponseCommand):
+        """The command class for the CheckLongRunningCommandStatus command."""
+
+        def __init__(self, queue_manager, logger=None):
+            """Initialise a new CheckLongRunningCommandStatusCommand instance.
+
+            :param queue_manager: the object manages the worker
+                thread and the LRC attributes
+            :type queue_manager: object
+            :param logger: the logger to be used by this Command. If not
+                provided, then a default module logger will be used.
+            :type logger: a logger that implements the standard library
+                logger interface
+            """
+            self.queue_manager = queue_manager
+            super().__init__(target=None, logger=logger)
+
+        def do(self, argin):
+            """Determine the status of the command ID passed in, if any.
+
+            - Check `command_result` to see if it's finished.
+            - Check `command_status` to see if it's in progress
+            - Check `command_ids_in_queue` to see if it's queued
+
+            :param argin: The command ID
+            :type argin: str
+            :return: The resultcode for this command and the code for the state
+            :rtype: tuple
+                (ResultCode.OK, LongRunningCommandState)
+            """
+            # implementation details to be added
+            return (ResultCode.OK, LongRunningCommandState.OK)
+
+    @command(
+        dtype_in=str,
+        dtype_out="DevVarShortArray",
+    )
+    @DebugIt()
+    def CheckLongRunningCommandStatus(self, argin):
+        """Check the status of a long running command by ID."""
+        handler = self.get_command_object("CheckLongRunningCommandStatus")
+        (return_code, command_state) = handler(argin)
+        return [return_code, command_state]
 
     class DebugDeviceCommand(BaseCommand):
         """A class for the SKABaseDevice's DebugDevice() command."""

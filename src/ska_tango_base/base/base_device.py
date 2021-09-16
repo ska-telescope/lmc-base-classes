@@ -1145,7 +1145,6 @@ class SKABaseDevice(Device):
         """
         return self._command_result
 
-
     # --------
     # Commands
     # --------

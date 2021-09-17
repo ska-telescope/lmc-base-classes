@@ -284,34 +284,34 @@
       <status abstract="false" inherited="true" concrete="true"/>
       <properties description="Logging targets for this device, excluding ska_ser_logging defaults - &#xA;initialises to LoggingTargetsDefault on startup" label="" unit="" standardUnit="" displayUnit="" format="" maxValue="" minValue="" maxAlarm="" minAlarm="" maxWarning="" minWarning="" deltaTime="" deltaValue=""/>
     </attributes>
-    <attributes name="longRunningCommandsInQueue" attType="Spectrum" rwType="READ" displayLevel="OPERATOR" polledPeriod="1000" maxX="98" maxY="" allocReadMember="true" isDynamic="false">
+    <attributes name="longRunningCommandsInQueue" attType="Spectrum" rwType="READ" displayLevel="OPERATOR" polledPeriod="0" maxX="98" maxY="" allocReadMember="true" isDynamic="false">
       <dataType xsi:type="pogoDsl:StringType"/>
       <changeEvent fire="true" libCheckCriteria="true"/>
-      <status abstract="false" inherited="true" concrete="true" concreteHere="true"/>
+      <status abstract="false" inherited="true" concrete="true" concreteHere="false"/>
       <properties description="Keep track of which commands are in the queue. &#xA;Pop off from front as they complete." label="" unit="" standardUnit="" displayUnit="" format="" maxValue="" minValue="" maxAlarm="" minAlarm="" maxWarning="" minWarning="" deltaTime="" deltaValue=""/>
     </attributes>
-    <attributes name="longRunningCommandIDsInQueue" attType="Spectrum" rwType="READ" displayLevel="OPERATOR" polledPeriod="1000" maxX="98" maxY="" allocReadMember="true" isDynamic="false">
+    <attributes name="longRunningCommandIDsInQueue" attType="Spectrum" rwType="READ" displayLevel="OPERATOR" polledPeriod="0" maxX="98" maxY="" allocReadMember="true" isDynamic="false">
       <dataType xsi:type="pogoDsl:StringType"/>
       <changeEvent fire="false" libCheckCriteria="false"/>
-      <status abstract="false" inherited="true" concrete="true" concreteHere="true"/>
+      <status abstract="false" inherited="true" concrete="true" concreteHere="false"/>
       <properties description="Every client that executes a command will receive a command ID as response. &#xA;Keep track of IDs in the queue. Pop off from front as they complete." label="" unit="" standardUnit="" displayUnit="" format="" maxValue="" minValue="" maxAlarm="" minAlarm="" maxWarning="" minWarning="" deltaTime="" deltaValue=""/>
     </attributes>
-    <attributes name="longRunningCommandStatus" attType="Spectrum" rwType="READ" displayLevel="OPERATOR" polledPeriod="1000" maxX="2" maxY="" allocReadMember="true" isDynamic="false">
+    <attributes name="longRunningCommandStatus" attType="Spectrum" rwType="READ" displayLevel="OPERATOR" polledPeriod="0" maxX="2" maxY="" allocReadMember="true" isDynamic="false">
       <dataType xsi:type="pogoDsl:StringType"/>
       <changeEvent fire="true" libCheckCriteria="true"/>
-      <status abstract="false" inherited="true" concrete="true" concreteHere="true"/>
+      <status abstract="false" inherited="true" concrete="true" concreteHere="false"/>
       <properties description="ID, status pair of the currently executing command. &#xA;Clients can subscribe to on_change event and wait for the ID they are interested in." label="" unit="" standardUnit="" displayUnit="" format="" maxValue="" minValue="" maxAlarm="" minAlarm="" maxWarning="" minWarning="" deltaTime="" deltaValue=""/>
     </attributes>
-    <attributes name="longRunningCommandProgress" attType="Spectrum" rwType="READ" displayLevel="OPERATOR" polledPeriod="1000" maxX="2" maxY="" allocReadMember="true" isDynamic="false">
+    <attributes name="longRunningCommandProgress" attType="Spectrum" rwType="READ" displayLevel="OPERATOR" polledPeriod="0" maxX="2" maxY="" allocReadMember="true" isDynamic="false">
       <dataType xsi:type="pogoDsl:StringType"/>
       <changeEvent fire="true" libCheckCriteria="true"/>
-      <status abstract="false" inherited="true" concrete="true" concreteHere="true"/>
+      <status abstract="false" inherited="true" concrete="true" concreteHere="false"/>
       <properties description="ID, progress of the currently executing command. &#xA;Clients can subscribe to on_change event and wait for the ID they are interested in." label="" unit="" standardUnit="" displayUnit="" format="" maxValue="" minValue="" maxAlarm="" minAlarm="" maxWarning="" minWarning="" deltaTime="" deltaValue=""/>
     </attributes>
-    <attributes name="longRunningCommandResult" attType="Spectrum" rwType="READ" displayLevel="OPERATOR" polledPeriod="1000" maxX="2" maxY="" allocReadMember="true" isDynamic="false">
+    <attributes name="longRunningCommandResult" attType="Spectrum" rwType="READ" displayLevel="OPERATOR" polledPeriod="0" maxX="2" maxY="" allocReadMember="true" isDynamic="false">
       <dataType xsi:type="pogoDsl:StringType"/>
       <changeEvent fire="true" libCheckCriteria="true"/>
-      <status abstract="false" inherited="true" concrete="true" concreteHere="true"/>
+      <status abstract="false" inherited="true" concrete="true" concreteHere="false"/>
       <properties description="ID, result pair. &#xA;Clients can subscribe to on_change event and wait for the ID they are interested in." label="" unit="" standardUnit="" displayUnit="" format="" maxValue="" minValue="" maxAlarm="" minAlarm="" maxWarning="" minWarning="" deltaTime="" deltaValue=""/>
     </attributes>
     <states name="ON" description="This state could have been called OK or OPERATIONAL. It means that the device is in its operational state. (E.g. the power supply is giving its nominal current, th motor is ON and ready to move, the instrument is operating). This state is modified by the Attribute alarm checking of the DeviceImpl:dev_state method. i.e. if the State is ON and one attribute has its quality factor to ATTR_WARNING or ATTR_ALARM, then the State is modified to ALARM.">

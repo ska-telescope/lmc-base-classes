@@ -453,7 +453,6 @@ class SKABaseDevice(Device):
             device._command_progress = []
             device._command_result = []
             device.queue_manager = QueueManager()
-            device.command_queue_lock = threading.Lock()
 
             try:
                 # create Tango Groups dict, according to property
@@ -1490,8 +1489,7 @@ class SKABaseDevice(Device):
             :type logger: a logger that implements the standard library
                 logger interface
             """
-            self.queue_manager = queue_manager
-            super().__init__(target=None, logger=logger)
+            super().__init__(target=queue_manager, logger=logger)
 
         def do(self):
             """Abort long running commands.
@@ -1525,8 +1523,7 @@ class SKABaseDevice(Device):
             :type logger: a logger that implements the standard library
                 logger interface
             """
-            self.queue_manager = queue_manager
-            super().__init__(target=None, logger=logger)
+            super().__init__(target=queue_manager, logger=logger)
 
         def do(self, argin):
             """Determine the status of the command ID passed in, if any.

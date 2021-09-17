@@ -96,10 +96,6 @@ class LongRunningCommandState(enum.IntEnum):
     NOT_ALLOWED = 6
 
 
-class QueueManager:
-    """Manages the worker thread and the state of the queue."""
-
-
 _PYTHON_TO_TANGO_LOGGING_LEVEL = {
     logging.CRITICAL: _Log4TangoLoggingLevel.FATAL,
     logging.ERROR: _Log4TangoLoggingLevel.ERROR,
@@ -447,13 +443,6 @@ class SKABaseDevice(Device):
             device._version_id = release.version
             device._methods_patched_for_debugger = False
 
-            device._commands_in_queue = []
-            device._command_ids_in_queue = []
-            device._command_status = []
-            device._command_progress = []
-            device._command_result = []
-            device.queue_manager = QueueManager()
-
             try:
                 # create Tango Groups dict, according to property
                 self.logger.debug(
@@ -738,7 +727,7 @@ class SKABaseDevice(Device):
 
     longRunningCommandResult = attribute(
         dtype=("str",),
-        max_dim_x=2, 
+        max_dim_x=2,
         access=AttrWriteType.READ,
         doc="ID, result pair. \n"
         "Clients can subscribe to on_change event and wait for the ID they are interested in.",
@@ -872,7 +861,7 @@ class SKABaseDevice(Device):
         self._command_objects = {}
 
         component_args = (self.component_manager, self.op_state_model, self.logger)
-        lrc_args = (self.queue_manager, self.logger)
+        lrc_args = (self.component_manager, self.logger)
         self.register_command_object("Standby", self.StandbyCommand(*component_args))
         self.register_command_object("Off", self.OffCommand(*component_args))
         self.register_command_object("On", self.OnCommand(*component_args))
@@ -1122,7 +1111,7 @@ class SKABaseDevice(Device):
 
         :return: commands in the device queue
         """
-        return self._commands_in_queue
+        return self.component_manager.commands_in_queue
 
     def read_longRunningCommandIDsInQueue(self):
         # PROTECTED REGION ID(SKABaseDevice.longRunningCommandIDsInQueue_read) ENABLED START #
@@ -1131,7 +1120,7 @@ class SKABaseDevice(Device):
 
         :return: unique ids for the enqueued commands
         """
-        return self._command_ids_in_queue
+        return self.component_manager.command_ids_in_queue
 
     def read_longRunningCommandStatus(self):
         # PROTECTED REGION ID(SKABaseDevice.longRunningCommandStatus_read) ENABLED START #
@@ -1140,7 +1129,7 @@ class SKABaseDevice(Device):
 
         :return: ID, status pair of the currently executing command
         """
-        return self._command_status
+        return self.component_manager.command_status
 
     def read_longRunningCommandProgress(self):
         # PROTECTED REGION ID(SKABaseDevice.longRunningCommandProgress_read) ENABLED START #
@@ -1149,7 +1138,7 @@ class SKABaseDevice(Device):
 
         :return: ID, progress of the currently executing command.
         """
-        return self._command_progress
+        return self.component_manager.command_progress
 
     def read_longRunningCommandResult(self):
         # PROTECTED REGION ID(SKABaseDevice.longRunningCommandResult_read) ENABLED START #
@@ -1158,7 +1147,7 @@ class SKABaseDevice(Device):
 
         :return: ID, result pair.
         """
-        return self._command_result
+        return self.component_manager.command_result
 
     # --------
     # Commands
@@ -1473,18 +1462,18 @@ class SKABaseDevice(Device):
     class AbortCommandsCommand(ResponseCommand):
         """The command class for the AbortCommand command."""
 
-        def __init__(self, queue_manager, logger=None):
+        def __init__(self, component_manager, logger=None):
             """Initialise a new AbortCommandsCommand instance.
 
-            :param queue_manager: the object manages the worker
-                thread and the LRC attributes
-            :type queue_manager: object
+            :param component_manager: contains the queue manager which
+                manages the worker thread and the LRC attributes
+            :type component_manager: object
             :param logger: the logger to be used by this Command. If not
                 provided, then a default module logger will be used.
             :type logger: a logger that implements the standard library
                 logger interface
             """
-            super().__init__(target=queue_manager, logger=logger)
+            super().__init__(target=component_manager, logger=logger)
 
         def do(self):
             """Abort long running commands.
@@ -1507,18 +1496,18 @@ class SKABaseDevice(Device):
     class CheckLongRunningCommandStatusCommand(ResponseCommand):
         """The command class for the CheckLongRunningCommandStatus command."""
 
-        def __init__(self, queue_manager, logger=None):
+        def __init__(self, component_manager, logger=None):
             """Initialise a new CheckLongRunningCommandStatusCommand instance.
 
-            :param queue_manager: the object manages the worker
-                thread and the LRC attributes
-            :type queue_manager: object
+            :param component_manager: contains the queue manager which
+                manages the worker thread and the LRC attributes
+            :type component_manager: object
             :param logger: the logger to be used by this Command. If not
                 provided, then a default module logger will be used.
             :type logger: a logger that implements the standard library
                 logger interface
             """
-            super().__init__(target=queue_manager, logger=logger)
+            super().__init__(target=component_manager, logger=logger)
 
         def do(self, argin):
             """Determine the status of the command ID passed in, if any.
@@ -1534,7 +1523,7 @@ class SKABaseDevice(Device):
                 (ResultCode.OK, LongRunningCommandState)
             """
             # implementation details to be added
-            return (ResultCode.OK, LongRunningCommandState.OK)
+            return (ResultCode.OK, LongRunningCommandState.NOT_FOUND)
 
     @command(
         dtype_in=str,

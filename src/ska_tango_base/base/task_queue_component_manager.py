@@ -61,6 +61,7 @@ class QueueManager:
             stopping_event: Event,
             aborting_event: Event,
             result_callback: Callable,
+            update_command_state_callback: Callable,
             queue_fetch_timeout: int = 0.1,
         ) -> None:
             """Initiate a worker.
@@ -75,8 +76,10 @@ class QueueManager:
             :type stopping_event: Event
             :param aborting_event: Indicates whether to get more tasks off the queue
             :type aborting_event: Event
-            :param result_callback: [description]
+            :param result_callback: The callback to run to pass back results
             :type result_callback: Callable
+            :param update_command_state_callback: Callback to update command state
+            :type update_command_state_callback: Callable
             """
             super().__init__()
             self._work_queue = queue
@@ -84,6 +87,7 @@ class QueueManager:
             self.is_stopping = stopping_event
             self.is_aborting = aborting_event
             self._result_callback = result_callback
+            self._update_command_state_callback = update_command_state_callback
             self._queue_fetch_timeout = queue_fetch_timeout
             self._currently_executing_id = ""
             self._command_status = []
@@ -113,14 +117,17 @@ class QueueManager:
                         (unique_id, task) = self._work_queue.get(
                             block=True, timeout=self._queue_fetch_timeout
                         )
-                        self._currently_executing_id = unique_id
-                        self._command_status = [f"{unique_id}", "IN PROGRESS"]
+
+                        self._update_command_state_callback(unique_id, "IN_PROGRESS")
+                        # self._currently_executing_id = unique_id
+                        # self._command_status = [f"{unique_id}", "IN PROGRESS"]
 
                         task_result = self.execute_task(task)
                         result = TaskResult(
                             task_result[0], f"{task_result[1]}", unique_id
                         )
                         self._work_queue.task_done()
+                        self._update_command_state_callback("", "")
                         self._result_callback(result)
                     except Empty:
                         continue
@@ -191,6 +198,7 @@ class QueueManager:
                 self.is_stopping,
                 self.is_aborting,
                 self.result_callback,
+                self.update_command_state_callback,
             )
             for _ in range(num_workers)
         ]
@@ -314,9 +322,11 @@ class QueueManager:
 
         # If there is no queue, just execute the command and return
         if self._max_queue_size == 0:
+            self.update_command_state_callback(unique_id, "IN_PROGRESS")
             task_result = self.Worker.execute_task(task)
             result = TaskResult(task_result[0], f"{task_result[1]}", unique_id)
             self.result_callback(result)
+            self.update_command_state_callback("", "")
             return unique_id
 
         if self.queue_full:
@@ -348,6 +358,17 @@ class QueueManager:
                 self.command_ids_in_queue.pop(0)
                 self.commands_in_queue.pop(0)
         self.command_status = []
+
+    def update_command_state_callback(self, unique_id: str, progress_state: str):
+        """Update the executing command state.
+
+        :param unique_id: The command unique ID
+        :type unique_id: str
+        :param progress_state: The state of the command progress
+        :type progress_state: str
+        """
+        self._currently_executing_id = unique_id
+        self._command_progress = [unique_id, progress_state]
 
     def abort_commands(self):
         """Start aborting commands."""

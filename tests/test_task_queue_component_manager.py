@@ -191,3 +191,31 @@ class TestQueueManagerTasks:
         assert qm.command_result[0].endswith(expected_name)
         assert int(qm.command_result[1]) == expected_result_code
         assert qm.command_result[2] == expected_result
+
+    def test_currently_executing(self):
+        """Check that currently executing and progress state is updated."""
+        # Queue
+        with patch.object(QueueManager, "update_command_state_callback") as my_cb:
+            qm = QueueManager(logger, max_queue_size=1, num_workers=1)
+            add_task_one = partial(add_five, 1)
+            unique_id = qm.enqueue_command(add_task_one)
+            while not qm.command_result:
+                time.sleep(0.5)
+            assert my_cb.call_count == 2
+            assert my_cb.call_args_list[0][0][0] == unique_id
+            assert my_cb.call_args_list[0][0][1] == "IN_PROGRESS"
+            assert not my_cb.call_args_list[1][0][0]
+            assert not my_cb.call_args_list[1][0][1]
+
+        # No Queue
+        with patch.object(QueueManager, "update_command_state_callback") as my_cb:
+            qm = QueueManager(logger, max_queue_size=0, num_workers=1)
+            add_task_one = partial(add_five, 1)
+            unique_id = qm.enqueue_command(add_task_one)
+            while not qm.command_result:
+                time.sleep(0.5)
+            assert my_cb.call_count == 2
+            assert my_cb.call_args_list[0][0][0] == unique_id
+            assert my_cb.call_args_list[0][0][1] == "IN_PROGRESS"
+            assert not my_cb.call_args_list[1][0][0]
+            assert not my_cb.call_args_list[1][0][1]

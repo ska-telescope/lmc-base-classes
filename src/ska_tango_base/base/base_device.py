@@ -703,7 +703,6 @@ class SKABaseDevice(Device):
     longRunningCommandsInQueue = attribute(
         dtype=("str",),
         max_dim_x=98,
-        polling_period=1000,
         access=AttrWriteType.READ,
         doc="Keep track of which commands are in the queue. \n"
         "Pop off from front as they complete.",
@@ -713,7 +712,6 @@ class SKABaseDevice(Device):
     longRunningCommandIDsInQueue = attribute(
         dtype=("str",),
         max_dim_x=98,
-        polling_period=1000,
         access=AttrWriteType.READ,
         doc="Every client that executes a command will receive a command ID as response. \n"
         "Keep track of IDs in the queue. Pop off from front as they complete.",
@@ -723,7 +721,6 @@ class SKABaseDevice(Device):
     longRunningCommandStatus = attribute(
         dtype=("str",),
         max_dim_x=2,
-        polling_period=1000,
         access=AttrWriteType.READ,
         doc="ID, status pair of the currently executing command. \n"
         "Clients can subscribe to on_change event and wait for the ID they are interested in.",
@@ -733,7 +730,6 @@ class SKABaseDevice(Device):
     longRunningCommandProgress = attribute(
         dtype=("str",),
         max_dim_x=2,
-        polling_period=1000,
         access=AttrWriteType.READ,
         doc="ID, progress of the currently executing command. \n"
         "Clients can subscribe to on_change event and wait for the ID they are interested in..",
@@ -742,8 +738,7 @@ class SKABaseDevice(Device):
 
     longRunningCommandResult = attribute(
         dtype=("str",),
-        max_dim_x=2,
-        polling_period=1000,
+        max_dim_x=2, 
         access=AttrWriteType.READ,
         doc="ID, result pair. \n"
         "Clients can subscribe to on_change event and wait for the ID they are interested in.",
@@ -1504,7 +1499,7 @@ class SKABaseDevice(Device):
     )
     @DebugIt()
     def AbortCommands(self):
-        """Empty out long running comands in queue."""
+        """Empty out long running commands in queue."""
         handler = self.get_command_object("AbortCommands")
         (return_code, message) = handler()
         return [[return_code], [message]]

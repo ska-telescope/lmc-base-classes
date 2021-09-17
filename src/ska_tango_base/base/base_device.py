@@ -866,10 +866,12 @@ class SKABaseDevice(Device):
         self.register_command_object("Off", self.OffCommand(*component_args))
         self.register_command_object("On", self.OnCommand(*component_args))
         self.register_command_object("Reset", self.ResetCommand(*component_args))
-        self.register_command_object("AbortCommands", self.AbortCommandsCommand(*lrc_args))
+        self.register_command_object(
+            "AbortCommands", self.AbortCommandsCommand(*lrc_args)
+        )
         self.register_command_object(
             "CheckLongRunningCommandStatus",
-            self.CheckLongRunningCommandStatusCommand(*lrc_args)
+            self.CheckLongRunningCommandStatusCommand(*lrc_args),
         )
 
         device_args = (self, self.op_state_model, self.logger)

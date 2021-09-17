@@ -1,4 +1,5 @@
-"""This module implements a component manager that has the ability to queue tasks for execution by background threads"""
+"""This module implements a component manager that can queue tasks for execution by background threads."""
+from __future__ import annotations
 import functools
 import logging
 import threading
@@ -6,7 +7,8 @@ import time
 import traceback
 from queue import Empty, Queue
 from threading import Event
-from typing import Any, Callable
+from typing import Any, Callable, List
+from attr import dataclass
 
 import tango
 
@@ -14,16 +16,46 @@ from ska_tango_base.base.component_manager import BaseComponentManager
 from ska_tango_base.commands import ResultCode
 
 
-class QueueManager:
-    """Manages the worker thread and the attributes that will communicate the
-    state of the queue.
-    """
+@dataclass
+class TaskResult:
+    """Convenience class for results."""
 
-    class _Worker(threading.Thread):
+    result_code: ResultCode
+    task_result: str
+    unique_id: str
+
+    def to_command_result(self) -> List[str]:
+        """Convert TaskResult to command_result.
+
+        :return: The command result
+        :rtype: list[str]
+        """
+        return [f"{self.unique_id}", f"{int(self.result_code)}", f"{self.task_result}"]
+
+    @classmethod
+    def from_command_result(cls, command_result: list) -> TaskResult:
+        """Convert command_result to TaskResult.
+
+        :param command_result: The command_result [unique_id, result_code, task_result]
+        :type command_result: list
+        :return: The task result
+        :rtype: TaskResult
+        """
+        return TaskResult(
+            result_code=ResultCode(int(command_result[1])),
+            task_result=command_result[2],
+            unique_id=command_result[0],
+        )
+
+
+class QueueManager:
+    """Manages the worker threads. Updates the properties as the tasks are completed."""
+
+    class Worker(threading.Thread):
         """A worker thread that takes tasks from the queue and performs them."""
 
         def __init__(
-            self,
+            self: QueueManager.Worker,
             queue: Queue,
             logger: logging.Logger,
             stopping_event: Event,
@@ -31,17 +63,17 @@ class QueueManager:
             result_callback: Callable,
             queue_fetch_timeout: int = 0.1,
         ) -> None:
-            """Initiate a worker
+            """Initiate a worker.
 
             :param self: Worker class
-            :type self: QueueManager._Worker
+            :type self: QueueManager.Worker
             :param queue: The queue from which tasks are pulled
             :type queue: Queue
             :param logger: Logger to log to
             :type logger: logging.Logger
             :param stopping_event: Indicates whether to get more tasks off the queue
             :type stopping_event: Event
-            :param aborting_event: Indicates whther to get more tasks off the queue
+            :param aborting_event: Indicates whether to get more tasks off the queue
             :type aborting_event: Event
             :param result_callback: [description]
             :type result_callback: Callable
@@ -49,54 +81,76 @@ class QueueManager:
             super().__init__()
             self._work_queue = queue
             self._logger = logger
-            self._is_stopping = stopping_event
-            self._is_aborting = aborting_event
+            self.is_stopping = stopping_event
+            self.is_aborting = aborting_event
             self._result_callback = result_callback
             self._queue_fetch_timeout = queue_fetch_timeout
+            self._currently_executing_id = ""
+            self._command_status = []
             self.setDaemon(True)
 
         def run(self) -> None:
+            """Run in the thread.
+
+            Tasks are fetched off the queue and executed.
+            if _is_stopping is set the thread wil exit.
+            If _is_aborting is set the queue will be emptied. Once emptied it will reset.
+            """
             with tango.EnsureOmniThread():
-                while not self._is_stopping.is_set():
-                    if self._is_aborting.is_set():
+                while not self.is_stopping.is_set():
+                    if self.is_aborting.is_set():
                         # Drain the Queue since self.is_aborting is set
                         while not self._work_queue.empty():
                             unique_id, _ = self._work_queue.get()
                             self._logger.warning("Aborting task ID [%s]", unique_id)
-                            result = (
-                                ResultCode.ABORTED,
-                                f"{unique_id} Aborted",
+                            result = TaskResult(
+                                ResultCode.ABORTED, f"{unique_id} Aborted", unique_id
                             )
-                            self._result_callback(unique_id, result)
+                            self._result_callback(result)
                             self._work_queue.task_done()
-                        self._is_aborting.clear()
+                        self.is_aborting.clear()
                     try:
                         (unique_id, task) = self._work_queue.get(
                             block=True, timeout=self._queue_fetch_timeout
                         )
                         self._currently_executing_id = unique_id
-                        self.command_status = [f"{unique_id}", "IN PROGRESS"]
+                        self._command_status = [f"{unique_id}", "IN PROGRESS"]
 
-                        try:
-                            result = (ResultCode.OK, task())
-                        except Exception as err:
-                            result = (
-                                ResultCode.FAILED,
-                                f"Error: {err} {traceback.format_exc()}",
-                            )
+                        task_result = self.execute_task(task)
+                        result = TaskResult(
+                            task_result[0], f"{task_result[1]}", unique_id
+                        )
                         self._work_queue.task_done()
-                        self._result_callback(unique_id, result)
+                        self._result_callback(result)
                     except Empty:
                         continue
 
+        @classmethod
+        def execute_task(cls, task: Callable):
+            """Execute a task, return results in a standardised format.
+
+            :param task: Callable to execute
+            :type task: Callable
+            :return: (ResultCode, result)
+            :rtype: tuple
+            """
+            try:
+                result = (ResultCode.OK, task())
+            except Exception as err:
+                result = (
+                    ResultCode.FAILED,
+                    f"Error: {err} {traceback.format_exc()}",
+                )
+            return result
+
     def __init__(
-        self,
+        self: QueueManager,
         logger: logging.Logger,
         max_queue_size: int = 0,
         queue_fetch_timeout: float = 0.1,
         num_workers: int = 0,
     ):
-        """QueryManager init
+        """Init QueryManager.
 
         Creates the queue and starts the thread that will execute commands
         from it.
@@ -124,78 +178,122 @@ class QueueManager:
         self._command_status = []
         self._command_progress = []
         self._currently_executing_id = None
+        self._threads = []
+
+        # If there's no queue, don't start threads
+        if not self._max_queue_size:
+            return
 
         self._threads = [
-            self._Worker(
+            self.Worker(
                 self._work_queue,
                 self._logger,
                 self.is_stopping,
                 self.is_aborting,
                 self.result_callback,
             )
-            for i in range(num_workers)
+            for _ in range(num_workers)
         ]
         for thread in self._threads:
             thread.start()
 
     @property
-    def queue_full(self):
+    def queue_full(self) -> bool:
+        """Check if the queue is full.
+
+        :return: Whether or not the queue is full.
+        :rtype: bool
+        """
         return self._work_queue.full()
 
     @property
-    def command_result(self):
+    def command_result(self) -> list:
+        """Return the last command result.
+
+        :return: Last command result
+        :rtype: list
+        """
         return self._command_result
 
     @command_result.setter
-    def command_result(self, value):
+    def command_result(self, value: list):
+        """Set the command result.
+
+        :param value: The command result
+        :type value: list
+        """
         self._command_result = value
-        # self._tango_device.push_change_event(
-        #     "longRunningCommandResult",
-        #     self._command_result,
-        # )
 
     @property
-    def command_ids_in_queue(self):
+    def command_ids_in_queue(self) -> list:
+        """Command IDs in the queue.
+
+        :return: The command IDs in the queue
+        :rtype: list
+        """
         return self._command_ids_in_queue
 
     @command_ids_in_queue.setter
-    def command_ids_in_queue(self, value):
+    def command_ids_in_queue(self, value: list):
+        """Set the command IDs in the queue.
+
+        :param value: The list of command IDs in the queue
+        :type value: list
+        """
         self._command_ids_in_queue = value
-        # self._tango_device.push_change_event(
-        #     "longRunningCommandIDsInQueue",
-        #     self._command_ids_in_queue,
-        # )
 
     @property
-    def commands_in_queue(self):
+    def commands_in_queue(self) -> list:
+        """Command names in the queue.
+
+        :return: The list of command names in the queue
+        :rtype: list
+        """
         return self._commands_in_queue
 
     @commands_in_queue.setter
-    def commands_in_queue(self, value):
+    def commands_in_queue(self, value: list):
+        """Set the commands in queue.
+
+        :param value: The commands in the queue
+        :type value: list
+        """
         self._commands_in_queue = value
-        # self._tango_device.push_change_event(
-        #     "longRunningCommandsInQueue",
-        #     self._commands_in_queue,
-        # )
 
     @property
-    def command_status(self):
+    def command_status(self) -> list:
+        """Return command status.
+
+        :return: The command status
+        :rtype: list
+        """
         return self._command_status
 
     @command_status.setter
-    def command_status(self, value):
+    def command_status(self, value: list):
+        """Set the command status.
+
+        :param value: The command status
+        :type value: list
+        """
         self._command_status = value
-        # self._tango_device.push_change_event(
-        #     "longRunningCommandStatus",
-        #     self._command_status,
-        # )
 
     @property
-    def command_progress(self):
+    def command_progress(self) -> list:
+        """Return the command progress.
+
+        :return: The command progress
+        :rtype: list
+        """
         return self._command_progress
 
     @command_progress.setter
-    def command_progress(self, value):
+    def command_progress(self, value: list):
+        """Set the command progress.
+
+        :param value: The command progress.
+        :type value: list
+        """
         if self._currently_executing_id and value:
             self._command_progress = [
                 f"{self._currently_executing_id}",
@@ -203,13 +301,9 @@ class QueueManager:
             ]
         else:
             self._command_progress = []
-        # self._tango_device.push_change_event(
-        #     "longRunningCommandProgress",
-        #     self._command_progress,
-        # )
 
-    def enqueue_command(self, task: functools.partial):
-        """Add the task to be done onto the queue
+    def enqueue_command(self, task: functools.partial) -> str:
+        """Add the task to be done onto the queue.
 
         :param task: The task to execute in a thread
         :type task: functools.partial
@@ -218,8 +312,17 @@ class QueueManager:
         """
         unique_id = self.get_unique_id(task.func.__name__)
 
+        # If there is no queue, just execute the command and return
+        if self._max_queue_size == 0:
+            task_result = self.Worker.execute_task(task)
+            result = TaskResult(task_result[0], f"{task_result[1]}", unique_id)
+            self.result_callback(result)
+            return unique_id
+
         if self.queue_full:
-            self.result_callback(unique_id, (ResultCode.REJECTED, "Queue is full"))
+            self.result_callback(
+                TaskResult(ResultCode.REJECTED, "Queue is full", unique_id)
+            )
             return unique_id
 
         self._work_queue.put([unique_id, task])
@@ -231,17 +334,14 @@ class QueueManager:
             self.commands_in_queue = self._commands_in_queue
         return unique_id
 
-    def result_callback(self, unique_id, result):
-        """Called when the command, taken from the queue have completed to
-        update the appropriate attributes
+    def result_callback(self, task_result: TaskResult):
+        """Run when the command, taken from the queue have completed to update the appropriate attributes.
 
-        :param result: The result of the command
-        :type result: tuple, (result_code, result_string)
-        :param: The unique ID of the command
-        :type: string
+        :param task_result: The result of the command
+        :type task_result: TaskResult
         """
         self.command_progress = None
-        self.command_result = [f"{unique_id}", f"{int(result[0])}", f"{result[1]}"]
+        self.command_result = task_result.to_command_result()
 
         if self.commands_in_queue:
             with self.command_queue_lock:
@@ -250,17 +350,19 @@ class QueueManager:
         self.command_status = []
 
     def abort_commands(self):
-        """Start aborting commands"""
+        """Start aborting commands."""
         self.is_aborting.set()
 
     def exit_worker(self):
-        """Exit the worker thread
+        """Exit the worker thread.
+
         NOTE: Long running commands in progress should complete
         """
         self.is_stopping.set()
 
-    def get_unique_id(self, command_name):
-        """Generate a unique ID for the command
+    @classmethod
+    def get_unique_id(cls, command_name):
+        """Generate a unique ID for the command.
 
         :param command_name: The name of the command
         :type command_name: string
@@ -278,23 +380,25 @@ class QueueManager:
         - Wait for the queues to empty out.
         - Set the workers to stopping, this will exit out the running thread.
         """
+        if not self._threads:
+            return
 
         for worker in self._threads:
-            worker._is_aborting.set()
+            worker.is_aborting.set()
 
-        thread_aborting_state = [worker._is_aborting for worker in self._threads]
+        thread_aborting_state = [worker.is_aborting for worker in self._threads]
         while not any(thread_aborting_state):
-            thread_aborting_state = [worker._is_aborting for worker in self._threads]
+            thread_aborting_state = [worker.is_aborting for worker in self._threads]
 
         for worker in self._threads:
-            worker._is_stopping.set()
+            worker.is_stopping.set()
 
 
 class TaskQueueComponentManager(BaseComponentManager):
     """A component manager that provides message queue functionality."""
 
     def __init__(
-        self,
+        self: TaskQueueComponentManager,
         message_queue: QueueManager,
         logger: logging.Logger,
         *args: Any,

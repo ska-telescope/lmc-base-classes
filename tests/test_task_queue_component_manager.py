@@ -6,7 +6,11 @@ from functools import partial
 from unittest.mock import patch
 
 from ska_tango_base.commands import ResultCode
-from ska_tango_base.base.task_queue_component_manager import QueueManager, TaskResult
+from ska_tango_base.base.task_queue_component_manager import (
+    QueueManager,
+    TaskResult,
+    TaskQueueComponentManager,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -219,3 +223,15 @@ class TestQueueManagerTasks:
             assert my_cb.call_args_list[0][0][1] == "IN_PROGRESS"
             assert not my_cb.call_args_list[1][0][0]
             assert not my_cb.call_args_list[1][0][1]
+
+
+class TestComponentManager:
+    """Tests for the component manager."""
+
+    def test_init(self):
+        """Test that we can init the component manager."""
+        qm = QueueManager(logger, max_queue_size=0, num_workers=1)
+        cm = TaskQueueComponentManager(
+            message_queue=qm, op_state_model=None, logger=logger
+        )
+        assert cm.message_queue.command_ids_in_queue == []

@@ -7,7 +7,7 @@ import time
 import traceback
 from queue import Empty, Queue
 from threading import Event
-from typing import Any, Callable, List
+from typing import Any, Callable, Dict, List, Optional
 from attr import dataclass
 
 import tango
@@ -89,8 +89,6 @@ class QueueManager:
             self._result_callback = result_callback
             self._update_command_state_callback = update_command_state_callback
             self._queue_fetch_timeout = queue_fetch_timeout
-            self._currently_executing_id = ""
-            self._command_status = []
             self.setDaemon(True)
 
         def run(self) -> None:
@@ -119,15 +117,12 @@ class QueueManager:
                         )
 
                         self._update_command_state_callback(unique_id, "IN_PROGRESS")
-                        # self._currently_executing_id = unique_id
-                        # self._command_status = [f"{unique_id}", "IN PROGRESS"]
 
                         task_result = self.execute_task(task)
                         result = TaskResult(
                             task_result[0], f"{task_result[1]}", unique_id
                         )
                         self._work_queue.task_done()
-                        self._update_command_state_callback("", "")
                         self._result_callback(result)
                     except Empty:
                         continue
@@ -156,6 +151,7 @@ class QueueManager:
         max_queue_size: int = 0,
         queue_fetch_timeout: float = 0.1,
         num_workers: int = 0,
+        on_property_update_callback: Optional[Callable] = None,
     ):
         """Init QueryManager.
 
@@ -175,16 +171,17 @@ class QueueManager:
         self._max_queue_size = max_queue_size
         self._work_queue = Queue(self._max_queue_size)
         self._queue_fetch_timeout = queue_fetch_timeout
+        self._on_property_update_callback = on_property_update_callback
         self.is_aborting = threading.Event()
         self.is_stopping = threading.Event()
         self.command_queue_lock = threading.Lock()
+        self.command_status_lock = threading.Lock()
 
         self._command_result = []
         self._command_ids_in_queue = []
-        self._commands_in_queue = []
-        self._command_status = []
-        self._command_progress = []
-        self._currently_executing_id = None
+        self._commands_in_queue: Dict[str, str] = {}  # unique_id, command_name
+        self._command_status: Dict[str, str] = {}  # unique_id, status
+        self._command_progress = {}
         self._threads = []
 
         # If there's no queue, don't start threads
@@ -224,13 +221,15 @@ class QueueManager:
         return self._command_result
 
     @command_result.setter
-    def command_result(self, value: list):
-        """Set the command result.
+    def command_result(self, value):
+        """Set the command_result.
 
-        :param value: The command result
+        :param value: the command result
         :type value: list
         """
         self._command_result = value
+        if self._on_property_update_callback:
+            self._on_property_update_callback("command_result", self.command_result)
 
     @property
     def command_ids_in_queue(self) -> list:
@@ -242,13 +241,13 @@ class QueueManager:
         return self._command_ids_in_queue
 
     @command_ids_in_queue.setter
-    def command_ids_in_queue(self, value: list):
-        """Set the command IDs in the queue.
-
-        :param value: The list of command IDs in the queue
-        :type value: list
-        """
+    def command_ids_in_queue(self, value):
+        """Set command IDs in the queue."""
         self._command_ids_in_queue = value
+        if self._on_property_update_callback:
+            self._on_property_update_callback(
+                "command_ids_in_queue", self.command_ids_in_queue
+            )
 
     @property
     def commands_in_queue(self) -> list:
@@ -257,16 +256,20 @@ class QueueManager:
         :return: The list of command names in the queue
         :rtype: list
         """
-        return self._commands_in_queue
+        return list(self._commands_in_queue.values())
 
     @commands_in_queue.setter
-    def commands_in_queue(self, value: list):
-        """Set the commands in queue.
+    def commands_in_queue(self, value):
+        """Set command names in the queue.
 
-        :param value: The commands in the queue
-        :type value: list
+        :return: The list of command names in the queue
+        :rtype: list
         """
         self._commands_in_queue = value
+        if self._on_property_update_callback:
+            self._on_property_update_callback(
+                "commands_in_queue", self.commands_in_queue
+            )
 
     @property
     def command_status(self) -> list:
@@ -275,16 +278,22 @@ class QueueManager:
         :return: The command status
         :rtype: list
         """
-        return self._command_status
+        result = []
+        for unique_id, status in self._command_status.items():
+            result.append(unique_id)
+            result.append(status)
+        return result
 
     @command_status.setter
-    def command_status(self, value: list):
+    def command_status(self, value: dict):
         """Set the command status.
 
-        :param value: The command status
-        :type value: list
+        :param value: command status dict
+        :type value: dict
         """
         self._command_status = value
+        if self._on_property_update_callback:
+            self._on_property_update_callback("command_status", self.command_status)
 
     @property
     def command_progress(self) -> list:
@@ -293,22 +302,22 @@ class QueueManager:
         :return: The command progress
         :rtype: list
         """
-        return self._command_progress
+        result = []
+        for unique_id, progress in self._command_progress.items():
+            result.append(unique_id)
+            result.append(progress)
+        return result
 
     @command_progress.setter
-    def command_progress(self, value: list):
+    def command_progress(self, value: dict):
         """Set the command progress.
 
-        :param value: The command progress.
-        :type value: list
+        :param value: The command progress dictionary
+        :type value: dict
         """
-        if self._currently_executing_id and value:
-            self._command_progress = [
-                f"{self._currently_executing_id}",
-                f"{value}",
-            ]
-        else:
-            self._command_progress = []
+        self._command_progress = value
+        if self._on_property_update_callback:
+            self._on_property_update_callback("command_progress", self.command_progress)
 
     def enqueue_command(self, task: functools.partial) -> str:
         """Add the task to be done onto the queue.
@@ -326,7 +335,6 @@ class QueueManager:
             task_result = self.Worker.execute_task(task)
             result = TaskResult(task_result[0], f"{task_result[1]}", unique_id)
             self.result_callback(result)
-            self.update_command_state_callback("", "")
             return unique_id
 
         if self.queue_full:
@@ -340,7 +348,7 @@ class QueueManager:
         with self.command_queue_lock:
             self._command_ids_in_queue.append(unique_id)
             self.command_ids_in_queue = self._command_ids_in_queue
-            self._commands_in_queue.append(task.func.__name__)
+            self._commands_in_queue[unique_id] = task.func.__name__
             self.commands_in_queue = self._commands_in_queue
         return unique_id
 
@@ -350,25 +358,32 @@ class QueueManager:
         :param task_result: The result of the command
         :type task_result: TaskResult
         """
-        self.command_progress = None
-        self.command_result = task_result.to_command_result()
+        with self.command_status_lock:
+            del self._command_status[task_result.unique_id]
+            self.command_status = self._command_status
+            self._command_result = task_result.to_command_result()
+            self.command_result = self._command_result
 
-        if self.commands_in_queue:
-            with self.command_queue_lock:
-                self.command_ids_in_queue.pop(0)
-                self.commands_in_queue.pop(0)
-        self.command_status = []
+        with self.command_queue_lock:
+            if self.commands_in_queue:
+                if task_result.unique_id in self._commands_in_queue:
+                    del self._commands_in_queue[task_result.unique_id]
+                    self.commands_in_queue = self._commands_in_queue
 
-    def update_command_state_callback(self, unique_id: str, progress_state: str):
+                if task_result.unique_id in self._command_ids_in_queue:
+                    self._command_ids_in_queue.remove(task_result.unique_id)
+                    self.command_ids_in_queue = self._command_ids_in_queue
+
+    def update_command_state_callback(self, unique_id: str, status: str):
         """Update the executing command state.
 
         :param unique_id: The command unique ID
         :type unique_id: str
-        :param progress_state: The state of the command progress
-        :type progress_state: str
+        :param status: The state of the command
+        :type status: str
         """
-        self._currently_executing_id = unique_id
-        self._command_progress = [unique_id, progress_state]
+        self._command_status[unique_id] = status
+        self.command_status = self._command_status
 
     def abort_commands(self):
         """Start aborting commands."""
@@ -421,34 +436,36 @@ class TaskQueueComponentManager(BaseComponentManager):
     def __init__(
         self: TaskQueueComponentManager,
         message_queue: QueueManager,
-        logger: logging.Logger,
+        op_state_model: Any,
         *args: Any,
         **kwargs: Any,
     ) -> None:
-        """
-        Initialise a new instance.
+        """Create a new component manager that puts tasks on the queue.
 
-        :param message_queue: a message queue for this component manager to use
-        :param logger: a logger for this component manager to use
-        :param args: positional arguments to pass to the parent class
-        :param kwargs: keyword arguments to pass to the parent class.
+        :param message_queue: The queue manager instance
+        :type message_queue: QueueManager
+        :param op_state_model: The ops state model
+        :type op_state_model: Any
         """
-        self._message_queue = message_queue
-        super().__init__(logger, *args, **kwargs)
+        self.message_queue = message_queue
+
+        super().__init__(op_state_model, *args, **kwargs)
 
     def enqueue(
         self,
         func: Callable,
         *args: Any,
         **kwargs: Any,
-    ) -> ResultCode:
-        """
-        Put a method call onto the queue.
+    ) -> str:
+        """Put `func` on the queue. The unique ID for it is returned.
 
-        :param func: the method to be called.
-        :param args: positional arguments to the method
-        :param kwargs: keyword arguments to the method
-
-        :return: a result code
+        :param func: The method to call
+        :type func: Callable
+        :param args: The method arguments
+        :type args: Any
+        :param kwargs: The method keyword arguments
+        :type kwargs: Any
+        :return: The unique ID of the queued command
+        :rtype: str
         """
-        return self._message_queue.enqueue(func, *args, **kwargs)
+        return self.message_queue.enqueue_command(functools.partial(func, args, kwargs))

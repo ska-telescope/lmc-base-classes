@@ -84,6 +84,18 @@ class _Log4TangoLoggingLevel(enum.IntEnum):
     DEBUG = 600
 
 
+class LongRunningCommandState(enum.IntEnum):
+    """The state of the long running command."""
+
+    QUEUED = 0
+    IN_PROGRESS = 1
+    ABORTED = 2
+    NOT_FOUND = 3
+    OK = 4
+    FAILED = 5
+    NOT_ALLOWED = 6
+
+
 _PYTHON_TO_TANGO_LOGGING_LEVEL = {
     logging.CRITICAL: _Log4TangoLoggingLevel.FATAL,
     logging.ERROR: _Log4TangoLoggingLevel.ERROR,
@@ -677,6 +689,51 @@ class SKABaseDevice(Device):
     )
     """Device attribute."""
 
+    longRunningCommandsInQueue = attribute(
+        dtype=("str",),
+        max_dim_x=98,
+        access=AttrWriteType.READ,
+        doc="Keep track of which commands are in the queue. \n"
+        "Pop off from front as they complete.",
+    )
+    """Device attribute for long running commands."""
+
+    longRunningCommandIDsInQueue = attribute(
+        dtype=("str",),
+        max_dim_x=98,
+        access=AttrWriteType.READ,
+        doc="Every client that executes a command will receive a command ID as response. \n"
+        "Keep track of IDs in the queue. Pop off from front as they complete.",
+    )
+    """Device attribute for long running commands."""
+
+    longRunningCommandStatus = attribute(
+        dtype=("str",),
+        max_dim_x=2,
+        access=AttrWriteType.READ,
+        doc="ID, status pair of the currently executing command. \n"
+        "Clients can subscribe to on_change event and wait for the ID they are interested in.",
+    )
+    """Device attribute for long running commands."""
+
+    longRunningCommandProgress = attribute(
+        dtype=("str",),
+        max_dim_x=2,
+        access=AttrWriteType.READ,
+        doc="ID, progress of the currently executing command. \n"
+        "Clients can subscribe to on_change event and wait for the ID they are interested in..",
+    )
+    """Device attribute for long running commands."""
+
+    longRunningCommandResult = attribute(
+        dtype=("str",),
+        max_dim_x=2,
+        access=AttrWriteType.READ,
+        doc="ID, result pair. \n"
+        "Clients can subscribe to on_change event and wait for the ID they are interested in.",
+    )
+    """Device attribute for long running commands."""
+
     # ---------------
     # General methods
     # ---------------
@@ -804,10 +861,18 @@ class SKABaseDevice(Device):
         self._command_objects = {}
 
         component_args = (self.component_manager, self.op_state_model, self.logger)
+        lrc_args = (self.component_manager, self.logger)
         self.register_command_object("Standby", self.StandbyCommand(*component_args))
         self.register_command_object("Off", self.OffCommand(*component_args))
         self.register_command_object("On", self.OnCommand(*component_args))
         self.register_command_object("Reset", self.ResetCommand(*component_args))
+        self.register_command_object(
+            "AbortCommands", self.AbortCommandsCommand(*lrc_args)
+        )
+        self.register_command_object(
+            "CheckLongRunningCommandStatus",
+            self.CheckLongRunningCommandStatusCommand(*lrc_args),
+        )
 
         device_args = (self, self.op_state_model, self.logger)
         self.register_command_object(
@@ -1040,6 +1105,51 @@ class SKABaseDevice(Device):
         """
         self._test_mode = value
         # PROTECTED REGION END #    //  SKABaseDevice.testMode_write
+
+    def read_longRunningCommandsInQueue(self):
+        # PROTECTED REGION ID(SKABaseDevice.longRunningCommandsInQueue_read) ENABLED START #
+        """
+        Read the long running commands in the queue.
+
+        :return: commands in the device queue
+        """
+        return self.component_manager.commands_in_queue
+
+    def read_longRunningCommandIDsInQueue(self):
+        # PROTECTED REGION ID(SKABaseDevice.longRunningCommandIDsInQueue_read) ENABLED START #
+        """
+        Read the IDs of the long running commands in the queue.
+
+        :return: unique ids for the enqueued commands
+        """
+        return self.component_manager.command_ids_in_queue
+
+    def read_longRunningCommandStatus(self):
+        # PROTECTED REGION ID(SKABaseDevice.longRunningCommandStatus_read) ENABLED START #
+        """
+        Read the status of the currently executing long running command.
+
+        :return: ID, status pair of the currently executing command
+        """
+        return self.component_manager.command_status
+
+    def read_longRunningCommandProgress(self):
+        # PROTECTED REGION ID(SKABaseDevice.longRunningCommandProgress_read) ENABLED START #
+        """
+        Read the progress of the currently executing long running command.
+
+        :return: ID, progress of the currently executing command.
+        """
+        return self.component_manager.command_progress
+
+    def read_longRunningCommandResult(self):
+        # PROTECTED REGION ID(SKABaseDevice.longRunningCommandResult_read) ENABLED START #
+        """
+        Read the result of the completed long running command.
+
+        :return: ID, result pair.
+        """
+        return self.component_manager.command_result
 
     # --------
     # Commands
@@ -1350,6 +1460,83 @@ class SKABaseDevice(Device):
         command = self.get_command_object("On")
         (return_code, message) = command()
         return [[return_code], [message]]
+
+    class AbortCommandsCommand(ResponseCommand):
+        """The command class for the AbortCommand command."""
+
+        def __init__(self, component_manager, logger=None):
+            """Initialise a new AbortCommandsCommand instance.
+
+            :param component_manager: contains the queue manager which
+                manages the worker thread and the LRC attributes
+            :type component_manager: object
+            :param logger: the logger to be used by this Command. If not
+                provided, then a default module logger will be used.
+            :type logger: a logger that implements the standard library
+                logger interface
+            """
+            super().__init__(target=component_manager, logger=logger)
+
+        def do(self):
+            """Abort long running commands.
+
+            Abort the currently executing LRC and remove all enqueued LRCs.
+            """
+            # implementation details to be added
+            return (ResultCode.OK, "Aborting")
+
+    @command(
+        dtype_out="DevVarLongStringArray",
+    )
+    @DebugIt()
+    def AbortCommands(self):
+        """Empty out long running commands in queue."""
+        handler = self.get_command_object("AbortCommands")
+        (return_code, message) = handler()
+        return [[return_code], [message]]
+
+    class CheckLongRunningCommandStatusCommand(ResponseCommand):
+        """The command class for the CheckLongRunningCommandStatus command."""
+
+        def __init__(self, component_manager, logger=None):
+            """Initialise a new CheckLongRunningCommandStatusCommand instance.
+
+            :param component_manager: contains the queue manager which
+                manages the worker thread and the LRC attributes
+            :type component_manager: object
+            :param logger: the logger to be used by this Command. If not
+                provided, then a default module logger will be used.
+            :type logger: a logger that implements the standard library
+                logger interface
+            """
+            super().__init__(target=component_manager, logger=logger)
+
+        def do(self, argin):
+            """Determine the status of the command ID passed in, if any.
+
+            - Check `command_result` to see if it's finished.
+            - Check `command_status` to see if it's in progress
+            - Check `command_ids_in_queue` to see if it's queued
+
+            :param argin: The command ID
+            :type argin: str
+            :return: The resultcode for this command and the code for the state
+            :rtype: tuple
+                (ResultCode.OK, LongRunningCommandState)
+            """
+            # implementation details to be added
+            return (ResultCode.OK, LongRunningCommandState.NOT_FOUND)
+
+    @command(
+        dtype_in=str,
+        dtype_out="DevVarShortArray",
+    )
+    @DebugIt()
+    def CheckLongRunningCommandStatus(self, argin):
+        """Check the status of a long running command by ID."""
+        handler = self.get_command_object("CheckLongRunningCommandStatus")
+        (return_code, command_state) = handler(argin)
+        return [return_code, command_state]
 
     class DebugDeviceCommand(BaseCommand):
         """A class for the SKABaseDevice's DebugDevice() command."""

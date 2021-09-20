@@ -15,7 +15,6 @@ from ska_tango_base.base.task_queue_component_manager import (
 logger = logging.getLogger(__name__)
 
 
-@pytest.mark.timeout(5)
 class TestQueueManager:
     """General QueueManager checks."""
 
@@ -72,10 +71,10 @@ def raise_an_exc():
     raise Exception("An Error occurred")
 
 
-@pytest.mark.timeout(5)
 class TestQueueManagerTasks:
     """QueueManager checks for tasks executed."""
 
+    @pytest.mark.timeout(5)
     def test_task_ids(self):
         """Check ids."""
         qm = QueueManager(logger, max_queue_size=5, num_workers=2)
@@ -86,6 +85,7 @@ class TestQueueManagerTasks:
         assert unique_id_one.endswith("add_five")
         assert unique_id_one != unique_id_two
 
+    @pytest.mark.timeout(5)
     def test_task_is_executed(self):
         """Check that tasks are executed."""
         with patch.object(QueueManager, "result_callback") as my_cb:
@@ -111,6 +111,7 @@ class TestQueueManagerTasks:
             assert result_one.task_result == "5"
             assert result_two.task_result == "11"
 
+    @pytest.mark.timeout(5)
     def test_command_result(self):
         """Check task results are what's expected."""
         qm = QueueManager(logger, max_queue_size=5, num_workers=2)
@@ -135,6 +136,7 @@ class TestQueueManagerTasks:
             "Error: An Error occurred Traceback (most"
         )
 
+    @pytest.mark.timeout(5)
     def test_full_queue(self):
         """Check full queues rejects new commands."""
         with patch.object(QueueManager, "result_callback") as my_cb:
@@ -167,6 +169,7 @@ class TestQueueManagerTasks:
             for res in results[:-2]:
                 assert res == ResultCode.REJECTED
 
+    @pytest.mark.timeout(5)
     def test_zero_queue(self):
         """Check command_result is the same between queue and non queue."""
         expected_name = "add_five"
@@ -196,6 +199,7 @@ class TestQueueManagerTasks:
         assert int(qm.command_result[1]) == expected_result_code
         assert qm.command_result[2] == expected_result
 
+    @pytest.mark.timeout(5)
     def test_currently_executing(self):
         """Check that currently executing and progress state is updated."""
         # Queue
@@ -205,11 +209,9 @@ class TestQueueManagerTasks:
             unique_id = qm.enqueue_command(add_task_one)
             while not qm.command_result:
                 time.sleep(0.5)
-            assert my_cb.call_count == 2
+            assert my_cb.call_count == 1
             assert my_cb.call_args_list[0][0][0] == unique_id
             assert my_cb.call_args_list[0][0][1] == "IN_PROGRESS"
-            assert not my_cb.call_args_list[1][0][0]
-            assert not my_cb.call_args_list[1][0][1]
 
         # No Queue
         with patch.object(QueueManager, "update_command_state_callback") as my_cb:
@@ -218,11 +220,9 @@ class TestQueueManagerTasks:
             unique_id = qm.enqueue_command(add_task_one)
             while not qm.command_result:
                 time.sleep(0.5)
-            assert my_cb.call_count == 2
+            assert my_cb.call_count == 1
             assert my_cb.call_args_list[0][0][0] == unique_id
             assert my_cb.call_args_list[0][0][1] == "IN_PROGRESS"
-            assert not my_cb.call_args_list[1][0][0]
-            assert not my_cb.call_args_list[1][0][1]
 
 
 class TestComponentManager:

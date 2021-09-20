@@ -359,7 +359,8 @@ class QueueManager:
         :type task_result: TaskResult
         """
         with self.command_status_lock:
-            del self._command_status[task_result.unique_id]
+            if task_result.unique_id in self._command_status:
+                del self._command_status[task_result.unique_id]
             self.command_status = self._command_status
             self._command_result = task_result.to_command_result()
             self.command_result = self._command_result

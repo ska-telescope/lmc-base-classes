@@ -174,11 +174,9 @@ class QueueManager:
         self._on_property_update_callback = on_property_update_callback
         self.is_aborting = threading.Event()
         self.is_stopping = threading.Event()
-        self.command_queue_lock = threading.Lock()
-        self.command_status_lock = threading.Lock()
+        self._property_update_lock = threading.Lock()
 
         self._command_result = []
-        self._command_ids_in_queue = []
         self._commands_in_queue: Dict[str, str] = {}  # unique_id, command_name
         self._command_status: Dict[str, str] = {}  # unique_id, status
         self._command_progress = {}
@@ -218,18 +216,7 @@ class QueueManager:
         :return: Last command result
         :rtype: list
         """
-        return self._command_result
-
-    @command_result.setter
-    def command_result(self, value):
-        """Set the command_result.
-
-        :param value: the command result
-        :type value: list
-        """
-        self._command_result = value
-        if self._on_property_update_callback:
-            self._on_property_update_callback("command_result", self.command_result)
+        return self._command_result.copy()
 
     @property
     def command_ids_in_queue(self) -> list:
@@ -238,16 +225,7 @@ class QueueManager:
         :return: The command IDs in the queue
         :rtype: list
         """
-        return self._command_ids_in_queue
-
-    @command_ids_in_queue.setter
-    def command_ids_in_queue(self, value):
-        """Set command IDs in the queue."""
-        self._command_ids_in_queue = value
-        if self._on_property_update_callback:
-            self._on_property_update_callback(
-                "command_ids_in_queue", self.command_ids_in_queue
-            )
+        return list(self._commands_in_queue.keys())
 
     @property
     def commands_in_queue(self) -> list:
@@ -258,66 +236,23 @@ class QueueManager:
         """
         return list(self._commands_in_queue.values())
 
-    @commands_in_queue.setter
-    def commands_in_queue(self, value):
-        """Set command names in the queue.
-
-        :return: The list of command names in the queue
-        :rtype: list
-        """
-        self._commands_in_queue = value
-        if self._on_property_update_callback:
-            self._on_property_update_callback(
-                "commands_in_queue", self.commands_in_queue
-            )
-
     @property
-    def command_status(self) -> list:
+    def command_status(self) -> Dict[str, str]:
         """Return command status.
 
         :return: The command status
-        :rtype: list
+        :rtype: Dict[str, str]
         """
-        result = []
-        for unique_id, status in self._command_status.items():
-            result.append(unique_id)
-            result.append(status)
-        return result
-
-    @command_status.setter
-    def command_status(self, value: dict):
-        """Set the command status.
-
-        :param value: command status dict
-        :type value: dict
-        """
-        self._command_status = value
-        if self._on_property_update_callback:
-            self._on_property_update_callback("command_status", self.command_status)
+        return self._command_status.copy()
 
     @property
-    def command_progress(self) -> list:
+    def command_progress(self) -> Dict[str, str]:
         """Return the command progress.
 
         :return: The command progress
-        :rtype: list
+        :rtype: Dict[str, str]
         """
-        result = []
-        for unique_id, progress in self._command_progress.items():
-            result.append(unique_id)
-            result.append(progress)
-        return result
-
-    @command_progress.setter
-    def command_progress(self, value: dict):
-        """Set the command progress.
-
-        :param value: The command progress dictionary
-        :type value: dict
-        """
-        self._command_progress = value
-        if self._on_property_update_callback:
-            self._on_property_update_callback("command_progress", self.command_progress)
+        return self._command_progress.copy()
 
     def enqueue_command(self, task: functools.partial) -> str:
         """Add the task to be done onto the queue.
@@ -344,12 +279,10 @@ class QueueManager:
             return unique_id
 
         self._work_queue.put([unique_id, task])
-
-        with self.command_queue_lock:
-            self._command_ids_in_queue.append(unique_id)
-            self.command_ids_in_queue = self._command_ids_in_queue
+        with self._property_update_lock:
             self._commands_in_queue[unique_id] = task.func.__name__
-            self.commands_in_queue = self._commands_in_queue
+        self._on_property_change("commands_in_queue")
+        self._on_property_change("command_ids_in_queue")
         return unique_id
 
     def result_callback(self, task_result: TaskResult):
@@ -358,22 +291,17 @@ class QueueManager:
         :param task_result: The result of the command
         :type task_result: TaskResult
         """
-        with self.command_status_lock:
-            if task_result.unique_id in self._command_status:
+        if task_result.unique_id in self._command_status:
+            with self._property_update_lock:
                 del self._command_status[task_result.unique_id]
-            self.command_status = self._command_status
-            self._command_result = task_result.to_command_result()
-            self.command_result = self._command_result
+                self._command_result = task_result.to_command_result()
+            self._on_property_change("command_result")
 
-        with self.command_queue_lock:
-            if self.commands_in_queue:
-                if task_result.unique_id in self._commands_in_queue:
-                    del self._commands_in_queue[task_result.unique_id]
-                    self.commands_in_queue = self._commands_in_queue
-
-                if task_result.unique_id in self._command_ids_in_queue:
-                    self._command_ids_in_queue.remove(task_result.unique_id)
-                    self.command_ids_in_queue = self._command_ids_in_queue
+        if task_result.unique_id in self._commands_in_queue:
+            with self._property_update_lock:
+                del self._commands_in_queue[task_result.unique_id]
+            self._on_property_change("command_ids_in_queue")
+            self._on_property_change("commands_in_queue")
 
     def update_command_state_callback(self, unique_id: str, status: str):
         """Update the executing command state.
@@ -383,8 +311,20 @@ class QueueManager:
         :param status: The state of the command
         :type status: str
         """
-        self._command_status[unique_id] = status
-        self.command_status = self._command_status
+        with self._property_update_lock:
+            self._command_status[unique_id] = status
+        self._on_property_change("command_status")
+
+    def _on_property_change(self, property_name: str):
+        """Trigger when a property changes value.
+
+        :param property_name: The property name
+        :type property_name: str
+        """
+        if self._on_property_update_callback:
+            self._on_property_update_callback(
+                property_name, getattr(self, property_name)
+            )
 
     def abort_commands(self):
         """Start aborting commands."""
@@ -414,7 +354,7 @@ class QueueManager:
         - Set the workers to aborting, this will empty out the queue and set the result code
           for each task to `Aborted`.
           It will also block any new tasks fo coming in.
-        - Wait for the queues to empty out.
+        - Wait for the queues to empty out.ss
         - Set the workers to stopping, this will exit out the running thread.
         """
         if not self._threads:

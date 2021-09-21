@@ -1,9 +1,10 @@
 """Tests for QueueManager and its component manager."""
+import functools
 import logging
 import time
 import pytest
 from functools import partial
-from unittest.mock import patch
+from unittest.mock import MagicMock, patch
 
 from ska_tango_base.commands import ResultCode
 from ska_tango_base.base.task_queue_component_manager import (
@@ -69,6 +70,18 @@ def slow_function(num: float):
 def raise_an_exc():
     """Raise an Exception."""
     raise Exception("An Error occurred")
+
+
+def check_matching_pattern(list_to_check=()):
+    """Check that lengths go 1,2,3,2,1 for example."""
+    list_to_check = list(list_to_check)
+    if not list_to_check[-1]:
+        list_to_check.pop()
+    assert len(list_to_check) > 2
+    while len(list_to_check) > 2:
+        last_e = list_to_check.pop()
+        first_e = list_to_check.pop(0)
+        assert len(last_e) == len(first_e)
 
 
 class TestQueueManagerTasks:
@@ -200,29 +213,61 @@ class TestQueueManagerTasks:
         assert qm.command_result[2] == expected_result
 
     @pytest.mark.timeout(5)
-    def test_currently_executing(self):
-        """Check that currently executing and progress state is updated."""
-        # Queue
-        with patch.object(QueueManager, "update_command_state_callback") as my_cb:
-            qm = QueueManager(logger, max_queue_size=1, num_workers=1)
-            add_task_one = partial(add_five, 1)
-            unique_id = qm.enqueue_command(add_task_one)
-            while not qm.command_result:
-                time.sleep(0.5)
-            assert my_cb.call_count == 1
-            assert my_cb.call_args_list[0][0][0] == unique_id
-            assert my_cb.call_args_list[0][0][1] == "IN_PROGRESS"
+    def test_multi_jobs(self):
+        """Test that multiple threads are working. Test that attribute updates fires."""
+        num_of_workers = 3
 
-        # No Queue
-        with patch.object(QueueManager, "update_command_state_callback") as my_cb:
-            qm = QueueManager(logger, max_queue_size=0, num_workers=1)
-            add_task_one = partial(add_five, 1)
-            unique_id = qm.enqueue_command(add_task_one)
-            while not qm.command_result:
-                time.sleep(0.5)
-            assert my_cb.call_count == 1
-            assert my_cb.call_args_list[0][0][0] == unique_id
-            assert my_cb.call_args_list[0][0][1] == "IN_PROGRESS"
+        call_back_func = MagicMock()
+        qm = QueueManager(
+            logger,
+            max_queue_size=5,
+            num_workers=num_of_workers,
+            on_property_update_callback=call_back_func,
+        )
+        unique_ids = []
+        for _ in range(4):
+            unique_id = qm.enqueue_command(functools.partial(slow_function, 2))
+            unique_ids.append(unique_id)
+
+        # Wait for a item on the queue
+        while not qm.command_ids_in_queue:
+            pass
+        # Wait for commands to finish
+        while qm.command_ids_in_queue:
+            pass
+
+        all_passed_params = [a_call[0] for a_call in call_back_func.call_args_list]
+        commands_in_queue = [
+            a_call[1]
+            for a_call in all_passed_params
+            if a_call[0] == "commands_in_queue"
+        ]
+        command_ids_in_queue = [
+            a_call[1]
+            for a_call in all_passed_params
+            if a_call[0] == "command_ids_in_queue"
+        ]
+        command_status = [
+            a_call[1] for a_call in all_passed_params if a_call[0] == "command_status"
+        ]
+        command_result = [
+            a_call[1] for a_call in all_passed_params if a_call[0] == "command_result"
+        ]
+        command_result_ids = [res[0] for res in command_result]
+
+        check_matching_pattern(tuple(commands_in_queue))
+        check_matching_pattern(tuple(command_ids_in_queue))
+
+        # Since there's 3 workers there should at least once be 3 in progress
+        for status in command_status:
+            if len(status) == num_of_workers:
+                break
+        else:
+            assert 0, f"Length of {num_of_workers} in command_status not found"
+
+        assert len(command_result) == 4
+        for unique_id in unique_ids:
+            assert unique_id in command_result_ids
 
 
 class TestComponentManager:

@@ -59,7 +59,6 @@ class QueueManager:
             queue: Queue,
             logger: logging.Logger,
             stopping_event: Event,
-            aborting_event: Event,
             result_callback: Callable,
             update_command_state_callback: Callable,
             queue_fetch_timeout: int = 0.1,
@@ -85,7 +84,7 @@ class QueueManager:
             self._work_queue = queue
             self._logger = logger
             self.is_stopping = stopping_event
-            self.is_aborting = aborting_event
+            self.is_aborting = threading.Event()
             self._result_callback = result_callback
             self._update_command_state_callback = update_command_state_callback
             self._queue_fetch_timeout = queue_fetch_timeout
@@ -96,7 +95,8 @@ class QueueManager:
 
             Tasks are fetched off the queue and executed.
             if _is_stopping is set the thread wil exit.
-            If _is_aborting is set the queue will be emptied. Once emptied it will reset.
+            If _is_aborting is set the queue will be emptied. All new commands will be aborted until
+            is_aborting cleared.
             """
             with tango.EnsureOmniThread():
                 while not self.is_stopping.is_set():
@@ -110,7 +110,8 @@ class QueueManager:
                             )
                             self._result_callback(result)
                             self._work_queue.task_done()
-                        self.is_aborting.clear()
+                        time.sleep(self._queue_fetch_timeout)
+                        continue  # Don't try and get work off the queue below, continue next loop
                     try:
                         (unique_id, task) = self._work_queue.get(
                             block=True, timeout=self._queue_fetch_timeout
@@ -118,6 +119,9 @@ class QueueManager:
 
                         self._update_command_state_callback(unique_id, "IN_PROGRESS")
 
+                        # Inject is_aborting, is_stopping into task
+                        task.keywords["is_aborting"] = self.is_aborting
+                        task.keywords["is_stopping_event"] = self.is_stopping
                         task_result = self.execute_task(task)
                         result = TaskResult(
                             task_result[0], f"{task_result[1]}", unique_id
@@ -172,7 +176,6 @@ class QueueManager:
         self._work_queue = Queue(self._max_queue_size)
         self._queue_fetch_timeout = queue_fetch_timeout
         self._on_property_update_callback = on_property_update_callback
-        self.is_aborting = threading.Event()
         self.is_stopping = threading.Event()
         self._property_update_lock = threading.Lock()
 
@@ -191,7 +194,6 @@ class QueueManager:
                 self._work_queue,
                 self._logger,
                 self.is_stopping,
-                self.is_aborting,
                 self.result_callback,
                 self.update_command_state_callback,
             )
@@ -291,11 +293,11 @@ class QueueManager:
         :param task_result: The result of the command
         :type task_result: TaskResult
         """
-        if task_result.unique_id in self._command_status:
-            with self._property_update_lock:
+        with self._property_update_lock:
+            if task_result.unique_id in self._command_status:
                 del self._command_status[task_result.unique_id]
-                self._command_result = task_result.to_command_result()
-            self._on_property_change("command_result")
+            self._command_result = task_result.to_command_result()
+        self._on_property_change("command_result")
 
         if task_result.unique_id in self._commands_in_queue:
             with self._property_update_lock:
@@ -328,7 +330,18 @@ class QueueManager:
 
     def abort_commands(self):
         """Start aborting commands."""
-        self.is_aborting.set()
+        for worker in self._threads:
+            worker.is_aborting.set()
+
+    def resume_commands(self):
+        """Unsets aborting so commands can be picked up again."""
+        for worker in self._threads:
+            worker.is_aborting.clear()
+
+    @property
+    def is_aborting(self):
+        """Return False if any of the threads are aborting."""
+        return all([worker.is_aborting.is_set() for worker in self._threads])
 
     def exit_worker(self):
         """Exit the worker thread.
@@ -360,13 +373,7 @@ class QueueManager:
         if not self._threads:
             return
 
-        for worker in self._threads:
-            worker.is_aborting.set()
-
-        thread_aborting_state = [worker.is_aborting for worker in self._threads]
-        while not any(thread_aborting_state):
-            thread_aborting_state = [worker.is_aborting for worker in self._threads]
-
+        self.abort_commands()
         for worker in self._threads:
             worker.is_stopping.set()
 
@@ -409,4 +416,8 @@ class TaskQueueComponentManager(BaseComponentManager):
         :return: The unique ID of the queued command
         :rtype: str
         """
-        return self.message_queue.enqueue_command(functools.partial(func, args, kwargs))
+        # Inject references to abort and stopping so that they may be used to exit out a
+        # method that runs a long time when either stopping or aborting is set.
+        return self.message_queue.enqueue_command(
+            functools.partial(func, *args, **kwargs)
+        )

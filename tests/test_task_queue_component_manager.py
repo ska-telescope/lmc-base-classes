@@ -40,36 +40,54 @@ class TestQueueManager:
         del qm
 
 
-def add_five(num: int) -> int:
+def add_five(*args, **kwargs) -> int:
     """Add 5 to number passed in.
 
     :param num: Number to add 5 to
     :type num: int
     """
-    return 5 + num
+    return 5 + args[0]
 
 
-def add_ten(num: int) -> int:
+def add_ten(*args, **kwargs) -> int:
     """Add 10 to number passed in.
 
     :param num: Number to add 5 to
     :type num: int
     """
-    return 10 + num
+    return 10 + args[0]
 
 
-def slow_function(num: float):
+def slow_function(*args, **kwargs):
     """Sleep num seconds.
 
     :param num: seconds to sleep
     :type num: int
     """
-    time.sleep(num)
+    time.sleep(args[0])
 
 
-def raise_an_exc():
+def raise_an_exc(*args, **kwargs):
     """Raise an Exception."""
     raise Exception("An Error occurred")
+
+
+def exit_on_stopping_method(*args, **kwargs):
+    """Test function that exists on stopping."""
+    while True:
+        is_stopping = kwargs.get("is_stopping")
+        if is_stopping and is_stopping.is_set():
+            return
+        time.sleep(0.5)
+
+
+def exit_on_aborting_method(*args, **kwargs):
+    """Test function that exists on stopping."""
+    is_aborting = kwargs.get("is_aborting")
+    while True:
+        if is_aborting.is_set():
+            return
+        time.sleep(0.1)
 
 
 def check_matching_pattern(list_to_check=()):
@@ -268,6 +286,52 @@ class TestQueueManagerTasks:
         assert len(command_result) == 4
         for unique_id in unique_ids:
             assert unique_id in command_result_ids
+
+
+class TestQueueManagerExit:
+    """Test the stopping and aborting."""
+
+    @pytest.mark.timeout(5)
+    def test_exit_abort(self):
+        """Test aborting exit."""
+        call_back_func = MagicMock()
+        qm = QueueManager(
+            logger,
+            max_queue_size=5,
+            num_workers=2,
+            on_property_update_callback=call_back_func,
+        )
+        cm = TaskQueueComponentManager(
+            message_queue=qm, op_state_model=None, logger=None
+        )
+        unique_id = cm.enqueue(exit_on_aborting_method, 1, 2, 3, arg_one=5, arg_2=6)
+
+        # Wait for the command to start
+        while not qm.command_status:
+            pass
+        # Start aborting
+        cm.message_queue.abort_commands()
+        # Wait for the exit
+        while not qm.command_result:
+            pass
+        assert qm.is_aborting
+        # When aborting this should be rejected
+        unique_id = cm.enqueue(slow_function, 1)
+        while True:
+            tr = TaskResult.from_command_result(qm.command_result)
+            if tr.unique_id == unique_id and tr.result_code == ResultCode.ABORTED:
+                break
+
+        # Resi=ume the commands
+        qm.resume_commands()
+        assert not qm.is_aborting
+
+        # Wait for my slow command to finish
+        unique_id = cm.enqueue(slow_function, 1)
+        while True:
+            tr = TaskResult.from_command_result(qm.command_result)
+            if tr.unique_id == unique_id:
+                break
 
 
 class TestComponentManager:

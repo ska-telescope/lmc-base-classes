@@ -1,6 +1,5 @@
 """This module implements a component manager that can queue tasks for execution by background threads."""
 from __future__ import annotations
-import functools
 import logging
 import threading
 import time
@@ -24,28 +23,54 @@ class TaskResult:
     task_result: str
     unique_id: str
 
-    def to_command_result(self) -> List[str]:
-        """Convert TaskResult to command_result.
+    def to_task_result(self) -> List[str]:
+        """Convert TaskResult to task_result.
 
-        :return: The command result
+        :return: The task result
         :rtype: list[str]
         """
         return [f"{self.unique_id}", f"{int(self.result_code)}", f"{self.task_result}"]
 
     @classmethod
-    def from_command_result(cls, command_result: list) -> TaskResult:
-        """Convert command_result to TaskResult.
+    def from_task_result(cls, task_result: list) -> TaskResult:
+        """Convert task_result list to TaskResult.
 
-        :param command_result: The command_result [unique_id, result_code, task_result]
-        :type command_result: list
+        :param task_result: The task_result [unique_id, result_code, task_result]
+        :type task_result: list
         :return: The task result
         :rtype: TaskResult
         """
         return TaskResult(
-            result_code=ResultCode(int(command_result[1])),
-            task_result=command_result[2],
-            unique_id=command_result[0],
+            result_code=ResultCode(int(task_result[1])),
+            task_result=task_result[2],
+            unique_id=task_result[0],
         )
+
+
+class QueueTask:
+    """A task that can be put on the queue."""
+
+    def __init__(self: QueueTask, *args, **kwargs) -> None:
+        """Create the task. args and kwargs are stored and should be referenced in the `do` method.
+
+        :param self: [description]
+        :type self: QueueTask
+        """
+        self.args = args
+        self.kwargs = kwargs
+        self.progress = ""
+
+    def get_task_name(self) -> str:
+        """Return a custom task name.
+
+        :return: The name of the task
+        :rtype: str
+        """
+        return self.__class__.__name__
+
+    def do(self: QueueTask) -> Any:
+        """Implement this method with your functionality."""
+        raise NotImplementedError
 
 
 class QueueManager:
@@ -73,10 +98,6 @@ class QueueManager:
             :type logger: logging.Logger
             :param stopping_event: Indicates whether to get more tasks off the queue
             :type stopping_event: Event
-            :param aborting_event: Indicates whether to get more tasks off the queue
-            :type aborting_event: Event
-            :param result_callback: The callback to run to pass back results
-            :type result_callback: Callable
             :param update_command_state_callback: Callback to update command state
             :type update_command_state_callback: Callable
             """
@@ -120,8 +141,8 @@ class QueueManager:
                         self._update_command_state_callback(unique_id, "IN_PROGRESS")
 
                         # Inject is_aborting, is_stopping into task
-                        task.keywords["is_aborting"] = self.is_aborting
-                        task.keywords["is_stopping_event"] = self.is_stopping
+                        task.kwargs["is_aborting_event"] = self.is_aborting
+                        task.kwargs["is_stopping_event"] = self.is_stopping
                         task_result = self.execute_task(task)
                         result = TaskResult(
                             task_result[0], f"{task_result[1]}", unique_id
@@ -130,18 +151,19 @@ class QueueManager:
                         self._result_callback(result)
                     except Empty:
                         continue
+                return
 
         @classmethod
-        def execute_task(cls, task: Callable):
+        def execute_task(cls, task: QueueTask):
             """Execute a task, return results in a standardised format.
 
-            :param task: Callable to execute
-            :type task: Callable
+            :param task: Task to execute
+            :type task: QueueTask
             :return: (ResultCode, result)
             :rtype: tuple
             """
             try:
-                result = (ResultCode.OK, task())
+                result = (ResultCode.OK, task.do())
             except Exception as err:
                 result = (
                     ResultCode.FAILED,
@@ -179,10 +201,10 @@ class QueueManager:
         self.is_stopping = threading.Event()
         self._property_update_lock = threading.Lock()
 
-        self._command_result = []
-        self._commands_in_queue: Dict[str, str] = {}  # unique_id, command_name
-        self._command_status: Dict[str, str] = {}  # unique_id, status
-        self._command_progress = {}
+        self._task_result = []
+        self._tasks_in_queue: Dict[str, str] = {}  # unique_id, task_name
+        self._task_status: Dict[str, str] = {}  # unique_id, status
+        self._task_progress = {}
         self._threads = []
 
         # If there's no queue, don't start threads
@@ -195,7 +217,7 @@ class QueueManager:
                 self._logger,
                 self.is_stopping,
                 self.result_callback,
-                self.update_command_state_callback,
+                self.update_task_state_callback,
             )
             for _ in range(num_workers)
         ]
@@ -212,63 +234,63 @@ class QueueManager:
         return self._work_queue.full()
 
     @property
-    def command_result(self) -> list:
-        """Return the last command result.
+    def task_result(self) -> list:
+        """Return the last task result.
 
-        :return: Last command result
+        :return: Last task result
         :rtype: list
         """
-        return self._command_result.copy()
+        return self._task_result.copy()
 
     @property
-    def command_ids_in_queue(self) -> list:
-        """Command IDs in the queue.
+    def task_ids_in_queue(self) -> list:
+        """Task IDs in the queue.
 
-        :return: The command IDs in the queue
+        :return: The task IDs in the queue
         :rtype: list
         """
-        return list(self._commands_in_queue.keys())
+        return list(self._tasks_in_queue.keys())
 
     @property
-    def commands_in_queue(self) -> list:
-        """Command names in the queue.
+    def tasks_in_queue(self) -> list:
+        """Task names in the queue.
 
-        :return: The list of command names in the queue
+        :return: The list of task names in the queue
         :rtype: list
         """
-        return list(self._commands_in_queue.values())
+        return list(self._tasks_in_queue.values())
 
     @property
-    def command_status(self) -> Dict[str, str]:
-        """Return command status.
+    def task_status(self) -> Dict[str, str]:
+        """Return task status.
 
-        :return: The command status
+        :return: The task status
         :rtype: Dict[str, str]
         """
-        return self._command_status.copy()
+        return self._task_status.copy()
 
     @property
-    def command_progress(self) -> Dict[str, str]:
-        """Return the command progress.
+    def task_progress(self) -> Dict[str, str]:
+        """Return the task progress.
 
-        :return: The command progress
+        :return: The task progress
         :rtype: Dict[str, str]
         """
-        return self._command_progress.copy()
+        return self._task_progress.copy()
 
-    def enqueue_command(self, task: functools.partial) -> str:
+    def enqueue_task(self, task: QueueTask) -> str:
         """Add the task to be done onto the queue.
 
         :param task: The task to execute in a thread
-        :type task: functools.partial
+        :type task: QueueTask
         :return: The unique ID of the command
         :rtype: string
         """
-        unique_id = self.get_unique_id(task.func.__name__)
+        unique_id = self.get_unique_id(task.get_task_name())
 
         # If there is no queue, just execute the command and return
         if self._max_queue_size == 0:
-            self.update_command_state_callback(unique_id, "IN_PROGRESS")
+            self.update_task_state_callback(unique_id, "IN_PROGRESS")
             task_result = self.Worker.execute_task(task)
             result = TaskResult(task_result[0], f"{task_result[1]}", unique_id)
             self.result_callback(result)
@@ -282,40 +304,40 @@ class QueueManager:
 
         self._work_queue.put([unique_id, task])
         with self._property_update_lock:
-            self._commands_in_queue[unique_id] = task.func.__name__
-        self._on_property_change("commands_in_queue")
-        self._on_property_change("command_ids_in_queue")
+            self._tasks_in_queue[unique_id] = task.get_task_name()
+        self._on_property_change("tasks_in_queue")
+        self._on_property_change("task_ids_in_queue")
         return unique_id
 
     def result_callback(self, task_result: TaskResult):
-        """Run when the command, taken from the queue have completed to update the appropriate attributes.
+        """Run when the task, taken from the queue, have completed to update the appropriate attributes.
 
-        :param task_result: The result of the command
+        :param task_result: The result of the task
         :type task_result: TaskResult
         """
         with self._property_update_lock:
-            if task_result.unique_id in self._command_status:
-                del self._command_status[task_result.unique_id]
-            self._command_result = task_result.to_command_result()
-        self._on_property_change("command_result")
+            if task_result.unique_id in self._task_status:
+                del self._task_status[task_result.unique_id]
+            self._task_result = task_result.to_task_result()
+        self._on_property_change("task_result")
 
-        if task_result.unique_id in self._commands_in_queue:
+        if task_result.unique_id in self._tasks_in_queue:
             with self._property_update_lock:
-                del self._commands_in_queue[task_result.unique_id]
-            self._on_property_change("command_ids_in_queue")
-            self._on_property_change("commands_in_queue")
+                del self._tasks_in_queue[task_result.unique_id]
+            self._on_property_change("task_ids_in_queue")
+            self._on_property_change("tasks_in_queue")
 
-    def update_command_state_callback(self, unique_id: str, status: str):
-        """Update the executing command state.
+    def update_task_state_callback(self, unique_id: str, status: str):
+        """Update the executing task state.
 
-        :param unique_id: The command unique ID
+        :param unique_id: The task unique ID
         :type unique_id: str
-        :param status: The state of the command
+        :param status: The state of the task
         :type status: str
         """
         with self._property_update_lock:
-            self._command_status[unique_id] = status
-        self._on_property_change("command_status")
+            self._task_status[unique_id] = status
+        self._on_property_change("task_status")
 
     def _on_property_change(self, property_name: str):
         """Trigger when a property changes value.
@@ -338,44 +360,51 @@ class QueueManager:
         for worker in self._threads:
             worker.is_aborting.clear()
 
+    def stop_commands(self):
+        """Set is_stopping on each thread so it exists out. Killing the thread."""
+        self.is_stopping.set()
+
     @property
     def is_aborting(self):
         """Return False if any of the threads are aborting."""
         return all([worker.is_aborting.is_set() for worker in self._threads])
 
-    def exit_worker(self):
-        """Exit the worker thread.
-
-        NOTE: Long running commands in progress should complete
-        """
-        self.is_stopping.set()
-
     @classmethod
-    def get_unique_id(cls, command_name):
-        """Generate a unique ID for the command.
+    def get_unique_id(cls, task_name):
+        """Generate a unique ID for the task.
 
-        :param command_name: The name of the command
-        :type command_name: string
-        :return: The unique ID of the command
+        :param task_name: The name of the task
+        :type task_name: string
+        :return: The unique ID of the task
         :rtype: string
         """
-        return f"{time.time()}_{command_name}"
+        return f"{time.time()}_{task_name}"
 
     def __del__(self) -> None:
         """Release resources prior to instance deletion.
 
         - Set the workers to aborting, this will empty out the queue and set the result code
           for each task to `Aborted`.
-          It will also block any new tasks fo coming in.
-        - Wait for the queues to empty out.ss
+        - Wait for the queues to empty out.
         - Set the workers to stopping, this will exit out the running thread.
         """
         if not self._threads:
             return
 
         self.abort_commands()
+        self._work_queue.join()
         for worker in self._threads:
             worker.is_stopping.set()
+        while not any([worker.is_alive() for worker in self._threads]):
+            pass
+
+    def __len__(self) -> int:
+        """Approximate length of the queue.
+
+        :return: The approximate length of the queue
+        :rtype: int
+        """
+        return self._work_queue.qsize()
 
 
 class TaskQueueComponentManager(BaseComponentManager):
@@ -401,23 +430,13 @@ class TaskQueueComponentManager(BaseComponentManager):
 
     def enqueue(
         self,
-        func: Callable,
-        *args: Any,
-        **kwargs: Any,
+        task: QueueTask,
     ) -> str:
-        """Put `func` on the queue. The unique ID for it is returned.
+        """Put `task` on the queue. The unique ID for it is returned.
 
-        :param func: The method to call
-        :type func: Callable
-        :param args: The method arguments
-        :type args: Any
-        :param kwargs: The method keyword arguments
-        :type kwargs: Any
+        :param task: The task to execute in the thread
+        :type task: QueueTask
         :return: The unique ID of the queued command
         :rtype: str
         """
-        # Inject references to abort and stopping so that they may be used to exit out a
-        # method that runs a long time when either stopping or aborting is set.
-        return self.message_queue.enqueue_command(
-            functools.partial(func, *args, **kwargs)
-        )
+        return self.message_queue.enqueue_task(task)

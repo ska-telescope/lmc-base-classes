@@ -425,8 +425,6 @@ class QueueManager:
         self._work_queue.join()
         for worker in self._threads:
             worker.is_stopping.set()
-        while not any([worker.is_alive() for worker in self._threads]):
-            pass
 
     def __len__(self) -> int:
         """Approximate length of the queue.

@@ -28,6 +28,22 @@ def check_matching_pattern(list_to_check=()):
 
 
 @pytest.fixture
+def progress_task():
+    """Fixture for a test that throws an exception."""
+
+    def get_task():
+        class ProgressTask(QueueTask):
+            def do(self):
+                for i in range(100):
+                    self.update_progress(str(i))
+                    time.sleep(0.5)
+
+        return ProgressTask()
+
+    return get_task
+
+
+@pytest.fixture
 def exc_task():
     """Fixture for a test that throws an exception."""
 
@@ -307,6 +323,25 @@ class TestQueueManagerTasks:
         assert len(task_result) == 4
         for unique_id in unique_ids:
             assert unique_id in task_result_ids
+
+    def test_task_progress(self, progress_task):
+        """Test the progress updates."""
+        qm = QueueManager(logger, max_queue_size=8, num_workers=2)
+        unique_id_one = qm.enqueue_task(progress_task())
+        unique_id_two = qm.enqueue_task(progress_task())
+
+        time.sleep(0.5)
+        assert unique_id_one in qm.task_progress
+        assert unique_id_two in qm.task_progress
+        progress_one_before = qm.task_progress[unique_id_one]
+        progress_two_before = qm.task_progress[unique_id_two]
+
+        time.sleep(0.5)
+        progress_one_after = qm.task_progress[unique_id_one]
+        progress_two_after = qm.task_progress[unique_id_two]
+
+        assert int(progress_one_after) > int(progress_one_before)
+        assert int(progress_two_after) > int(progress_two_before)
 
 
 class TestQueueManagerExit:

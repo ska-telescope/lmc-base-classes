@@ -58,7 +58,16 @@ class QueueTask:
         """
         self.args = args
         self.kwargs = kwargs
-        self.progress = ""
+
+    def update_progress(self, progress: str):
+        """Private method to call the callback to update the progress.
+
+        :param progress: [description]
+        :type progress: str
+        """
+        self._update_progress_callback = self.kwargs.get("update_progress_callback")
+        if self._update_progress_callback:
+            self._update_progress_callback(progress)
 
     def get_task_name(self) -> str:
         """Return a custom task name.
@@ -109,6 +118,8 @@ class QueueManager:
             self._result_callback = result_callback
             self._update_command_state_callback = update_command_state_callback
             self._queue_fetch_timeout = queue_fetch_timeout
+            self.current_task_progress: Optional[str] = None
+            self.current_task_id: Optional[str] = None
             self.setDaemon(True)
 
         def run(self) -> None:
@@ -121,10 +132,14 @@ class QueueManager:
             """
             with tango.EnsureOmniThread():
                 while not self.is_stopping.is_set():
+                    self.current_task_id = None
+                    self.current_task_progress = ""
+
                     if self.is_aborting.is_set():
                         # Drain the Queue since self.is_aborting is set
                         while not self._work_queue.empty():
                             unique_id, _ = self._work_queue.get()
+                            self.current_task_id = unique_id
                             self._logger.warning("Aborting task ID [%s]", unique_id)
                             result = TaskResult(
                                 ResultCode.ABORTED, f"{unique_id} Aborted", unique_id
@@ -137,12 +152,16 @@ class QueueManager:
                         (unique_id, task) = self._work_queue.get(
                             block=True, timeout=self._queue_fetch_timeout
                         )
-
+                        self.current_task_id = unique_id
                         self._update_command_state_callback(unique_id, "IN_PROGRESS")
 
-                        # Inject is_aborting, is_stopping into task
+                        # Inject is_aborting, is_stopping, progress_update into task
                         task.kwargs["is_aborting_event"] = self.is_aborting
                         task.kwargs["is_stopping_event"] = self.is_stopping
+                        task.kwargs[
+                            "update_progress_callback"
+                        ] = self._update_progress_callback
+
                         task_result = self.execute_task(task)
                         result = TaskResult(
                             task_result[0], f"{task_result[1]}", unique_id
@@ -152,6 +171,14 @@ class QueueManager:
                     except Empty:
                         continue
                 return
+
+        def _update_progress_callback(self, progress: str) -> None:
+            """Update the current task progress.
+
+            :param progress: An indication of progress
+            :type progress: str
+            """
+            self.current_task_progress = progress
 
         @classmethod
         def execute_task(cls, task: QueueTask):
@@ -204,7 +231,6 @@ class QueueManager:
         self._task_result = []
         self._tasks_in_queue: Dict[str, str] = {}  # unique_id, task_name
         self._task_status: Dict[str, str] = {}  # unique_id, status
-        self._task_progress = {}
         self._threads = []
 
         # If there's no queue, don't start threads
@@ -276,7 +302,11 @@ class QueueManager:
         :return: The task progress
         :rtype: Dict[str, str]
         """
-        return self._task_progress.copy()
+        progress = {}
+        for worker in self._threads:
+            if worker.current_task_id:
+                progress[worker.current_task_id] = worker.current_task_progress
+        return progress
 
     def enqueue_task(self, task: QueueTask) -> str:
         """Add the task to be done onto the queue.

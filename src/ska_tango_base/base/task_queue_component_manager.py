@@ -1,5 +1,6 @@
 """This module implements a component manager that can queue tasks for execution by background threads."""
 from __future__ import annotations
+import enum
 import logging
 import threading
 import time
@@ -13,6 +14,40 @@ import tango
 
 from ska_tango_base.base.component_manager import BaseComponentManager
 from ska_tango_base.commands import ResultCode
+
+
+class TaskState(enum.IntEnum):
+    """The state of the QueueTask in the QueueManager."""
+
+    QUEUED = 0
+    """
+    The task has been accepted and will be executed at a future time
+    """
+
+    IN_PROGRESS = 1
+    """
+    The task in progress
+    """
+
+    ABORTED = 2
+    """
+    The task in progress has been aborted
+    """
+
+    NOT_FOUND = 3
+    """
+    The task is not found
+    """
+
+    COMPLETED = 4
+    """
+    The task was completed.
+    """
+
+    NOT_ALLOWED = 5
+    """
+    The task is not allowed to be executed
+    """
 
 
 @dataclass
@@ -39,7 +74,11 @@ class TaskResult:
         :type task_result: list
         :return: The task result
         :rtype: TaskResult
+        :raises: ValueError
         """
+        if len(task_result) != 3:
+            raise ValueError(f"Cannot parse task_result {task_result}")
+
         return TaskResult(
             result_code=ResultCode(int(task_result[1])),
             task_result=task_result[2],
@@ -58,6 +97,7 @@ class QueueTask:
         """
         self.args = args
         self.kwargs = kwargs
+        self._update_progress_callback = None
 
     def update_progress(self, progress: str):
         """Private method to call the callback to update the progress.
@@ -152,9 +192,9 @@ class QueueManager:
                         (unique_id, task) = self._work_queue.get(
                             block=True, timeout=self._queue_fetch_timeout
                         )
-                        self.current_task_id = unique_id
-                        self._update_command_state_callback(unique_id, "IN_PROGRESS")
 
+                        self._update_command_state_callback(unique_id, "IN_PROGRESS")
+                        self.current_task_id = unique_id
                         # Inject is_aborting, is_stopping, progress_update into task
                         task.kwargs["is_aborting_event"] = self.is_aborting
                         task.kwargs["is_stopping_event"] = self.is_stopping
@@ -166,8 +206,8 @@ class QueueManager:
                         result = TaskResult(
                             task_result[0], f"{task_result[1]}", unique_id
                         )
-                        self._work_queue.task_done()
                         self._result_callback(result)
+                        self._work_queue.task_done()
                     except Empty:
                         continue
                 return
@@ -351,12 +391,6 @@ class QueueManager:
             self._task_result = task_result.to_task_result()
         self._on_property_change("task_result")
 
-        if task_result.unique_id in self._tasks_in_queue:
-            with self._property_update_lock:
-                del self._tasks_in_queue[task_result.unique_id]
-            self._on_property_change("task_ids_in_queue")
-            self._on_property_change("tasks_in_queue")
-
     def update_task_state_callback(self, unique_id: str, status: str):
         """Update the executing task state.
 
@@ -365,6 +399,12 @@ class QueueManager:
         :param status: The state of the task
         :type status: str
         """
+        if unique_id in self._tasks_in_queue:
+            with self._property_update_lock:
+                del self._tasks_in_queue[unique_id]
+            self._on_property_change("task_ids_in_queue")
+            self._on_property_change("tasks_in_queue")
+
         with self._property_update_lock:
             self._task_status[unique_id] = status
         self._on_property_change("task_status")
@@ -409,6 +449,27 @@ class QueueManager:
         :rtype: string
         """
         return f"{time.time()}_{task_name}"
+
+    def get_task_state(self, unique_id: str) -> TaskState:
+        """Attempt to get state of QueueTask.
+
+        :param unique_id: Unique ID of the QueueTask
+        :type unique_id: str
+        :return: State of the QueueTask
+        :rtype: TaskState
+        """
+        if self.task_result:
+            _task_result = TaskResult.from_task_result(self.task_result)
+            if unique_id == _task_result.unique_id:
+                return TaskState.COMPLETED
+
+        if unique_id in self.task_ids_in_queue:
+            return TaskState.QUEUED
+
+        if unique_id in self.task_status.keys():
+            return TaskState.IN_PROGRESS
+
+        return TaskState.NOT_FOUND
 
     def __del__(self) -> None:
         """Release resources prior to instance deletion.

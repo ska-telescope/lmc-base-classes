@@ -90,19 +90,15 @@ class QueueTask:
     """A task that can be put on the queue."""
 
     def __init__(self: QueueTask, *args, **kwargs) -> None:
-        """Create the task. args and kwargs are stored and should be referenced in the `do` method.
-
-        :param self: [description]
-        :type self: QueueTask
-        """
+        """Create the task. args and kwargs are stored and should be referenced in the `do` method."""
         self.args = args
         self.kwargs = kwargs
         self._update_progress_callback = None
 
     def update_progress(self, progress: str):
-        """Private method to call the callback to update the progress.
+        """Call the callback to update the progress.
 
-        :param progress: [description]
+        :param progress: String that to indicate progress of task
         :type progress: str
         """
         self._update_progress_callback = self.kwargs.get("update_progress_callback")

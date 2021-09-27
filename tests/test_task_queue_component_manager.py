@@ -337,7 +337,7 @@ class TestQueueManagerTasks:
         assert unique_id_two in qm.task_progress
         progress_one_before = qm.task_progress[unique_id_one]
         progress_two_before = qm.task_progress[unique_id_two]
-        time.sleep(0.5)
+        time.sleep(1.0)
         progress_one_after = qm.task_progress[unique_id_one]
         progress_two_after = qm.task_progress[unique_id_two]
 

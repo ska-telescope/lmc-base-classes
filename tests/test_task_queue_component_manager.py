@@ -95,8 +95,7 @@ def abort_task():
         class AbortTask(QueueTask):
             def do(self):
                 sleep_time = self.args[0]
-                is_aborting_event = self.kwargs.get("is_aborting_event")
-                while not is_aborting_event.is_set():
+                while not self.is_aborting_event.is_set():
                     time.sleep(sleep_time)
 
         return AbortTask(0.2)
@@ -111,9 +110,8 @@ def stop_task():
     def get_task():
         class StopTask(QueueTask):
             def do(self):
-                is_stopping_event = self.kwargs.get("is_stopping_event")
-                assert not is_stopping_event.is_set()
-                while not is_stopping_event.is_set():
+                assert not self.is_stopping_event.is_set()
+                while not self.is_stopping_event.is_set():
                     pass
 
         return StopTask()

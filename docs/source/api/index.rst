@@ -32,3 +32,4 @@ API
   Faults<faults>
   Release<release>
   Utils<utils>
+  QueueManager<queue_manager>

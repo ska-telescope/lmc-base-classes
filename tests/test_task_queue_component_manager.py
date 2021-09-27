@@ -398,7 +398,7 @@ class TestQueueManagerExit:
         while not qm.task_status:
             pass
         # Start aborting
-        cm.message_queue.abort_commands()
+        cm.message_queue.abort_tasks()
         # Wait for the exit
         while not qm.task_result:
             pass
@@ -411,7 +411,7 @@ class TestQueueManagerExit:
                 break
 
         # Resume the commands
-        qm.resume_commands()
+        qm.resume_tasks()
         assert not qm.is_aborting
 
         # Wait for my slow command to finish
@@ -440,7 +440,7 @@ class TestQueueManagerExit:
         while not qm.task_status:
             pass
         # Stop all threads
-        cm.message_queue.stop_commands()
+        cm.message_queue.stop_tasks()
         # Wait for the exit
         while not qm.task_result:
             pass

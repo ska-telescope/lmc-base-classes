@@ -10,6 +10,7 @@ from ska_tango_base.base.task_queue_component_manager import (
     TaskResult,
     TaskQueueComponentManager,
     QueueTask,
+    TaskState,
 )
 
 logger = logging.getLogger(__name__)
@@ -287,8 +288,12 @@ class TestQueueManagerTasks:
         # Wait for a item on the queue
         while not qm.task_ids_in_queue:
             pass
-        # Wait for commands to finish
-        while qm.task_ids_in_queue:
+
+        while not qm.task_result:
+            pass
+
+        # Wait for last task to finish
+        while unique_ids[-1] != TaskResult.from_task_result(qm.task_result).unique_id:
             pass
 
         all_passed_params = [a_call[0] for a_call in call_back_func.call_args_list]
@@ -317,7 +322,6 @@ class TestQueueManagerTasks:
                 break
         else:
             assert 0, f"Length of {num_of_workers} in task_status not found"
-
         assert len(task_result) == 4
         for unique_id in unique_ids:
             assert unique_id in task_result_ids
@@ -333,13 +337,43 @@ class TestQueueManagerTasks:
         assert unique_id_two in qm.task_progress
         progress_one_before = qm.task_progress[unique_id_one]
         progress_two_before = qm.task_progress[unique_id_two]
-
         time.sleep(0.5)
         progress_one_after = qm.task_progress[unique_id_one]
         progress_two_after = qm.task_progress[unique_id_two]
 
         assert int(progress_one_after) > int(progress_one_before)
         assert int(progress_two_after) > int(progress_two_before)
+
+    def test_task_get_state_completed(self, simple_task):
+        """Test the QueueTask get state is completed."""
+        qm = QueueManager(logger, max_queue_size=8, num_workers=2)
+        unique_id_one = qm.enqueue_task(simple_task())
+        while not qm.task_result:
+            pass
+        assert qm.get_task_state(unique_id=unique_id_one) == TaskState.COMPLETED
+
+    def test_task_get_state_in_queued(self, slow_task):
+        """Test the QueueTask get state is queued."""
+        qm = QueueManager(logger, max_queue_size=8, num_workers=1)
+        qm.enqueue_task(slow_task())
+        qm.enqueue_task(slow_task())
+        unique_id_last = qm.enqueue_task(slow_task())
+
+        assert qm.get_task_state(unique_id=unique_id_last) == TaskState.QUEUED
+
+    def test_task_get_state_in_progress(self, progress_task):
+        """Test the QueueTask get state is in progress."""
+        qm = QueueManager(logger, max_queue_size=8, num_workers=2)
+        unique_id_one = qm.enqueue_task(progress_task())
+        while not qm.task_progress:
+            pass
+
+        assert qm.get_task_state(unique_id=unique_id_one) == TaskState.IN_PROGRESS
+
+    def test_task_get_state_in_not_found(self):
+        """Test the QueueTask get state not found."""
+        qm = QueueManager(logger, max_queue_size=8, num_workers=2)
+        assert qm.get_task_state(unique_id="non_existing_id") == TaskState.NOT_FOUND
 
 
 class TestQueueManagerExit:
@@ -358,7 +392,7 @@ class TestQueueManagerExit:
         cm = TaskQueueComponentManager(
             message_queue=qm, op_state_model=None, logger=None
         )
-        unique_id = cm.enqueue(abort_task())
+        cm.enqueue(abort_task())
 
         # Wait for the command to start
         while not qm.task_status:

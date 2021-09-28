@@ -58,7 +58,7 @@ Simple example:
 
 * **is_aborting_event**: can be check periodically to determine whether
   the queue tasks have been aborted to gracefully complete the task in progress.
-  The thread will stay active and `once is_aborting_event` has been unset,
+  The thread will stay active and once `is_aborting_event` has been unset,
   new tasks will be fetched from the queue for execution.
 
 .. code-block:: py
@@ -104,7 +104,7 @@ QueueManager
 The queue manager class manages the queue, workers and the update of properties.
 The number of worker threads can be specified.
 
-In the case of no worker threads, tasks that are enqueued will *not* be put on the queue,
+When `num_workers` is 0, tasks that are enqueued will *not* be put on the queue,
 but will simply be executed and thus block until done. No worker threads are started in this case.
 
 As tasks are taken off the queue and completes, the properties below will be updated. An optional callback

@@ -170,7 +170,7 @@ import traceback
 from queue import Empty, Queue
 from threading import Event
 from typing import Any, Callable, Dict, Optional, Tuple
-from attr import dataclass
+from dataclasses import dataclass
 
 import tango
 

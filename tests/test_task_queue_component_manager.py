@@ -145,7 +145,7 @@ class TestQueueManager:
             assert worker.daemon
 
         for worker in qm._threads:
-            worker.is_stopping.set()
+            worker.is_stopping_event.set()
 
 
 class TestQueueManagerTasks:
@@ -192,7 +192,7 @@ class TestQueueManagerTasks:
         exc_task = exc_task()
 
         qm.enqueue_task(add_task_one)
-        while not qm.task_result:
+        while qm.task_result == ("", "", ""):
             time.sleep(0.5)
         task_result = TaskResult.from_task_result(qm.task_result)
         assert task_result.unique_id.endswith("SimpleTask")
@@ -262,7 +262,7 @@ class TestQueueManagerTasks:
         assert res.endswith(expected_name)
 
         # Wait for the task to be picked up
-        while not qm.task_result:
+        while qm.task_result == ("", "", ""):
             time.sleep(0.5)
         assert qm.task_result[0].endswith(expected_name)
         assert int(qm.task_result[1]) == expected_result_code
@@ -289,7 +289,7 @@ class TestQueueManagerTasks:
         while not qm.task_ids_in_queue:
             pass
 
-        while not qm.task_result:
+        while qm.task_result == ("", "", ""):
             pass
 
         # Wait for last task to finish
@@ -348,7 +348,7 @@ class TestQueueManagerTasks:
         """Test the QueueTask get state is completed."""
         qm = QueueManager(logger, max_queue_size=8, num_workers=2)
         unique_id_one = qm.enqueue_task(simple_task())
-        while not qm.task_result:
+        while qm.task_result == ("", "", ""):
             pass
         assert qm.get_task_state(unique_id=unique_id_one) == TaskState.COMPLETED
 
@@ -400,7 +400,7 @@ class TestQueueManagerExit:
         # Start aborting
         cm.message_queue.abort_tasks()
         # Wait for the exit
-        while not qm.task_result:
+        while qm.task_result == ("", "", ""):
             pass
         assert qm.is_aborting
         # When aborting this should be rejected
@@ -442,7 +442,7 @@ class TestQueueManagerExit:
         # Stop all threads
         cm.message_queue.stop_tasks()
         # Wait for the exit
-        while not qm.task_result:
+        while qm.task_result == ("", "", ""):
             pass
         # Wait for all the workers to stop
         while not any([worker.is_alive() for worker in qm._threads]):

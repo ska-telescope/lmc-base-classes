@@ -220,16 +220,16 @@ class TaskResult:
     task_result: str
     unique_id: str
 
-    def to_task_result(self) -> Tuple[str]:
+    def to_task_result(self) -> Tuple[str, str, str]:
         """Convert TaskResult to task_result.
 
         :return: The task result
         :rtype: list[str]
         """
-        return (f"{self.unique_id}", f"{int(self.result_code)}", f"{self.task_result}")
+        return f"{self.unique_id}", f"{int(self.result_code)}", f"{self.task_result}"
 
     @classmethod
-    def from_task_result(cls, task_result: list) -> TaskResult:
+    def from_task_result(cls, task_result: Tuple[str, str, str]) -> TaskResult:
         """Convert task_result list to TaskResult.
 
         :param task_result: The task_result [unique_id, result_code, task_result]
@@ -333,7 +333,7 @@ class QueueManager:
             super().__init__()
             self._work_queue = queue
             self._logger = logger
-            self.is_stopping = stopping_event
+            self.is_stopping_event = stopping_event
             self.is_aborting = threading.Event()
             self._result_callback = result_callback
             self._update_command_state_callback = update_command_state_callback
@@ -351,7 +351,7 @@ class QueueManager:
             is_aborting cleared.
             """
             with tango.EnsureOmniThread():
-                while not self.is_stopping.is_set():
+                while not self.is_stopping_event.is_set():
                     self.current_task_id = None
                     self.current_task_progress = ""
 
@@ -377,7 +377,7 @@ class QueueManager:
                         self.current_task_id = unique_id
                         # Inject is_aborting, is_stopping, progress_update into task
                         task.kwargs["is_aborting_event"] = self.is_aborting
-                        task.kwargs["is_stopping_event"] = self.is_stopping
+                        task.kwargs["is_stopping_event"] = self.is_stopping_event
                         task.kwargs[
                             "update_progress_callback"
                         ] = self._update_progress_callback
@@ -447,7 +447,7 @@ class QueueManager:
         self.is_stopping = threading.Event()
         self._property_update_lock = threading.Lock()
 
-        self._task_result = ()
+        self._task_result: Tuple[str, str, str] = ("", "", "")
         self._tasks_in_queue: Dict[str, str] = {}  # unique_id, task_name
         self._task_status: Dict[str, str] = {}  # unique_id, status
         self._threads = []
@@ -479,7 +479,7 @@ class QueueManager:
         return self._work_queue.full()
 
     @property
-    def task_result(self) -> Tuple[str]:
+    def task_result(self) -> Tuple[str, str, str]:
         """Return the last task result.
 
         :return: Last task result
@@ -636,7 +636,7 @@ class QueueManager:
         :return: State of the QueueTask
         :rtype: TaskState
         """
-        if self._task_result:
+        if self._task_result != ("", "", ""):
             _task_result = TaskResult.from_task_result(self._task_result)
             if unique_id == _task_result.unique_id:
                 return TaskState.COMPLETED
@@ -648,22 +648,6 @@ class QueueManager:
             return TaskState.IN_PROGRESS
 
         return TaskState.NOT_FOUND
-
-    def __del__(self) -> None:
-        """Release resources prior to instance deletion.
-
-        - Set the workers to aborting, this will empty out the queue and set the result code
-          for each task to `Aborted`.
-        - Wait for the queues to empty out.
-        - Set the workers to stopping, this will exit out the running thread.
-        """
-        if not self._threads:
-            return
-
-        self.abort_tasks()
-        self._work_queue.join()
-        for worker in self._threads:
-            worker.is_stopping.set()
 
     def __len__(self) -> int:
         """Approximate length of the queue.

@@ -26,7 +26,7 @@ be made available as a Tango device attribute named `command_result`. It will be
 .. code-block:: py
 
     from ska_tango_base.base.task_queue_component_manager import TaskResult
-    tr = TaskResult.from_task_result(["UniqueID", "0", "The task result"])
+    tr = TaskResult.from_task_result(("UniqueID", "0", "The task result"))
     tr
     TaskResult(result_code=<ResultCode.OK: 0>, task_result='The task result', unique_id='UniqueID')
     tr.to_task_result()
@@ -56,9 +56,9 @@ Simple example:
 
 3 items are added dynamically by the worker thread and is available for use in the class instance.
 
-* **is_aborting_event**: can be check periodically to determine whether
+* **aborting_event**: can be check periodically to determine whether
   the queue tasks have been aborted to gracefully complete the task in progress.
-  The thread will stay active and once `is_aborting_event` has been unset,
+  The thread will stay active and once `aborting_event` has been unset,
   new tasks will be fetched from the queue for execution.
 
 .. code-block:: py
@@ -66,20 +66,20 @@ Simple example:
     class AbortTask(QueueTask):
         def do(self):
             sleep_time = self.args[0]
-            while not self.is_aborting_event.is_set():
+            while not self.aborting_event.is_set():
                 time.sleep(sleep_time)
 
     return AbortTask(0.2)
 
-* **is_stopping_event**: can be check periodically to determine whether
+* **stopping_event**: can be check periodically to determine whether
   the queue tasks have been stopped. In this case the thread will complete.
 
 .. code-block:: py
 
     class StopTask(QueueTask):
         def do(self):
-            assert not self.is_stopping_event.is_set()
-            while not self.is_stopping_event.is_set():
+            assert not self.stopping_event.is_set()
+            while not self.stopping_event.is_set():
                 pass
 
     return StopTask()
@@ -134,7 +134,7 @@ Aborting tasks
 
 When `abort_tasks` is called on the queue manager the following will happen.
 
-* Any tasks in progress will complete. Tasks that check `is_aborting_event` will know to complete otherwise
+* Any tasks in progress will complete. Tasks that check `aborting_event` will know to complete otherwise
   it will complete as per normal.
 
 * Any tasks on the queue will be removed and their result set to ABORTED. They will not be executed.
@@ -150,7 +150,7 @@ Stopping tasks
 
 Once `stop_tasks` is called the worker threads completes as soon as possible.
 
-* Any tasks in progress will complete. Tasks that check `is_stopping_event` will know to exit gracefully.
+* Any tasks in progress will complete. Tasks that check `stopping_event` will know to exit gracefully.
 
 * The thread will cease.
 
@@ -224,16 +224,16 @@ class TaskResult:
         """Convert TaskResult to task_result.
 
         :return: The task result
-        :rtype: list[str]
+        :rtype: tuple[str, str, str]
         """
         return f"{self.unique_id}", f"{int(self.result_code)}", f"{self.task_result}"
 
     @classmethod
     def from_task_result(cls, task_result: Tuple[str, str, str]) -> TaskResult:
-        """Convert task_result list to TaskResult.
+        """Convert task_result tuple to TaskResult.
 
-        :param task_result: The task_result [unique_id, result_code, task_result]
-        :type task_result: list
+        :param task_result: The task_result (unique_id, result_code, task_result)
+        :type task_result: tuple
         :return: The task result
         :rtype: TaskResult
         :raises: ValueError
@@ -258,26 +258,26 @@ class QueueTask:
         self._update_progress_callback = None
 
     @property
-    def is_aborting_event(self) -> threading.Event:
-        """Worker adds is_aborting_event threading event.
+    def aborting_event(self) -> threading.Event:
+        """Worker adds aborting_event threading event.
 
         Indicates whether task execution have been aborted.
 
         :return: The is_aborted event.
         :rtype: threading.Event
         """
-        return self.kwargs.get("is_aborting_event")
+        return self.kwargs.get("aborting_event")
 
     @property
-    def is_stopping_event(self) -> threading.Event:
-        """Worker adds is_stopping_event threading event.
+    def stopping_event(self) -> threading.Event:
+        """Worker adds stopping_event threading event.
 
         Indicates whether task execution have been stopped.
 
-        :return: The is_stopping event.
+        :return: The stopping_event.
         :rtype: threading.Event
         """
-        return self.kwargs.get("is_stopping_event")
+        return self.kwargs.get("stopping_event")
 
     def update_progress(self, progress: str):
         """Call the callback to update the progress.
@@ -333,8 +333,8 @@ class QueueManager:
             super().__init__()
             self._work_queue = queue
             self._logger = logger
-            self.is_stopping_event = stopping_event
-            self.is_aborting = threading.Event()
+            self.stopping_event = stopping_event
+            self.aborting_event = threading.Event()
             self._result_callback = result_callback
             self._update_command_state_callback = update_command_state_callback
             self._queue_fetch_timeout = queue_fetch_timeout
@@ -346,17 +346,17 @@ class QueueManager:
             """Run in the thread.
 
             Tasks are fetched off the queue and executed.
-            if _is_stopping is set the thread wil exit.
-            If _is_aborting is set the queue will be emptied. All new commands will be aborted until
-            is_aborting cleared.
+            if _stopping_event is set the thread will exit.
+            If _aborting_event is set the queue will be emptied. All new commands will be aborted until
+            aborting_event cleared.
             """
             with tango.EnsureOmniThread():
-                while not self.is_stopping_event.is_set():
+                while not self.stopping_event.is_set():
                     self.current_task_id = None
                     self.current_task_progress = ""
 
-                    if self.is_aborting.is_set():
-                        # Drain the Queue since self.is_aborting is set
+                    if self.aborting_event.is_set():
+                        # Drain the Queue since self.aborting_event is set
                         while not self._work_queue.empty():
                             unique_id, _ = self._work_queue.get()
                             self.current_task_id = unique_id
@@ -375,9 +375,9 @@ class QueueManager:
 
                         self._update_command_state_callback(unique_id, "IN_PROGRESS")
                         self.current_task_id = unique_id
-                        # Inject is_aborting, is_stopping, progress_update into task
-                        task.kwargs["is_aborting_event"] = self.is_aborting
-                        task.kwargs["is_stopping_event"] = self.is_stopping_event
+                        # Inject aborting_event, stopping_event, progress_update into task
+                        task.kwargs["aborting_event"] = self.aborting_event
+                        task.kwargs["stopping_event"] = self.stopping_event
                         task.kwargs[
                             "update_progress_callback"
                         ] = self._update_progress_callback
@@ -444,7 +444,7 @@ class QueueManager:
         self._work_queue = Queue(self._max_queue_size)
         self._queue_fetch_timeout = queue_fetch_timeout
         self._on_property_update_callback = on_property_update_callback
-        self.is_stopping = threading.Event()
+        self.stopping_event = threading.Event()
         self._property_update_lock = threading.Lock()
 
         self._task_result: Tuple[str, str, str] = ("", "", "")
@@ -460,7 +460,7 @@ class QueueManager:
             self.Worker(
                 self._work_queue,
                 self._logger,
-                self.is_stopping,
+                self.stopping_event,
                 self.result_callback,
                 self.update_task_state_callback,
             )
@@ -601,21 +601,21 @@ class QueueManager:
     def abort_tasks(self):
         """Start aborting tasks."""
         for worker in self._threads:
-            worker.is_aborting.set()
+            worker.aborting_event.set()
 
     def resume_tasks(self):
         """Unsets aborting so tasks can be picked up again."""
         for worker in self._threads:
-            worker.is_aborting.clear()
+            worker.aborting_event.clear()
 
     def stop_tasks(self):
-        """Set is_stopping on each thread so it exists out. Killing the thread."""
-        self.is_stopping.set()
+        """Set stopping_event on each thread so it exists out. Killing the thread."""
+        self.stopping_event.set()
 
     @property
-    def is_aborting(self) -> bool:
+    def aborting_event(self) -> bool:
         """Return False if any of the threads are aborting."""
-        return all([worker.is_aborting.is_set() for worker in self._threads])
+        return all([worker.aborting_event.is_set() for worker in self._threads])
 
     @classmethod
     def get_unique_id(cls, task_name) -> str:

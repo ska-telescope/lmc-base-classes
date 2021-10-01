@@ -134,8 +134,8 @@ Aborting tasks
 
 When `abort_tasks` is called on the queue manager the following will happen.
 
-* Any tasks in progress will complete. Tasks that check `aborting_event` will know to complete otherwise
-  it will complete as per normal.
+* Any tasks in progress will complete. Tasks that check `aborting_event` periodically will know to complete
+  otherwise it will complete as per normal.
 
 * Any tasks on the queue will be removed and their result set to ABORTED. They will not be executed.
 
@@ -238,7 +238,7 @@ class TaskResult:
         :rtype: TaskResult
         :raises: ValueError
         """
-        if len(task_result) != 3:
+        if not task_result or len(task_result) != 3:
             raise ValueError(f"Cannot parse task_result {task_result}")
 
         return TaskResult(
@@ -263,7 +263,7 @@ class QueueTask:
 
         Indicates whether task execution have been aborted.
 
-        :return: The is_aborted event.
+        :return: The aborting_event event.
         :rtype: threading.Event
         """
         return self.kwargs.get("aborting_event")
@@ -346,8 +346,8 @@ class QueueManager:
             """Run in the thread.
 
             Tasks are fetched off the queue and executed.
-            if _stopping_event is set the thread will exit.
-            If _aborting_event is set the queue will be emptied. All new commands will be aborted until
+            if stopping_event is set the thread will exit.
+            If aborting_event is set the queue will be emptied. All new commands will be aborted until
             aborting_event cleared.
             """
             with tango.EnsureOmniThread():
@@ -447,7 +447,7 @@ class QueueManager:
         self.stopping_event = threading.Event()
         self._property_update_lock = threading.Lock()
 
-        self._task_result: Tuple[str, str, str] = ("", "", "")
+        self._task_result: Optional[Tuple[str, str, str]] = None
         self._tasks_in_queue: Dict[str, str] = {}  # unique_id, task_name
         self._task_status: Dict[str, str] = {}  # unique_id, status
         self._threads = []
@@ -613,7 +613,7 @@ class QueueManager:
         self.stopping_event.set()
 
     @property
-    def aborting_event(self) -> bool:
+    def is_aborting(self) -> bool:
         """Return False if any of the threads are aborting."""
         return all([worker.aborting_event.is_set() for worker in self._threads])
 
@@ -636,7 +636,7 @@ class QueueManager:
         :return: State of the QueueTask
         :rtype: TaskState
         """
-        if self._task_result != ("", "", ""):
+        if self._task_result:
             _task_result = TaskResult.from_task_result(self._task_result)
             if unique_id == _task_result.unique_id:
                 return TaskState.COMPLETED

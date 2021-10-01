@@ -313,6 +313,7 @@ class QueueManager:
             queue: Queue,
             logger: logging.Logger,
             stopping_event: Event,
+            aborting_event: Event,
             result_callback: Callable,
             update_command_state_callback: Callable,
             queue_fetch_timeout: int = 0.1,
@@ -327,6 +328,8 @@ class QueueManager:
             :type logger: logging.Logger
             :param stopping_event: Indicates whether to get more tasks off the queue
             :type stopping_event: Event
+            :param aborting_event: Indicates whether the queue is being aborted
+            :type aborting_event: Event
             :param update_command_state_callback: Callback to update command state
             :type update_command_state_callback: Callable
             """
@@ -334,7 +337,7 @@ class QueueManager:
             self._work_queue = queue
             self._logger = logger
             self.stopping_event = stopping_event
-            self.aborting_event = threading.Event()
+            self.aborting_event = aborting_event
             self._result_callback = result_callback
             self._update_command_state_callback = update_command_state_callback
             self._queue_fetch_timeout = queue_fetch_timeout
@@ -445,6 +448,7 @@ class QueueManager:
         self._queue_fetch_timeout = queue_fetch_timeout
         self._on_property_update_callback = on_property_update_callback
         self.stopping_event = threading.Event()
+        self.aborting_event = threading.Event()
         self._property_update_lock = threading.Lock()
 
         self._task_result: Optional[Tuple[str, str, str]] = None
@@ -461,6 +465,7 @@ class QueueManager:
                 self._work_queue,
                 self._logger,
                 self.stopping_event,
+                self.aborting_event,
                 self.result_callback,
                 self.update_task_state_callback,
             )
@@ -567,6 +572,12 @@ class QueueManager:
             if task_result.unique_id in self._task_status:
                 del self._task_status[task_result.unique_id]
             self._task_result = task_result.to_task_result()
+
+        # Once the queue is cleared and all the work in progress have completed, clear
+        # the aborting state.
+        if self.is_aborting and self._work_queue.empty() and (not self.task_status):
+            self.resume_tasks()
+
         self._on_property_change("task_result")
 
     def update_task_state_callback(self, unique_id: str, status: str):
@@ -600,8 +611,7 @@ class QueueManager:
 
     def abort_tasks(self):
         """Start aborting tasks."""
-        for worker in self._threads:
-            worker.aborting_event.set()
+        self.aborting_event.set()
 
     def resume_tasks(self):
         """Unsets aborting so tasks can be picked up again."""
@@ -614,8 +624,8 @@ class QueueManager:
 
     @property
     def is_aborting(self) -> bool:
-        """Return False if any of the threads are aborting."""
-        return all([worker.aborting_event.is_set() for worker in self._threads])
+        """Return whether we are in aborting state."""
+        return self.aborting_event.is_set()
 
     @classmethod
     def get_unique_id(cls, task_name) -> str:

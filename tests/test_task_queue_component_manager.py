@@ -379,13 +379,13 @@ class TestQueueManagerTasks:
 class TestQueueManagerExit:
     """Test the stopping and aborting."""
 
-    @pytest.mark.timeout(10)
+    @pytest.mark.timeout(15)
     def test_exit_abort(self, abort_task, slow_task):
         """Test aborting exit."""
         call_back_func = MagicMock()
         qm = QueueManager(
             logger,
-            max_queue_size=5,
+            max_queue_size=10,
             num_workers=2,
             on_property_update_callback=call_back_func,
         )
@@ -402,9 +402,23 @@ class TestQueueManagerExit:
         # Wait for the exit
         while not qm.task_result:
             pass
-        assert qm.is_aborting
+        # aborting state should be cleaned up since the queue is empty and
+        # nothing is in progress
+        while qm.is_aborting:
+            pass
+
         # When aborting this should be rejected
+        # Fill up the workers
+        cm.enqueue(slow_task())
+        cm.enqueue(slow_task())
+        # Abort tasks
+        cm.message_queue.abort_tasks()
+
+        # Load up some tasks that should be aborted
+        cm.enqueue(slow_task())
+        cm.enqueue(slow_task())
         unique_id = cm.enqueue(slow_task())
+
         while True:
             tr = TaskResult.from_task_result(qm.task_result)
             if tr.unique_id == unique_id and tr.result_code == ResultCode.ABORTED:

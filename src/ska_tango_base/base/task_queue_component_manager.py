@@ -615,8 +615,7 @@ class QueueManager:
 
     def resume_tasks(self):
         """Unsets aborting so tasks can be picked up again."""
-        for worker in self._threads:
-            worker.aborting_event.clear()
+        self.aborting_event.clear()
 
     def stop_tasks(self):
         """Set stopping_event on each thread so it exists out. Killing the thread."""

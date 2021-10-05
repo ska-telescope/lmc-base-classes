@@ -60,9 +60,7 @@ class BaseComponentManager:
             In this case any tasks enqueued to it will block.
         """
         self.op_state_model = op_state_model
-        self.queue_manager = (
-            queue_manager if isinstance(queue_manager, QueueManager) else QueueManager()
-        )
+        self.queue_manager = queue_manager if queue_manager else QueueManager()
 
     def start_communicating(self):
         """

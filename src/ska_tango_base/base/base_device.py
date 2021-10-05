@@ -709,7 +709,7 @@ class SKABaseDevice(Device):
 
     longRunningCommandStatus = attribute(
         dtype=("str",),
-        max_dim_x=2,
+        max_dim_x=100,  # 2 per thread, assume we'll never do more than 50 threads
         access=AttrWriteType.READ,
         doc="ID, status pair of the currently executing command. \n"
         "Clients can subscribe to on_change event and wait for the ID they are interested in.",
@@ -727,7 +727,7 @@ class SKABaseDevice(Device):
 
     longRunningCommandResult = attribute(
         dtype=("str",),
-        max_dim_x=2,
+        max_dim_x=3,
         access=AttrWriteType.READ,
         doc="ID, result pair. \n"
         "Clients can subscribe to on_change event and wait for the ID they are interested in.",
@@ -1113,7 +1113,7 @@ class SKABaseDevice(Device):
 
         :return: commands in the device queue
         """
-        return self.component_manager.commands_in_queue
+        return self.component_manager.queue_manager.tasks_in_queue
 
     def read_longRunningCommandIDsInQueue(self):
         # PROTECTED REGION ID(SKABaseDevice.longRunningCommandIDsInQueue_read) ENABLED START #
@@ -1122,16 +1122,23 @@ class SKABaseDevice(Device):
 
         :return: unique ids for the enqueued commands
         """
-        return self.component_manager.command_ids_in_queue
+        return self.component_manager.queue_manager.task_ids_in_queue
 
     def read_longRunningCommandStatus(self):
         # PROTECTED REGION ID(SKABaseDevice.longRunningCommandStatus_read) ENABLED START #
         """
         Read the status of the currently executing long running command.
 
-        :return: ID, status pair of the currently executing command
+        :return: ID, status pair of the currently executing commands
         """
-        return self.component_manager.command_status
+        result = []
+        for (
+            unique_id,
+            status,
+        ) in self.component_manager.queue_manager.task_status.items():
+            result.append(unique_id)
+            result.append(status)
+        return result
 
     def read_longRunningCommandProgress(self):
         # PROTECTED REGION ID(SKABaseDevice.longRunningCommandProgress_read) ENABLED START #
@@ -1140,16 +1147,18 @@ class SKABaseDevice(Device):
 
         :return: ID, progress of the currently executing command.
         """
-        return self.component_manager.command_progress
+        return self.component_manager.queue_manager.task_progress
 
     def read_longRunningCommandResult(self):
         # PROTECTED REGION ID(SKABaseDevice.longRunningCommandResult_read) ENABLED START #
         """
         Read the result of the completed long running command.
 
-        :return: ID, result pair.
+        :return: ID, ResultCode, result.
         """
-        return self.component_manager.command_result
+        if not self.component_manager.queue_manager.task_result:
+            return []
+        return list(self.component_manager.queue_manager.task_result)
 
     # --------
     # Commands
@@ -1482,7 +1491,7 @@ class SKABaseDevice(Device):
 
             Abort the currently executing LRC and remove all enqueued LRCs.
             """
-            # implementation details to be added
+            self.target.queue_manager.abort_tasks()
             return (ResultCode.OK, "Aborting")
 
     @command(
@@ -1522,10 +1531,10 @@ class SKABaseDevice(Device):
             :type argin: str
             :return: The resultcode for this command and the code for the state
             :rtype: tuple
-                (ResultCode.OK, LongRunningCommandState)
+                (ResultCode.OK, TaskState)
             """
-            # implementation details to be added
-            return (ResultCode.OK, LongRunningCommandState.NOT_FOUND)
+            result = self.target.queue_manager.get_task_state(argin)
+            return (ResultCode.OK, f"{result}")
 
     @command(
         dtype_in=str,

@@ -246,12 +246,32 @@ class TaskResult:
             unique_id=task_result[0],
         )
 
+    @classmethod
+    def from_response_command(cls, command_result: Tuple[str, str]) -> TaskResult:
+        """Convert from ResponseCommand to TaskResult.
+
+        :param command_result: The task_result (result_code, unique_id)
+        :type command_result: tuple
+        :return: The task result
+        :rtype: TaskResult
+        :raises: ValueError
+        """
+        if not command_result or len(command_result) != 2:
+            raise ValueError(f"Cannot parse task_result {command_result}")
+
+        return TaskResult(
+            result_code=ResultCode(int(command_result[0])),
+            task_result="",
+            unique_id=command_result[1],
+        )
+
 
 class QueueTask:
     """A task that can be put on the queue."""
 
-    def __init__(self: QueueTask, *args, **kwargs) -> None:
+    def __init__(self: QueueTask, *args, logger=Optional[None], **kwargs) -> None:
         """Create the task. args and kwargs are stored and should be referenced in the `do` method."""
+        self.logger = logger if logger else logging.getLogger(__name__)
         self.args = args
         self.kwargs = kwargs
         self._update_progress_callback = None
@@ -377,9 +397,6 @@ class QueueManager:
 
                         self._update_command_state_callback(unique_id, "IN_PROGRESS")
                         self.current_task_id = unique_id
-                        # Inject aborting_event, stopping_event, progress_update into task
-                        task.kwargs["aborting_event"] = self.aborting_event
-                        task.kwargs["stopping_event"] = self.stopping_event
                         task.kwargs[
                             "update_progress_callback"
                         ] = self._update_progress_callback
@@ -410,7 +427,16 @@ class QueueManager:
             :rtype: TaskResult
             """
             try:
-                result = TaskResult(ResultCode.OK, f"{task.do()}", unique_id)
+                result = task.do()
+                # If the response is (ResultCode, Any)
+                if (
+                    isinstance(result, tuple)
+                    and len(result) == 2
+                    and isinstance(result[0], ResultCode)
+                ):
+                    return TaskResult(result[0], f"{result[1]}", unique_id)
+                # else set as OK and return the string of whatever the result was
+                result = TaskResult(ResultCode.OK, f"{result}", unique_id)
             except Exception as err:
                 result = TaskResult(
                     ResultCode.FAILED,
@@ -541,6 +567,10 @@ class QueueManager:
         """
         unique_id = self.get_unique_id(task.get_task_name())
 
+        # Inject the events into the task
+        task.kwargs["aborting_event"] = self.aborting_event
+        task.kwargs["stopping_event"] = self.stopping_event
+
         # If there is no queue, just execute the command and return
         if self._max_queue_size == 0:
             self.update_task_state_callback(unique_id, "IN_PROGRESS")
@@ -664,3 +694,11 @@ class QueueManager:
         :rtype: int
         """
         return self._work_queue.qsize()
+
+    def __bool__(self):
+        """Ensure `if QueueManager()` works as expected with `__len__` being overridden.
+
+        :return: True
+        :rtype: bool
+        """
+        return True

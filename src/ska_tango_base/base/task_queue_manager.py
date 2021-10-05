@@ -174,7 +174,6 @@ from dataclasses import dataclass
 
 import tango
 
-from ska_tango_base.base.component_manager import BaseComponentManager
 from ska_tango_base.commands import ResultCode
 
 
@@ -422,27 +421,26 @@ class QueueManager:
 
     def __init__(
         self: QueueManager,
-        logger: logging.Logger,
         max_queue_size: int = 0,
         queue_fetch_timeout: float = 0.1,
         num_workers: int = 0,
         on_property_update_callback: Optional[Callable] = None,
+        logger: Optional[logging.Logger] = None,
     ):
         """Init QueryManager.
 
         Creates the queue and starts the thread that will execute tasks
         from it.
 
-        :param logger: Python logger
-        :type logger: logging.Logger
         :param max_queue_size: The maximum size of the queue
         :type max_queue_size: int
         :param max_queue_size: The time to wait for items in the queue
         :type max_queue_size: float
         :param num_workers: The number of worker threads to start
         :type num_workers: float
+        :param logger: Python logger
+        :type logger: logging.Logger
         """
-        self._logger = logger
         self._max_queue_size = max_queue_size
         self._work_queue = Queue(self._max_queue_size)
         self._queue_fetch_timeout = queue_fetch_timeout
@@ -450,6 +448,7 @@ class QueueManager:
         self.stopping_event = threading.Event()
         self.aborting_event = threading.Event()
         self._property_update_lock = threading.Lock()
+        self._logger = logger if logger else logging.getLogger(__name__)
 
         self._task_result: Optional[Tuple[str, str, str]] = None
         self._tasks_in_queue: Dict[str, str] = {}  # unique_id, task_name
@@ -665,38 +664,3 @@ class QueueManager:
         :rtype: int
         """
         return self._work_queue.qsize()
-
-
-class TaskQueueComponentManager(BaseComponentManager):
-    """A component manager that provides message queue functionality."""
-
-    def __init__(
-        self: TaskQueueComponentManager,
-        message_queue: QueueManager,
-        op_state_model: Any,
-        *args: Any,
-        **kwargs: Any,
-    ) -> None:
-        """Create a new component manager that puts tasks on the queue.
-
-        :param message_queue: The queue manager instance
-        :type message_queue: QueueManager
-        :param op_state_model: The ops state model
-        :type op_state_model: Any
-        """
-        self.message_queue = message_queue
-
-        super().__init__(op_state_model, *args, **kwargs)
-
-    def enqueue(
-        self,
-        task: QueueTask,
-    ) -> str:
-        """Put `task` on the queue. The unique ID for it is returned.
-
-        :param task: The task to execute in the thread
-        :type task: QueueTask
-        :return: The unique ID of the queued command
-        :rtype: str
-        """
-        return self.message_queue.enqueue_task(task)

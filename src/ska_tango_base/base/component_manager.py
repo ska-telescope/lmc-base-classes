@@ -23,7 +23,10 @@ The basic model is:
   the component to change behaviour and/or state; and it *monitors* its
   component by keeping track of its state.
 """
+from typing import Optional
+
 from ska_tango_base.control_model import PowerMode
+from ska_tango_base.base.task_queue_manager import QueueManager, QueueTask
 
 
 class BaseComponentManager:
@@ -41,14 +44,25 @@ class BaseComponentManager:
       or on
     """
 
-    def __init__(self, op_state_model, *args, **kwargs):
+    def __init__(
+        self,
+        op_state_model,
+        queue_manager: Optional[QueueManager] = None,
+        *args,
+        **kwargs
+    ):
         """
         Initialise a new ComponentManager instance.
 
         :param op_state_model: the op state model used by this component
             manager
+        :param queue_manager: If not specified a default QueueManager will be initialised.
+            In this case any tasks enqueued to it will block.
         """
         self.op_state_model = op_state_model
+        self.queue_manager = (
+            queue_manager if isinstance(queue_manager, QueueManager) else QueueManager()
+        )
 
     def start_communicating(self):
         """
@@ -155,3 +169,16 @@ class BaseComponentManager:
         This is a callback hook.
         """
         self.op_state_model.perform_action("component_fault")
+
+    def enqueue(
+        self,
+        task: QueueTask,
+    ) -> str:
+        """Put `task` on the queue. The unique ID for it is returned.
+
+        :param task: The task to execute in the thread
+        :type task: QueueTask
+        :return: The unique ID of the queued command
+        :rtype: str
+        """
+        return self.queue_manager.enqueue_task(task)

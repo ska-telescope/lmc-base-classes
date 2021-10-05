@@ -5,13 +5,13 @@ import pytest
 from unittest.mock import MagicMock, patch
 
 from ska_tango_base.commands import ResultCode
-from ska_tango_base.base.task_queue_component_manager import (
+from ska_tango_base.base.task_queue_manager import (
     QueueManager,
     TaskResult,
-    TaskQueueComponentManager,
     QueueTask,
     TaskState,
 )
+from ska_tango_base.base.component_manager import BaseComponentManager
 
 logger = logging.getLogger(__name__)
 
@@ -138,7 +138,7 @@ class TestQueueManager:
 
     def test_threads_start(self):
         """Test that threads start up. Set stop and exit."""
-        qm = QueueManager(logger, max_queue_size=2, num_workers=2)
+        qm = QueueManager(max_queue_size=2, num_workers=2, logger=logger)
         assert len(qm._threads) == 2
         for worker in qm._threads:
             assert worker.is_alive()
@@ -154,7 +154,7 @@ class TestQueueManagerTasks:
     @pytest.mark.timeout(5)
     def test_task_ids(self, simple_task):
         """Check ids."""
-        qm = QueueManager(logger, max_queue_size=5, num_workers=2)
+        qm = QueueManager(max_queue_size=5, num_workers=2, logger=logger)
         unique_id_one = qm.enqueue_task(simple_task())
         unique_id_two = qm.enqueue_task(simple_task())
         assert unique_id_one.endswith("SimpleTask")
@@ -164,7 +164,7 @@ class TestQueueManagerTasks:
     def test_task_is_executed(self, simple_task):
         """Check that tasks are executed."""
         with patch.object(QueueManager, "result_callback") as my_cb:
-            qm = QueueManager(logger, max_queue_size=5, num_workers=2)
+            qm = QueueManager(max_queue_size=5, num_workers=2, logger=logger)
             unique_id_one = qm.enqueue_task(simple_task())
             unique_id_two = qm.enqueue_task(simple_task())
 
@@ -187,7 +187,7 @@ class TestQueueManagerTasks:
     @pytest.mark.timeout(5)
     def test_task_result(self, simple_task, exc_task):
         """Check task results are what's expected."""
-        qm = QueueManager(logger, max_queue_size=5, num_workers=2)
+        qm = QueueManager(max_queue_size=5, num_workers=2, logger=logger)
         add_task_one = simple_task()
         exc_task = exc_task()
 
@@ -213,7 +213,7 @@ class TestQueueManagerTasks:
     def test_full_queue(self, slow_task):
         """Check full queues rejects new commands."""
         with patch.object(QueueManager, "result_callback") as my_cb:
-            qm = QueueManager(logger, max_queue_size=1, num_workers=1)
+            qm = QueueManager(max_queue_size=1, num_workers=1, logger=logger)
             for i in range(10):
                 qm.enqueue_task(slow_task())
 
@@ -227,7 +227,7 @@ class TestQueueManagerTasks:
                 assert res == ResultCode.REJECTED
 
         with patch.object(QueueManager, "result_callback") as my_cb:
-            qm = QueueManager(logger, max_queue_size=2, num_workers=2)
+            qm = QueueManager(max_queue_size=2, num_workers=2, logger=logger)
             for i in range(10):
                 qm.enqueue_task(slow_task())
 
@@ -248,7 +248,7 @@ class TestQueueManagerTasks:
         expected_result = "5"
 
         # No Queue
-        qm = QueueManager(logger, max_queue_size=0, num_workers=1)
+        qm = QueueManager(max_queue_size=0, num_workers=1, logger=logger)
         assert len(qm._threads) == 0
         res = qm.enqueue_task(simple_task())
         assert res.endswith(expected_name)
@@ -257,7 +257,7 @@ class TestQueueManagerTasks:
         assert qm.task_result[2] == expected_result
 
         # Queue
-        qm = QueueManager(logger, max_queue_size=2, num_workers=1)
+        qm = QueueManager(max_queue_size=2, num_workers=1, logger=logger)
         res = qm.enqueue_task(simple_task())
         assert res.endswith(expected_name)
 
@@ -275,10 +275,10 @@ class TestQueueManagerTasks:
 
         call_back_func = MagicMock()
         qm = QueueManager(
-            logger,
             max_queue_size=5,
             num_workers=num_of_workers,
             on_property_update_callback=call_back_func,
+            logger=logger,
         )
         unique_ids = []
         for _ in range(4):
@@ -328,7 +328,7 @@ class TestQueueManagerTasks:
 
     def test_task_progress(self, progress_task):
         """Test the progress updates."""
-        qm = QueueManager(logger, max_queue_size=8, num_workers=2)
+        qm = QueueManager(max_queue_size=8, num_workers=2, logger=logger)
         unique_id_one = qm.enqueue_task(progress_task())
         unique_id_two = qm.enqueue_task(progress_task())
 
@@ -346,7 +346,7 @@ class TestQueueManagerTasks:
 
     def test_task_get_state_completed(self, simple_task):
         """Test the QueueTask get state is completed."""
-        qm = QueueManager(logger, max_queue_size=8, num_workers=2)
+        qm = QueueManager(max_queue_size=8, num_workers=2, logger=logger)
         unique_id_one = qm.enqueue_task(simple_task())
         while not qm.task_result:
             pass
@@ -354,7 +354,7 @@ class TestQueueManagerTasks:
 
     def test_task_get_state_in_queued(self, slow_task):
         """Test the QueueTask get state is queued."""
-        qm = QueueManager(logger, max_queue_size=8, num_workers=1)
+        qm = QueueManager(max_queue_size=8, num_workers=1, logger=logger)
         qm.enqueue_task(slow_task())
         qm.enqueue_task(slow_task())
         unique_id_last = qm.enqueue_task(slow_task())
@@ -363,7 +363,7 @@ class TestQueueManagerTasks:
 
     def test_task_get_state_in_progress(self, progress_task):
         """Test the QueueTask get state is in progress."""
-        qm = QueueManager(logger, max_queue_size=8, num_workers=2)
+        qm = QueueManager(max_queue_size=8, num_workers=2, logger=logger)
         unique_id_one = qm.enqueue_task(progress_task())
         while not qm.task_progress:
             pass
@@ -372,7 +372,7 @@ class TestQueueManagerTasks:
 
     def test_task_get_state_in_not_found(self):
         """Test the QueueTask get state not found."""
-        qm = QueueManager(logger, max_queue_size=8, num_workers=2)
+        qm = QueueManager(max_queue_size=8, num_workers=2, logger=logger)
         assert qm.get_task_state(unique_id="non_existing_id") == TaskState.NOT_FOUND
 
 
@@ -384,21 +384,20 @@ class TestQueueManagerExit:
         """Test aborting exit."""
         call_back_func = MagicMock()
         qm = QueueManager(
-            logger,
             max_queue_size=10,
             num_workers=2,
             on_property_update_callback=call_back_func,
+            logger=logger,
         )
-        cm = TaskQueueComponentManager(
-            message_queue=qm, op_state_model=None, logger=None
-        )
+        cm = BaseComponentManager(op_state_model=None, queue_manager=qm, logger=None)
+
         cm.enqueue(abort_task())
 
         # Wait for the command to start
         while not qm.task_status:
             pass
         # Start aborting
-        cm.message_queue.abort_tasks()
+        cm.queue_manager.abort_tasks()
         # Wait for the exit
         while not qm.task_result:
             pass
@@ -412,7 +411,7 @@ class TestQueueManagerExit:
         cm.enqueue(slow_task())
         cm.enqueue(slow_task())
         # Abort tasks
-        cm.message_queue.abort_tasks()
+        cm.queue_manager.abort_tasks()
 
         # Load up some tasks that should be aborted
         cm.enqueue(slow_task())
@@ -440,21 +439,19 @@ class TestQueueManagerExit:
         """Test stopping exit."""
         call_back_func = MagicMock()
         qm = QueueManager(
-            logger,
             max_queue_size=5,
             num_workers=2,
             on_property_update_callback=call_back_func,
+            logger=logger,
         )
-        cm = TaskQueueComponentManager(
-            message_queue=qm, op_state_model=None, logger=None
-        )
+        cm = BaseComponentManager(op_state_model=None, queue_manager=qm, logger=None)
         cm.enqueue(stop_task())
 
         # Wait for the command to start
         while not qm.task_status:
             pass
         # Stop all threads
-        cm.message_queue.stop_tasks()
+        cm.queue_manager.stop_tasks()
         # Wait for the exit
         while not qm.task_result:
             pass
@@ -467,14 +464,12 @@ class TestQueueManagerExit:
         """Test deleting the queue."""
         call_back_func = MagicMock()
         qm = QueueManager(
-            logger,
             max_queue_size=8,
             num_workers=2,
             on_property_update_callback=call_back_func,
+            logger=logger,
         )
-        cm = TaskQueueComponentManager(
-            message_queue=qm, op_state_model=None, logger=None
-        )
+        cm = BaseComponentManager(op_state_model=None, queue_manager=qm, logger=None)
         cm.enqueue(slow_task())
         cm.enqueue(stop_task())
         cm.enqueue(abort_task())
@@ -485,7 +480,7 @@ class TestQueueManagerExit:
         cm.enqueue(stop_task())
         cm.enqueue(abort_task())
 
-        del cm.message_queue
+        del cm.queue_manager
         del cm
 
 
@@ -494,8 +489,6 @@ class TestComponentManager:
 
     def test_init(self):
         """Test that we can init the component manager."""
-        qm = QueueManager(logger, max_queue_size=0, num_workers=1)
-        cm = TaskQueueComponentManager(
-            message_queue=qm, op_state_model=None, logger=logger
-        )
-        assert cm.message_queue.task_ids_in_queue == []
+        qm = QueueManager(max_queue_size=0, num_workers=1, logger=logger)
+        cm = BaseComponentManager(op_state_model=None, queue_manager=qm, logger=logger)
+        assert cm.queue_manager.task_ids_in_queue == []

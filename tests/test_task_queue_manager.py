@@ -2,7 +2,7 @@
 import logging
 import time
 import pytest
-from unittest.mock import MagicMock, patch
+from unittest.mock import patch
 
 from ska_tango_base.commands import ResultCode
 from ska_tango_base.base.task_queue_manager import (
@@ -273,64 +273,66 @@ class TestQueueManagerTasks:
         """Test that multiple threads are working. Test that attribute updates fires."""
         num_of_workers = 3
 
-        call_back_func = MagicMock()
-        qm = QueueManager(
-            max_queue_size=5,
-            num_workers=num_of_workers,
-            on_property_update_callback=call_back_func,
-            logger=logger,
-        )
-        unique_ids = []
-        for _ in range(4):
-            unique_id = qm.enqueue_task(slow_task())
-            unique_ids.append(unique_id)
+        with patch.object(QueueManager, "_on_property_change") as call_back_func:
 
-        # Wait for a item on the queue
-        while not qm.task_ids_in_queue:
-            pass
+            qm = QueueManager(
+                max_queue_size=5,
+                num_workers=num_of_workers,
+                logger=logger,
+            )
+            unique_ids = []
+            for _ in range(4):
+                unique_id = qm.enqueue_task(slow_task())
+                unique_ids.append(unique_id)
 
-        while not qm.task_result:
-            pass
+            # Wait for a item on the queue
+            while not qm.task_ids_in_queue:
+                pass
 
-        # Wait for last task to finish
-        while unique_ids[-1] != TaskResult.from_task_result(qm.task_result).unique_id:
-            pass
+            while not qm.task_result:
+                pass
 
-        all_passed_params = [a_call[0] for a_call in call_back_func.call_args_list]
-        tasks_in_queue = [
-            a_call[1]
-            for a_call in all_passed_params
-            if a_call[0] == "longRunningCommandsInQueue"
-        ]
-        task_ids_in_queue = [
-            a_call[1]
-            for a_call in all_passed_params
-            if a_call[0] == "longRunningCommandIDsInQueue"
-        ]
-        task_status = [
-            a_call[1]
-            for a_call in all_passed_params
-            if a_call[0] == "longRunningCommandStatus"
-        ]
-        task_result = [
-            a_call[1]
-            for a_call in all_passed_params
-            if a_call[0] == "longRunningCommandResult"
-        ]
-        task_result_ids = [res[0] for res in task_result]
+            # Wait for last task to finish
+            while (
+                unique_ids[-1] != TaskResult.from_task_result(qm.task_result).unique_id
+            ):
+                pass
 
-        check_matching_pattern(tuple(tasks_in_queue))
-        check_matching_pattern(tuple(task_ids_in_queue))
+            all_passed_params = [a_call[0] for a_call in call_back_func.call_args_list]
+            tasks_in_queue = [
+                a_call[1]
+                for a_call in all_passed_params
+                if a_call[0] == "longRunningCommandsInQueue"
+            ]
+            task_ids_in_queue = [
+                a_call[1]
+                for a_call in all_passed_params
+                if a_call[0] == "longRunningCommandIDsInQueue"
+            ]
+            task_status = [
+                a_call[1]
+                for a_call in all_passed_params
+                if a_call[0] == "longRunningCommandStatus"
+            ]
+            task_result = [
+                a_call[1]
+                for a_call in all_passed_params
+                if a_call[0] == "longRunningCommandResult"
+            ]
+            task_result_ids = [res[0] for res in task_result]
 
-        # Since there's 3 workers there should at least once be 3 in progress
-        for status in task_status:
-            if len(status) == 2 * num_of_workers:
-                break
-        else:
-            assert 0, f"Length of {num_of_workers} in task_status not found"
-        assert len(task_result) == 4
-        for unique_id in unique_ids:
-            assert unique_id in task_result_ids
+            check_matching_pattern(tuple(tasks_in_queue))
+            check_matching_pattern(tuple(task_ids_in_queue))
+
+            # Since there's 3 workers there should at least once be 3 in progress
+            for status in task_status:
+                if len(status) == 2 * num_of_workers:
+                    break
+            else:
+                assert 0, f"Length of {num_of_workers} in task_status not found"
+            assert len(task_result) == 4
+            for unique_id in unique_ids:
+                assert unique_id in task_result_ids
 
     def test_task_get_state_completed(self, simple_task):
         """Test the QueueTask get state is completed."""
@@ -370,11 +372,9 @@ class TestQueueManagerExit:
     @pytest.mark.timeout(15)
     def test_exit_abort(self, abort_task, slow_task):
         """Test aborting exit."""
-        call_back_func = MagicMock()
         qm = QueueManager(
             max_queue_size=10,
             num_workers=2,
-            on_property_update_callback=call_back_func,
             logger=logger,
         )
         cm = BaseComponentManager(op_state_model=None, queue_manager=qm, logger=None)
@@ -425,11 +425,9 @@ class TestQueueManagerExit:
     @pytest.mark.timeout(20)
     def test_exit_stop(self, stop_task):
         """Test stopping exit."""
-        call_back_func = MagicMock()
         qm = QueueManager(
             max_queue_size=5,
             num_workers=2,
-            on_property_update_callback=call_back_func,
             logger=logger,
         )
         cm = BaseComponentManager(op_state_model=None, queue_manager=qm, logger=None)
@@ -450,11 +448,9 @@ class TestQueueManagerExit:
     @pytest.mark.timeout(5)
     def test_delete_queue(self, slow_task, stop_task, abort_task):
         """Test deleting the queue."""
-        call_back_func = MagicMock()
         qm = QueueManager(
             max_queue_size=8,
             num_workers=2,
-            on_property_update_callback=call_back_func,
             logger=logger,
         )
         cm = BaseComponentManager(op_state_model=None, queue_manager=qm, logger=None)

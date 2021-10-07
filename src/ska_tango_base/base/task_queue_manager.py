@@ -455,7 +455,6 @@ class QueueManager:
         max_queue_size: int = 0,
         queue_fetch_timeout: float = 0.1,
         num_workers: int = 0,
-        on_property_update_callback: Optional[Callable] = None,
         logger: Optional[logging.Logger] = None,
     ):
         """Init QueryManager.
@@ -475,7 +474,6 @@ class QueueManager:
         self._max_queue_size = max_queue_size
         self._work_queue = Queue(self._max_queue_size)
         self._queue_fetch_timeout = queue_fetch_timeout
-        self._on_property_update_callback = on_property_update_callback
         self.stopping_event = threading.Event()
         self.aborting_event = threading.Event()
         self._property_update_lock = threading.Lock()
@@ -657,8 +655,7 @@ class QueueManager:
         :type property_name: Any
         """
         # with self._property_update_lock:
-        if self._on_property_update_callback:
-            self._on_property_update_callback(property_name, property_value)
+        pass
 
     def abort_tasks(self):
         """Start aborting tasks."""

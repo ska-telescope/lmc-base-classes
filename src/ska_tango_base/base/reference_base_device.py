@@ -236,13 +236,6 @@ class AsyncBaseDevice(BaseTestDevice):
     def create_component_manager(self):
         """Create the component manager with a queue manager that has workers."""
         queue_manager = QueueManager(
-            max_queue_size=10,
-            num_workers=3,
-            logger=self.logger,
-            on_property_update_callback=self._push_change_event_callback,
+            max_queue_size=10, num_workers=3, logger=self.logger
         )
-        return BaseComponentManager(
-            op_state_model=None,
-            queue_manager=queue_manager,
-            push_change_event_callback=self._push_change_event_callback,
-        )
+        return BaseComponentManager(op_state_model=None, queue_manager=queue_manager)

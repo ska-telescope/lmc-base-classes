@@ -760,19 +760,6 @@ class SKABaseDevice(Device):
         self.push_change_event("adminMode", admin_mode)
         self.push_archive_event("adminMode", admin_mode)
 
-    def _push_change_event_callback(
-        self, attribute_name: str, attribute_value: typing.Any
-    ):
-        """Push the change event on an attribute.
-
-        :param attribute_name: The attribute name to push a change event.
-        :type attribute_name: str
-        :param attribute_name: The attribute value to push.
-        :type attribute_name: Any
-        """
-        # TODO: Fix this
-        self.push_change_event(attribute_name, attribute_value)
-
     def _update_state(self, state):
         """
         Perform Tango operations in response to a change in op state.
@@ -849,9 +836,7 @@ class SKABaseDevice(Device):
 
     def create_component_manager(self):
         """Create and return a component manager for this device."""
-        queue_manager = QueueManager(
-            on_property_update_callback=self._push_change_event_callback
-        )
+        queue_manager = QueueManager()
         return BaseComponentManager(self.op_state_model, queue_manager)
 
     def register_command_object(self, command_name, command_object):

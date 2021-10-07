@@ -298,18 +298,24 @@ class TestQueueManagerTasks:
 
         all_passed_params = [a_call[0] for a_call in call_back_func.call_args_list]
         tasks_in_queue = [
-            a_call[1] for a_call in all_passed_params if a_call[0] == "tasks_in_queue"
+            a_call[1]
+            for a_call in all_passed_params
+            if a_call[0] == "longRunningCommandsInQueue"
         ]
         task_ids_in_queue = [
             a_call[1]
             for a_call in all_passed_params
-            if a_call[0] == "task_ids_in_queue"
+            if a_call[0] == "longRunningCommandIDsInQueue"
         ]
         task_status = [
-            a_call[1] for a_call in all_passed_params if a_call[0] == "task_status"
+            a_call[1]
+            for a_call in all_passed_params
+            if a_call[0] == "longRunningCommandStatus"
         ]
         task_result = [
-            a_call[1] for a_call in all_passed_params if a_call[0] == "task_result"
+            a_call[1]
+            for a_call in all_passed_params
+            if a_call[0] == "longRunningCommandResult"
         ]
         task_result_ids = [res[0] for res in task_result]
 
@@ -318,31 +324,13 @@ class TestQueueManagerTasks:
 
         # Since there's 3 workers there should at least once be 3 in progress
         for status in task_status:
-            if len(status) == num_of_workers:
+            if len(status) == 2 * num_of_workers:
                 break
         else:
             assert 0, f"Length of {num_of_workers} in task_status not found"
         assert len(task_result) == 4
         for unique_id in unique_ids:
             assert unique_id in task_result_ids
-
-    def test_task_progress(self, progress_task):
-        """Test the progress updates."""
-        qm = QueueManager(max_queue_size=8, num_workers=2, logger=logger)
-        unique_id_one = qm.enqueue_task(progress_task())
-        unique_id_two = qm.enqueue_task(progress_task())
-
-        time.sleep(0.5)
-        assert unique_id_one in qm.task_progress
-        assert unique_id_two in qm.task_progress
-        progress_one_before = qm.task_progress[unique_id_one]
-        progress_two_before = qm.task_progress[unique_id_two]
-        time.sleep(1.0)
-        progress_one_after = qm.task_progress[unique_id_one]
-        progress_two_after = qm.task_progress[unique_id_two]
-
-        assert int(progress_one_after) > int(progress_one_before)
-        assert int(progress_two_after) > int(progress_two_before)
 
     def test_task_get_state_completed(self, simple_task):
         """Test the QueueTask get state is completed."""
@@ -434,7 +422,7 @@ class TestQueueManagerExit:
             if tr.unique_id == unique_id:
                 break
 
-    @pytest.mark.timeout(10)
+    @pytest.mark.timeout(20)
     def test_exit_stop(self, stop_task):
         """Test stopping exit."""
         call_back_func = MagicMock()
@@ -492,3 +480,24 @@ class TestComponentManager:
         qm = QueueManager(max_queue_size=0, num_workers=1, logger=logger)
         cm = BaseComponentManager(op_state_model=None, queue_manager=qm, logger=logger)
         assert cm.queue_manager.task_ids_in_queue == []
+
+
+class TestStress:
+    """Stress test the queue mananger."""
+
+    @pytest.mark.timeout(20)
+    def test_stress(self, slow_task):
+        """Stress test the queue mananger."""
+        qm = QueueManager(max_queue_size=600, num_workers=100, logger=logger)
+        assert len(qm._threads) == 100
+        for worker in qm._threads:
+            assert worker.is_alive()
+        for _ in range(500):
+            qm.enqueue_task(slow_task())
+
+        assert qm._work_queue.qsize() > 100
+
+        # Wait for the queue to drain
+        while qm._work_queue.qsize():
+            pass
+        del qm

@@ -47,31 +47,11 @@ class BaseTestDevice(SKABaseDevice):
                 self.component_manager, logger=self.logger
             ),
         )
-        # self.register_command_object(
-        #     "TestA",
-        #     self.TestACommand(self),
-        # )
-        # self.register_command_object(
-        #     "TestB",
-        #     self.TestBCommand(self),
-        # )
-        # self.register_command_object(
-        #     "TestC",
-        #     self.TestCCommand(self),
-        # )
-        # self.register_command_object(
-        #     "TestProgress",
-        #     self.TestProgressCommand(self),
-        # )
-        # self.register_command_object(
-        #     "NotAllowedExc",
-        #     self.NotAllowedExcCommand(self),
-        # )
 
-        # self.register_command_object(
-        #     "NotAllowedBool",
-        #     self.NotAllowedBoolCommand(self),
-        # )
+        self.register_command_object(
+            "TestProgress",
+            self.TestProgressCommand(self.component_manager, logger=self.logger),
+        )
 
     class ShortCommand(ResponseCommand):
         """The command class for the Short command."""
@@ -214,136 +194,34 @@ class BaseTestDevice(SKABaseDevice):
         (return_code, message) = handler()
         return f"{return_code}", f"{message}"
 
-    # class TestACommand(ResponseCommand):
-    #     """The command class for the TestA command."""
+    class TestProgressCommand(ResponseCommand):
+        """The command class for the TestProgress command."""
 
-    #     def do(self):
-    #         """ """
-    #         time.sleep(1)
-    #         return (ResultCode.OK, "Done TestACommand")
+        def do(self, argin):
+            """Do the task."""
 
-    # @command(
-    #     dtype_in=None,
-    #     dtype_out="DevVarLongStringArray",
-    # )
-    # @DebugIt()
-    # def TestA(self):
-    #     """ """
-    #     handler = self.get_command_object("TestA")
-    #     (return_code, message) = handler()
-    #     return [[return_code], [message]]
+            class ProgressTask(QueueTask):
+                """A task that updates its progress."""
 
-    # class TestBCommand(ResponseCommand):
-    #     """The command class for the TestB command."""
+                def do(self):
+                    """Update progress."""
+                    for progress in [1, 25, 50, 74, 100]:
+                        self.update_progress(f"{progress}")
+                        time.sleep(self.args[0])
 
-    #     def do(self):
-    #         """ """
-    #         time.sleep(1)
-    #         return (ResultCode.OK, "Done TestBCommand")
+            unique_id = self.target.enqueue(ProgressTask(argin))
+            return ResultCode.OK, unique_id
 
-    # @command(
-    #     dtype_in=None,
-    #     dtype_out="DevVarLongStringArray",
-    # )
-    # @DebugIt()
-    # def TestB(self):
-    #     """ """
-    #     handler = self.get_command_object("TestB")
-    #     (return_code, message) = handler()
-    #     return [[return_code], [message]]
-
-    # class TestCCommand(ResponseCommand):
-    #     """The command class for the TestC command."""
-
-    #     def do(self):
-    #         """ """
-    #         time.sleep(1)
-    #         return (ResultCode.OK, "Done TestCCommand")
-
-    # @command(
-    #     dtype_in=None,
-    #     dtype_out="DevVarLongStringArray",
-    # )
-    # @DebugIt()
-    # def TestC(self):
-    #     """ """
-    #     handler = self.get_command_object("TestC")
-    #     (return_code, message) = handler()
-    #     return [[return_code], [message]]
-
-    # class TestProgressCommand(ResponseCommand):
-    #     """The command class for the TestProgress command."""
-
-    #     def do(self, argin):
-    #         """Use self.command_progress to indicate progress"""
-    #         for progress in [1, 25, 50, 74, 100]:
-    #             self.current_command_progress = progress
-    #             time.sleep(argin)
-
-    #         return (ResultCode.OK, "Done TestProgressCommand")
-
-    # @command(
-    #     dtype_in=float,
-    #     dtype_out="DevVarLongStringArray",
-    # )
-    # @DebugIt()
-    # def TestProgress(self, argin):
-    #     """Command to test the progress indicator"""
-    #     handler = self.get_command_object("TestProgress")
-    #     (return_code, message) = handler(argin)
-    #     return [[return_code], [message]]
-
-    # class NotAllowedExcCommand(ResponseCommand):
-    #     """The command class for the NotAllowedExc command."""
-
-    #     def is_allowed(self, raise_if_disallowed=True):
-    #         """Raises a CommandError to mark as not allowed"""
-    #         if raise_if_disallowed:
-    #             raise CommandError("Command not allowed")
-
-    #     def do(self):
-    #         """Don't do anything, command should be rejected"""
-    #         return (ResultCode.OK, "Done NotAllowedExcCommand")
-
-    # @command(
-    #     dtype_in=None,
-    #     dtype_out="DevVarLongStringArray",
-    # )
-    # @DebugIt()
-    # def NotAllowedExc(self):
-    #     """Command to test not allowed with exception"""
-    #     handler = self.get_command_object("NotAllowedExc")
-    #     (return_code, message) = handler()
-    #     return [[return_code], [message]]
-
-    # class NotAllowedBoolCommand(ResponseCommand):
-    #     """The command class for the NotAllowedBoolCommand command."""
-
-    #     def is_allowed(self, raise_if_disallowed=True):
-    #         """Return True or False depending on the
-    #         is_allowed_return_value attribute
-    #         """
-    #         self.logger.info("raise_if_disallowed %s", raise_if_disallowed)
-    #         return getattr(self.tango_device, "is_allowed_return_value")
-
-    #     def do(self, _argin):
-    #         """Simulate some work done"""
-    #         time.sleep(0.5)
-    #         return (ResultCode.OK, "Done NotAllowedExcCommand")
-
-    # @command(
-    #     dtype_in=bool,
-    #     dtype_out="DevVarLongStringArray",
-    # )
-    # @DebugIt()
-    # def NotAllowedBool(self, argin):
-    #     """Command to test not_allowed returning
-    #     true or false in not_allowed
-    #     """
-    #     setattr(self, "is_allowed_return_value", argin)
-    #     handler = self.get_command_object("NotAllowedBool")
-    #     (return_code, message) = handler(argin)
-    #     return [[return_code], [message]]
+    @command(
+        dtype_in=float,
+        dtype_out="DevVarStringArray",
+    )
+    @DebugIt()
+    def TestProgress(self, argin):
+        """Command to test the progress indicator."""
+        handler = self.get_command_object("TestProgress")
+        (return_code, message) = handler(argin)
+        return f"{return_code}", f"{message}"
 
 
 class BlockingBaseDevice(BaseTestDevice):
@@ -358,6 +236,13 @@ class AsyncBaseDevice(BaseTestDevice):
     def create_component_manager(self):
         """Create the component manager with a queue manager that has workers."""
         queue_manager = QueueManager(
-            max_queue_size=10, num_workers=3, logger=self.logger
+            max_queue_size=10,
+            num_workers=3,
+            logger=self.logger,
+            on_property_update_callback=self._push_change_event_callback,
         )
-        return BaseComponentManager(op_state_model=None, queue_manager=queue_manager)
+        return BaseComponentManager(
+            op_state_model=None,
+            queue_manager=queue_manager,
+            push_change_event_callback=self._push_change_event_callback,
+        )

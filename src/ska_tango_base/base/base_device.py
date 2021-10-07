@@ -36,6 +36,7 @@ import debugpy
 import ska_ser_logging
 from ska_tango_base import release
 from ska_tango_base.base import AdminModeModel, OpStateModel, BaseComponentManager
+from ska_tango_base.base.task_queue_manager import QueueManager
 from ska_tango_base.commands import (
     BaseCommand,
     CompletionCommand,
@@ -432,6 +433,13 @@ class SKABaseDevice(Device):
             device.set_change_event("status", True, True)
             device.set_archive_event("status", True, True)
 
+            # Long running command attributes
+            device.set_change_event("longRunningCommandsInQueue", True, True)
+            device.set_change_event("longRunningCommandIDsInQueue", True, True)
+            device.set_change_event("longRunningCommandStatus", True, True)
+            device.set_change_event("longRunningCommandProgress", True, True)
+            device.set_change_event("longRunningCommandResult", True, True)
+
             device._health_state = HealthState.OK
             device._control_mode = ControlMode.REMOTE
             device._simulation_mode = SimulationMode.FALSE
@@ -752,6 +760,19 @@ class SKABaseDevice(Device):
         self.push_change_event("adminMode", admin_mode)
         self.push_archive_event("adminMode", admin_mode)
 
+    def _push_change_event_callback(
+        self, attribute_name: str, attribute_value: typing.Any
+    ):
+        """Push the change event on an attribute.
+
+        :param attribute_name: The attribute name to push a change event.
+        :type attribute_name: str
+        :param attribute_name: The attribute value to push.
+        :type attribute_name: Any
+        """
+        # TODO: Fix this
+        self.push_change_event(attribute_name, attribute_value)
+
     def _update_state(self, state):
         """
         Perform Tango operations in response to a change in op state.
@@ -828,7 +849,10 @@ class SKABaseDevice(Device):
 
     def create_component_manager(self):
         """Create and return a component manager for this device."""
-        return BaseComponentManager(self.op_state_model)
+        queue_manager = QueueManager(
+            on_property_update_callback=self._push_change_event_callback
+        )
+        return BaseComponentManager(self.op_state_model, queue_manager)
 
     def register_command_object(self, command_name, command_object):
         """
@@ -1131,14 +1155,7 @@ class SKABaseDevice(Device):
 
         :return: ID, status pair of the currently executing commands
         """
-        result = []
-        for (
-            unique_id,
-            status,
-        ) in self.component_manager.queue_manager.task_status.items():
-            result.append(unique_id)
-            result.append(status)
-        return result
+        return self.component_manager.queue_manager.task_status
 
     def read_longRunningCommandProgress(self):
         # PROTECTED REGION ID(SKABaseDevice.longRunningCommandProgress_read) ENABLED START #

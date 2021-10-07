@@ -304,7 +304,9 @@ class QueueTask:
         :param progress: String that to indicate progress of task
         :type progress: str
         """
-        self._update_progress_callback = self.kwargs.get("update_progress_callback")
+        self._update_progress_callback = self.kwargs.get(
+            "update_task_progress_callback"
+        )
         if self._update_progress_callback:
             self._update_progress_callback(progress)
 
@@ -335,6 +337,7 @@ class QueueManager:
             aborting_event: Event,
             result_callback: Callable,
             update_command_state_callback: Callable,
+            update_progress_callback: Callable,
             queue_fetch_timeout: int = 0.1,
         ) -> None:
             """Initiate a worker.
@@ -359,6 +362,7 @@ class QueueManager:
             self.aborting_event = aborting_event
             self._result_callback = result_callback
             self._update_command_state_callback = update_command_state_callback
+            self._update_progress_callback = update_progress_callback
             self._queue_fetch_timeout = queue_fetch_timeout
             self.current_task_progress: Optional[str] = None
             self.current_task_id: Optional[str] = None
@@ -398,8 +402,8 @@ class QueueManager:
                         self._update_command_state_callback(unique_id, "IN_PROGRESS")
                         self.current_task_id = unique_id
                         task.kwargs[
-                            "update_progress_callback"
-                        ] = self._update_progress_callback
+                            "update_task_progress_callback"
+                        ] = self._update_task_progress
                         result = self.execute_task(task, unique_id)
                         self._result_callback(result)
                         self._work_queue.task_done()
@@ -407,13 +411,14 @@ class QueueManager:
                         continue
                 return
 
-        def _update_progress_callback(self, progress: str) -> None:
+        def _update_task_progress(self, progress: str) -> None:
             """Update the current task progress.
 
             :param progress: An indication of progress
             :type progress: str
             """
             self.current_task_progress = progress
+            self._update_progress_callback()
 
         @classmethod
         def execute_task(cls, task: QueueTask, unique_id: str) -> TaskResult:
@@ -493,6 +498,7 @@ class QueueManager:
                 self.aborting_event,
                 self.result_callback,
                 self.update_task_state_callback,
+                self.update_progress_callback,
             )
             for _ in range(num_workers)
         ]
@@ -536,26 +542,35 @@ class QueueManager:
         return list(self._tasks_in_queue.values())
 
     @property
-    def task_status(self) -> Dict[str, str]:
+    def task_status(
+        self,
+    ) -> tuple(str,):
         """Return task status.
 
-        :return: The task status
-        :rtype: Dict[str, str]
+        :return: The task status pairs (id, status)
+        :rtype: tuple(str,)
         """
-        return self._task_status.copy()
+        statuses = []
+        for u_id, status in self._task_status.copy().items():
+            statuses.append(u_id)
+            statuses.append(status)
+        return tuple(statuses)
 
     @property
-    def task_progress(self) -> Dict[str, str]:
+    def task_progress(
+        self,
+    ) -> tuple(str,):
         """Return the task progress.
 
-        :return: The task progress
-        :rtype: Dict[str, str]
+        :return: The task progress pairs (id, progress)
+        :rtype: tuple(str,)
         """
-        progress = {}
+        progress = []
         for worker in self._threads:
             if worker.current_task_id:
-                progress[worker.current_task_id] = worker.current_task_progress
-        return progress
+                progress.append(worker.current_task_id)
+                progress.append(worker.current_task_progress)
+        return tuple(progress)
 
     def enqueue_task(self, task: QueueTask) -> str:
         """Add the task to be done onto the queue.
@@ -587,8 +602,8 @@ class QueueManager:
         self._work_queue.put([unique_id, task])
         with self._property_update_lock:
             self._tasks_in_queue[unique_id] = task.get_task_name()
-        self._on_property_change("tasks_in_queue")
-        self._on_property_change("task_ids_in_queue")
+        self._on_property_change("longRunningCommandsInQueue", self.tasks_in_queue)
+        self._on_property_change("longRunningCommandIDsInQueue", self.task_ids_in_queue)
         return unique_id
 
     def result_callback(self, task_result: TaskResult):
@@ -607,7 +622,7 @@ class QueueManager:
         if self.is_aborting and self._work_queue.empty() and (not self.task_status):
             self.resume_tasks()
 
-        self._on_property_change("task_result")
+        self._on_property_change("longRunningCommandResult", self.task_result)
 
     def update_task_state_callback(self, unique_id: str, status: str):
         """Update the executing task state.
@@ -620,23 +635,30 @@ class QueueManager:
         if unique_id in self._tasks_in_queue:
             with self._property_update_lock:
                 del self._tasks_in_queue[unique_id]
-            self._on_property_change("task_ids_in_queue")
-            self._on_property_change("tasks_in_queue")
+            self._on_property_change("longRunningCommandsInQueue", self.tasks_in_queue)
+            self._on_property_change(
+                "longRunningCommandIDsInQueue", self.task_ids_in_queue
+            )
 
         with self._property_update_lock:
             self._task_status[unique_id] = status
-        self._on_property_change("task_status")
+        self._on_property_change("longRunningCommandStatus", self.task_status)
 
-    def _on_property_change(self, property_name: str):
+    def update_progress_callback(self):
+        """Trigger the property change callback back to the device."""
+        self._on_property_change("longRunningCommandProgress", self.task_progress)
+
+    def _on_property_change(self, property_name: str, property_value: Any):
         """Trigger when a property changes value.
 
         :param property_name: The property name
         :type property_name: str
+        :param property_name: The property value
+        :type property_name: Any
         """
+        # with self._property_update_lock:
         if self._on_property_update_callback:
-            self._on_property_update_callback(
-                property_name, getattr(self, property_name)
-            )
+            self._on_property_update_callback(property_name, property_value)
 
     def abort_tasks(self):
         """Start aborting tasks."""
@@ -682,7 +704,7 @@ class QueueManager:
         if unique_id in self.task_ids_in_queue:
             return TaskState.QUEUED
 
-        if unique_id in self.task_status.keys():
+        if unique_id in self.task_status:
             return TaskState.IN_PROGRESS
 
         return TaskState.NOT_FOUND

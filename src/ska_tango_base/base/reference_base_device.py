@@ -233,9 +233,12 @@ class BlockingBaseDevice(BaseTestDevice):
 class AsyncBaseDevice(BaseTestDevice):
     """Test device that has a component manager with workers."""
 
-    def create_component_manager(self):
+    def create_component_manager(self: SKABaseDevice):
         """Create the component manager with a queue manager that has workers."""
         queue_manager = QueueManager(
-            max_queue_size=10, num_workers=3, logger=self.logger
+            max_queue_size=10,
+            num_workers=3,
+            logger=self.logger,
+            push_change_event=self.push_change_event,
         )
         return BaseComponentManager(op_state_model=None, queue_manager=queue_manager)

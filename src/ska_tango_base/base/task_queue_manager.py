@@ -456,6 +456,7 @@ class QueueManager:
         queue_fetch_timeout: float = 0.1,
         num_workers: int = 0,
         logger: Optional[logging.Logger] = None,
+        push_change_event: Optional[Callable] = None,
     ):
         """Init QueryManager.
 
@@ -474,6 +475,7 @@ class QueueManager:
         self._max_queue_size = max_queue_size
         self._work_queue = Queue(self._max_queue_size)
         self._queue_fetch_timeout = queue_fetch_timeout
+        self._push_change_event = push_change_event
         self.stopping_event = threading.Event()
         self.aborting_event = threading.Event()
         self._property_update_lock = threading.Lock()
@@ -542,7 +544,7 @@ class QueueManager:
     @property
     def task_status(
         self,
-    ) -> tuple(str,):
+    ) -> Tuple[str,]:  # noqa: E231
         """Return task status.
 
         :return: The task status pairs (id, status)
@@ -557,7 +559,7 @@ class QueueManager:
     @property
     def task_progress(
         self,
-    ) -> tuple(str,):
+    ) -> Tuple[str,]:  # noqa: E231
         """Return the task progress.
 
         :return: The task progress pairs (id, progress)
@@ -654,8 +656,8 @@ class QueueManager:
         :param property_name: The property value
         :type property_name: Any
         """
-        # with self._property_update_lock:
-        pass
+        if self._push_change_event:
+            self._push_change_event(property_name, property_value)
 
     def abort_tasks(self):
         """Start aborting tasks."""

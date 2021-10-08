@@ -167,7 +167,9 @@ import logging
 import threading
 import time
 import traceback
+from uuid import uuid4
 from queue import Empty, Queue
+from datetime import datetime
 from threading import Event
 from typing import Any, Callable, Dict, Optional, Tuple
 from dataclasses import dataclass
@@ -209,6 +211,31 @@ class TaskState(enum.IntEnum):
     """
     The task is not allowed to be executed
     """
+
+
+@dataclass
+class TaskUniqueId:
+    """Convenience class for the unique ID of a task."""
+
+    id_uuid: str
+    id_datetime: datetime
+    id_task_name: str
+
+    @classmethod
+    def generate_unique_id(cls, task_name: str) -> str:
+        """Return a new unique ID."""
+        return f"{uuid4()}_{time.time()}_{task_name}"
+
+    @classmethod
+    def from_unique_id(cls, unique_id: str):
+        """Parse a unique ID."""
+        parts = unique_id.split("_")
+        id_uuid = parts[0]
+        id_datetime = datetime.fromtimestamp(float(parts[1]))
+        id_task_name = "_".join(parts[2:])
+        return TaskUniqueId(
+            id_uuid=id_uuid, id_datetime=id_datetime, id_task_name=id_task_name
+        )
 
 
 @dataclass
@@ -264,6 +291,10 @@ class TaskResult:
             task_result="",
             unique_id=command_result[1],
         )
+
+    def get_task_unique_id(self) -> TaskUniqueId:
+        """Convert from the unique_id string to TaskUniqueId."""
+        return TaskUniqueId.from_unique_id(self.unique_id)
 
 
 class QueueTask:
@@ -580,7 +611,7 @@ class QueueManager:
         :return: The unique ID of the command
         :rtype: string
         """
-        unique_id = self.get_unique_id(task.get_task_name())
+        unique_id = self.generate_unique_id(task.get_task_name())
 
         # Inject the events into the task
         task.kwargs["aborting_event"] = self.aborting_event
@@ -677,7 +708,7 @@ class QueueManager:
         return self.aborting_event.is_set()
 
     @classmethod
-    def get_unique_id(cls, task_name) -> str:
+    def generate_unique_id(cls, task_name) -> str:
         """Generate a unique ID for the task.
 
         :param task_name: The name of the task
@@ -685,7 +716,7 @@ class QueueManager:
         :return: The unique ID of the task
         :rtype: string
         """
-        return f"{time.time()}_{task_name}"
+        return TaskUniqueId.generate_unique_id(task_name)
 
     def get_task_state(self, unique_id: str) -> TaskState:
         """Attempt to get state of QueueTask.

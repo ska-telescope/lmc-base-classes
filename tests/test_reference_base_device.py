@@ -42,7 +42,7 @@ class TestCommands:
 
                 result = TaskResult.from_task_result(proxy.longRunningCommandResult)
                 assert result.result_code == ResultCode.OK
-                assert result.unique_id.endswith("SimpleTask")
+                assert result.get_task_unique_id().id_task_name == "SimpleTask"
 
     @pytest.mark.timeout(5)
     def test_non_aborting_command(self):
@@ -55,7 +55,7 @@ class TestCommands:
                     pass
                 result = TaskResult.from_task_result(proxy.longRunningCommandResult)
                 assert result.result_code == ResultCode.OK
-                assert result.unique_id.endswith("NonAbortingTask")
+                assert result.get_task_unique_id().id_task_name == "NonAbortingTask"
 
     @pytest.mark.timeout(5)
     def test_aborting_command(self):
@@ -155,7 +155,7 @@ def test_callbacks():
             # longRunningCommandResult
             assert len(attribute_values[10]) == 3
             tr = TaskResult.from_task_result(attribute_values[10])
-            tr.unique_id.endswith("ProgressTask")
+            assert tr.get_task_unique_id().id_task_name == "ProgressTask"
             tr.result_code == ResultCode.OK
             tr.task_result == "None"
 

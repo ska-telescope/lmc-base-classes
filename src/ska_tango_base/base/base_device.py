@@ -699,7 +699,7 @@ class SKABaseDevice(Device):
 
     longRunningCommandsInQueue = attribute(
         dtype=("str",),
-        max_dim_x=98,
+        max_dim_x=100,  # Assume we'll never have more than 100 tasks in the queue
         access=AttrWriteType.READ,
         doc="Keep track of which commands are in the queue. \n"
         "Pop off from front as they complete.",
@@ -708,7 +708,7 @@ class SKABaseDevice(Device):
 
     longRunningCommandIDsInQueue = attribute(
         dtype=("str",),
-        max_dim_x=98,
+        max_dim_x=100,  # Assume we'll never have more than 100 tasks in the queue
         access=AttrWriteType.READ,
         doc="Every client that executes a command will receive a command ID as response. \n"
         "Keep track of IDs in the queue. Pop off from front as they complete.",
@@ -726,7 +726,7 @@ class SKABaseDevice(Device):
 
     longRunningCommandProgress = attribute(
         dtype=("str",),
-        max_dim_x=2,
+        max_dim_x=100,  # 2 per thread, assume we'll never do more than 50 threads
         access=AttrWriteType.READ,
         doc="ID, progress of the currently executing command. \n"
         "Clients can subscribe to on_change event and wait for the ID they are interested in..",
@@ -735,7 +735,7 @@ class SKABaseDevice(Device):
 
     longRunningCommandResult = attribute(
         dtype=("str",),
-        max_dim_x=3,
+        max_dim_x=3,  # Always the last result (unique_id, result_code, task_result)
         access=AttrWriteType.READ,
         doc="ID, result pair. \n"
         "Clients can subscribe to on_change event and wait for the ID they are interested in.",

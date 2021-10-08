@@ -475,7 +475,7 @@ class TestComponentManager:
         """Test that we can init the component manager."""
         qm = QueueManager(max_queue_size=0, num_workers=1, logger=logger)
         cm = BaseComponentManager(op_state_model=None, queue_manager=qm, logger=logger)
-        assert cm.queue_manager.task_ids_in_queue == []
+        assert cm.queue_manager.task_ids_in_queue == ()
 
 
 class TestStress:

@@ -129,7 +129,7 @@ def test_callbacks():
             # longRunningCommandsInQueue
             attribute_values = [arg[1] for arg in called_args]
             assert len(attribute_values[0]) == 1
-            assert attribute_values[0] == ["ProgressTask"]
+            assert attribute_values[0] == ("ProgressTask",)
 
             # longRunningCommandIDsInQueue
             assert len(attribute_values[1]) == 1

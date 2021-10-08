@@ -555,22 +555,26 @@ class QueueManager:
         return self._task_result
 
     @property
-    def task_ids_in_queue(self) -> list:
+    def task_ids_in_queue(
+        self,
+    ) -> Tuple[str,]:  # noqa: E231
         """Task IDs in the queue.
 
         :return: The task IDs in the queue
-        :rtype: list
+        :rtype: tuple
         """
-        return list(self._tasks_in_queue.keys())
+        return tuple(self._tasks_in_queue.keys())
 
     @property
-    def tasks_in_queue(self) -> list:
+    def tasks_in_queue(
+        self,
+    ) -> Tuple[str,]:  # noqa: E231
         """Task names in the queue.
 
         :return: The list of task names in the queue
-        :rtype: list
+        :rtype: tuple
         """
-        return list(self._tasks_in_queue.values())
+        return tuple(self._tasks_in_queue.values())
 
     @property
     def task_status(

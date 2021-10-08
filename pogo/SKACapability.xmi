@@ -207,13 +207,13 @@
       <status abstract="false" inherited="false" concrete="true" concreteHere="true"/>
       <properties description="A list of components with no. of instances in use on this Capability." label="" unit="" standardUnit="" displayUnit="" format="" maxValue="" minValue="" maxAlarm="" minAlarm="" maxWarning="" minWarning="" deltaTime="" deltaValue=""/>
     </attributes>
-    <attributes name="longRunningCommandsInQueue" attType="Spectrum" rwType="READ" displayLevel="OPERATOR" polledPeriod="0" maxX="98" maxY="" allocReadMember="true" isDynamic="false">
+    <attributes name="longRunningCommandsInQueue" attType="Spectrum" rwType="READ" displayLevel="OPERATOR" polledPeriod="0" maxX="100" maxY="" allocReadMember="true" isDynamic="false">
       <dataType xsi:type="pogoDsl:StringType"/>
       <changeEvent fire="true" libCheckCriteria="true"/>
       <status abstract="false" inherited="true" concrete="true" concreteHere="false"/>
       <properties description="Keep track of which commands are in the queue. &#xA;Pop off from front as they complete." label="" unit="" standardUnit="" displayUnit="" format="" maxValue="" minValue="" maxAlarm="" minAlarm="" maxWarning="" minWarning="" deltaTime="" deltaValue=""/>
     </attributes>
-    <attributes name="longRunningCommandIDsInQueue" attType="Spectrum" rwType="READ" displayLevel="OPERATOR" polledPeriod="0" maxX="98" maxY="" allocReadMember="true" isDynamic="false">
+    <attributes name="longRunningCommandIDsInQueue" attType="Spectrum" rwType="READ" displayLevel="OPERATOR" polledPeriod="0" maxX="100" maxY="" allocReadMember="true" isDynamic="false">
       <dataType xsi:type="pogoDsl:StringType"/>
       <changeEvent fire="false" libCheckCriteria="false"/>
       <status abstract="false" inherited="true" concrete="true" concreteHere="false"/>
@@ -225,7 +225,7 @@
       <status abstract="false" inherited="true" concrete="true" concreteHere="false"/>
       <properties description="ID, status pair of the currently executing command. &#xA;Clients can subscribe to on_change event and wait for the ID they are interested in." label="" unit="" standardUnit="" displayUnit="" format="" maxValue="" minValue="" maxAlarm="" minAlarm="" maxWarning="" minWarning="" deltaTime="" deltaValue=""/>
     </attributes>
-    <attributes name="longRunningCommandProgress" attType="Spectrum" rwType="READ" displayLevel="OPERATOR" polledPeriod="0" maxX="2" maxY="" allocReadMember="true" isDynamic="false">
+    <attributes name="longRunningCommandProgress" attType="Spectrum" rwType="READ" displayLevel="OPERATOR" polledPeriod="0" maxX="100" maxY="" allocReadMember="true" isDynamic="false">
       <dataType xsi:type="pogoDsl:StringType"/>
       <changeEvent fire="true" libCheckCriteria="true"/>
       <status abstract="false" inherited="true" concrete="true" concreteHere="false"/>

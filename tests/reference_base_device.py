@@ -18,8 +18,6 @@ from ska_tango_base.base.base_device import SKABaseDevice
 from ska_tango_base.base.task_queue_manager import QueueManager, ResultCode, QueueTask
 from ska_tango_base.commands import ResponseCommand
 
-from ska_tango_base.subarray import SubarrayObsStateModel
-
 
 class LongRunningCommandBaseTestDevice(SKABaseDevice):
     """Implement commands to test queued work."""
@@ -243,6 +241,6 @@ class AsyncBaseDevice(LongRunningCommandBaseTestDevice):
             push_change_event=self.push_change_event,
         )
         return BaseComponentManager(
-            op_state_model=SubarrayObsStateModel(self.logger),
+            op_state_model=self.op_state_model,
             queue_manager=queue_manager,
         )

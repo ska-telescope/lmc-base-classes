@@ -222,8 +222,9 @@ class TestQueueManagerTasks:
 
             results = [i[0][0].result_code for i in my_cb.call_args_list]
             # 9/10 should be rejected since the first is busy and the queue length is 1
+            # Give a buffer of 2 just in case a task finishes up quicker than expected
             assert results[-1] == ResultCode.OK
-            for res in results[:-1]:
+            for res in results[:-3]:
                 assert res == ResultCode.REJECTED
 
         with patch.object(QueueManager, "result_callback") as my_cb:
@@ -235,9 +236,10 @@ class TestQueueManagerTasks:
                 time.sleep(0.5)
             results = [i[0][0].result_code for i in my_cb.call_args_list]
             # 8/10 should be rejected since two are taken to be processed.
+            # Give a buffer of 2 just in case a task finishes up quicker than expected
             assert results[-1] == ResultCode.OK
             assert results[-2] == ResultCode.OK
-            for res in results[:-2]:
+            for res in results[:-4]:
                 assert res == ResultCode.REJECTED
 
     @pytest.mark.timeout(5)
@@ -410,6 +412,7 @@ class TestQueueManagerExit:
             tr = TaskResult.from_task_result(qm.task_result)
             if tr.unique_id == unique_id and tr.result_code == ResultCode.ABORTED:
                 break
+            time.sleep(0.1)
 
         # Resume the commands
         qm.resume_tasks()

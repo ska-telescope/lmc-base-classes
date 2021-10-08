@@ -9,7 +9,7 @@ from unittest import mock
 from tango import EventType
 from tango.test_context import DeviceTestContext
 from tango.utils import EventCallback
-from .reference_base_device import (
+from reference_base_device import (
     BlockingBaseDevice,
     AsyncBaseDevice,
 )

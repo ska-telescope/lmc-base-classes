@@ -7,8 +7,7 @@ There are two versions used for testing long running commands.
   - AsyncBaseDevice - Uses the custom QueueManager. Multiple threads,
     async commands/responses.
 
-It is provided for explanatory purposes, and to support testing of this
-package.
+It is provided to support testing of the BaseDevice.
 """
 import time
 from tango.server import command
@@ -19,8 +18,10 @@ from ska_tango_base.base.base_device import SKABaseDevice
 from ska_tango_base.base.task_queue_manager import QueueManager, ResultCode, QueueTask
 from ska_tango_base.commands import ResponseCommand
 
+from ska_tango_base.subarray import SubarrayObsStateModel
 
-class BaseTestDevice(SKABaseDevice):
+
+class LongRunningCommandBaseTestDevice(SKABaseDevice):
     """Implement commands to test queued work."""
 
     def init_command_objects(self):
@@ -224,13 +225,13 @@ class BaseTestDevice(SKABaseDevice):
         return f"{return_code}", f"{message}"
 
 
-class BlockingBaseDevice(BaseTestDevice):
+class BlockingBaseDevice(LongRunningCommandBaseTestDevice):
     """Test device that has a component manager with the default queue manager that has no workers."""
 
     pass
 
 
-class AsyncBaseDevice(BaseTestDevice):
+class AsyncBaseDevice(LongRunningCommandBaseTestDevice):
     """Test device that has a component manager with workers."""
 
     def create_component_manager(self: SKABaseDevice):
@@ -241,4 +242,7 @@ class AsyncBaseDevice(BaseTestDevice):
             logger=self.logger,
             push_change_event=self.push_change_event,
         )
-        return BaseComponentManager(op_state_model=None, queue_manager=queue_manager)
+        return BaseComponentManager(
+            op_state_model=SubarrayObsStateModel(self.logger),
+            queue_manager=queue_manager,
+        )

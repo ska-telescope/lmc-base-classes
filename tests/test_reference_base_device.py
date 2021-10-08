@@ -9,15 +9,16 @@ from unittest import mock
 from tango import EventType
 from tango.test_context import DeviceTestContext
 from tango.utils import EventCallback
-from ska_tango_base.base.reference_base_device import (
+from .reference_base_device import (
     BlockingBaseDevice,
     AsyncBaseDevice,
 )
 from ska_tango_base.base.task_queue_manager import TaskResult
 from ska_tango_base.commands import ResultCode
+from ska_tango_base.control_model import AdminMode
 
 
-@pytest.mark.skip("Works as expected when run alone. Segfaults in suite.")
+@pytest.mark.forked
 class TestCommands:
     """Check that blocking and async commands behave the same way.
 
@@ -29,7 +30,11 @@ class TestCommands:
     def test_short_command(self):
         """Test a simple command."""
         for class_name in [BlockingBaseDevice, AsyncBaseDevice]:
-            with DeviceTestContext(class_name, process=True) as proxy:
+            with DeviceTestContext(
+                class_name,
+                process=True,
+                memorized={"adminMode": str(AdminMode.ONLINE.value)},
+            ) as proxy:
                 proxy.Short(1)
                 # Wait for a result, if the task does not abort, we'll time out here
                 while not proxy.longRunningCommandResult:
@@ -91,7 +96,7 @@ class TestCommands:
                 )
 
 
-@pytest.mark.skip("Works as expected when run alone. Segfaults in suite.")
+@pytest.mark.forked
 def test_callbacks():
     """Check that the callback is firing that sends the push change event."""
     with mock.patch.object(AsyncBaseDevice, "push_change_event") as my_cb:
@@ -155,7 +160,7 @@ def test_callbacks():
             tr.task_result == "None"
 
 
-@pytest.mark.skip("Works as expected when run alone. Segfaults in suite.")
+@pytest.mark.forked
 def test_events():
     """Testing the events.
 

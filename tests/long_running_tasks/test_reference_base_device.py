@@ -18,7 +18,6 @@ from ska_tango_base.commands import ResultCode
 from ska_tango_base.control_model import AdminMode
 
 
-@pytest.mark.forked
 class TestCommands:
     """Check that blocking and async commands behave the same way.
 
@@ -26,6 +25,7 @@ class TestCommands:
     AsyncBaseDevice - QueueManager has multiple threads, tasks run from queue
     """
 
+    @pytest.mark.forked
     @pytest.mark.timeout(5)
     def test_short_command(self):
         """Test a simple command."""
@@ -44,6 +44,7 @@ class TestCommands:
                 assert result.result_code == ResultCode.OK
                 assert result.get_task_unique_id().id_task_name == "SimpleTask"
 
+    @pytest.mark.forked
     @pytest.mark.timeout(5)
     def test_non_aborting_command(self):
         """Test tasks that does not abort."""
@@ -57,6 +58,7 @@ class TestCommands:
                 assert result.result_code == ResultCode.OK
                 assert result.get_task_unique_id().id_task_name == "NonAbortingTask"
 
+    @pytest.mark.forked
     @pytest.mark.timeout(5)
     def test_aborting_command(self):
         """Test Abort.
@@ -79,6 +81,7 @@ class TestCommands:
             assert result.result_code == ResultCode.ABORTED
             assert "Aborted" in result.task_result
 
+    @pytest.mark.forked
     @pytest.mark.timeout(5)
     def test_exception_command(self):
         """Test the task that throws an error."""
@@ -161,6 +164,7 @@ def test_callbacks():
 
 
 @pytest.mark.forked
+@pytest.mark.timeout(10)
 def test_events():
     """Testing the events.
 
@@ -191,6 +195,10 @@ def test_events():
 
         # Wait for task to finish
         while not proxy.longRunningCommandResult:
+            time.sleep(0.1)
+
+        # Wait for events
+        while not progress_events.get_events():
             time.sleep(0.1)
 
         progress_event_values = [

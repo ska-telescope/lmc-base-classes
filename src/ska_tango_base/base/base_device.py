@@ -737,7 +737,7 @@ class SKABaseDevice(Device):
         dtype=("str",),
         max_dim_x=3,  # Always the last result (unique_id, result_code, task_result)
         access=AttrWriteType.READ,
-        doc="ID, result pair. \n"
+        doc="unique_id, result_code, task_result. \n"
         "Clients can subscribe to on_change event and wait for the ID they are interested in.",
     )
     """Device attribute for long running commands."""
@@ -1120,7 +1120,7 @@ class SKABaseDevice(Device):
         """
         Read the long running commands in the queue.
 
-        :return: commands in the device queue
+        :return: tasks in the device queue
         """
         return self.component_manager.queue_manager.tasks_in_queue
 
@@ -1136,9 +1136,9 @@ class SKABaseDevice(Device):
     def read_longRunningCommandStatus(self):
         # PROTECTED REGION ID(SKABaseDevice.longRunningCommandStatus_read) ENABLED START #
         """
-        Read the status of the currently executing long running command.
+        Read the status of the currently executing long running commands.
 
-        :return: ID, status pair of the currently executing commands
+        :return: ID, status pairs of the currently executing commands
         """
         return self.component_manager.queue_manager.task_status
 

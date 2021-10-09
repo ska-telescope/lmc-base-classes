@@ -487,14 +487,14 @@ class TestStress:
     @pytest.mark.timeout(20)
     def test_stress(self, slow_task):
         """Stress test the queue mananger."""
-        qm = QueueManager(max_queue_size=600, num_workers=100, logger=logger)
-        assert len(qm._threads) == 100
+        qm = QueueManager(max_queue_size=100, num_workers=50, logger=logger)
+        assert len(qm._threads) == 50
         for worker in qm._threads:
             assert worker.is_alive()
         for _ in range(500):
             qm.enqueue_task(slow_task())
 
-        assert qm._work_queue.qsize() > 100
+        assert qm._work_queue.qsize() > 90
 
         # Wait for the queue to drain
         while qm._work_queue.qsize():

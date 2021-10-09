@@ -1,6 +1,9 @@
 """
 This module provides a QueueManager, TaskResult and QueueTask classes.
 
+* **TaskUniqueId**: is a convenience `dataclass` for parsing and generating the IDs used
+  to identify the tasks.
+
 * **TaskResult**: is a convenience `dataclass` for parsing and formatting the
   results of a task.
 
@@ -8,6 +11,12 @@ This module provides a QueueManager, TaskResult and QueueTask classes.
   by background threads.
 
 * **QueueManager**: that implements the queue and thread worker functionality.
+
+************
+TaskUniqueId
+************
+
+This is a simple convenience class for generating and parsing the IDs that identify tasks.
 
 **********
 TaskResult
@@ -224,14 +233,14 @@ class TaskUniqueId:
     @classmethod
     def generate_unique_id(cls, task_name: str) -> str:
         """Return a new unique ID."""
-        return f"{uuid4()}_{time.time()}_{task_name}"
+        return f"{time.time()}_{uuid4().fields[-1]}_{task_name}"
 
     @classmethod
     def from_unique_id(cls, unique_id: str):
         """Parse a unique ID."""
         parts = unique_id.split("_")
-        id_uuid = parts[0]
-        id_datetime = datetime.fromtimestamp(float(parts[1]))
+        id_uuid = parts[1]
+        id_datetime = datetime.fromtimestamp(float(parts[0]))
         id_task_name = "_".join(parts[2:])
         return TaskUniqueId(
             id_uuid=id_uuid, id_datetime=id_datetime, id_task_name=id_task_name
@@ -503,6 +512,10 @@ class QueueManager:
         :param logger: Python logger
         :type logger: logging.Logger
         """
+        if max_queue_size > 100:
+            raise ValueError("A maximum queue size of 100 is supported")
+        if num_workers > 50:
+            raise ValueError("A maximum number of 50 workers is supported")
         self._max_queue_size = max_queue_size
         self._work_queue = Queue(self._max_queue_size)
         self._queue_fetch_timeout = queue_fetch_timeout

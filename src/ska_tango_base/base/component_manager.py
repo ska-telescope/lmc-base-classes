@@ -23,10 +23,11 @@ The basic model is:
   the component to change behaviour and/or state; and it *monitors* its
   component by keeping track of its state.
 """
-from typing import Optional
+from typing import Any, Optional, Tuple
+from ska_tango_base.commands import BaseCommand, ResultCode
 
 from ska_tango_base.control_model import PowerMode
-from ska_tango_base.base.task_queue_manager import QueueManager, QueueTask
+from ska_tango_base.base.task_queue_manager import QueueManager
 
 
 class BaseComponentManager:
@@ -170,13 +171,14 @@ class BaseComponentManager:
 
     def enqueue(
         self,
-        task: QueueTask,
-    ) -> str:
+        task: BaseCommand,
+        argin: Optional[Any] = None,
+    ) -> Tuple[str, ResultCode]:
         """Put `task` on the queue. The unique ID for it is returned.
 
         :param task: The task to execute in the thread
-        :type task: QueueTask
+        :type task: BaseCommand
         :return: The unique ID of the queued command
         :rtype: str
         """
-        return self.queue_manager.enqueue_task(task)
+        return self.queue_manager.enqueue_task(task, argin=argin)

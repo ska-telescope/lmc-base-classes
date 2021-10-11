@@ -36,7 +36,6 @@ import debugpy
 import ska_ser_logging
 from ska_tango_base import release
 from ska_tango_base.base import AdminModeModel, OpStateModel, BaseComponentManager
-from ska_tango_base.base.task_queue_manager import QueueManager, QueueTask
 from ska_tango_base.commands import (
     BaseCommand,
     CompletionCommand,
@@ -836,8 +835,7 @@ class SKABaseDevice(Device):
 
     def create_component_manager(self):
         """Create and return a component manager for this device."""
-        queue_manager = QueueManager()
-        return BaseComponentManager(self.op_state_model, queue_manager)
+        return BaseComponentManager(self.op_state_model)
 
     def register_command_object(self, command_name, command_object):
         """
@@ -1230,16 +1228,10 @@ class SKABaseDevice(Device):
                 information purpose only.
             :rtype: (ResultCode, str)
             """
-
-            class ResetTask(QueueTask):
-                def do(self):
-                    self.args[0].reset()
-                    message = "Reset command completed OK"
-                    self.logger.info(message)
-                    return (ResultCode.OK, message)
-
-            unique_id = self.target.enqueue(ResetTask(self.target, logger=self.logger))
-            return ResultCode.OK, unique_id
+            self.target.reset()
+            message = "Reset command completed OK"
+            self.logger.info(message)
+            return (ResultCode.OK, message)
 
     def is_Reset_allowed(self):
         """
@@ -1270,8 +1262,9 @@ class SKABaseDevice(Device):
         :rtype: (ResultCode, str)
         """
         command = self.get_command_object("Reset")
-        (return_code, message) = command()
-        return [[return_code], [message]]
+        unique_id, return_code = self.component_manager.enqueue(command)
+
+        return [[return_code], [unique_id]]
 
     class StandbyCommand(StateModelCommand, ResponseCommand):
         """A class for the SKABaseDevice's Standby() command."""
@@ -1303,18 +1296,10 @@ class SKABaseDevice(Device):
                 information purpose only.
             :rtype: (ResultCode, str)
             """
-
-            class StandByTask(QueueTask):
-                def do(self):
-                    self.args[0].standby()
-                    message = "Standby command completed OK"
-                    self.logger.info(message)
-                    return (ResultCode.OK, message)
-
-            unique_id = self.target.enqueue(
-                StandByTask(self.target, logger=self.logger)
-            )
-            return ResultCode.OK, unique_id
+            self.target.standby()
+            message = "Standby command completed OK"
+            self.logger.info(message)
+            return (ResultCode.OK, message)
 
     def is_Standby_allowed(self):
         """
@@ -1346,8 +1331,9 @@ class SKABaseDevice(Device):
         :rtype: (ResultCode, str)
         """
         command = self.get_command_object("Standby")
-        (return_code, message) = command()
-        return [[return_code], [message]]
+        unique_id, return_code = self.component_manager.enqueue(command)
+
+        return [[return_code], [unique_id]]
 
     class OffCommand(StateModelCommand, ResponseCommand):
         """A class for the SKABaseDevice's Off() command."""
@@ -1379,16 +1365,10 @@ class SKABaseDevice(Device):
                 information purpose only.
             :rtype: (ResultCode, str)
             """
-
-            class OffTask(QueueTask):
-                def do(self):
-                    self.args[0].off()
-                    message = "Off command completed OK"
-                    self.logger.info(message)
-                    return (ResultCode.OK, message)
-
-            unique_id = self.target.enqueue(OffTask(self.target, logger=self.logger))
-            return ResultCode.OK, unique_id
+            self.target.off()
+            message = "Off command completed OK"
+            self.logger.info(message)
+            return (ResultCode.OK, message)
 
     def is_Off_allowed(self):
         """
@@ -1420,8 +1400,9 @@ class SKABaseDevice(Device):
         :rtype: (ResultCode, str)
         """
         command = self.get_command_object("Off")
-        (return_code, message) = command()
-        return [[return_code], [message]]
+        unique_id, return_code = self.component_manager.enqueue(command)
+
+        return [[return_code], [unique_id]]
 
     class OnCommand(StateModelCommand, ResponseCommand):
         """A class for the SKABaseDevice's On() command."""
@@ -1453,16 +1434,10 @@ class SKABaseDevice(Device):
                 information purpose only.
             :rtype: (ResultCode, str)
             """
-
-            class OnTask(QueueTask):
-                def do(self):
-                    self.args[0].on()
-                    message = "On command completed OK"
-                    self.logger.info(message)
-                    return (ResultCode.OK, message)
-
-            unique_id = self.target.enqueue(OnTask(self.target, logger=self.logger))
-            return ResultCode.OK, unique_id
+            self.target.on()
+            message = "On command completed OK"
+            self.logger.info(message)
+            return (ResultCode.OK, message)
 
     def is_On_allowed(self):
         """
@@ -1495,8 +1470,9 @@ class SKABaseDevice(Device):
         :rtype: (ResultCode, str)
         """
         command = self.get_command_object("On")
-        (return_code, message) = command()
-        return [[return_code], [message]]
+        unique_id, return_code = self.component_manager.enqueue(command)
+
+        return [[return_code], [unique_id]]
 
     class AbortCommandsCommand(ResponseCommand):
         """The command class for the AbortCommand command."""

@@ -15,7 +15,7 @@ from tango import DebugIt
 
 from ska_tango_base.base.component_manager import BaseComponentManager
 from ska_tango_base.base.base_device import SKABaseDevice
-from ska_tango_base.base.task_queue_manager import QueueManager, ResultCode, QueueTask
+from ska_tango_base.base.task_queue_manager import QueueManager, ResultCode
 from ska_tango_base.commands import ResponseCommand
 
 
@@ -57,16 +57,9 @@ class LongRunningCommandBaseTestDevice(SKABaseDevice):
 
         def do(self, argin):
             """Do command."""
-
-            class SimpleTask(QueueTask):
-                def do(self):
-                    num_one = self.args[0]
-                    return num_one + 2
-
             self.logger.info("In ShortCommand")
-            unique_id = self.target.enqueue(SimpleTask(2))
-
-            return ResultCode.OK, unique_id
+            result = argin + 2
+            return ResultCode.OK, result
 
     @command(
         dtype_in=int,
@@ -76,7 +69,7 @@ class LongRunningCommandBaseTestDevice(SKABaseDevice):
     def Short(self, argin):
         """Short command."""
         handler = self.get_command_object("Short")
-        (return_code, message) = handler(argin)
+        (return_code, message) = self.component_manager.enqueue(handler, argin=argin)
         return f"{return_code}", f"{message}"
 
     class NonAbortingLongRunningCommand(ResponseCommand):
@@ -90,25 +83,15 @@ class LongRunningCommandBaseTestDevice(SKABaseDevice):
 
             See the implementation of AnotherLongRunningCommand.
             """
-
-            class NonAbortingTask(QueueTask):
-                """NonAbortingTask."""
-
-                def do(self):
-                    """NonAborting."""
-                    retries = 45
-                    while retries > 0:
-                        retries -= 1
-                        time.sleep(self.args[0])  # This command takes long
-                        self.logger.info(
-                            "In NonAbortingTask repeating %s",
-                            retries,
-                        )
-
-            self.logger.info("In NonAbortingTask")
-            unique_id = self.target.enqueue(NonAbortingTask(argin, logger=self.logger))
-
-            return ResultCode.OK, unique_id
+            retries = 45
+            while retries > 0:
+                retries -= 1
+                time.sleep(argin)  # This command takes long
+                self.logger.info(
+                    "In NonAbortingTask repeating %s",
+                    retries,
+                )
+            return (ResultCode.OK, "Done")
 
     @command(
         dtype_in=float,
@@ -118,7 +101,7 @@ class LongRunningCommandBaseTestDevice(SKABaseDevice):
     def NonAbortingLongRunning(self, argin):
         """Non AbortingLongRunning command."""
         handler = self.get_command_object("NonAbortingLongRunning")
-        (return_code, message) = handler(argin)
+        (return_code, message) = self.component_manager.enqueue(handler, argin)
         return f"{return_code}", f"{message}"
 
     class AbortingLongRunningCommand(ResponseCommand):
@@ -126,33 +109,22 @@ class LongRunningCommandBaseTestDevice(SKABaseDevice):
 
         def do(self, argin):
             """Abort."""
+            retries = 45
+            while (not self.aborting_event.is_set()) and retries > 0:
+                retries -= 1
+                time.sleep(argin)  # This command takes long
+                self.logger.info("In NonAbortingTask repeating %s", retries)
 
-            class AbortingTask(QueueTask):
-                """Abort."""
-
-                def do(self):
-                    """Abort."""
-                    retries = 45
-                    while (not self.aborting_event.is_set()) and retries > 0:
-                        retries -= 1
-                        time.sleep(argin)  # This command takes long
-                        self.logger.info("In NonAbortingTask repeating %s", retries)
-
-                    if retries == 0:  # Normal finish
-                        return (
-                            ResultCode.OK,
-                            f"NonAbortingTask completed {argin}",
-                        )
-                    else:  # Aborted finish
-                        return (
-                            ResultCode.ABORTED,
-                            f"NonAbortingTask Aborted {argin}",
-                        )
-
-            self.logger.info("In AbortingLongRunningCommand")
-            unique_id = self.target.enqueue(AbortingTask(argin, logger=self.logger))
-
-            return ResultCode.OK, unique_id
+            if retries == 0:  # Normal finish
+                return (
+                    ResultCode.OK,
+                    f"NonAbortingTask completed {argin}",
+                )
+            else:  # Aborted finish
+                return (
+                    ResultCode.ABORTED,
+                    f"NonAbortingTask Aborted {argin}",
+                )
 
     @command(
         dtype_in=float,
@@ -162,7 +134,7 @@ class LongRunningCommandBaseTestDevice(SKABaseDevice):
     def AbortingLongRunning(self, argin):
         """AbortingLongRunning."""
         handler = self.get_command_object("AbortingLongRunning")
-        (return_code, message) = handler(argin)
+        (return_code, message) = self.component_manager.enqueue(handler, argin)
         return f"{return_code}", f"{message}"
 
     class LongRunningExceptionCommand(ResponseCommand):
@@ -170,17 +142,7 @@ class LongRunningCommandBaseTestDevice(SKABaseDevice):
 
         def do(self):
             """Throw an exception."""
-
-            class ExcTask(QueueTask):
-                """Throw an exception."""
-
-                def do(self):
-                    """Throw an exception."""
-                    raise Exception("An error occurred")
-
-            unique_id = self.target.enqueue(ExcTask())
-
-            return ResultCode.OK, unique_id
+            raise Exception("An error occurred")
 
     @command(
         dtype_in=None,
@@ -190,7 +152,7 @@ class LongRunningCommandBaseTestDevice(SKABaseDevice):
     def LongRunningException(self):
         """Command that queues a task that raises an exception."""
         handler = self.get_command_object("LongRunningException")
-        (return_code, message) = handler()
+        (return_code, message) = self.component_manager.enqueue(handler)
         return f"{return_code}", f"{message}"
 
     class TestProgressCommand(ResponseCommand):
@@ -198,18 +160,10 @@ class LongRunningCommandBaseTestDevice(SKABaseDevice):
 
         def do(self, argin):
             """Do the task."""
-
-            class ProgressTask(QueueTask):
-                """A task that updates its progress."""
-
-                def do(self):
-                    """Update progress."""
-                    for progress in [1, 25, 50, 74, 100]:
-                        self.update_progress(f"{progress}")
-                        time.sleep(self.args[0])
-
-            unique_id = self.target.enqueue(ProgressTask(argin))
-            return ResultCode.OK, unique_id
+            for progress in [1, 25, 50, 74, 100]:
+                self.update_progress(f"{progress}")
+                time.sleep(argin)
+            return ResultCode.OK, "OK"
 
     @command(
         dtype_in=float,
@@ -219,7 +173,7 @@ class LongRunningCommandBaseTestDevice(SKABaseDevice):
     def TestProgress(self, argin):
         """Command to test the progress indicator."""
         handler = self.get_command_object("TestProgress")
-        (return_code, message) = handler(argin)
+        (return_code, message) = self.component_manager.enqueue(handler, argin)
         return f"{return_code}", f"{message}"
 
 

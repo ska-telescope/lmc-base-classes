@@ -41,70 +41,6 @@ be made available as a Tango device attribute named `command_result`. It will be
     tr.to_task_result()
     ('UniqueID', '0', 'The task result')
 
-*********
-QueueTask
-*********
-
-This class should be subclassed and the `do` method implemented with the required functionality.
-The `do` method will be executed by the background worker in a thread.
-
-`get_task_name` can be overridden if you want to change the name of the task as it would appear in
-the `tasks_in_queue` property.
-
-Simple example:
-
-.. code-block:: py
-
-    class SimpleTask(QueueTask):
-        def do(self):
-            num_one = self.args[0]
-            num_two = self.kwargs.get("num_two")
-            return num_one + num_two
-
-    return SimpleTask(2, num_two=3)
-
-3 items are added dynamically by the worker thread and is available for use in the class instance.
-
-* **aborting_event**: can be check periodically to determine whether
-  the queue tasks have been aborted to gracefully complete the task in progress.
-  The thread will stay active and once `aborting_event` has been unset,
-  new tasks will be fetched from the queue for execution.
-
-.. code-block:: py
-
-    class AbortTask(QueueTask):
-        def do(self):
-            sleep_time = self.args[0]
-            while not self.aborting_event.is_set():
-                time.sleep(sleep_time)
-
-    return AbortTask(0.2)
-
-* **stopping_event**: can be check periodically to determine whether
-  the queue tasks have been stopped. In this case the thread will complete.
-
-.. code-block:: py
-
-    class StopTask(QueueTask):
-        def do(self):
-            assert not self.stopping_event.is_set()
-            while not self.stopping_event.is_set():
-                pass
-
-    return StopTask()
-
-* **update_progress**: a callback that can be called wth the current progress
-  of the task in progress
-
-.. code-block:: py
-
-    class ProgressTask(QueueTask):
-        def do(self):
-            for i in range(100):
-                self.update_progress(str(i))
-                time.sleep(0.5)
-
-    return ProgressTask()
 
 ************
 QueueManager
@@ -185,7 +121,7 @@ from dataclasses import dataclass
 
 import tango
 
-from ska_tango_base.commands import ResultCode
+from ska_tango_base.commands import BaseCommand, ResultCode
 
 
 class TaskState(enum.IntEnum):
@@ -306,63 +242,6 @@ class TaskResult:
         return TaskUniqueId.from_unique_id(self.unique_id)
 
 
-class QueueTask:
-    """A task that can be put on the queue."""
-
-    def __init__(self: QueueTask, *args, logger=Optional[None], **kwargs) -> None:
-        """Create the task. args and kwargs are stored and should be referenced in the `do` method."""
-        self.logger = logger if logger else logging.getLogger(__name__)
-        self.args = args
-        self.kwargs = kwargs
-        self._update_progress_callback = None
-
-    @property
-    def aborting_event(self) -> threading.Event:
-        """Worker adds aborting_event threading event.
-
-        Indicates whether task execution have been aborted.
-
-        :return: The aborting_event event.
-        :rtype: threading.Event
-        """
-        return self.kwargs.get("aborting_event")
-
-    @property
-    def stopping_event(self) -> threading.Event:
-        """Worker adds stopping_event threading event.
-
-        Indicates whether task execution have been stopped.
-
-        :return: The stopping_event.
-        :rtype: threading.Event
-        """
-        return self.kwargs.get("stopping_event")
-
-    def update_progress(self, progress: str):
-        """Call the callback to update the progress.
-
-        :param progress: String that to indicate progress of task
-        :type progress: str
-        """
-        self._update_progress_callback = self.kwargs.get(
-            "update_task_progress_callback"
-        )
-        if self._update_progress_callback:
-            self._update_progress_callback(progress)
-
-    def get_task_name(self) -> str:
-        """Return a custom task name.
-
-        :return: The name of the task
-        :rtype: str
-        """
-        return self.__class__.__name__
-
-    def do(self: QueueTask) -> Any:
-        """Implement this method with your functionality."""
-        raise NotImplementedError
-
-
 class QueueManager:
     """Manages the worker threads. Updates the properties as the tasks are completed."""
 
@@ -424,7 +303,7 @@ class QueueManager:
                     if self.aborting_event.is_set():
                         # Drain the Queue since self.aborting_event is set
                         while not self._work_queue.empty():
-                            unique_id, _ = self._work_queue.get()
+                            unique_id, _, _ = self._work_queue.get()
                             self.current_task_id = unique_id
                             self._logger.warning("Aborting task ID [%s]", unique_id)
                             result = TaskResult(
@@ -435,16 +314,14 @@ class QueueManager:
                         time.sleep(self._queue_fetch_timeout)
                         continue  # Don't try and get work off the queue below, continue next loop
                     try:
-                        (unique_id, task) = self._work_queue.get(
+                        (unique_id, task, argin) = self._work_queue.get(
                             block=True, timeout=self._queue_fetch_timeout
                         )
 
                         self._update_command_state_callback(unique_id, "IN_PROGRESS")
                         self.current_task_id = unique_id
-                        task.kwargs[
-                            "update_task_progress_callback"
-                        ] = self._update_task_progress
-                        result = self.execute_task(task, unique_id)
+                        setattr(task, "update_progress", self._update_task_progress)
+                        result = self.execute_task(task, argin, unique_id)
                         self._result_callback(result)
                         self._work_queue.task_done()
                     except Empty:
@@ -461,18 +338,28 @@ class QueueManager:
             self._update_progress_callback()
 
         @classmethod
-        def execute_task(cls, task: QueueTask, unique_id: str) -> TaskResult:
+        def execute_task(
+            cls, task: BaseCommand, argin: Any, unique_id: str
+        ) -> TaskResult:
             """Execute a task, return results in a standardised format.
 
             :param task: Task to execute
-            :type task: QueueTask
+            :type task: BaseCommand
             :param unique_id: The task unique ID
             :type unique_id: str
             :return: The result of the task
             :rtype: TaskResult
             """
             try:
-                result = task.do()
+                if hasattr(task, "is_allowed"):
+                    if not task.is_allowed():
+                        return TaskResult(
+                            ResultCode.NOT_ALLOWED, "Command not allowed", unique_id
+                        )
+                if argin:
+                    result = task.do(argin)
+                else:
+                    result = task.do()
                 # If the response is (ResultCode, Any)
                 if (
                     isinstance(result, tuple)
@@ -620,39 +507,45 @@ class QueueManager:
                 progress.append(worker.current_task_progress)
         return tuple(progress)
 
-    def enqueue_task(self, task: QueueTask) -> str:
+    def enqueue_task(
+        self, task: BaseCommand, argin: Optional[Any] = None
+    ) -> Tuple[str, ResultCode]:
         """Add the task to be done onto the queue.
 
         :param task: The task to execute in a thread
-        :type task: QueueTask
+        :type task: BaseCommand
         :return: The unique ID of the command
         :rtype: string
         """
-        unique_id = self.generate_unique_id(task.get_task_name())
+        unique_id = self.generate_unique_id(task.__class__.__name__)
 
         # Inject the events into the task
-        task.kwargs["aborting_event"] = self.aborting_event
-        task.kwargs["stopping_event"] = self.stopping_event
+        setattr(task, "aborting_event", self.aborting_event)
+        setattr(task, "stopping_event", self.stopping_event)
 
         # If there is no queue, just execute the command and return
         if self._max_queue_size == 0:
             self.update_task_state_callback(unique_id, "IN_PROGRESS")
-            result = self.Worker.execute_task(task, unique_id)
+
+            # This task blocks, so no need to update progress
+            setattr(task, "update_progress", lambda x: None)
+
+            result = self.Worker.execute_task(task, argin, unique_id)
             self.result_callback(result)
-            return unique_id
+            return unique_id, result.result_code
 
         if self.queue_full:
             self.result_callback(
                 TaskResult(ResultCode.REJECTED, "Queue is full", unique_id)
             )
-            return unique_id
+            return unique_id, ResultCode.REJECTED
 
-        self._work_queue.put([unique_id, task])
+        self._work_queue.put([unique_id, task, argin])
         with self._property_update_lock:
-            self._tasks_in_queue[unique_id] = task.get_task_name()
+            self._tasks_in_queue[unique_id] = task.__class__.__name__
         self._on_property_change("longRunningCommandsInQueue", self.tasks_in_queue)
         self._on_property_change("longRunningCommandIDsInQueue", self.task_ids_in_queue)
-        return unique_id
+        return unique_id, ResultCode.QUEUED
 
     def result_callback(self, task_result: TaskResult):
         """Run when the task, taken from the queue, have completed to update the appropriate attributes.

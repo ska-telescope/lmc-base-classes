@@ -15,7 +15,6 @@ from reference_base_device import (
 )
 from ska_tango_base.base.task_queue_manager import TaskResult
 from ska_tango_base.commands import ResultCode
-from ska_tango_base.control_model import AdminMode
 
 
 class TestCommands:
@@ -30,11 +29,7 @@ class TestCommands:
     def test_short_command(self):
         """Test a simple command."""
         for class_name in [BlockingBaseDevice, AsyncBaseDevice]:
-            with DeviceTestContext(
-                class_name,
-                process=True,
-                memorized={"adminMode": str(AdminMode.ONLINE.value)},
-            ) as proxy:
+            with DeviceTestContext(class_name, process=True) as proxy:
                 proxy.Short(1)
                 # Wait for a result, if the task does not abort, we'll time out here
                 while not proxy.longRunningCommandResult:
@@ -42,7 +37,7 @@ class TestCommands:
 
                 result = TaskResult.from_task_result(proxy.longRunningCommandResult)
                 assert result.result_code == ResultCode.OK
-                assert result.get_task_unique_id().id_task_name == "SimpleTask"
+                assert result.get_task_unique_id().id_task_name == "ShortCommand"
 
     @pytest.mark.forked
     @pytest.mark.timeout(5)
@@ -56,7 +51,10 @@ class TestCommands:
                     pass
                 result = TaskResult.from_task_result(proxy.longRunningCommandResult)
                 assert result.result_code == ResultCode.OK
-                assert result.get_task_unique_id().id_task_name == "NonAbortingTask"
+                assert (
+                    result.get_task_unique_id().id_task_name
+                    == "NonAbortingLongRunningCommand"
+                )
 
     @pytest.mark.forked
     @pytest.mark.timeout(5)
@@ -67,7 +65,7 @@ class TestCommands:
         AbortCommands after that makes no sense.
         """
         with DeviceTestContext(AsyncBaseDevice, process=True) as proxy:
-            _, unique_id = proxy.AbortingLongRunning(0.5)
+            unique_id, _ = proxy.AbortingLongRunning(0.5)
             # Wait for the task to be in progress
             while not proxy.longRunningCommandStatus:
                 pass
@@ -87,7 +85,7 @@ class TestCommands:
         """Test the task that throws an error."""
         for class_name in [BlockingBaseDevice, AsyncBaseDevice]:
             with DeviceTestContext(class_name, process=True) as proxy:
-                _, unique_id = proxy.LongRunningException()
+                unique_id, _ = proxy.LongRunningException()
                 while not proxy.longRunningCommandResult:
                     pass
                 result = TaskResult.from_task_result(proxy.longRunningCommandResult)
@@ -132,11 +130,11 @@ def test_callbacks():
             # longRunningCommandsInQueue
             attribute_values = [arg[1] for arg in called_args]
             assert len(attribute_values[0]) == 1
-            assert attribute_values[0] == ("ProgressTask",)
+            assert attribute_values[0] == ("TestProgressCommand",)
 
             # longRunningCommandIDsInQueue
             assert len(attribute_values[1]) == 1
-            assert attribute_values[1][0].endswith("ProgressTask")
+            assert attribute_values[1][0].endswith("TestProgressCommand")
 
             # longRunningCommandsInQueue
             assert not attribute_values[2]
@@ -146,19 +144,19 @@ def test_callbacks():
 
             # longRunningCommandStatus
             assert len(attribute_values[4]) == 2
-            assert attribute_values[4][0].endswith("ProgressTask")
+            assert attribute_values[4][0].endswith("TestProgressCommand")
             assert attribute_values[4][1] == "IN_PROGRESS"
 
             # longRunningCommandProgress
             for (index, progress) in zip(range(5, 9), ["1", "25", "50", "74", "100"]):
                 assert len(attribute_values[index]) == 2
-                assert attribute_values[index][0].endswith("ProgressTask")
+                assert attribute_values[index][0].endswith("TestProgressCommand")
                 assert attribute_values[index][1] == progress
 
             # longRunningCommandResult
             assert len(attribute_values[10]) == 3
             tr = TaskResult.from_task_result(attribute_values[10])
-            assert tr.get_task_unique_id().id_task_name == "ProgressTask"
+            assert tr.get_task_unique_id().id_task_name == "TestProgressCommand"
             tr.result_code == ResultCode.OK
             tr.task_result == "None"
 
@@ -168,7 +166,7 @@ def test_callbacks():
 def test_events():
     """Testing the events.
 
-    NOTE: Adding more than 2 event subscriptions leads to inconsistent results.
+    NOTE: Adding more than 1 event subscriptions leads to inconsistent results.
           Sometimes misses events.
 
           Full callback tests (where the push events are triggered) are covered
@@ -176,30 +174,23 @@ def test_events():
     """
     with DeviceTestContext(AsyncBaseDevice, process=True) as proxy:
         progress_events = EventCallback(fd=StringIO())
-        ids_in_queue_events = EventCallback(fd=StringIO())
 
-        progress_id = proxy.subscribe_event(
+        proxy.subscribe_event(
             "longRunningCommandProgress",
             EventType.CHANGE_EVENT,
             progress_events,
             wait=True,
         )
-        ids_id = proxy.subscribe_event(
-            "longRunningCommandIDsInQueue",
-            EventType.CHANGE_EVENT,
-            ids_in_queue_events,
-            wait=True,
-        )
 
-        proxy.TestProgress(0.5)
+        proxy.TestProgress(0.2)
 
         # Wait for task to finish
         while not proxy.longRunningCommandResult:
             time.sleep(0.1)
 
-        # Wait for events
+        # Wait for progress events
         while not progress_events.get_events():
-            time.sleep(0.1)
+            time.sleep(0.5)
 
         progress_event_values = [
             event.attr_value.value
@@ -208,13 +199,3 @@ def test_events():
         ]
         for index, progress in enumerate(["1", "25", "50", "74", "100"]):
             assert progress_event_values[index][1] == progress
-
-        ids_in_queue_events_values = [
-            event.attr_value.value
-            for event in ids_in_queue_events.get_events()
-            if event.attr_value and event.attr_value.value
-        ]
-        assert len(ids_in_queue_events_values) == 1
-        assert ids_in_queue_events_values[0][0].endswith("ProgressTask")
-        proxy.unsubscribe_event(progress_id)
-        proxy.unsubscribe_event(ids_id)

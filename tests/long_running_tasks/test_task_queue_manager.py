@@ -8,10 +8,10 @@ from ska_tango_base.commands import ResultCode
 from ska_tango_base.base.task_queue_manager import (
     QueueManager,
     TaskResult,
-    QueueTask,
     TaskState,
 )
 from ska_tango_base.base.component_manager import BaseComponentManager
+from ska_tango_base.commands import BaseCommand
 
 logger = logging.getLogger(__name__)
 
@@ -33,13 +33,13 @@ def progress_task():
     """Fixture for a test that throws an exception."""
 
     def get_task():
-        class ProgressTask(QueueTask):
+        class ProgressTask(BaseCommand):
             def do(self):
                 for i in range(100):
                     self.update_progress(str(i))
                     time.sleep(0.5)
 
-        return ProgressTask()
+        return ProgressTask(target=None)
 
     return get_task
 
@@ -49,11 +49,11 @@ def exc_task():
     """Fixture for a test that throws an exception."""
 
     def get_task():
-        class ExcTask(QueueTask):
+        class ExcTask(BaseCommand):
             def do(self):
                 raise Exception("An error occurred")
 
-        return ExcTask()
+        return ExcTask(target=None)
 
     return get_task
 
@@ -63,11 +63,11 @@ def slow_task():
     """Fixture for a test that takes long."""
 
     def get_task():
-        class SlowTask(QueueTask):
+        class SlowTask(BaseCommand):
             def do(self):
                 time.sleep(2)
 
-        return SlowTask()
+        return SlowTask(target=None)
 
     return get_task
 
@@ -77,13 +77,11 @@ def simple_task():
     """Fixture for a very simple task."""
 
     def get_task():
-        class SimpleTask(QueueTask):
-            def do(self):
-                num_one = self.args[0]
-                num_two = self.kwargs.get("num_two")
-                return num_one + num_two
+        class SimpleTask(BaseCommand):
+            def do(self, argin):
+                return argin + 2
 
-        return SimpleTask(2, num_two=3)
+        return SimpleTask(2)
 
     return get_task
 
@@ -93,13 +91,13 @@ def abort_task():
     """Fixture for a task that aborts."""
 
     def get_task():
-        class AbortTask(QueueTask):
-            def do(self):
-                sleep_time = self.args[0]
+        class AbortTask(BaseCommand):
+            def do(self, argin):
+                sleep_time = argin
                 while not self.aborting_event.is_set():
                     time.sleep(sleep_time)
 
-        return AbortTask(0.2)
+        return AbortTask(target=None)
 
     return get_task
 
@@ -109,30 +107,18 @@ def stop_task():
     """Fixture for a task that stops."""
 
     def get_task():
-        class StopTask(QueueTask):
+        class StopTask(BaseCommand):
             def do(self):
                 assert not self.stopping_event.is_set()
                 while not self.stopping_event.is_set():
                     pass
 
-        return StopTask()
+        return StopTask(target=None)
 
     return get_task
 
 
-class TestQueueTask:
-    """Test QueueTask."""
-
-    def test_simple(self, simple_task):
-        """Test simple task."""
-        assert simple_task().do() == 5
-
-    def test_exception(self, exc_task):
-        """Test that exception is thrown."""
-        with pytest.raises(Exception):
-            exc_task().do()
-
-
+@pytest.mark.forked
 class TestQueueManager:
     """General QueueManager checks."""
 
@@ -148,6 +134,7 @@ class TestQueueManager:
             worker.stopping_event.set()
 
 
+@pytest.mark.forked
 class TestQueueManagerTasks:
     """QueueManager checks for tasks executed."""
 
@@ -155,18 +142,19 @@ class TestQueueManagerTasks:
     def test_task_ids(self, simple_task):
         """Check ids."""
         qm = QueueManager(max_queue_size=5, num_workers=2, logger=logger)
-        unique_id_one = qm.enqueue_task(simple_task())
-        unique_id_two = qm.enqueue_task(simple_task())
+        unique_id_one, result_code = qm.enqueue_task(simple_task(), 2)
+        unique_id_two, _ = qm.enqueue_task(simple_task(), 2)
         assert unique_id_one.endswith("SimpleTask")
         assert unique_id_one != unique_id_two
+        assert result_code == ResultCode.QUEUED
 
     @pytest.mark.timeout(5)
     def test_task_is_executed(self, simple_task):
         """Check that tasks are executed."""
         with patch.object(QueueManager, "result_callback") as my_cb:
             qm = QueueManager(max_queue_size=5, num_workers=2, logger=logger)
-            unique_id_one = qm.enqueue_task(simple_task())
-            unique_id_two = qm.enqueue_task(simple_task())
+            unique_id_one, _ = qm.enqueue_task(simple_task(), 3)
+            unique_id_two, _ = qm.enqueue_task(simple_task(), 3)
 
             while my_cb.call_count != 2:
                 time.sleep(0.5)
@@ -191,7 +179,7 @@ class TestQueueManagerTasks:
         add_task_one = simple_task()
         exc_task = exc_task()
 
-        qm.enqueue_task(add_task_one)
+        qm.enqueue_task(add_task_one, 3)
         while not qm.task_result:
             time.sleep(0.5)
         task_result = TaskResult.from_task_result(qm.task_result)
@@ -252,7 +240,7 @@ class TestQueueManagerTasks:
         # No Queue
         qm = QueueManager(max_queue_size=0, num_workers=1, logger=logger)
         assert len(qm._threads) == 0
-        res = qm.enqueue_task(simple_task())
+        res, _ = qm.enqueue_task(simple_task(), 3)
         assert res.endswith(expected_name)
         assert qm.task_result[0].endswith(expected_name)
         assert int(qm.task_result[1]) == expected_result_code
@@ -260,7 +248,7 @@ class TestQueueManagerTasks:
 
         # Queue
         qm = QueueManager(max_queue_size=2, num_workers=1, logger=logger)
-        res = qm.enqueue_task(simple_task())
+        res, _ = qm.enqueue_task(simple_task(), 3)
         assert res.endswith(expected_name)
 
         # Wait for the task to be picked up
@@ -284,21 +272,20 @@ class TestQueueManagerTasks:
             )
             unique_ids = []
             for _ in range(4):
-                unique_id = qm.enqueue_task(slow_task())
+                unique_id, _ = qm.enqueue_task(slow_task())
                 unique_ids.append(unique_id)
 
             # Wait for a item on the queue
             while not qm.task_ids_in_queue:
                 pass
 
-            while not qm.task_result:
+            # Wait for the queue to empty
+            while not qm.task_status:
                 pass
 
-            # Wait for last task to finish
-            while (
-                unique_ids[-1] != TaskResult.from_task_result(qm.task_result).unique_id
-            ):
-                pass
+            # Wait for all the callbacks to fire
+            while len(call_back_func.call_args_list) < 24:
+                time.sleep(0.1)
 
             all_passed_params = [a_call[0] for a_call in call_back_func.call_args_list]
             tasks_in_queue = [
@@ -339,7 +326,7 @@ class TestQueueManagerTasks:
     def test_task_get_state_completed(self, simple_task):
         """Test the QueueTask get state is completed."""
         qm = QueueManager(max_queue_size=8, num_workers=2, logger=logger)
-        unique_id_one = qm.enqueue_task(simple_task())
+        unique_id_one, _ = qm.enqueue_task(simple_task(), 3)
         while not qm.task_result:
             pass
         assert qm.get_task_state(unique_id=unique_id_one) == TaskState.COMPLETED
@@ -347,16 +334,16 @@ class TestQueueManagerTasks:
     def test_task_get_state_in_queued(self, slow_task):
         """Test the QueueTask get state is queued."""
         qm = QueueManager(max_queue_size=8, num_workers=1, logger=logger)
-        qm.enqueue_task(slow_task())
-        qm.enqueue_task(slow_task())
-        unique_id_last = qm.enqueue_task(slow_task())
+        qm.enqueue_task(slow_task(), 2)
+        qm.enqueue_task(slow_task(), 2)
+        unique_id_last, _ = qm.enqueue_task(slow_task())
 
         assert qm.get_task_state(unique_id=unique_id_last) == TaskState.QUEUED
 
     def test_task_get_state_in_progress(self, progress_task):
         """Test the QueueTask get state is in progress."""
         qm = QueueManager(max_queue_size=8, num_workers=2, logger=logger)
-        unique_id_one = qm.enqueue_task(progress_task())
+        unique_id_one, _ = qm.enqueue_task(progress_task())
         while not qm.task_progress:
             pass
 
@@ -368,6 +355,7 @@ class TestQueueManagerTasks:
         assert qm.get_task_state(unique_id="non_existing_id") == TaskState.NOT_FOUND
 
 
+@pytest.mark.forked
 class TestQueueManagerExit:
     """Test the stopping and aborting."""
 
@@ -381,7 +369,7 @@ class TestQueueManagerExit:
         )
         cm = BaseComponentManager(op_state_model=None, queue_manager=qm, logger=None)
 
-        cm.enqueue(abort_task())
+        cm.enqueue(abort_task(), 0.1)
 
         # Wait for the command to start
         while not qm.task_status:
@@ -406,7 +394,7 @@ class TestQueueManagerExit:
         # Load up some tasks that should be aborted
         cm.enqueue(slow_task())
         cm.enqueue(slow_task())
-        unique_id = cm.enqueue(slow_task())
+        unique_id, _ = cm.enqueue(slow_task())
 
         while True:
             tr = TaskResult.from_task_result(qm.task_result)
@@ -419,7 +407,7 @@ class TestQueueManagerExit:
         assert not qm.is_aborting
 
         # Wait for my slow command to finish
-        unique_id = cm.enqueue(slow_task())
+        unique_id, _ = cm.enqueue(slow_task())
         while True:
             tr = TaskResult.from_task_result(qm.task_result)
             if tr.unique_id == unique_id:
@@ -471,6 +459,7 @@ class TestQueueManagerExit:
         del cm
 
 
+@pytest.mark.forked
 class TestComponentManager:
     """Tests for the component manager."""
 
@@ -481,6 +470,7 @@ class TestComponentManager:
         assert cm.queue_manager.task_ids_in_queue == ()
 
 
+@pytest.mark.forked
 class TestStress:
     """Stress test the queue mananger."""
 

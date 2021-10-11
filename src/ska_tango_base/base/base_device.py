@@ -1120,7 +1120,7 @@ class SKABaseDevice(Device):
 
         :return: tasks in the device queue
         """
-        return self.component_manager.queue_manager.tasks_in_queue
+        return self.component_manager.tasks_in_queue
 
     def read_longRunningCommandIDsInQueue(self):
         # PROTECTED REGION ID(SKABaseDevice.longRunningCommandIDsInQueue_read) ENABLED START #
@@ -1138,7 +1138,7 @@ class SKABaseDevice(Device):
 
         :return: ID, status pairs of the currently executing commands
         """
-        return self.component_manager.queue_manager.task_status
+        return self.component_manager.task_status
 
     def read_longRunningCommandProgress(self):
         # PROTECTED REGION ID(SKABaseDevice.longRunningCommandProgress_read) ENABLED START #
@@ -1147,7 +1147,7 @@ class SKABaseDevice(Device):
 
         :return: ID, progress of the currently executing command.
         """
-        return self.component_manager.queue_manager.task_progress
+        return self.component_manager.task_progress
 
     def read_longRunningCommandResult(self):
         # PROTECTED REGION ID(SKABaseDevice.longRunningCommandResult_read) ENABLED START #
@@ -1156,9 +1156,9 @@ class SKABaseDevice(Device):
 
         :return: ID, ResultCode, result.
         """
-        if not self.component_manager.queue_manager.task_result:
+        if not self.component_manager.task_result:
             return []
-        return list(self.component_manager.queue_manager.task_result)
+        return list(self.component_manager.task_result)
 
     # --------
     # Commands

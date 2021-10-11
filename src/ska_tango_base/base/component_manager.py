@@ -126,6 +126,53 @@ class BaseComponentManager:
         """
         raise NotImplementedError("BaseComponentManager is abstract.")
 
+    @property
+    def tasks_in_queue(self):
+        """
+        Read the long running commands in the queue.
+
+        :return: tasks in the device queue
+        """
+        return self.queue_manager.tasks_in_queue
+
+    @property
+    def task_ids_in_queue(self):
+        """
+        Read the IDs of the long running commands in the queue.
+
+        :return: unique ids for the enqueued commands
+        """
+        return self.queue_manager.task_ids_in_queue
+
+    @property
+    def task_status(self):
+        """
+        Read the status of the currently executing long running commands.
+
+        :return: ID, status pairs of the currently executing commands
+        """
+        return self.queue_manager.task_status
+
+    @property
+    def task_progress(self):
+        """
+        Read the progress of the currently executing long running command.
+
+        :return: ID, progress of the currently executing command.
+        """
+        return self.queue_manager.task_progress
+
+    @property
+    def task_result(self):
+        """
+        Read the result of the completed long running command.
+
+        :return: ID, ResultCode, result.
+        """
+        if not self.queue_manager.task_result:
+            return []
+        return list(self.queue_manager.task_result)
+
     def off(self):
         """Turn the component off."""
         raise NotImplementedError("BaseComponentManager is abstract.")

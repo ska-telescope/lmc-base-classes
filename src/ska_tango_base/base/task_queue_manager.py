@@ -345,6 +345,8 @@ class QueueManager:
 
             :param task: Task to execute
             :type task: BaseCommand
+            :param argin: The argument for the command
+            :type argin: Any
             :param unique_id: The task unique ID
             :type unique_id: str
             :return: The result of the task
@@ -494,7 +496,7 @@ class QueueManager:
     @property
     def task_progress(
         self,
-    ) -> Tuple[str,]:  # noqa: E231
+    ) -> Tuple[Optional[str],]:  # noqa: E231
         """Return the task progress.
 
         :return: The task progress pairs (id, progress)
@@ -514,6 +516,8 @@ class QueueManager:
 
         :param task: The task to execute in a thread
         :type task: BaseCommand
+        :param argin: The parameter for the command
+        :type argin: Any
         :return: The unique ID of the command
         :rtype: string
         """

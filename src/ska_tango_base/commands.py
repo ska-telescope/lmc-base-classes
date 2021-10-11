@@ -381,7 +381,7 @@ class ResponseCommand(BaseCommand):
             f"Exiting command {self.name} with return_code "
             f"{return_code!s}, message: '{message}'.",
         )
-        return (return_code, message)
+        return return_code, message
 
 
 class CompletionCommand(StateModelCommand):

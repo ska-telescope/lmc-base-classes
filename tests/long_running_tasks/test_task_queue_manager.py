@@ -10,22 +10,10 @@ from ska_tango_base.base.task_queue_manager import (
     TaskResult,
     TaskState,
 )
-from ska_tango_base.base.component_manager import BaseComponentManager
+from ska_tango_base.base.component_manager import QueueWorkerComponentManager
 from ska_tango_base.commands import BaseCommand
 
 logger = logging.getLogger(__name__)
-
-
-def check_matching_pattern(list_to_check=()):
-    """Check that lengths go 1,2,3,2,1 for example."""
-    list_to_check = list(list_to_check)
-    if not list_to_check[-1]:
-        list_to_check.pop()
-    assert len(list_to_check) > 2
-    while len(list_to_check) > 2:
-        last_e = list_to_check.pop()
-        first_e = list_to_check.pop(0)
-        assert len(last_e) == len(first_e)
 
 
 @pytest.fixture
@@ -310,8 +298,8 @@ class TestQueueManagerTasks:
             ]
             task_result_ids = [res[0] for res in task_result]
 
-            check_matching_pattern(tuple(tasks_in_queue))
-            check_matching_pattern(tuple(task_ids_in_queue))
+            assert len(tasks_in_queue) == 8
+            assert len(task_ids_in_queue) == 8
 
             # Since there's 3 workers there should at least once be 3 in progress
             for status in task_status:
@@ -362,26 +350,27 @@ class TestQueueManagerExit:
     @pytest.mark.timeout(15)
     def test_exit_abort(self, abort_task, slow_task):
         """Test aborting exit."""
-        qm = QueueManager(
+        cm = QueueWorkerComponentManager(
+            op_state_model=None,
+            logger=logger,
             max_queue_size=10,
             num_workers=2,
-            logger=logger,
+            push_change_event=None,
         )
-        cm = BaseComponentManager(op_state_model=None, queue_manager=qm, logger=None)
 
         cm.enqueue(abort_task(), 0.1)
 
         # Wait for the command to start
-        while not qm.task_status:
+        while not cm.task_status:
             pass
         # Start aborting
         cm.queue_manager.abort_tasks()
         # Wait for the exit
-        while not qm.task_result:
+        while not cm.task_result:
             pass
         # aborting state should be cleaned up since the queue is empty and
         # nothing is in progress
-        while qm.is_aborting:
+        while cm.queue_manager.is_aborting:
             pass
 
         # When aborting this should be rejected
@@ -397,54 +386,56 @@ class TestQueueManagerExit:
         unique_id, _ = cm.enqueue(slow_task())
 
         while True:
-            tr = TaskResult.from_task_result(qm.task_result)
+            tr = TaskResult.from_task_result(cm.task_result)
             if tr.unique_id == unique_id and tr.result_code == ResultCode.ABORTED:
                 break
             time.sleep(0.1)
 
         # Resume the commands
-        qm.resume_tasks()
-        assert not qm.is_aborting
+        cm.queue_manager.resume_tasks()
+        assert not cm.queue_manager.is_aborting
 
         # Wait for my slow command to finish
         unique_id, _ = cm.enqueue(slow_task())
         while True:
-            tr = TaskResult.from_task_result(qm.task_result)
+            tr = TaskResult.from_task_result(cm.task_result)
             if tr.unique_id == unique_id:
                 break
 
     @pytest.mark.timeout(20)
     def test_exit_stop(self, stop_task):
         """Test stopping exit."""
-        qm = QueueManager(
+        cm = QueueWorkerComponentManager(
+            op_state_model=None,
+            logger=logger,
             max_queue_size=5,
             num_workers=2,
-            logger=logger,
+            push_change_event=None,
         )
-        cm = BaseComponentManager(op_state_model=None, queue_manager=qm, logger=None)
         cm.enqueue(stop_task())
 
         # Wait for the command to start
-        while not qm.task_status:
+        while not cm.task_status:
             pass
         # Stop all threads
         cm.queue_manager.stop_tasks()
         # Wait for the exit
-        while not qm.task_result:
+        while not cm.task_result:
             pass
         # Wait for all the workers to stop
-        while not any([worker.is_alive() for worker in qm._threads]):
+        while not any([worker.is_alive() for worker in cm.queue_manager._threads]):
             pass
 
     @pytest.mark.timeout(5)
     def test_delete_queue(self, slow_task, stop_task, abort_task):
         """Test deleting the queue."""
-        qm = QueueManager(
+        cm = QueueWorkerComponentManager(
+            op_state_model=None,
+            logger=logger,
             max_queue_size=8,
             num_workers=2,
-            logger=logger,
+            push_change_event=None,
         )
-        cm = BaseComponentManager(op_state_model=None, queue_manager=qm, logger=None)
         cm.enqueue(slow_task())
         cm.enqueue(stop_task())
         cm.enqueue(abort_task())
@@ -465,18 +456,23 @@ class TestComponentManager:
 
     def test_init(self):
         """Test that we can init the component manager."""
-        qm = QueueManager(max_queue_size=0, num_workers=1, logger=logger)
-        cm = BaseComponentManager(op_state_model=None, queue_manager=qm, logger=logger)
-        assert cm.queue_manager.task_ids_in_queue == ()
+        cm = QueueWorkerComponentManager(
+            op_state_model=None,
+            logger=logger,
+            max_queue_size=0,
+            num_workers=1,
+            push_change_event=None,
+        )
+        assert cm.task_ids_in_queue == ()
 
 
 @pytest.mark.forked
 class TestStress:
-    """Stress test the queue mananger."""
+    """Stress test the queue manager."""
 
     @pytest.mark.timeout(20)
     def test_stress(self, slow_task):
-        """Stress test the queue mananger."""
+        """Stress test the queue manager."""
         qm = QueueManager(max_queue_size=100, num_workers=50, logger=logger)
         assert len(qm._threads) == 50
         for worker in qm._threads:

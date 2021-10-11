@@ -157,8 +157,8 @@ def test_callbacks():
             assert len(attribute_values[10]) == 3
             tr = TaskResult.from_task_result(attribute_values[10])
             assert tr.get_task_unique_id().id_task_name == "TestProgressCommand"
-            tr.result_code == ResultCode.OK
-            tr.task_result == "None"
+            assert tr.result_code == ResultCode.OK
+            assert tr.task_result == "OK"
 
 
 @pytest.mark.forked

@@ -13,9 +13,11 @@ import time
 from tango.server import command
 from tango import DebugIt
 
-from ska_tango_base.base.component_manager import BaseComponentManager
+from ska_tango_base.base.component_manager import (
+    QueueWorkerComponentManager,
+)
 from ska_tango_base.base.base_device import SKABaseDevice
-from ska_tango_base.base.task_queue_manager import QueueManager, ResultCode
+from ska_tango_base.base.task_queue_manager import ResultCode
 from ska_tango_base.commands import ResponseCommand
 
 
@@ -91,7 +93,7 @@ class LongRunningCommandBaseTestDevice(SKABaseDevice):
                     "In NonAbortingTask repeating %s",
                     retries,
                 )
-            return (ResultCode.OK, "Done")
+            return ResultCode.OK, "Done"
 
     @command(
         dtype_in=float,
@@ -188,13 +190,10 @@ class AsyncBaseDevice(LongRunningCommandBaseTestDevice):
 
     def create_component_manager(self: SKABaseDevice):
         """Create the component manager with a queue manager that has workers."""
-        queue_manager = QueueManager(
-            max_queue_size=10,
-            num_workers=3,
-            logger=self.logger,
-            push_change_event=self.push_change_event,
-        )
-        return BaseComponentManager(
+        return QueueWorkerComponentManager(
             op_state_model=self.op_state_model,
-            queue_manager=queue_manager,
+            logger=self.logger,
+            max_queue_size=20,
+            num_workers=3,
+            push_change_event=self.push_change_event,
         )

@@ -23,7 +23,10 @@ The basic model is:
   the component to change behaviour and/or state; and it *monitors* its
   component by keeping track of its state.
 """
-from typing import Any, Optional, Tuple
+import logging
+from typing import Any, Callable, Optional, Tuple
+from ska_tango_base.base.op_state_model import OpStateModel
+
 from ska_tango_base.commands import BaseCommand, ResultCode
 
 from ska_tango_base.control_model import PowerMode
@@ -45,13 +48,7 @@ class BaseComponentManager:
       or on
     """
 
-    def __init__(
-        self,
-        op_state_model,
-        *args,
-        queue_manager: Optional[QueueManager] = None,
-        **kwargs
-    ):
+    def __init__(self, op_state_model, *args, **kwargs):
         """
         Initialise a new ComponentManager instance.
 
@@ -61,7 +58,7 @@ class BaseComponentManager:
             In this case any tasks enqueued to it will block.
         """
         self.op_state_model = op_state_model
-        self.queue_manager = queue_manager if queue_manager else QueueManager()
+        self.queue_manager = self.create_queue_manager()
 
     def start_communicating(self):
         """
@@ -216,6 +213,17 @@ class BaseComponentManager:
         """
         self.op_state_model.perform_action("component_fault")
 
+    def create_queue_manager(self) -> QueueManager:
+        """Create a QueueManager.
+
+        By default the QueueManager will not have a queue or workers. Thus
+        tasks enqueued will block.
+
+        :return: The queue manager.
+        :rtype: QueueManager
+        """
+        return QueueManager(max_queue_size=0, num_workers=0)
+
     def enqueue(
         self,
         task: BaseCommand,
@@ -225,7 +233,57 @@ class BaseComponentManager:
 
         :param task: The task to execute in the thread
         :type task: BaseCommand
-        :return: The unique ID of the queued command
-        :rtype: str
+        :param argin: The parameter for the command
+        :type argin: Any
+        :return: The unique ID of the queued command and the ResultCode
+        :rtype: tuple
         """
         return self.queue_manager.enqueue_task(task, argin=argin)
+
+
+class QueueWorkerComponentManager(BaseComponentManager):
+    """A component manager that configres the queue manager."""
+
+    def __init__(
+        self,
+        op_state_model: Optional[OpStateModel],
+        logger: logging.Logger,
+        max_queue_size: int,
+        num_workers: int,
+        push_change_event: Optional[Callable],
+        *args,
+        **kwargs
+    ):
+        """Component manager that configures the queue.
+
+        :param op_state_model: The ops state model
+        :type op_state_model: OpStateModel
+        :param logger: Logger to use
+        :type logger: logging.Logger
+        :param max_queue_size: The size of the queue
+        :type max_queue_size: int
+        :param num_workers: The number of workers
+        :type num_workers: int
+        :param push_change_event: A method that will be called when attributes are updated
+        :type push_change_event: Callable
+        """
+        self.logger = logger
+        self.max_queue_size = max_queue_size
+        self.num_workers = num_workers
+        self.push_change_event = push_change_event
+        super().__init__(op_state_model, *args, **kwargs)
+
+    def create_queue_manager(self) -> QueueManager:
+        """Create a QueueManager.
+
+        Create the QueueManager with the queue configured as needed.
+
+        :return: The queue manager
+        :rtype: QueueManager
+        """
+        return QueueManager(
+            max_queue_size=self.max_queue_size,
+            num_workers=self.num_workers,
+            logger=self.logger,
+            push_change_event=self.push_change_event,
+        )

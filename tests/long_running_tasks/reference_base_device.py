@@ -13,9 +13,7 @@ import time
 from tango.server import command
 from tango import DebugIt
 
-from ska_tango_base.base.component_manager import (
-    QueueWorkerComponentManager,
-)
+from ska_tango_base.base.reference_component_manager import QueueWorkerComponentManager
 from ska_tango_base.base.base_device import SKABaseDevice
 from ska_tango_base.base.task_queue_manager import ResultCode
 from ska_tango_base.commands import ResponseCommand

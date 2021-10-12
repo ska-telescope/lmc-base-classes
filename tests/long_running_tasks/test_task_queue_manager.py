@@ -10,7 +10,7 @@ from ska_tango_base.base.task_queue_manager import (
     TaskResult,
     TaskState,
 )
-from ska_tango_base.base.component_manager import QueueWorkerComponentManager
+from ska_tango_base.base.reference_component_manager import QueueWorkerComponentManager
 from ska_tango_base.commands import BaseCommand
 
 logger = logging.getLogger(__name__)

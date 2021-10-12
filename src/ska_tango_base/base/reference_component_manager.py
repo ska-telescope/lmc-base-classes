@@ -1,12 +1,15 @@
 """
-This module provided a reference implementation of a BaseComponentManager.
+This module provided reference implementations of a BaseComponentManager.
 
 It is provided for explanatory purposes, and to support testing of this
 package.
 """
 import functools
+import logging
+from typing import Optional, Callable
 
-from ska_tango_base.base import BaseComponentManager
+from ska_tango_base.base import BaseComponentManager, OpStateModel
+from ska_tango_base.base.task_queue_manager import QueueManager
 from ska_tango_base.control_model import PowerMode
 from ska_tango_base.faults import ComponentFault
 
@@ -389,3 +392,51 @@ class ReferenceBaseComponentManager(BaseComponentManager):
         This is a callback hook.
         """
         self.op_state_model.perform_action("component_fault")
+
+
+class QueueWorkerComponentManager(BaseComponentManager):
+    """A component manager that configres the queue manager."""
+
+    def __init__(
+        self,
+        op_state_model: Optional[OpStateModel],
+        logger: logging.Logger,
+        max_queue_size: int,
+        num_workers: int,
+        push_change_event: Optional[Callable],
+        *args,
+        **kwargs
+    ):
+        """Component manager that configures the queue.
+
+        :param op_state_model: The ops state model
+        :type op_state_model: OpStateModel
+        :param logger: Logger to use
+        :type logger: logging.Logger
+        :param max_queue_size: The size of the queue
+        :type max_queue_size: int
+        :param num_workers: The number of workers
+        :type num_workers: int
+        :param push_change_event: A method that will be called when attributes are updated
+        :type push_change_event: Callable
+        """
+        self.logger = logger
+        self.max_queue_size = max_queue_size
+        self.num_workers = num_workers
+        self.push_change_event = push_change_event
+        super().__init__(op_state_model, *args, **kwargs)
+
+    def create_queue_manager(self) -> QueueManager:
+        """Create a QueueManager.
+
+        Create the QueueManager with the queue configured as needed.
+
+        :return: The queue manager
+        :rtype: QueueManager
+        """
+        return QueueManager(
+            max_queue_size=self.max_queue_size,
+            num_workers=self.num_workers,
+            logger=self.logger,
+            push_change_event=self.push_change_event,
+        )

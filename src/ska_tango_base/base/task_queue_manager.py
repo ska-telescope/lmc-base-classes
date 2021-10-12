@@ -117,7 +117,6 @@ from queue import Empty, Queue
 from datetime import datetime
 from threading import Event
 from typing import Any, Callable, Dict, Optional, Tuple
-from dataclasses import dataclass
 
 import tango
 
@@ -158,13 +157,22 @@ class TaskState(enum.IntEnum):
     """
 
 
-@dataclass
 class TaskUniqueId:
     """Convenience class for the unique ID of a task."""
 
-    id_uuid: str
-    id_datetime: datetime
-    id_task_name: str
+    def __init__(self, id_uuid: str, id_datetime: datetime, id_task_name: str) -> None:
+        """Create a TaskUniqueId instance.
+
+        :param id_uuid: The uuid portion of the task identifier
+        :type id_uuid: str
+        :param id_datetime: The datetime portion of the task identifier
+        :type id_datetime: datetime
+        :param id_task_name: The task name portion of the task identifier
+        :type id_task_name: str
+        """
+        self.id_uuid = id_uuid
+        self.id_datetime = id_datetime
+        self.id_task_name = id_task_name
 
     @classmethod
     def generate_unique_id(cls, task_name: str) -> str:
@@ -183,13 +191,28 @@ class TaskUniqueId:
         )
 
 
-@dataclass
 class TaskResult:
     """Convenience class for results."""
 
     result_code: ResultCode
     task_result: str
     unique_id: str
+
+    def __init__(
+        self, result_code: ResultCode, task_result: str, unique_id: str
+    ) -> None:
+        """Create the TaskResult.
+
+        :param result_code: The ResultCode of the task result
+        :type result_code: ResultCode
+        :param task_result: The string of the task result
+        :type task_result: str
+        :param unique_id: The unique identifier of a task.
+        :type unique_id: str
+        """
+        self.result_code = result_code
+        self.task_result = task_result
+        self.unique_id = unique_id
 
     def to_task_result(self) -> Tuple[str, str, str]:
         """Convert TaskResult to task_result.

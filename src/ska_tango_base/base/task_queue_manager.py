@@ -382,9 +382,9 @@ class QueueManager:
                             ResultCode.NOT_ALLOWED, "Command not allowed", unique_id
                         )
                 if argin:
-                    result = task.do(argin)
+                    result = task(argin)
                 else:
-                    result = task.do()
+                    result = task()
                 # If the response is (ResultCode, Any)
                 if (
                     isinstance(result, tuple)

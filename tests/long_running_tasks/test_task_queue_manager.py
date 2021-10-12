@@ -350,7 +350,6 @@ class TestQueueManagerExit:
     @pytest.mark.timeout(5)
     def test_exit_abort(self, abort_task, slow_task):
         """Test aborting exit."""
-
         results = []
 
         def catch_updates(name, result):

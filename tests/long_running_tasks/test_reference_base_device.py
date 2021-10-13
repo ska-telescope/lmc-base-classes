@@ -33,7 +33,7 @@ class TestCommands:
                 proxy.Short(1)
                 # Wait for a result, if the task does not abort, we'll time out here
                 while not proxy.longRunningCommandResult:
-                    pass
+                    time.sleep(0.1)
 
                 result = TaskResult.from_task_result(proxy.longRunningCommandResult)
                 assert result.result_code == ResultCode.OK
@@ -48,7 +48,7 @@ class TestCommands:
                 proxy.NonAbortingLongRunning(0.01)
                 # Wait for a result, if the task does not abort, we'll time out here
                 while not proxy.longRunningCommandResult:
-                    pass
+                    time.sleep(0.1)
                 result = TaskResult.from_task_result(proxy.longRunningCommandResult)
                 assert result.result_code == ResultCode.OK
                 assert (
@@ -68,12 +68,12 @@ class TestCommands:
             unique_id, _ = proxy.AbortingLongRunning(0.5)
             # Wait for the task to be in progress
             while not proxy.longRunningCommandStatus:
-                pass
+                time.sleep(0.1)
             # Abort the tasks
             proxy.AbortCommands()
             # Wait for a result, if the task does not abort, we'll time out here
             while not proxy.longRunningCommandResult:
-                pass
+                time.sleep(0.1)
             result = TaskResult.from_task_result(proxy.longRunningCommandResult)
             assert result.unique_id == unique_id
             assert result.result_code == ResultCode.ABORTED
@@ -87,7 +87,7 @@ class TestCommands:
             with DeviceTestContext(class_name, process=True) as proxy:
                 unique_id, _ = proxy.LongRunningException()
                 while not proxy.longRunningCommandResult:
-                    pass
+                    time.sleep(0.1)
                 result = TaskResult.from_task_result(proxy.longRunningCommandResult)
                 assert result.unique_id == unique_id
                 assert result.result_code == ResultCode.FAILED

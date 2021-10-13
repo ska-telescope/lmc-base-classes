@@ -1,10 +1,10 @@
 """
 This module provides a QueueManager, TaskResult and QueueTask classes.
 
-* **TaskUniqueId**: is a convenience `dataclass` for parsing and generating the IDs used
+* **TaskUniqueId**: is a convenience class for parsing and generating the IDs used
   to identify the tasks.
 
-* **TaskResult**: is a convenience `dataclass` for parsing and formatting the
+* **TaskResult**: is a convenience class for parsing and formatting the
   results of a task.
 
 * **QueueTask**: is a class that instances of which can be added to the queue for execution

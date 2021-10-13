@@ -395,7 +395,7 @@ class ReferenceBaseComponentManager(BaseComponentManager):
 
 
 class QueueWorkerComponentManager(BaseComponentManager):
-    """A component manager that configres the queue manager."""
+    """A component manager that configures the queue manager."""
 
     def __init__(
         self,

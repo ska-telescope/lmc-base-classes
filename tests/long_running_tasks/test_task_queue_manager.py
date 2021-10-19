@@ -402,6 +402,7 @@ class TestQueueManagerExit:
             max_queue_size=10,
             num_workers=2,
             push_change_event=catch_updates,
+            child_devices=[],
         )
 
         cm.enqueue(abort_task(), 0.1)
@@ -463,6 +464,7 @@ class TestQueueManagerExit:
             max_queue_size=5,
             num_workers=2,
             push_change_event=None,
+            child_devices=[],
         )
         cm.enqueue(stop_task())
 
@@ -490,6 +492,7 @@ class TestQueueManagerExit:
             max_queue_size=8,
             num_workers=2,
             push_change_event=None,
+            child_devices=[],
         )
         cm.enqueue(slow_task())
         cm.enqueue(stop_task())
@@ -517,6 +520,7 @@ class TestComponentManager:
             max_queue_size=0,
             num_workers=1,
             push_change_event=None,
+            child_devices=[],
         )
         assert cm.task_ids_in_queue == ()
 

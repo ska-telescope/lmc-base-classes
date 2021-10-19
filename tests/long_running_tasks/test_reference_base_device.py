@@ -9,9 +9,10 @@ from unittest import mock
 from tango import EventType
 from tango.test_context import DeviceTestContext
 from tango.utils import EventCallback
-from reference_base_device import (
+from ska_tango_base.base.reference_base_device import (
     BlockingBaseDevice,
     AsyncBaseDevice,
+    AsyncClientDevice,
 )
 from ska_tango_base.base.task_queue_manager import TaskResult
 from ska_tango_base.commands import ResultCode
@@ -199,3 +200,175 @@ def test_events():
         ]
         for index, progress in enumerate(["1", "25", "50", "74", "100"]):
             assert progress_event_values[index][1] == progress
+
+
+devices_to_test = [
+    {
+        "class": AsyncBaseDevice,
+        "devices": [
+            {"name": "test/asyncdevice/1"},
+            {"name": "test/asyncdevice/2"},
+        ],
+    },
+    {
+        "class": AsyncClientDevice,
+        "devices": [
+            {
+                "name": "test/asyncclientdevice/1",
+                "properties": {
+                    "client_devices": [
+                        "test/asyncdevice/1",
+                    ],
+                },
+            },
+            {
+                "name": "test/asyncclientdevice/2",
+                "properties": {
+                    "client_devices": [
+                        "test/asyncdevice/1",
+                        "test/asyncdevice/2",
+                    ],
+                },
+            },
+        ],
+    },
+]
+
+
+class TestMultiDevice:
+    """Multi-device tests."""
+
+    # TODO track events from underlying device(s) instead
+
+    def test_two_async_devices_communicating(self, multi_device_tango_context):
+        """Test only two devices communication."""
+        client = multi_device_tango_context.get_device(
+            "test/asyncclientdevice/1"
+        )
+
+        commands_in_queue_events = EventCallback(fd=StringIO())
+        client.subscribe_event(
+            "longRunningCommandsInQueue",
+            EventType.CHANGE_EVENT,
+            commands_in_queue_events,
+            wait=True,
+        )
+
+        command_ids_in_queue_events = EventCallback(fd=StringIO())
+        client.subscribe_event(
+            "longRunningCommandIDsInQueue",
+            EventType.CHANGE_EVENT,
+            command_ids_in_queue_events,
+            wait=True,
+        )
+
+        client.TestProgressNoArgs()
+        client.ping()
+        time.sleep(2)
+
+        commands_in_queue = [
+            i.attr_value.value[0]
+            for i in commands_in_queue_events.get_events()
+            if i.attr_value.value
+        ]
+        # though two commands were triggered, only one is registered in the
+        # event callback since ping is not registered as a long running command
+        assert commands_in_queue == ['TestProgressNoArgsCommand']
+
+        command_ids_in_queue = [
+            i.attr_value.value
+            for i in command_ids_in_queue_events.get_events()
+            if i.attr_value.value
+        ]
+        # there should be 1 ID since 1 command was triggered
+        assert len(command_ids_in_queue) == 1
+
+    def test_multiple_async_devices_communicating(self, multi_device_tango_context):
+        """Test multiple devices."""
+        client = multi_device_tango_context.get_device(
+            "test/asyncclientdevice/2"
+        )
+
+        commands_in_queue_events = EventCallback(fd=StringIO())
+        client.subscribe_event(
+            "longRunningCommandsInQueue",
+            EventType.CHANGE_EVENT,
+            commands_in_queue_events,
+            wait=True,
+        )
+
+        command_ids_in_queue_events = EventCallback(fd=StringIO())
+        client.subscribe_event(
+            "longRunningCommandIDsInQueue",
+            EventType.CHANGE_EVENT,
+            command_ids_in_queue_events,
+            wait=True,
+        )
+
+        client.TestProgressNoArgs()
+        client.ping()
+        client.TestProgressWithArgs(0.5)
+        time.sleep(3)
+
+        commands_in_queue = [
+            i.attr_value.value[0]
+            for i in commands_in_queue_events.get_events()
+            if i.attr_value.value
+        ]
+        assert commands_in_queue == ['TestProgressNoArgsCommand', 'TestProgressWithArgsCommand']
+
+        commands_ids_in_queue = [
+            i.attr_value.value
+            for i in command_ids_in_queue_events.get_events()
+            if i.attr_value.value
+        ]
+        # should be checking for 4 since each comand triggers
+        # two devices under the hood, see TODO in class
+        assert len(commands_ids_in_queue) == 2
+
+    def test_multiple_async_devices_communicating_with_duplicate_commands(self, multi_device_tango_context):
+        """Test multiple devices with duplicate commands."""
+        client = multi_device_tango_context.get_device(
+            "test/asyncclientdevice/2"
+        )
+
+        commands_in_queue_events = EventCallback(fd=StringIO())
+        client.subscribe_event(
+            "longRunningCommandsInQueue",
+            EventType.CHANGE_EVENT,
+            commands_in_queue_events,
+            wait=True,
+        )
+
+        command_ids_in_queue_events = EventCallback(fd=StringIO())
+        client.subscribe_event(
+            "longRunningCommandIDsInQueue",
+            EventType.CHANGE_EVENT,
+            command_ids_in_queue_events,
+            wait=True,
+        )
+
+        client.TestProgressNoArgs()
+        client.TestProgressNoArgs()
+        client.TestProgressNoArgs()
+        client.ping()
+        client.TestProgressWithArgs(0.5)
+        time.sleep(3)
+
+        commands_in_queue = [
+            i.attr_value.value
+            for i in commands_in_queue_events.get_events()
+            if i.attr_value.value
+        ]
+        assert commands_in_queue == [
+            'TestProgressNoArgsCommand', 'TestProgressNoArgsCommand',
+            'TestProgressNoArgsCommand', 'TestProgressWithArgsCommand']
+
+        commands_ids_in_queue = [
+            i.attr_value.value
+            for i in command_ids_in_queue_events.get_events()
+            if i.attr_value.value
+        ]
+        # should be checking for 8 since each comand triggers
+        # two devices under the hood, see TODO in class
+        assert len(commands_ids_in_queue) == 4

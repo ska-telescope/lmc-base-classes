@@ -1,10 +1,12 @@
 """This module defines elements of the pytest test harness shared by all tests."""
 import logging
+import socket
 from queue import Empty, Queue
 
 import pytest
+import tango
 from tango import EventType
-from tango.test_context import DeviceTestContext
+from tango.test_context import get_host_ip, DeviceTestContext, MultiDeviceTestContext
 
 
 @pytest.fixture(scope="class")
@@ -219,3 +221,42 @@ def tango_change_event_helper(device_under_test):
 def logger():
     """Fixture that returns a default logger for tests."""
     return logging.Logger("Test logger")
+
+
+@pytest.fixture(scope="module")
+def devices_to_test(request):
+    yield getattr(request.module, "devices_to_test")
+
+
+@pytest.fixture(scope="function")
+def multi_device_tango_context(
+    mocker, devices_to_test  # pylint: disable=redefined-outer-name
+):
+    """
+    Creates and returns a TANGO MultiDeviceTestContext object, with
+    tango.DeviceProxy patched to work around a name-resolving issue.
+    """
+
+    def _get_open_port():
+        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        s.bind(("", 0))
+        s.listen(1)
+        port = s.getsockname()[1]
+        s.close()
+        return port
+
+    HOST = get_host_ip()
+    PORT = _get_open_port()
+    _DeviceProxy = tango.DeviceProxy
+    mocker.patch(
+        "tango.DeviceProxy",
+        wraps=lambda fqdn, *args, **kwargs: _DeviceProxy(
+            "tango://{0}:{1}/{2}#dbase=no".format(HOST, PORT, fqdn),
+            *args,
+            **kwargs
+        ),
+    )
+    with MultiDeviceTestContext(
+        devices_to_test, host=HOST, port=PORT, process=True
+    ) as context:
+        yield context

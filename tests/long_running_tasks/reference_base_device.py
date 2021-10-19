@@ -10,7 +10,7 @@ There are two versions used for testing long running commands.
 It is provided to support testing of the BaseDevice.
 """
 import time
-from tango.server import command
+from tango.server import command, device_property
 from tango import DebugIt
 
 from ska_tango_base.base.reference_component_manager import QueueWorkerComponentManager
@@ -21,6 +21,8 @@ from ska_tango_base.commands import ResponseCommand
 
 class LongRunningCommandBaseTestDevice(SKABaseDevice):
     """Implement commands to test queued work."""
+
+    client_devices = device_property(dtype="DevVarStringArray")
 
     def init_command_objects(self):
         """Initialise the command handlers."""
@@ -50,6 +52,16 @@ class LongRunningCommandBaseTestDevice(SKABaseDevice):
         self.register_command_object(
             "TestProgress",
             self.TestProgressCommand(self.component_manager, logger=self.logger),
+        )
+
+        self.register_command_object(
+            "TestProgressNoArgs",
+            self.TestProgressNoArgsCommand(self.component_manager, logger=self.logger),
+        )
+
+        self.register_command_object(
+            "TestProgressWithArgs",
+            self.TestProgressWithArgsCommand(self.component_manager, logger=self.logger),
         )
 
     class ShortCommand(ResponseCommand):
@@ -176,6 +188,50 @@ class LongRunningCommandBaseTestDevice(SKABaseDevice):
         (return_code, message) = self.component_manager.enqueue(handler, argin)
         return f"{return_code}", f"{message}"
 
+    class TestProgressNoArgsCommand(ResponseCommand):
+        """The command class for the TestProgressNoArgsCommand command."""
+
+        def do(self):
+            """Execute something on the long running device."""
+            interface = self.target.lrc_device_interface
+            interface.execute_long_running_command(
+                "TestProgress", 0.5, None)
+            self.logger.info("In TestProgressNoArgsCommand")
+            return (ResultCode.OK, "Done TestProgressNoArgsCommand")
+
+    @command(
+        dtype_in=None,
+        dtype_out="DevVarStringArray",
+    )
+    @DebugIt()
+    def TestProgressNoArgs(self):
+        """Command to execute the TestProgress on long running command device."""
+        handler = self.get_command_object("TestProgressNoArgs")
+        (return_code, message) = self.component_manager.enqueue(handler)
+        return f"{return_code}", f"{message}"
+
+    class TestProgressWithArgsCommand(ResponseCommand):
+        """The command class for the TestProgressWithArgsCommand command."""
+
+        def do(self, argin):
+            """Execute something on the long running device."""
+            interface = self.target.lrc_device_interface
+            interface.execute_long_running_command(
+                "TestProgress", argin, None)
+            self.logger.info("In TestProgressWithArgs")
+            return (ResultCode.OK, "Done TestProgressWithArgsCommand")
+
+    @command(
+        dtype_in=float,
+        dtype_out="DevVarStringArray",
+    )
+    @DebugIt()
+    def TestProgressWithArgs(self, argin):
+        """Command to execute the TestProgress on long running command device."""
+        handler = self.get_command_object("TestProgressWithArgs")
+        (return_code, message) = self.component_manager.enqueue(handler, argin)
+        return f"{return_code}", f"{message}"
+
 
 class BlockingBaseDevice(LongRunningCommandBaseTestDevice):
     """Test device that has a component manager with the default queue manager that has no workers."""
@@ -194,4 +250,20 @@ class AsyncBaseDevice(LongRunningCommandBaseTestDevice):
             max_queue_size=20,
             num_workers=3,
             push_change_event=self.push_change_event,
+            child_devices=self.client_devices,
+        )
+
+
+class AsyncClientDevice(LongRunningCommandBaseTestDevice):
+    """Async client device."""
+
+    def create_component_manager(self: SKABaseDevice):
+        """Create the component manager with a queue manager that has workers."""
+        return QueueWorkerComponentManager(
+            op_state_model=self.op_state_model,
+            logger=self.logger,
+            max_queue_size=20,
+            num_workers=3,
+            push_change_event=self.push_change_event,
+            child_devices=self.client_devices,
         )

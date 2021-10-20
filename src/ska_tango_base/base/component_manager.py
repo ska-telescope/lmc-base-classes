@@ -52,8 +52,6 @@ class BaseComponentManager:
 
         :param op_state_model: the op state model used by this component
             manager
-        :param queue_manager: If not specified a default QueueManager will be initialised.
-            In this case any tasks enqueued to it will block.
         """
         self.op_state_model = op_state_model
         self.queue_manager = self.create_queue_manager()

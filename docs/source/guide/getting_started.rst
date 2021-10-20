@@ -8,7 +8,7 @@ Prerequisites
 -------------
 It is assumed here that you have a subproject repository, and have `set
 up your development environment`_. The ``ska-tango-base`` package can be
-installed from the EngageSKA Nexus repository:
+installed from the SKAO repository:
 
 .. code-block:: shell-session
 

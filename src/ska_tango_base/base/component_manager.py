@@ -124,7 +124,7 @@ class BaseComponentManager:
         """
         Read the long running commands in the queue.
 
-        :return: tasks in the device queue
+        :return: tasks in the queue
         """
         return self._queue_manager.tasks_in_queue
 
@@ -211,7 +211,7 @@ class BaseComponentManager:
         """Create a QueueManager.
 
         By default the QueueManager will not have a queue or workers. Thus
-        tasks enqueued will block.
+        tasks enqueued will execute synchronously.
 
         :return: The queue manager.
         :rtype: QueueManager

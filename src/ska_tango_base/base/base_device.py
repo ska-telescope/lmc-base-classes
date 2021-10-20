@@ -1123,7 +1123,7 @@ class SKABaseDevice(Device):
         """
         Read the long running commands in the queue.
 
-        :return: tasks in the device queue
+        :return: tasks in the queue
         """
         return self.component_manager.tasks_in_queue
 

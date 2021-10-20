@@ -1134,7 +1134,7 @@ class SKABaseDevice(Device):
 
         :return: unique ids for the enqueued commands
         """
-        return self.component_manager.queue_manager.task_ids_in_queue
+        return self.component_manager.task_ids_in_queue
 
     def read_longRunningCommandStatus(self):
         # PROTECTED REGION ID(SKABaseDevice.longRunningCommandStatus_read) ENABLED START #
@@ -1498,7 +1498,7 @@ class SKABaseDevice(Device):
 
             Abort the currently executing LRC and remove all enqueued LRCs.
             """
-            self.target.queue_manager.abort_tasks()
+            self.target.abort_tasks()
             return (ResultCode.OK, "Aborting")
 
     @command(
@@ -1540,7 +1540,7 @@ class SKABaseDevice(Device):
             :rtype: tuple
                 (ResultCode.OK, TaskState)
             """
-            result = self.target.queue_manager.get_task_state(argin)
+            result = self.target.get_task_state(argin)
             return (ResultCode.OK, f"{result}")
 
     @command(

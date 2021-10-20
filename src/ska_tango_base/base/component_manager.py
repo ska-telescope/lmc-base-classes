@@ -28,7 +28,7 @@ from typing import Any, Optional, Tuple
 from ska_tango_base.commands import BaseCommand, ResultCode
 
 from ska_tango_base.control_model import PowerMode
-from ska_tango_base.base.task_queue_manager import QueueManager
+from ska_tango_base.base.task_queue_manager import QueueManager, TaskState
 
 
 class BaseComponentManager:
@@ -235,3 +235,11 @@ class BaseComponentManager:
         :rtype: tuple
         """
         return self.queue_manager.enqueue_task(task, argin=argin)
+
+    def abort_tasks(self) -> None:
+        """Start aborting tasks on the queue."""
+        self.queue_manager.abort_tasks()
+
+    def get_task_state(self, unique_id: str) -> TaskState:
+        """Attempt to get state of QueueTask."""
+        return self.queue_manager.get_task_state(unique_id)

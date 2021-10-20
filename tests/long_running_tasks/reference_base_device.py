@@ -10,6 +10,7 @@ There are two versions used for testing long running commands.
 It is provided to support testing of the BaseDevice.
 """
 import time
+import tango
 from tango.server import command, device_property
 from tango import DebugIt
 
@@ -55,14 +56,9 @@ class LongRunningCommandBaseTestDevice(SKABaseDevice):
         )
 
         self.register_command_object(
-            "TestProgressNoArgs",
-            self.TestProgressNoArgsCommand(self.component_manager, logger=self.logger),
-        )
-
-        self.register_command_object(
-            "TestProgressWithArgs",
-            self.TestProgressWithArgsCommand(
-                self.component_manager, logger=self.logger
+            "CallChildren",
+            self.CallChildrenCommand(
+                self.component_manager, logger=self.logger, devices=self.client_devices
             ),
         )
 
@@ -190,46 +186,40 @@ class LongRunningCommandBaseTestDevice(SKABaseDevice):
         (return_code, message) = self.component_manager.enqueue(handler, argin)
         return f"{return_code}", f"{message}"
 
-    class TestProgressNoArgsCommand(ResponseCommand):
-        """The command class for the TestProgressNoArgsCommand command."""
+    class CallChildrenCommand(ResponseCommand):
+        """The command class for the TestProgress command."""
 
-        def do(self):
-            """Execute something on the long running device."""
-            interface = self.target.lrc_device_interface
-            interface.execute_long_running_command("TestProgress", 0.5, None)
-            self.logger.info("In TestProgressNoArgsCommand")
-            return (ResultCode.OK, "Done TestProgressNoArgsCommand")
+        def __init__(self, target, *args, logger=None, **kwargs):
+            """Create ResponseCommand, add devices.
 
-    @command(
-        dtype_in=None,
-        dtype_out="DevVarStringArray",
-    )
-    @DebugIt()
-    def TestProgressNoArgs(self):
-        """Command to execute the TestProgress on long running command device."""
-        handler = self.get_command_object("TestProgressNoArgs")
-        (return_code, message) = self.component_manager.enqueue(handler)
-        return f"{return_code}", f"{message}"
-
-    class TestProgressWithArgsCommand(ResponseCommand):
-        """The command class for the TestProgressWithArgsCommand command."""
+            :param target: component manager
+            :type target: BaseComponentManager
+            :param logger: logger, defaults to None
+            :type logger: logging.Logger, optional
+            """
+            self.devices = kwargs.pop("devices")
+            super().__init__(target, *args, logger=logger, **kwargs)
 
         def do(self, argin):
-            """Execute something on the long running device."""
-            interface = self.target.lrc_device_interface
-            interface.execute_long_running_command("TestProgress", argin, None)
-            self.logger.info("In TestProgressWithArgs")
-            return (ResultCode.OK, "Done TestProgressWithArgsCommand")
+            """Call `CallChildren` on children, or block if not."""
+            if self.devices:
+                for device in self.devices:
+                    proxy = tango.DeviceProxy(device)
+                    proxy.CallChildren(argin)
+                return ResultCode.QUEUED, f"Called children: {self.devices}"
+            else:
+                time.sleep(argin)
+                return ResultCode.OK, f"Slept {argin}"
 
     @command(
         dtype_in=float,
         dtype_out="DevVarStringArray",
     )
     @DebugIt()
-    def TestProgressWithArgs(self, argin):
-        """Command to execute the TestProgress on long running command device."""
-        handler = self.get_command_object("TestProgressWithArgs")
-        (return_code, message) = self.component_manager.enqueue(handler, argin)
+    def CallChildren(self, argin):
+        """Command to call `CallChildren` on children, or block if not."""
+        command = self.get_command_object("CallChildren")
+        (return_code, message) = self.component_manager.enqueue(command, argin)
         return f"{return_code}", f"{message}"
 
 
@@ -250,20 +240,4 @@ class AsyncBaseDevice(LongRunningCommandBaseTestDevice):
             max_queue_size=20,
             num_workers=3,
             push_change_event=self.push_change_event,
-            child_devices=self.client_devices,
-        )
-
-
-class AsyncClientDevice(LongRunningCommandBaseTestDevice):
-    """Async client device."""
-
-    def create_component_manager(self: SKABaseDevice):
-        """Create the component manager with a queue manager that has workers."""
-        return QueueWorkerComponentManager(
-            op_state_model=self.op_state_model,
-            logger=self.logger,
-            max_queue_size=20,
-            num_workers=3,
-            push_change_event=self.push_change_event,
-            child_devices=self.client_devices,
         )

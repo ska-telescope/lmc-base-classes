@@ -1545,14 +1545,14 @@ class SKABaseDevice(Device):
 
     @command(
         dtype_in=str,
-        dtype_out="DevVarShortArray",
+        dtype_out="DevVarLongStringArray",
     )
     @DebugIt()
     def CheckLongRunningCommandStatus(self, argin):
         """Check the status of a long running command by ID."""
         command = self.get_command_object("CheckLongRunningCommandStatus")
         (return_code, command_state) = command(argin)
-        return [return_code, command_state]
+        return [[return_code], [command_state]]
 
     class DebugDeviceCommand(BaseCommand):
         """A class for the SKABaseDevice's DebugDevice() command."""

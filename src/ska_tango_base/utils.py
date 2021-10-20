@@ -618,7 +618,7 @@ class LongRunningDeviceInterface:
         For every event that comes in:
 
         - Update command state:
-            - Make sure that it's a longrunningcommandresult
+            - Make sure that it's a longRunningCommandResult
             - Check to see if the command ID we get from the event
                 is one we are keeping track of.
             - If so, set that command to completed
@@ -630,7 +630,7 @@ class LongRunningDeviceInterface:
             - If so, fire the callback
             - Clean up
         """
-        if ev.attr_value.name == "longrunningcommandresult":
+        if ev.attr_value and ev.attr_value.name == "longrunningcommandresult":
             if ev.attr_value.value:
                 # push change event to new attribute for all tango devices
                 # for tango_dev in self._tango_devices:

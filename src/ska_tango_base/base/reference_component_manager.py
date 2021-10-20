@@ -6,13 +6,12 @@ package.
 """
 import functools
 import logging
-from typing import Optional, Callable, List
+from typing import Optional, Callable
 
 from ska_tango_base.base import BaseComponentManager, OpStateModel
 from ska_tango_base.base.task_queue_manager import QueueManager
 from ska_tango_base.control_model import PowerMode
 from ska_tango_base.faults import ComponentFault
-from ska_tango_base.utils import LongRunningDeviceInterface
 
 
 def check_communicating(func):
@@ -405,7 +404,6 @@ class QueueWorkerComponentManager(ReferenceBaseComponentManager):
         max_queue_size: int,
         num_workers: int,
         push_change_event: Optional[Callable],
-        child_devices: Optional[List[str]],
         *args,
         **kwargs
     ):
@@ -421,14 +419,11 @@ class QueueWorkerComponentManager(ReferenceBaseComponentManager):
         :type num_workers: int
         :param push_change_event: A method that will be called when attributes are updated
         :type push_change_event: Callable
-        :param child_devices: Names of child devices to execute long running commands on
-        :type child_devices: List of strings
         """
         self.logger = logger
         self.max_queue_size = max_queue_size
         self.num_workers = num_workers
         self.push_change_event = push_change_event
-        self.lrc_device_interface = LongRunningDeviceInterface(child_devices, logger)
         super().__init__(op_state_model, *args, logger=logger, **kwargs)
 
     def create_queue_manager(self) -> QueueManager:

@@ -411,14 +411,14 @@ class TestQueueManagerExit:
         while not cm.task_status:
             time.sleep(0.1)
         # Start aborting
-        cm.queue_manager.abort_tasks()
+        cm._queue_manager.abort_tasks()
 
         # Wait for the exit
         while not cm.task_result:
             time.sleep(0.1)
         # aborting state should be cleaned up since the queue is empty and
         # nothing is in progress
-        while cm.queue_manager.is_aborting:
+        while cm._queue_manager.is_aborting:
             time.sleep(0.1)
 
         # When aborting this should be rejected
@@ -426,11 +426,11 @@ class TestQueueManagerExit:
         cm.enqueue(slow_task())
         cm.enqueue(slow_task())
 
-        assert not cm.queue_manager.is_aborting
+        assert not cm._queue_manager.is_aborting
         # Abort tasks
-        cm.queue_manager.abort_tasks()
+        cm._queue_manager.abort_tasks()
 
-        assert cm.queue_manager.is_aborting
+        assert cm._queue_manager.is_aborting
 
         # Load up some tasks that should be aborted
         cm.enqueue(slow_task())
@@ -443,8 +443,8 @@ class TestQueueManagerExit:
             time.sleep(0.1)
 
         # Resume the commands
-        cm.queue_manager.resume_tasks()
-        assert not cm.queue_manager.is_aborting
+        cm._queue_manager.resume_tasks()
+        assert not cm._queue_manager.is_aborting
 
         # Wait for my slow command to finish
         unique_id, _ = cm.enqueue(slow_task())
@@ -473,13 +473,13 @@ class TestQueueManagerExit:
             time.sleep(0.1)
 
         # Stop all threads
-        cm.queue_manager.stop_tasks()
+        cm._queue_manager.stop_tasks()
         # Wait for the exit
         while not cm.task_result:
             time.sleep(0.5)
 
         # Wait for all the workers to stop
-        while any([worker.is_alive() for worker in cm.queue_manager._threads]):
+        while any([worker.is_alive() for worker in cm._queue_manager._threads]):
             time.sleep(0.1)
 
     @pytest.mark.forked
@@ -504,7 +504,7 @@ class TestQueueManagerExit:
         cm.enqueue(stop_task())
         cm.enqueue(abort_task())
 
-        del cm.queue_manager
+        del cm._queue_manager
         del cm
 
 

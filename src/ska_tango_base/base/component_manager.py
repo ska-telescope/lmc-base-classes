@@ -54,7 +54,7 @@ class BaseComponentManager:
             manager
         """
         self.op_state_model = op_state_model
-        self.queue_manager = self.create_queue_manager()
+        self._queue_manager = self.create_queue_manager()
 
     def start_communicating(self):
         """
@@ -126,7 +126,7 @@ class BaseComponentManager:
 
         :return: tasks in the device queue
         """
-        return self.queue_manager.tasks_in_queue
+        return self._queue_manager.tasks_in_queue
 
     @property
     def task_ids_in_queue(self):
@@ -135,7 +135,7 @@ class BaseComponentManager:
 
         :return: unique ids for the enqueued commands
         """
-        return self.queue_manager.task_ids_in_queue
+        return self._queue_manager.task_ids_in_queue
 
     @property
     def task_status(self):
@@ -144,7 +144,7 @@ class BaseComponentManager:
 
         :return: ID, status pairs of the currently executing commands
         """
-        return self.queue_manager.task_status
+        return self._queue_manager.task_status
 
     @property
     def task_progress(self):
@@ -153,7 +153,7 @@ class BaseComponentManager:
 
         :return: ID, progress of the currently executing command.
         """
-        return self.queue_manager.task_progress
+        return self._queue_manager.task_progress
 
     @property
     def task_result(self):
@@ -162,7 +162,7 @@ class BaseComponentManager:
 
         :return: ID, ResultCode, result.
         """
-        return list(self.queue_manager.task_result)
+        return list(self._queue_manager.task_result)
 
     def off(self):
         """Turn the component off."""
@@ -232,12 +232,12 @@ class BaseComponentManager:
         :return: The unique ID of the queued command and the ResultCode
         :rtype: tuple
         """
-        return self.queue_manager.enqueue_task(task, argin=argin)
+        return self._queue_manager.enqueue_task(task, argin=argin)
 
     def abort_tasks(self) -> None:
         """Start aborting tasks on the queue."""
-        self.queue_manager.abort_tasks()
+        self._queue_manager.abort_tasks()
 
     def get_task_state(self, unique_id: str) -> TaskState:
         """Attempt to get state of QueueTask."""
-        return self.queue_manager.get_task_state(unique_id)
+        return self._queue_manager.get_task_state(unique_id)

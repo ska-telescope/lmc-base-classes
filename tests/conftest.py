@@ -225,6 +225,7 @@ def logger():
 
 @pytest.fixture(scope="module")
 def devices_to_test(request):
+    """Fixture for devices to test."""
     yield getattr(request.module, "devices_to_test")
 
 
@@ -233,7 +234,8 @@ def multi_device_tango_context(
     mocker, devices_to_test  # pylint: disable=redefined-outer-name
 ):
     """
-    Creates and returns a TANGO MultiDeviceTestContext object, with
+    Create and return a TANGO MultiDeviceTestContext object.
+
     tango.DeviceProxy patched to work around a name-resolving issue.
     """
 
@@ -251,9 +253,7 @@ def multi_device_tango_context(
     mocker.patch(
         "tango.DeviceProxy",
         wraps=lambda fqdn, *args, **kwargs: _DeviceProxy(
-            "tango://{0}:{1}/{2}#dbase=no".format(HOST, PORT, fqdn),
-            *args,
-            **kwargs
+            "tango://{0}:{1}/{2}#dbase=no".format(HOST, PORT, fqdn), *args, **kwargs
         ),
     )
     with MultiDeviceTestContext(

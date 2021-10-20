@@ -564,8 +564,7 @@ class StoredCommand:
 
 
 class LongRunningDeviceInterface:
-    """This class is a convenience class to be used by clients of devices
-    that implement long running commands.
+    """This class is a convenience class for long running command devices.
 
     The intent of this class is that clients should not have to keep
     track of command IDs or the various attributes
@@ -577,10 +576,10 @@ class LongRunningDeviceInterface:
 
     Using this class, a client would need to:
     - Supply the Tango devices to connect to that implements long
-      running commands
+    running commands
     - The Long running commands to run (including parameter)
     - Optional callback that should be executed when the command
-      completes
+    completes
 
     The callback will be executed once the command completes across all
     devices. Thus there's no need to watch attribute changes or keep
@@ -614,7 +613,7 @@ class LongRunningDeviceInterface:
                 )
 
     def push_event(self, ev: EventData):
-        """Handles the attribute change events.
+        """Handle the attribute change events.
 
         For every event that comes in:
 

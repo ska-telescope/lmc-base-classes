@@ -164,8 +164,6 @@ class BaseComponentManager:
 
         :return: ID, ResultCode, result.
         """
-        if not self.queue_manager.task_result:
-            return []
         return list(self.queue_manager.task_result)
 
     def off(self):

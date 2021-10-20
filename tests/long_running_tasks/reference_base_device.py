@@ -61,7 +61,9 @@ class LongRunningCommandBaseTestDevice(SKABaseDevice):
 
         self.register_command_object(
             "TestProgressWithArgs",
-            self.TestProgressWithArgsCommand(self.component_manager, logger=self.logger),
+            self.TestProgressWithArgsCommand(
+                self.component_manager, logger=self.logger
+            ),
         )
 
     class ShortCommand(ResponseCommand):
@@ -194,8 +196,7 @@ class LongRunningCommandBaseTestDevice(SKABaseDevice):
         def do(self):
             """Execute something on the long running device."""
             interface = self.target.lrc_device_interface
-            interface.execute_long_running_command(
-                "TestProgress", 0.5, None)
+            interface.execute_long_running_command("TestProgress", 0.5, None)
             self.logger.info("In TestProgressNoArgsCommand")
             return (ResultCode.OK, "Done TestProgressNoArgsCommand")
 
@@ -216,8 +217,7 @@ class LongRunningCommandBaseTestDevice(SKABaseDevice):
         def do(self, argin):
             """Execute something on the long running device."""
             interface = self.target.lrc_device_interface
-            interface.execute_long_running_command(
-                "TestProgress", argin, None)
+            interface.execute_long_running_command("TestProgress", argin, None)
             self.logger.info("In TestProgressWithArgs")
             return (ResultCode.OK, "Done TestProgressWithArgsCommand")
 

@@ -433,7 +433,6 @@ class SKABaseDevice(Device):
             device.set_change_event("status", True, True)
             device.set_archive_event("status", True, True)
 
-            # Long running command attributes
             device.set_change_event("longRunningCommandsInQueue", True, True)
             device.set_archive_event("longRunningCommandsInQueue", True, True)
             device.set_change_event("longRunningCommandIDsInQueue", True, True)
@@ -1162,9 +1161,7 @@ class SKABaseDevice(Device):
 
         :return: ID, ResultCode, result.
         """
-        if not self.component_manager.task_result:
-            return []
-        return list(self.component_manager.task_result)
+        return self.component_manager.task_result
 
     # --------
     # Commands

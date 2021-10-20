@@ -116,7 +116,7 @@ from uuid import uuid4
 from queue import Empty, Queue
 from datetime import datetime
 from threading import Event
-from typing import Any, Callable, Dict, Optional, Tuple
+from typing import Any, Callable, Dict, Optional, Tuple, Union
 
 import tango
 
@@ -442,7 +442,7 @@ class QueueManager:
         self._property_update_lock = threading.Lock()
         self._logger = logger if logger else logging.getLogger(__name__)
 
-        self._task_result: Optional[Tuple[str, str, str]] = None
+        self._task_result: Union[Tuple[str, str, str], Tuple[()]] = ()
         self._tasks_in_queue: Dict[str, str] = {}  # unique_id, task_name
         self._task_status: Dict[str, str] = {}  # unique_id, status
         self._threads = []
@@ -476,7 +476,7 @@ class QueueManager:
         return self._work_queue.full()
 
     @property
-    def task_result(self) -> Tuple[str, str, str]:
+    def task_result(self) -> Union[Tuple[str, str, str], Tuple[()]]:
         """Return the last task result.
 
         :return: Last task result

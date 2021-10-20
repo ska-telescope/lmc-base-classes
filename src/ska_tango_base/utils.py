@@ -30,7 +30,7 @@ from tango import (
 from tango import DevState
 from contextlib import contextmanager
 from ska_tango_base.faults import GroupDefinitionsError, SKABaseError
-from ska_tango_base.commands import ResultCode
+from ska_tango_base.base.task_queue_manager import TaskResult
 
 int_types = {
     tango._tango.CmdArgType.DevUShort,
@@ -549,26 +549,6 @@ def for_testing_only(func, _testing_check=lambda: "pytest" in sys.modules):
 
 
 @dataclass
-class LongRunningRequestResponse:
-    """Convenience class to parse the long running command response."""
-
-    response_code: ResultCode
-    command_id: str
-    command_name: str
-
-    def __init__(self, request_response):
-        """Create the LongRunningRequestResponse dataclass.
-
-        :param request_response: The response from a Long Running
-          Request Command
-        :type request_response: list
-        """
-        self.response_code = request_response[0][0]
-        self.command_id = request_response[1][0]
-        self.command_name = self.command_id.split("_")[1]
-
-
-@dataclass
 class StoredCommand:
     """Used to keep track of commands scheduled across devices.
 
@@ -607,9 +587,7 @@ class LongRunningDeviceInterface:
     track of commands IDs. They are handled here.
     """
 
-    def __init__(
-        self, tango_devices: List[str], logger: logging.Logger
-    ) -> None:
+    def __init__(self, tango_devices: List[str], logger: logging.Logger) -> None:
         """Init LRC device interface."""
         self._logger = logger
         self._tango_devices = tango_devices
@@ -622,9 +600,7 @@ class LongRunningDeviceInterface:
         """Only create the device proxy and subscribe when a command is invoked."""
         if not self._long_running_device_proxies:
             for device in self._tango_devices:
-                self._long_running_device_proxies.append(
-                    tango.DeviceProxy(device)
-                )
+                self._long_running_device_proxies.append(tango.DeviceProxy(device))
 
         if not self._result_subscriptions:
             for device_proxy in self._long_running_device_proxies:
@@ -725,13 +701,13 @@ class LongRunningDeviceInterface:
         self._stored_callbacks[unique_id] = on_completion_callback
         self._stored_commands[unique_id] = []
         for device_proxy in self._long_running_device_proxies:
-            response = LongRunningRequestResponse(
+            response = TaskResult.from_response_command(
                 device_proxy.command_inout(command_name, command_arg)
             )
             self._stored_commands[unique_id].append(
                 StoredCommand(
                     command_name,
-                    response.command_id,
+                    response.unique_id,
                     False,
                 )
             )

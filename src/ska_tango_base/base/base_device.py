@@ -58,6 +58,7 @@ from ska_tango_base.faults import (
     LoggingTargetError,
     LoggingLevelError,
 )
+from ska_tango_base.base.task_queue_manager import MAX_WORKER_COUNT, MAX_QUEUE_SIZE
 
 LOG_FILE_SIZE = 1024 * 1024  # Log file size 1MB.
 _DEBUGGER_PORT = 5678
@@ -698,7 +699,7 @@ class SKABaseDevice(Device):
 
     longRunningCommandsInQueue = attribute(
         dtype=("str",),
-        max_dim_x=100,  # Assume we'll never have more than 100 tasks in the queue
+        max_dim_x=MAX_QUEUE_SIZE,
         access=AttrWriteType.READ,
         doc="Keep track of which commands are in the queue. \n"
         "Pop off from front as they complete.",
@@ -707,7 +708,7 @@ class SKABaseDevice(Device):
 
     longRunningCommandIDsInQueue = attribute(
         dtype=("str",),
-        max_dim_x=100,  # Assume we'll never have more than 100 tasks in the queue
+        max_dim_x=MAX_QUEUE_SIZE,
         access=AttrWriteType.READ,
         doc="Every client that executes a command will receive a command ID as response. \n"
         "Keep track of IDs in the queue. Pop off from front as they complete.",
@@ -716,7 +717,7 @@ class SKABaseDevice(Device):
 
     longRunningCommandStatus = attribute(
         dtype=("str",),
-        max_dim_x=100,  # 2 per thread, assume we'll never do more than 50 threads
+        max_dim_x=MAX_WORKER_COUNT * 2,  # 2 per thread
         access=AttrWriteType.READ,
         doc="ID, status pair of the currently executing command. \n"
         "Clients can subscribe to on_change event and wait for the ID they are interested in.",
@@ -725,7 +726,7 @@ class SKABaseDevice(Device):
 
     longRunningCommandProgress = attribute(
         dtype=("str",),
-        max_dim_x=100,  # 2 per thread, assume we'll never do more than 50 threads
+        max_dim_x=MAX_WORKER_COUNT * 2,  # 2 per thread
         access=AttrWriteType.READ,
         doc="ID, progress of the currently executing command. \n"
         "Clients can subscribe to on_change event and wait for the ID they are interested in..",

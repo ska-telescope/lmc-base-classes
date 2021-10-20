@@ -122,6 +122,9 @@ import tango
 
 from ska_tango_base.commands import BaseCommand, ResultCode
 
+MAX_QUEUE_SIZE = 100  # Maximum supported size of the queue
+MAX_WORKER_COUNT = 50  # Maximum number of workers supported
+
 
 class TaskState(enum.IntEnum):
     """The state of the QueueTask in the QueueManager."""
@@ -245,7 +248,7 @@ class TaskResult:
     def from_response_command(cls, command_result: Tuple[str, str]) -> TaskResult:
         """Convert from ResponseCommand to TaskResult.
 
-        :param command_result: The task_result (result_code, unique_id)
+        :param command_result: The task_result (unique_id, result_code)
         :type command_result: tuple
         :return: The task result
         :rtype: TaskResult
@@ -255,9 +258,9 @@ class TaskResult:
             raise ValueError(f"Cannot parse task_result {command_result}")
 
         return TaskResult(
-            result_code=ResultCode(int(command_result[0])),
+            result_code=ResultCode(int(command_result[1])),
             task_result="",
-            unique_id=command_result[1],
+            unique_id=command_result[0],
         )
 
     def get_task_unique_id(self) -> TaskUniqueId:
@@ -424,10 +427,12 @@ class QueueManager:
         :param logger: Python logger
         :type logger: logging.Logger
         """
-        if max_queue_size > 100:
-            raise ValueError("A maximum queue size of 100 is supported")
-        if num_workers > 50:
-            raise ValueError("A maximum number of 50 workers is supported")
+        if max_queue_size > MAX_QUEUE_SIZE:
+            raise ValueError(f"A maximum queue size of {MAX_QUEUE_SIZE} is supported")
+        if num_workers > MAX_WORKER_COUNT:
+            raise ValueError(
+                f"A maximum number of {MAX_WORKER_COUNT} workers is supported"
+            )
         self._max_queue_size = max_queue_size
         self._work_queue = Queue(self._max_queue_size)
         self._queue_fetch_timeout = queue_fetch_timeout

@@ -1507,8 +1507,8 @@ class SKABaseDevice(Device):
     @DebugIt()
     def AbortCommands(self):
         """Empty out long running commands in queue."""
-        handler = self.get_command_object("AbortCommands")
-        (return_code, message) = handler()
+        command = self.get_command_object("AbortCommands")
+        (return_code, message) = command()
         return [[return_code], [message]]
 
     class CheckLongRunningCommandStatusCommand(ResponseCommand):
@@ -1550,8 +1550,8 @@ class SKABaseDevice(Device):
     @DebugIt()
     def CheckLongRunningCommandStatus(self, argin):
         """Check the status of a long running command by ID."""
-        handler = self.get_command_object("CheckLongRunningCommandStatus")
-        (return_code, command_state) = handler(argin)
+        command = self.get_command_object("CheckLongRunningCommandStatus")
+        (return_code, command_state) = command(argin)
         return [return_code, command_state]
 
     class DebugDeviceCommand(BaseCommand):

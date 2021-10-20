@@ -435,10 +435,15 @@ class SKABaseDevice(Device):
 
             # Long running command attributes
             device.set_change_event("longRunningCommandsInQueue", True, True)
+            device.set_archive_event("longRunningCommandsInQueue", True, True)
             device.set_change_event("longRunningCommandIDsInQueue", True, True)
+            device.set_archive_event("longRunningCommandIDsInQueue", True, True)
             device.set_change_event("longRunningCommandStatus", True, True)
+            device.set_archive_event("longRunningCommandStatus", True, True)
             device.set_change_event("longRunningCommandProgress", True, True)
+            device.set_archive_event("longRunningCommandProgress", True, True)
             device.set_change_event("longRunningCommandResult", True, True)
+            device.set_archive_event("longRunningCommandResult", True, True)
 
             device._health_state = HealthState.OK
             device._control_mode = ControlMode.REMOTE

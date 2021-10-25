@@ -69,7 +69,7 @@
         <type xsi:type="pogoDsl:LongStringArrayType"/>
       </argin>
       <argout description="">
-        <type xsi:type="pogoDsl:BooleanType"/>
+        <type xsi:type="pogoDsl:DevVarLongStringArray"/>
       </argout>
       <status abstract="false" inherited="false" concrete="true" concreteHere="true"/>
     </commands>

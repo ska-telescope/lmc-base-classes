@@ -1183,8 +1183,8 @@ class SKABaseDevice(Device):
             return [f"{device.__class__.__name__}, {device.read_buildState()}"]
 
     @command(
-        dtype_out=("str",),
-        doc_out="Version strings",
+        dtype_out="DevVarLongStringArray",
+        doc_out="(ReturnType, 'Command unique ID')",
     )
     @DebugIt()
     def GetVersionInfo(self):
@@ -1198,7 +1198,8 @@ class SKABaseDevice(Device):
         :return: Version details of the device.
         """
         command = self.get_command_object("GetVersionInfo")
-        return command()
+        unique_id, return_code = self.component_manager.enqueue(command)
+        return [[return_code], [unique_id]]
         # PROTECTED REGION END #    //  SKABaseDevice.GetVersionInfo
 
     class ResetCommand(StateModelCommand, ResponseCommand):

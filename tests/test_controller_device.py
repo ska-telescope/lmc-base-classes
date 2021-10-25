@@ -95,11 +95,12 @@ class TestSKAController(object):
         """Test for GetVersionInfo."""
         # PROTECTED REGION ID(SKAController.test_GetVersionInfo) ENABLED START #
         versionPattern = re.compile(
-            f"{device_under_test.info().dev_class}, ska_tango_base, [0-9]+.[0-9]+.[0-9]+, "
-            "A set of generic base devices for SKA Telescope."
+            f"['{device_under_test.info().dev_class}, ska_tango_base, [0-9]+.[0-9]+.[0-9]+, "
+            "A set of generic base devices for SKA Telescope.']"
         )
-        versionInfo = device_under_test.GetVersionInfo()
-        assert (re.match(versionPattern, versionInfo[0])) is not None
+        device_under_test.GetVersionInfo()
+        versionInfo = device_under_test.longRunningCommandResult[2]
+        assert (re.match(versionPattern, versionInfo)) is not None
         # PROTECTED REGION END #    //  SKAController.test_GetVersionInfo
 
     # PROTECTED REGION ID(SKAController.test_isCapabilityAchievable_failure_decorators) ENABLED START #

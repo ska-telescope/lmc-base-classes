@@ -116,6 +116,7 @@ from uuid import uuid4
 from queue import Empty, Queue
 from datetime import datetime
 from threading import Event
+from inspect import signature
 from typing import Any, Callable, Dict, Optional, Tuple, Union
 
 import tango
@@ -380,7 +381,12 @@ class QueueManager:
             """
             try:
                 if hasattr(task, "is_allowed"):
-                    if not task.is_allowed():
+                    is_allowed_signature = signature(task.is_allowed)
+                    if "raise_if_disallowed" in is_allowed_signature.parameters:
+                        is_task_allowed = task.is_allowed(raise_if_disallowed=True)
+                    else:
+                        is_task_allowed = task.is_allowed()
+                    if not is_task_allowed:
                         return TaskResult(
                             ResultCode.NOT_ALLOWED, "Command not allowed", unique_id
                         )

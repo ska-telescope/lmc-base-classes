@@ -240,7 +240,8 @@ class SKAController(SKABaseDevice):
     @command(
         dtype_in="DevVarLongStringArray",
         doc_in="[nrInstances][Capability types]",
-        dtype_out="bool",
+        dtype_out="DevVarLongStringArray",
+        doc_out="(ResultCode, 'Command unique ID')",
     )
     @DebugIt()
     def isCapabilityAchievable(self, argin):
@@ -258,11 +259,12 @@ class SKAController(SKABaseDevice):
 
         :type argin: :py:class:`tango.DevVarLongStringArray`.
 
-        :return: True if capability can be achieved, False if cannot
-        :rtype: DevBoolean
+        :return: result_code, unique_id
+        :rtype: DevVarLongStringArray
         """
         command = self.get_command_object("IsCapabilityAchievable")
-        return command(argin)
+        unique_id, result_code = self.component_manager.enqueue(command, argin)
+        return [[result_code], [unique_id]]
         # PROTECTED REGION END #    //  SKAController.isCapabilityAchievable
 
 

@@ -1237,17 +1237,6 @@ class SKABaseDevice(Device):
             self.logger.info(message)
             return (ResultCode.OK, message)
 
-    def is_Reset_allowed(self):
-        """
-        Whether the ``Reset()`` command is allowed to be run in the current state.
-
-        :returns: whether the ``Reset()`` command is allowed to be run in the
-            current state
-        :rtype: boolean
-        """
-        command = self.get_command_object("Reset")
-        return command.is_allowed(raise_if_disallowed=True)
-
     @command(
         dtype_out="DevVarLongStringArray",
         doc_out="(ReturnType, 'informational message')",
@@ -1304,18 +1293,6 @@ class SKABaseDevice(Device):
             message = "Standby command completed OK"
             self.logger.info(message)
             return (ResultCode.OK, message)
-
-    def is_Standby_allowed(self):
-        """
-        Check if command Standby is allowed in the current device state.
-
-        :raises :py:exc:`CommandError`: if the command is not allowed
-
-        :return: ``True`` if the command is allowed
-        :rtype: boolean
-        """
-        command = self.get_command_object("Standby")
-        return command.is_allowed(raise_if_disallowed=True)
 
     @command(
         dtype_out="DevVarLongStringArray",
@@ -1374,18 +1351,6 @@ class SKABaseDevice(Device):
             self.logger.info(message)
             return (ResultCode.OK, message)
 
-    def is_Off_allowed(self):
-        """
-        Check if command `Off` is allowed in the current device state.
-
-        :raises :py:exc:`CommandError`: if the command is not allowed
-
-        :return: ``True`` if the command is allowed
-        :rtype: boolean
-        """
-        command = self.get_command_object("Off")
-        return command.is_allowed(raise_if_disallowed=True)
-
     @command(
         dtype_out="DevVarLongStringArray",
         doc_out="(ReturnType, 'informational message')",
@@ -1442,19 +1407,6 @@ class SKABaseDevice(Device):
             message = "On command completed OK"
             self.logger.info(message)
             return (ResultCode.OK, message)
-
-    def is_On_allowed(self):
-        """
-        Check if command `On` is allowed in the current device state.
-
-        :raises :py:exc:`CommandError`: if the command is not
-            allowed
-
-        :return: ``True`` if the command is allowed
-        :rtype: boolean
-        """
-        command = self.get_command_object("On")
-        return command.is_allowed(raise_if_disallowed=True)
 
     @command(
         dtype_out="DevVarLongStringArray",
@@ -1537,9 +1489,9 @@ class SKABaseDevice(Device):
 
             :param argin: The command ID
             :type argin: str
-            :return: The resultcode for this command and the code for the state
+            :return: The resultcode for this command and the string of the TaskState
             :rtype: tuple
-                (ResultCode.OK, TaskState)
+                (ResultCode.OK, str)
             """
             result = self.target.get_task_state(argin)
             return (ResultCode.OK, f"{result}")

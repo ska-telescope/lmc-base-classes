@@ -630,6 +630,10 @@ class LongRunningDeviceInterface:
             - If so, fire the callback
             - Clean up
         """
+        if ev.err:
+            self._logger.error("Event system DevError(s) occured: %s", str(ev.errors))
+            return
+
         if ev.attr_value and ev.attr_value.name == "longrunningcommandresult":
             if ev.attr_value.value:
                 # push change event to new attribute for all tango devices

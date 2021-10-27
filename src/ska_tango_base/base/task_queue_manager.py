@@ -381,16 +381,12 @@ class QueueManager:
             """
             try:
                 if hasattr(task, "is_allowed"):
-<<<<<<< HEAD:src/ska_tango_base/base/task_queue_manager.py
-                    if not task.is_allowed():
-=======
                     is_allowed_signature = signature(task.is_allowed)
                     if "raise_if_disallowed" in is_allowed_signature.parameters:
                         is_task_allowed = task.is_allowed(raise_if_disallowed=True)
                     else:
                         is_task_allowed = task.is_allowed()
                     if not is_task_allowed:
->>>>>>> main:src/ska_tango_base/base/task_queue_component_manager.py
                         return TaskResult(
                             ResultCode.NOT_ALLOWED, "Command not allowed", unique_id
                         )

@@ -58,6 +58,7 @@ from ska_tango_base.faults import (
     LoggingTargetError,
     LoggingLevelError,
 )
+from ska_tango_base.base.task_queue_manager import MAX_WORKER_COUNT, MAX_QUEUE_SIZE
 
 LOG_FILE_SIZE = 1024 * 1024  # Log file size 1MB.
 _DEBUGGER_PORT = 5678
@@ -432,6 +433,17 @@ class SKABaseDevice(Device):
             device.set_change_event("status", True, True)
             device.set_archive_event("status", True, True)
 
+            device.set_change_event("longRunningCommandsInQueue", True, True)
+            device.set_archive_event("longRunningCommandsInQueue", True, True)
+            device.set_change_event("longRunningCommandIDsInQueue", True, True)
+            device.set_archive_event("longRunningCommandIDsInQueue", True, True)
+            device.set_change_event("longRunningCommandStatus", True, True)
+            device.set_archive_event("longRunningCommandStatus", True, True)
+            device.set_change_event("longRunningCommandProgress", True, True)
+            device.set_archive_event("longRunningCommandProgress", True, True)
+            device.set_change_event("longRunningCommandResult", True, True)
+            device.set_archive_event("longRunningCommandResult", True, True)
+
             device._health_state = HealthState.OK
             device._control_mode = ControlMode.REMOTE
             device._simulation_mode = SimulationMode.FALSE
@@ -691,7 +703,7 @@ class SKABaseDevice(Device):
 
     longRunningCommandsInQueue = attribute(
         dtype=("str",),
-        max_dim_x=98,
+        max_dim_x=MAX_QUEUE_SIZE,
         access=AttrWriteType.READ,
         doc="Keep track of which commands are in the queue. \n"
         "Pop off from front as they complete.",
@@ -700,7 +712,7 @@ class SKABaseDevice(Device):
 
     longRunningCommandIDsInQueue = attribute(
         dtype=("str",),
-        max_dim_x=98,
+        max_dim_x=MAX_QUEUE_SIZE,
         access=AttrWriteType.READ,
         doc="Every client that executes a command will receive a command ID as response. \n"
         "Keep track of IDs in the queue. Pop off from front as they complete.",
@@ -709,7 +721,7 @@ class SKABaseDevice(Device):
 
     longRunningCommandStatus = attribute(
         dtype=("str",),
-        max_dim_x=2,
+        max_dim_x=MAX_WORKER_COUNT * 2,  # 2 per thread
         access=AttrWriteType.READ,
         doc="ID, status pair of the currently executing command. \n"
         "Clients can subscribe to on_change event and wait for the ID they are interested in.",
@@ -718,7 +730,7 @@ class SKABaseDevice(Device):
 
     longRunningCommandProgress = attribute(
         dtype=("str",),
-        max_dim_x=2,
+        max_dim_x=MAX_WORKER_COUNT * 2,  # 2 per thread
         access=AttrWriteType.READ,
         doc="ID, progress of the currently executing command. \n"
         "Clients can subscribe to on_change event and wait for the ID they are interested in..",
@@ -727,9 +739,9 @@ class SKABaseDevice(Device):
 
     longRunningCommandResult = attribute(
         dtype=("str",),
-        max_dim_x=2,
+        max_dim_x=3,  # Always the last result (unique_id, result_code, task_result)
         access=AttrWriteType.READ,
-        doc="ID, result pair. \n"
+        doc="unique_id, result_code, task_result. \n"
         "Clients can subscribe to on_change event and wait for the ID they are interested in.",
     )
     """Device attribute for long running commands."""
@@ -1111,9 +1123,9 @@ class SKABaseDevice(Device):
         """
         Read the long running commands in the queue.
 
-        :return: commands in the device queue
+        :return: tasks in the queue
         """
-        return self.component_manager.commands_in_queue
+        return self.component_manager.tasks_in_queue
 
     def read_longRunningCommandIDsInQueue(self):
         # PROTECTED REGION ID(SKABaseDevice.longRunningCommandIDsInQueue_read) ENABLED START #
@@ -1122,16 +1134,16 @@ class SKABaseDevice(Device):
 
         :return: unique ids for the enqueued commands
         """
-        return self.component_manager.command_ids_in_queue
+        return self.component_manager.task_ids_in_queue
 
     def read_longRunningCommandStatus(self):
         # PROTECTED REGION ID(SKABaseDevice.longRunningCommandStatus_read) ENABLED START #
         """
-        Read the status of the currently executing long running command.
+        Read the status of the currently executing long running commands.
 
-        :return: ID, status pair of the currently executing command
+        :return: ID, status pairs of the currently executing commands
         """
-        return self.component_manager.command_status
+        return self.component_manager.task_status
 
     def read_longRunningCommandProgress(self):
         # PROTECTED REGION ID(SKABaseDevice.longRunningCommandProgress_read) ENABLED START #
@@ -1140,16 +1152,16 @@ class SKABaseDevice(Device):
 
         :return: ID, progress of the currently executing command.
         """
-        return self.component_manager.command_progress
+        return self.component_manager.task_progress
 
     def read_longRunningCommandResult(self):
         # PROTECTED REGION ID(SKABaseDevice.longRunningCommandResult_read) ENABLED START #
         """
         Read the result of the completed long running command.
 
-        :return: ID, result pair.
+        :return: ID, ResultCode, result.
         """
-        return self.component_manager.command_result
+        return self.component_manager.task_result
 
     # --------
     # Commands
@@ -1224,17 +1236,6 @@ class SKABaseDevice(Device):
             self.logger.info(message)
             return (ResultCode.OK, message)
 
-    def is_Reset_allowed(self):
-        """
-        Whether the ``Reset()`` command is allowed to be run in the current state.
-
-        :returns: whether the ``Reset()`` command is allowed to be run in the
-            current state
-        :rtype: boolean
-        """
-        command = self.get_command_object("Reset")
-        return command.is_allowed(raise_if_disallowed=True)
-
     @command(
         dtype_out="DevVarLongStringArray",
         doc_out="(ReturnType, 'informational message')",
@@ -1253,8 +1254,9 @@ class SKABaseDevice(Device):
         :rtype: (ResultCode, str)
         """
         command = self.get_command_object("Reset")
-        (return_code, message) = command()
-        return [[return_code], [message]]
+        unique_id, return_code = self.component_manager.enqueue(command)
+
+        return [[return_code], [unique_id]]
 
     class StandbyCommand(StateModelCommand, ResponseCommand):
         """A class for the SKABaseDevice's Standby() command."""
@@ -1291,18 +1293,6 @@ class SKABaseDevice(Device):
             self.logger.info(message)
             return (ResultCode.OK, message)
 
-    def is_Standby_allowed(self):
-        """
-        Check if command Standby is allowed in the current device state.
-
-        :raises :py:exc:`CommandError`: if the command is not allowed
-
-        :return: ``True`` if the command is allowed
-        :rtype: boolean
-        """
-        command = self.get_command_object("Standby")
-        return command.is_allowed(raise_if_disallowed=True)
-
     @command(
         dtype_out="DevVarLongStringArray",
         doc_out="(ReturnType, 'informational message')",
@@ -1321,8 +1311,9 @@ class SKABaseDevice(Device):
         :rtype: (ResultCode, str)
         """
         command = self.get_command_object("Standby")
-        (return_code, message) = command()
-        return [[return_code], [message]]
+        unique_id, return_code = self.component_manager.enqueue(command)
+
+        return [[return_code], [unique_id]]
 
     class OffCommand(StateModelCommand, ResponseCommand):
         """A class for the SKABaseDevice's Off() command."""
@@ -1359,18 +1350,6 @@ class SKABaseDevice(Device):
             self.logger.info(message)
             return (ResultCode.OK, message)
 
-    def is_Off_allowed(self):
-        """
-        Check if command `Off` is allowed in the current device state.
-
-        :raises :py:exc:`CommandError`: if the command is not allowed
-
-        :return: ``True`` if the command is allowed
-        :rtype: boolean
-        """
-        command = self.get_command_object("Off")
-        return command.is_allowed(raise_if_disallowed=True)
-
     @command(
         dtype_out="DevVarLongStringArray",
         doc_out="(ReturnType, 'informational message')",
@@ -1389,8 +1368,9 @@ class SKABaseDevice(Device):
         :rtype: (ResultCode, str)
         """
         command = self.get_command_object("Off")
-        (return_code, message) = command()
-        return [[return_code], [message]]
+        unique_id, return_code = self.component_manager.enqueue(command)
+
+        return [[return_code], [unique_id]]
 
     class OnCommand(StateModelCommand, ResponseCommand):
         """A class for the SKABaseDevice's On() command."""
@@ -1427,19 +1407,6 @@ class SKABaseDevice(Device):
             self.logger.info(message)
             return (ResultCode.OK, message)
 
-    def is_On_allowed(self):
-        """
-        Check if command `On` is allowed in the current device state.
-
-        :raises :py:exc:`CommandError`: if the command is not
-            allowed
-
-        :return: ``True`` if the command is allowed
-        :rtype: boolean
-        """
-        command = self.get_command_object("On")
-        return command.is_allowed(raise_if_disallowed=True)
-
     @command(
         dtype_out="DevVarLongStringArray",
         doc_out="(ReturnType, 'informational message')",
@@ -1458,8 +1425,9 @@ class SKABaseDevice(Device):
         :rtype: (ResultCode, str)
         """
         command = self.get_command_object("On")
-        (return_code, message) = command()
-        return [[return_code], [message]]
+        unique_id, return_code = self.component_manager.enqueue(command)
+
+        return [[return_code], [unique_id]]
 
     class AbortCommandsCommand(ResponseCommand):
         """The command class for the AbortCommand command."""
@@ -1482,7 +1450,7 @@ class SKABaseDevice(Device):
 
             Abort the currently executing LRC and remove all enqueued LRCs.
             """
-            # implementation details to be added
+            self.target.abort_tasks()
             return (ResultCode.OK, "Aborting")
 
     @command(
@@ -1491,8 +1459,8 @@ class SKABaseDevice(Device):
     @DebugIt()
     def AbortCommands(self):
         """Empty out long running commands in queue."""
-        handler = self.get_command_object("AbortCommands")
-        (return_code, message) = handler()
+        command = self.get_command_object("AbortCommands")
+        (return_code, message) = command()
         return [[return_code], [message]]
 
     class CheckLongRunningCommandStatusCommand(ResponseCommand):
@@ -1520,23 +1488,23 @@ class SKABaseDevice(Device):
 
             :param argin: The command ID
             :type argin: str
-            :return: The resultcode for this command and the code for the state
+            :return: The resultcode for this command and the string of the TaskState
             :rtype: tuple
-                (ResultCode.OK, LongRunningCommandState)
+                (ResultCode.OK, str)
             """
-            # implementation details to be added
-            return (ResultCode.OK, LongRunningCommandState.NOT_FOUND)
+            result = self.target.get_task_state(argin)
+            return (ResultCode.OK, f"{result}")
 
     @command(
         dtype_in=str,
-        dtype_out="DevVarShortArray",
+        dtype_out="DevVarLongStringArray",
     )
     @DebugIt()
     def CheckLongRunningCommandStatus(self, argin):
         """Check the status of a long running command by ID."""
-        handler = self.get_command_object("CheckLongRunningCommandStatus")
-        (return_code, command_state) = handler(argin)
-        return [return_code, command_state]
+        command = self.get_command_object("CheckLongRunningCommandStatus")
+        (return_code, command_state) = command(argin)
+        return [[return_code], [command_state]]
 
     class DebugDeviceCommand(BaseCommand):
         """A class for the SKABaseDevice's DebugDevice() command."""

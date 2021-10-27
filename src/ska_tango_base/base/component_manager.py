@@ -23,7 +23,12 @@ The basic model is:
   the component to change behaviour and/or state; and it *monitors* its
   component by keeping track of its state.
 """
+from typing import Any, Optional, Tuple
+
+from ska_tango_base.commands import BaseCommand, ResultCode
+
 from ska_tango_base.control_model import PowerMode
+from ska_tango_base.base.task_queue_manager import QueueManager, TaskState
 
 
 class BaseComponentManager:
@@ -49,6 +54,7 @@ class BaseComponentManager:
             manager
         """
         self.op_state_model = op_state_model
+        self._queue_manager = self.create_queue_manager()
 
     def start_communicating(self):
         """
@@ -113,6 +119,51 @@ class BaseComponentManager:
         """
         raise NotImplementedError("BaseComponentManager is abstract.")
 
+    @property
+    def tasks_in_queue(self):
+        """
+        Read the long running commands in the queue.
+
+        :return: tasks in the queue
+        """
+        return self._queue_manager.tasks_in_queue
+
+    @property
+    def task_ids_in_queue(self):
+        """
+        Read the IDs of the long running commands in the queue.
+
+        :return: unique ids for the enqueued commands
+        """
+        return self._queue_manager.task_ids_in_queue
+
+    @property
+    def task_status(self):
+        """
+        Read the status of the currently executing long running commands.
+
+        :return: ID, status pairs of the currently executing commands
+        """
+        return self._queue_manager.task_status
+
+    @property
+    def task_progress(self):
+        """
+        Read the progress of the currently executing long running command.
+
+        :return: ID, progress of the currently executing command.
+        """
+        return self._queue_manager.task_progress
+
+    @property
+    def task_result(self):
+        """
+        Read the result of the completed long running command.
+
+        :return: ID, ResultCode, result.
+        """
+        return list(self._queue_manager.task_result)
+
     def off(self):
         """Turn the component off."""
         raise NotImplementedError("BaseComponentManager is abstract.")
@@ -155,3 +206,38 @@ class BaseComponentManager:
         This is a callback hook.
         """
         self.op_state_model.perform_action("component_fault")
+
+    def create_queue_manager(self) -> QueueManager:
+        """Create a QueueManager.
+
+        By default the QueueManager will not have a queue or workers. Thus
+        tasks enqueued will execute synchronously.
+
+        :return: The queue manager.
+        :rtype: QueueManager
+        """
+        return QueueManager(max_queue_size=0, num_workers=0)
+
+    def enqueue(
+        self,
+        task: BaseCommand,
+        argin: Optional[Any] = None,
+    ) -> Tuple[str, ResultCode]:
+        """Put `task` on the queue. The unique ID for it is returned.
+
+        :param task: The task to execute in the thread
+        :type task: BaseCommand
+        :param argin: The parameter for the command
+        :type argin: Any
+        :return: The unique ID of the queued command and the ResultCode
+        :rtype: tuple
+        """
+        return self._queue_manager.enqueue_task(task, argin=argin)
+
+    def abort_tasks(self) -> None:
+        """Start aborting tasks on the queue."""
+        self._queue_manager.abort_tasks()
+
+    def get_task_state(self, unique_id: str) -> TaskState:
+        """Attempt to get state of QueueTask."""
+        return self._queue_manager.get_task_state(unique_id)

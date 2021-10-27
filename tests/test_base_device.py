@@ -455,8 +455,12 @@ class TestSKABaseDevice(object):
         # PROTECTED REGION ID(SKABaseDevice.test_Reset) ENABLED START #
         # The main test of this command is
         # TestSKABaseDevice_commands::test_ResetCommand
-        with pytest.raises(DevFailed):
-            device_under_test.Reset()
+        device_under_test.Reset()
+        assert f"{ResultCode.FAILED}" == device_under_test.longRunningCommandResult[1]
+        assert (
+            "Action reset_invoked is not allowed in op_state OFF"
+            in device_under_test.longRunningCommandResult[2]
+        )
         # PROTECTED REGION END #    //  SKABaseDevice.test_Reset
 
     def test_On(self, device_under_test, tango_change_event_helper):

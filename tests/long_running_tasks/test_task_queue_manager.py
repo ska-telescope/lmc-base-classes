@@ -10,7 +10,9 @@ from ska_tango_base.base.task_queue_manager import (
     TaskResult,
     TaskState,
 )
-from ska_tango_base.base.reference_component_manager import QueueWorkerComponentManager
+from ska_tango_base.base.reference_component_manager import (
+    ReferenceBaseComponentManager,
+)
 from ska_tango_base.commands import BaseCommand
 
 logger = logging.getLogger(__name__)
@@ -396,7 +398,7 @@ class TestQueueManagerExit:
                     )
                 )
 
-        cm = QueueWorkerComponentManager(
+        cm = ReferenceBaseComponentManager(
             op_state_model=None,
             logger=logger,
             max_queue_size=10,
@@ -458,7 +460,7 @@ class TestQueueManagerExit:
     @pytest.mark.timeout(5)
     def test_exit_stop(self, stop_task):
         """Test stopping exit."""
-        cm = QueueWorkerComponentManager(
+        cm = ReferenceBaseComponentManager(
             op_state_model=None,
             logger=logger,
             max_queue_size=5,
@@ -486,7 +488,7 @@ class TestQueueManagerExit:
     @pytest.mark.timeout(5)
     def test_delete_queue(self, slow_task, stop_task, abort_task):
         """Test deleting the queue."""
-        cm = QueueWorkerComponentManager(
+        cm = ReferenceBaseComponentManager(
             op_state_model=None,
             logger=logger,
             max_queue_size=8,
@@ -514,7 +516,7 @@ class TestComponentManager:
 
     def test_init(self):
         """Test that we can init the component manager."""
-        cm = QueueWorkerComponentManager(
+        cm = ReferenceBaseComponentManager(
             op_state_model=None,
             logger=logger,
             max_queue_size=0,

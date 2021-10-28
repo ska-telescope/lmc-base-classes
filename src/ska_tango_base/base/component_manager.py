@@ -54,6 +54,9 @@ class BaseComponentManager:
             manager
         """
         self.op_state_model = op_state_model
+        self._max_queue_size = kwargs.get("max_queue_size", 0)
+        self._num_workers = kwargs.get("num_workers", 0)
+        self._push_change_event = kwargs.get("push_change_event", None)
         self._queue_manager = self.create_queue_manager()
 
     def start_communicating(self):
@@ -216,7 +219,13 @@ class BaseComponentManager:
         :return: The queue manager.
         :rtype: QueueManager
         """
-        return QueueManager(max_queue_size=0, num_workers=0)
+        logger = getattr(self, "logger", None)
+        return QueueManager(
+            max_queue_size=self._max_queue_size,
+            num_workers=self._num_workers,
+            logger=logger,
+            push_change_event=self._push_change_event,
+        )
 
     def enqueue(
         self,

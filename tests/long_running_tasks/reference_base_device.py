@@ -14,7 +14,9 @@ import tango
 from tango.server import command, device_property
 from tango import DebugIt
 
-from ska_tango_base.base.reference_component_manager import QueueWorkerComponentManager
+from ska_tango_base.base.reference_component_manager import (
+    ReferenceBaseComponentManager,
+)
 from ska_tango_base.base.base_device import SKABaseDevice
 from ska_tango_base.base.task_queue_manager import ResultCode
 from ska_tango_base.commands import ResponseCommand
@@ -234,7 +236,7 @@ class AsyncBaseDevice(LongRunningCommandBaseTestDevice):
 
     def create_component_manager(self: SKABaseDevice):
         """Create the component manager with a queue manager that has workers."""
-        return QueueWorkerComponentManager(
+        return ReferenceBaseComponentManager(
             op_state_model=self.op_state_model,
             logger=self.logger,
             max_queue_size=20,

@@ -32,7 +32,7 @@ class TestCommands:
             with DeviceTestContext(class_name, process=True) as proxy:
                 proxy.Short(1)
                 # Wait for a result, if the task does not abort, we'll time out here
-                while not proxy.longRunningCommandResult:
+                while not any(proxy.longRunningCommandResult):
                     time.sleep(0.1)
 
                 result = TaskResult.from_task_result(proxy.longRunningCommandResult)
@@ -47,7 +47,7 @@ class TestCommands:
             with DeviceTestContext(class_name, process=True) as proxy:
                 proxy.NonAbortingLongRunning(0.01)
                 # Wait for a result, if the task does not abort, we'll time out here
-                while not proxy.longRunningCommandResult:
+                while not any(proxy.longRunningCommandResult):
                     time.sleep(0.1)
                 result = TaskResult.from_task_result(proxy.longRunningCommandResult)
                 assert result.result_code == ResultCode.OK
@@ -72,7 +72,7 @@ class TestCommands:
             # Abort the tasks
             proxy.AbortCommands()
             # Wait for a result, if the task does not abort, we'll time out here
-            while not proxy.longRunningCommandResult:
+            while not any(proxy.longRunningCommandResult):
                 time.sleep(0.1)
             result = TaskResult.from_task_result(proxy.longRunningCommandResult)
             assert result.unique_id == unique_id
@@ -86,7 +86,7 @@ class TestCommands:
         for class_name in [BlockingBaseDevice, AsyncBaseDevice]:
             with DeviceTestContext(class_name, process=True) as proxy:
                 unique_id, _ = proxy.LongRunningException()
-                while not proxy.longRunningCommandResult:
+                while not any(proxy.longRunningCommandResult):
                     time.sleep(0.1)
                 result = TaskResult.from_task_result(proxy.longRunningCommandResult)
                 assert result.unique_id == unique_id
@@ -104,7 +104,7 @@ def test_callbacks():
         with DeviceTestContext(AsyncBaseDevice, process=False) as proxy:
             # Execute some commands
             proxy.TestProgress(0.5)
-            while not proxy.longRunningCommandResult:
+            while not any(proxy.longRunningCommandResult):
                 time.sleep(0.1)
             assert my_cb.called
 
@@ -185,7 +185,7 @@ def test_events():
         proxy.TestProgress(0.2)
 
         # Wait for task to finish
-        while not proxy.longRunningCommandResult:
+        while not any(proxy.longRunningCommandResult):
             time.sleep(0.1)
 
         # Wait for progress events

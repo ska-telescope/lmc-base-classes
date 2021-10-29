@@ -240,7 +240,7 @@ class TaskResult:
             raise ValueError(f"Cannot parse task_result {task_result}")
 
         return TaskResult(
-            result_code=ResultCode(int(task_result[1])),
+            result_code=ResultCode(int(task_result[1])) if task_result[1] else ResultCode.UNKNOWN,
             task_result=task_result[2],
             unique_id=task_result[0],
         )
@@ -448,7 +448,7 @@ class QueueManager:
         self._property_update_lock = threading.Lock()
         self._logger = logger if logger else logging.getLogger(__name__)
 
-        self._task_result: Union[Tuple[str, str, str], Tuple[()]] = ()
+        self._task_result: Union[Tuple[str, str, str], Tuple[()]] = ("", "", "")
         self._tasks_in_queue: Dict[str, str] = {}  # unique_id, task_name
         self._task_status: Dict[str, str] = {}  # unique_id, status
         self._threads = []

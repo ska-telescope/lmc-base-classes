@@ -202,7 +202,7 @@ class TestQueueManagerTasks:
         exc_task = exc_task()
 
         qm.enqueue_task(add_task_one, 3)
-        while not qm.task_result:
+        while not any(qm.task_result):
             time.sleep(0.5)
         task_result = TaskResult.from_task_result(qm.task_result)
         assert task_result.unique_id.endswith("SimpleTask")
@@ -274,7 +274,7 @@ class TestQueueManagerTasks:
         assert res.endswith(expected_name)
 
         # Wait for the task to be picked up
-        while not qm.task_result:
+        while not any(qm.task_result):
             time.sleep(0.5)
         assert qm.task_result[0].endswith(expected_name)
         assert int(qm.task_result[1]) == expected_result_code
@@ -349,7 +349,7 @@ class TestQueueManagerTasks:
         """Test the QueueTask get state is completed."""
         qm = QueueManager(max_queue_size=8, num_workers=2, logger=logger)
         unique_id_one, _ = qm.enqueue_task(simple_task(), 3)
-        while not qm.task_result:
+        while not any(qm.task_result):
             time.sleep(0.1)
         assert qm.get_task_state(unique_id=unique_id_one) == TaskState.COMPLETED
 

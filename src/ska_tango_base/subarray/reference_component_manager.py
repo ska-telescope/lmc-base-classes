@@ -658,6 +658,11 @@ class ReferenceSubarrayComponentManager(
         self.obs_state_model.perform_action("component_obsfault")
 
     def create_queue_manager(self) -> QueueManager:
+        """Create a Queue Manager.
+
+        :return: The queue manager
+        :rtype: QueueManager
+        """
         return QueueManager(
             num_workers=self._num_workers,
             max_queue_size=self._max_queue_size,

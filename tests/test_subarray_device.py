@@ -69,7 +69,7 @@ class TestSKASubarray:
                 logger=self.logger,
                 num_workers=3,
                 max_queue_size=5,
-                push_change_event=self.push_change_event
+                push_change_event=self.push_change_event,
             ),
             "properties": device_properties,
             "memorized": {"adminMode": str(AdminMode.ONLINE.value)},
@@ -88,12 +88,16 @@ class TestSKASubarray:
         """Test for Abort."""
         # PROTECTED REGION ID(SKASubarray.test_Abort) ENABLED START #
 
-        result_callback = tango_change_event_helper.subscribe("longRunningCommandResult")
+        result_callback = tango_change_event_helper.subscribe(
+            "longRunningCommandResult"
+        )
 
         on_tr = TaskResult.from_response_command(device_under_test.On())
         result_callback.wait_for_lrc_id(on_tr.unique_id)
 
-        assign_tr = TaskResult.from_response_command(device_under_test.AssignResources(json.dumps(["BAND1"])))
+        assign_tr = TaskResult.from_response_command(
+            device_under_test.AssignResources(json.dumps(["BAND1"]))
+        )
         result_callback.wait_for_lrc_id(assign_tr.unique_id)
 
         device_under_test.Configure('{"BAND1": 2}')
@@ -113,11 +117,15 @@ class TestSKASubarray:
     def test_Configure(self, device_under_test, tango_change_event_helper):
         """Test for Configure."""
         # PROTECTED REGION ID(SKASubarray.test_Configure) ENABLED START #
-        result_callback = tango_change_event_helper.subscribe("longRunningCommandResult")
+        result_callback = tango_change_event_helper.subscribe(
+            "longRunningCommandResult"
+        )
 
         on_tr = TaskResult.from_response_command(device_under_test.On())
         result_callback.wait_for_lrc_id(on_tr.unique_id)
-        assign_tr = TaskResult.from_response_command(device_under_test.AssignResources(json.dumps(["BAND1"])))
+        assign_tr = TaskResult.from_response_command(
+            device_under_test.AssignResources(json.dumps(["BAND1"]))
+        )
         result_callback.wait_for_lrc_id(assign_tr.unique_id)
 
         obs_state_callback = tango_change_event_helper.subscribe("obsState")
@@ -139,9 +147,13 @@ class TestSKASubarray:
             f"['{device_under_test.info().dev_class}, ska_tango_base, [0-9]+.[0-9]+.[0-9]+, "
             "A set of generic base devices for SKA Telescope.']"
         )
-        result_callback = tango_change_event_helper.subscribe("longRunningCommandResult")
+        result_callback = tango_change_event_helper.subscribe(
+            "longRunningCommandResult"
+        )
 
-        ver_info_tr = TaskResult.from_response_command(device_under_test.GetVersionInfo())
+        ver_info_tr = TaskResult.from_response_command(
+            device_under_test.GetVersionInfo()
+        )
         result_callback.wait_for_lrc_id(ver_info_tr.unique_id)
 
         versionInfo = device_under_test.longRunningCommandResult[2]
@@ -170,7 +182,9 @@ class TestSKASubarray:
         """Test for AssignResources."""
         # PROTECTED REGION ID(SKASubarray.test_AssignResources) ENABLED START #
 
-        result_callback = tango_change_event_helper.subscribe("longRunningCommandResult")
+        result_callback = tango_change_event_helper.subscribe(
+            "longRunningCommandResult"
+        )
 
         on_tr = TaskResult.from_response_command(device_under_test.On())
         result_callback.wait_for_lrc_id(on_tr.unique_id)
@@ -179,7 +193,9 @@ class TestSKASubarray:
         obs_state_callback.assert_call(ObsState.EMPTY)
 
         resources_to_assign = ["BAND1", "BAND2"]
-        assign_tr = TaskResult.from_response_command(device_under_test.AssignResources(json.dumps(resources_to_assign)))
+        assign_tr = TaskResult.from_response_command(
+            device_under_test.AssignResources(json.dumps(resources_to_assign))
+        )
         result_callback.wait_for_lrc_id(assign_tr.unique_id)
 
         obs_state_callback.assert_calls([ObsState.RESOURCING, ObsState.IDLE])
@@ -199,12 +215,16 @@ class TestSKASubarray:
     def test_End(self, device_under_test, tango_change_event_helper):
         """Test for EndSB."""
         # PROTECTED REGION ID(SKASubarray.test_EndSB) ENABLED START #
-        result_callback = tango_change_event_helper.subscribe("longRunningCommandResult")
+        result_callback = tango_change_event_helper.subscribe(
+            "longRunningCommandResult"
+        )
 
         on_tr = TaskResult.from_response_command(device_under_test.On())
         result_callback.wait_for_lrc_id(on_tr.unique_id)
 
-        assign_tr = TaskResult.from_response_command(device_under_test.AssignResources(json.dumps(["BAND1"])))
+        assign_tr = TaskResult.from_response_command(
+            device_under_test.AssignResources(json.dumps(["BAND1"]))
+        )
         result_callback.wait_for_lrc_id(assign_tr.unique_id)
 
         device_under_test.Configure('{"BAND1": 2}')
@@ -225,12 +245,16 @@ class TestSKASubarray:
     def test_EndScan(self, device_under_test, tango_change_event_helper):
         """Test for EndScan."""
         # PROTECTED REGION ID(SKASubarray.test_EndScan) ENABLED START #
-        result_callback = tango_change_event_helper.subscribe("longRunningCommandResult")
+        result_callback = tango_change_event_helper.subscribe(
+            "longRunningCommandResult"
+        )
 
         on_tr = TaskResult.from_response_command(device_under_test.On())
         result_callback.wait_for_lrc_id(on_tr.unique_id)
 
-        assign_tr = TaskResult.from_response_command(device_under_test.AssignResources(json.dumps(["BAND1"])))
+        assign_tr = TaskResult.from_response_command(
+            device_under_test.AssignResources(json.dumps(["BAND1"]))
+        )
         result_callback.wait_for_lrc_id(assign_tr.unique_id)
 
         device_under_test.Configure('{"BAND1": 2}')
@@ -254,12 +278,16 @@ class TestSKASubarray:
         """Test for ReleaseAllResources."""
         # PROTECTED REGION ID(SKASubarray.test_ReleaseAllResources) ENABLED START #
         # assert device_under_test.ReleaseAllResources() == [""]
-        result_callback = tango_change_event_helper.subscribe("longRunningCommandResult")
+        result_callback = tango_change_event_helper.subscribe(
+            "longRunningCommandResult"
+        )
 
         on_tr = TaskResult.from_response_command(device_under_test.On())
         result_callback.wait_for_lrc_id(on_tr.unique_id)
 
-        assign_tr = TaskResult.from_response_command(device_under_test.AssignResources(json.dumps(["BAND1", "BAND2"])))
+        assign_tr = TaskResult.from_response_command(
+            device_under_test.AssignResources(json.dumps(["BAND1", "BAND2"]))
+        )
         result_callback.wait_for_lrc_id(assign_tr.unique_id)
 
         obs_state_callback = tango_change_event_helper.subscribe("obsState")
@@ -276,12 +304,16 @@ class TestSKASubarray:
     def test_ReleaseResources(self, device_under_test, tango_change_event_helper):
         """Test for ReleaseResources."""
         # PROTECTED REGION ID(SKASubarray.test_ReleaseResources) ENABLED START #
-        result_callback = tango_change_event_helper.subscribe("longRunningCommandResult")
+        result_callback = tango_change_event_helper.subscribe(
+            "longRunningCommandResult"
+        )
 
         on_tr = TaskResult.from_response_command(device_under_test.On())
         result_callback.wait_for_lrc_id(on_tr.unique_id)
 
-        assign_tr = TaskResult.from_response_command(device_under_test.AssignResources(json.dumps(["BAND1", "BAND2"])))
+        assign_tr = TaskResult.from_response_command(
+            device_under_test.AssignResources(json.dumps(["BAND1", "BAND2"]))
+        )
         result_callback.wait_for_lrc_id(assign_tr.unique_id)
 
         obs_state_callback = tango_change_event_helper.subscribe("obsState")
@@ -299,12 +331,16 @@ class TestSKASubarray:
     def test_ObsReset(self, device_under_test, tango_change_event_helper):
         """Test for Reset."""
         # PROTECTED REGION ID(SKASubarray.test_Reset) ENABLED START #
-        result_callback = tango_change_event_helper.subscribe("longRunningCommandResult")
+        result_callback = tango_change_event_helper.subscribe(
+            "longRunningCommandResult"
+        )
 
         on_tr = TaskResult.from_response_command(device_under_test.On())
         result_callback.wait_for_lrc_id(on_tr.unique_id)
 
-        assign_tr = TaskResult.from_response_command(device_under_test.AssignResources(json.dumps(["BAND1"])))
+        assign_tr = TaskResult.from_response_command(
+            device_under_test.AssignResources(json.dumps(["BAND1"]))
+        )
         result_callback.wait_for_lrc_id(assign_tr.unique_id)
 
         device_under_test.Configure('{"BAND1": 2}')
@@ -327,12 +363,16 @@ class TestSKASubarray:
     def test_Scan(self, device_under_test, tango_change_event_helper):
         """Test for Scan."""
         # PROTECTED REGION ID(SKASubarray.test_Scan) ENABLED START #
-        result_callback = tango_change_event_helper.subscribe("longRunningCommandResult")
+        result_callback = tango_change_event_helper.subscribe(
+            "longRunningCommandResult"
+        )
 
         on_tr = TaskResult.from_response_command(device_under_test.On())
         result_callback.wait_for_lrc_id(on_tr.unique_id)
 
-        assign_tr = TaskResult.from_response_command(device_under_test.AssignResources(json.dumps(["BAND1"])))
+        assign_tr = TaskResult.from_response_command(
+            device_under_test.AssignResources(json.dumps(["BAND1"]))
+        )
         result_callback.wait_for_lrc_id(assign_tr.unique_id)
 
         device_under_test.Configure('{"BAND1": 2}')
@@ -477,7 +517,9 @@ class TestSKASubarray:
     def test_assignedResources(self, device_under_test, tango_change_event_helper):
         """Test for assignedResources."""
         # PROTECTED REGION ID(SKASubarray.test_assignedResources) ENABLED START #
-        result_callback = tango_change_event_helper.subscribe("longRunningCommandResult")
+        result_callback = tango_change_event_helper.subscribe(
+            "longRunningCommandResult"
+        )
 
         on_tr = TaskResult.from_response_command(device_under_test.On())
         result_callback.wait_for_lrc_id(on_tr.unique_id)
@@ -490,7 +532,9 @@ class TestSKASubarray:
     def test_configuredCapabilities(self, device_under_test, tango_change_event_helper):
         """Test for configuredCapabilities."""
         # PROTECTED REGION ID(SKASubarray.test_configuredCapabilities) ENABLED START #
-        result_callback = tango_change_event_helper.subscribe("longRunningCommandResult")
+        result_callback = tango_change_event_helper.subscribe(
+            "longRunningCommandResult"
+        )
 
         on_tr = TaskResult.from_response_command(device_under_test.On())
         result_callback.wait_for_lrc_id(on_tr.unique_id)

@@ -1,5 +1,6 @@
 """This module models component management for SKA subarray devices."""
 import functools
+from ska_tango_base.base.task_queue_manager import QueueManager
 
 from ska_tango_base.subarray import SubarrayComponentManager
 from ska_tango_base.base import (
@@ -421,6 +422,9 @@ class ReferenceSubarrayComponentManager(
         capability_types,
         logger=None,
         _component=None,
+        max_queue_size=0,
+        num_workers=0,
+        push_change_event=None,
     ):
         """
         Initialise a new ReferenceSubarrayComponentManager instance.
@@ -437,6 +441,9 @@ class ReferenceSubarrayComponentManager(
         """
         self.obs_state_model = obs_state_model
         self._resource_pool = self._ResourcePool(self.component_resourced)
+        self._max_queue_size = max_queue_size
+        self._num_workers = num_workers
+        self._push_change_event = push_change_event
 
         super().__init__(
             op_state_model,
@@ -649,3 +656,11 @@ class ReferenceSubarrayComponentManager(
         This is a callback hook.
         """
         self.obs_state_model.perform_action("component_obsfault")
+
+    def create_queue_manager(self) -> QueueManager:
+        return QueueManager(
+            num_workers=self._num_workers,
+            max_queue_size=self._max_queue_size,
+            logger=self.logger,
+            push_change_event=self._push_change_event,
+        )

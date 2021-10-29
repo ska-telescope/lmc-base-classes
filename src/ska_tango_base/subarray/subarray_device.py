@@ -637,17 +637,6 @@ class SKASubarray(SKAObsDevice):
     # --------
     # Commands
     # --------
-
-    def is_AssignResources_allowed(self):
-        """
-        Check if command `AssignResources` is allowed in the current device state.
-
-        :return: ``True`` if the command is allowed
-        :rtype: boolean
-        """
-        command = self.get_command_object("AssignResources")
-        return command.is_allowed(raise_if_disallowed=True)
-
     @command(
         dtype_in="DevString",
         doc_in="JSON-encoded string with the resources to add to subarray",
@@ -672,8 +661,8 @@ class SKASubarray(SKAObsDevice):
         """
         command = self.get_command_object("AssignResources")
         args = json.loads(argin)
-        (return_code, message) = command(args)
-        return [[return_code], [message]]
+        unique_id, return_code = self.component_manager.enqueue(command, args)
+        return [[return_code], [unique_id]]
 
     def is_ReleaseResources_allowed(self):
         """

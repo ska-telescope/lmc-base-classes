@@ -122,6 +122,7 @@ def tango_change_event_helper(device_under_test):
             self._value = None
             self._values_queue = Queue()
             self._errors = []
+            self._attribute_name = attribute_name
 
             # Subscription will result in an immediate
             # synchronous callback with the current value,
@@ -211,6 +212,21 @@ def tango_change_event_helper(device_under_test):
             """
             for value in values:
                 self.assert_call(value)
+
+        def wait_for_lrc_id(self, unique_id: str):
+            """Wait for the longRunningCommandResult unique ID to be the same as the paramater.
+
+            :param unique_id: The long running command unique ID
+            :type unique_id: str
+            """
+            assert (
+                self._attribute_name == "longRunningCommandResult"
+            ), "Method only available for longRunningCommandResult"
+            while True:
+                next_val = self._next()
+                assert next_val, "No more events"
+                if unique_id == next_val[0]:
+                    break
 
     yield _Callback
 

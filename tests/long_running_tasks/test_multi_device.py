@@ -210,7 +210,9 @@ class TestMultiDevice:
             events = [
                 i.attr_value.value
                 for i in event_callback.get_events()
-                if i.attr_value and i.attr_value.value and i.attr_value.value != ("", "", "")
+                if i.attr_value
+                and i.attr_value.value
+                and i.attr_value.value != ("", "", "")
             ]
             time.sleep(0.2)
         return events

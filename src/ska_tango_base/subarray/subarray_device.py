@@ -659,9 +659,9 @@ class SKASubarray(SKAObsDevice):
             information purpose only.
         :rtype: (ResultCode, str)
         """
-        command = self.get_command_object("AssignResources")
+        handler = self.get_command_object("AssignResources")
         args = json.loads(argin)
-        unique_id, return_code = self.component_manager.enqueue(command, args)
+        unique_id, return_code = self.component_manager.enqueue(handler, args)
         return [[return_code], [unique_id]]
 
     def is_ReleaseResources_allowed(self):

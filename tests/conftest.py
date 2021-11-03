@@ -1,10 +1,14 @@
 """This module defines elements of the pytest test harness shared by all tests."""
 import logging
 from queue import Empty, Queue
+from unittest import mock
 
 import pytest
 from tango import EventType
 from tango.test_context import DeviceTestContext
+
+from ska_tango_base.base.task_queue_manager import TaskResult
+from ska_tango_base.commands import ResultCode
 
 
 @pytest.fixture(scope="class")
@@ -12,7 +16,7 @@ def device_properties():
     """
     Fixture that returns device_properties to be provided to the device under test.
 
-    This is a default implementiong that provides no properties.
+    This is a default implementation that provides no properties.
     """
     return {}
 
@@ -24,10 +28,27 @@ def tango_context(device_test_config):
     if component_manager_patch is not None:
         device_test_config["device"].create_component_manager = component_manager_patch
 
-    tango_context = DeviceTestContext(**device_test_config)
-    tango_context.start()
-    yield tango_context
-    tango_context.stop()
+    def _get_command_func(dp, cmd_info, name):
+        """Patch __get_command_func so that we can return a TaskResult if applicable."""
+        _, doc = cmd_info
+
+        def f(*args, **kwds):
+            result = dp.command_inout(name, *args, **kwds)
+            if isinstance(result, list):
+                if len(result) == 2:
+                    if len(result[0]) == 1 and len(result[1]) == 1:
+                        if result[0][0] == ResultCode.QUEUED:
+                            return TaskResult.from_response_command(result)
+            return result
+
+        f.__doc__ = doc
+        return f
+
+    with mock.patch("tango.device_proxy.__get_command_func", _get_command_func):
+        tango_context = DeviceTestContext(**device_test_config)
+        tango_context.start()
+        yield tango_context
+        tango_context.stop()
 
 
 @pytest.fixture()
@@ -214,7 +235,7 @@ def tango_change_event_helper(device_under_test):
                 self.assert_call(value)
 
         def wait_for_lrc_id(self, unique_id: str):
-            """Wait for the longRunningCommandResult unique ID to be the same as the paramater.
+            """Wait for the longRunningCommandResult unique ID to be the same as the parameter.
 
             :param unique_id: The long running command unique ID
             :type unique_id: str

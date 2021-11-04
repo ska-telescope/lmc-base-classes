@@ -66,7 +66,7 @@ class TestSKASubarray:
                 self.obs_state_model,
                 self.CapabilityTypes,
                 logger=self.logger,
-                num_workers=3,
+                num_workers=1,
                 max_queue_size=5,
                 push_change_event=self.push_change_event,
             ),
@@ -92,9 +92,8 @@ class TestSKASubarray:
         )
 
         on_tr = device_under_test.On()
-        result_callback.wait_for_lrc_id(on_tr.unique_id)
-
         assign_tr = device_under_test.AssignResources(json.dumps(["BAND1"]))
+        result_callback.wait_for_lrc_id(on_tr.unique_id)
         result_callback.wait_for_lrc_id(assign_tr.unique_id)
 
         device_under_test.Configure('{"BAND1": 2}')
@@ -119,8 +118,8 @@ class TestSKASubarray:
         )
 
         on_tr = device_under_test.On()
-        result_callback.wait_for_lrc_id(on_tr.unique_id)
         assign_tr = device_under_test.AssignResources(json.dumps(["BAND1"]))
+        result_callback.wait_for_lrc_id(on_tr.unique_id)
         result_callback.wait_for_lrc_id(assign_tr.unique_id)
 
         obs_state_callback = tango_change_event_helper.subscribe("obsState")
@@ -211,9 +210,8 @@ class TestSKASubarray:
         )
 
         on_tr = device_under_test.On()
-        result_callback.wait_for_lrc_id(on_tr.unique_id)
-
         assign_tr = device_under_test.AssignResources(json.dumps(["BAND1"]))
+        result_callback.wait_for_lrc_id(on_tr.unique_id)
         result_callback.wait_for_lrc_id(assign_tr.unique_id)
 
         device_under_test.Configure('{"BAND1": 2}')
@@ -239,9 +237,8 @@ class TestSKASubarray:
         )
 
         on_tr = device_under_test.On()
-        result_callback.wait_for_lrc_id(on_tr.unique_id)
-
         assign_tr = device_under_test.AssignResources(json.dumps(["BAND1"]))
+        result_callback.wait_for_lrc_id(on_tr.unique_id)
         result_callback.wait_for_lrc_id(assign_tr.unique_id)
 
         device_under_test.Configure('{"BAND1": 2}')
@@ -270,9 +267,8 @@ class TestSKASubarray:
         )
 
         on_tr = device_under_test.On()
-        result_callback.wait_for_lrc_id(on_tr.unique_id)
-
         assign_tr = device_under_test.AssignResources(json.dumps(["BAND1", "BAND2"]))
+        result_callback.wait_for_lrc_id(on_tr.unique_id)
         result_callback.wait_for_lrc_id(assign_tr.unique_id)
 
         obs_state_callback = tango_change_event_helper.subscribe("obsState")
@@ -294,9 +290,8 @@ class TestSKASubarray:
         )
 
         on_tr = device_under_test.On()
-        result_callback.wait_for_lrc_id(on_tr.unique_id)
-
         assign_tr = device_under_test.AssignResources(json.dumps(["BAND1", "BAND2"]))
+        result_callback.wait_for_lrc_id(on_tr.unique_id)
         result_callback.wait_for_lrc_id(assign_tr.unique_id)
 
         obs_state_callback = tango_change_event_helper.subscribe("obsState")
@@ -319,9 +314,8 @@ class TestSKASubarray:
         )
 
         on_tr = device_under_test.On()
-        result_callback.wait_for_lrc_id(on_tr.unique_id)
-
         assign_tr = device_under_test.AssignResources(json.dumps(["BAND1"]))
+        result_callback.wait_for_lrc_id(on_tr.unique_id)
         result_callback.wait_for_lrc_id(assign_tr.unique_id)
 
         device_under_test.Configure('{"BAND1": 2}')
@@ -349,9 +343,8 @@ class TestSKASubarray:
         )
 
         on_tr = device_under_test.On()
-        result_callback.wait_for_lrc_id(on_tr.unique_id)
-
         assign_tr = device_under_test.AssignResources(json.dumps(["BAND1"]))
+        result_callback.wait_for_lrc_id(on_tr.unique_id)
         result_callback.wait_for_lrc_id(assign_tr.unique_id)
 
         device_under_test.Configure('{"BAND1": 2}')

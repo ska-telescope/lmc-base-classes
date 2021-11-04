@@ -112,6 +112,7 @@ import logging
 import threading
 import time
 import traceback
+import numpy
 from uuid import uuid4
 from queue import Empty, Queue
 from datetime import datetime
@@ -240,16 +241,22 @@ class TaskResult:
             raise ValueError(f"Cannot parse task_result {task_result}")
 
         return TaskResult(
-            result_code=ResultCode(int(task_result[1])),
+            result_code=ResultCode(int(task_result[1]))
+            if task_result[1]
+            else ResultCode.UNKNOWN,
             task_result=task_result[2],
             unique_id=task_result[0],
         )
 
     @classmethod
-    def from_response_command(cls, command_result: Tuple[str, str]) -> TaskResult:
+    def from_response_command(
+        cls, command_result: Union[Tuple[str, str], numpy.ndarray]
+    ) -> TaskResult:
         """Convert from ResponseCommand to TaskResult.
 
-        :param command_result: The task_result (unique_id, result_code)
+        Either from (str, str) or DevVarLongStringArray
+
+        :param command_result: Either (unique_id, result_code) or numpy.ndarray [[result_code], [unique_id]]
         :type command_result: tuple
         :return: The task result
         :rtype: TaskResult
@@ -258,11 +265,18 @@ class TaskResult:
         if not command_result or len(command_result) != 2:
             raise ValueError(f"Cannot parse task_result {command_result}")
 
-        return TaskResult(
-            result_code=ResultCode(int(command_result[1])),
-            task_result="",
-            unique_id=command_result[0],
-        )
+        if isinstance(command_result[0], str):
+            return TaskResult(
+                result_code=ResultCode(int(command_result[1])),
+                task_result="",
+                unique_id=command_result[0],
+            )
+        else:
+            return TaskResult(
+                result_code=ResultCode(command_result[0][0]),
+                task_result="",
+                unique_id=command_result[1][0],
+            )
 
     def get_task_unique_id(self) -> TaskUniqueId:
         """Convert from the unique_id string to TaskUniqueId."""
@@ -448,7 +462,7 @@ class QueueManager:
         self._property_update_lock = threading.Lock()
         self._logger = logger if logger else logging.getLogger(__name__)
 
-        self._task_result: Union[Tuple[str, str, str], Tuple[()]] = ()
+        self._task_result: Tuple[str, str, str] = ("", "", "")
         self._tasks_in_queue: Dict[str, str] = {}  # unique_id, task_name
         self._task_status: Dict[str, str] = {}  # unique_id, status
         self._threads = []

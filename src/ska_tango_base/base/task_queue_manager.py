@@ -462,7 +462,7 @@ class QueueManager:
         self._property_update_lock = threading.Lock()
         self._logger = logger if logger else logging.getLogger(__name__)
 
-        self._task_result: Union[Tuple[str, str, str], Tuple[()]] = ("", "", "")
+        self._task_result: Tuple[str, str, str] = ("", "", "")
         self._tasks_in_queue: Dict[str, str] = {}  # unique_id, task_name
         self._task_status: Dict[str, str] = {}  # unique_id, status
         self._threads = []

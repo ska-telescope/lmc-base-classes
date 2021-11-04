@@ -1197,8 +1197,8 @@ class SKABaseDevice(Device):
 
         :return: The result code and the command unique ID
         """
-        command = self.get_command_object("GetVersionInfo")
-        unique_id, result_code = self.component_manager.enqueue(command)
+        handler = self.get_command_object("GetVersionInfo")
+        unique_id, result_code = self.component_manager.enqueue(handler)
         return [[result_code], [unique_id]]
         # PROTECTED REGION END #    //  SKABaseDevice.GetVersionInfo
 
@@ -1254,8 +1254,8 @@ class SKABaseDevice(Device):
             information purpose only.
         :rtype: (ResultCode, str)
         """
-        command = self.get_command_object("Reset")
-        unique_id, return_code = self.component_manager.enqueue(command)
+        handler = self.get_command_object("Reset")
+        unique_id, return_code = self.component_manager.enqueue(handler)
 
         return [[return_code], [unique_id]]
 
@@ -1311,8 +1311,8 @@ class SKABaseDevice(Device):
             information purpose only.
         :rtype: (ResultCode, str)
         """
-        command = self.get_command_object("Standby")
-        unique_id, return_code = self.component_manager.enqueue(command)
+        handler = self.get_command_object("Standby")
+        unique_id, return_code = self.component_manager.enqueue(handler)
 
         return [[return_code], [unique_id]]
 
@@ -1368,8 +1368,8 @@ class SKABaseDevice(Device):
             information purpose only.
         :rtype: (ResultCode, str)
         """
-        command = self.get_command_object("Off")
-        unique_id, return_code = self.component_manager.enqueue(command)
+        handler = self.get_command_object("Off")
+        unique_id, return_code = self.component_manager.enqueue(handler)
 
         return [[return_code], [unique_id]]
 
@@ -1425,8 +1425,8 @@ class SKABaseDevice(Device):
             information purpose only.
         :rtype: (ResultCode, str)
         """
-        command = self.get_command_object("On")
-        unique_id, return_code = self.component_manager.enqueue(command)
+        handler = self.get_command_object("On")
+        unique_id, return_code = self.component_manager.enqueue(handler)
 
         return [[return_code], [unique_id]]
 
@@ -1460,8 +1460,8 @@ class SKABaseDevice(Device):
     @DebugIt()
     def AbortCommands(self):
         """Empty out long running commands in queue."""
-        command = self.get_command_object("AbortCommands")
-        (return_code, message) = command()
+        handler = self.get_command_object("AbortCommands")
+        (return_code, message) = handler()
         return [[return_code], [message]]
 
     class CheckLongRunningCommandStatusCommand(ResponseCommand):
@@ -1503,8 +1503,8 @@ class SKABaseDevice(Device):
     @DebugIt()
     def CheckLongRunningCommandStatus(self, argin):
         """Check the status of a long running command by ID."""
-        command = self.get_command_object("CheckLongRunningCommandStatus")
-        (return_code, command_state) = command(argin)
+        handler = self.get_command_object("CheckLongRunningCommandStatus")
+        (return_code, command_state) = handler(argin)
         return [[return_code], [command_state]]
 
     class DebugDeviceCommand(BaseCommand):

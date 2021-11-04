@@ -438,6 +438,9 @@ class ReferenceSubarrayComponentManager(
         :param logger: a logger for this component manager
         :param _component: allows setting of the component to be
             managed; for testing purposes only
+        :param max_queue_size: The size of the QueueManager queue
+        :param num_workers: The number of QueueManager workers
+        :param push_change_event: Function to call to push change events
         """
         self.obs_state_model = obs_state_model
         self._resource_pool = self._ResourcePool(self.component_resourced)

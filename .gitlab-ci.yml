@@ -18,12 +18,15 @@ variables:
   GIT_SUBMODULE_STRATEGY: recursive
 
 stages:
+  - scan
   - build
   - test
   - linting
+  - lint
   - publish
   - pages
   - release
+  - python-lint
 
 clean shell runner:
   stage: .pre
@@ -72,25 +75,14 @@ pages:
   only:
   - master
 
+# Details: https://gitlab.com/ska-telescope/templates-repository#how-to-use
 include:
     # Python
   - project: 'ska-telescope/templates-repository'
     file: 'gitlab-ci/includes/python.gitlab-ci.yml'
-    # Docs pages
-  - project: 'ska-telescope/templates-repository'
-    file: 'gitlab-ci/includes/docs-pages.gitlab-ci.yml'
-    # k8s steps
-  - project: 'ska-telescope/templates-repository'
-    file: 'gitlab-ci/includes/k8s.gitlab-ci.yml'
-    # OCI Images
+  # OCI Images
   - project: 'ska-telescope/templates-repository'
     file: 'gitlab-ci/includes/oci-image.gitlab-ci.yml'
-    # Raw
-  - project: 'ska-telescope/templates-repository'
-    file: 'gitlab-ci/includes/raw.gitlab-ci.yml'
-    # Tag Based GitLab Release Management
-  - project: 'ska-telescope/templates-repository'
-    file: 'gitlab-ci/includes/release.gitlab-ci.yml'
-    # .post step finalisers eg: badges
+  # .post step finalisers eg: badges
   - project: 'ska-telescope/templates-repository'
     file: 'gitlab-ci/includes/finaliser.gitlab-ci.yml'

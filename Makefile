@@ -20,6 +20,7 @@ IMAGE_FOR_DIAGRAMS = artefact.skao.int/ska-tango-images-pytango-builder:9.3.10
 # import some standard Make targets e.g. `make build` (for building
 # docker images), ``make push` (docker push procedure), etc.
 include .make/Makefile.mk
+include .ci_make/*.mk
 
 # import make targets for code linting e.g. `make lint`
 include .make/lint.mk

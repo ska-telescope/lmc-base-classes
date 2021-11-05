@@ -14,6 +14,9 @@ cache:
 # In this case we have only the test job which produce an artifacts (it must be placed into a directory called "public")
 # It is also specified that only the master branch will be subject of this job.
 
+variables:
+  GIT_SUBMODULE_STRATEGY: recursive
+
 stages:
   - build
   - test
@@ -70,15 +73,24 @@ pages:
   - master
 
 include:
-  # Create Gitlab CI badges from CI metrics
-  # https://developer.skatelescope.org/en/latest/tools/continuousintegration.html#automated-collection-of-ci-health-metrics-as-part-of-the-ci-pipeline
+    # Python
   - project: 'ska-telescope/templates-repository'
-    file: 'gitlab-ci/includes/post_step.yml'
-  # Publish Python packages
-  # https://developer.skao.int/en/latest/tools/software-package-release-procedure.html#building-and-publishing-python-packages
+    file: 'gitlab-ci/includes/python.gitlab-ci.yml'
+    # Docs pages
   - project: 'ska-telescope/templates-repository'
-    file: 'gitlab-ci/includes/build_wheel.yml'
-  # Publish OCI images
-  # https://developer.skao.int/en/latest/tools/software-package-release-procedure.html#oci-image
+    file: 'gitlab-ci/includes/docs-pages.gitlab-ci.yml'
+    # k8s steps
   - project: 'ska-telescope/templates-repository'
-    file: 'gitlab-ci/includes/build_push.yml'
+    file: 'gitlab-ci/includes/k8s.gitlab-ci.yml'
+    # OCI Images
+  - project: 'ska-telescope/templates-repository'
+    file: 'gitlab-ci/includes/oci-image.gitlab-ci.yml'
+    # Raw
+  - project: 'ska-telescope/templates-repository'
+    file: 'gitlab-ci/includes/raw.gitlab-ci.yml'
+    # Tag Based GitLab Release Management
+  - project: 'ska-telescope/templates-repository'
+    file: 'gitlab-ci/includes/release.gitlab-ci.yml'
+    # .post step finalisers eg: badges
+  - project: 'ska-telescope/templates-repository'
+    file: 'gitlab-ci/includes/finaliser.gitlab-ci.yml'

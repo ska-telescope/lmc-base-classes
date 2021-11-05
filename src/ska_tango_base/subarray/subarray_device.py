@@ -664,16 +664,6 @@ class SKASubarray(SKAObsDevice):
         unique_id, return_code = self.component_manager.enqueue(handler, args)
         return [[return_code], [unique_id]]
 
-    def is_ReleaseResources_allowed(self):
-        """
-        Check if command `ReleaseResources` is allowed in the current device state.
-
-        :return: ``True`` if the command is allowed
-        :rtype: boolean
-        """
-        command = self.get_command_object("ReleaseResources")
-        return command.is_allowed(raise_if_disallowed=True)
-
     @command(
         dtype_in="DevString",
         doc_in="JSON-encoded string with the resources to remove from the subarray",
@@ -696,20 +686,10 @@ class SKASubarray(SKAObsDevice):
             information purpose only.
         :rtype: (ResultCode, str)
         """
-        command = self.get_command_object("ReleaseResources")
+        handler = self.get_command_object("ReleaseResources")
         args = json.loads(argin)
-        (return_code, message) = command(args)
-        return [[return_code], [message]]
-
-    def is_ReleaseAllResources_allowed(self):
-        """
-        Check if command `ReleaseAllResources` is allowed in the current device state.
-
-        :return: ``True`` if the command is allowed
-        :rtype: boolean
-        """
-        command = self.get_command_object("ReleaseAllResources")
-        return command.is_allowed(raise_if_disallowed=True)
+        unique_id, return_code = self.component_manager.enqueue(handler, args)
+        return [[return_code], [unique_id]]
 
     @command(
         dtype_out="DevVarLongStringArray",
@@ -728,19 +708,9 @@ class SKASubarray(SKAObsDevice):
             information purpose only.
         :rtype: (ResultCode, str)
         """
-        command = self.get_command_object("ReleaseAllResources")
-        (return_code, message) = command()
-        return [[return_code], [message]]
-
-    def is_Configure_allowed(self):
-        """
-        Check if command `Configure` is allowed in the current device state.
-
-        :return: ``True`` if the command is allowed
-        :rtype: boolean
-        """
-        command = self.get_command_object("Configure")
-        return command.is_allowed(raise_if_disallowed=True)
+        handler = self.get_command_object("ReleaseAllResources")
+        unique_id, return_code = self.component_manager.enqueue(handler)
+        return [[return_code], [unique_id]]
 
     @command(
         dtype_in="DevString",
@@ -764,20 +734,10 @@ class SKASubarray(SKAObsDevice):
             information purpose only.
         :rtype: (ResultCode, str)
         """
-        command = self.get_command_object("Configure")
+        handler = self.get_command_object("Configure")
         args = json.loads(argin)
-        (return_code, message) = command(args)
-        return [[return_code], [message]]
-
-    def is_Scan_allowed(self):
-        """
-        Check if command `Scan` is allowed in the current device state.
-
-        :return: ``True`` if the command is allowed
-        :rtype: boolean
-        """
-        command = self.get_command_object("Scan")
-        return command.is_allowed(raise_if_disallowed=True)
+        unique_id, return_code = self.component_manager.enqueue(handler, args)
+        return [[return_code], [unique_id]]
 
     @command(
         dtype_in="DevString",
@@ -801,20 +761,10 @@ class SKASubarray(SKAObsDevice):
             information purpose only.
         :rtype: (ResultCode, str)
         """
-        command = self.get_command_object("Scan")
+        handler = self.get_command_object("Scan")
         args = json.loads(argin)
-        (return_code, message) = command(args)
-        return [[return_code], [message]]
-
-    def is_EndScan_allowed(self):
-        """
-        Check if command `EndScan` is allowed in the current device state.
-
-        :return: ``True`` if the command is allowed
-        :rtype: boolean
-        """
-        command = self.get_command_object("EndScan")
-        return command.is_allowed(raise_if_disallowed=True)
+        unique_id, return_code = self.component_manager.enqueue(handler, args)
+        return [[return_code], [unique_id]]
 
     @command(
         dtype_out="DevVarLongStringArray",
@@ -833,19 +783,9 @@ class SKASubarray(SKAObsDevice):
             information purpose only.
         :rtype: (ResultCode, str)
         """
-        command = self.get_command_object("EndScan")
-        (return_code, message) = command()
-        return [[return_code], [message]]
-
-    def is_End_allowed(self):
-        """
-        Check if command `End` is allowed in the current device state.
-
-        :return: ``True`` if the command is allowed
-        :rtype: boolean
-        """
-        command = self.get_command_object("End")
-        return command.is_allowed(raise_if_disallowed=True)
+        handler = self.get_command_object("EndScan")
+        unique_id, return_code = self.component_manager.enqueue(handler)
+        return [[return_code], [unique_id]]
 
     @command(
         dtype_out="DevVarLongStringArray",
@@ -865,19 +805,9 @@ class SKASubarray(SKAObsDevice):
             information purpose only.
         :rtype: (ResultCode, str)
         """
-        command = self.get_command_object("End")
-        (return_code, message) = command()
-        return [[return_code], [message]]
-
-    def is_Abort_allowed(self):
-        """
-        Check if command `Abort` is allowed in the current device state.
-
-        :return: ``True`` if the command is allowed
-        :rtype: boolean
-        """
-        command = self.get_command_object("Abort")
-        return command.is_allowed(raise_if_disallowed=True)
+        handler = self.get_command_object("End")
+        unique_id, return_code = self.component_manager.enqueue(handler)
+        return [[return_code], [unique_id]]
 
     @command(
         dtype_out="DevVarLongStringArray",
@@ -896,19 +826,9 @@ class SKASubarray(SKAObsDevice):
             information purpose only.
         :rtype: (ResultCode, str)
         """
-        command = self.get_command_object("Abort")
-        (return_code, message) = command()
-        return [[return_code], [message]]
-
-    def is_ObsReset_allowed(self):
-        """
-        Check if command `ObsReset` is allowed in the current device state.
-
-        :return: ``True`` if the command is allowed
-        :rtype: boolean
-        """
-        command = self.get_command_object("ObsReset")
-        return command.is_allowed(raise_if_disallowed=True)
+        handler = self.get_command_object("Abort")
+        unique_id, return_code = self.component_manager.enqueue(handler)
+        return [[return_code], [unique_id]]
 
     @command(
         dtype_out="DevVarLongStringArray",
@@ -927,19 +847,9 @@ class SKASubarray(SKAObsDevice):
             information purpose only.
         :rtype: (ResultCode, str)
         """
-        command = self.get_command_object("ObsReset")
-        (return_code, message) = command()
-        return [[return_code], [message]]
-
-    def is_Restart_allowed(self):
-        """
-        Check if command `Restart` is allowed in the current device state.
-
-        :return: ``True`` if the command is allowed
-        :rtype: boolean
-        """
-        command = self.get_command_object("Restart")
-        return command.is_allowed(raise_if_disallowed=True)
+        handler = self.get_command_object("ObsReset")
+        unique_id, return_code = self.component_manager.enqueue(handler)
+        return [[return_code], [unique_id]]
 
     @command(
         dtype_out="DevVarLongStringArray",
@@ -958,9 +868,9 @@ class SKASubarray(SKAObsDevice):
             information purpose only.
         :rtype: (ResultCode, str)
         """
-        command = self.get_command_object("Restart")
-        (return_code, message) = command()
-        return [[return_code], [message]]
+        handler = self.get_command_object("Restart")
+        unique_id, return_code = self.component_manager.enqueue(handler)
+        return [[return_code], [unique_id]]
 
 
 # ----------

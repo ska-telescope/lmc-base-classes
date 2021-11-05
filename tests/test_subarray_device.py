@@ -104,6 +104,11 @@ class TestSKASubarray:
 
         abort_tr = device_under_test.Abort()
         result_callback.wait_for_lrc_id(abort_tr.unique_id)
+        assert (
+            device_under_test.longRunningCommandResult[2]
+            == "Abort command completed OK"
+        )
+        assert int(device_under_test.longRunningCommandResult[1]) == ResultCode.OK
         obs_state_callback.assert_calls([ObsState.ABORTING, ObsState.ABORTED])
         # PROTECTED REGION END #    //  SKASubarray.test_Abort
 
@@ -223,6 +228,10 @@ class TestSKASubarray:
 
         end_tr = device_under_test.End()
         result_callback.wait_for_lrc_id(end_tr.unique_id)
+        assert (
+            device_under_test.longRunningCommandResult[2] == "End command completed OK"
+        )
+        assert int(device_under_test.longRunningCommandResult[1]) == ResultCode.OK
 
         obs_state_callback.assert_call(ObsState.IDLE)
 
@@ -252,6 +261,11 @@ class TestSKASubarray:
 
         endscan_tr = device_under_test.EndScan()
         result_callback.wait_for_lrc_id(endscan_tr.unique_id)
+        assert (
+            device_under_test.longRunningCommandResult[2]
+            == "EndScan command completed OK"
+        )
+        assert int(device_under_test.longRunningCommandResult[1]) == ResultCode.OK
 
         obs_state_callback.assert_call(ObsState.READY)
 
@@ -332,6 +346,11 @@ class TestSKASubarray:
 
         obs_reset_tr = device_under_test.ObsReset()
         result_callback.wait_for_lrc_id(obs_reset_tr.unique_id)
+        assert (
+            device_under_test.longRunningCommandResult[2]
+            == "ObsReset command completed OK"
+        )
+        assert int(device_under_test.longRunningCommandResult[1]) == ResultCode.OK
 
         obs_state_callback.assert_calls([ObsState.RESETTING, ObsState.IDLE])
         assert device_under_test.obsState == ObsState.IDLE
@@ -359,6 +378,8 @@ class TestSKASubarray:
 
         scan_tr = device_under_test.Scan('{"id": 123}')
         result_callback.wait_for_lrc_id(scan_tr.unique_id)
+        assert device_under_test.longRunningCommandResult[2] == "Scan command started"
+        assert int(device_under_test.longRunningCommandResult[1]) == ResultCode.STARTED
 
         obs_state_callback.assert_call(ObsState.SCANNING)
         assert device_under_test.obsState == ObsState.SCANNING

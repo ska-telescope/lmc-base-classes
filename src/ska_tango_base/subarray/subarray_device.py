@@ -47,7 +47,7 @@ class SKASubarray(SKAObsDevice):
             :return: A tuple containing a return code and a string
                 message indicating status. The message is for
                 information purpose only.
-            :rtype: (ResultCode, str)
+            :rtype: ([ResultCode], [str])
             """
             super().do()
 
@@ -96,7 +96,7 @@ class SKASubarray(SKAObsDevice):
             :return: A tuple containing a return code and a string
                 message indicating status. The message is for
                 information purpose only.
-            :rtype: (ResultCode, str)
+            :rtype: ([ResultCode], [str])
             """
             component_manager = self.target
             component_manager.assign(argin)
@@ -143,7 +143,7 @@ class SKASubarray(SKAObsDevice):
             :return: A tuple containing a return code and a string
                 message indicating status. The message is for
                 information purpose only.
-            :rtype: (ResultCode, str)
+            :rtype: ([ResultCode], [str])
             """
             component_manager = self.target
             component_manager.release(argin)
@@ -187,7 +187,7 @@ class SKASubarray(SKAObsDevice):
             :return: A tuple containing a return code and a string
                 message indicating status. The message is for
                 information purpose only.
-            :rtype: (ResultCode, str)
+            :rtype: ([ResultCode], [str])
             """
             component_manager = self.target
             component_manager.release_all()
@@ -232,7 +232,7 @@ class SKASubarray(SKAObsDevice):
             :return: A tuple containing a return code and a string
                 message indicating status. The message is for
                 information purpose only.
-            :rtype: (ResultCode, str)
+            :rtype: ([ResultCode], [str])
             """
             component_manager = self.target
             component_manager.configure(argin)
@@ -277,7 +277,7 @@ class SKASubarray(SKAObsDevice):
             :return: A tuple containing a return code and a string
                 message indicating status. The message is for
                 information purpose only.
-            :rtype: (ResultCode, str)
+            :rtype: ([ResultCode], [str])
             """
             component_manager = self.target
             component_manager.scan(argin)
@@ -319,7 +319,7 @@ class SKASubarray(SKAObsDevice):
             :return: A tuple containing a return code and a string
                 message indicating status. The message is for
                 information purpose only.
-            :rtype: (ResultCode, str)
+            :rtype: ([ResultCode], [str])
             """
             component_manager = self.target
             component_manager.end_scan()
@@ -361,7 +361,7 @@ class SKASubarray(SKAObsDevice):
             :return: A tuple containing a return code and a string
                 message indicating status. The message is for
                 information purpose only.
-            :rtype: (ResultCode, str)
+            :rtype: ([ResultCode], [str])
             """
             component_manager = self.target
             component_manager.deconfigure()
@@ -403,7 +403,7 @@ class SKASubarray(SKAObsDevice):
             :return: A tuple containing a return code and a string
                 message indicating status. The message is for
                 information purpose only.
-            :rtype: (ResultCode, str)
+            :rtype: ([ResultCode], [str])
             """
             component_manager = self.target
             component_manager.abort()
@@ -445,7 +445,7 @@ class SKASubarray(SKAObsDevice):
             :return: A tuple containing a return code and a string
                 message indicating status. The message is for
                 information purpose only.
-            :rtype: (ResultCode, str)
+            :rtype: ([ResultCode], [str])
             """
             component_manager = self.target
             component_manager.obsreset()
@@ -487,7 +487,7 @@ class SKASubarray(SKAObsDevice):
             :return: A tuple containing a return code and a string
                 message indicating status. The message is for
                 information purpose only.
-            :rtype: (ResultCode, str)
+            :rtype: ([ResultCode], [str])
             """
             component_manager = self.target
             component_manager.restart()
@@ -641,7 +641,7 @@ class SKASubarray(SKAObsDevice):
         dtype_in="DevString",
         doc_in="JSON-encoded string with the resources to add to subarray",
         dtype_out="DevVarLongStringArray",
-        doc_out="(ReturnType, 'informational message')",
+        doc_out="([Command ResultCode], [Unique ID of the command])",
     )
     @DebugIt()
     def AssignResources(self, argin):
@@ -654,21 +654,19 @@ class SKASubarray(SKAObsDevice):
         :param argin: the resources to be assigned
         :type argin: list of str
 
-        :return: A tuple containing a return code and a string
-            message indicating status. The message is for
-            information purpose only.
-        :rtype: (ResultCode, str)
+        :return: A tuple containing a result code and the unique ID of the command
+        :rtype: ([ResultCode], [str])
         """
         handler = self.get_command_object("AssignResources")
         args = json.loads(argin)
         unique_id, return_code = self.component_manager.enqueue(handler, args)
-        return [[return_code], [unique_id]]
+        return ([return_code], [unique_id])
 
     @command(
         dtype_in="DevString",
         doc_in="JSON-encoded string with the resources to remove from the subarray",
         dtype_out="DevVarLongStringArray",
-        doc_out="(ReturnType, 'informational message')",
+        doc_out="([Command ResultCode], [Unique ID of the command])",
     )
     @DebugIt()
     def ReleaseResources(self, argin):
@@ -681,19 +679,17 @@ class SKASubarray(SKAObsDevice):
         :param argin: the resources to be released
         :type argin: list of str
 
-        :return: A tuple containing a return code and a string
-            message indicating status. The message is for
-            information purpose only.
-        :rtype: (ResultCode, str)
+        :return: A tuple containing a result code and the unique ID of the command
+        :rtype: ([ResultCode], [str])
         """
         handler = self.get_command_object("ReleaseResources")
         args = json.loads(argin)
         unique_id, return_code = self.component_manager.enqueue(handler, args)
-        return [[return_code], [unique_id]]
+        return ([return_code], [unique_id])
 
     @command(
         dtype_out="DevVarLongStringArray",
-        doc_out="(ReturnType, 'informational message')",
+        doc_out="([Command ResultCode], [Unique ID of the command])",
     )
     @DebugIt()
     def ReleaseAllResources(self):
@@ -703,20 +699,18 @@ class SKASubarray(SKAObsDevice):
         To modify behaviour for this command, modify the do() method of
         the command class.
 
-        :return: A tuple containing a return code and a string
-            message indicating status. The message is for
-            information purpose only.
-        :rtype: (ResultCode, str)
+        :return: A tuple containing a result code and the unique ID of the command
+        :rtype: ([ResultCode], [str])
         """
         handler = self.get_command_object("ReleaseAllResources")
         unique_id, return_code = self.component_manager.enqueue(handler)
-        return [[return_code], [unique_id]]
+        return ([return_code], [unique_id])
 
     @command(
         dtype_in="DevString",
         doc_in="JSON-encoded string with the scan configuration",
         dtype_out="DevVarLongStringArray",
-        doc_out="(ReturnType, 'informational message')",
+        doc_out="([Command ResultCode], [Unique ID of the command])",
     )
     @DebugIt()
     def Configure(self, argin):
@@ -729,21 +723,19 @@ class SKASubarray(SKAObsDevice):
         :param argin: configuration specification
         :type argin: string
 
-        :return: A tuple containing a return code and a string
-            message indicating status. The message is for
-            information purpose only.
-        :rtype: (ResultCode, str)
+        :return: A tuple containing a result code and the unique ID of the command
+        :rtype: ([ResultCode], [str])
         """
         handler = self.get_command_object("Configure")
         args = json.loads(argin)
         unique_id, return_code = self.component_manager.enqueue(handler, args)
-        return [[return_code], [unique_id]]
+        return ([return_code], [unique_id])
 
     @command(
         dtype_in="DevString",
         doc_in="JSON-encoded string with the per-scan configuration",
         dtype_out="DevVarLongStringArray",
-        doc_out="(ReturnType, 'informational message')",
+        doc_out="([Command ResultCode], [Unique ID of the command])",
     )
     @DebugIt()
     def Scan(self, argin):
@@ -756,19 +748,17 @@ class SKASubarray(SKAObsDevice):
         :param argin: Information about the scan
         :type argin: Array of str
 
-        :return: A tuple containing a return code and a string
-            message indicating status. The message is for
-            information purpose only.
-        :rtype: (ResultCode, str)
+        :return: A tuple containing a result code and the unique ID of the command
+        :rtype: ([ResultCode], [str])
         """
         handler = self.get_command_object("Scan")
         args = json.loads(argin)
         unique_id, return_code = self.component_manager.enqueue(handler, args)
-        return [[return_code], [unique_id]]
+        return ([return_code], [unique_id])
 
     @command(
         dtype_out="DevVarLongStringArray",
-        doc_out="(ReturnType, 'informational message')",
+        doc_out="([Command ResultCode], [Unique ID of the command])",
     )
     @DebugIt()
     def EndScan(self):
@@ -778,18 +768,16 @@ class SKASubarray(SKAObsDevice):
         To modify behaviour for this command, modify the do() method of
         the command class.
 
-        :return: A tuple containing a return code and a string
-            message indicating status. The message is for
-            information purpose only.
-        :rtype: (ResultCode, str)
+        :return: A tuple containing a result code and the unique ID of the command
+        :rtype: ([ResultCode], [str])
         """
         handler = self.get_command_object("EndScan")
         unique_id, return_code = self.component_manager.enqueue(handler)
-        return [[return_code], [unique_id]]
+        return ([return_code], [unique_id])
 
     @command(
         dtype_out="DevVarLongStringArray",
-        doc_out="(ReturnType, 'informational message')",
+        doc_out="([Command ResultCode], [Unique ID of the command])",
     )
     @DebugIt()
     def End(self):
@@ -800,18 +788,16 @@ class SKASubarray(SKAObsDevice):
         To modify behaviour for this command, modify the do() method of
         the command class.
 
-        :return: A tuple containing a return code and a string
-            message indicating status. The message is for
-            information purpose only.
-        :rtype: (ResultCode, str)
+        :return: A tuple containing a result code and the unique ID of the command
+        :rtype: ([ResultCode], [str])
         """
         handler = self.get_command_object("End")
         unique_id, return_code = self.component_manager.enqueue(handler)
-        return [[return_code], [unique_id]]
+        return ([return_code], [unique_id])
 
     @command(
         dtype_out="DevVarLongStringArray",
-        doc_out="(ReturnType, 'informational message')",
+        doc_out="([Command ResultCode], [Unique ID of the command])",
     )
     @DebugIt()
     def Abort(self):
@@ -821,18 +807,16 @@ class SKASubarray(SKAObsDevice):
         To modify behaviour for this command, modify the do() method of
         the command class.
 
-        :return: A tuple containing a return code and a string
-            message indicating status. The message is for
-            information purpose only.
-        :rtype: (ResultCode, str)
+        :return: A tuple containing a result code and the unique ID of the command
+        :rtype: ([ResultCode], [str])
         """
         handler = self.get_command_object("Abort")
         unique_id, return_code = self.component_manager.enqueue(handler)
-        return [[return_code], [unique_id]]
+        return ([return_code], [unique_id])
 
     @command(
         dtype_out="DevVarLongStringArray",
-        doc_out="(ReturnType, 'informational message')",
+        doc_out="([Command ResultCode], [Unique ID of the command])",
     )
     @DebugIt()
     def ObsReset(self):
@@ -842,18 +826,16 @@ class SKASubarray(SKAObsDevice):
         To modify behaviour for this command, modify the do() method of
         the command class.
 
-        :return: A tuple containing a return code and a string
-            message indicating status. The message is for
-            information purpose only.
-        :rtype: (ResultCode, str)
+        :return: A tuple containing a result code and the unique ID of the command
+        :rtype: ([ResultCode], [str])
         """
         handler = self.get_command_object("ObsReset")
         unique_id, return_code = self.component_manager.enqueue(handler)
-        return [[return_code], [unique_id]]
+        return ([return_code], [unique_id])
 
     @command(
         dtype_out="DevVarLongStringArray",
-        doc_out="(ReturnType, 'informational message')",
+        doc_out="([Command ResultCode], [Unique ID of the command])",
     )
     @DebugIt()
     def Restart(self):
@@ -863,14 +845,12 @@ class SKASubarray(SKAObsDevice):
         To modify behaviour for this command, modify the do() method of
         the command class.
 
-        :return: A tuple containing a return code and a string
-            message indicating status. The message is for
-            information purpose only.
-        :rtype: (ResultCode, str)
+        :return: A tuple containing a result code and the unique ID of the command
+        :rtype: ([ResultCode], [str])
         """
         handler = self.get_command_object("Restart")
         unique_id, return_code = self.component_manager.enqueue(handler)
-        return [[return_code], [unique_id]]
+        return ([return_code], [unique_id])
 
 
 # ----------

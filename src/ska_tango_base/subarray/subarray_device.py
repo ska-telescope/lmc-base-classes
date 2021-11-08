@@ -187,7 +187,7 @@ class SKASubarray(SKAObsDevice):
             :return: A tuple containing a return code and a string
                 message indicating status. The message is for
                 information purpose only.
-            :rtype: ([ResultCode], [str])
+            :rtype: (ResultCode, str)
             """
             component_manager = self.target
             component_manager.release_all()
@@ -232,7 +232,7 @@ class SKASubarray(SKAObsDevice):
             :return: A tuple containing a return code and a string
                 message indicating status. The message is for
                 information purpose only.
-            :rtype: ([ResultCode], [str])
+            :rtype: (ResultCode, str)
             """
             component_manager = self.target
             component_manager.configure(argin)
@@ -277,7 +277,7 @@ class SKASubarray(SKAObsDevice):
             :return: A tuple containing a return code and a string
                 message indicating status. The message is for
                 information purpose only.
-            :rtype: ([ResultCode], [str])
+            :rtype: (ResultCode, str)
             """
             component_manager = self.target
             component_manager.scan(argin)
@@ -319,7 +319,7 @@ class SKASubarray(SKAObsDevice):
             :return: A tuple containing a return code and a string
                 message indicating status. The message is for
                 information purpose only.
-            :rtype: ([ResultCode], [str])
+            :rtype: (ResultCode, str)
             """
             component_manager = self.target
             component_manager.end_scan()
@@ -361,7 +361,7 @@ class SKASubarray(SKAObsDevice):
             :return: A tuple containing a return code and a string
                 message indicating status. The message is for
                 information purpose only.
-            :rtype: ([ResultCode], [str])
+            :rtype: (ResultCode, str)
             """
             component_manager = self.target
             component_manager.deconfigure()
@@ -403,7 +403,7 @@ class SKASubarray(SKAObsDevice):
             :return: A tuple containing a return code and a string
                 message indicating status. The message is for
                 information purpose only.
-            :rtype: ([ResultCode], [str])
+            :rtype: (ResultCode, str)
             """
             component_manager = self.target
             component_manager.abort()
@@ -445,7 +445,7 @@ class SKASubarray(SKAObsDevice):
             :return: A tuple containing a return code and a string
                 message indicating status. The message is for
                 information purpose only.
-            :rtype: ([ResultCode], [str])
+            :rtype: (ResultCode, str)
             """
             component_manager = self.target
             component_manager.obsreset()
@@ -487,7 +487,7 @@ class SKASubarray(SKAObsDevice):
             :return: A tuple containing a return code and a string
                 message indicating status. The message is for
                 information purpose only.
-            :rtype: ([ResultCode], [str])
+            :rtype: (ResultCode, str)
             """
             component_manager = self.target
             component_manager.restart()

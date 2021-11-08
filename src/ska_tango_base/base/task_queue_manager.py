@@ -295,6 +295,7 @@ class QueueManager:
             logger: logging.Logger,
             stopping_event: Event,
             aborting_event: Event,
+            suspend_event: Event,
             result_callback: Callable,
             update_command_state_callback: Callable,
             update_progress_callback: Callable,
@@ -312,6 +313,8 @@ class QueueManager:
             :type stopping_event: Event
             :param aborting_event: Indicates whether the queue is being aborted
             :type aborting_event: Event
+            :param suspend_event: Indicates whether to suspend task retrieval
+            :type suspend_event: Event
             :param update_command_state_callback: Callback to update command state
             :type update_command_state_callback: Callable
             """
@@ -320,6 +323,7 @@ class QueueManager:
             self._logger = logger
             self.stopping_event = stopping_event
             self.aborting_event = aborting_event
+            self.suspend_event = suspend_event
             self._result_callback = result_callback
             self._update_command_state_callback = update_command_state_callback
             self._update_progress_callback = update_progress_callback
@@ -340,6 +344,10 @@ class QueueManager:
                 while not self.stopping_event.is_set():
                     self.current_task_id = None
                     self.current_task_progress = ""
+
+                    # Don't pull new tasks off of the queue until unsuspended.
+                    while self.suspend_event.is_set():
+                        time.sleep(self._queue_fetch_timeout)
 
                     if self.aborting_event.is_set():
                         # Drain the Queue since self.aborting_event is set
@@ -459,6 +467,7 @@ class QueueManager:
         self._push_change_event = push_change_event
         self.stopping_event = threading.Event()
         self.aborting_event = threading.Event()
+        self.suspend_event = threading.Event()
         self._property_update_lock = threading.Lock()
         self._logger = logger if logger else logging.getLogger(__name__)
 
@@ -466,6 +475,17 @@ class QueueManager:
         self._tasks_in_queue: Dict[str, str] = {}  # unique_id, task_name
         self._task_status: Dict[str, str] = {}  # unique_id, status
         self._threads = []
+
+        self._long_running_properties = [
+            "longRunningCommandsInQueue",
+            "longRunningCommandStatus",
+            "longRunningCommandProgress",
+            "longRunningCommandIDsInQueue",
+            "longRunningCommandResult",
+        ]
+        self._property_change_callbacks = {}
+        for prop in self._long_running_properties:
+            self._property_change_callbacks[prop] = []
 
         # If there's no queue, don't start threads
         if not self._max_queue_size:
@@ -477,6 +497,7 @@ class QueueManager:
                 self._logger,
                 self.stopping_event,
                 self.aborting_event,
+                self.suspend_event,
                 self.result_callback,
                 self.update_task_state_callback,
                 self.update_progress_callback,
@@ -496,7 +517,7 @@ class QueueManager:
         return self._work_queue.full()
 
     @property
-    def task_result(self) -> Union[Tuple[str, str, str], Tuple[()]]:
+    def task_result(self) -> Tuple[str, str, str]:
         """Return the last task result.
 
         :return: Last task result
@@ -649,6 +670,8 @@ class QueueManager:
         :param property_name: The property value
         :type property_name: Any
         """
+        for callback in self._property_change_callbacks[property_name]:
+            callback(property_value)
         if self._push_change_event:
             self._push_change_event(property_name, property_value)
 
@@ -663,6 +686,25 @@ class QueueManager:
     def stop_tasks(self):
         """Set stopping_event on each thread so it exists out. Killing the thread."""
         self.stopping_event.set()
+
+    def suspend_task_dequeue(self):
+        """Stop pulling new tasks off the queue to execute.
+
+        - Tasks enqueued after this method will not be dequeued.
+        - Existing tasks may be dequeued during this method.
+        """
+        self.suspend_event.set()
+        # Wait a little longer than fetch timeout otherwise one of the worker
+        # threads that is waiting in `queue.get`
+        # will pick up a task (enqueued immediately after this method) before
+        # the suspend takes effect.
+        time.sleep(self._queue_fetch_timeout + 0.1)
+        self._logger.info("Queue task execution suspended")
+
+    def unsuspend_task_dequeue(self):
+        """Undo suspend_task_dequeue."""
+        self.suspend_event.clear()
+        self._logger.info("Queue task execution unsuspended")
 
     @property
     def is_aborting(self) -> bool:
@@ -700,6 +742,29 @@ class QueueManager:
             return TaskState.IN_PROGRESS
 
         return TaskState.NOT_FOUND
+
+    def add_property_change_callback(self, attribute: str, update_callback: Callable):
+        """Add a callback that will be executed when the attribute changes.
+
+        :param attribute: The attribute name
+        :type attribute: str
+        :param update_callback: The function to execute
+        :type update_callback: Callable
+        """
+        assert (
+            attribute in self._long_running_properties
+        ), f"[{attribute}] is not supported, should be one of [{self._long_running_properties}]"
+        self._property_change_callbacks[attribute].append(update_callback)
+
+    def remove_property_change_callback(self, update_callback: Callable):
+        """Remove the callback.
+
+        :param update_callback: The function to execute
+        :type update_callback: Callable
+        """
+        for callbacks in self._property_change_callbacks.values():
+            if update_callback in callbacks:
+                callbacks.remove(update_callback)
 
     def __len__(self) -> int:
         """Approximate length of the queue.

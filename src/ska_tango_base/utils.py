@@ -6,6 +6,7 @@ import inspect
 import json
 import logging
 import pydoc
+from queue import Empty, Queue
 import traceback
 import sys
 import uuid
@@ -29,8 +30,9 @@ from tango import (
 )
 from tango import DevState
 from contextlib import contextmanager
+from ska_tango_base.commands import BaseCommand
 from ska_tango_base.faults import GroupDefinitionsError, SKABaseError
-from ska_tango_base.base.task_queue_manager import TaskResult
+from ska_tango_base.base.task_queue_manager import QueueManager, TaskResult
 
 int_types = {
     tango._tango.CmdArgType.DevUShort,
@@ -631,7 +633,7 @@ class LongRunningDeviceInterface:
             - Clean up
         """
         if ev.err:
-            self._logger.error("Event system DevError(s) occured: %s", str(ev.errors))
+            self._logger.error("Event system DevError(s) occurred: %s", str(ev.errors))
             return
 
         if ev.attr_value and ev.attr_value.name == "longrunningcommandresult":
@@ -666,7 +668,7 @@ class LongRunningDeviceInterface:
                     command_name = stored_command_group[0].command_name
 
                     # Trigger the callback, send command_name and command_ids
-                    # as paramater
+                    # as parameter
                     self._stored_callbacks[key](command_name, command_ids)
                     # Remove callback as the group completed
 
@@ -684,10 +686,10 @@ class LongRunningDeviceInterface:
     ):
         """Execute the long running command with an argument if any.
 
-        Once the commmand completes, then the `on_completion_callback`
+        Once the command completes, then the `on_completion_callback`
         will be executed with the EventData as parameter.
         This class keeps track of the command ID and events
-        used to determine when this commmand has completed.
+        used to determine when this command has completed.
 
         :param command_name: A long running command that exists on the
             target Tango device.
@@ -714,3 +716,70 @@ class LongRunningDeviceInterface:
                     False,
                 )
             )
+
+
+class EnqueueSuspend:
+    """Context manager that will enqueue a command and then suspend new tasks from being taken off the queue."""
+
+    def __init__(
+        self,
+        queue_manager: QueueManager,
+        command: BaseCommand,
+        args: Any = None,
+        retries: int = 5,
+        timeout: float = 0.5,
+    ) -> None:
+        """Context manager to enqueue a task and suspend new tasks.
+
+        :param queue_manager: The queue manager
+        :type queue_manager: QueueManager
+        :param command: Command to execute
+        :type command: BaseCommand
+        :param args: Argument for the command, defaults to None
+        :type args: Any, optional
+        :param retries: Number of times to retry waiting for the command to start, defaults to 5
+        :type retries: int, optional
+        :param timeout: Time to wait for a status change, defaults to 0.5
+        :type timeout: float, optional
+        """
+        self.queue_manager = queue_manager
+        self.command = command
+        self.args = args
+        self.retries = retries
+        self.timeout = timeout
+        self.unique_id = ""
+        self.event_queue = Queue()
+
+    def _on_status_change_callback(self, new_value):
+        """Add status change to queue."""
+        self.event_queue.put(new_value)
+
+    def wait_for_id(self, unique_id) -> bool:
+        """Wait for the enqueued task to start."""
+        while True:
+            try:
+                while self.retries > 0:
+                    value = self.event_queue.get(timeout=self.timeout)
+                    if unique_id in value:
+                        return True
+                    self.retries -= 1
+            except Empty:
+                return False
+
+    def __enter__(self):
+        """Add callback enqueue task and suspend."""
+        self.queue_manager.add_property_change_callback(
+            "longRunningCommandStatus", self._on_status_change_callback
+        )
+        self.unique_id, _ = self.queue_manager.enqueue_task(self.command, self.args)
+        if not self.wait_for_id(self.unique_id):
+            raise Exception("Command not started")
+        self.queue_manager.suspend_task_dequeue()
+        return self.unique_id
+
+    def __exit__(self, _exc_type, _exc_value, _exc_traceback):
+        """Clear callback and unsuspend."""
+        self.queue_manager.remove_property_change_callback(
+            self._on_status_change_callback
+        )
+        self.queue_manager.unsuspend_task_dequeue()

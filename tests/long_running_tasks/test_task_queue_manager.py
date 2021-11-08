@@ -12,6 +12,7 @@ from ska_tango_base.base.task_queue_manager import (
 )
 from ska_tango_base.base.reference_component_manager import QueueWorkerComponentManager
 from ska_tango_base.commands import BaseCommand
+from ska_tango_base.utils import EnqueueSuspend
 
 logger = logging.getLogger(__name__)
 
@@ -104,6 +105,20 @@ def simple_task():
                 return argin + 2
 
         return SimpleTask(2)
+
+    return get_task
+
+
+@pytest.fixture
+def noop_task():
+    """Fixture for a very simple task."""
+
+    def get_task():
+        class NoopTask(BaseCommand):
+            def do(self):
+                return True
+
+        return NoopTask(target=None)
 
     return get_task
 
@@ -523,6 +538,37 @@ class TestComponentManager:
             child_devices=[],
         )
         assert cm.task_ids_in_queue == ()
+
+    def test_enqueue_suspend_util(self, simple_task, noop_task, caplog):
+        """Test that EnqueueSuspend enqueues and suspends."""
+        caplog.set_level(logging.INFO)
+        cm = QueueWorkerComponentManager(
+            op_state_model=None,
+            logger=logger,
+            max_queue_size=3,
+            num_workers=3,
+            push_change_event=None,
+            child_devices=[],
+        )
+        second_task_id = ""
+        with EnqueueSuspend(cm._queue_manager, simple_task(), args=1) as unique_id:
+            # Make sure the command exists
+            assert unique_id
+            # Make sure pulling new tasks off the queue is paused
+            assert cm._queue_manager.suspend_event.is_set()
+            # Make sure any new work is not pulled off queue
+            second_task_id, _ = cm.enqueue(noop_task())
+            for wait_time in [0.1, 0.2, 0.3]:
+                assert (
+                    second_task_id in cm.task_ids_in_queue
+                ), "Task should not be taken off the queue while suspend is in effect"
+                time.sleep(wait_time)
+
+        # Make sure work is unsuspended
+        assert not cm._queue_manager.suspend_event.is_set()
+        # Make sure the enqueued task during suspension is taken off the queue
+        time.sleep(0.5)
+        assert second_task_id not in cm.task_ids_in_queue
 
 
 @pytest.mark.forked

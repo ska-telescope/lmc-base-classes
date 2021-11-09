@@ -1,0 +1,3 @@
+[submodule ".make"]
+	path = .make
+	url = https://gitlab.com/ska-telescope/sdi/ska-cicd-makefile.git

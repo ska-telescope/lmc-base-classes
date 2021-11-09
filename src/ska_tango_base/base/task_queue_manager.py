@@ -306,8 +306,8 @@ class QueueManager:
             :type self: QueueManager.Worker
             :param queue: The queue from which tasks are pulled
             :type queue: Queue
-            :param logger: Logger to log to
-            :type logger: logging.Logger
+            :param log_message: Method to log a message
+            :type log_message: Callable
             :param stopping_event: Indicates whether to get more tasks off the queue
             :type stopping_event: Event
             :param aborting_event: Indicates whether the queue is being aborted

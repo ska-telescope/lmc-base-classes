@@ -66,16 +66,19 @@ monitoring and reporting of result, status and progress of LRCs.
 |                             |                                                 | queue                |
 +-----------------------------+-------------------------------------------------+----------------------+
 | longRunningCommandIDsInQueue|('1636437568.0723004_235210334802782_OnCommand', | Keeps track of IDs in|
-|                             |1636437789.493874_116219429722764_OffCommand)    | the queue            |
+|                             |                                                 | the queue            |
+|                             |1636437789.493874_116219429722764_OffCommand)    |                      |
 +-----------------------------+-------------------------------------------------+----------------------+
 | longRunningCommandStatus    | ('1636437568.0723004_235210334802782_OnCommand',| ID, status pair of   |
 |                             | 'IN_PROGRESS',                                  | the currently        |
-|                             | '1636437789.493874_116219429722764_OffCommand', | executing commands   |
+|                             |                                                 | executing commands   |
+|                             | '1636437789.493874_116219429722764_OffCommand', |                      |
 |                             | 'IN_PROGRESS')                                  |                      |
 +-----------------------------+-------------------------------------------------+----------------------+
 | longRunningCommandProgress  | ('1636437568.0723004_235210334802782_OnCommand',| ID, progress pair of |
 |                             | '12%',                                          | the currently        |
-|                             | '1636437789.493874_116219429722764_OffCommand', | executing commands   |
+|                             |                                                 | executing commands   |
+|                             | '1636437789.493874_116219429722764_OffCommand', |                      |
 |                             | '1%')                                           |                      |
 +-----------------------------+-------------------------------------------------+----------------------+
 | longRunningCommandResult    | ('1636438076.6105473_101143779281769_OnCommand',| ID, ResultCode,      |
@@ -146,8 +149,8 @@ Example Device Implementing Long Running Command
         )
 
 .. note:: QueueWorkerComponentManager does not have access to the tango layer.
-In order to send LRC attribute updates, provide a copy of the device's `push_change_event`
-method to its constructor.
+   In order to send LRC attribute updates, provide a copy of the device's `push_change_event`
+   method to its constructor.
 
 then to enqueue your command:
 

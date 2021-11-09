@@ -76,10 +76,10 @@ monitoring and reporting of result, status and progress of LRCs.
 |                             | 'IN_PROGRESS')                                  |                      |
 +-----------------------------+-------------------------------------------------+----------------------+
 | longRunningCommandProgress  | ('1636437568.0723004_235210334802782_OnCommand',| ID, progress pair of |
-|                             | '12%',                                          | the currently        |
+|                             | '12',                                           | the currently        |
 |                             |                                                 | executing commands   |
 |                             | '1636437789.493874_116219429722764_OffCommand', |                      |
-|                             | '1%')                                           |                      |
+|                             | '1')                                            |                      |
 +-----------------------------+-------------------------------------------------+----------------------+
 | longRunningCommandResult    | ('1636438076.6105473_101143779281769_OnCommand',| ID, ResultCode,      |
 |                             | '0', 'OK')                                      | result of the        |

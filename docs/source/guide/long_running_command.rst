@@ -106,10 +106,10 @@ converted to execute as long running commands (asynchronously), viz: Standby, On
 Reset and GetVersionInfo.
 
 The device has change events configured for all the LRC attributes which clients can use to track
-their requests. The client has the responsibility of subscribing to events to receive changes on
-command status and results. To make monitoring easier, there's an interface (LongRunningDeviceInterface)
-which can be used to track attribute subscriptions and command IDs for a list of devices specified.
-More on its usage can be found in `utils <https://gitlab.com/ska-telescope/ska-tango-base/-/blob/main/src/ska_tango_base/utils.py#L566>`_.
+their requests. **The client has the responsibility of subscribing to events to receive changes on
+command status and results**. To make monitoring easier, there's an interface (LongRunningDeviceInterface)
+which can be used to track attribute subscriptions and command IDs for a list of specified devices.
+More about this interface can be found in `utils <https://gitlab.com/ska-telescope/ska-tango-base/-/blob/main/src/ska_tango_base/utils.py#L566>`_.
 
 UML Illustration
 ----------------

@@ -16,19 +16,30 @@ SHELL = /bin/bash
 PROJECT = ska-tango-base
 IMAGE_FOR_DIAGRAMS = artefact.skao.int/ska-tango-images-pytango-builder:9.3.10
 
+#
+# include makefile to pick up the standard Make targets, e.g., 'make build'
+# build, 'make push' docker push procedure, etc. The other Make targets
+# ('make interactive', 'make test', etc.) are defined in this file.
+#
 
-# import some standard Make targets e.g. `make build` (for building
-# docker images), ``make push` (docker push procedure), etc.
-include .make/Makefile.mk
+# include OCI Images support
+include .make/oci.mk
 
-# import make targets for code linting e.g. `make lint`
-include .make/lint.mk
+# Include Python support
+include .make/python.mk
+
+# include core make support
+include .make/base.mk
+
+# include your own private variables for custom deployment configuration
+-include PrivateRules.mak
+
 
 .DEFAULT_GOAL := help
 
-test: ## test ska_tango_base Python code
-	mkdir -p build/reports
-	python3 setup.py test | tee build/setup_py_test.stdout
+python-post-test: ## test ska_tango_base Python code
+	scripts/validate-metadata.sh
+	
 
 test-in-docker: build ## Build the docker image and run tests inside it.
 	@docker run --rm $(IMAGE):$(VERSION) make test

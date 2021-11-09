@@ -15,7 +15,7 @@ SHELL = /bin/bash
 # PROJECT to give a final Docker tag of artefact.skao.int/ska-tango-base
 PROJECT = ska-tango-base
 IMAGE_FOR_DIAGRAMS = artefact.skao.int/ska-tango-images-pytango-builder:9.3.10
-
+PYTHON_BUILD_TYPE=tag_setup
 #
 # include makefile to pick up the standard Make targets, e.g., 'make build'
 # build, 'make push' docker push procedure, etc. The other Make targets

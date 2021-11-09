@@ -48,8 +48,8 @@ Monitoring Progress of Long Running Commands
 --------------------------------------------
 In addition to the listed requirements above, the device should provide monitoring points
 to allow clients determine when a LRC is received, executing or completed (success or fail).
-LRCs can assume any of the following defined task states: QUEUED, IN_PROGRESS, ABORTED, NOT_FOUND,
-OK, FAILED, NOT_ALLOWED.
+LRCs can assume any of the following defined task states: QUEUED, IN_PROGRESS, ABORTED,
+COMPLETED, FAILED, NOT_ALLOWED. NOT_FOUND is returned for command IDs that are non-existent.
 
 .. uml:: lrc_command_state.uml
 
@@ -61,20 +61,22 @@ monitoring and reporting of result, status and progress of LRCs.
 +-----------------------------+-------------------------------------------------+----------------------+
 | Attribute                   | Example Value                                   |  Description         |
 +=============================+=================================================+======================+
-| longRunningCommandsInQueue  | ('StandbyCommand',                              | Keeps track of which |
-|                             |  'OnCommand')                                   | commands are on the  |
+| longRunningCommandsInQueue  | ('StandbyCommand', 'OnCommand', 'OffCommand')   | Keeps track of which |
+|                             |                                                 | commands are on the  |
 |                             |                                                 | queue                |
 +-----------------------------+-------------------------------------------------+----------------------+
-| longRunningCommandIDsInQueue| ('1636437568.0723004_235210334802782_OnCommand')| Keeps track of IDs in|
-|                             |                                                 | the queue            |
+| longRunningCommandIDsInQueue|('1636437568.0723004_235210334802782_OnCommand', | Keeps track of IDs in|
+|                             |1636437789.493874_116219429722764_OffCommand)    | the queue            |
 +-----------------------------+-------------------------------------------------+----------------------+
-| longRunningCommandStatus    | ('1636437568.0712566_169594145565937_OnCommand',| ID, status pair of   |
-|                             | 'IN_PROGRESS')                                  | the currently        |
-|                             |                                                 | executing commands   |
+| longRunningCommandStatus    | ('1636437568.0723004_235210334802782_OnCommand',| ID, status pair of   |
+|                             | 'IN_PROGRESS',                                  | the currently        |
+|                             | '1636437789.493874_116219429722764_OffCommand', | executing commands   |
+|                             | 'IN_PROGRESS')                                  |                      |
 +-----------------------------+-------------------------------------------------+----------------------+
-| longRunningCommandProgress  | ('1636437568.0712566_169594145565937_OnCommand',| ID, progress pair of |
-|                             | '12%')                                          | the currently        |
-|                             |                                                 | executing commands   |
+| longRunningCommandProgress  | ('1636437568.0723004_235210334802782_OnCommand',| ID, progress pair of |
+|                             | '12%',                                          | the currently        |
+|                             | '1636437789.493874_116219429722764_OffCommand', | executing commands   |
+|                             | '1%')                                           |                      |
 +-----------------------------+-------------------------------------------------+----------------------+
 | longRunningCommandResult    | ('1636438076.6105473_101143779281769_OnCommand',| ID, ResultCode,      |
 |                             | '0', 'OK')                                      | result of the        |
@@ -109,9 +111,9 @@ More on its usage can be found in `utils <https://gitlab.com/ska-telescope/ska-t
 UML Illustration
 ----------------
 
-Scenario 1: Multiple clients invoke multiple long running commands
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-.. uml:: lrc_scenario1.uml
+Multiple Clients Invoke Multiple Long Running Commands
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.. uml:: lrc_scenario.uml
 
 Implementing a TANGO Command as Long Running
 --------------------------------------------
@@ -142,6 +144,10 @@ Example Device Implementing Long Running Command
             num_workers=3,
             push_change_event=self.push_change_event,
         )
+
+.. note:: QueueWorkerComponentManager does not have access to the tango layer.
+In order to send LRC attribute updates, provide a copy of the device's `push_change_event`
+method to its constructor.
 
 then to enqueue your command:
 

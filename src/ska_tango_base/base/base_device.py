@@ -85,18 +85,6 @@ class _Log4TangoLoggingLevel(enum.IntEnum):
     DEBUG = 600
 
 
-class LongRunningCommandState(enum.IntEnum):
-    """The state of the long running command."""
-
-    QUEUED = 0
-    IN_PROGRESS = 1
-    ABORTED = 2
-    NOT_FOUND = 3
-    OK = 4
-    FAILED = 5
-    NOT_ALLOWED = 6
-
-
 _PYTHON_TO_TANGO_LOGGING_LEVEL = {
     logging.CRITICAL: _Log4TangoLoggingLevel.FATAL,
     logging.ERROR: _Log4TangoLoggingLevel.ERROR,

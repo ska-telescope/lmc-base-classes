@@ -18,7 +18,7 @@ IMAGE_FOR_DIAGRAMS = artefact.skao.int/ska-tango-images-pytango-builder:9.3.10
 
 PYTHON_BUILD_TYPE = tag_setup
 PYTHON_SWITCHES_FOR_ISORT = --skip tests --skip src -w 79 
-PYTHON_SWITCHES_FOR_BLACK = --exclude src --exclude tests --line-length 79
+PYTHON_SWITCHES_FOR_BLACK = --exclude src --exclude tests 
 
 #
 # include makefile to pick up the standard Make targets, e.g., 'make build'

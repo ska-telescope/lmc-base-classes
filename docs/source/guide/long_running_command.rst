@@ -2,13 +2,11 @@
 Asynchronous Implementation of Long Running Commands
 ====================================================
 
-The base device has a worker thread/queue implementation for long running
-commands (LRCs) to allow concurrent access to TANGO devices. This means that
-devices return immediately with a response while busy with the actual task
-in the background or parked on a queue pending the next available worker.
-The number of commands which can be received depends on a configurable
-maximum queue size of the device. Clients requests to devices at maximum
-queue size are rejected and will need to retry to have their command enqueued.
+Some SKA commands interact with hardware systems that have some inherent delays
+in their responses. Such commands block concurrent access to TANGO devices and
+affect the overall performance (responsiveness) of the device to other requests.
+To address this, the base device has a worker thread/queue implementation for
+long running commands (LRCs) to allow concurrent access to TANGO devices.
 
 .. note:: Long Running Command: A TANGO command for which the execution time
    is in the order of seconds (CS Guidelines recommends less than 10 ms).
@@ -17,41 +15,74 @@ queue size are rejected and will need to retry to have their command enqueued.
    this text and the code base. In the event where the meaning differ it will
    be explained but both mean non-blocking.
 
+This means that devices return immediately with a response while busy with the
+actual task in the background or parked on a queue pending the next available worker.
+The number of commands which can be received depends on a configurable maximum queue 
+size of the device. Clients requests to devices at maximum queue size are rejected and
+will need to retry to have their command enqueued.
+
+
 New attributes and commands have been added to the base device to support the
-mechanism to execute long running TANGO commands asynchronously. 
+mechanism to execute long running TANGO commands asynchronously.
 
-LRC Attributes
---------------
-The new set of attributes record the result, status and progress of LRCs running
-from a queue.
+Reference Design for the Implementation of Long Running Commands
+----------------------------------------------------------------
+A message queue solution is the backbone to the implementation of the LRC design. The goal
+is to have a hybrid solution which will have the queue usage as an opt in. Note that the
+device cannot process short running commands, reply to attribute reads and writes, process
+subscription requests or send events with the default option. That said, the SKABaseDevice
+meets the following requirements for executing long running commands:
 
-+-----------------------------+-----------------------+----------------------+
-| Attribute                   | Value                 | Description          |
-+=============================+=======================+======================+
-| longRunningCommandsInQueue  | column 2              | Keeps track of which |
-|                             |                       | commands are on the  |
-|                             |                       | queue                |
-+-----------------------------+-----------------------+----------------------+
-| longRunningCommandIDsInQueue| column 2              | Keeps track of IDs in|
-|                             |                       | the queue            |
-+-----------------------------+-----------------------+----------------------+
-| longRunningCommandStatus    | column 2              | ID, status pair of   |
-|                             |                       | the currently        |
-|                             |                       | executing commands   |
-+-----------------------------+-----------------------+----------------------+
-| longRunningCommandProgress  | column 2              | ID, progress pair of |
-|                             |                       | the currently        |
-|                             |                       | executing commands   |
-+-----------------------------+-----------------------+----------------------+
-| longRunningCommandResult    | column 2              | ID, ResultCode,      |
-|                             |                       | result of the        |
-|                             |                       | completed command    |
-+-----------------------------+-----------------------+----------------------+
+* With no queue (default):
+    * start executing LRC if another LRC is not currently executing
+    * reject the LRC if another LRC is currently executing
+* With queue enabled:
+    * enqueue the LRC if the queue is not full
+    * reject the LRC if the queue is full
+    * execute the LRCs in the order which they have been enqueued (FIFO)
+* Interrupt LRCs:
+    * abort the execution of currently executing LRCs 
+    * flush enqueued LRCs
+
+Monitoring Progress of Long Running Commands
+--------------------------------------------
+In addition to the listed requirements above, the device should provide monitoring points
+to allow clients determine when a LRC is received, executing or completed (success or fail).
+LRCs can assume any of the following defined task states: QUEUED, IN_PROGRESS, ABORTED, NOT_FOUND,
+OK, FAILED, NOT_ALLOWED.
+
+.. uml:: lrc_command_state.uml
+
+A new set of attributes and commands have been added to the base device to enable
+monitoring and reporting of result, status and progress of LRCs.
+
+**LRC Attributes**
+
++-----------------------------+-------------------------------------------------+----------------------+
+| Attribute                   | Example Value                                   |  Description         |
++=============================+=================================================+======================+
+| longRunningCommandsInQueue  | ('StandbyCommand',                              | Keeps track of which |
+|                             |  'OnCommand')                                   | commands are on the  |
+|                             |                                                 | queue                |
++-----------------------------+-------------------------------------------------+----------------------+
+| longRunningCommandIDsInQueue| ('1636437568.0723004_235210334802782_OnCommand')| Keeps track of IDs in|
+|                             |                                                 | the queue            |
++-----------------------------+-------------------------------------------------+----------------------+
+| longRunningCommandStatus    | ('1636437568.0712566_169594145565937_OnCommand',| ID, status pair of   |
+|                             | 'IN_PROGRESS')                                  | the currently        |
+|                             |                                                 | executing commands   |
++-----------------------------+-------------------------------------------------+----------------------+
+| longRunningCommandProgress  | ('1636437568.0712566_169594145565937_OnCommand',| ID, progress pair of |
+|                             | '12%')                                          | the currently        |
+|                             |                                                 | executing commands   |
++-----------------------------+-------------------------------------------------+----------------------+
+| longRunningCommandResult    | ('1636438076.6105473_101143779281769_OnCommand',| ID, ResultCode,      |
+|                             | '0', 'OK')                                      | result of the        |
+|                             |                                                 | completed command    |
++-----------------------------+-------------------------------------------------+----------------------+
 
 
-LRC Commands
-------------
-The new set of commands report the content of the LRC attributes or flush the queue.
+**LRC Commands**
 
 +-------------------------------+------------------------------+
 | Command                       | Description                  |
@@ -66,14 +97,26 @@ The new set of commands report the content of the LRC attributes or flush the qu
 
 In addition to the set of commands in the table above, a number of candidate SKA
 commands in the base device previously implemented as blocking commands have been
-converted to execute as long commands (asynchronously), viz: Standby, On, Off,
+converted to execute as long running commands (asynchronously), viz: Standby, On, Off,
 Reset and GetVersionInfo.
 
+The device has change events configured for all the LRC attributes which clients can use to track
+their requests. The client has the responsibility of subscribing to events to receive changes on
+command status and results. To make monitoring easier, there's an interface (LongRunningDeviceInterface)
+which can be used to track attribute subscriptions and command IDs for a list of devices specified.
+More on its usage can be found in `utils <https://gitlab.com/ska-telescope/ska-tango-base/-/blob/main/src/ska_tango_base/utils.py#L566>`_.
+
+UML Illustration
+----------------
+
+Scenario 1: Multiple clients invoke multiple long running commands
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.. uml:: lrc_scenario1.uml
 
 Implementing a TANGO Command as Long Running
 --------------------------------------------
 The LRC update is a drop-in replacement of the current base device implementation.
-The base device provisions a QueueManager which has no threads. Existing device 
+The base device provisions a QueueManager which has no threads and no queue. Existing device 
 implementations will execute commands in the same manner unless your component manager
 specifies otherwise. Summarised in a few points, you would do the following to implement
 TANGO commands as long running:
@@ -90,7 +133,7 @@ Example Device Implementing Long Running Command
 
    class DeviceWithLongRunningCommands(SKABaseDevice):
     ...
-    def create_component_manager(self: SKABaseDevice):
+    def create_component_manager(self):
 
         return QueueWorkerComponentManager(
             op_state_model=self.op_state_model,

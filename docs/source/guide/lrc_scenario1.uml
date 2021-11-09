@@ -1,0 +1,63 @@
+@startuml
+
+participant Client2 as c2
+participant Client1 as c1
+participant SKADevice as d
+entity Queue as q
+participant Worker as w
+
+== First Client Request ==
+
+c1 -> d: Subscribe to attr to get result notification of LongRunningCommand
+c1 -> d : LongRunningCommand
+d -> d : Check queue capacity
+d -> q : enqueue task LongRunningCommandTask
+rnote over q
+  Queue:
+  LongRunningCommandTask
+endrnote
+d -> c1 : Response QUEUED LongRunningCommand, Task ID 101
+== Second Client Request ==
+
+c2 -> d: Subscribe to attr to get result notification of OtherLongRunningCommand
+c2 -> d : OtherLongRunningCommand
+d -> d : Check queue capacity
+d -> q : enqueue task OtherLongRunningCommandTask
+rnote over q
+  Queue:
+  LongRunningCommandTask
+  OtherLongRunningCommandTask
+endrnote
+d -> c2 : Response QUEUED OtherLongRunningCommandTask, Task ID 102
+
+== Processing tasks  ==
+
+q -> w : dequeue LongRunningCommandTask
+rnote over q
+  Queue:
+  OtherLongRunningCommandTask
+endrnote
+activate w
+
+w -> d : LongRunningCommandTask result
+deactivate w
+d -> d : push_change_event (ID 101) on attr
+d <--> c1 : on_change event with result (ID 101, some_result)
+d <--> c2 : on_change event with result (ID 101, some_result)
+c2 -> c2 : Not interested in 101, ignoring
+
+q -> w : dequeue OtherLongRunningCommandTask
+rnote over q
+  Queue:
+  <empty>
+endrnote
+activate w
+
+w -> d : OtherLongRunningCommandTask result
+deactivate w
+d -> d : push_change_event (ID 102) on attr
+d <--> c2 : on_change event with result (ID 102, some_result)
+d <--> c1 : on_change event with result (ID 102, some_result)
+c1 -> c1 : Not interested in 102, ignoring 
+
+@enduml

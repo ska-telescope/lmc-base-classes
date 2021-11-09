@@ -12,6 +12,7 @@ from ska_tango_base.base.task_queue_manager import (
 )
 from ska_tango_base.base.reference_component_manager import QueueWorkerComponentManager
 from ska_tango_base.commands import BaseCommand
+from tests.test_utils import LRCAttributesStore
 
 logger = logging.getLogger(__name__)
 
@@ -382,40 +383,29 @@ class TestQueueManagerExit:
 
     @pytest.mark.forked
     @pytest.mark.timeout(5)
-    def test_exit_abort(self, abort_task, slow_task):
+    def test_exit_abort(self, abort_task, slow_task, caplog):
         """Test aborting exit."""
-        results = []
-
-        def catch_updates(name, result):
-            if name == "longRunningCommandResult":
-                tr = TaskResult.from_task_result(result)
-                results.append(
-                    (
-                        tr.unique_id,
-                        tr.result_code,
-                    )
-                )
+        attribute_store = LRCAttributesStore()
+        caplog.set_level(logging.INFO)
 
         cm = QueueWorkerComponentManager(
             op_state_model=None,
             logger=logger,
             max_queue_size=10,
             num_workers=2,
-            push_change_event=catch_updates,
+            push_change_event=attribute_store.store_push_event,
             child_devices=[],
         )
 
         cm.enqueue(abort_task(), 0.1)
 
         # Wait for the command to start
-        while not cm.task_status:
-            time.sleep(0.1)
+        attribute_store.get_attribute_value("longRunningCommandStatus")
         # Start aborting
         cm._queue_manager.abort_tasks()
 
         # Wait for the exit
-        while not cm.task_result:
-            time.sleep(0.1)
+        attribute_store.get_attribute_value("longRunningCommandResult")
         # aborting state should be cleaned up since the queue is empty and
         # nothing is in progress
         while cm._queue_manager.is_aborting:
@@ -433,14 +423,16 @@ class TestQueueManagerExit:
         assert cm._queue_manager.is_aborting
 
         # Load up some tasks that should be aborted
-        cm.enqueue(slow_task())
+        aborted_task_id, _ = cm.enqueue(slow_task())
         cm.enqueue(slow_task())
         unique_id, _ = cm.enqueue(slow_task())
 
         while True:
-            if (unique_id, ResultCode.ABORTED) in results:
+            result_id, result_code, _ = attribute_store.get_attribute_value(
+                "longRunningCommandResult"
+            )
+            if (unique_id, ResultCode.ABORTED) == (result_id, int(result_code)):
                 break
-            time.sleep(0.1)
 
         # Resume the commands
         cm._queue_manager.resume_tasks()
@@ -450,9 +442,14 @@ class TestQueueManagerExit:
         unique_id, _ = cm.enqueue(slow_task())
 
         while True:
-            if (unique_id, ResultCode.OK) in results:
+            result_id, result_code, _ = attribute_store.get_attribute_value(
+                "longRunningCommandResult"
+            )
+            if (unique_id, ResultCode.OK) == (result_id, int(result_code)):
                 break
-            time.sleep(0.1)
+
+        log_messages = [rec.msg for rec in caplog.records]
+        assert f"Aborting task ID [{aborted_task_id}]" in log_messages
 
     @pytest.mark.forked
     @pytest.mark.timeout(5)

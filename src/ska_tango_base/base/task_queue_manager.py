@@ -292,7 +292,7 @@ class QueueManager:
         def __init__(
             self: QueueManager.Worker,
             queue: Queue,
-            logger: logging.Logger,
+            log_message: Callable,
             stopping_event: Event,
             aborting_event: Event,
             result_callback: Callable,
@@ -317,7 +317,7 @@ class QueueManager:
             """
             super().__init__()
             self._work_queue = queue
-            self._logger = logger
+            self._log_message = log_message
             self.stopping_event = stopping_event
             self.aborting_event = aborting_event
             self._result_callback = result_callback
@@ -346,7 +346,9 @@ class QueueManager:
                         while not self._work_queue.empty():
                             unique_id, _, _ = self._work_queue.get()
                             self.current_task_id = unique_id
-                            self._logger.warning("Aborting task ID [%s]", unique_id)
+                            self._log_message(
+                                f"Aborting task ID [{unique_id}]", level="WARNING"
+                            )
                             result = TaskResult(
                                 ResultCode.ABORTED, f"{unique_id} Aborted", unique_id
                             )
@@ -474,7 +476,7 @@ class QueueManager:
         self._threads = [
             self.Worker(
                 self._work_queue,
-                self._logger,
+                self._log_message,
                 self.stopping_event,
                 self.aborting_event,
                 self.result_callback,
@@ -700,6 +702,18 @@ class QueueManager:
             return TaskState.IN_PROGRESS
 
         return TaskState.NOT_FOUND
+
+    def _log_message(self, message: str, level: str = "INFO"):
+        """Log a message.
+
+        Called from worker threads as well.
+
+        :param message: Message to log
+        :type message: str
+        :param level: A valid logging level, defaults to "INFO"
+        :type level: str, optional
+        """
+        self._logger.log(getattr(logging, level), message)
 
     def __len__(self) -> int:
         """Approximate length of the queue.

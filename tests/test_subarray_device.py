@@ -96,15 +96,19 @@ class TestSKASubarray:
         result_callback.wait_for_lrc_id(on_tr.unique_id)
         result_callback.wait_for_lrc_id(assign_tr.unique_id)
 
-        device_under_test.Configure('{"BAND1": 2}')
+        conf_tr = device_under_test.Configure('{"BAND1": 2}')
+        result_callback.wait_for_lrc_id(conf_tr.unique_id)
 
         obs_state_callback = tango_change_event_helper.subscribe("obsState")
         obs_state_callback.assert_call(ObsState.READY)
 
-        assert device_under_test.Abort() == [
-            [ResultCode.OK],
-            ["Abort command completed OK"],
-        ]
+        abort_tr = device_under_test.Abort()
+        result_callback.wait_for_lrc_id(abort_tr.unique_id)
+        assert (
+            device_under_test.longRunningCommandResult[2]
+            == "Abort command completed OK"
+        )
+        assert int(device_under_test.longRunningCommandResult[1]) == ResultCode.OK
         obs_state_callback.assert_calls([ObsState.ABORTING, ObsState.ABORTED])
         # PROTECTED REGION END #    //  SKASubarray.test_Abort
 
@@ -125,7 +129,8 @@ class TestSKASubarray:
         obs_state_callback = tango_change_event_helper.subscribe("obsState")
         obs_state_callback.assert_call(ObsState.IDLE)
 
-        device_under_test.Configure('{"BAND1": 2}')
+        conf_tr = device_under_test.Configure('{"BAND1": 2}')
+        result_callback.wait_for_lrc_id(conf_tr.unique_id)
 
         obs_state_callback.assert_calls([ObsState.CONFIGURING, ObsState.READY])
         assert device_under_test.obsState == ObsState.READY
@@ -192,7 +197,8 @@ class TestSKASubarray:
         assert device_under_test.ObsState == ObsState.IDLE
         assert list(device_under_test.assignedResources) == resources_to_assign
 
-        device_under_test.ReleaseAllResources()
+        release_tr = device_under_test.ReleaseAllResources()
+        result_callback.wait_for_lrc_id(release_tr.unique_id)
         obs_state_callback.assert_calls([ObsState.RESOURCING, ObsState.EMPTY])
         assert device_under_test.ObsState == ObsState.EMPTY
 
@@ -214,15 +220,19 @@ class TestSKASubarray:
         result_callback.wait_for_lrc_id(on_tr.unique_id)
         result_callback.wait_for_lrc_id(assign_tr.unique_id)
 
-        device_under_test.Configure('{"BAND1": 2}')
+        conf_tr = device_under_test.Configure('{"BAND1": 2}')
+        result_callback.wait_for_lrc_id(conf_tr.unique_id)
 
         obs_state_callback = tango_change_event_helper.subscribe("obsState")
         obs_state_callback.assert_call(ObsState.READY)
 
-        assert device_under_test.End() == [
-            [ResultCode.OK],
-            ["End command completed OK"],
-        ]
+        end_tr = device_under_test.End()
+        result_callback.wait_for_lrc_id(end_tr.unique_id)
+        assert (
+            device_under_test.longRunningCommandResult[2] == "End command completed OK"
+        )
+        assert int(device_under_test.longRunningCommandResult[1]) == ResultCode.OK
+
         obs_state_callback.assert_call(ObsState.IDLE)
 
         # PROTECTED REGION END #    //  SKASubarray.test_EndSB
@@ -238,19 +248,24 @@ class TestSKASubarray:
 
         on_tr = device_under_test.On()
         assign_tr = device_under_test.AssignResources(json.dumps(["BAND1"]))
+        conf_tr = device_under_test.Configure('{"BAND1": 2}')
+        scan_tr = device_under_test.Scan('{"id": 123}')
+
         result_callback.wait_for_lrc_id(on_tr.unique_id)
         result_callback.wait_for_lrc_id(assign_tr.unique_id)
-
-        device_under_test.Configure('{"BAND1": 2}')
-        device_under_test.Scan('{"id": 123}')
+        result_callback.wait_for_lrc_id(conf_tr.unique_id)
+        result_callback.wait_for_lrc_id(scan_tr.unique_id)
 
         obs_state_callback = tango_change_event_helper.subscribe("obsState")
         obs_state_callback.assert_call(ObsState.SCANNING)
 
-        assert device_under_test.EndScan() == [
-            [ResultCode.OK],
-            ["EndScan command completed OK"],
-        ]
+        endscan_tr = device_under_test.EndScan()
+        result_callback.wait_for_lrc_id(endscan_tr.unique_id)
+        assert (
+            device_under_test.longRunningCommandResult[2]
+            == "EndScan command completed OK"
+        )
+        assert int(device_under_test.longRunningCommandResult[1]) == ResultCode.OK
 
         obs_state_callback.assert_call(ObsState.READY)
 
@@ -274,7 +289,8 @@ class TestSKASubarray:
         obs_state_callback = tango_change_event_helper.subscribe("obsState")
         obs_state_callback.assert_call(ObsState.IDLE)
 
-        device_under_test.ReleaseAllResources()
+        release_tr = device_under_test.ReleaseAllResources()
+        result_callback.wait_for_lrc_id(release_tr.unique_id)
 
         obs_state_callback.assert_calls([ObsState.RESOURCING, ObsState.EMPTY])
         assert device_under_test.assignedResources is None
@@ -297,7 +313,8 @@ class TestSKASubarray:
         obs_state_callback = tango_change_event_helper.subscribe("obsState")
         obs_state_callback.assert_call(ObsState.IDLE)
 
-        device_under_test.ReleaseResources(json.dumps(["BAND1"]))
+        release_tr = device_under_test.ReleaseResources(json.dumps(["BAND1"]))
+        result_callback.wait_for_lrc_id(release_tr.unique_id)
 
         obs_state_callback.assert_calls([ObsState.RESOURCING, ObsState.IDLE])
         assert device_under_test.ObsState == ObsState.IDLE
@@ -318,16 +335,22 @@ class TestSKASubarray:
         result_callback.wait_for_lrc_id(on_tr.unique_id)
         result_callback.wait_for_lrc_id(assign_tr.unique_id)
 
-        device_under_test.Configure('{"BAND1": 2}')
-        device_under_test.Abort()
+        conf_tr = device_under_test.Configure('{"BAND1": 2}')
+        result_callback.wait_for_lrc_id(conf_tr.unique_id)
+        abort_tr = device_under_test.Abort()
+        result_callback.wait_for_lrc_id(abort_tr.unique_id)
 
         obs_state_callback = tango_change_event_helper.subscribe("obsState")
+
         obs_state_callback.assert_call(ObsState.ABORTED)
 
-        assert device_under_test.ObsReset() == [
-            [ResultCode.OK],
-            ["ObsReset command completed OK"],
-        ]
+        obs_reset_tr = device_under_test.ObsReset()
+        result_callback.wait_for_lrc_id(obs_reset_tr.unique_id)
+        assert (
+            device_under_test.longRunningCommandResult[2]
+            == "ObsReset command completed OK"
+        )
+        assert int(device_under_test.longRunningCommandResult[1]) == ResultCode.OK
 
         obs_state_callback.assert_calls([ObsState.RESETTING, ObsState.IDLE])
         assert device_under_test.obsState == ObsState.IDLE
@@ -347,20 +370,23 @@ class TestSKASubarray:
         result_callback.wait_for_lrc_id(on_tr.unique_id)
         result_callback.wait_for_lrc_id(assign_tr.unique_id)
 
-        device_under_test.Configure('{"BAND1": 2}')
+        conf_tr = device_under_test.Configure('{"BAND1": 2}')
+        result_callback.wait_for_lrc_id(conf_tr.unique_id)
 
         obs_state_callback = tango_change_event_helper.subscribe("obsState")
         obs_state_callback.assert_call(ObsState.READY)
 
-        assert device_under_test.Scan('{"id": 123}') == [
-            [ResultCode.STARTED],
-            ["Scan command started"],
-        ]
+        scan_tr = device_under_test.Scan('{"id": 123}')
+        result_callback.wait_for_lrc_id(scan_tr.unique_id)
+        assert device_under_test.longRunningCommandResult[2] == "Scan command started"
+        assert int(device_under_test.longRunningCommandResult[1]) == ResultCode.STARTED
 
         obs_state_callback.assert_call(ObsState.SCANNING)
         assert device_under_test.obsState == ObsState.SCANNING
 
-        device_under_test.EndScan()
+        endscan_tr = device_under_test.EndScan()
+        result_callback.wait_for_lrc_id(endscan_tr.unique_id)
+
         with pytest.raises(DevFailed):
             device_under_test.Scan("Invalid JSON")
         # PROTECTED REGION END #    //  SKASubarray.test_Scan

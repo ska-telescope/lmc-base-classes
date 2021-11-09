@@ -1,6 +1,6 @@
-====================================================
-Asynchronous Implementation of Long Running Commands
-====================================================
+=====================
+Long Running Commands
+=====================
 
 Some SKA commands interact with hardware systems that have some inherent delays
 in their responses. Such commands block concurrent access to TANGO devices and
@@ -17,9 +17,8 @@ long running commands (LRCs) to allow concurrent access to TANGO devices.
 
 This means that devices return immediately with a response while busy with the
 actual task in the background or parked on a queue pending the next available worker.
-The number of commands which can be received depends on a configurable maximum queue 
-size of the device. Clients requests to devices at maximum queue size are rejected and
-will need to retry to have their command enqueued.
+The number of commands that can be enqueued depends on a configurable maximum queue 
+size of the device. Commands enqueued when the queue is full will be rejected.
 
 
 New attributes and commands have been added to the base device to support the
@@ -29,8 +28,8 @@ Reference Design for the Implementation of Long Running Commands
 ----------------------------------------------------------------
 A message queue solution is the backbone to the implementation of the LRC design. The goal
 is to have a hybrid solution which will have the queue usage as an opt in. Note that the
-device cannot process short running commands, reply to attribute reads and writes, process
-subscription requests or send events with the default option. That said, the SKABaseDevice
+enqueued commands will block short running commands, reply to attribute reads and writes, process
+subscription requests until completed with the default option. That said, the SKABaseDevice
 meets the following requirements for executing long running commands:
 
 * With no queue (default):
@@ -169,10 +168,16 @@ then to enqueue your command:
     )
     @DebugIt()
     def PerformLongTask(self):
-        """Command that queues a task that downloads data"""
-        handler = self.get_command_object("PerformLongTask")
+        """Command that queues a task that downloads data
+        
+        :return: A tuple containing a return code and a string
+            message indicating status. The message is for
+            information purpose only.
+        :rtype: (ResultCode, str)
+        """
+        command = self.get_command_object("PerformLongTask")
 
         # Enqueue here
-        (return_code, message) = self.component_manager.enqueue(handler)
+        unique_id, result_code = self.component_manager.enqueue(command)
 
-        return f"{return_code}", f"{message}"
+        return [[result_code], [unique_id]]

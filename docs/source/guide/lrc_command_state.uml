@@ -9,4 +9,5 @@ QUEUED  --> ABORTED : aborted
 FAILED      -> join
 ABORTED     -> join
 NOT_ALLOWED -> join
+COMPLETED   -> join
 join -> [*]

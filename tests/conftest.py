@@ -256,4 +256,3 @@ def tango_change_event_helper(device_under_test):
 def logger():
     """Fixture that returns a default logger for tests."""
     return logging.Logger("Test logger")
-

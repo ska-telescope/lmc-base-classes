@@ -51,7 +51,7 @@ python-post-test: ## test ska_tango_base Python code
 	
 python-pre-test:
 	echo ${CI_COMMIT_SHORT_SHA} 
-	echo $(ls ./)
+	echo $(ls -d ./*)
 	python3 -m pip install --extra-index-url https://artefact.skao.int/repository/pypi-all/simple -U $(ls -d ./dist/*.whl | grep ${CI_COMMIT_SHORT_SHA}) 
 
 test-in-docker: build ## Build the docker image and run tests inside it.

@@ -32,7 +32,7 @@ clean shell runner:
     # Gitlab CI badges creation
     - rm -rf build/*
 
- runlocaltest:
+runlocaltest:
   stage: localtest
   tags:
     - k8srunner

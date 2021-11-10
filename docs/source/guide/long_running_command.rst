@@ -164,7 +164,7 @@ then to enqueue your command:
 
     @command(
         dtype_in=None,
-        dtype_out="DevVarStringArray",
+        dtype_out="DevVarLongStringArray",
     )
     @DebugIt()
     def PerformLongTask(self):

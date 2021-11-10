@@ -8,6 +8,7 @@ image: artefact.skao.int/ska-tango-images-pytango-builder:9.3.10
 cache:
   paths:
     - build
+    - dist
 
 # The YAML file defines a set of jobs with constraints stating when they should be run.
 # You can specify an unlimited number of jobs which are defined as top-level elements with an arbitrary name and always have to contain at least the script clause.

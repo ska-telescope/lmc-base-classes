@@ -18,6 +18,7 @@ stages:
   - lint
   - build
   - join-reports
+  - localtest
   - test
   - pages
   - publish
@@ -30,7 +31,15 @@ clean shell runner:
   script:
     # Gitlab CI badges creation
     - rm -rf build/*
-      
+
+ runlocaltest:
+  stage: localtest
+  tags:
+    - k8srunner
+  script:
+    # Gitlab CI badges creation
+    - make python-test
+     
 #Join linting reports (This stage is temporary!)
 join_linting_reports:
   stage: join-reports

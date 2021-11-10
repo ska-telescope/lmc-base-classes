@@ -27,10 +27,10 @@ mechanism to execute long running TANGO commands asynchronously.
 Reference Design for the Implementation of Long Running Commands
 ----------------------------------------------------------------
 A message queue solution is the backbone to the implementation of the LRC design. The goal
-is to have a hybrid solution which will have the queue usage as an opt in. Note that the
-enqueued commands will block short running commands, reply to attribute reads and writes, process
-subscription requests until completed with the default option. That said, the SKABaseDevice
-meets the following requirements for executing long running commands:
+is to have a hybrid solution which will have the queue usage as an opt in. With the default option,
+note that the enqueued commands will block short running commands, reply to attribute reads and writes,
+process subscription requests until completed. That said, the SKABaseDevice meets the following 
+requirements for executing long running commands:
 
 * With no queue (default):
     * start executing LRC if another LRC is not currently executing

@@ -32,14 +32,6 @@ clean shell runner:
     # Gitlab CI badges creation
     - rm -rf build/*
 
-runlocaltest:
-  stage: localtest
-  tags:
-    - k8srunner
-  script:
-    # Gitlab CI badges creation
-    - make python-test
-
 python-test:
   retry: 2
     

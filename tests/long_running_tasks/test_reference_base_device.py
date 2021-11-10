@@ -25,7 +25,7 @@ class TestCommands:
     """
 
     @pytest.mark.forked
-    @pytest.mark.timeout(5)
+    @pytest.mark.timeout(50)
     @pytest.mark.xfail
     def test_short_command(self):
         """Test a simple command."""
@@ -41,7 +41,7 @@ class TestCommands:
                 assert result.get_task_unique_id().id_task_name == "ShortCommand"
 
     @pytest.mark.forked
-    @pytest.mark.timeout(5)
+    @pytest.mark.timeout(50)
     @pytest.mark.xfail
     def test_non_aborting_command(self):
         """Test tasks that does not abort."""
@@ -82,7 +82,7 @@ class TestCommands:
             assert "Aborted" in result.task_result
 
     @pytest.mark.forked
-    @pytest.mark.timeout(5)
+    @pytest.mark.timeout(50)
     @pytest.mark.xfail
     def test_exception_command(self):
         """Test the task that throws an error."""

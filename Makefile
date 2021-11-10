@@ -16,9 +16,14 @@ SHELL = /bin/bash
 PROJECT = ska-tango-base
 IMAGE_FOR_DIAGRAMS = artefact.skao.int/ska-tango-images-pytango-builder:9.3.10
 
-PYTHON_BUILD_TYPE = tag_setup
+# use setup.py
+# PYTHON_BUILD_TYPE = tag_setup
+
+# TODO: use black, isort and pylint and then remove these
 PYTHON_SWITCHES_FOR_ISORT = --skip tests --skip src -w 79 
 PYTHON_SWITCHES_FOR_BLACK = --exclude src --exclude tests 
+PYTHON_SWITCHES_FOR_PYLINT = --ignore=tests,src
+PYTHON_LINT_TARGET = src tests 
 
 #
 # include makefile to pick up the standard Make targets, e.g., 'make build'

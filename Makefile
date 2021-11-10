@@ -50,8 +50,8 @@ python-post-test: ## test ska_tango_base Python code
 	scripts/validate-metadata.sh
 	
 python-pre-test:
-	@echo $(${CI_COMMIT_SHORT_SHA}) 
-	@echo $(ls -d ./dist/*.whl)
+	echo $(${CI_COMMIT_SHORT_SHA}) 
+	echo $(ls -d ./dist/)
 	python3 -m pip install --extra-index-url https://artefact.skao.int/repository/pypi-all/simple -U $(ls -d ./dist/*.whl | grep ${CI_COMMIT_SHORT_SHA}) 
 
 test-in-docker: build ## Build the docker image and run tests inside it.

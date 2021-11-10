@@ -39,7 +39,10 @@ runlocaltest:
   script:
     # Gitlab CI badges creation
     - make python-test
-     
+
+python-test:
+  retry:2
+    
 #Join linting reports (This stage is temporary!)
 join_linting_reports:
   stage: join-reports

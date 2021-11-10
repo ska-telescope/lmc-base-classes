@@ -26,6 +26,7 @@ class TestCommands:
 
     @pytest.mark.forked
     @pytest.mark.timeout(5)
+    @pytest.mark.xfail
     def test_short_command(self):
         """Test a simple command."""
         for class_name in [BlockingBaseDevice, AsyncBaseDevice]:
@@ -41,6 +42,7 @@ class TestCommands:
 
     @pytest.mark.forked
     @pytest.mark.timeout(5)
+    @pytest.mark.xfail
     def test_non_aborting_command(self):
         """Test tasks that does not abort."""
         for class_name in [BlockingBaseDevice, AsyncBaseDevice]:
@@ -81,6 +83,7 @@ class TestCommands:
 
     @pytest.mark.forked
     @pytest.mark.timeout(5)
+    @pytest.mark.xfail
     def test_exception_command(self):
         """Test the task that throws an error."""
         for class_name in [BlockingBaseDevice, AsyncBaseDevice]:

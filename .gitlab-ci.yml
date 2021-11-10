@@ -41,7 +41,7 @@ runlocaltest:
     - make python-test
 
 python-test:
-  retry:2
+  retry: 2
     
 #Join linting reports (This stage is temporary!)
 join_linting_reports:

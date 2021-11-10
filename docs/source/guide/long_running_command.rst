@@ -125,7 +125,7 @@ implementations will execute commands in the same manner unless your component m
 specifies otherwise. Summarised in a few points, you would do the following to implement
 TANGO commands as long running:
 
-1. Create a component manager of type QueueWorkerComponentManager with queue size and thread determined.
+1. Create a component manager with queue size and thread determined.
 
 2. Create the command class for your tango command.
 
@@ -139,7 +139,7 @@ Example Device Implementing Long Running Command
     ...
     def create_component_manager(self):
 
-        return QueueWorkerComponentManager(
+        return SampleComponentManager(
             op_state_model=self.op_state_model,
             logger=self.logger,
             max_queue_size=20,
@@ -147,7 +147,7 @@ Example Device Implementing Long Running Command
             push_change_event=self.push_change_event,
         )
 
-.. note:: QueueWorkerComponentManager does not have access to the tango layer.
+.. note:: SampleComponentManager does not have access to the tango layer.
    In order to send LRC attribute updates, provide a copy of the device's `push_change_event`
    method to its constructor.
 
@@ -175,9 +175,9 @@ then to enqueue your command:
             information purpose only.
         :rtype: (ResultCode, str)
         """
-        command = self.get_command_object("PerformLongTask")
+        handler = self.get_command_object("PerformLongTask")
 
         # Enqueue here
-        unique_id, result_code = self.component_manager.enqueue(command)
+        unique_id, result_code = self.component_manager.enqueue(handler)
 
         return [[result_code], [unique_id]]

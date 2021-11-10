@@ -1,0 +1,13 @@
+[*]      -> QUEUED : queued
+QUEUED   -> IN_PROGRESS : starts executing
+IN_PROGRESS --> COMPLETED : completed normally
+IN_PROGRESS --> FAILED : completed abnormally
+IN_PROGRESS  -> ABORTED : aborted
+IN_PROGRESS  -> NOT_ALLOWED : not allowed
+state join <<join>>
+QUEUED  --> ABORTED : aborted
+FAILED      -> join
+ABORTED     -> join
+NOT_ALLOWED -> join
+COMPLETED   -> join
+join -> [*]

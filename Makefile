@@ -17,7 +17,7 @@ PROJECT = ska-tango-base
 IMAGE_FOR_DIAGRAMS = artefact.skao.int/ska-tango-images-pytango-builder:9.3.10
 
 # use setup.py
-# PYTHON_BUILD_TYPE = tag_setup
+PYTHON_BUILD_TYPE = non_tag_setup
 
 # TODO: use black, isort and pylint and then remove these
 PYTHON_SWITCHES_FOR_ISORT = --skip tests --skip src -w 79 
@@ -50,7 +50,8 @@ python-post-test: ## test ska_tango_base Python code
 	scripts/validate-metadata.sh
 	
 python-pre-test:
-	@echo $(ls -d ./dist/*.whl | grep ${CI_COMMIT_SHORT_SHA}) 
+	@echo $(${CI_COMMIT_SHORT_SHA}) 
+	@echo $(ls -d ./dist/*.whl)
 	python3 -m pip install --extra-index-url https://artefact.skao.int/repository/pypi-all/simple -U $(ls -d ./dist/*.whl | grep ${CI_COMMIT_SHORT_SHA}) 
 
 test-in-docker: build ## Build the docker image and run tests inside it.

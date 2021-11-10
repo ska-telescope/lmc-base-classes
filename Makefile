@@ -49,14 +49,15 @@ include .make/base.mk
 #python-do-test:
 #	mkdir -p build/reports
 #	python3 setup.py test | tee build/setup_py_test.stdout
-
+ 
 python-post-test: ## test ska_tango_base Python code
 	scripts/validate-metadata.sh
 	
 python-pre-test:
+	python3 -n pip install --extra-index-url https://artefact.skao.int/repository/pypi-all/simple ska-ser-logging
 	python3 -m pip install --extra-index-url https://artefact.skao.int/repository/pypi-all/simple -U $$(ls -d ./dist/*.whl | grep $$CI_COMMIT_SHORT_SHA) 
-	python3 -m pip install ipython-genutils
-	
+
+
 test-in-docker: build ## Build the docker image and run tests inside it.
 	@docker run --rm $(IMAGE):$(VERSION) make test
 

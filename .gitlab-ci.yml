@@ -5,9 +5,9 @@ image: artefact.skao.int/ska-tango-images-pytango-builder:9.3.10
 
 # cache is used to specify a list of files and directories which should be cached between jobs. You can only use paths that are within the project workspace.
 # If cache is defined outside the scope of jobs, it means it is set globally and all jobs will use that definition
-#cache:
-#  paths:
-#    - build
+cache:
+  paths:
+    - build
 
 # The YAML file defines a set of jobs with constraints stating when they should be run.
 # You can specify an unlimited number of jobs which are defined as top-level elements with an arbitrary name and always have to contain at least the script clause.

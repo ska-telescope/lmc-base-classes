@@ -17,7 +17,7 @@ PROJECT = ska-tango-base
 IMAGE_FOR_DIAGRAMS = artefact.skao.int/ska-tango-images-pytango-builder:9.3.10
 
 # use setup.py
-PYTHON_BUILD_TYPE = non_tag_setup
+#PYTHON_BUILD_TYPE = non_tag_setup
 
 # TODO: use black, isort and pylint and then remove these
 PYTHON_SWITCHES_FOR_ISORT = --skip tests --skip src -w 79 
@@ -45,6 +45,10 @@ include .make/base.mk
 
 
 .DEFAULT_GOAL := help
+
+python-do-test:
+	mkdir -p build/reports
+	python3 setup.py test | tee build/setup_py_test.stdout
 
 python-post-test: ## test ska_tango_base Python code
 	scripts/validate-metadata.sh

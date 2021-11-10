@@ -46,9 +46,9 @@ include .make/base.mk
 
 .DEFAULT_GOAL := help
 
-python-do-test:
-	mkdir -p build/reports
-	python3 setup.py test | tee build/setup_py_test.stdout
+#python-do-test:
+#	mkdir -p build/reports
+#	python3 setup.py test | tee build/setup_py_test.stdout
 
 python-post-test: ## test ska_tango_base Python code
 	scripts/validate-metadata.sh

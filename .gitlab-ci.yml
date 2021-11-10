@@ -38,7 +38,7 @@ runlocaltest:
     - k8srunner
   script:
     # Gitlab CI badges creation
-    - python3 -m pip install requests==2.26.0 transitions==0.8.9
+    - python3 -m pip install ipython-genutils
     - make python-test
      
 #Join linting reports (This stage is temporary!)

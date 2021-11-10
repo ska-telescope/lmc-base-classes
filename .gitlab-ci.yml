@@ -38,6 +38,7 @@ runlocaltest:
     - k8srunner
   script:
     # Gitlab CI badges creation
+    - python3 -m pip install requirements==2.26.0 transitions=0.8.9
     - make python-test
      
 #Join linting reports (This stage is temporary!)

@@ -55,7 +55,8 @@ python-post-test: ## test ska_tango_base Python code
 	 
 python-pre-test:
 	python3 -m pip install pytest-timeout
-	python3 -m pip install --extra-index-url https://artefact.skao.int/repository/pypi-all/simple -U $$(ls -d ./dist/*.whl | grep $$CI_COMMIT_SHORT_SHA) 
+	ls -d ./dist/*
+	python3 -m pip install --extra-index-url https://artefact.skao.int/repository/pypi-all/simple -U $$(ls -d ./dist/*.whl) 
 
 test-in-docker: build ## Build the docker image and run tests inside it.
 	@docker run --rm $(IMAGE):$(VERSION) make test

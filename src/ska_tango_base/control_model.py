@@ -328,7 +328,24 @@ class PowerMode(enum.IntEnum):
     Used by components that rely upon a power supply, such as hardware.
     """
 
-    UNKNOWN = 0
-    OFF = 1
-    STANDBY = 2
-    ON = 3
+    UNKNOWN = 1
+    """The power mode is not known."""
+
+    NO_SUPPLY = 2
+    """
+    The component is unsupplied with power and cannot be commanded on.
+
+    For example, the power mode of a TPM will be NO_SUPPLY if the
+    subrack that powers the TPM is turned off: not only is the TPM
+    off, but it cannot even be turned on (until the subrack has been
+    turned on).
+    """
+
+    OFF = 3
+    """The component is turned off but can be commanded on."""
+
+    STANDBY = 4
+    """The component is powered on and running in low-power standby mode."""
+
+    ON = 5
+    """The component is powered on and running in fully-operational mode."""

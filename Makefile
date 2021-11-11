@@ -16,19 +16,46 @@ SHELL = /bin/bash
 PROJECT = ska-tango-base
 IMAGE_FOR_DIAGRAMS = artefact.skao.int/ska-tango-images-pytango-builder:9.3.10
 
+# use setup.py
+#PYTHON_BUILD_TYPE = non_tag_setup
 
-# import some standard Make targets e.g. `make build` (for building
-# docker images), ``make push` (docker push procedure), etc.
-include .make/Makefile.mk
+# TODO: use black, isort and pylint and then remove these
+PYTHON_SWITCHES_FOR_ISORT = --skip tests --skip src -w 79 
+PYTHON_SWITCHES_FOR_BLACK = --exclude src --exclude tests 
+PYTHON_SWITCHES_FOR_PYLINT = --ignore=tests,src
+PYTHON_LINT_TARGET = src tests 
 
-# import make targets for code linting e.g. `make lint`
-include .make/lint.mk
+#
+# include makefile to pick up the standard Make targets, e.g., 'make build'
+# build, 'make push' docker push procedure, etc. The other Make targets
+# ('make interactive', 'make test', etc.) are defined in this file.
+#
+
+# include OCI Images support
+include .make/oci.mk
+
+# Include Python support
+include .make/python.mk
+
+# include core make support
+include .make/base.mk
+
+# include your own private variables for custom deployment configuration
+-include PrivateRules.mak
+
 
 .DEFAULT_GOAL := help
 
-test: ## test ska_tango_base Python code
-	mkdir -p build/reports
-	python3 setup.py test | tee build/setup_py_test.stdout
+#python-do-test:
+#	mkdir -p build/reports
+#	python3 setup.py test | tee build/setup_py_test.stdout
+ 
+python-post-test: ## test ska_tango_base Python code
+	scripts/validate-metadata.sh
+	 
+python-pre-test:
+	python3 -m pip install pytest-timeout
+	python3 -m pip install --extra-index-url https://artefact.skao.int/repository/pypi-all/simple -U $$(ls -d ./dist/*.whl | grep $$CI_COMMIT_SHORT_SHA) 
 
 test-in-docker: build ## Build the docker image and run tests inside it.
 	@docker run --rm $(IMAGE):$(VERSION) make test

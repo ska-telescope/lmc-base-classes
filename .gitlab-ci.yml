@@ -15,12 +15,14 @@ cache:
 # It is also specified that only the master branch will be subject of this job.
 
 stages:
+  - lint
   - build
+  - join-reports
+  - localtest
   - test
-  - linting
-  - publish
   - pages
-  - release
+  - publish
+  - scan
 
 clean shell runner:
   stage: .pre
@@ -30,55 +32,46 @@ clean shell runner:
     # Gitlab CI badges creation
     - rm -rf build/*
 
-unit tests:
-  stage: test
+python-test:
+  retry: 2
+    
+#Join linting reports (This stage is temporary!)
+join_linting_reports:
+  stage: join-reports
   tags:
     - k8srunner
   script:
-    - echo $(ls -d ./dist/*.whl | grep $CI_COMMIT_SHORT_SHA)
-    - python3 -m pip install --extra-index-url https://artefact.skao.int/repository/pypi-all/simple -U $(ls -d ./dist/*.whl | grep $CI_COMMIT_SHORT_SHA)
-    - make test
-    - scripts/validate-metadata.sh
+    - echo "This step is needed as the artifacts can't be passed in the same stage"
+    - make join-lint-reports
   artifacts:
     paths:
-      - ./build
+      - build/
+    when: always
 
-linting:
-  stage: linting
-  tags:
-    - k8srunner
-  script:
-    - echo $(ls -d ./dist/*.whl | grep $CI_COMMIT_SHORT_SHA)
-    - python3 -m pip install --extra-index-url https://artefact.skao.int/repository/pypi-all/simple -U $(ls -d ./dist/*.whl | grep $CI_COMMIT_SHORT_SHA)
-    - make lint
-  artifacts:
-    paths:
-      - ./build
+# Standardised included jobs
+variables:
+  GIT_SUBMODULE_STRATEGY: recursive
 
-pages:
-  stage: pages
-  tags:
-    - k8srunner
-  script:
-    - mkdir .public
-    - cp -R build .public
-    - mv .public public
-  artifacts:
-    paths:
-      - public
-  only:
-  - master
-
+# Include CI templates
 include:
-  # Create Gitlab CI badges from CI metrics
-  # https://developer.skatelescope.org/en/latest/tools/continuousintegration.html#automated-collection-of-ci-health-metrics-as-part-of-the-ci-pipeline
+# OCI Images
+  # do a custom set of build and publish stages
   - project: 'ska-telescope/templates-repository'
-    file: 'gitlab-ci/includes/post_step.yml'
-  # Publish Python packages
-  # https://developer.skao.int/en/latest/tools/software-package-release-procedure.html#building-and-publishing-python-packages
+    file: 'gitlab-ci/includes/oci-image.gitlab-ci.yml'
+
+  # Python packages build,lint, test and publish
   - project: 'ska-telescope/templates-repository'
-    file: 'gitlab-ci/includes/build_wheel.yml'
-  # Publish OCI images
-  # https://developer.skao.int/en/latest/tools/software-package-release-procedure.html#oci-image
+    file: 'gitlab-ci/includes/python.gitlab-ci.yml'
+
+# Docs pages
   - project: 'ska-telescope/templates-repository'
-    file: 'gitlab-ci/includes/build_push.yml'
+    file: 'gitlab-ci/includes/docs-pages.gitlab-ci.yml'
+
+# .post step finalisers eg: badges
+  - project: 'ska-telescope/templates-repository'
+    file: 'gitlab-ci/includes/finaliser.gitlab-ci.yml'
+
+# changelog release page
+  - project: 'ska-telescope/templates-repository'
+    file: 'gitlab-ci/includes/release.gitlab-ci.yml'
+

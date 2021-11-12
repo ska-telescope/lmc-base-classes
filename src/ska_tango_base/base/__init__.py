@@ -7,6 +7,7 @@ __all__ = (
     "ReferenceBaseComponentManager",
     "check_communicating",
     "SKABaseDevice",
+    "QueueManager",
 )
 
 # Note: order of imports is important - start with lowest in the hierarchy
@@ -19,3 +20,4 @@ from .reference_component_manager import (
     check_communicating,
 )
 from .base_device import SKABaseDevice
+from .task_queue_manager import QueueManager

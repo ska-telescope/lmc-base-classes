@@ -8,7 +8,7 @@ import pytest
 
 from ska_tango_base.faults import ComponentError, ComponentFault
 from ska_tango_base.subarray import ReferenceSubarrayComponentManager
-from ska_tango_base.control_model import PowerMode
+from ska_tango_base.control_model import PowerState
 
 
 class TestSubarrayComponentResourceManager:
@@ -152,7 +152,7 @@ class TestSubarrayComponentManager:
         """Return mock arguments to the scan() method."""
         return mocker.Mock()
 
-    @pytest.fixture(params=[PowerMode.OFF, PowerMode.STANDBY, PowerMode.ON])
+    @pytest.fixture(params=[PowerState.OFF, PowerState.STANDBY, PowerState.ON])
     def initial_power_mode(self, request):
         """Return the initial power mode of the component under test."""
         return request.param
@@ -210,9 +210,9 @@ class TestSubarrayComponentManager:
         :param mock_op_state_model: a mock state model for testing
         """
         power_mode_map = {
-            PowerMode.OFF: "component_off",
-            PowerMode.STANDBY: "component_standby",
-            PowerMode.ON: "component_on",
+            PowerState.OFF: "component_off",
+            PowerState.STANDBY: "component_standby",
+            PowerState.ON: "component_on",
         }
         expected_action = (
             "component_fault" if initial_fault else power_mode_map[initial_power_mode]
@@ -222,7 +222,7 @@ class TestSubarrayComponentManager:
 
         # While disconnected, tell the component to simulate an obsfault
         # (but only if it is turned on and not faulty)
-        if initial_power_mode == PowerMode.ON and not initial_fault:
+        if initial_power_mode == PowerState.ON and not initial_fault:
             component.simulate_obsfault(True)
 
             # The component is disconnected, so the state model cannot
@@ -236,7 +236,7 @@ class TestSubarrayComponentManager:
             ((expected_action,),),
         ]
 
-        if initial_power_mode == PowerMode.ON and not initial_fault:
+        if initial_power_mode == PowerState.ON and not initial_fault:
             # The component manager has noticed that it missed a change
             # in the component while it was disconnected, and his
             # updated the obs state model
@@ -317,9 +317,9 @@ class TestSubarrayComponentManager:
             the state model
         """
         power_mode_map = {
-            PowerMode.OFF: "component_off",
-            PowerMode.STANDBY: "component_standby",
-            PowerMode.ON: "component_on",
+            PowerState.OFF: "component_off",
+            PowerState.STANDBY: "component_standby",
+            PowerState.ON: "component_on",
         }
 
         component_manager.start_communicating()
@@ -371,9 +371,9 @@ class TestSubarrayComponentManager:
             the state model
         """
         power_mode_map = {
-            PowerMode.OFF: "component_off",
-            PowerMode.STANDBY: "component_standby",
-            PowerMode.ON: "component_on",
+            PowerState.OFF: "component_off",
+            PowerState.STANDBY: "component_standby",
+            PowerState.ON: "component_on",
         }
 
         component_manager.start_communicating()
@@ -467,7 +467,7 @@ class TestSubarrayComponentManager:
             pytest.raises(ComponentFault, match="")
             if initial_fault
             else pytest.raises(ComponentError, match="Component is not ON")
-            if initial_power_mode != PowerMode.ON
+            if initial_power_mode != PowerState.ON
             else contextlib.nullcontext()
         )
 
@@ -514,7 +514,7 @@ class TestSubarrayComponentManager:
             pytest.raises(ComponentFault, match="")
             if initial_fault
             else pytest.raises(ComponentError, match="Component is not ON")
-            if initial_power_mode != PowerMode.ON
+            if initial_power_mode != PowerState.ON
             else contextlib.nullcontext()
         )
 
@@ -568,7 +568,7 @@ class TestSubarrayComponentManager:
             pytest.raises(ComponentFault, match="")
             if initial_fault
             else pytest.raises(ComponentError, match="Component is not ON")
-            if initial_power_mode != PowerMode.ON
+            if initial_power_mode != PowerState.ON
             else contextlib.nullcontext()
         )
 

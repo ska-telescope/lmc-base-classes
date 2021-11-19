@@ -1422,7 +1422,8 @@ class SKABaseDevice(Device):
         """The command class for the AbortCommand command."""
 
         def __init__(self, component_manager, logger=None):
-            """Initialise a new AbortCommandsCommand instance.
+            """
+            Initialise a new AbortCommandsCommand instance.
 
             :param component_manager: contains the queue manager which
                 manages the worker thread and the LRC attributes
@@ -1435,9 +1436,11 @@ class SKABaseDevice(Device):
             super().__init__(target=component_manager, logger=logger)
 
         def do(self):
-            """Abort long running commands.
+            """
+            Abort long running commands.
 
-            Abort the currently executing LRC and remove all enqueued LRCs.
+            Abort the currently executing LRC and remove all enqueued
+            LRCs.
             """
             self.target.abort_tasks()
             return (ResultCode.OK, "Aborting")
@@ -1456,7 +1459,8 @@ class SKABaseDevice(Device):
         """The command class for the CheckLongRunningCommandStatus command."""
 
         def __init__(self, component_manager, logger=None):
-            """Initialise a new CheckLongRunningCommandStatusCommand instance.
+            """
+            Initialise a new CheckLongRunningCommandStatusCommand instance.
 
             :param component_manager: contains the queue manager which
                 manages the worker thread and the LRC attributes
@@ -1469,7 +1473,8 @@ class SKABaseDevice(Device):
             super().__init__(target=component_manager, logger=logger)
 
         def do(self, argin):
-            """Determine the status of the command ID passed in, if any.
+            """
+            Determine the status of the command ID passed in, if any.
 
             - Check `command_result` to see if it's finished.
             - Check `command_status` to see if it's in progress

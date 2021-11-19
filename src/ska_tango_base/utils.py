@@ -550,7 +550,8 @@ def for_testing_only(func, _testing_check=lambda: "pytest" in sys.modules):
 
 @dataclass
 class StoredCommand:
-    """Used to keep track of commands scheduled across devices.
+    """
+    Used to keep track of commands scheduled across devices.
 
     command_name: The Tango command to execute across devices.
     command_id: Every Tango device will return the command ID for the
@@ -564,7 +565,8 @@ class StoredCommand:
 
 
 class LongRunningDeviceInterface:
-    """This class is a convenience class for long running command devices.
+    """
+    This class is a convenience class for long running command devices.
 
     The intent of this class is that clients should not have to keep
     track of command IDs or the various attributes
@@ -613,7 +615,8 @@ class LongRunningDeviceInterface:
                 )
 
     def push_event(self, ev: EventData):
-        """Handle the attribute change events.
+        """
+        Handle the attribute change events.
 
         For every event that comes in:
 
@@ -682,7 +685,8 @@ class LongRunningDeviceInterface:
         command_arg: Any = None,
         on_completion_callback: Callable = None,
     ):
-        """Execute the long running command with an argument if any.
+        """
+        Execute the long running command with an argument if any.
 
         Once the commmand completes, then the `on_completion_callback`
         will be executed with the EventData as parameter.

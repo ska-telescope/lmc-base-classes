@@ -104,7 +104,6 @@ Getting the state of a task
 
 Calling `get_task_state` with the task ID will check the state of the task. A history of completed tasks
 are not kept, so it may not be found.
-
 """
 from __future__ import annotations
 import enum
@@ -166,7 +165,8 @@ class TaskUniqueId:
     """Convenience class for the unique ID of a task."""
 
     def __init__(self, id_uuid: str, id_datetime: datetime, id_task_name: str) -> None:
-        """Create a TaskUniqueId instance.
+        """
+        Create a TaskUniqueId instance.
 
         :param id_uuid: The uuid portion of the task identifier
         :type id_uuid: str
@@ -206,7 +206,8 @@ class TaskResult:
     def __init__(
         self, result_code: ResultCode, task_result: str, unique_id: str
     ) -> None:
-        """Create the TaskResult.
+        """
+        Create the TaskResult.
 
         :param result_code: The ResultCode of the task result
         :type result_code: ResultCode
@@ -220,7 +221,8 @@ class TaskResult:
         self.unique_id = unique_id
 
     def to_task_result(self) -> Tuple[str, str, str]:
-        """Convert TaskResult to task_result.
+        """
+        Convert TaskResult to task_result.
 
         :return: The task result
         :rtype: tuple[str, str, str]
@@ -229,7 +231,8 @@ class TaskResult:
 
     @classmethod
     def from_task_result(cls, task_result: Tuple[str, str, str]) -> TaskResult:
-        """Convert task_result tuple to TaskResult.
+        """
+        Convert task_result tuple to TaskResult.
 
         :param task_result: The task_result (unique_id, result_code, task_result)
         :type task_result: tuple
@@ -252,7 +255,8 @@ class TaskResult:
     def from_response_command(
         cls, command_result: Union[Tuple[str, str], numpy.ndarray]
     ) -> TaskResult:
-        """Convert from ResponseCommand to TaskResult.
+        """
+        Convert from ResponseCommand to TaskResult.
 
         Either from (str, str) or DevVarLongStringArray
 
@@ -284,7 +288,11 @@ class TaskResult:
 
 
 class QueueManager:
-    """Manages the worker threads. Updates the properties as the tasks are completed."""
+    """
+    Manages the worker threads.
+
+    Updates the properties as the tasks are completed.
+    """
 
     class Worker(threading.Thread):
         """A worker thread that takes tasks from the queue and performs them."""
@@ -300,7 +308,8 @@ class QueueManager:
             update_progress_callback: Callable,
             queue_fetch_timeout: int = 0.1,
         ) -> None:
-            """Initiate a worker.
+            """
+            Initiate a worker.
 
             :param self: Worker class
             :type self: QueueManager.Worker
@@ -329,12 +338,13 @@ class QueueManager:
             self.setDaemon(True)
 
         def run(self) -> None:
-            """Run in the thread.
+            """
+            Run in the thread.
 
-            Tasks are fetched off the queue and executed.
-            if stopping_event is set the thread will exit.
-            If aborting_event is set the queue will be emptied. All new commands will be aborted until
-            aborting_event cleared.
+            Tasks are fetched off the queue and executed. if
+            stopping_event is set the thread will exit. If
+            aborting_event is set the queue will be emptied. All new
+            commands will be aborted until aborting_event cleared.
             """
             with tango.EnsureOmniThread():
                 while not self.stopping_event.is_set():
@@ -372,7 +382,8 @@ class QueueManager:
                 return
 
         def _update_task_progress(self, progress: str) -> None:
-            """Update the current task progress.
+            """
+            Update the current task progress.
 
             :param progress: An indication of progress
             :type progress: str
@@ -384,7 +395,8 @@ class QueueManager:
         def execute_task(
             cls, task: BaseCommand, argin: Any, unique_id: str
         ) -> TaskResult:
-            """Execute a task, return results in a standardised format.
+            """
+            Execute a task, return results in a standardised format.
 
             :param task: Task to execute
             :type task: BaseCommand
@@ -435,7 +447,8 @@ class QueueManager:
         logger: Optional[logging.Logger] = None,
         push_change_event: Optional[Callable] = None,
     ):
-        """Init QueryManager.
+        """
+        Init QueryManager.
 
         Creates the queue and starts the thread that will execute tasks
         from it.
@@ -490,7 +503,8 @@ class QueueManager:
 
     @property
     def queue_full(self) -> bool:
-        """Check if the queue is full.
+        """
+        Check if the queue is full.
 
         :return: Whether or not the queue is full.
         :rtype: bool
@@ -499,7 +513,8 @@ class QueueManager:
 
     @property
     def task_result(self) -> Union[Tuple[str, str, str], Tuple[()]]:
-        """Return the last task result.
+        """
+        Return the last task result.
 
         :return: Last task result
         :rtype: Tuple
@@ -510,7 +525,8 @@ class QueueManager:
     def task_ids_in_queue(
         self,
     ) -> Tuple[str,]:  # noqa: E231
-        """Task IDs in the queue.
+        """
+        Task IDs in the queue.
 
         :return: The task IDs in the queue
         :rtype: tuple
@@ -521,7 +537,8 @@ class QueueManager:
     def tasks_in_queue(
         self,
     ) -> Tuple[str,]:  # noqa: E231
-        """Task names in the queue.
+        """
+        Task names in the queue.
 
         :return: The list of task names in the queue
         :rtype: tuple
@@ -532,7 +549,8 @@ class QueueManager:
     def task_status(
         self,
     ) -> Tuple[str,]:  # noqa: E231
-        """Return task status.
+        """
+        Return task status.
 
         :return: The task status pairs (id, status)
         :rtype: tuple(str,)
@@ -547,7 +565,8 @@ class QueueManager:
     def task_progress(
         self,
     ) -> Tuple[Optional[str],]:  # noqa: E231
-        """Return the task progress.
+        """
+        Return the task progress.
 
         :return: The task progress pairs (id, progress)
         :rtype: tuple(str,)
@@ -562,7 +581,8 @@ class QueueManager:
     def enqueue_task(
         self, task: BaseCommand, argin: Optional[Any] = None
     ) -> Tuple[str, ResultCode]:
-        """Add the task to be done onto the queue.
+        """
+        Add the task to be done onto the queue.
 
         :param task: The task to execute in a thread
         :type task: BaseCommand
@@ -602,7 +622,11 @@ class QueueManager:
         return unique_id, ResultCode.QUEUED
 
     def result_callback(self, task_result: TaskResult):
-        """Run when the task, taken from the queue, have completed to update the appropriate attributes.
+        """
+        Handle task completion.
+
+        This is a callback hook, run when the task, taken from the
+        queue, has completed, to update the appropriate attributes.
 
         :param task_result: The result of the task
         :type task_result: TaskResult
@@ -620,7 +644,8 @@ class QueueManager:
         self._on_property_change("longRunningCommandResult", self.task_result)
 
     def update_task_state_callback(self, unique_id: str, status: str):
-        """Update the executing task state.
+        """
+        Update the executing task state.
 
         :param unique_id: The task unique ID
         :type unique_id: str
@@ -644,7 +669,8 @@ class QueueManager:
         self._on_property_change("longRunningCommandProgress", self.task_progress)
 
     def _on_property_change(self, property_name: str, property_value: Any):
-        """Trigger when a property changes value.
+        """
+        Trigger when a property changes value.
 
         :param property_name: The property name
         :type property_name: str
@@ -663,7 +689,11 @@ class QueueManager:
         self.aborting_event.clear()
 
     def stop_tasks(self):
-        """Set stopping_event on each thread so it exists out. Killing the thread."""
+        """
+        Set stopping_event on each thread so it exists out.
+
+        Killing the thread.
+        """
         self.stopping_event.set()
 
     @property
@@ -673,7 +703,8 @@ class QueueManager:
 
     @classmethod
     def generate_unique_id(cls, task_name) -> str:
-        """Generate a unique ID for the task.
+        """
+        Generate a unique ID for the task.
 
         :param task_name: The name of the task
         :type task_name: string
@@ -683,7 +714,8 @@ class QueueManager:
         return TaskUniqueId.generate_unique_id(task_name)
 
     def get_task_state(self, unique_id: str) -> TaskState:
-        """Attempt to get state of QueueTask.
+        """
+        Attempt to get state of QueueTask.
 
         :param unique_id: Unique ID of the QueueTask
         :type unique_id: str
@@ -716,7 +748,8 @@ class QueueManager:
         self._logger.log(getattr(logging, level), message)
 
     def __len__(self) -> int:
-        """Approximate length of the queue.
+        """
+        Approximate length of the queue.
 
         :return: The approximate length of the queue
         :rtype: int
@@ -724,7 +757,8 @@ class QueueManager:
         return self._work_queue.qsize()
 
     def __bool__(self):
-        """Ensure `if QueueManager()` works as expected with `__len__` being overridden.
+        """
+        Ensure `if QueueManager()` works as expected with `__len__` being overridden.
 
         :return: True
         :rtype: bool

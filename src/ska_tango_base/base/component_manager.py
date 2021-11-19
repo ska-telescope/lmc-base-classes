@@ -27,7 +27,7 @@ from typing import Any, Optional, Tuple
 
 from ska_tango_base.commands import BaseCommand, ResultCode
 
-from ska_tango_base.control_model import PowerMode
+from ska_tango_base.control_model import PowerState
 from ska_tango_base.base.task_queue_manager import QueueManager, TaskState
 
 
@@ -181,9 +181,9 @@ class BaseComponentManager:
         raise NotImplementedError("BaseComponentManager is abstract.")
 
     action_map = {
-        PowerMode.OFF: "component_off",
-        PowerMode.STANDBY: "component_standby",
-        PowerMode.ON: "component_on",
+        PowerState.OFF: "component_off",
+        PowerState.STANDBY: "component_standby",
+        PowerState.ON: "component_on",
     }
 
     def component_power_mode_changed(self, power_mode):
@@ -194,7 +194,7 @@ class BaseComponentManager:
 
         :param power_mode: the new power mode of the component
         :type power_mode:
-            :py:class:`ska_tango_base.control_model.PowerMode`
+            :py:class:`ska_tango_base.control_model.PowerState`
         """
         action = self.action_map[power_mode]
         self.op_state_model.perform_action(action)
@@ -208,7 +208,8 @@ class BaseComponentManager:
         self.op_state_model.perform_action("component_fault")
 
     def create_queue_manager(self) -> QueueManager:
-        """Create a QueueManager.
+        """
+        Create a QueueManager.
 
         By default the QueueManager will not have a queue or workers. Thus
         tasks enqueued will execute synchronously.
@@ -223,7 +224,8 @@ class BaseComponentManager:
         task: BaseCommand,
         argin: Optional[Any] = None,
     ) -> Tuple[str, ResultCode]:
-        """Put `task` on the queue. The unique ID for it is returned.
+        """
+        Put `task` on the queue. The unique ID for it is returned.
 
         :param task: The task to execute in the thread
         :type task: BaseCommand

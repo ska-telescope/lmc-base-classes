@@ -7,7 +7,7 @@ from ska_tango_base.base import (
     check_communicating,
     ReferenceBaseComponentManager,
 )
-from ska_tango_base.control_model import PowerMode
+from ska_tango_base.control_model import PowerState
 from ska_tango_base.faults import (
     CapabilityValidationError,
     ComponentError,
@@ -51,7 +51,7 @@ def check_on(func):
         """
         if component.faulty:
             raise ComponentFault()
-        if component.power_mode != PowerMode.ON:
+        if component.power_mode != PowerState.ON:
             raise ComponentError("Component is not ON")
         return func(component, *args, **kwargs)
 
@@ -174,7 +174,7 @@ class ReferenceSubarrayComponentManager(
         def __init__(
             self,
             capability_types,
-            _power_mode=PowerMode.OFF,
+            _power_mode=PowerState.OFF,
             _faulty=False,
         ):
             """
@@ -469,7 +469,7 @@ class ReferenceSubarrayComponentManager(
 
         if self._component.faulty:
             return
-        if self._component.power_mode != PowerMode.ON:
+        if self._component.power_mode != PowerState.ON:
             return
 
         # we've been disconnected and we might have missed some
@@ -661,7 +661,8 @@ class ReferenceSubarrayComponentManager(
         self.obs_state_model.perform_action("component_obsfault")
 
     def create_queue_manager(self) -> QueueManager:
-        """Create a Queue Manager.
+        """
+        Create a Queue Manager.
 
         :return: The queue manager
         :rtype: QueueManager

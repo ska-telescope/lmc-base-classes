@@ -235,7 +235,8 @@ def tango_change_event_helper(device_under_test):
                 self.assert_call(value)
 
         def wait_for_lrc_id(self, unique_id: str):
-            """Wait for the longRunningCommandResult unique ID to be the same as the parameter.
+            """
+            Wait for longRunningCommandResult unique ID to be the same as the parameter.
 
             :param unique_id: The long running command unique ID
             :type unique_id: str

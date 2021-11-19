@@ -10,7 +10,7 @@ from typing import Optional, Callable
 
 from ska_tango_base.base import BaseComponentManager, OpStateModel
 from ska_tango_base.base.task_queue_manager import QueueManager
-from ska_tango_base.control_model import PowerMode
+from ska_tango_base.control_model import PowerState
 from ska_tango_base.faults import ComponentFault
 
 
@@ -99,7 +99,7 @@ class ReferenceBaseComponentManager(BaseComponentManager):
         callback method.
         """
 
-        def __init__(self, _power_mode=PowerMode.OFF, _faulty=False):
+        def __init__(self, _power_mode=PowerState.OFF, _faulty=False):
             """
             Initialise a new instance.
 
@@ -142,7 +142,7 @@ class ReferenceBaseComponentManager(BaseComponentManager):
             Return the current power mode of the component.
 
             :return: power mode of the component
-            :rtype: :py:class:`ska_tango_base.control_model.PowerMode`
+            :rtype: :py:class:`ska_tango_base.control_model.PowerState`
             """
             if self.faulty:
                 raise ComponentFault()
@@ -173,7 +173,7 @@ class ReferenceBaseComponentManager(BaseComponentManager):
             """
             if self.faulty:
                 raise ComponentFault()
-            self._update_power_mode(PowerMode.OFF)
+            self._update_power_mode(PowerState.OFF)
 
         def simulate_standby(self):
             """
@@ -184,7 +184,7 @@ class ReferenceBaseComponentManager(BaseComponentManager):
             """
             if self.faulty:
                 raise ComponentFault()
-            self._update_power_mode(PowerMode.STANDBY)
+            self._update_power_mode(PowerState.STANDBY)
 
         def simulate_on(self):
             """
@@ -195,7 +195,7 @@ class ReferenceBaseComponentManager(BaseComponentManager):
             """
             if self.faulty:
                 raise ComponentFault()
-            self._update_power_mode(PowerMode.ON)
+            self._update_power_mode(PowerState.ON)
 
         def _invoke_power_callback(self):
             """Invoke the callback when the power mode of the component changes."""
@@ -212,7 +212,7 @@ class ReferenceBaseComponentManager(BaseComponentManager):
 
             :param power_mode: new value for the power mode
             :type power_mode:
-                :py:class:`ska_tango_base.control_model.PowerMode`
+                :py:class:`ska_tango_base.control_model.PowerState`
             """
             if self._power_mode != power_mode:
                 self._power_mode = power_mode
@@ -367,9 +367,9 @@ class ReferenceBaseComponentManager(BaseComponentManager):
         self._component.reset()
 
     action_map = {
-        PowerMode.OFF: "component_off",
-        PowerMode.STANDBY: "component_standby",
-        PowerMode.ON: "component_on",
+        PowerState.OFF: "component_off",
+        PowerState.STANDBY: "component_standby",
+        PowerState.ON: "component_on",
     }
 
     def component_power_mode_changed(self, power_mode):
@@ -380,7 +380,7 @@ class ReferenceBaseComponentManager(BaseComponentManager):
 
         :param power_mode: the new power mode of the component
         :type power_mode:
-            :py:class:`ska_tango_base.control_model.PowerMode`
+            :py:class:`ska_tango_base.control_model.PowerState`
         """
         action = self.action_map[power_mode]
         self.op_state_model.perform_action(action)
@@ -407,7 +407,8 @@ class QueueWorkerComponentManager(ReferenceBaseComponentManager):
         *args,
         **kwargs
     ):
-        """Component manager that configures the queue.
+        """
+        Component manager that configures the queue.
 
         :param op_state_model: The ops state model
         :type op_state_model: OpStateModel
@@ -427,7 +428,8 @@ class QueueWorkerComponentManager(ReferenceBaseComponentManager):
         super().__init__(op_state_model, *args, logger=logger, **kwargs)
 
     def create_queue_manager(self) -> QueueManager:
-        """Create a QueueManager.
+        """
+        Create a QueueManager.
 
         Create the QueueManager with the queue configured as needed.
 

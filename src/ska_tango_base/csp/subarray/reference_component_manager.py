@@ -4,7 +4,7 @@ import functools
 from ska_tango_base.base import check_communicating
 from ska_tango_base.csp.subarray import CspSubarrayComponentManager
 from ska_tango_base.subarray import ReferenceSubarrayComponentManager
-from ska_tango_base.control_model import PowerMode
+from ska_tango_base.control_model import PowerState
 from ska_tango_base.faults import ComponentError, ComponentFault
 
 
@@ -44,7 +44,7 @@ def check_on(func):
         """
         if component.faulty:
             raise ComponentFault()
-        if component.power_mode != PowerMode.ON:
+        if component.power_mode != PowerState.ON:
             raise ComponentError("Component is not ON")
         return func(component, *args, **kwargs)
 
@@ -85,7 +85,7 @@ class ReferenceCspSubarrayComponentManager(
         def __init__(
             self,
             capability_types,
-            _power_mode=PowerMode.OFF,
+            _power_mode=PowerState.OFF,
             _faulty=False,
         ):
             """

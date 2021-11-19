@@ -4,7 +4,7 @@ import functools
 from ska_tango_base.csp.obs import CspObsComponentManager
 from ska_tango_base.base import check_communicating, ReferenceBaseComponentManager
 
-from ska_tango_base.control_model import PowerMode
+from ska_tango_base.control_model import PowerState
 from ska_tango_base.faults import ComponentError, ComponentFault
 
 
@@ -44,7 +44,7 @@ def check_on(func):
         """
         if component.faulty:
             raise ComponentFault()
-        if component.power_mode != PowerMode.ON:
+        if component.power_mode != PowerState.ON:
             raise ComponentError("Component is not ON")
         return func(component, *args, **kwargs)
 
@@ -83,7 +83,7 @@ class ReferenceCspObsComponentManager(
 
         def __init__(
             self,
-            _power_mode=PowerMode.OFF,
+            _power_mode=PowerState.OFF,
             _faulty=False,
         ):
             """
@@ -281,7 +281,7 @@ class ReferenceCspObsComponentManager(
 
         if self._component.faulty:
             return
-        if self._component.power_mode != PowerMode.ON:
+        if self._component.power_mode != PowerState.ON:
             return
 
         # we've been disconnected and we might have missed some

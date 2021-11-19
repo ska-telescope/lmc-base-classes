@@ -18,7 +18,8 @@ from ska_tango_base.commands import ResultCode
 
 
 class TestCommands:
-    """Check that blocking and async commands behave the same way.
+    """
+    Check that blocking and async commands behave the same way.
 
     BlockingBaseDevice - QueueManager has no threads and blocks tasks
     AsyncBaseDevice - QueueManager has multiple threads, tasks run from queue
@@ -61,10 +62,11 @@ class TestCommands:
     @pytest.mark.forked
     @pytest.mark.timeout(5)
     def test_aborting_command(self):
-        """Test Abort.
+        """
+        Test Abort.
 
-        BlockingBaseDevice will block on `AbortingLongRunning` so calling
-        AbortCommands after that makes no sense.
+        BlockingBaseDevice will block on `AbortingLongRunning` so
+        calling AbortCommands after that makes no sense.
         """
         with DeviceTestContext(AsyncBaseDevice, process=True) as proxy:
             unique_id, _ = proxy.AbortingLongRunning(0.5)
@@ -167,7 +169,8 @@ def test_callbacks():
 @pytest.mark.forked
 @pytest.mark.timeout(10)
 def test_events():
-    """Testing the events.
+    """
+    Testing the events.
 
     NOTE: Adding more than 1 event subscriptions leads to inconsistent results.
           Sometimes misses events.

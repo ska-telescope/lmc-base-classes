@@ -321,7 +321,7 @@ class LoggingLevel(enum.IntEnum):
     DEBUG = 5
 
 
-class PowerMode(enum.IntEnum):
+class PowerState(enum.IntEnum):
     """
     Enumerated type for power mode.
 
@@ -331,16 +331,7 @@ class PowerMode(enum.IntEnum):
     UNKNOWN = 0
     """The power mode is not known."""
 
-    OFF = 1
-    """The component is turned off but can be commanded on."""
-
-    STANDBY = 2
-    """The component is powered on and running in low-power standby mode."""
-
-    ON = 3
-    """The component is powered on and running in fully-operational mode."""
-
-    NO_SUPPLY = 4
+    NO_SUPPLY = 1
     """
     The component is unsupplied with power and cannot be commanded on.
 
@@ -349,3 +340,12 @@ class PowerMode(enum.IntEnum):
     off, but it cannot even be turned on (until the subrack has been
     turned on).
     """
+
+    OFF = 2
+    """The component is turned off but can be commanded on."""
+
+    STANDBY = 3
+    """The component is powered on and running in low-power standby mode."""
+
+    ON = 4
+    """The component is powered on and running in fully-operational mode."""

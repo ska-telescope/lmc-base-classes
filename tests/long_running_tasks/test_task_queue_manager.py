@@ -146,7 +146,11 @@ class TestQueueManager:
     """General QueueManager checks."""
 
     def test_threads_start(self):
-        """Test that threads start up. Set stop and exit."""
+        """
+        Test that threads start up.
+
+        Set stop and exit.
+        """
         qm = QueueManager(max_queue_size=2, num_workers=2, logger=logger)
         assert len(qm._threads) == 2
         for worker in qm._threads:
@@ -283,7 +287,11 @@ class TestQueueManagerTasks:
 
     @pytest.mark.timeout(5)
     def test_multi_jobs(self, slow_task):
-        """Test that multiple threads are working. Test that attribute updates fires."""
+        """
+        Test that multiple threads are working.
+
+        Test that attribute updates fires.
+        """
         num_of_workers = 3
 
         with patch.object(QueueManager, "_on_property_change") as call_back_func:

@@ -3,7 +3,7 @@ import contextlib
 import pytest
 
 from ska_tango_base.base import ReferenceBaseComponentManager
-from ska_tango_base.control_model import PowerMode
+from ska_tango_base.control_model import PowerState
 from ska_tango_base.faults import ComponentFault
 
 
@@ -22,7 +22,7 @@ class TestBaseComponentManager:
         """
         return mocker.Mock()
 
-    @pytest.fixture(params=[PowerMode.OFF, PowerMode.STANDBY, PowerMode.ON])
+    @pytest.fixture(params=[PowerState.OFF, PowerState.STANDBY, PowerState.ON])
     def initial_power_mode(self, request):
         """Return the initial power mode of the component under test."""
         return request.param
@@ -63,9 +63,9 @@ class TestBaseComponentManager:
         :param mock_op_state_model: a mock state model for testing
         """
         power_mode_map = {
-            PowerMode.OFF: "component_off",
-            PowerMode.STANDBY: "component_standby",
-            PowerMode.ON: "component_on",
+            PowerState.OFF: "component_off",
+            PowerState.STANDBY: "component_standby",
+            PowerState.ON: "component_on",
         }
         expected_action = (
             "component_fault" if initial_fault else power_mode_map[initial_power_mode]
@@ -154,9 +154,9 @@ class TestBaseComponentManager:
             the state model
         """
         power_mode_map = {
-            PowerMode.OFF: "component_off",
-            PowerMode.STANDBY: "component_standby",
-            PowerMode.ON: "component_on",
+            PowerState.OFF: "component_off",
+            PowerState.STANDBY: "component_standby",
+            PowerState.ON: "component_on",
         }
 
         component_manager.start_communicating()
@@ -208,9 +208,9 @@ class TestBaseComponentManager:
             the state model
         """
         power_mode_map = {
-            PowerMode.OFF: "component_off",
-            PowerMode.STANDBY: "component_standby",
-            PowerMode.ON: "component_on",
+            PowerState.OFF: "component_off",
+            PowerState.STANDBY: "component_standby",
+            PowerState.ON: "component_on",
         }
 
         component_manager.start_communicating()

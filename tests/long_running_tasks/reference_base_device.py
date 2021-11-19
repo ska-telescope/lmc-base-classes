@@ -86,7 +86,8 @@ class LongRunningCommandBaseTestDevice(SKABaseDevice):
         """The command class for the NonAbortingLongRunning command."""
 
         def do(self, argin):
-            """NOTE This is an example of what _not_ to do.
+            """
+            NOTE This is an example of what _not_ to do.
 
             Always check self.is_aborting periodically so that the command
             will exit out if long running commands are aborted.
@@ -190,7 +191,8 @@ class LongRunningCommandBaseTestDevice(SKABaseDevice):
         """The command class for the TestProgress command."""
 
         def __init__(self, target, *args, logger=None, **kwargs):
-            """Create ResponseCommand, add devices.
+            """
+            Create ResponseCommand, add devices.
 
             :param target: component manager
             :type target: BaseComponentManager
@@ -224,7 +226,7 @@ class LongRunningCommandBaseTestDevice(SKABaseDevice):
 
 
 class BlockingBaseDevice(LongRunningCommandBaseTestDevice):
-    """Test device that has a component manager with the default queue manager that has no workers."""
+    """Test device with a component manager with a queue manager with no workers."""
 
     pass
 

@@ -728,7 +728,18 @@ class TestSKABaseDevice_commands:
         """
 
         def _command_factory(command):
-            return command(mocker.Mock(), op_state_model)
+            mocked_command = mocker.Mock()
+            mocked_command.on.return_value = ResultCode.OK, "On command completed OK"
+            mocked_command.off.return_value = ResultCode.OK, "Off command completed OK"
+            mocked_command.reset.return_value = (
+                ResultCode.OK,
+                "Reset command completed OK",
+            )
+            mocked_command.standby.return_value = (
+                ResultCode.OK,
+                "Standby command completed OK",
+            )
+            return command(mocked_command, op_state_model)
 
         return _command_factory
 

@@ -88,7 +88,7 @@ class TestMultiDevice:
     """Multi-device tests."""
 
     @pytest.mark.forked
-    @pytest.mark.timeout(6)
+    @pytest.mark.timeout(8)
     def test_chain(self, multi_device_tango_context):
         """Test that commands flow from top to middle to low level."""
         # Top level

@@ -1222,7 +1222,7 @@ class SKABaseDevice(Device):
             """
             result_code, message = self.target.reset()
             self.logger.info(message)
-            return result_code, message
+            return (result_code, message)
 
     @command(
         dtype_out="DevVarLongStringArray",

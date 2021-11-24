@@ -1,6 +1,7 @@
 """This module models component management for SKA subarray devices."""
 import functools
 from ska_tango_base.base.task_queue_manager import QueueManager
+from ska_tango_base.commands import ResultCode
 
 from ska_tango_base.subarray import SubarrayComponentManager
 from ska_tango_base.base import (
@@ -513,6 +514,7 @@ class ReferenceSubarrayComponentManager(
         """
         self.logger.info("Assigning resources to component")
         self._resource_pool.assign(resources)
+        return (ResultCode.OK, "AssignResources command completed OK")
 
     @check_communicating
     def release(self, resources):
@@ -524,12 +526,14 @@ class ReferenceSubarrayComponentManager(
         """
         self.logger.info("Releasing resources in component")
         self._resource_pool.release(resources)
+        return (ResultCode.OK, "ReleaseResources command completed OK")
 
     @check_communicating
     def release_all(self):
         """Release all resources."""
         self.logger.info("Releasing all resources in component")
         self._resource_pool.release_all()
+        return (ResultCode.OK, "ReleaseAllResources command completed OK")
 
     @check_communicating
     def configure(self, configuration):
@@ -541,24 +545,28 @@ class ReferenceSubarrayComponentManager(
         """
         self.logger.info("Configuring component")
         self._component.configure(configuration)
+        return (ResultCode.OK, "Configure command completed OK")
 
     @check_communicating
     def deconfigure(self):
         """Deconfigure this component."""
         self.logger.info("Deconfiguring component")
         self._component.deconfigure()
+        return (ResultCode.OK, "")
 
     @check_communicating
     def scan(self, args):
         """Start scanning."""
         self.logger.info("Starting scan in component")
         self._component.scan(args)
+        return (ResultCode.STARTED, "Scan command started")
 
     @check_communicating
     def end_scan(self):
         """End scanning."""
         self.logger.info("Stopping scan in component")
         self._component.end_scan()
+        return (ResultCode.OK, "EndScan command completed OK")
 
     @check_communicating
     def abort(self):
@@ -566,6 +574,7 @@ class ReferenceSubarrayComponentManager(
         self.logger.info("Aborting component")
         if self._component.scanning:
             self._component.end_scan()
+        return (ResultCode.OK, "Abort command completed OK")
 
     @check_communicating
     def obsreset(self):
@@ -573,6 +582,7 @@ class ReferenceSubarrayComponentManager(
         self.logger.info("Resetting component")
         if self._component.configured:
             self._component.deconfigure()
+        return (ResultCode.OK, "ObsReset command completed OK")
 
     @check_communicating
     def restart(self):
@@ -586,6 +596,7 @@ class ReferenceSubarrayComponentManager(
         if self._component.configured:
             self._component.deconfigure()
         self._resource_pool.release_all()
+        return (ResultCode.OK, "Restart command completed OK")
 
     @property
     @check_communicating

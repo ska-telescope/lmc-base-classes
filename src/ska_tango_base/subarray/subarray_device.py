@@ -99,11 +99,9 @@ class SKASubarray(SKAObsDevice):
             :rtype: (ResultCode, str)
             """
             component_manager = self.target
-            component_manager.assign(argin)
-
-            message = "AssignResources command completed OK"
+            result_code, message = component_manager.assign(argin)
             self.logger.info(message)
-            return (ResultCode.OK, message)
+            return (result_code, message)
 
     class ReleaseResourcesCommand(
         ObservationCommand, ResponseCommand, CompletionCommand
@@ -146,11 +144,9 @@ class SKASubarray(SKAObsDevice):
             :rtype: (ResultCode, str)
             """
             component_manager = self.target
-            component_manager.release(argin)
-
-            message = "ReleaseResources command completed OK"
+            result_code, message = component_manager.release(argin)
             self.logger.info(message)
-            return (ResultCode.OK, message)
+            return (result_code, message)
 
     class ReleaseAllResourcesCommand(
         ObservationCommand, ResponseCommand, CompletionCommand
@@ -190,11 +186,9 @@ class SKASubarray(SKAObsDevice):
             :rtype: (ResultCode, str)
             """
             component_manager = self.target
-            component_manager.release_all()
-
-            message = "ReleaseAllResources command completed OK"
+            result_code, message = component_manager.release_all()
             self.logger.info(message)
-            return (ResultCode.OK, message)
+            return (result_code, message)
 
     class ConfigureCommand(ObservationCommand, ResponseCommand, CompletionCommand):
         """A class for SKASubarray's Configure() command."""
@@ -235,11 +229,9 @@ class SKASubarray(SKAObsDevice):
             :rtype: (ResultCode, str)
             """
             component_manager = self.target
-            component_manager.configure(argin)
-
-            message = "Configure command completed OK"
+            result_code, message = component_manager.configure(argin)
             self.logger.info(message)
-            return (ResultCode.OK, message)
+            return (result_code, message)
 
     class ScanCommand(ObservationCommand, ResponseCommand):
         """A class for SKASubarray's Scan() command."""
@@ -280,11 +272,9 @@ class SKASubarray(SKAObsDevice):
             :rtype: (ResultCode, str)
             """
             component_manager = self.target
-            component_manager.scan(argin)
-
-            message = "Scan command started"
+            result_code, message = component_manager.scan(argin)
             self.logger.info(message)
-            return (ResultCode.STARTED, message)
+            return (result_code, message)
 
     class EndScanCommand(ObservationCommand, ResponseCommand):
         """A class for SKASubarray's EndScan() command."""
@@ -322,11 +312,9 @@ class SKASubarray(SKAObsDevice):
             :rtype: (ResultCode, str)
             """
             component_manager = self.target
-            component_manager.end_scan()
-
-            message = "EndScan command completed OK"
+            result_code, message = component_manager.end_scan()
             self.logger.info(message)
-            return (ResultCode.OK, message)
+            return (result_code, message)
 
     class EndCommand(ObservationCommand, ResponseCommand):
         """A class for SKASubarray's End() command."""
@@ -364,11 +352,10 @@ class SKASubarray(SKAObsDevice):
             :rtype: (ResultCode, str)
             """
             component_manager = self.target
-            component_manager.deconfigure()
-
+            result_code, _ = component_manager.deconfigure()
             message = "End command completed OK"
             self.logger.info(message)
-            return (ResultCode.OK, message)
+            return (result_code, message)
 
     class AbortCommand(ObservationCommand, ResponseCommand, CompletionCommand):
         """A class for SKASubarray's Abort() command."""
@@ -406,11 +393,9 @@ class SKASubarray(SKAObsDevice):
             :rtype: (ResultCode, str)
             """
             component_manager = self.target
-            component_manager.abort()
-
-            message = "Abort command completed OK"
+            result_code, message = component_manager.abort()
             self.logger.info(message)
-            return (ResultCode.OK, message)
+            return (result_code, message)
 
     class ObsResetCommand(ObservationCommand, ResponseCommand, CompletionCommand):
         """A class for SKASubarray's ObsReset() command."""
@@ -448,11 +433,9 @@ class SKASubarray(SKAObsDevice):
             :rtype: (ResultCode, str)
             """
             component_manager = self.target
-            component_manager.obsreset()
-
-            message = "ObsReset command completed OK"
+            result_code, message = component_manager.obsreset()
             self.logger.info(message)
-            return (ResultCode.OK, message)
+            return (result_code, message)
 
     class RestartCommand(ObservationCommand, ResponseCommand, CompletionCommand):
         """A class for SKASubarray's Restart() command."""
@@ -490,11 +473,9 @@ class SKASubarray(SKAObsDevice):
             :rtype: (ResultCode, str)
             """
             component_manager = self.target
-            component_manager.restart()
-
-            message = "Restart command completed OK"
+            result_code, message = component_manager.restart()
             self.logger.info(message)
-            return (ResultCode.OK, message)
+            return (result_code, message)
 
     # PROTECTED REGION ID(SKASubarray.class_variable) ENABLED START #
     def _init_state_model(self):

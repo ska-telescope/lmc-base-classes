@@ -348,28 +348,28 @@ class ReferenceBaseComponentManager(BaseComponentManager):
         """Turn the component off."""
         self.logger.info("Turning component off")
         self._component.off()
-        return ResultCode.OK, "Off command completed OK"
+        return (ResultCode.OK, "Off command completed OK")
 
     @check_communicating
     def standby(self):
         """Put the component into low-power standby mode."""
         self.logger.info("Putting component into standby mode")
         self._component.standby()
-        return ResultCode.OK, "Standby command completed OK"
+        return (ResultCode.OK, "Standby command completed OK")
 
     @check_communicating
     def on(self):
         """Turn the component on."""
         self.logger.info("Turning component on")
         self._component.on()
-        return ResultCode.OK, "On command completed OK"
+        return (ResultCode.OK, "On command completed OK")
 
     @check_communicating
     def reset(self):
         """Reset the component (from fault state)."""
         self.logger.info("Resetting component")
         self._component.reset()
-        return ResultCode.OK, "Reset command completed OK"
+        return (ResultCode.OK, "Reset command completed OK")
 
     action_map = {
         PowerState.OFF: "component_off",

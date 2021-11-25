@@ -352,8 +352,10 @@ class SKASubarray(SKAObsDevice):
             :rtype: (ResultCode, str)
             """
             component_manager = self.target
-            result_code, _ = component_manager.deconfigure()
+            result_code = component_manager.deconfigure()
             message = "End command completed OK"
+            if result_code != ResultCode.OK:
+                message = f"End command completed with {result_code}"
             self.logger.info(message)
             return (result_code, message)
 

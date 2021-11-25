@@ -552,7 +552,7 @@ class ReferenceSubarrayComponentManager(
         """Deconfigure this component."""
         self.logger.info("Deconfiguring component")
         self._component.deconfigure()
-        return (ResultCode.OK, "")
+        return ResultCode.OK
 
     @check_communicating
     def scan(self, args):

@@ -104,7 +104,7 @@ def simple_task():
             def do(self, argin):
                 return argin + 2
 
-        return SimpleTask(2)
+        return SimpleTask(target=None)
 
     return get_task
 

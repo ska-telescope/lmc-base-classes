@@ -1220,10 +1220,9 @@ class SKABaseDevice(Device):
                 information purpose only.
             :rtype: (ResultCode, str)
             """
-            self.target.reset()
-            message = "Reset command completed OK"
+            result_code, message = self.target.reset()
             self.logger.info(message)
-            return (ResultCode.OK, message)
+            return (result_code, message)
 
     @command(
         dtype_out="DevVarLongStringArray",
@@ -1277,10 +1276,9 @@ class SKABaseDevice(Device):
                 information purpose only.
             :rtype: (ResultCode, str)
             """
-            self.target.standby()
-            message = "Standby command completed OK"
+            result_code, message = self.target.standby()
             self.logger.info(message)
-            return (ResultCode.OK, message)
+            return (result_code, message)
 
     @command(
         dtype_out="DevVarLongStringArray",
@@ -1334,10 +1332,9 @@ class SKABaseDevice(Device):
                 information purpose only.
             :rtype: (ResultCode, str)
             """
-            self.target.off()
-            message = "Off command completed OK"
+            result_code, message = self.target.off()
             self.logger.info(message)
-            return (ResultCode.OK, message)
+            return (result_code, message)
 
     @command(
         dtype_out="DevVarLongStringArray",
@@ -1391,10 +1388,9 @@ class SKABaseDevice(Device):
                 information purpose only.
             :rtype: (ResultCode, str)
             """
-            self.target.on()
-            message = "On command completed OK"
+            result_code, message = self.target.on()
             self.logger.info(message)
-            return (ResultCode.OK, message)
+            return (result_code, message)
 
     @command(
         dtype_out="DevVarLongStringArray",

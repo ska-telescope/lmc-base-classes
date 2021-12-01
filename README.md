@@ -247,6 +247,18 @@ Tango devices can be launched with a `-v` parameter to set the logging level. Fo
 
 ## Version History
 
+#### 0.12.1
+- SAR-303
+  - Fixed PYPI URL
+  - Moved command response message to component manager
+- MCCS-845
+  - `NO_SUPPLY` added to `PowerMode` enum
+
+#### 0.12.0
+- Implemented ST-946 (automation templates)
+- Included Long running commands implementation
+  - SAR-277, SAR-287, SAR-286, SAR-276, SAR-275, SAR-273
+
 #### 0.11.3
 - No change, moving artefacts to a new repository https://artefact.skao.int/.
 

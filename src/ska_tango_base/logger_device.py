@@ -18,7 +18,7 @@ from tango.server import run, command
 
 # SKA specific imports
 from ska_tango_base import SKABaseDevice
-from ska_tango_base.commands import ResponseCommand, ResultCode
+from ska_tango_base.commands import FastCommand, ResultCode
 from ska_tango_base.control_model import LoggingLevel
 
 # PROTECTED REGION END #    //  SKALogger.additionnal_import
@@ -48,8 +48,12 @@ class SKALogger(SKABaseDevice):
         super().init_command_objects()
         self.register_command_object(
             "SetLoggingLevel",
-            self.SetLoggingLevelCommand(self, self.op_state_model, self.logger),
+            self.SetLoggingLevelCommand(self.logger),
         )
+
+    def create_component_manager(self):
+        """Create and return the component manager for this device."""
+        return None  # This device doesn't have a component manager yet
 
     def always_executed_hook(self):
         # PROTECTED REGION ID(SKALogger.always_executed_hook) ENABLED START #
@@ -81,27 +85,8 @@ class SKALogger(SKABaseDevice):
     # --------
     # Commands
     # --------
-    class SetLoggingLevelCommand(ResponseCommand):
+    class SetLoggingLevelCommand(FastCommand):
         """A class for the SKALoggerDevice's SetLoggingLevel() command."""
-
-        def __init__(self, target, state_model, logger=None):
-            """
-            Initialise a new SetLoggingLevelCommand instance.
-
-            :param target: the object that this base command acts upon. For
-                example, the device's component manager.
-            :type target: object
-            :param state_model: the state model that this command uses
-                 to check that it is allowed to run, and that it drives
-                 with actions.
-            :type state_model: SKABaseClassStateModel or a subclass of
-                same
-            :param logger: the logger to be used by this Command. If not
-                provided, then a default module logger will be used.
-            :type logger: a logger that implements the standard library
-                logger interface
-            """
-            super().__init__(target, state_model, logger=logger)
 
         def do(self, argin):
             """
@@ -157,9 +142,9 @@ class SKALogger(SKABaseDevice):
 
         :returns: None.
         """
-        command = self.get_command_object("SetLoggingLevel")
-        (return_code, message) = command(argin)
-        return [[return_code], [message]]
+        handler = self.get_command_object("SetLoggingLevel")
+        (result_code, message) = handler(argin)
+        return [[result_code], [message]]
 
         # PROTECTED REGION END #    //  SKALogger.SetLoggingLevel
 

@@ -11,13 +11,17 @@
 # Imports
 import re
 import pytest
+import time
 
 from tango import DevState, DevFailed
 from tango.test_context import MultiDeviceTestContext
 
 # PROTECTED REGION ID(CspSubelementController.test_additional_imports) ENABLED START #
 from ska_tango_base import SKAController, CspSubElementController
-from ska_tango_base.base import ReferenceBaseComponentManager
+from ska_tango_base.testing import (
+    ReferenceBaseComponentManager,
+)
+
 from ska_tango_base.commands import ResultCode
 from ska_tango_base.control_model import (
     AdminMode,
@@ -53,7 +57,9 @@ class TestCspSubElementController(object):
         return {
             "device": CspSubElementController,
             "component_manager_patch": lambda self: ReferenceBaseComponentManager(
-                self.op_state_model, logger=self.logger
+                self.logger,
+                self._communication_state_changed,
+                self._component_state_changed,
             ),
             "properties": device_properties,
             "memorized": {"adminMode": str(AdminMode.ONLINE.value)},
@@ -71,7 +77,8 @@ class TestCspSubElementController(object):
     def test_State(self, device_under_test):
         """Test for State."""
         # PROTECTED REGION ID(CspSubelementController.test_State) ENABLED START #
-        assert device_under_test.State() == DevState.OFF
+        time.sleep(0.2)
+        assert device_under_test.state() == DevState.OFF
         # PROTECTED REGION END #    //  CspSubelementController.test_State
 
     # PROTECTED REGION ID(CspSubelementController.test_Status_decorators) ENABLED START #
@@ -79,6 +86,7 @@ class TestCspSubElementController(object):
     def test_Status(self, device_under_test):
         """Test for Status."""
         # PROTECTED REGION ID(CspSubelementController.test_Status) ENABLED START #
+        time.sleep(0.2)
         assert device_under_test.Status() == "The device is in OFF state."
         # PROTECTED REGION END #    //  CspSubelementController.test_Status
 
@@ -87,13 +95,13 @@ class TestCspSubElementController(object):
     def test_GetVersionInfo(self, device_under_test):
         """Test for GetVersionInfo."""
         # PROTECTED REGION ID(CspSubelementController.test_GetVersionInfo) ENABLED START #
-        versionPattern = re.compile(
-            f"['{device_under_test.info().dev_class}, ska_tango_base, [0-9]+.[0-9]+.[0-9]+, "
-            "A set of generic base devices for SKA Telescope.']"
+        version_pattern = (
+            f"{device_under_test.info().dev_class}, ska_tango_base, "
+            "[0-9]+.[0-9]+.[0-9]+, A set of generic base devices for SKA Telescope."
         )
-        device_under_test.GetVersionInfo()
-        versionInfo = device_under_test.longRunningCommandResult[2]
-        assert (re.match(versionPattern, versionInfo)) is not None
+        version_info = device_under_test.GetVersionInfo()
+        assert len(version_info) == 1
+        assert re.match(version_pattern, version_info[0])
         # PROTECTED REGION END #    //  CspSubelementController.test_GetVersionInfo
 
     # PROTECTED REGION ID(CspSubelementController.test_configurationProgress_decorators) ENABLED START #
@@ -287,6 +295,7 @@ class TestCspSubElementController(object):
         # PROTECTED REGION ID(CspSubelementController.test_LoadFirmware) ENABLED START #
         # After initialization the device is in the right state (OFF/MAINTENANCE) to
         # execute the command.
+        time.sleep(0.15)
         device_under_test.adminMode = AdminMode.MAINTENANCE
         assert device_under_test.LoadFirmware(
             ["file", "test/dev/b", "918698a7fea3"]
@@ -300,21 +309,44 @@ class TestCspSubElementController(object):
         # PROTECTED REGION ID(CspSubelementController.test_LoadFirmware_when_in_wrong_state) ENABLED START #
         # Set the device in ON/ONLINE state
         device_under_test.On()
-        with pytest.raises(DevFailed, match="LoadFirmwareCommand not allowed"):
+        with pytest.raises(
+            DevFailed,
+            match="LoadFirmware not allowed when the device is in UNKNOWN state",
+        ):
             device_under_test.LoadFirmware(["file", "test/dev/b", "918698a7fea3"])
         # PROTECTED REGION END #    //  CspSubelementController.test_LoadFirmware_when_in_wrong_state
 
     # PROTECTED REGION ID(CspSubelementController.test_PowerOnDevices_decorators) ENABLED START #
     # PROTECTED REGION END #    //  CspSubelementController.test_PowerOnDevices_decorators
-    def test_PowerOnDevices(self, device_under_test):
+    def test_power_on_and_off_devices(
+        self, device_under_test, tango_change_event_helper
+    ):
         """Test for PowerOnDevices."""
         # PROTECTED REGION ID(CspSubelementController.test_PowerOnDevices) ENABLED START #
-        # put it in ON state
-        device_under_test.On()
-        assert device_under_test.PowerOnDevices(["test/dev/1", "test/dev/2"]) == [
-            [ResultCode.OK],
-            ["PowerOnDevices command completed OK"],
-        ]
+        time.sleep(0.15)
+        assert device_under_test.state() == DevState.OFF
+
+        device_state_callback = tango_change_event_helper.subscribe("state")
+        device_state_callback.assert_call(DevState.OFF)
+
+        [[result_code], [_]] = device_under_test.On()
+        assert result_code == ResultCode.QUEUED
+
+        device_state_callback.assert_call(DevState.ON)
+        assert device_under_test.state() == DevState.ON
+
+        # Test power on devices
+        [[result_code], [_]] = device_under_test.PowerOnDevices(
+            ["test/dev/1", "test/dev/2"]
+        )
+        assert result_code == ResultCode.OK
+
+        # Test power off devices
+        [[result_code], [_]] = device_under_test.PowerOffDevices(
+            ["test/dev/1", "test/dev/2"]
+        )
+        assert result_code == ResultCode.OK
+
         # PROTECTED REGION END #    //  CspSubelementController.test_PowerOnDevices
 
     # PROTECTED REGION ID(CspSubelementController.test_PowerOnDevices_when_in_wrong_state_decorators) ENABLED START #
@@ -322,39 +354,46 @@ class TestCspSubElementController(object):
     def test_PowerOnDevices_when_in_wrong_state(self, device_under_test):
         """Test for PowerOnDevices when the Controller is in wrong state."""
         # PROTECTED REGION ID(CspSubelementController.test_PowerOnDevices_when_in_wrong_state) ENABLED START #
-        with pytest.raises(DevFailed, match="PowerOnDevicesCommand not allowed"):
+        with pytest.raises(
+            DevFailed,
+            match="Command PowerOnDevices not allowed when the device is in UNKNOWN state",
+        ):
             device_under_test.PowerOnDevices(["test/dev/1", "test/dev/2"])
         # PROTECTED REGION END #    //  CspSubelementController.test_PowerOnDevices_when_in_wrong_state
-
-    # PROTECTED REGION ID(CspSubelementController.test_PowerOffDevices_decorators) ENABLED START #
-    # PROTECTED REGION END #    //  CspSubelementController.test_PowerOffDevices_decorators
-    def test_PowerOffDevices(self, device_under_test):
-        """Test for PowerOffDEvices."""
-        # PROTECTED REGION ID(CspSubelementController.test_PowerOffDevices) ENABLED START #
-        # put it in ON state
-        device_under_test.On()
-        assert device_under_test.PowerOffDevices(["test/dev/1", "test/dev/2"]) == [
-            [ResultCode.OK],
-            ["PowerOffDevices command completed OK"],
-        ]
-        # PROTECTED REGION END #    //  CspSubelementController.test_PowerOffDevices
 
     # PROTECTED REGION ID(CspSubelementController.test_PowerOffDevices_when_in_wrong_state_decorators) ENABLED START #
     # PROTECTED REGION END #    //  CspSubelementController.test_PowerOffDevices_decorators
     def test_PowerOffDevices_when_in_wrong_state(self, device_under_test):
         """Test for PowerOffDevices when the Controller is in wrong state."""
         # PROTECTED REGION ID(CspSubelementController.test_PowerOffDevices_when_in_wrong_state) ENABLED START #
-        with pytest.raises(DevFailed, match="PowerOffDevicesCommand not allowed"):
+        with pytest.raises(
+            DevFailed,
+            match="Command PowerOffDevices not allowed when the device is in UNKNOWN state",
+        ):
             device_under_test.PowerOffDevices(["test/dev/1", "test/dev/2"])
         # PROTECTED REGION END #    //  CspSubelementController.test_PowerOffDevices_when_in_wrong_state
 
     # PROTECTED REGION ID(CspSubelementController.test_ReInitDevices_decorators) ENABLED START #
     # PROTECTED REGION END #    //  CspSubelementController.test_ReInitDevices_decorators
-    def test_ReInitDevices(self, device_under_test):
+    def test_ReInitDevices(self, device_under_test, tango_change_event_helper):
         """Test for ReInitDevices."""
         # PROTECTED REGION ID(CspSubelementController.test_ReInitDevices) ENABLED START #
-        # put it in ON state
-        device_under_test.On()
+        time.sleep(0.15)
+        assert device_under_test.state() == DevState.OFF
+
+        device_state_callback = tango_change_event_helper.subscribe("state")
+        device_state_callback.assert_call(DevState.OFF)
+
+        [[result_code], [_]] = device_under_test.On()
+        assert result_code == ResultCode.QUEUED
+
+        device_state_callback.assert_call(DevState.ON)
+        assert device_under_test.state() == DevState.ON
+
+        # Test power on devices
+        [[result_code], [_]] = device_under_test.PowerOnDevices(
+            ["test/dev/1", "test/dev/2"]
+        )
         assert device_under_test.ReInitDevices(["test/dev/1", "test/dev/2"]) == [
             [ResultCode.OK],
             ["ReInitDevices command completed OK"],
@@ -367,7 +406,10 @@ class TestCspSubElementController(object):
         """Test for ReInitDevices whe the device is in a wrong state."""
         # PROTECTED REGION ID(CspSubelementController.test_ReInitDevices_when_in_wrong_state) ENABLED START #
         # put it in ON state
-        with pytest.raises(DevFailed, match="ReInitDevicesCommand not allowed"):
+        with pytest.raises(
+            DevFailed,
+            match="ReInitDevices not allowed when the device is in UNKNOWN state",
+        ):
             device_under_test.ReInitDevices(["test/dev/1", "test/dev/2"])
         # PROTECTED REGION END #    //  CspSubelementController.test_ReInitDevices_when_in_wrong_state
 
@@ -385,5 +427,7 @@ def test_multiple_devices_in_same_process():
     with MultiDeviceTestContext(devices_info, process=False) as context:
         proxy1 = context.get_device("test/se/1")
         proxy2 = context.get_device("test/control/1")
-        assert proxy1.State() == DevState.DISABLE
-        assert proxy2.State() == DevState.DISABLE
+
+        time.sleep(0.15)
+        assert proxy1.state() == DevState.DISABLE
+        assert proxy2.state() == DevState.DISABLE

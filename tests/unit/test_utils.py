@@ -1,8 +1,6 @@
 """Tests for skabase.utils."""
 from contextlib import nullcontext
-from queue import Queue
 import json
-from typing import Any
 import pytest
 
 from ska_tango_base.utils import (
@@ -264,42 +262,3 @@ def test_for_testing_only_decorator():
     with pytest.warns(None) as warning_record:
         assert bah() == "bah"
     assert len(warning_record) == 0  # no warning was raised because we are testing
-
-
-class LRCAttributesStore:
-    """Utility class to keep track of long running command attribute changes."""
-
-    def __init__(self) -> None:
-        """Create the queues."""
-        self.queues = {}
-        for attribute in [
-            "longRunningCommandsInQueue",
-            "longRunningCommandStatus",
-            "longRunningCommandProgress",
-            "longRunningCommandIDsInQueue",
-            "longRunningCommandResult",
-        ]:
-            self.queues[attribute] = Queue()
-
-    def store_push_event(self, attribute_name: str, value: Any):
-        """Store attribute changes as they change.
-
-        :param attribute_name: a valid LCR attribute
-        :type attribute_name: str
-        :param value: The value of the attribute
-        :type value: Any
-        """
-        assert attribute_name in self.queues
-        self.queues[attribute_name].put_nowait(value)
-
-    def get_attribute_value(self, attribute_name: str, fetch_timeout: float = 2.0):
-        """Read a value from the queue.
-
-        :param attribute_name: a valid LCR attribute
-        :type attribute_name: str
-        :param fetch_timeout: How long to wait for a event, defaults to 2.0
-        :type fetch_timeout: float, optional
-        :return: An attribute value fromthe queue
-        :rtype: Any
-        """
-        return self.queues[attribute_name].get(timeout=fetch_timeout)

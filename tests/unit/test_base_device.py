@@ -9,26 +9,31 @@
 """This module contains the tests for the SKABaseDevice."""
 
 # PROTECTED REGION ID(SKABaseDevice.test_additional_imports) ENABLED START #
+import json
 import logging
 import re
 import pytest
 import socket
-import tango
-
+import time
 from unittest import mock
+
+import tango
 from tango import DevFailed, DevState
 
 import ska_tango_base.base.base_device
 
 from ska_tango_base import SKABaseDevice
-from ska_tango_base.base import OpStateModel, ReferenceBaseComponentManager
 from ska_tango_base.base.base_device import (
+    _CommandTracker,
     _DEBUGGER_PORT,
     _Log4TangoLoggingLevel,
     _PYTHON_TO_TANGO_LOGGING_LEVEL,
     LoggingUtils,
     LoggingTargetError,
     TangoLoggingServiceHandler,
+)
+from ska_tango_base.testing import (
+    ReferenceBaseComponentManager,
 )
 from ska_tango_base.commands import ResultCode
 from ska_tango_base.control_model import (
@@ -39,9 +44,7 @@ from ska_tango_base.control_model import (
     SimulationMode,
     TestMode,
 )
-from ska_tango_base.faults import CommandError
-
-from .state.conftest import load_state_machine_spec
+from ska_tango_base.executor import TaskStatus
 
 # PROTECTED REGION END #    //  SKABaseDevice.test_additional_imports
 # Device test case
@@ -128,7 +131,10 @@ class TestTangoLoggingServiceHandler:
     def test_repr_tango_logger_none(self, tls_handler):
         """Test the string representation of a handler with no logger."""
         tls_handler.tango_logger = None
-        expected = "<TangoLoggingServiceHandler !No Tango logger! (Python NOTSET, Tango UNKNOWN)>"
+        expected = (
+            "<TangoLoggingServiceHandler !No Tango logger! (Python NOTSET, Tango "
+            "UNKNOWN)>"
+        )
         assert repr(tls_handler) == expected
 
 
@@ -204,7 +210,10 @@ class TestLoggingUtils:
             ),
             ("udp://127.0.0.1:1234", [("127.0.0.1", 1234), socket.SOCK_DGRAM]),
             ("tcp://somehost:1234", [("somehost", 1234), socket.SOCK_STREAM]),
-            ("tcp://127.0.0.1:1234", [("127.0.0.1", 1234), socket.SOCK_STREAM]),
+            (
+                "tcp://127.0.0.1:1234",
+                [("127.0.0.1", 1234), socket.SOCK_STREAM],
+            ),
         ]
     )
     def good_syslog_url(self, request):
@@ -237,9 +246,10 @@ class TestLoggingUtils:
     def test_get_syslog_address_and_socktype_success(self, good_syslog_url):
         """Test that logging successfully accepts a good target."""
         url, (expected_address, expected_socktype) = good_syslog_url
-        actual_address, actual_socktype = LoggingUtils.get_syslog_address_and_socktype(
-            url
-        )
+        (
+            actual_address,
+            actual_socktype,
+        ) = LoggingUtils.get_syslog_address_and_socktype(url)
         assert actual_address == expected_address
         assert actual_socktype == expected_socktype
 
@@ -293,7 +303,9 @@ class TestLoggingUtils:
         mock_syslog_handler.reset_mock()
         handler = LoggingUtils.create_logging_handler("syslog::file:///tmp/path")
         mock_syslog_handler.assert_called_once_with(
-            address="/tmp/path", facility=mock_syslog_handler.LOG_SYSLOG, socktype=None
+            address="/tmp/path",
+            facility=mock_syslog_handler.LOG_SYSLOG,
+            socktype=None,
         )
         assert handler == mock_syslog_handler()
         handler.setFormatter.assert_called_once_with(mock_formatter)
@@ -383,6 +395,193 @@ class TestLoggingUtils:
 
 
 # PROTECTED REGION END #    //  SKABaseDevice.test_SKABaseDevice_decorators
+class TestCommandTracker:
+    """Tests of the _CommandTracker class."""
+
+    @pytest.fixture
+    def callbacks(self, mocker):
+        """
+        Return a dictionary of mocks for use as callbacks.
+
+        These callbacks will be passed to the command tracker under
+        test, and can then be used in testing to check that callbacks
+        are called as expected.
+
+        :param mocker: pytest fixture that wraps
+            :py:mod:`unittest.mock`.
+        """
+        return {
+            "queue": mocker.Mock(),
+            "status": mocker.Mock(),
+            "progress": mocker.Mock(),
+            "result": mocker.Mock(),
+        }
+
+    @pytest.fixture
+    def command_tracker(self, callbacks):
+        """
+        Return the command tracker under test.
+
+        :param callbacks: a dictionary of mocks, passed as callbacks to
+            the command tracker under test
+        """
+        return _CommandTracker(
+            queue_changed_callback=callbacks["queue"],
+            status_changed_callback=callbacks["status"],
+            progress_changed_callback=callbacks["progress"],
+            result_callback=callbacks["result"],
+        )
+
+    def test_command_tracker(self, command_tracker, callbacks):
+        """
+        Test that the command tracker correctly tracks commands.
+
+        :param command_tracker: the command tracker under test
+        :param callbacks: a dictionary of mocks, passed as callbacks to
+            the command tracker under test
+        """
+        assert command_tracker.commands_in_queue == []
+        assert command_tracker.command_statuses == []
+        assert command_tracker.command_progresses == []
+        assert command_tracker.command_result is None
+        callbacks["queue"].assert_not_called()
+        callbacks["status"].assert_not_called()
+        callbacks["progress"].assert_not_called()
+        callbacks["result"].assert_not_called()
+
+        first_command_id = command_tracker.new_command("first_command")
+        assert command_tracker.commands_in_queue == [
+            (first_command_id, "first_command")
+        ]
+        assert command_tracker.command_statuses == [
+            (first_command_id, TaskStatus.STAGING)
+        ]
+        assert command_tracker.command_progresses == [(first_command_id, None)]
+        assert command_tracker.command_result is None
+        callbacks["queue"].assert_called_once_with(
+            [(first_command_id, "first_command")]
+        )
+        callbacks["queue"].reset_mock()
+        callbacks["status"].assert_not_called()
+        callbacks["progress"].assert_not_called()
+        callbacks["result"].assert_not_called()
+
+        command_tracker.update_command_info(
+            first_command_id, status=TaskStatus.IN_PROGRESS
+        )
+        assert command_tracker.commands_in_queue == [
+            (first_command_id, "first_command")
+        ]
+        assert command_tracker.command_statuses == [
+            (first_command_id, TaskStatus.IN_PROGRESS)
+        ]
+        assert command_tracker.command_progresses == [(first_command_id, None)]
+        assert command_tracker.command_result is None
+        callbacks["queue"].assert_not_called()
+        callbacks["status"].assert_called_once_with(
+            [(first_command_id, TaskStatus.IN_PROGRESS)]
+        )
+        callbacks["status"].reset_mock()
+        callbacks["progress"].assert_not_called()
+        callbacks["result"].assert_not_called()
+
+        second_command_id = command_tracker.new_command("second_command")
+        assert command_tracker.commands_in_queue == [
+            (first_command_id, "first_command"),
+            (second_command_id, "second_command"),
+        ]
+        assert command_tracker.command_statuses == [
+            (first_command_id, TaskStatus.IN_PROGRESS),
+            (second_command_id, TaskStatus.STAGING),
+        ]
+        assert command_tracker.command_progresses == [
+            (first_command_id, None),
+            (second_command_id, None),
+        ]
+        assert command_tracker.command_result is None
+        callbacks["queue"].assert_called_once_with(
+            [(first_command_id, "first_command"), (second_command_id, "second_command")]
+        )
+        callbacks["queue"].reset_mock()
+        callbacks["status"].assert_not_called()
+        callbacks["progress"].assert_not_called()
+        callbacks["result"].assert_not_called()
+
+        command_tracker.update_command_info(first_command_id, progress=50)
+        assert command_tracker.commands_in_queue == [
+            (first_command_id, "first_command"),
+            (second_command_id, "second_command"),
+        ]
+        assert command_tracker.command_statuses == [
+            (first_command_id, TaskStatus.IN_PROGRESS),
+            (second_command_id, TaskStatus.STAGING),
+        ]
+        assert command_tracker.command_progresses == [
+            (first_command_id, 50),
+            (second_command_id, None),
+        ]
+        assert command_tracker.command_result is None
+        callbacks["queue"].assert_not_called()
+        callbacks["status"].assert_not_called()
+        callbacks["progress"].assert_called_once_with(
+            [(first_command_id, 50), (second_command_id, None)]
+        )
+        callbacks["progress"].reset_mock()
+        callbacks["result"].assert_not_called()
+
+        command_tracker.update_command_info(
+            first_command_id, result=(ResultCode.OK, "a message string")
+        )
+        assert command_tracker.command_statuses == [
+            (first_command_id, TaskStatus.IN_PROGRESS),
+            (second_command_id, TaskStatus.STAGING),
+        ]
+        assert command_tracker.command_progresses == [
+            (first_command_id, 50),
+            (second_command_id, None),
+        ]
+        assert command_tracker.command_result == (
+            first_command_id,
+            (ResultCode.OK, "a message string"),
+        )
+        callbacks["queue"].assert_not_called()
+        callbacks["status"].assert_not_called()
+        callbacks["progress"].assert_not_called()
+        callbacks["progress"].reset_mock()
+        callbacks["result"].assert_called_once_with(
+            first_command_id, (ResultCode.OK, "a message string")
+        )
+        callbacks["result"].reset_mock()
+
+        command_tracker.update_command_info(
+            first_command_id, status=TaskStatus.COMPLETED
+        )
+        assert command_tracker.commands_in_queue == [
+            (second_command_id, "second_command")
+        ]
+        assert command_tracker.command_statuses == [
+            (second_command_id, TaskStatus.STAGING)
+        ]
+        assert command_tracker.command_progresses == [(second_command_id, None)]
+        assert command_tracker.command_result == (
+            first_command_id,
+            (ResultCode.OK, "a message string"),
+        )
+        callbacks["queue"].assert_called_once_with(
+            [(second_command_id, "second_command")]
+        )
+        callbacks["queue"].reset_mock()
+        callbacks["status"].assert_called_once_with(
+            [
+                (first_command_id, TaskStatus.COMPLETED),
+                (second_command_id, TaskStatus.STAGING),
+            ]
+        )
+        callbacks["status"].reset_mock()
+        callbacks["progress"].assert_not_called()
+        callbacks["result"].assert_not_called()
+
+
 class TestSKABaseDevice(object):
     """Test cases for SKABaseDevice."""
 
@@ -397,7 +596,9 @@ class TestSKABaseDevice(object):
         return {
             "device": SKABaseDevice,
             "component_manager_patch": lambda self: ReferenceBaseComponentManager(
-                self.op_state_model, logger=self.logger
+                self.logger,
+                self._communication_state_changed,
+                self._component_state_changed,
             ),
             "properties": device_properties,
             "memorized": {"adminMode": str(AdminMode.ONLINE.value)},
@@ -424,7 +625,9 @@ class TestSKABaseDevice(object):
     def test_State(self, device_under_test):
         """Test for State."""
         # PROTECTED REGION ID(SKABaseDevice.test_State) ENABLED START #
-        assert device_under_test.State() == DevState.OFF
+        time.sleep(0.2)
+        assert device_under_test.state() == DevState.OFF
+
         # PROTECTED REGION END #    //  SKABaseDevice.test_State
 
     # PROTECTED REGION ID(SKABaseDevice.test_Status_decorators) ENABLED START #
@@ -432,6 +635,7 @@ class TestSKABaseDevice(object):
     def test_Status(self, device_under_test):
         """Test for Status."""
         # PROTECTED REGION ID(SKABaseDevice.test_Status) ENABLED START #
+        time.sleep(0.2)
         assert device_under_test.Status() == "The device is in OFF state."
         # PROTECTED REGION END #    //  SKABaseDevice.test_Status
 
@@ -440,67 +644,184 @@ class TestSKABaseDevice(object):
     def test_GetVersionInfo(self, device_under_test):
         """Test for GetVersionInfo."""
         # PROTECTED REGION ID(SKABaseDevice.test_GetVersionInfo) ENABLED START #
-        versionPattern = re.compile(
-            f"['{device_under_test.info().dev_class}, ska_tango_base, [0-9]+.[0-9]+.[0-9]+, "
-            "A set of generic base devices for SKA Telescope.']"
+        version_pattern = (
+            f"{device_under_test.info().dev_class}, ska_tango_base, "
+            "[0-9]+.[0-9]+.[0-9]+, A set of generic base devices for SKA Telescope."
         )
-        device_under_test.GetVersionInfo()
-        versionInfo = device_under_test.longRunningCommandResult[2]
-        assert (re.match(versionPattern, versionInfo)) is not None
+        version_info = device_under_test.GetVersionInfo()
+        assert len(version_info) == 1
+        assert re.match(version_pattern, version_info[0])
+
         # PROTECTED REGION END #    //  SKABaseDevice.test_GetVersionInfo
 
-    # PROTECTED REGION ID(SKABaseDevice.test_Reset_decorators) ENABLED START #
-    # PROTECTED REGION END #    //  SKABaseDevice.test_Reset_decorators
     def test_Reset(self, device_under_test):
         """Test for Reset."""
         # PROTECTED REGION ID(SKABaseDevice.test_Reset) ENABLED START #
         # The main test of this command is
         # TestSKABaseDevice_commands::test_ResetCommand
-        device_under_test.Reset()
-        assert f"{ResultCode.FAILED}" == device_under_test.longRunningCommandResult[1]
-        assert (
-            "Action reset_invoked is not allowed in op_state OFF"
-            in device_under_test.longRunningCommandResult[2]
-        )
+        time.sleep(0.15)
+        assert device_under_test.state() == DevState.OFF
+
+        with pytest.raises(
+            DevFailed,
+            match="Command Reset not allowed when the device is in OFF state",
+        ):
+            _ = device_under_test.Reset()
         # PROTECTED REGION END #    //  SKABaseDevice.test_Reset
 
     def test_On(self, device_under_test, tango_change_event_helper):
         """Test for On command."""
-        state_callback = tango_change_event_helper.subscribe("state")
-        status_callback = tango_change_event_helper.subscribe("status")
-        state_callback.assert_call(DevState.OFF)
-        status_callback.assert_call("The device is in OFF state.")
+        time.sleep(0.15)
+        assert device_under_test.state() == DevState.OFF
 
-        # Check that we can turn a freshly initialised device on
-        device_under_test.On()
-        state_callback.assert_call(DevState.ON)
-        status_callback.assert_call("The device is in ON state.")
+        device_state_callback = tango_change_event_helper.subscribe("state")
+        device_state_callback.assert_call(DevState.OFF)
 
-        # Check that we can turn it on when it is already on
-        device_under_test.On()
-        state_callback.assert_not_called()
-        status_callback.assert_not_called()
+        device_status_callback = tango_change_event_helper.subscribe("status")
+        device_status_callback.assert_call("The device is in OFF state.")
 
-    def test_Standby(self, device_under_test):
+        command_progress_callback = tango_change_event_helper.subscribe(
+            "longRunningCommandProgress"
+        )
+        command_progress_callback.assert_call(None)
+
+        command_status_callback = tango_change_event_helper.subscribe(
+            "longRunningCommandStatus"
+        )
+        command_status_callback.assert_call(None)
+
+        command_result_callback = tango_change_event_helper.subscribe(
+            "longRunningCommandResult"
+        )
+        command_result_callback.assert_call(("", ""))
+
+        [[result_code], [command_id]] = device_under_test.On()
+        assert result_code == ResultCode.QUEUED
+        command_status_callback.assert_call((command_id, "QUEUED"))
+        command_status_callback.assert_call((command_id, "IN_PROGRESS"))
+
+        command_progress_callback.assert_call((command_id, "33"))
+        command_progress_callback.assert_call((command_id, "66"))
+
+        device_state_callback.assert_call(DevState.ON)
+        device_status_callback.assert_call("The device is in ON state.")
+        assert device_under_test.state() == DevState.ON
+
+        command_status_callback.assert_call((command_id, "COMPLETED"))
+
+        command_result_callback.assert_call(
+            (command_id, json.dumps([int(ResultCode.OK), "On command completed OK"]))
+        )
+
+        # Check what happens if we call On() when the device is already ON.
+        [[result_code], [message]] = device_under_test.On()
+        assert result_code == ResultCode.REJECTED
+        assert message == "Device is already in ON state."
+
+        command_status_callback.assert_not_called()
+        command_progress_callback.assert_not_called()
+        command_result_callback.assert_not_called()
+
+        device_state_callback.assert_not_called()
+        device_status_callback.assert_not_called()
+
+    def test_Standby(self, device_under_test, tango_change_event_helper):
         """Test for Standby command."""
         # Check that we can put it on standby
-        device_under_test.Standby()
+        time.sleep(0.15)
+        assert device_under_test.state() == DevState.OFF
+
+        device_state_callback = tango_change_event_helper.subscribe("state")
+        device_state_callback.assert_call(DevState.OFF)
+
+        device_status_callback = tango_change_event_helper.subscribe("status")
+        device_status_callback.assert_call("The device is in OFF state.")
+
+        command_progress_callback = tango_change_event_helper.subscribe(
+            "longRunningCommandProgress"
+        )
+        command_progress_callback.assert_call(None)
+
+        command_status_callback = tango_change_event_helper.subscribe(
+            "longRunningCommandStatus"
+        )
+        command_status_callback.assert_call(None)
+
+        command_result_callback = tango_change_event_helper.subscribe(
+            "longRunningCommandResult"
+        )
+        command_result_callback.assert_call(("", ""))
+
+        [[result_code], [command_id]] = device_under_test.Standby()
+        assert result_code == ResultCode.QUEUED
+        command_status_callback.assert_call((command_id, "QUEUED"))
+        command_status_callback.assert_call((command_id, "IN_PROGRESS"))
+
+        command_progress_callback.assert_call((command_id, "33"))
+        command_progress_callback.assert_call((command_id, "66"))
+
+        device_state_callback.assert_call(DevState.STANDBY)
+        device_status_callback.assert_call("The device is in STANDBY state.")
         assert device_under_test.state() == DevState.STANDBY
 
-        # Check that we can put it on standby when it is already on standby
-        device_under_test.Standby()
+        command_status_callback.assert_call((command_id, "COMPLETED"))
+
+        command_result_callback.assert_call(
+            (
+                command_id,
+                json.dumps([int(ResultCode.OK), "Standby command completed OK"]),
+            )
+        )
+
+        # Check what happens if we call Standby() when the device is already STANDBY.
+        [[result_code], [message]] = device_under_test.Standby()
+        assert result_code == ResultCode.REJECTED
+        assert message == "Device is already in STANDBY state."
+
+        command_status_callback.assert_not_called()
+        command_progress_callback.assert_not_called()
+        command_result_callback.assert_not_called()
+
+        device_state_callback.assert_not_called()
+        device_status_callback.assert_not_called()
 
     def test_Off(self, device_under_test, tango_change_event_helper):
         """Test for Off command."""
-        state_callback = tango_change_event_helper.subscribe("state")
-        status_callback = tango_change_event_helper.subscribe("status")
-        state_callback.assert_call(DevState.OFF)
-        status_callback.assert_call("The device is in OFF state.")
+        time.sleep(0.15)
+        assert device_under_test.state() == DevState.OFF
 
-        # Check that we can turn off a device that is already off
-        device_under_test.Off()
-        state_callback.assert_not_called()
-        status_callback.assert_not_called()
+        device_state_callback = tango_change_event_helper.subscribe("state")
+        device_state_callback.assert_call(DevState.OFF)
+
+        device_status_callback = tango_change_event_helper.subscribe("status")
+        device_status_callback.assert_call("The device is in OFF state.")
+
+        command_progress_callback = tango_change_event_helper.subscribe(
+            "longRunningCommandProgress"
+        )
+        command_progress_callback.assert_call(None)
+
+        command_status_callback = tango_change_event_helper.subscribe(
+            "longRunningCommandStatus"
+        )
+        command_status_callback.assert_call(None)
+
+        command_result_callback = tango_change_event_helper.subscribe(
+            "longRunningCommandResult"
+        )
+        command_result_callback.assert_call(("", ""))
+
+        # Check what happens if we call Off() when the device is already OFF.
+        [[result_code], [message]] = device_under_test.Off()
+        assert result_code == ResultCode.REJECTED
+        assert message == "Device is already in OFF state."
+
+        command_status_callback.assert_not_called()
+        command_progress_callback.assert_not_called()
+        command_result_callback.assert_not_called()
+
+        device_state_callback.assert_not_called()
+        device_status_callback.assert_not_called()
 
     # PROTECTED REGION ID(SKABaseDevice.test_buildState_decorators) ENABLED START #
     # PROTECTED REGION END #    //  SKABaseDevice.test_buildState_decorators
@@ -615,25 +936,45 @@ class TestSKABaseDevice(object):
     def test_adminMode(self, device_under_test, tango_change_event_helper):
         """Test for adminMode."""
         # PROTECTED REGION ID(SKABaseDevice.test_adminMode) ENABLED START #
+        time.sleep(0.15)
+        assert device_under_test.state() == DevState.OFF
+
+        state_callback = tango_change_event_helper.subscribe("state")
+        status_callback = tango_change_event_helper.subscribe("status")
+        admin_mode_callback = tango_change_event_helper.subscribe("adminMode")
+
+        admin_mode_callback.assert_call(AdminMode.ONLINE)
+        state_callback.assert_call(DevState.OFF)
+        status_callback.assert_call("The device is in OFF state.")
+
         assert device_under_test.adminMode == AdminMode.ONLINE
         assert device_under_test.state() == DevState.OFF
 
-        admin_mode_callback = tango_change_event_helper.subscribe("adminMode")
-        admin_mode_callback.assert_call(AdminMode.ONLINE)
-
         device_under_test.adminMode = AdminMode.OFFLINE
-        assert device_under_test.adminMode == AdminMode.OFFLINE
         admin_mode_callback.assert_call(AdminMode.OFFLINE)
+        assert device_under_test.adminMode == AdminMode.OFFLINE
+
+        state_callback.assert_call(DevState.DISABLE)
+        status_callback.assert_call("The device is in DISABLE state.")
         assert device_under_test.state() == DevState.DISABLE
 
         device_under_test.adminMode = AdminMode.MAINTENANCE
-        assert device_under_test.adminMode == AdminMode.MAINTENANCE
         admin_mode_callback.assert_call(AdminMode.MAINTENANCE)
+        assert device_under_test.adminMode == AdminMode.MAINTENANCE
+
+        state_callback.assert_call(DevState.UNKNOWN)
+        status_callback.assert_call("The device is in UNKNOWN state.")
+
+        state_callback.assert_call(DevState.OFF)
+        status_callback.assert_call("The device is in OFF state.")
         assert device_under_test.state() == DevState.OFF
 
         device_under_test.adminMode = AdminMode.ONLINE
-        assert device_under_test.adminMode == AdminMode.ONLINE
         admin_mode_callback.assert_call(AdminMode.ONLINE)
+        assert device_under_test.adminMode == AdminMode.ONLINE
+
+        state_callback.assert_not_called()
+        status_callback.assert_not_called()
         assert device_under_test.state() == DevState.OFF
         # PROTECTED REGION END #    //  SKABaseDevice.test_adminMode
 
@@ -685,12 +1026,21 @@ class TestSKABaseDevice(object):
         assert SKABaseDevice._global_debugger_listening
 
     @pytest.mark.usefixtures("patch_debugger_to_start_on_ephemeral_port")
-    def test_DebugDevice_does_not_break_a_command(self, device_under_test):
+    def test_DebugDevice_does_not_break_a_command(
+        self, device_under_test, tango_change_event_helper
+    ):
         """Test that enabling the DebugDevice feature does not break device commands."""
         device_under_test.DebugDevice()
-        assert device_under_test.State() == DevState.OFF
+        assert device_under_test.state() == DevState.OFF
+
+        state_callback = tango_change_event_helper.subscribe("state")
+        state_callback.assert_call(DevState.OFF)
+
         device_under_test.On()
-        assert device_under_test.State() == DevState.ON
+
+        state_callback.assert_call(DevState.ON)
+
+        assert device_under_test.state() == DevState.ON
 
 
 @pytest.fixture()
@@ -704,117 +1054,3 @@ def patch_debugger_to_start_on_ephemeral_port():
     available for use yet.
     """
     ska_tango_base.base.base_device._DEBUGGER_PORT = 0
-
-
-class TestSKABaseDevice_commands:
-    """This class contains tests of SKABaseDevice commands."""
-
-    @pytest.fixture
-    def op_state_model(self, logger):
-        """
-        Yield a new OpStateModel for testing.
-
-        :yields: a OpStateModel instance to be tested
-        """
-        yield OpStateModel(logger)
-
-    @pytest.fixture
-    def command_factory(self, mocker, op_state_model):
-        """
-        Return a factory that constructs a command object for a given class.
-
-        :returns: a factory that constructs a command object for a given
-            class
-        """
-
-        def _command_factory(command):
-            mocked_command = mocker.Mock()
-            mocked_command.on.return_value = ResultCode.OK, "On command completed OK"
-            mocked_command.off.return_value = ResultCode.OK, "Off command completed OK"
-            mocked_command.reset.return_value = (
-                ResultCode.OK,
-                "Reset command completed OK",
-            )
-            mocked_command.standby.return_value = (
-                ResultCode.OK,
-                "Standby command completed OK",
-            )
-            return command(mocked_command, op_state_model)
-
-        return _command_factory
-
-    @pytest.fixture
-    def machine_spec(self):
-        """Return a state machine specification."""
-        return load_state_machine_spec("op_state_machine")
-
-    @pytest.fixture()
-    def op_state_mapping(self):
-        """Return a mapping from state machine state to model state."""
-        return {
-            "_UNINITIALISED": None,
-            "INIT_DISABLE": DevState.INIT,
-            "INIT_UNKNOWN": DevState.INIT,
-            "INIT_OFF": DevState.INIT,
-            "INIT_STANDBY": DevState.INIT,
-            "INIT_ON": DevState.INIT,
-            "INIT_FAULT": DevState.INIT,
-            "DISABLE": DevState.DISABLE,
-            "UNKNOWN": DevState.UNKNOWN,
-            "OFF": DevState.OFF,
-            "STANDBY": DevState.STANDBY,
-            "ON": DevState.ON,
-            "FAULT": DevState.FAULT,
-        }
-
-    @pytest.mark.parametrize(
-        ("command_class", "slug"),
-        [
-            (SKABaseDevice.ResetCommand, "reset"),
-            (SKABaseDevice.OffCommand, "off"),
-            (SKABaseDevice.StandbyCommand, "standby"),
-            (SKABaseDevice.OnCommand, "on"),
-        ],
-    )
-    def test_Command(
-        self,
-        machine_spec,
-        op_state_mapping,
-        command_factory,
-        op_state_model,
-        command_class,
-        slug,
-    ):
-        """
-        Test command invokation.
-
-        Specifically, test that certain commands can only be invoked in
-        certain states, and that the result of invoking the command is
-        as expected.
-        """
-        command = command_factory(command_class)
-
-        states = machine_spec["states"]
-        transitions = machine_spec["transitions"]
-        transitions = [t for t in transitions if t.get("trigger") == f"{slug}_invoked"]
-
-        for state in states:
-            op_state_model._straight_to_state(state)
-
-            transitions_from_state = [t for t in transitions if t.get("from") == state]
-
-            if transitions_from_state:
-                # this command is permitted in the current state, should succeed,
-                # should result in the correct transition.
-                assert command.is_allowed()
-                (result_code, _) = command()
-                assert result_code == ResultCode.OK
-                expected = transitions_from_state[0]["to"]
-            else:
-                # this command is not permitted, should not be allowed,
-                # should fail, should have no side-effect.
-                assert not command.is_allowed()
-                with pytest.raises(CommandError):
-                    command()
-                expected = state
-            assert op_state_model.op_state == op_state_mapping[expected]

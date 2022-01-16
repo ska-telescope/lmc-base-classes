@@ -8,10 +8,11 @@
 #########################################################################################
 """This module contains the tests for the CspSubelementObsDevice."""
 # Imports
-import re
-import pytest
 import json
+import re
+import time
 
+import pytest
 from tango import DevState, DevFailed
 from tango.test_context import MultiDeviceTestContext
 
@@ -26,10 +27,8 @@ from ska_tango_base.control_model import (
     SimulationMode,
     TestMode,
 )
-from ska_tango_base.csp import (
-    CspSubElementObsStateModel,
-    ReferenceCspObsComponentManager,
-)
+from ska_tango_base.csp import CspSubElementObsStateModel
+from ska_tango_base.testing import ReferenceCspObsComponentManager
 
 # PROTECTED REGION END #    //  CspSubElementObsDevice.test_additional_imports
 
@@ -69,7 +68,9 @@ class TestCspSubElementObsDevice(object):
         return {
             "device": CspSubElementObsDevice,
             "component_manager_patch": lambda self: ReferenceCspObsComponentManager(
-                self.op_state_model, self.obs_state_model, logger=self.logger
+                self.logger,
+                self._communication_state_changed,
+                self._component_state_changed,
             ),
             "properties": device_properties,
             "memorized": {"adminMode": str(AdminMode.ONLINE.value)},
@@ -80,7 +81,8 @@ class TestCspSubElementObsDevice(object):
     def test_State(self, device_under_test):
         """Test for State."""
         # PROTECTED REGION ID(CspSubelementObsDevice.test_State) ENABLED START #
-        assert device_under_test.State() == DevState.OFF
+        time.sleep(0.2)
+        assert device_under_test.state() == DevState.OFF
         # PROTECTED REGION END #    //  CspSubelementObsDevice.test_State
 
     # PROTECTED REGION ID(CspSubelementObsDevice.test_Status_decorators) ENABLED START #
@@ -88,6 +90,7 @@ class TestCspSubElementObsDevice(object):
     def test_Status(self, device_under_test):
         """Test for Status."""
         # PROTECTED REGION ID(CspSubelementObsDevice.test_Status) ENABLED START #
+        time.sleep(0.2)
         assert device_under_test.Status() == "The device is in OFF state."
         # PROTECTED REGION END #    //  CspSubelementObsDevice.test_Status
 
@@ -96,13 +99,13 @@ class TestCspSubElementObsDevice(object):
     def test_GetVersionInfo(self, device_under_test):
         """Test for GetVersionInfo."""
         # PROTECTED REGION ID(CspSubelementObsDevice.test_GetVersionInfo) ENABLED START #
-        versionPattern = re.compile(
-            f"['{device_under_test.info().dev_class}, ska_tango_base, [0-9]+.[0-9]+.[0-9]+, "
-            "A set of generic base devices for SKA Telescope.']"
+        version_pattern = (
+            f"{device_under_test.info().dev_class}, ska_tango_base, "
+            "[0-9]+.[0-9]+.[0-9]+, A set of generic base devices for SKA Telescope."
         )
-        device_under_test.GetVersionInfo()
-        versionInfo = device_under_test.longRunningCommandResult[2]
-        assert (re.match(versionPattern, versionInfo)) is not None
+        version_info = device_under_test.GetVersionInfo()
+        assert len(version_info) == 1
+        assert re.match(version_pattern, version_info[0])
         # PROTECTED REGION END #    //  CspSubelementObsDevice.test_GetVersionInfo
 
     # PROTECTED REGION ID(CspSubelementObsDevice.test_buildState_decorators) ENABLED START #
@@ -168,10 +171,19 @@ class TestCspSubElementObsDevice(object):
 
     # PROTECTED REGION ID(CspSubelementObsDevice.test_scanID_decorators) ENABLED START #
     # PROTECTED REGION END #    //  CspSubelementObsDevice.test_scanID_decorators
-    def test_scanID(self, device_under_test):
+    def test_scanID(self, device_under_test, tango_change_event_helper):
         """Test for scanID."""
         # PROTECTED REGION ID(CspSubelementObsDevice.test_scanID) ENABLED START #
+        time.sleep(0.15)
+        assert device_under_test.state() == DevState.OFF
+
+        device_state_callback = tango_change_event_helper.subscribe("state")
+        device_state_callback.assert_call(DevState.OFF)
+
         device_under_test.On()
+
+        device_state_callback.assert_call(DevState.ON)
+        assert device_under_test.state() == DevState.ON
 
         assert device_under_test.scanID == 0
         # PROTECTED REGION END #    //  CspSubelementObsDevice.test_scanID
@@ -222,21 +234,107 @@ class TestCspSubElementObsDevice(object):
 
     # PROTECTED REGION ID(CspSubelementObsDevice.test_ConfigureScan_decorators) ENABLED START #
     # PROTECTED REGION END #    //  CspSubelementObsDevice.test_ConfigureScan_decorators
-    def test_ConfigureScan(self, device_under_test, tango_change_event_helper):
+    def test_ConfigureScan_and_GoToIdle(
+        self, device_under_test, tango_change_event_helper
+    ):
         """Test for ConfigureScan."""
         # PROTECTED REGION ID(CspSubelementObsDevice.test_ConfigureScan) ENABLED START #
-        device_under_test.On()
-        assert device_under_test.obsState == ObsState.IDLE
+        time.sleep(0.15)
+        assert device_under_test.state() == DevState.OFF
 
-        obs_state_callback = tango_change_event_helper.subscribe("obsState")
-        scan_configuration = '{"id":"sbi-mvp01-20200325-00002"}'
-        device_under_test.ConfigureScan(scan_configuration)
-        obs_state_callback.assert_calls(
-            [ObsState.IDLE, ObsState.CONFIGURING, ObsState.READY]
+        device_state_callback = tango_change_event_helper.subscribe("state")
+        device_state_callback.assert_call(DevState.OFF)
+
+        device_status_callback = tango_change_event_helper.subscribe("status")
+        device_status_callback.assert_call("The device is in OFF state.")
+
+        command_progress_callback = tango_change_event_helper.subscribe(
+            "longRunningCommandProgress"
         )
-        assert device_under_test.obsState == ObsState.READY
-        assert device_under_test.configurationID == "sbi-mvp01-20200325-00002"
-        assert device_under_test.lastScanConfiguration == scan_configuration
+        command_progress_callback.assert_call(None)
+
+        command_status_callback = tango_change_event_helper.subscribe(
+            "longRunningCommandStatus"
+        )
+        command_status_callback.assert_call(None)
+
+        command_result_callback = tango_change_event_helper.subscribe(
+            "longRunningCommandResult"
+        )
+        command_result_callback.assert_call(("", ""))
+
+        [[result_code], [command_id]] = device_under_test.On()
+        assert result_code == ResultCode.QUEUED
+        command_status_callback.assert_call((command_id, "QUEUED"))
+        command_status_callback.assert_call((command_id, "IN_PROGRESS"))
+
+        command_progress_callback.assert_call((command_id, "33"))
+        command_progress_callback.assert_call((command_id, "66"))
+
+        device_state_callback.assert_call(DevState.ON)
+        device_status_callback.assert_call("The device is in ON state.")
+        assert device_under_test.state() == DevState.ON
+
+        command_status_callback.assert_call((command_id, "COMPLETED"))
+
+        command_result_callback.assert_call(
+            (command_id, json.dumps([int(ResultCode.OK), "On command completed OK"]))
+        )
+
+        # assignment of resources
+        obs_state_callback = tango_change_event_helper.subscribe("obsState")
+        obs_state_callback.assert_call(ObsState.IDLE)
+
+        # TODO: Everything above here is just to turn on the device and clear the queue
+        # attributes. We need a better way to handle this.
+
+        assert device_under_test.configurationId == ""
+
+        config_id = "sbi-mvp01-20200325-00002"
+
+        [[result_code], [command_id]] = device_under_test.ConfigureScan(
+            json.dumps({"id": config_id})
+        )
+        assert result_code == ResultCode.QUEUED
+
+        obs_state_callback.assert_call(ObsState.CONFIGURING)
+
+        command_status_callback.assert_call((command_id, "QUEUED"))
+        command_status_callback.assert_call((command_id, "IN_PROGRESS"))
+
+        command_progress_callback.assert_call((command_id, "33"))
+        command_progress_callback.assert_call((command_id, "66"))
+
+        command_status_callback.assert_call((command_id, "COMPLETED"))
+
+        obs_state_callback.assert_call(ObsState.READY)
+
+        command_result_callback.assert_call(
+            (command_id, json.dumps([int(ResultCode.OK), "Configure completed OK"]))
+        )
+
+        assert device_under_test.configurationId == config_id
+
+        # test deconfigure
+        [[result_code], [command_id]] = device_under_test.GoToIdle()
+        assert result_code == ResultCode.QUEUED
+
+        command_status_callback.assert_call((command_id, "QUEUED"))
+        command_status_callback.assert_call((command_id, "IN_PROGRESS"))
+
+        command_progress_callback.assert_call((command_id, "33"))
+        command_progress_callback.assert_call((command_id, "66"))
+
+        command_status_callback.assert_call((command_id, "COMPLETED"))
+
+        obs_state_callback.assert_call(ObsState.IDLE)
+
+        command_result_callback.assert_call(
+            (command_id, json.dumps([int(ResultCode.OK), "Deconfigure completed OK"]))
+        )
+
+        assert device_under_test.configurationId == ""
+
         # PROTECTED REGION END #    //  CspSubelementObsDevice.test_ConfigureScan
 
     # PROTECTED REGION ID(CspSubelementObsDevice.test_ConfigureScan_when_in_wrong_state_decorators) ENABLED START #
@@ -283,113 +381,376 @@ class TestCspSubElementObsDevice(object):
         assert device_under_test.obsState == ObsState.IDLE
         # PROTECTED REGION END #    //  CspSubelementObsDevice.test_ConfigureScan_with_json_syntax_error
 
-    # PROTECTED REGION ID(CspSubelementObsDevice.test_GoToIdle_decorators) ENABLED START #
-    # PROTECTED REGION END #    //  CspSubelementObsDevice.test_GoToIdle_decorators
-    def test_GoToIdle(self, device_under_test, tango_change_event_helper):
-        """Test for GoToIdle."""
-        # PROTECTED REGION ID(CspSubelementObsDevice.test_GoToIdle) ENABLED START #
-        device_under_test.On()
-        obs_state_callback = tango_change_event_helper.subscribe("obsState")
-        device_under_test.ConfigureScan('{"id":"sbi-mvp01-20200325-00002"}')
-        obs_state_callback.assert_calls(
-            [ObsState.IDLE, ObsState.CONFIGURING, ObsState.READY]
-        )
-        device_under_test.GoToIdle()
-        obs_state_callback.assert_call(ObsState.IDLE)
-        assert device_under_test.scanID == 0
-        assert device_under_test.configurationID == ""
-        # PROTECTED REGION END #    //  CspSubelementObsDevice.test_GoToIdle
-
     # PROTECTED REGION ID(CspSubelementObsDevice.test_GoToIdle_when_in_wrong_state_decorators) ENABLED START #
     # PROTECTED REGION END #    //  CspSubelementObsDevice.test_GoToIdle_when_in_wrong_state_decorators
     def test_GoToIdle_when_in_wrong_state(self, device_under_test):
         """Test for GoToIdle when the device is in wrong state."""
         # PROTECTED REGION ID(CspSubelementObsDevice.test_GoToIdle_when_in_wrong_state) ENABLED START #
         # The device in in OFF/IDLE state, not valid to invoke GoToIdle.
-        with pytest.raises(DevFailed, match="Command not permitted by state model."):
+        with pytest.raises(
+            DevFailed, match="Command not permitted in observation state IDLE"
+        ):
             device_under_test.GoToIdle()
 
         # PROTECTED REGION END #    //  CspSubelementObsDevice.test_GoToIdle_when_in_wrong_state
 
     # PROTECTED REGION ID(CspSubelementObsDevice.test_Scan_decorators) ENABLED START #
     # PROTECTED REGION END #    //  CspSubelementObsDevice.test_Scan_decorators
-    def test_Scan(self, device_under_test, tango_change_event_helper):
+    def test_Scan_and_EndScan(self, device_under_test, tango_change_event_helper):
         """Test for Scan."""
         # PROTECTED REGION ID(CspSubelementObsDevice.test_Scan) ENABLED START #
-        device_under_test.On()
-        device_under_test.ConfigureScan('{"id":"sbi-mvp01-20200325-00002"}')
+
+        time.sleep(0.15)
+        assert device_under_test.state() == DevState.OFF
+
+        device_state_callback = tango_change_event_helper.subscribe("state")
+        device_state_callback.assert_call(DevState.OFF)
+
+        device_status_callback = tango_change_event_helper.subscribe("status")
+        device_status_callback.assert_call("The device is in OFF state.")
+
+        command_progress_callback = tango_change_event_helper.subscribe(
+            "longRunningCommandProgress"
+        )
+        command_progress_callback.assert_call(None)
+
+        command_status_callback = tango_change_event_helper.subscribe(
+            "longRunningCommandStatus"
+        )
+        command_status_callback.assert_call(None)
+
+        command_result_callback = tango_change_event_helper.subscribe(
+            "longRunningCommandResult"
+        )
+        command_result_callback.assert_call(("", ""))
+
+        [[result_code], [command_id]] = device_under_test.On()
+        assert result_code == ResultCode.QUEUED
+        command_status_callback.assert_call((command_id, "QUEUED"))
+        command_status_callback.assert_call((command_id, "IN_PROGRESS"))
+
+        command_progress_callback.assert_call((command_id, "33"))
+        command_progress_callback.assert_call((command_id, "66"))
+
+        device_state_callback.assert_call(DevState.ON)
+        device_status_callback.assert_call("The device is in ON state.")
+        assert device_under_test.state() == DevState.ON
+
+        command_status_callback.assert_call((command_id, "COMPLETED"))
+
+        command_result_callback.assert_call(
+            (command_id, json.dumps([int(ResultCode.OK), "On command completed OK"]))
+        )
+
         obs_state_callback = tango_change_event_helper.subscribe("obsState")
-        device_under_test.Scan("1")
-        obs_state_callback.assert_calls([ObsState.READY, ObsState.SCANNING])
-        assert device_under_test.scanID == 1
+        obs_state_callback.assert_call(ObsState.IDLE)
+
+        assert device_under_test.scanId == 0
+
+        config_id = "sbi-mvp01-20200325-00002"
+
+        [[result_code], [command_id]] = device_under_test.ConfigureScan(
+            json.dumps({"id": config_id})
+        )
+        assert result_code == ResultCode.QUEUED
+
+        obs_state_callback.assert_call(ObsState.CONFIGURING)
+
+        command_status_callback.assert_call((command_id, "QUEUED"))
+        command_status_callback.assert_call((command_id, "IN_PROGRESS"))
+
+        command_progress_callback.assert_call((command_id, "33"))
+        command_progress_callback.assert_call((command_id, "66"))
+
+        command_status_callback.assert_call((command_id, "COMPLETED"))
+
+        obs_state_callback.assert_call(ObsState.READY)
+
+        command_result_callback.assert_call(
+            (command_id, json.dumps([int(ResultCode.OK), "Configure completed OK"]))
+        )
+
+        assert device_under_test.configurationId == config_id
+
+        # TODO: Everything above here is just to turn on the device, configure it, and
+        # clear the queue attributes. We need a better way to handle this.
+
+        scan_id = 1
+        [[result_code], [command_id]] = device_under_test.Scan(str(scan_id))
+        assert result_code == ResultCode.QUEUED
+
+        command_status_callback.assert_call((command_id, "QUEUED"))
+        command_status_callback.assert_call((command_id, "IN_PROGRESS"))
+
+        command_progress_callback.assert_call((command_id, "33"))
+        command_progress_callback.assert_call((command_id, "66"))
+
+        command_status_callback.assert_call((command_id, "COMPLETED"))
+
+        obs_state_callback.assert_call(ObsState.SCANNING)
+
+        command_result_callback.assert_call(
+            (
+                command_id,
+                json.dumps([int(ResultCode.OK), "Scan commencement completed OK"]),
+            )
+        )
+
+        assert device_under_test.scanId == scan_id
+
+        # test end_scan
+        [[result_code], [command_id]] = device_under_test.EndScan()
+        assert result_code == ResultCode.QUEUED
+
+        command_status_callback.assert_call((command_id, "QUEUED"))
+        command_status_callback.assert_call((command_id, "IN_PROGRESS"))
+
+        command_progress_callback.assert_call((command_id, "33"))
+        command_progress_callback.assert_call((command_id, "66"))
+
+        command_status_callback.assert_call((command_id, "COMPLETED"))
+
+        obs_state_callback.assert_call(ObsState.READY)
+
+        command_result_callback.assert_call(
+            (command_id, json.dumps([int(ResultCode.OK), "End scan completed OK"]))
+        )
+
+        assert device_under_test.scanId == 0
         # PROTECTED REGION END #    //  CspSubelementObsDevice.test_Scan
 
     # PROTECTED REGION ID(CspSubelementObsDevice.test_Scan_when_in_wrong_state_decorators) ENABLED START #
     # PROTECTED REGION END #    //  CspSubelementObsDevice.test_Scan_when_in_wrong_state_decorators
-    def test_Scan_when_in_wrong_state(self, device_under_test):
+    def test_Scan_when_in_wrong_state(
+        self, device_under_test, tango_change_event_helper
+    ):
         """Test for Scan when the device is in wrong state."""
         # PROTECTED REGION ID(CspSubelementObsDevice.test_Scan_when_in_wrong_state) ENABLED START #
         # Set the device in ON/IDLE state
-        device_under_test.On()
-        with pytest.raises(DevFailed, match="Command not permitted by state model."):
+        time.sleep(0.15)
+        assert device_under_test.state() == DevState.OFF
+
+        device_state_callback = tango_change_event_helper.subscribe("state")
+        device_state_callback.assert_call(DevState.OFF)
+
+        [[result_code], [command_id]] = device_under_test.On()
+        assert result_code == ResultCode.QUEUED
+
+        device_state_callback.assert_call(DevState.ON)
+
+        with pytest.raises(
+            DevFailed, match="Command not permitted in observation state IDLE"
+        ):
             device_under_test.Scan("32")
         # PROTECTED REGION END #    //  CspSubelementObsDevice.test_Scan_when_in_wrong_state
 
     # PROTECTED REGION ID(CspSubelementObsDevice.test_Scan_with_wrong_argument_decorators) ENABLED START #
     # PROTECTED REGION END #    //  CspSubelementObsDevice.test_Scan_with_wrong_argument_decorators
-    def test_Scan_with_wrong_argument(self, device_under_test):
+    def test_Scan_with_wrong_argument(
+        self, device_under_test, tango_change_event_helper
+    ):
         """Test for Scan when a wrong input argument is passed."""
         # PROTECTED REGION ID(CspSubelementObsDevice.test_Scan_with_wrong_argument) ENABLED START #
         # Set the device in ON/IDLE state
-        device_under_test.On()
-        device_under_test.ConfigureScan('{"id":"sbi-mvp01-20200325-00002"}')
+        time.sleep(0.15)
+        assert device_under_test.state() == DevState.OFF
+
+        device_state_callback = tango_change_event_helper.subscribe("state")
+        device_state_callback.assert_call(DevState.OFF)
+
+        [[result_code], [command_id]] = device_under_test.On()
+        assert result_code == ResultCode.QUEUED
+
+        device_state_callback.assert_call(DevState.ON)
+
+        obs_state_callback = tango_change_event_helper.subscribe("obsState")
+        obs_state_callback.assert_call(ObsState.IDLE)
+
+        config_id = "sbi-mvp01-20200325-00002"
+
+        [[result_code], [command_id]] = device_under_test.ConfigureScan(
+            json.dumps({"id": config_id})
+        )
+        assert result_code == ResultCode.QUEUED
+
+        obs_state_callback.assert_call(ObsState.CONFIGURING)
+        obs_state_callback.assert_call(ObsState.READY)
+
+        assert device_under_test.configurationId == config_id
+
         (result_code, _) = device_under_test.Scan("abc")
         assert result_code == ResultCode.FAILED
+
+        obs_state_callback.assert_not_called()
         assert device_under_test.obsState == ObsState.READY
         # PROTECTED REGION END #    //  CspSubelementObsDevice.test_Scan_with_wrong_argument
 
-    # PROTECTED REGION ID(CspSubelementObsDevice.test_EndScan_decorators) ENABLED START #
-    # PROTECTED REGION END #    //  CspSubelementObsDevice.test_EndScan_decorators
-    def test_EndScan(self, device_under_test, tango_change_event_helper):
-        """Test for EndScan."""
-        # PROTECTED REGION ID(CspSubelementObsDevice.test_EndScan) ENABLED START #
-        device_under_test.On()
-        device_under_test.ConfigureScan('{"id":"sbi-mvp01-20200325-00002"}')
-        obs_state_callback = tango_change_event_helper.subscribe("obsState")
-        obs_state_callback.assert_call(ObsState.READY)
-        device_under_test.Scan("1")
-        obs_state_callback.assert_call(ObsState.SCANNING)
-        device_under_test.EndScan()
-        obs_state_callback.assert_call(ObsState.READY)
-        # PROTECTED REGION END #    //  CspSubelementObsDevice.test_EndScan
-
     # PROTECTED REGION ID(CspSubelementObsDevice.test_EndScan_when_in_wrong_state_decorators) ENABLED START #
     # PROTECTED REGION END #    //  CspSubelementObsDevice.test_EndScan_when_in_wrong_state_decorators
-    def test_EndScan_when_in_wrong_state(self, device_under_test):
+    def test_EndScan_when_in_wrong_state(
+        self, device_under_test, tango_change_event_helper
+    ):
         """Test for EndScan when the device is in wrong state."""
         # PROTECTED REGION ID(CspSubelementObsDevice.test_EndScan_when_in_wrong_state) ENABLED START #
         # Set the device in ON/READY state
-        device_under_test.On()
-        device_under_test.ConfigureScan('{"id":"sbi-mvp01-20200325-00002"}')
-        with pytest.raises(DevFailed, match="Command not permitted by state model."):
+        time.sleep(0.15)
+        assert device_under_test.state() == DevState.OFF
+
+        device_state_callback = tango_change_event_helper.subscribe("state")
+        device_state_callback.assert_call(DevState.OFF)
+
+        [[result_code], [command_id]] = device_under_test.On()
+        assert result_code == ResultCode.QUEUED
+
+        device_state_callback.assert_call(DevState.ON)
+
+        obs_state_callback = tango_change_event_helper.subscribe("obsState")
+        obs_state_callback.assert_call(ObsState.IDLE)
+
+        config_id = "sbi-mvp01-20200325-00002"
+
+        [[result_code], [command_id]] = device_under_test.ConfigureScan(
+            json.dumps({"id": config_id})
+        )
+        assert result_code == ResultCode.QUEUED
+
+        obs_state_callback.assert_call(ObsState.CONFIGURING)
+        obs_state_callback.assert_call(ObsState.READY)
+
+        assert device_under_test.configurationId == config_id
+
+        with pytest.raises(
+            DevFailed, match="Command not permitted in observation state READY"
+        ):
             device_under_test.EndScan()
 
         # PROTECTED REGION END #    //  CspSubelementObsDevice.test_EndScan_when_in_wrong_state
 
-    # PROTECTED REGION ID(CspSubelementObsDevice.test_ObsReset_decorators) ENABLED START #
-    # PROTECTED REGION END #    //  CspSubelementObsDevice.test_ObsReset_decorators
-    def test_ObsReset(self, device_under_test, tango_change_event_helper):
-        """Test for ObsReset."""
-        # PROTECTED REGION ID(CspSubelementObsDevice.test_ObsReset) ENABLED START #
-        device_under_test.On()
-        device_under_test.ConfigureScan('{"id":"sbi-mvp01-20200325-00002"}')
+    # PROTECTED REGION ID(CspSubelementObsDevice.test_Abort_decorators) ENABLED START #
+    # PROTECTED REGION END #    //  CspSubelementObsDevice.test_Abort_decorators
+    def test_abort_and_obsreset(self, device_under_test, tango_change_event_helper):
+        """Test for Abort."""
+        # PROTECTED REGION ID(CspSubelementObsDevice.test_Abort) ENABLED START #
+        time.sleep(0.15)
+        assert device_under_test.state() == DevState.OFF
+
+        device_state_callback = tango_change_event_helper.subscribe("state")
+        device_state_callback.assert_call(DevState.OFF)
+
+        device_status_callback = tango_change_event_helper.subscribe("status")
+        device_status_callback.assert_call("The device is in OFF state.")
+
+        command_progress_callback = tango_change_event_helper.subscribe(
+            "longRunningCommandProgress"
+        )
+        command_progress_callback.assert_call(None)
+
+        command_status_callback = tango_change_event_helper.subscribe(
+            "longRunningCommandStatus"
+        )
+        command_status_callback.assert_call(None)
+
+        command_result_callback = tango_change_event_helper.subscribe(
+            "longRunningCommandResult"
+        )
+        command_result_callback.assert_call(("", ""))
+
+        [[result_code], [command_id]] = device_under_test.On()
+        assert result_code == ResultCode.QUEUED
+        command_status_callback.assert_call((command_id, "QUEUED"))
+        command_status_callback.assert_call((command_id, "IN_PROGRESS"))
+
+        command_progress_callback.assert_call((command_id, "33"))
+        command_progress_callback.assert_call((command_id, "66"))
+
+        device_state_callback.assert_call(DevState.ON)
+        device_status_callback.assert_call("The device is in ON state.")
+        assert device_under_test.state() == DevState.ON
+
+        command_status_callback.assert_call((command_id, "COMPLETED"))
+
+        command_result_callback.assert_call(
+            (command_id, json.dumps([int(ResultCode.OK), "On command completed OK"]))
+        )
+
         obs_state_callback = tango_change_event_helper.subscribe("obsState")
-        obs_state_callback.assert_call(ObsState.READY)
-        device_under_test.Abort()
-        obs_state_callback.assert_calls([ObsState.ABORTING, ObsState.ABORTED])
-        device_under_test.ObsReset()
-        obs_state_callback.assert_calls([ObsState.RESETTING, ObsState.IDLE])
-        # PROTECTED REGION END #    //  CspSubelementObsDevice.test_ObsReset
+        obs_state_callback.assert_call(ObsState.IDLE)
+
+        # TODO: Everything above here is just to turn on the device and clear the queue
+        # attributes. We need a better way to handle this.
+
+        # Start configuring but then abort
+        [[result_code], [configure_command_id]] = device_under_test.ConfigureScan(
+            json.dumps({"id": "sbi-mvp01-20200325-00002"})
+        )
+        assert result_code == ResultCode.QUEUED
+
+        obs_state_callback.assert_call(ObsState.CONFIGURING)
+
+        command_status_callback.assert_call((configure_command_id, "QUEUED"))
+        command_status_callback.assert_call((configure_command_id, "IN_PROGRESS"))
+
+        [[result_code], [abort_command_id]] = device_under_test.Abort()
+        assert result_code == ResultCode.STARTED
+
+        obs_state_callback.assert_call(ObsState.ABORTING)
+
+        command_status_callback.assert_call(
+            (configure_command_id, "IN_PROGRESS", abort_command_id, "IN_PROGRESS")
+        )
+
+        status_call = command_status_callback.get_call()
+        if status_call == (
+            configure_command_id,
+            "ABORTED",
+            abort_command_id,
+            "IN_PROGRESS",
+        ):
+            # event announcing abort of configure arrived first,
+            # now we expect abort to complete
+            command_status_callback.assert_call((abort_command_id, "COMPLETED"))
+        else:
+            # event announcing completion of abort arrived first,
+            # now we expect configure to abort.
+            assert status_call == (
+                configure_command_id,
+                "IN_PROGRESS",
+                abort_command_id,
+                "COMPLETED",
+            )
+            command_status_callback.assert_call((configure_command_id, "ABORTED"))
+        #    ((configure_command_id, 'ABORTED', abort_command_id, 'COMPLETED'))
+        obs_state_callback.assert_call(ObsState.ABORTED)
+
+        # command_progress_callback.assert_not_called()
+        command_status_callback.assert_not_called()
+        command_result_callback.assert_not_called()
+
+        # Reset from aborted state
+        [[result_code], [reset_command_id]] = device_under_test.ObsReset()
+        assert result_code == ResultCode.QUEUED
+        command_status_callback.assert_call((reset_command_id, "QUEUED"))
+        command_status_callback.assert_call((reset_command_id, "IN_PROGRESS"))
+
+        obs_state_callback.assert_call(ObsState.RESETTING)
+
+        # command_progress_callback.assert_call((reset_command_id, '33'))
+        # command_progress_callback.assert_call((reset_command_id, '66'))
+
+        command_status_callback.assert_call((reset_command_id, "COMPLETED"))
+
+        obs_state_callback.assert_call(ObsState.IDLE)
+
+        command_result_callback.assert_call(
+            (
+                reset_command_id,
+                json.dumps([int(ResultCode.OK), "Obs reset completed OK"]),
+            )
+        )
+
+        assert device_under_test.obsState == ObsState.IDLE
+
+        # PROTECTED REGION END #    //  CspSubelementObsDevice.test_Abort
 
     # PROTECTED REGION ID(CspSubelementObsDevice.test_ObsReset_when_in_wrong_state_decorators) ENABLED START #
     # PROTECTED REGION END #    //  CspSubelementObsDevice.test_ObsReset_when_in_wrong_state_decorators
@@ -398,23 +759,11 @@ class TestCspSubElementObsDevice(object):
         # PROTECTED REGION ID(CspSubelementObsDevice.test_ObsReset_when_in_wrong_state) ENABLED START #
         # Set the device in ON/IDLE state
         device_under_test.On()
-        with pytest.raises(DevFailed, match="Command not permitted by state model."):
+        with pytest.raises(
+            DevFailed, match="Command not permitted in observation state IDLE"
+        ):
             device_under_test.ObsReset()
         # PROTECTED REGION END #    //  CspSubelementObsDevice.test_ObsReset_when_in_wrong_state
-
-    # PROTECTED REGION ID(CspSubelementObsDevice.test_Abort_decorators) ENABLED START #
-    # PROTECTED REGION END #    //  CspSubelementObsDevice.test_Abort_decorators
-    def test_Abort(self, device_under_test, tango_change_event_helper):
-        """Test for Abort."""
-        # PROTECTED REGION ID(CspSubelementObsDevice.test_Abort) ENABLED START #
-        device_under_test.On()
-        device_under_test.ConfigureScan('{"id":"sbi-mvp01-20200325-00002"}')
-        obs_state_callback = tango_change_event_helper.subscribe("obsState")
-        device_under_test.Abort()
-        obs_state_callback.assert_calls(
-            [ObsState.READY, ObsState.ABORTING, ObsState.ABORTED]
-        )
-        # PROTECTED REGION END #    //  CspSubelementObsDevice.test_Abort
 
 
 @pytest.mark.forked
@@ -428,5 +777,7 @@ def test_multiple_devices_in_same_process():
     with MultiDeviceTestContext(devices_info, process=False) as context:
         proxy1 = context.get_device("test/se/1")
         proxy2 = context.get_device("test/obsdevice/1")
-        assert proxy1.State() == DevState.DISABLE
-        assert proxy2.State() == DevState.DISABLE
+
+        time.sleep(0.15)
+        assert proxy1.state() == DevState.DISABLE
+        assert proxy2.state() == DevState.DISABLE

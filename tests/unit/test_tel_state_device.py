@@ -9,12 +9,17 @@
 """Contain the tests for the SKATelState."""
 
 import re
+import time
+
 import pytest
 from tango import DevState
 
 # PROTECTED REGION ID(SKATelState.test_additional_imports) ENABLED START #
 from ska_tango_base import SKATelState
-from ska_tango_base.base import ReferenceBaseComponentManager
+
+from ska_tango_base.testing import (
+    ReferenceBaseComponentManager,
+)
 from ska_tango_base.control_model import (
     AdminMode,
     ControlMode,
@@ -42,7 +47,9 @@ class TestSKATelState(object):
         return {
             "device": SKATelState,
             "component_manager_patch": lambda self: ReferenceBaseComponentManager(
-                self.op_state_model, logger=self.logger
+                self.logger,
+                self._communication_state_changed,
+                self._component_state_changed,
             ),
             "properties": device_properties,
             "memorized": {"adminMode": str(AdminMode.ONLINE.value)},
@@ -60,7 +67,8 @@ class TestSKATelState(object):
     def test_State(self, device_under_test):
         """Test for State."""
         # PROTECTED REGION ID(SKATelState.test_State) ENABLED START #
-        assert device_under_test.State() == DevState.OFF
+        time.sleep(0.2)
+        assert device_under_test.state() == DevState.OFF
         # PROTECTED REGION END #    //  SKATelState.test_State
 
     # PROTECTED REGION ID(SKATelState.test_Status_decorators) ENABLED START #
@@ -68,6 +76,7 @@ class TestSKATelState(object):
     def test_Status(self, device_under_test):
         """Test for Status."""
         # PROTECTED REGION ID(SKATelState.test_Status) ENABLED START #
+        time.sleep(0.2)
         assert device_under_test.Status() == "The device is in OFF state."
         # PROTECTED REGION END #    //  SKATelState.test_Status
 
@@ -76,13 +85,13 @@ class TestSKATelState(object):
     def test_GetVersionInfo(self, device_under_test):
         """Test for GetVersionInfo."""
         # PROTECTED REGION ID(SKATelState.test_GetVersionInfo) ENABLED START #
-        versionPattern = re.compile(
-            f"['{device_under_test.info().dev_class}, ska_tango_base, [0-9]+.[0-9]+.[0-9]+, "
-            "A set of generic base devices for SKA Telescope.']"
+        version_pattern = (
+            f"{device_under_test.info().dev_class}, ska_tango_base, "
+            "[0-9]+.[0-9]+.[0-9]+, A set of generic base devices for SKA Telescope."
         )
-        device_under_test.GetVersionInfo()
-        versionInfo = device_under_test.longRunningCommandResult[2]
-        assert (re.match(versionPattern, versionInfo)) is not None
+        version_info = device_under_test.GetVersionInfo()
+        assert len(version_info) == 1
+        assert re.match(version_pattern, version_info[0])
         # PROTECTED REGION END #    //  SKATelState.test_GetVersionInfo
 
     # PROTECTED REGION ID(SKATelState.test_buildState_decorators) ENABLED START #

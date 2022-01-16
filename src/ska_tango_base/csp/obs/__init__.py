@@ -3,7 +3,6 @@
 __all__ = (
     "CspSubElementObsStateModel",
     "CspObsComponentManager",
-    "ReferenceCspObsComponentManager",
     "CspSubElementObsDevice",
 )
 
@@ -11,7 +10,5 @@ __all__ = (
 from .obs_state_model import CspSubElementObsStateModel
 
 from .component_manager import CspObsComponentManager
-
-from .reference_component_manager import ReferenceCspObsComponentManager
 
 from .obs_device import CspSubElementObsDevice

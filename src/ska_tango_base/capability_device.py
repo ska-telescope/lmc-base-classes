@@ -16,7 +16,7 @@ from tango.server import run, attribute, command, device_property
 
 # SKA specific imports
 from ska_tango_base import SKAObsDevice
-from ska_tango_base.commands import ResponseCommand, ResultCode
+from ska_tango_base.commands import DeviceInitCommand, FastCommand, ResultCode
 
 # PROTECTED REGION END #    //  SKACapability.additionnal_imports
 
@@ -35,10 +35,10 @@ class SKACapability(SKAObsDevice):
         super().init_command_objects()
         self.register_command_object(
             "ConfigureInstances",
-            self.ConfigureInstancesCommand(self, self.op_state_model, self.logger),
+            self.ConfigureInstancesCommand(self, self.logger),
         )
 
-    class InitCommand(SKAObsDevice.InitCommand):
+    class InitCommand(DeviceInitCommand):
         """A class for the CapabilityDevice's init_device() "command"."""
 
         def do(self):
@@ -50,12 +50,9 @@ class SKACapability(SKAObsDevice):
                 information purpose only.
             :rtype: (ResultCode, str)
             """
-            super().do()
-
-            device = self.target
-            device._activation_time = 0.0
-            device._configured_instances = 0
-            device._used_components = [""]
+            self._device._activation_time = 0.0
+            self._device._configured_instances = 0
+            self._device._used_components = [""]
 
             message = "SKACapability Init command completed OK"
             self.logger.info(message)
@@ -172,8 +169,18 @@ class SKACapability(SKAObsDevice):
     # Commands
     # --------
 
-    class ConfigureInstancesCommand(ResponseCommand):
+    class ConfigureInstancesCommand(FastCommand):
         """A class for the SKALoggerDevice's SetLoggingLevel() command."""
+
+        def __init__(self, device, logger=None):
+            """
+            Initialise a new instance.
+
+            :param device: the device to which this command belongs.
+            :param logger: a logger for the command to log with
+            """
+            self._device = device
+            super().__init__(logger=logger)
 
         def do(self, argin):
             """
@@ -184,8 +191,7 @@ class SKACapability(SKAObsDevice):
                 information purpose only.
             :rtype: (ResultCode, str)
             """
-            device = self.target
-            device._configured_instances = argin
+            self._device._configured_instances = argin
 
             message = "ConfigureInstances command completed OK"
             self.logger.info(message)
@@ -209,9 +215,9 @@ class SKACapability(SKAObsDevice):
         :param argin: Number of instances to configure
         :return: None.
         """
-        command = self.get_command_object("ConfigureInstances")
-        (return_code, message) = command(argin)
-        return [[return_code], [message]]
+        handler = self.get_command_object("ConfigureInstances")
+        (result_code, message) = handler(argin)
+        return [[result_code], [message]]
         # PROTECTED REGION END #    //  SKACapability.ConfigureInstances
 
 

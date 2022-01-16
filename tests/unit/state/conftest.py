@@ -327,7 +327,7 @@ def load_data(name):
         loaded.
     :type name: string
     """
-    with open(f"tests/state/data/{name}.json", "r") as json_file:
+    with open(f"tests/unit/state/data/{name}.json", "r") as json_file:
         return json.load(json_file)
 
 

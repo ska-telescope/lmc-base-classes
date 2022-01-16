@@ -17,7 +17,7 @@ from tango.server import run, attribute, command, device_property
 
 # SKA specific imports
 from ska_tango_base import SKABaseDevice
-from ska_tango_base.commands import BaseCommand, ResultCode
+from ska_tango_base.commands import FastCommand, DeviceInitCommand, ResultCode
 from ska_tango_base.utils import (
     validate_capability_types,
     validate_input_sizes,
@@ -38,10 +38,10 @@ class SKAController(SKABaseDevice):
         super().init_command_objects()
         self.register_command_object(
             "IsCapabilityAchievable",
-            self.IsCapabilityAchievableCommand(self, self.op_state_model, self.logger),
+            self.IsCapabilityAchievableCommand(self, self.logger),
         )
 
-    class InitCommand(SKABaseDevice.InitCommand):
+    class InitCommand(DeviceInitCommand):
         """A class for the SKAController's init_device() "command"."""
 
         def do(self):
@@ -53,26 +53,23 @@ class SKAController(SKABaseDevice):
                 information purpose only.
             :rtype: (ResultCode, str)
             """
-            super().do()
-
-            device = self.target
-            device._element_logger_address = ""
-            device._element_alarm_address = ""
-            device._element_tel_state_address = ""
-            device._element_database_address = ""
-            device._element_alarm_device = ""
-            device._element_tel_state_device = ""
-            device._element_database_device = ""
-            device._max_capabilities = {}
-            if device.MaxCapabilities:
-                for max_capability in device.MaxCapabilities:
+            self._device._element_logger_address = ""
+            self._device._element_alarm_address = ""
+            self._device._element_tel_state_address = ""
+            self._device._element_database_address = ""
+            self._device._element_alarm_device = ""
+            self._device._element_tel_state_device = ""
+            self._device._element_database_device = ""
+            self._device._max_capabilities = {}
+            if self._device.MaxCapabilities:
+                for max_capability in self._device.MaxCapabilities:
                     capability_type, max_capability_instances = max_capability.split(
                         ":"
                     )
-                    device._max_capabilities[capability_type] = int(
+                    self._device._max_capabilities[capability_type] = int(
                         max_capability_instances
                     )
-            device._available_capabilities = device._max_capabilities.copy()
+            self._device._available_capabilities = self._device._max_capabilities.copy()
 
             message = "SKAController Init command completed OK"
             self.logger.info(message)
@@ -209,8 +206,18 @@ class SKAController(SKABaseDevice):
     # Commands
     # --------
 
-    class IsCapabilityAchievableCommand(BaseCommand):
+    class IsCapabilityAchievableCommand(FastCommand):
         """A class for the SKAController's IsCapabilityAchievable() command."""
+
+        def __init__(self, device, logger=None):
+            """
+            Initialise a new instance.
+
+            :param device: the device that this command acts upon.
+            :param logger: a logger for this command to log with.
+            """
+            self._device = device
+            super().__init__(logger=logger)
 
         def do(self, argin):
             """
@@ -219,19 +226,20 @@ class SKAController(SKABaseDevice):
             :return: Whether the capability is achievable
             :rtype: bool
             """
-            device = self.target
             command_name = "isCapabilityAchievable"
             capabilities_instances, capability_types = argin
             validate_input_sizes(command_name, argin)
             validate_capability_types(
-                command_name, capability_types, list(device._max_capabilities.keys())
+                command_name,
+                capability_types,
+                list(self._device._max_capabilities.keys()),
             )
 
             for capability_type, capability_instances in zip(
                 capability_types, capabilities_instances
             ):
                 if (
-                    not device._available_capabilities[capability_type]
+                    not self._device._available_capabilities[capability_type]
                     >= capability_instances
                 ):
                     return False
@@ -240,7 +248,7 @@ class SKAController(SKABaseDevice):
     @command(
         dtype_in="DevVarLongStringArray",
         doc_in="[nrInstances][Capability types]",
-        dtype_out="DevVarLongStringArray",
+        dtype_out=bool,
         doc_out="(ResultCode, 'Command unique ID')",
     )
     @DebugIt()
@@ -262,9 +270,8 @@ class SKAController(SKABaseDevice):
         :return: result_code, unique_id
         :rtype: DevVarLongStringArray
         """
-        command = self.get_command_object("IsCapabilityAchievable")
-        unique_id, result_code = self.component_manager.enqueue(command, argin)
-        return [[result_code], [unique_id]]
+        handler = self.get_command_object("IsCapabilityAchievable")
+        return handler(argin)
         # PROTECTED REGION END #    //  SKAController.isCapabilityAchievable
 
 

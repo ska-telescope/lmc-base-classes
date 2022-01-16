@@ -11,7 +11,10 @@ import re
 import pytest
 
 from ska_tango_base import SKACapability
-from ska_tango_base.base import ReferenceBaseComponentManager
+
+from ska_tango_base.testing import (
+    ReferenceBaseComponentManager,
+)
 from ska_tango_base.control_model import AdminMode
 
 
@@ -34,7 +37,9 @@ class TestSKACapability(object):
         return {
             "device": SKACapability,
             "component_manager_patch": lambda self: ReferenceBaseComponentManager(
-                self.op_state_model, logger=self.logger
+                self.logger,
+                self._communication_state_changed,
+                self._component_state_changed,
             ),
             "properties": device_properties,
             "memorized": {"adminMode": str(AdminMode.ONLINE.value)},

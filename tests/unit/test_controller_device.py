@@ -9,12 +9,18 @@
 """Contain the tests for the SKAController."""
 
 import re
+import time
+
 import pytest
 from tango import DevState
 
 # PROTECTED REGION ID(SKAController.test_additional_imports) ENABLED START #
 from ska_tango_base import SKAController
-from ska_tango_base.base import ReferenceBaseComponentManager
+
+from ska_tango_base.testing import (
+    ReferenceBaseComponentManager,
+)
+
 from ska_tango_base.control_model import (
     AdminMode,
     ControlMode,
@@ -60,7 +66,9 @@ class TestSKAController(object):
         return {
             "device": SKAController,
             "component_manager_patch": lambda self: ReferenceBaseComponentManager(
-                self.op_state_model, logger=self.logger
+                self.logger,
+                self._communication_state_changed,
+                self._component_state_changed,
             ),
             "properties": device_properties,
             "memorized": {"adminMode": str(AdminMode.ONLINE.value)},
@@ -78,7 +86,8 @@ class TestSKAController(object):
     def test_State(self, device_under_test):
         """Test for State."""
         # PROTECTED REGION ID(SKAController.test_State) ENABLED START #
-        assert device_under_test.State() == DevState.OFF
+        time.sleep(0.2)
+        assert device_under_test.state() == DevState.OFF
         # PROTECTED REGION END #    //  SKAController.test_State
 
     # PROTECTED REGION ID(SKAController.test_Status_decorators) ENABLED START #
@@ -86,6 +95,7 @@ class TestSKAController(object):
     def test_Status(self, device_under_test):
         """Test for Status."""
         # PROTECTED REGION ID(SKAController.test_Status) ENABLED START #
+        time.sleep(0.2)
         assert device_under_test.Status() == "The device is in OFF state."
         # PROTECTED REGION END #    //  SKAController.test_Status
 
@@ -94,36 +104,25 @@ class TestSKAController(object):
     def test_GetVersionInfo(self, device_under_test):
         """Test for GetVersionInfo."""
         # PROTECTED REGION ID(SKAController.test_GetVersionInfo) ENABLED START #
-        versionPattern = re.compile(
-            f"['{device_under_test.info().dev_class}, ska_tango_base, [0-9]+.[0-9]+.[0-9]+, "
-            "A set of generic base devices for SKA Telescope.']"
+        version_pattern = (
+            f"{device_under_test.info().dev_class}, ska_tango_base, "
+            "[0-9]+.[0-9]+.[0-9]+, A set of generic base devices for SKA Telescope."
         )
-        device_under_test.GetVersionInfo()
-        versionInfo = device_under_test.longRunningCommandResult[2]
-        assert (re.match(versionPattern, versionInfo)) is not None
+        version_info = device_under_test.GetVersionInfo()
+        assert len(version_info) == 1
+        assert re.match(version_pattern, version_info[0])
         # PROTECTED REGION END #    //  SKAController.test_GetVersionInfo
 
     # PROTECTED REGION ID(SKAController.test_isCapabilityAchievable_failure_decorators) ENABLED START #
     # PROTECTED REGION END #    //  SKAController.test_isCapabilityAchievable_failure_decorators
-    def test_isCapabilityAchievable_failure(self, device_under_test):
+    @pytest.mark.parametrize(
+        ("capability", "success"), [([[2], ["BAND1"]], False), ([[1], ["BAND1"]], True)]
+    )
+    def test_isCapabilityAchievable(self, device_under_test, capability, success):
         """Test for isCapabilityAchievable to test failure condition."""
-        # PROTECTED REGION ID(SKAController.test_isCapabilityAchievable_failure) ENABLED START #
-        device_under_test.isCapabilityAchievable([[2], ["BAND1"]])
-        capability_achievalble = device_under_test.longRunningCommandResult[2]
-        assert capability_achievalble == "False"
-        # assert device_under_test.isCapabilityAchievable([[2], ["BAND1"]]) is False
-        # PROTECTED REGION END #    //  SKAController.test_isCapabilityAchievable_failure
-
-        # PROTECTED REGION ID(SKAController.test_isCapabilityAchievable_success_decorators) ENABLED START #
-        # PROTECTED REGION END #    //  SKAController.test_isCapabilityAchievable_success_decorators
-
-    def test_isCapabilityAchievable_success(self, device_under_test):
-        """Test for isCapabilityAchievable to test success condition."""
-        # PROTECTED REGION ID(SKAController.test_isCapabilityAchievable_success) ENABLED START #
-        device_under_test.isCapabilityAchievable([[1], ["BAND1"]])
-        capability_achievalble = device_under_test.longRunningCommandResult[2]
-        assert capability_achievalble == "True"
-        # PROTECTED REGION END #    //  SKAController.test_isCapabilityAchievable_success
+        # PROTECTED REGION ID(SKAController.test_isCapabilityAchievable) ENABLED START #
+        assert success == device_under_test.isCapabilityAchievable(capability)
+        # PROTECTED REGION END #    //  SKAController.test_isCapabilityAchievable
 
     # PROTECTED REGION ID(SKAController.test_elementLoggerAddress_decorators) ENABLED START #
     # PROTECTED REGION END #    //  SKAController.test_elementLoggerAddress_decorators

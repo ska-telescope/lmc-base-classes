@@ -321,6 +321,45 @@ class LoggingLevel(enum.IntEnum):
     DEBUG = 5
 
 
+class CommunicationStatus(enum.IntEnum):
+    """The status of a component manager's communication with its component."""
+
+    DISABLED = 1
+    """
+    The component manager is not trying to establish/maintain a channel
+    of communication with its component. For example:
+
+    * if communication with the component is connection-oriented, then
+      there is no connection, and the component manager is not trying to
+      establish a connection.
+    * if communication with the component is by event subscription, then
+      the component manager is unsubscribed from events.
+    * if communication with the component is by periodic connectionless
+      polling, then the component manager is not performing that
+      polling.
+    """
+
+    NOT_ESTABLISHED = 2
+    """
+    The component manager is trying to establish/maintain a channel of
+    communication with its component, but that channel is not currently
+    established. For example:
+
+    * if communication with the component is connection-oriented, then
+      the component manager has failed to establish/maintain the
+      connection.
+    """
+
+    ESTABLISHED = 3
+    """
+    The component manager has established a channel of communication
+    with its component. For example:
+
+    * if communication with the component is connection-oriented, then
+      the component manager has connected to its component.
+    """
+
+
 class PowerState(enum.IntEnum):
     """
     Enumerated type for power mode.

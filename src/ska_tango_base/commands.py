@@ -3,67 +3,37 @@ This module provides abstract base classes for device commands, and a ResultCode
 
 The following command classes are provided:
 
-* **BaseCommand**: that implements the common pattern for commands;
-  implement the do() method, and invoke the command class by *calling*
-  it.
+* **FastCommand**: implements the common pattern for fast commands; that
+  is, commands that do not perform any blocking action. These commands
+  call their callback to indicate that they have started, then execute
+  their do hook, and then immediately call their callback to indicate
+  that they have completed.
 
-* **StateModelCommand**: implements a command that drives a state model.
-  For example, a command that drives the operational state of the
-  device, such as ``On()``, ``Standby()`` and ``Off()``, is a
-  ``StateModelCommand``.
+* **DeviceInitCommand**: Implements the common pattern for device Init
+    commands. This is just a FastCommands, with a fixed signature for
+    the ``__init__`` method.
 
-* **ObservationCommand**: implements a command that drives the
-  observation state of an obsDevice, such as a subarray; for example,
-  ``AssignResources()``, ``Configure()``, ``Scan()``.
+* **SlowCommand**: implements the common pattern for slow commands; that
+  is, commands that need to perform a blocking action, such as file I/O,
+  network I/O, waiting for a shared resource, etc. These commands call
+  their callback to indicate that they have started, then execute their
+  do hook. However they do not immediately call their callback to
+  indicate completion. They assume that the do hook will launch work in
+  an asynchronous context (such as a thread), and make it the
+  responsibility of that asynchronous context to call the command's
+  ``completed`` method when it finishes.
 
-* **ResponseCommand**: for commands that return a ``(ResultCode,
-  message)`` tuple.
 
-* **CompletionCommand**: for commands that need to let their state
-  machine know when they have completed; that is, long-running commands
-  with transitional states, such as ``AssignResources()`` and
-  ``Configure()``.
-
-.. inheritance-diagram::
-   ska_tango_base.commands.BaseCommand
-   ska_tango_base.commands.StateModelCommand
-   ska_tango_base.commands.ResponseCommand
-   ska_tango_base.commands.CompletionCommand
-   ska_tango_base.commands.ObservationCommand
-   :parts: 1
-
-Multiple inheritance is supported, and it is expected that many commands
-will need to inherit from more than one command class. For example, a
-subarray's ``AssignResources`` command would inherit from:
-
-* ``ObservationState``, because it drives observation state
-
-* ``ResponseCommand``, because it returns a `(ResultCode, message)`
-
-* ``CompletionCommand``, because it needs to let its state machine know
-  when it is completed.
-
-To use these commands: subclass from the command classes needed, then
-implement the ``__init__`` and ``do`` methods. For example:
-
-.. code-block:: py
-
-    class AssignResourcesCommand(
-        ObservationCommand, ResponseCommand, CompletionCommand
-    ):
-        def __init__(self, target, op_state_model, obs_state_model, logger=None):
-            super().__init__(target, obs_state_model, "assign", op_state_model, logger=logger)
-
-        def do(self, argin):
-            # do stuff
-            return (ResultCode.OK, "AssignResources command completed OK")
+* **SubmittedSlowCommand**: ``whereas SlowCommand`` makes no assumptions
+    about how the command will be implemented, ``SubmittedSlowCommand``
+    assumes the current device structure: i.e. a command tracker, and a
+    component manager with support for submitting tasks.
 """
 import enum
+import functools
 import logging
 
-from tango import DevState
-
-from ska_tango_base.faults import CommandError, StateModelError
+from ska_tango_base.executor import TaskStatus
 
 module_logger = logging.getLogger(__name__)
 
@@ -112,7 +82,7 @@ class ResultCode(enum.IntEnum):
     """
 
 
-class BaseCommand:
+class _BaseCommand:
     """
     Abstract base class for Tango device server commands.
 
@@ -120,23 +90,19 @@ class BaseCommand:
     runs the command.
     """
 
-    def __init__(self, target, *args, logger=None, **kwargs):
+    def __init__(self, logger=None):
         """
         Initialise a new BaseCommand instance.
 
-        :param target: the object that this command acts upon; for
-            example, a component manager
-        :type target: object
         :param logger: the logger to be used by this Command. If not
             provided, then a default module logger will be used.
         :type logger: a logger that implements the standard library
             logger interface
         """
-        self.name = self.__class__.__name__
-        self.target = target
+        self._name = self.__class__.__name__
         self.logger = logger or module_logger
 
-    def __call__(self, argin=None):
+    def __call__(self, *args, **kwargs):
         """
         Invoke the command.
 
@@ -147,31 +113,12 @@ class BaseCommand:
             present
         :type argin: ANY
         """
-        try:
-            return self._call_do(argin)
-        except Exception:
-            self.logger.exception(
-                f"Error executing command {self.name} with argin '{argin}'"
-            )
-            raise
+        raise NotImplementedError(
+            "_BaseCommand is abstract; __call__() needs to be implemented by a "
+            "subclass; try FastCommand or SlowCommand instead."
+        )
 
-    def _call_do(self, argin=None):
-        """
-        Call the ``do`` method with the right arguments, and log the call.
-
-        :param argin: the argument passed to the Tango command, if
-            present
-        :type argin: ANY
-        """
-        if argin is None:
-            returned = self.do()
-        else:
-            returned = self.do(argin=argin)
-
-        self.logger.info(f"Exiting command {self.name}")
-        return returned
-
-    def do(self, argin=None):
+    def do(self, *args, **kwargs):
         """
         Perform the user-specified functionality of the command.
 
@@ -183,263 +130,179 @@ class BaseCommand:
         :type argin: ANY
         """
         raise NotImplementedError(
-            "BaseCommand is abstract; do() must be subclassed not called."
+            "BaseCommand is abstract; do() needs to be implemented by a subclass."
         )
 
 
-class StateModelCommand(BaseCommand):
-    """A base class for commands that drive a state model."""
-
-    def __init__(self, target, state_model, action_slug, *args, logger=None, **kwargs):
-        """
-        Initialise a new command object.
-
-        :param target: the object that this command acts upon; for
-            example, a component manager
-        :type target: object
-        :param state_model: the state model that this command uses, for
-            example to raise a fatal error if the command errors out.
-        :type state_model: a state model, such as an OperationStateModel
-        :param action_slug: a slug for this command, used to construct
-            actions on the state model corresponding to this command.
-            For example, if we set the slug for the Scan() command to
-            "scan", then invoking the command would correspond to the
-            "scan_invoked" action on the state model. This can be set to
-            None, in which case no action is taken.
-        :param args: additional positional arguments
-        :param logger: the logger to be used by this Command. If not
-            provided, then a default module logger will be used.
-        :type logger: a logger that implements the standard library
-            logger interface
-        :param kwargs: additional keyword arguments
-        """
-        self.state_model = state_model
-        self._action_slug = action_slug
-
-        if self._action_slug is None:
-            self._invoked_action = None
-        else:
-            self._invoked_action = f"{action_slug}_invoked"
-
-        super().__init__(target, *args, logger=logger, **kwargs)
-
-    def __call__(self, argin=None):
-        """
-        Let the state model know that the command is starting, then invoke the command.
-
-        :param argin: the argument passed to the Tango command, if
-            present
-        :type argin: ANY
-
-        :return: result of call
-
-        :raises CommandError: if the command is not allowed
-        """
-        if self._invoked_action is not None:
-            try:
-                self.state_model.perform_action(self._invoked_action)
-            except StateModelError as sme:
-                raise CommandError("Command not permitted by state model.") from sme
-
-        return super().__call__(argin)
-
-    def is_allowed(self, raise_if_disallowed=False):
-        """
-        Whether this command is allowed to run in the current state of the state model.
-
-        :param raise_if_disallowed: whether to raise an error or
-            simply return False if the command is disallowed
-
-        :returns: whether this command is allowed to run
-        :rtype: boolean
-
-        :raises CommandError: if the command is not allowed and
-            `raise_if_disallowed` is True
-        """
-        if self._invoked_action is None:
-            return True
-
-        try:
-            return self.state_model.is_action_allowed(
-                self._invoked_action, raise_if_disallowed=raise_if_disallowed
-            )
-        except StateModelError as state_model_error:
-            raise CommandError(
-                f"Error executing command {self.name}"
-            ) from state_model_error
-
-
-class ObservationCommand(StateModelCommand):
+class FastCommand(_BaseCommand):
     """
-    A base class for commands that drive the device's observing state.
+    An abstract class for Tango device server commands that execute quickly.
 
-    This is a special case of a ``StateModelCommand`` because although
-    it only drives the observation state model, it has to check also the
-    operational state model to determine whether it is allowed to run.
+    That is, they do not perform any blocking operation, so can be
+    safely run synchronously.
+    """
+
+    def __call__(self, *args, **kwargs):
+        """
+        Invoke the command.
+
+        This is implemented to simply call the do() hook, thus running
+        the user-specified functionality therein.
+        """
+        try:
+            return self.do(*args, **kwargs)
+        except Exception:
+            self.logger.exception(
+                f"Error executing command {self._name} with args '{args}', kwargs '{kwargs}'."
+            )
+            raise
+
+
+class SlowCommand(_BaseCommand):
+    """
+    An abstract class for Tango device server commands that execute slowly.
+
+    That is, they perform at least one blocking operation, such as file
+    I/O, network I/O, waiting for a shared resources, etc. They
+    therefore need to be run asynchronously in order to preserve
+    throughput.
+    """
+
+    def __init__(self, callback, logger=None):
+        """
+        Initialise a new BaseCommand instance.
+
+        :param callback: a callback to be called when this command
+            starts and finishes.
+        :param logger: a logger for this command to log with.
+        """
+        self._callback = callback
+        super().__init__(logger=logger)
+
+    def __call__(self, *args, **kwargs):
+        """
+        Invoke the command.
+
+        This is implemented to simply call the do() hook, thus running
+        the user-specified functionality therein.
+        """
+        self._invoked()
+        try:
+            return self.do(*args, **kwargs)
+        except Exception:
+            self.logger.exception(
+                f"Error executing command {self._name} with args '{args}', kwargs '{kwargs}'."
+            )
+            self._completed()
+            raise
+
+    def _invoked(self):
+        if self._callback is not None:
+            self._callback(True)
+
+    def _completed(self):
+        if self._callback is not None:
+            self._callback(False)
+
+
+class DeviceInitCommand(FastCommand):
+    """
+    A ``FastCommand`` with a fixed initialisation interface.
+
+    Although most commands have lots of flexibility in how they are
+    initialised, device ``InitCommand`` instances are always called in
+    the same way. This class fixes that interface. ``InitCommand``
+    instances should inherit from this command, rather than directly
+    from ``FastCommand``, to ensure that their initialisation signature
+    is correct.
+    """
+
+    def __init__(self, device, logger=None):
+        """
+        Initialise a new instance.
+
+        :param device: the device that this command will initialise
+        :param logger: a logger for this command to log with.
+        """
+        self._device = device
+        super().__init__(logger=logger)
+
+
+class SubmittedSlowCommand(SlowCommand):
+    """
+    A SlowCommand with lots of implementation-dependent boilerplate in it.
+
+    Whereas the SlowCommand is generic, and makes no assumptions about
+    how the slow command will be executed, this SubmittedSlowCommand
+    contains implementation-dependent information about the
+    SKABaseDevice model, such as knowledge of the command tracker and
+    component manager. It thus implements a lot of boilerplate code, and
+    allows us to avoid implementing many identical commands.
+
+    :param command_name: name of the command e.g. "Scan". This is only
+        used to ensure that the generated command id contains it.
+    :param command_tracker: the device's command tracker
+    :param component_manager: the device's component manager
+    :param method_name: name of the component manager method to be
+        invoked by the do hook
+    :param callback: an optional callback to be called when this command
+        starts and finishes.
+    :param logger: a logger for this command to log with.
     """
 
     def __init__(
         self,
-        target,
-        obs_state_model,
-        action_slug,
-        op_state_model,
-        *args,
+        command_name,
+        command_tracker,
+        component_manager,
+        method_name,
+        callback=None,
         logger=None,
-        **kwargs,
     ):
         """
-        Initialise a new ``ObservationCommand`` object.
+        Initialise a new instance.
 
-        :param target: the object that this command acts upon; for
-            example, a component manager
-        :type target: object
-        :param obs_state_model: the observation state model that
-                this command uses to check that it is allowed to run,
-                and that it drives with actions.
-        :type obs_state_model: :py:class:`ObsStateModel`
-        :param action_slug: a slug for this command, used to construct
-            actions on the state model corresponding to this command.
-            For example, if we set the slug for the Scan() command to
-            "scan", then invoking the command would correspond to the
-            "scan_invoked" action on the state model.
-        :param op_state_model: the op state model that this command
-            uses to check that it is allowed to run
-        :type op_state_model: :py:class:`OpStateModel`
-        :param logger: the logger to be used by this Command. If not
-            provided, then a default module logger will be used.
-        :type logger: a logger that implements the standard library
-            logger interface
+        :param command_name: name of the command e.g. "Scan". This is
+            only used to ensure that the generated command id contains
+            it.
+        :param command_tracker: the device's command tracker
+        :param component_manager: the device's component manager
+        :param method_name: name of the component manager method to be
+            invoked by the do hook
+        :param callback: an optional callback to be called when this
+            command starts and finishes.
+        :param logger: a logger for this command to log with.
         """
-        self._op_state_model = op_state_model
-        super().__init__(
-            target, obs_state_model, action_slug, *args, logger=logger, **kwargs
-        )
-        self._action_slug = action_slug
-        self._invoked_action = f"{action_slug}_invoked"
+        self._command_name = command_name
+        self._command_tracker = command_tracker
+        self._component_manager = component_manager
+        self._method_name = method_name
+        super().__init__(callback=callback, logger=logger)
 
-    def is_allowed(self, raise_if_disallowed=False):
+    def do(self, *args, **kwargs):
         """
-        Whether this command is allowed to run in the current state of the state model.
+        Stateless hook for On() command functionality.
 
-        :param raise_if_disallowed: whether to raise an error or
-            simply return False if the command is disallowed
+        :param args: positional args to the component manager method
+        :param kwargs: keyword args to the component manager method
 
-        :returns: whether this command is allowed to run
-        :rtype: boolean
-
-        :raises CommandError: if the command is not allowed and
-            `raise_if_disallowed` is True
-        """
-        if self._op_state_model.op_state != DevState.ON:
-            if raise_if_disallowed:
-                raise CommandError(
-                    "Observation commands are only permitted in Op state ON."
-                )
-            else:
-                return False
-
-        return super().is_allowed(raise_if_disallowed=raise_if_disallowed)
-
-
-class ResponseCommand(BaseCommand):
-    """
-    A command returns a (ResultCode, message) tuple.
-
-    This is an Abstract base class for commands that execute a procedure
-    or operation, then return a (ResultCode, message) tuple.
-    """
-
-    RESULT_LOG_LEVEL = {
-        ResultCode.OK: logging.INFO,
-        ResultCode.STARTED: logging.INFO,
-        ResultCode.QUEUED: logging.INFO,
-        ResultCode.FAILED: logging.ERROR,
-        ResultCode.UNKNOWN: logging.WARNING,
-    }
-
-    def _call_do(self, argin=None):
-        """
-        Call the ``do`` method with the right arguments, and log the call.
-
-        :param argin: the argument passed to the Tango command, if
-            present
-        :type argin: ANY
-
-        :return: A tuple containing a return code and a string
-            message indicating status. The message is for
-            information purpose only.
+        :return: A tuple containing the task status (e.g. QUEUED or
+            REJECTED), and a string message containing a command_id (if
+            the command has been accepted) or an informational message
+            (if the command was rejected)
         :rtype: (ResultCode, str)
         """
-        if argin is None:
-            (return_code, message) = self.do()
-        else:
-            (return_code, message) = self.do(argin=argin)
-
-        self.logger.log(
-            self.RESULT_LOG_LEVEL.get(return_code, logging.ERROR),
-            f"Exiting command {self.name} with return_code "
-            f"{return_code!s}, message: '{message}'.",
+        command_id = self._command_tracker.new_command(
+            self._command_name, completed_callback=self._completed
         )
-        return return_code, message
-
-
-class CompletionCommand(StateModelCommand):
-    """
-    A command that triggers an action on the state model at completion.
-
-    This is an abstract base class for commands that need to signal
-    completion by triggering a "completed" action on the state model.
-    """
-
-    def __init__(self, target, state_model, action_slug, *args, logger=None, **kwargs):
-        """
-        Create a new CompletionCommand for a device.
-
-        :param target: the object that this command acts upon; for
-            example, a component manager
-        :type target: object
-        :param state_model: the state model that this command uses, for
-            example to raise a fatal error if the command errors out.
-        :type state_model: a state model, such as
-            `OperationalStateModel`
-        :param action_slug: a slug for this command, used to construct
-            actions on the state model corresponding to this command.
-            For example, if we set the slug for the Scan() command to
-            "scan", then invokation and completion of the command would
-            correspond respectively to the "scan_invoked" and
-            "scan_completed" actions on the state model.
-        :type action_slug: string
-        :param args: additional positional arguments
-        :param logger: the logger to be used by this Command. If not
-            provided, then a default module logger will be used.
-        :type logger: a logger that implements the standard library
-            logger interface
-        :param kwargs: additional keyword arguments
-        """
-        super().__init__(
-            target, state_model, action_slug, *args, logger=logger, **kwargs
+        method = getattr(self._component_manager, self._method_name)
+        status, message = method(
+            *args,
+            functools.partial(self._command_tracker.update_command_info, command_id),
+            **kwargs,
         )
-        self._completed_hook = f"{action_slug}_completed"
 
-    def __call__(self, argin=None):
-        """
-        Invoke the command.
-
-        This is implemented to check that the command is allowed to run,
-        then run the command, then send an action to the state model
-        advising that the command has completed.
-
-        :param argin: the argument passed to the Tango command, if
-            present
-        :type argin: ANY
-
-        :return: The result of the call.
-        """
-        result = super().__call__(argin)
-        self.completed()
-        return result
-
-    def completed(self):
-        """Let the state model know that the command has completed."""
-        self.state_model.perform_action(self._completed_hook)
+        if status == TaskStatus.QUEUED:
+            return ResultCode.QUEUED, command_id
+        elif status == TaskStatus.REJECTED:
+            return ResultCode.REJECTED, message

@@ -81,7 +81,6 @@ class TestCspSubElementObsDevice(object):
     def test_State(self, device_under_test):
         """Test for State."""
         # PROTECTED REGION ID(CspSubelementObsDevice.test_State) ENABLED START #
-        time.sleep(0.2)
         assert device_under_test.state() == DevState.OFF
         # PROTECTED REGION END #    //  CspSubelementObsDevice.test_State
 
@@ -90,7 +89,6 @@ class TestCspSubElementObsDevice(object):
     def test_Status(self, device_under_test):
         """Test for Status."""
         # PROTECTED REGION ID(CspSubelementObsDevice.test_Status) ENABLED START #
-        time.sleep(0.2)
         assert device_under_test.Status() == "The device is in OFF state."
         # PROTECTED REGION END #    //  CspSubelementObsDevice.test_Status
 
@@ -174,7 +172,6 @@ class TestCspSubElementObsDevice(object):
     def test_scanID(self, device_under_test, tango_change_event_helper):
         """Test for scanID."""
         # PROTECTED REGION ID(CspSubelementObsDevice.test_scanID) ENABLED START #
-        time.sleep(0.15)
         assert device_under_test.state() == DevState.OFF
 
         device_state_callback = tango_change_event_helper.subscribe("state")
@@ -239,7 +236,6 @@ class TestCspSubElementObsDevice(object):
     ):
         """Test for ConfigureScan."""
         # PROTECTED REGION ID(CspSubelementObsDevice.test_ConfigureScan) ENABLED START #
-        time.sleep(0.15)
         assert device_under_test.state() == DevState.OFF
 
         device_state_callback = tango_change_event_helper.subscribe("state")
@@ -400,7 +396,6 @@ class TestCspSubElementObsDevice(object):
         """Test for Scan."""
         # PROTECTED REGION ID(CspSubelementObsDevice.test_Scan) ENABLED START #
 
-        time.sleep(0.15)
         assert device_under_test.state() == DevState.OFF
 
         device_state_callback = tango_change_event_helper.subscribe("state")
@@ -527,7 +522,6 @@ class TestCspSubElementObsDevice(object):
         """Test for Scan when the device is in wrong state."""
         # PROTECTED REGION ID(CspSubelementObsDevice.test_Scan_when_in_wrong_state) ENABLED START #
         # Set the device in ON/IDLE state
-        time.sleep(0.15)
         assert device_under_test.state() == DevState.OFF
 
         device_state_callback = tango_change_event_helper.subscribe("state")
@@ -552,7 +546,6 @@ class TestCspSubElementObsDevice(object):
         """Test for Scan when a wrong input argument is passed."""
         # PROTECTED REGION ID(CspSubelementObsDevice.test_Scan_with_wrong_argument) ENABLED START #
         # Set the device in ON/IDLE state
-        time.sleep(0.15)
         assert device_under_test.state() == DevState.OFF
 
         device_state_callback = tango_change_event_helper.subscribe("state")
@@ -593,7 +586,6 @@ class TestCspSubElementObsDevice(object):
         """Test for EndScan when the device is in wrong state."""
         # PROTECTED REGION ID(CspSubelementObsDevice.test_EndScan_when_in_wrong_state) ENABLED START #
         # Set the device in ON/READY state
-        time.sleep(0.15)
         assert device_under_test.state() == DevState.OFF
 
         device_state_callback = tango_change_event_helper.subscribe("state")
@@ -631,7 +623,6 @@ class TestCspSubElementObsDevice(object):
     def test_abort_and_obsreset(self, device_under_test, tango_change_event_helper):
         """Test for Abort."""
         # PROTECTED REGION ID(CspSubelementObsDevice.test_Abort) ENABLED START #
-        time.sleep(0.15)
         assert device_under_test.state() == DevState.OFF
 
         device_state_callback = tango_change_event_helper.subscribe("state")
@@ -778,6 +769,6 @@ def test_multiple_devices_in_same_process():
         proxy1 = context.get_device("test/se/1")
         proxy2 = context.get_device("test/obsdevice/1")
 
-        time.sleep(0.15)
+        time.sleep(0.15)  # required because of PushChanges segfault workaround
         assert proxy1.state() == DevState.DISABLE
         assert proxy2.state() == DevState.DISABLE

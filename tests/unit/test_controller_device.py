@@ -9,7 +9,6 @@
 """Contain the tests for the SKAController."""
 
 import re
-import time
 
 import pytest
 from tango import DevState
@@ -86,7 +85,6 @@ class TestSKAController(object):
     def test_State(self, device_under_test):
         """Test for State."""
         # PROTECTED REGION ID(SKAController.test_State) ENABLED START #
-        time.sleep(0.2)
         assert device_under_test.state() == DevState.OFF
         # PROTECTED REGION END #    //  SKAController.test_State
 
@@ -95,7 +93,6 @@ class TestSKAController(object):
     def test_Status(self, device_under_test):
         """Test for Status."""
         # PROTECTED REGION ID(SKAController.test_Status) ENABLED START #
-        time.sleep(0.2)
         assert device_under_test.Status() == "The device is in OFF state."
         # PROTECTED REGION END #    //  SKAController.test_Status
 

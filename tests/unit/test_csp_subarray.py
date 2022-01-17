@@ -10,7 +10,6 @@
 # Imports
 import json
 import re
-import time
 
 import pytest
 from tango import DevState, DevFailed
@@ -79,7 +78,6 @@ class TestCspSubElementSubarray(object):
     def test_State(self, device_under_test):
         """Test for State."""
         # PROTECTED REGION ID(CspSubelementSubarray.test_State) ENABLED START #
-        time.sleep(0.15)
         assert device_under_test.state() == DevState.OFF
         # PROTECTED REGION END #    //  CspSubelementSubarray.test_State
 
@@ -88,7 +86,6 @@ class TestCspSubElementSubarray(object):
     def test_Status(self, device_under_test):
         """Test for Status."""
         # PROTECTED REGION ID(CspSubelementSubarray.test_Status) ENABLED START #
-        time.sleep(0.15)
         assert device_under_test.Status() == "The device is in OFF state."
         # PROTECTED REGION END #    //  CspSubelementSubarray.test_Status
 
@@ -168,7 +165,6 @@ class TestCspSubElementSubarray(object):
 
     def test_scanID(self, device_under_test, tango_change_event_helper):
         """Test for scanID."""
-        time.sleep(0.15)
         assert device_under_test.state() == DevState.OFF
 
         device_state_callback = tango_change_event_helper.subscribe("state")
@@ -320,7 +316,6 @@ class TestCspSubElementSubarray(object):
     ):
         """Test for ConfigureScan."""
         # PROTECTED REGION ID(CspSubelementSubarray.test_ConfigureScan) ENABLED START #
-        time.sleep(0.15)
         assert device_under_test.state() == DevState.OFF
 
         device_state_callback = tango_change_event_helper.subscribe("state")
@@ -467,7 +462,6 @@ class TestCspSubElementSubarray(object):
         """Test that ConfigureScan handles a wrong configuration id key."""
         # PROTECTED REGION ID(CspSubelementSubarray.test_ConfigureScan_with_wrong_configId_key) ENABLED START #
 
-        time.sleep(0.15)
         assert device_under_test.state() == DevState.OFF
 
         device_state_callback = tango_change_event_helper.subscribe("state")
@@ -551,7 +545,6 @@ class TestCspSubElementSubarray(object):
     ):
         """Test for ConfigureScan when syntax error in json configuration."""
         # PROTECTED REGION ID(CspSubelementSubarray.test_ConfigureScan_with_json_syntax_error) ENABLED START #
-        time.sleep(0.15)
         assert device_under_test.state() == DevState.OFF
 
         device_state_callback = tango_change_event_helper.subscribe("state")

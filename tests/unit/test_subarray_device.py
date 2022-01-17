@@ -10,7 +10,6 @@
 
 import json
 import re
-import time
 
 import pytest
 from tango import DevState
@@ -93,7 +92,6 @@ class TestSKASubarray:
     def test_Status(self, device_under_test):
         """Test for Status."""
         # PROTECTED REGION ID(SKASubarray.test_Status) ENABLED START #
-        time.sleep(0.2)
         assert device_under_test.Status() == "The device is in OFF state."
         # PROTECTED REGION END #    //  SKASubarray.test_Status
 
@@ -102,7 +100,6 @@ class TestSKASubarray:
     def test_State(self, device_under_test):
         """Test for State."""
         # PROTECTED REGION ID(SKASubarray.test_State) ENABLED START #
-        time.sleep(0.2)
         assert device_under_test.state() == DevState.OFF
         # PROTECTED REGION END #    //  SKASubarray.test_State
 
@@ -113,7 +110,6 @@ class TestSKASubarray:
     ):
         """Test for AssignResources."""
         # PROTECTED REGION ID(SKASubarray.test_AssignResources) ENABLED START #
-        time.sleep(0.15)
         assert device_under_test.state() == DevState.OFF
 
         device_state_callback = tango_change_event_helper.subscribe("state")
@@ -248,7 +244,6 @@ class TestSKASubarray:
     def test_configure_and_end(self, device_under_test, tango_change_event_helper):
         """Test for Configure."""
         # PROTECTED REGION ID(SKASubarray.test_Configure) ENABLED START #
-        time.sleep(0.15)
         assert device_under_test.state() == DevState.OFF
 
         device_state_callback = tango_change_event_helper.subscribe("state")
@@ -378,7 +373,6 @@ class TestSKASubarray:
     def test_scan_and_end_scan(self, device_under_test, tango_change_event_helper):
         """Test for Scan."""
         # PROTECTED REGION ID(SKASubarray.test_Scan) ENABLED START #
-        time.sleep(0.15)
         assert device_under_test.state() == DevState.OFF
 
         device_state_callback = tango_change_event_helper.subscribe("state")
@@ -529,7 +523,6 @@ class TestSKASubarray:
         """Test for Reset."""
         # PROTECTED REGION ID(SKASubarray.test_Reset) ENABLED START #
 
-        time.sleep(0.15)
         assert device_under_test.state() == DevState.OFF
 
         device_state_callback = tango_change_event_helper.subscribe("state")
@@ -698,7 +691,6 @@ class TestSKASubarray:
     def test_adminMode(self, device_under_test, tango_change_event_helper):
         """Test for adminMode."""
         # PROTECTED REGION ID(SKASubarray.test_adminMode) ENABLED START #
-        time.sleep(0.15)
         assert device_under_test.state() == DevState.OFF
         assert device_under_test.adminMode == AdminMode.ONLINE
 

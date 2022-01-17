@@ -9,7 +9,6 @@
 """Contain the tests for the SKATelState."""
 
 import re
-import time
 
 import pytest
 from tango import DevState
@@ -67,7 +66,6 @@ class TestSKATelState(object):
     def test_State(self, device_under_test):
         """Test for State."""
         # PROTECTED REGION ID(SKATelState.test_State) ENABLED START #
-        time.sleep(0.2)
         assert device_under_test.state() == DevState.OFF
         # PROTECTED REGION END #    //  SKATelState.test_State
 
@@ -76,7 +74,6 @@ class TestSKATelState(object):
     def test_Status(self, device_under_test):
         """Test for Status."""
         # PROTECTED REGION ID(SKATelState.test_Status) ENABLED START #
-        time.sleep(0.2)
         assert device_under_test.Status() == "The device is in OFF state."
         # PROTECTED REGION END #    //  SKATelState.test_Status
 

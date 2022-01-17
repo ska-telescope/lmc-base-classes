@@ -73,7 +73,6 @@ class TestSKAObsDevice(object):
     def test_State(self, device_under_test):
         """Test for State."""
         # PROTECTED REGION ID(SKAObsDevice.test_State) ENABLED START #
-        time.sleep(0.2)
         assert device_under_test.state() == DevState.OFF
         # PROTECTED REGION END #    //  SKAObsDevice.test_State
 
@@ -82,7 +81,6 @@ class TestSKAObsDevice(object):
     def test_Status(self, device_under_test):
         """Test for Status."""
         # PROTECTED REGION ID(SKAObsDevice.test_Status) ENABLED START #
-        time.sleep(0.2)
         assert device_under_test.Status() == "The device is in OFF state."
         # PROTECTED REGION END #    //  SKAObsDevice.test_Status
 
@@ -213,6 +211,6 @@ def test_multiple_devices_in_same_process():
         proxy1 = context.get_device("test/obs/1")
         proxy2 = context.get_device("test/base/1")
 
-        time.sleep(0.15)
+        time.sleep(0.15)  # required because of PushChanges segfault workaround
         assert proxy1.state() == DevState.DISABLE
         assert proxy2.state() == DevState.DISABLE

@@ -77,7 +77,6 @@ class TestCspSubElementController(object):
     def test_State(self, device_under_test):
         """Test for State."""
         # PROTECTED REGION ID(CspSubelementController.test_State) ENABLED START #
-        time.sleep(0.2)
         assert device_under_test.state() == DevState.OFF
         # PROTECTED REGION END #    //  CspSubelementController.test_State
 
@@ -86,7 +85,6 @@ class TestCspSubElementController(object):
     def test_Status(self, device_under_test):
         """Test for Status."""
         # PROTECTED REGION ID(CspSubelementController.test_Status) ENABLED START #
-        time.sleep(0.2)
         assert device_under_test.Status() == "The device is in OFF state."
         # PROTECTED REGION END #    //  CspSubelementController.test_Status
 
@@ -295,7 +293,6 @@ class TestCspSubElementController(object):
         # PROTECTED REGION ID(CspSubelementController.test_LoadFirmware) ENABLED START #
         # After initialization the device is in the right state (OFF/MAINTENANCE) to
         # execute the command.
-        time.sleep(0.15)
         device_under_test.adminMode = AdminMode.MAINTENANCE
         assert device_under_test.LoadFirmware(
             ["file", "test/dev/b", "918698a7fea3"]
@@ -311,7 +308,7 @@ class TestCspSubElementController(object):
         device_under_test.On()
         with pytest.raises(
             DevFailed,
-            match="LoadFirmware not allowed when the device is in UNKNOWN state",
+            match="LoadFirmware not allowed when the device is in OFF state",
         ):
             device_under_test.LoadFirmware(["file", "test/dev/b", "918698a7fea3"])
         # PROTECTED REGION END #    //  CspSubelementController.test_LoadFirmware_when_in_wrong_state
@@ -323,7 +320,6 @@ class TestCspSubElementController(object):
     ):
         """Test for PowerOnDevices."""
         # PROTECTED REGION ID(CspSubelementController.test_PowerOnDevices) ENABLED START #
-        time.sleep(0.15)
         assert device_under_test.state() == DevState.OFF
 
         device_state_callback = tango_change_event_helper.subscribe("state")
@@ -356,7 +352,7 @@ class TestCspSubElementController(object):
         # PROTECTED REGION ID(CspSubelementController.test_PowerOnDevices_when_in_wrong_state) ENABLED START #
         with pytest.raises(
             DevFailed,
-            match="Command PowerOnDevices not allowed when the device is in UNKNOWN state",
+            match="Command PowerOnDevices not allowed when the device is in OFF state",
         ):
             device_under_test.PowerOnDevices(["test/dev/1", "test/dev/2"])
         # PROTECTED REGION END #    //  CspSubelementController.test_PowerOnDevices_when_in_wrong_state
@@ -368,7 +364,7 @@ class TestCspSubElementController(object):
         # PROTECTED REGION ID(CspSubelementController.test_PowerOffDevices_when_in_wrong_state) ENABLED START #
         with pytest.raises(
             DevFailed,
-            match="Command PowerOffDevices not allowed when the device is in UNKNOWN state",
+            match="Command PowerOffDevices not allowed when the device is in OFF state",
         ):
             device_under_test.PowerOffDevices(["test/dev/1", "test/dev/2"])
         # PROTECTED REGION END #    //  CspSubelementController.test_PowerOffDevices_when_in_wrong_state
@@ -378,7 +374,6 @@ class TestCspSubElementController(object):
     def test_ReInitDevices(self, device_under_test, tango_change_event_helper):
         """Test for ReInitDevices."""
         # PROTECTED REGION ID(CspSubelementController.test_ReInitDevices) ENABLED START #
-        time.sleep(0.15)
         assert device_under_test.state() == DevState.OFF
 
         device_state_callback = tango_change_event_helper.subscribe("state")
@@ -408,7 +403,7 @@ class TestCspSubElementController(object):
         # put it in ON state
         with pytest.raises(
             DevFailed,
-            match="ReInitDevices not allowed when the device is in UNKNOWN state",
+            match="ReInitDevices not allowed when the device is in OFF state",
         ):
             device_under_test.ReInitDevices(["test/dev/1", "test/dev/2"])
         # PROTECTED REGION END #    //  CspSubelementController.test_ReInitDevices_when_in_wrong_state
@@ -428,6 +423,6 @@ def test_multiple_devices_in_same_process():
         proxy1 = context.get_device("test/se/1")
         proxy2 = context.get_device("test/control/1")
 
-        time.sleep(0.15)
+        time.sleep(0.15)  # required because of PushChanges segfault workaround
         assert proxy1.state() == DevState.DISABLE
         assert proxy2.state() == DevState.DISABLE

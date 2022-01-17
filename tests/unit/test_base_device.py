@@ -14,7 +14,6 @@ import logging
 import re
 import pytest
 import socket
-import time
 from unittest import mock
 
 import tango
@@ -625,7 +624,6 @@ class TestSKABaseDevice(object):
     def test_State(self, device_under_test):
         """Test for State."""
         # PROTECTED REGION ID(SKABaseDevice.test_State) ENABLED START #
-        time.sleep(0.2)
         assert device_under_test.state() == DevState.OFF
 
         # PROTECTED REGION END #    //  SKABaseDevice.test_State
@@ -635,7 +633,6 @@ class TestSKABaseDevice(object):
     def test_Status(self, device_under_test):
         """Test for Status."""
         # PROTECTED REGION ID(SKABaseDevice.test_Status) ENABLED START #
-        time.sleep(0.2)
         assert device_under_test.Status() == "The device is in OFF state."
         # PROTECTED REGION END #    //  SKABaseDevice.test_Status
 
@@ -659,7 +656,6 @@ class TestSKABaseDevice(object):
         # PROTECTED REGION ID(SKABaseDevice.test_Reset) ENABLED START #
         # The main test of this command is
         # TestSKABaseDevice_commands::test_ResetCommand
-        time.sleep(0.15)
         assert device_under_test.state() == DevState.OFF
 
         with pytest.raises(
@@ -671,7 +667,6 @@ class TestSKABaseDevice(object):
 
     def test_On(self, device_under_test, tango_change_event_helper):
         """Test for On command."""
-        time.sleep(0.15)
         assert device_under_test.state() == DevState.OFF
 
         device_state_callback = tango_change_event_helper.subscribe("state")
@@ -728,7 +723,6 @@ class TestSKABaseDevice(object):
     def test_Standby(self, device_under_test, tango_change_event_helper):
         """Test for Standby command."""
         # Check that we can put it on standby
-        time.sleep(0.15)
         assert device_under_test.state() == DevState.OFF
 
         device_state_callback = tango_change_event_helper.subscribe("state")
@@ -787,7 +781,6 @@ class TestSKABaseDevice(object):
 
     def test_Off(self, device_under_test, tango_change_event_helper):
         """Test for Off command."""
-        time.sleep(0.15)
         assert device_under_test.state() == DevState.OFF
 
         device_state_callback = tango_change_event_helper.subscribe("state")
@@ -936,7 +929,6 @@ class TestSKABaseDevice(object):
     def test_adminMode(self, device_under_test, tango_change_event_helper):
         """Test for adminMode."""
         # PROTECTED REGION ID(SKABaseDevice.test_adminMode) ENABLED START #
-        time.sleep(0.15)
         assert device_under_test.state() == DevState.OFF
 
         state_callback = tango_change_event_helper.subscribe("state")

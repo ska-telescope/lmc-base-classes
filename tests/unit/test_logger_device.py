@@ -14,7 +14,7 @@ import pytest
 from tango import DevState
 from tango.test_context import MultiDeviceTestContext
 
-from ska_tango_base.testing import (
+from ska_tango_base.testing.reference import (
     ReferenceBaseComponentManager,
 )
 from ska_tango_base.logger_device import SKALogger

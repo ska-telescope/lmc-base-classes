@@ -6,7 +6,7 @@ import pytest
 from ska_tango_base.commands import ResultCode
 from ska_tango_base.control_model import CommunicationStatus, PowerState
 from ska_tango_base.executor import TaskStatus
-from ska_tango_base.testing import (
+from ska_tango_base.testing.reference import (
     FakeSubarrayComponent,
     ReferenceSubarrayComponentManager,
 )

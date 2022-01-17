@@ -1,7 +1,10 @@
 """This module models component management for CSP subelement observation devices."""
 from ska_tango_base.csp.obs import CspObsComponentManager
 from ska_tango_base.base import check_communicating, check_on
-from ska_tango_base.testing import FakeBaseComponent, ReferenceBaseComponentManager
+from ska_tango_base.testing.reference import (
+    FakeBaseComponent,
+    ReferenceBaseComponentManager,
+)
 
 from ska_tango_base.commands import ResultCode
 from ska_tango_base.control_model import PowerState

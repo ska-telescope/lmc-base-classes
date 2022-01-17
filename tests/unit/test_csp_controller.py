@@ -18,7 +18,7 @@ from tango.test_context import MultiDeviceTestContext
 
 # PROTECTED REGION ID(CspSubelementController.test_additional_imports) ENABLED START #
 from ska_tango_base import SKAController, CspSubElementController
-from ska_tango_base.testing import (
+from ska_tango_base.testing.reference import (
     ReferenceBaseComponentManager,
 )
 
@@ -323,12 +323,12 @@ class TestCspSubElementController(object):
         assert device_under_test.state() == DevState.OFF
 
         device_state_callback = tango_change_event_helper.subscribe("state")
-        device_state_callback.assert_call(DevState.OFF)
+        device_state_callback.assert_next_change_event(DevState.OFF)
 
         [[result_code], [_]] = device_under_test.On()
         assert result_code == ResultCode.QUEUED
 
-        device_state_callback.assert_call(DevState.ON)
+        device_state_callback.assert_next_change_event(DevState.ON)
         assert device_under_test.state() == DevState.ON
 
         # Test power on devices
@@ -377,12 +377,12 @@ class TestCspSubElementController(object):
         assert device_under_test.state() == DevState.OFF
 
         device_state_callback = tango_change_event_helper.subscribe("state")
-        device_state_callback.assert_call(DevState.OFF)
+        device_state_callback.assert_next_change_event(DevState.OFF)
 
         [[result_code], [_]] = device_under_test.On()
         assert result_code == ResultCode.QUEUED
 
-        device_state_callback.assert_call(DevState.ON)
+        device_state_callback.assert_next_change_event(DevState.ON)
         assert device_under_test.state() == DevState.ON
 
         # Test power on devices

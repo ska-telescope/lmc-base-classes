@@ -31,7 +31,7 @@ from ska_tango_base.base.base_device import (
     LoggingTargetError,
     TangoLoggingServiceHandler,
 )
-from ska_tango_base.testing import (
+from ska_tango_base.testing.reference import (
     ReferenceBaseComponentManager,
 )
 from ska_tango_base.commands import ResultCode
@@ -670,41 +670,41 @@ class TestSKABaseDevice(object):
         assert device_under_test.state() == DevState.OFF
 
         device_state_callback = tango_change_event_helper.subscribe("state")
-        device_state_callback.assert_call(DevState.OFF)
+        device_state_callback.assert_next_change_event(DevState.OFF)
 
         device_status_callback = tango_change_event_helper.subscribe("status")
-        device_status_callback.assert_call("The device is in OFF state.")
+        device_status_callback.assert_next_change_event("The device is in OFF state.")
 
         command_progress_callback = tango_change_event_helper.subscribe(
             "longRunningCommandProgress"
         )
-        command_progress_callback.assert_call(None)
+        command_progress_callback.assert_next_change_event(None)
 
         command_status_callback = tango_change_event_helper.subscribe(
             "longRunningCommandStatus"
         )
-        command_status_callback.assert_call(None)
+        command_status_callback.assert_next_change_event(None)
 
         command_result_callback = tango_change_event_helper.subscribe(
             "longRunningCommandResult"
         )
-        command_result_callback.assert_call(("", ""))
+        command_result_callback.assert_next_change_event(("", ""))
 
         [[result_code], [command_id]] = device_under_test.On()
         assert result_code == ResultCode.QUEUED
-        command_status_callback.assert_call((command_id, "QUEUED"))
-        command_status_callback.assert_call((command_id, "IN_PROGRESS"))
+        command_status_callback.assert_next_change_event((command_id, "QUEUED"))
+        command_status_callback.assert_next_change_event((command_id, "IN_PROGRESS"))
 
-        command_progress_callback.assert_call((command_id, "33"))
-        command_progress_callback.assert_call((command_id, "66"))
+        command_progress_callback.assert_next_change_event((command_id, "33"))
+        command_progress_callback.assert_next_change_event((command_id, "66"))
 
-        device_state_callback.assert_call(DevState.ON)
-        device_status_callback.assert_call("The device is in ON state.")
+        device_state_callback.assert_next_change_event(DevState.ON)
+        device_status_callback.assert_next_change_event("The device is in ON state.")
         assert device_under_test.state() == DevState.ON
 
-        command_status_callback.assert_call((command_id, "COMPLETED"))
+        command_status_callback.assert_next_change_event((command_id, "COMPLETED"))
 
-        command_result_callback.assert_call(
+        command_result_callback.assert_next_change_event(
             (command_id, json.dumps([int(ResultCode.OK), "On command completed OK"]))
         )
 
@@ -726,41 +726,43 @@ class TestSKABaseDevice(object):
         assert device_under_test.state() == DevState.OFF
 
         device_state_callback = tango_change_event_helper.subscribe("state")
-        device_state_callback.assert_call(DevState.OFF)
+        device_state_callback.assert_next_change_event(DevState.OFF)
 
         device_status_callback = tango_change_event_helper.subscribe("status")
-        device_status_callback.assert_call("The device is in OFF state.")
+        device_status_callback.assert_next_change_event("The device is in OFF state.")
 
         command_progress_callback = tango_change_event_helper.subscribe(
             "longRunningCommandProgress"
         )
-        command_progress_callback.assert_call(None)
+        command_progress_callback.assert_next_change_event(None)
 
         command_status_callback = tango_change_event_helper.subscribe(
             "longRunningCommandStatus"
         )
-        command_status_callback.assert_call(None)
+        command_status_callback.assert_next_change_event(None)
 
         command_result_callback = tango_change_event_helper.subscribe(
             "longRunningCommandResult"
         )
-        command_result_callback.assert_call(("", ""))
+        command_result_callback.assert_next_change_event(("", ""))
 
         [[result_code], [command_id]] = device_under_test.Standby()
         assert result_code == ResultCode.QUEUED
-        command_status_callback.assert_call((command_id, "QUEUED"))
-        command_status_callback.assert_call((command_id, "IN_PROGRESS"))
+        command_status_callback.assert_next_change_event((command_id, "QUEUED"))
+        command_status_callback.assert_next_change_event((command_id, "IN_PROGRESS"))
 
-        command_progress_callback.assert_call((command_id, "33"))
-        command_progress_callback.assert_call((command_id, "66"))
+        command_progress_callback.assert_next_change_event((command_id, "33"))
+        command_progress_callback.assert_next_change_event((command_id, "66"))
 
-        device_state_callback.assert_call(DevState.STANDBY)
-        device_status_callback.assert_call("The device is in STANDBY state.")
+        device_state_callback.assert_next_change_event(DevState.STANDBY)
+        device_status_callback.assert_next_change_event(
+            "The device is in STANDBY state."
+        )
         assert device_under_test.state() == DevState.STANDBY
 
-        command_status_callback.assert_call((command_id, "COMPLETED"))
+        command_status_callback.assert_next_change_event((command_id, "COMPLETED"))
 
-        command_result_callback.assert_call(
+        command_result_callback.assert_next_change_event(
             (
                 command_id,
                 json.dumps([int(ResultCode.OK), "Standby command completed OK"]),
@@ -784,25 +786,25 @@ class TestSKABaseDevice(object):
         assert device_under_test.state() == DevState.OFF
 
         device_state_callback = tango_change_event_helper.subscribe("state")
-        device_state_callback.assert_call(DevState.OFF)
+        device_state_callback.assert_next_change_event(DevState.OFF)
 
         device_status_callback = tango_change_event_helper.subscribe("status")
-        device_status_callback.assert_call("The device is in OFF state.")
+        device_status_callback.assert_next_change_event("The device is in OFF state.")
 
         command_progress_callback = tango_change_event_helper.subscribe(
             "longRunningCommandProgress"
         )
-        command_progress_callback.assert_call(None)
+        command_progress_callback.assert_next_change_event(None)
 
         command_status_callback = tango_change_event_helper.subscribe(
             "longRunningCommandStatus"
         )
-        command_status_callback.assert_call(None)
+        command_status_callback.assert_next_change_event(None)
 
         command_result_callback = tango_change_event_helper.subscribe(
             "longRunningCommandResult"
         )
-        command_result_callback.assert_call(("", ""))
+        command_result_callback.assert_next_change_event(("", ""))
 
         # Check what happens if we call Off() when the device is already OFF.
         [[result_code], [message]] = device_under_test.Off()
@@ -935,34 +937,34 @@ class TestSKABaseDevice(object):
         status_callback = tango_change_event_helper.subscribe("status")
         admin_mode_callback = tango_change_event_helper.subscribe("adminMode")
 
-        admin_mode_callback.assert_call(AdminMode.ONLINE)
-        state_callback.assert_call(DevState.OFF)
-        status_callback.assert_call("The device is in OFF state.")
+        admin_mode_callback.assert_next_change_event(AdminMode.ONLINE)
+        state_callback.assert_next_change_event(DevState.OFF)
+        status_callback.assert_next_change_event("The device is in OFF state.")
 
         assert device_under_test.adminMode == AdminMode.ONLINE
         assert device_under_test.state() == DevState.OFF
 
         device_under_test.adminMode = AdminMode.OFFLINE
-        admin_mode_callback.assert_call(AdminMode.OFFLINE)
+        admin_mode_callback.assert_next_change_event(AdminMode.OFFLINE)
         assert device_under_test.adminMode == AdminMode.OFFLINE
 
-        state_callback.assert_call(DevState.DISABLE)
-        status_callback.assert_call("The device is in DISABLE state.")
+        state_callback.assert_next_change_event(DevState.DISABLE)
+        status_callback.assert_next_change_event("The device is in DISABLE state.")
         assert device_under_test.state() == DevState.DISABLE
 
         device_under_test.adminMode = AdminMode.MAINTENANCE
-        admin_mode_callback.assert_call(AdminMode.MAINTENANCE)
+        admin_mode_callback.assert_next_change_event(AdminMode.MAINTENANCE)
         assert device_under_test.adminMode == AdminMode.MAINTENANCE
 
-        state_callback.assert_call(DevState.UNKNOWN)
-        status_callback.assert_call("The device is in UNKNOWN state.")
+        state_callback.assert_next_change_event(DevState.UNKNOWN)
+        status_callback.assert_next_change_event("The device is in UNKNOWN state.")
 
-        state_callback.assert_call(DevState.OFF)
-        status_callback.assert_call("The device is in OFF state.")
+        state_callback.assert_next_change_event(DevState.OFF)
+        status_callback.assert_next_change_event("The device is in OFF state.")
         assert device_under_test.state() == DevState.OFF
 
         device_under_test.adminMode = AdminMode.ONLINE
-        admin_mode_callback.assert_call(AdminMode.ONLINE)
+        admin_mode_callback.assert_next_change_event(AdminMode.ONLINE)
         assert device_under_test.adminMode == AdminMode.ONLINE
 
         state_callback.assert_not_called()
@@ -1026,11 +1028,11 @@ class TestSKABaseDevice(object):
         assert device_under_test.state() == DevState.OFF
 
         state_callback = tango_change_event_helper.subscribe("state")
-        state_callback.assert_call(DevState.OFF)
+        state_callback.assert_next_change_event(DevState.OFF)
 
         device_under_test.On()
 
-        state_callback.assert_call(DevState.ON)
+        state_callback.assert_next_change_event(DevState.ON)
 
         assert device_under_test.state() == DevState.ON
 

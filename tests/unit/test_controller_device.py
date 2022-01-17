@@ -16,7 +16,7 @@ from tango import DevState
 # PROTECTED REGION ID(SKAController.test_additional_imports) ENABLED START #
 from ska_tango_base import SKAController
 
-from ska_tango_base.testing import (
+from ska_tango_base.testing.reference import (
     ReferenceBaseComponentManager,
 )
 

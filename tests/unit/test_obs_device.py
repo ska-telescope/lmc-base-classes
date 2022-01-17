@@ -19,7 +19,7 @@ from tango.test_context import MultiDeviceTestContext
 # PROTECTED REGION ID(SKAObsDevice.test_additional_imports) ENABLED START #
 from ska_tango_base import SKABaseDevice, SKAObsDevice
 
-from ska_tango_base.testing import (
+from ska_tango_base.testing.reference import (
     ReferenceBaseComponentManager,
 )
 from ska_tango_base.control_model import (
@@ -108,7 +108,7 @@ class TestSKAObsDevice(object):
         # Check that events are working by subscribing and checking for that
         # initial event
         obs_state_callback = tango_change_event_helper.subscribe("obsState")
-        obs_state_callback.assert_call(ObsState.EMPTY)
+        obs_state_callback.assert_next_change_event(ObsState.EMPTY)
         # PROTECTED REGION END #    //  SKAObsDevice.test_obsState
 
     # PROTECTED REGION ID(SKAObsDevice.test_obsMode_decorators) ENABLED START #

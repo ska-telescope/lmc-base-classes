@@ -4,7 +4,7 @@ import itertools
 import pytest
 
 from ska_tango_base.commands import ResultCode
-from ska_tango_base.testing import (
+from ska_tango_base.testing.reference import (
     FakeCspSubarrayComponent,
     ReferenceCspSubarrayComponentManager,
 )

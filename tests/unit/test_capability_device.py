@@ -12,7 +12,7 @@ import pytest
 
 from ska_tango_base import SKACapability
 
-from ska_tango_base.testing import (
+from ska_tango_base.testing.reference import (
     ReferenceBaseComponentManager,
 )
 from ska_tango_base.control_model import AdminMode

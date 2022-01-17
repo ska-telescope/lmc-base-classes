@@ -25,7 +25,7 @@ from ska_tango_base.control_model import (
     TestMode,
 )
 from ska_tango_base.csp import CspSubElementSubarray
-from ska_tango_base.testing import ReferenceCspSubarrayComponentManager
+from ska_tango_base.testing.reference import ReferenceCspSubarrayComponentManager
 
 # PROTECTED REGION END #    //  CspSubElementSubarray.test_additional_imports
 
@@ -168,11 +168,11 @@ class TestCspSubElementSubarray(object):
         assert device_under_test.state() == DevState.OFF
 
         device_state_callback = tango_change_event_helper.subscribe("state")
-        device_state_callback.assert_call(DevState.OFF)
+        device_state_callback.assert_next_change_event(DevState.OFF)
 
         device_under_test.On()
 
-        device_state_callback.assert_call(DevState.ON)
+        device_state_callback.assert_next_change_event(DevState.ON)
         assert device_under_test.state() == DevState.ON
 
         assert device_under_test.scanID == 0
@@ -319,47 +319,47 @@ class TestCspSubElementSubarray(object):
         assert device_under_test.state() == DevState.OFF
 
         device_state_callback = tango_change_event_helper.subscribe("state")
-        device_state_callback.assert_call(DevState.OFF)
+        device_state_callback.assert_next_change_event(DevState.OFF)
 
         device_status_callback = tango_change_event_helper.subscribe("status")
-        device_status_callback.assert_call("The device is in OFF state.")
+        device_status_callback.assert_next_change_event("The device is in OFF state.")
 
         command_progress_callback = tango_change_event_helper.subscribe(
             "longRunningCommandProgress"
         )
-        command_progress_callback.assert_call(None)
+        command_progress_callback.assert_next_change_event(None)
 
         command_status_callback = tango_change_event_helper.subscribe(
             "longRunningCommandStatus"
         )
-        command_status_callback.assert_call(None)
+        command_status_callback.assert_next_change_event(None)
 
         command_result_callback = tango_change_event_helper.subscribe(
             "longRunningCommandResult"
         )
-        command_result_callback.assert_call(("", ""))
+        command_result_callback.assert_next_change_event(("", ""))
 
         [[result_code], [command_id]] = device_under_test.On()
         assert result_code == ResultCode.QUEUED
-        command_status_callback.assert_call((command_id, "QUEUED"))
-        command_status_callback.assert_call((command_id, "IN_PROGRESS"))
+        command_status_callback.assert_next_change_event((command_id, "QUEUED"))
+        command_status_callback.assert_next_change_event((command_id, "IN_PROGRESS"))
 
-        command_progress_callback.assert_call((command_id, "33"))
-        command_progress_callback.assert_call((command_id, "66"))
+        command_progress_callback.assert_next_change_event((command_id, "33"))
+        command_progress_callback.assert_next_change_event((command_id, "66"))
 
-        device_state_callback.assert_call(DevState.ON)
-        device_status_callback.assert_call("The device is in ON state.")
+        device_state_callback.assert_next_change_event(DevState.ON)
+        device_status_callback.assert_next_change_event("The device is in ON state.")
         assert device_under_test.state() == DevState.ON
 
-        command_status_callback.assert_call((command_id, "COMPLETED"))
+        command_status_callback.assert_next_change_event((command_id, "COMPLETED"))
 
-        command_result_callback.assert_call(
+        command_result_callback.assert_next_change_event(
             (command_id, json.dumps([int(ResultCode.OK), "On command completed OK"]))
         )
 
         # assignment of resources
         obs_state_callback = tango_change_event_helper.subscribe("obsState")
-        obs_state_callback.assert_call(ObsState.EMPTY)
+        obs_state_callback.assert_next_change_event(ObsState.EMPTY)
 
         [[result_code], [command_id]] = device_under_test.AssignResources(
             json.dumps([1, 2, 3])
@@ -367,19 +367,19 @@ class TestCspSubElementSubarray(object):
 
         assert result_code == ResultCode.QUEUED
 
-        obs_state_callback.assert_call(ObsState.RESOURCING)
+        obs_state_callback.assert_next_change_event(ObsState.RESOURCING)
 
-        command_status_callback.assert_call((command_id, "QUEUED"))
-        command_status_callback.assert_call((command_id, "IN_PROGRESS"))
+        command_status_callback.assert_next_change_event((command_id, "QUEUED"))
+        command_status_callback.assert_next_change_event((command_id, "IN_PROGRESS"))
 
-        command_progress_callback.assert_call((command_id, "33"))
-        command_progress_callback.assert_call((command_id, "66"))
+        command_progress_callback.assert_next_change_event((command_id, "33"))
+        command_progress_callback.assert_next_change_event((command_id, "66"))
 
-        command_status_callback.assert_call((command_id, "COMPLETED"))
+        command_status_callback.assert_next_change_event((command_id, "COMPLETED"))
 
-        obs_state_callback.assert_call(ObsState.IDLE)
+        obs_state_callback.assert_next_change_event(ObsState.IDLE)
 
-        command_result_callback.assert_call(
+        command_result_callback.assert_next_change_event(
             (
                 command_id,
                 json.dumps([int(ResultCode.OK), "Resource assignment completed OK"]),
@@ -397,19 +397,19 @@ class TestCspSubElementSubarray(object):
         )
         assert result_code == ResultCode.QUEUED
 
-        obs_state_callback.assert_call(ObsState.CONFIGURING)
+        obs_state_callback.assert_next_change_event(ObsState.CONFIGURING)
 
-        command_status_callback.assert_call((command_id, "QUEUED"))
-        command_status_callback.assert_call((command_id, "IN_PROGRESS"))
+        command_status_callback.assert_next_change_event((command_id, "QUEUED"))
+        command_status_callback.assert_next_change_event((command_id, "IN_PROGRESS"))
 
-        command_progress_callback.assert_call((command_id, "33"))
-        command_progress_callback.assert_call((command_id, "66"))
+        command_progress_callback.assert_next_change_event((command_id, "33"))
+        command_progress_callback.assert_next_change_event((command_id, "66"))
 
-        command_status_callback.assert_call((command_id, "COMPLETED"))
+        command_status_callback.assert_next_change_event((command_id, "COMPLETED"))
 
-        obs_state_callback.assert_call(ObsState.READY)
+        obs_state_callback.assert_next_change_event(ObsState.READY)
 
-        command_result_callback.assert_call(
+        command_result_callback.assert_next_change_event(
             (command_id, json.dumps([int(ResultCode.OK), "Configure completed OK"]))
         )
 
@@ -422,19 +422,17 @@ class TestCspSubElementSubarray(object):
         [[result_code], [command_id]] = device_under_test.GoToIdle()
         assert result_code == ResultCode.QUEUED
 
-        obs_state_callback.assert_not_called()
+        command_status_callback.assert_next_change_event((command_id, "QUEUED"))
+        command_status_callback.assert_next_change_event((command_id, "IN_PROGRESS"))
 
-        command_status_callback.assert_call((command_id, "QUEUED"))
-        command_status_callback.assert_call((command_id, "IN_PROGRESS"))
+        command_progress_callback.assert_next_change_event((command_id, "33"))
+        command_progress_callback.assert_next_change_event((command_id, "66"))
 
-        command_progress_callback.assert_call((command_id, "33"))
-        command_progress_callback.assert_call((command_id, "66"))
+        command_status_callback.assert_next_change_event((command_id, "COMPLETED"))
 
-        command_status_callback.assert_call((command_id, "COMPLETED"))
+        obs_state_callback.assert_next_change_event(ObsState.IDLE)
 
-        obs_state_callback.assert_call(ObsState.IDLE)
-
-        command_result_callback.assert_call(
+        command_result_callback.assert_next_change_event(
             (command_id, json.dumps([int(ResultCode.OK), "Deconfigure completed OK"]))
         )
 
@@ -465,47 +463,47 @@ class TestCspSubElementSubarray(object):
         assert device_under_test.state() == DevState.OFF
 
         device_state_callback = tango_change_event_helper.subscribe("state")
-        device_state_callback.assert_call(DevState.OFF)
+        device_state_callback.assert_next_change_event(DevState.OFF)
 
         device_status_callback = tango_change_event_helper.subscribe("status")
-        device_status_callback.assert_call("The device is in OFF state.")
+        device_status_callback.assert_next_change_event("The device is in OFF state.")
 
         command_progress_callback = tango_change_event_helper.subscribe(
             "longRunningCommandProgress"
         )
-        command_progress_callback.assert_call(None)
+        command_progress_callback.assert_next_change_event(None)
 
         command_status_callback = tango_change_event_helper.subscribe(
             "longRunningCommandStatus"
         )
-        command_status_callback.assert_call(None)
+        command_status_callback.assert_next_change_event(None)
 
         command_result_callback = tango_change_event_helper.subscribe(
             "longRunningCommandResult"
         )
-        command_result_callback.assert_call(("", ""))
+        command_result_callback.assert_next_change_event(("", ""))
 
         [[result_code], [command_id]] = device_under_test.On()
         assert result_code == ResultCode.QUEUED
-        command_status_callback.assert_call((command_id, "QUEUED"))
-        command_status_callback.assert_call((command_id, "IN_PROGRESS"))
+        command_status_callback.assert_next_change_event((command_id, "QUEUED"))
+        command_status_callback.assert_next_change_event((command_id, "IN_PROGRESS"))
 
-        command_progress_callback.assert_call((command_id, "33"))
-        command_progress_callback.assert_call((command_id, "66"))
+        command_progress_callback.assert_next_change_event((command_id, "33"))
+        command_progress_callback.assert_next_change_event((command_id, "66"))
 
-        device_state_callback.assert_call(DevState.ON)
-        device_status_callback.assert_call("The device is in ON state.")
+        device_state_callback.assert_next_change_event(DevState.ON)
+        device_status_callback.assert_next_change_event("The device is in ON state.")
         assert device_under_test.state() == DevState.ON
 
-        command_status_callback.assert_call((command_id, "COMPLETED"))
+        command_status_callback.assert_next_change_event((command_id, "COMPLETED"))
 
-        command_result_callback.assert_call(
+        command_result_callback.assert_next_change_event(
             (command_id, json.dumps([int(ResultCode.OK), "On command completed OK"]))
         )
 
         # assignment of resources
         obs_state_callback = tango_change_event_helper.subscribe("obsState")
-        obs_state_callback.assert_call(ObsState.EMPTY)
+        obs_state_callback.assert_next_change_event(ObsState.EMPTY)
 
         [[result_code], [command_id]] = device_under_test.AssignResources(
             json.dumps([1, 2, 3])
@@ -513,19 +511,19 @@ class TestCspSubElementSubarray(object):
 
         assert result_code == ResultCode.QUEUED
 
-        obs_state_callback.assert_call(ObsState.RESOURCING)
+        obs_state_callback.assert_next_change_event(ObsState.RESOURCING)
 
-        command_status_callback.assert_call((command_id, "QUEUED"))
-        command_status_callback.assert_call((command_id, "IN_PROGRESS"))
+        command_status_callback.assert_next_change_event((command_id, "QUEUED"))
+        command_status_callback.assert_next_change_event((command_id, "IN_PROGRESS"))
 
-        command_progress_callback.assert_call((command_id, "33"))
-        command_progress_callback.assert_call((command_id, "66"))
+        command_progress_callback.assert_next_change_event((command_id, "33"))
+        command_progress_callback.assert_next_change_event((command_id, "66"))
 
-        command_status_callback.assert_call((command_id, "COMPLETED"))
+        command_status_callback.assert_next_change_event((command_id, "COMPLETED"))
 
-        obs_state_callback.assert_call(ObsState.IDLE)
+        obs_state_callback.assert_next_change_event(ObsState.IDLE)
 
-        command_result_callback.assert_call(
+        command_result_callback.assert_next_change_event(
             (
                 command_id,
                 json.dumps([int(ResultCode.OK), "Resource assignment completed OK"]),
@@ -548,47 +546,47 @@ class TestCspSubElementSubarray(object):
         assert device_under_test.state() == DevState.OFF
 
         device_state_callback = tango_change_event_helper.subscribe("state")
-        device_state_callback.assert_call(DevState.OFF)
+        device_state_callback.assert_next_change_event(DevState.OFF)
 
         device_status_callback = tango_change_event_helper.subscribe("status")
-        device_status_callback.assert_call("The device is in OFF state.")
+        device_status_callback.assert_next_change_event("The device is in OFF state.")
 
         command_progress_callback = tango_change_event_helper.subscribe(
             "longRunningCommandProgress"
         )
-        command_progress_callback.assert_call(None)
+        command_progress_callback.assert_next_change_event(None)
 
         command_status_callback = tango_change_event_helper.subscribe(
             "longRunningCommandStatus"
         )
-        command_status_callback.assert_call(None)
+        command_status_callback.assert_next_change_event(None)
 
         command_result_callback = tango_change_event_helper.subscribe(
             "longRunningCommandResult"
         )
-        command_result_callback.assert_call(("", ""))
+        command_result_callback.assert_next_change_event(("", ""))
 
         [[result_code], [command_id]] = device_under_test.On()
         assert result_code == ResultCode.QUEUED
-        command_status_callback.assert_call((command_id, "QUEUED"))
-        command_status_callback.assert_call((command_id, "IN_PROGRESS"))
+        command_status_callback.assert_next_change_event((command_id, "QUEUED"))
+        command_status_callback.assert_next_change_event((command_id, "IN_PROGRESS"))
 
-        command_progress_callback.assert_call((command_id, "33"))
-        command_progress_callback.assert_call((command_id, "66"))
+        command_progress_callback.assert_next_change_event((command_id, "33"))
+        command_progress_callback.assert_next_change_event((command_id, "66"))
 
-        device_state_callback.assert_call(DevState.ON)
-        device_status_callback.assert_call("The device is in ON state.")
+        device_state_callback.assert_next_change_event(DevState.ON)
+        device_status_callback.assert_next_change_event("The device is in ON state.")
         assert device_under_test.state() == DevState.ON
 
-        command_status_callback.assert_call((command_id, "COMPLETED"))
+        command_status_callback.assert_next_change_event((command_id, "COMPLETED"))
 
-        command_result_callback.assert_call(
+        command_result_callback.assert_next_change_event(
             (command_id, json.dumps([int(ResultCode.OK), "On command completed OK"]))
         )
 
         # assignment of resources
         obs_state_callback = tango_change_event_helper.subscribe("obsState")
-        obs_state_callback.assert_call(ObsState.EMPTY)
+        obs_state_callback.assert_next_change_event(ObsState.EMPTY)
 
         [[result_code], [command_id]] = device_under_test.AssignResources(
             json.dumps([1, 2, 3])
@@ -596,19 +594,19 @@ class TestCspSubElementSubarray(object):
 
         assert result_code == ResultCode.QUEUED
 
-        obs_state_callback.assert_call(ObsState.RESOURCING)
+        obs_state_callback.assert_next_change_event(ObsState.RESOURCING)
 
-        command_status_callback.assert_call((command_id, "QUEUED"))
-        command_status_callback.assert_call((command_id, "IN_PROGRESS"))
+        command_status_callback.assert_next_change_event((command_id, "QUEUED"))
+        command_status_callback.assert_next_change_event((command_id, "IN_PROGRESS"))
 
-        command_progress_callback.assert_call((command_id, "33"))
-        command_progress_callback.assert_call((command_id, "66"))
+        command_progress_callback.assert_next_change_event((command_id, "33"))
+        command_progress_callback.assert_next_change_event((command_id, "66"))
 
-        command_status_callback.assert_call((command_id, "COMPLETED"))
+        command_status_callback.assert_next_change_event((command_id, "COMPLETED"))
 
-        obs_state_callback.assert_call(ObsState.IDLE)
+        obs_state_callback.assert_next_change_event(ObsState.IDLE)
 
-        command_result_callback.assert_call(
+        command_result_callback.assert_next_change_event(
             (
                 command_id,
                 json.dumps([int(ResultCode.OK), "Resource assignment completed OK"]),

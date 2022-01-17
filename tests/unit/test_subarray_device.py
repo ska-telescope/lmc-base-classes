@@ -26,7 +26,7 @@ from ska_tango_base.control_model import (
     SimulationMode,
     TestMode,
 )
-from ska_tango_base.testing import ReferenceSubarrayComponentManager
+from ska_tango_base.testing.reference import ReferenceSubarrayComponentManager
 
 # PROTECTED REGION END #    //  SKASubarray.test_additional_imports
 
@@ -113,41 +113,41 @@ class TestSKASubarray:
         assert device_under_test.state() == DevState.OFF
 
         device_state_callback = tango_change_event_helper.subscribe("state")
-        device_state_callback.assert_call(DevState.OFF)
+        device_state_callback.assert_next_change_event(DevState.OFF)
 
         device_status_callback = tango_change_event_helper.subscribe("status")
-        device_status_callback.assert_call("The device is in OFF state.")
+        device_status_callback.assert_next_change_event("The device is in OFF state.")
 
         command_progress_callback = tango_change_event_helper.subscribe(
             "longRunningCommandProgress"
         )
-        command_progress_callback.assert_call(None)
+        command_progress_callback.assert_next_change_event(None)
 
         command_status_callback = tango_change_event_helper.subscribe(
             "longRunningCommandStatus"
         )
-        command_status_callback.assert_call(None)
+        command_status_callback.assert_next_change_event(None)
 
         command_result_callback = tango_change_event_helper.subscribe(
             "longRunningCommandResult"
         )
-        command_result_callback.assert_call(("", ""))
+        command_result_callback.assert_next_change_event(("", ""))
 
         [[result_code], [command_id]] = device_under_test.On()
         assert result_code == ResultCode.QUEUED
-        command_status_callback.assert_call((command_id, "QUEUED"))
-        command_status_callback.assert_call((command_id, "IN_PROGRESS"))
+        command_status_callback.assert_next_change_event((command_id, "QUEUED"))
+        command_status_callback.assert_next_change_event((command_id, "IN_PROGRESS"))
 
-        command_progress_callback.assert_call((command_id, "33"))
-        command_progress_callback.assert_call((command_id, "66"))
+        command_progress_callback.assert_next_change_event((command_id, "33"))
+        command_progress_callback.assert_next_change_event((command_id, "66"))
 
-        device_state_callback.assert_call(DevState.ON)
-        device_status_callback.assert_call("The device is in ON state.")
+        device_state_callback.assert_next_change_event(DevState.ON)
+        device_status_callback.assert_next_change_event("The device is in ON state.")
         assert device_under_test.state() == DevState.ON
 
-        command_status_callback.assert_call((command_id, "COMPLETED"))
+        command_status_callback.assert_next_change_event((command_id, "COMPLETED"))
 
-        command_result_callback.assert_call(
+        command_result_callback.assert_next_change_event(
             (command_id, json.dumps([int(ResultCode.OK), "On command completed OK"]))
         )
 
@@ -156,7 +156,7 @@ class TestSKASubarray:
 
         # Test assignment of resources
         obs_state_callback = tango_change_event_helper.subscribe("obsState")
-        obs_state_callback.assert_call(ObsState.EMPTY)
+        obs_state_callback.assert_next_change_event(ObsState.EMPTY)
 
         resources_to_assign = ["BAND1", "BAND2"]
         [[result_code], [command_id]] = device_under_test.AssignResources(
@@ -164,19 +164,19 @@ class TestSKASubarray:
         )
         assert result_code == ResultCode.QUEUED
 
-        obs_state_callback.assert_call(ObsState.RESOURCING)
+        obs_state_callback.assert_next_change_event(ObsState.RESOURCING)
 
-        command_status_callback.assert_call((command_id, "QUEUED"))
-        command_status_callback.assert_call((command_id, "IN_PROGRESS"))
+        command_status_callback.assert_next_change_event((command_id, "QUEUED"))
+        command_status_callback.assert_next_change_event((command_id, "IN_PROGRESS"))
 
-        command_progress_callback.assert_call((command_id, "33"))
-        command_progress_callback.assert_call((command_id, "66"))
+        command_progress_callback.assert_next_change_event((command_id, "33"))
+        command_progress_callback.assert_next_change_event((command_id, "66"))
 
-        command_status_callback.assert_call((command_id, "COMPLETED"))
+        command_status_callback.assert_next_change_event((command_id, "COMPLETED"))
 
-        obs_state_callback.assert_call(ObsState.IDLE)
+        obs_state_callback.assert_next_change_event(ObsState.IDLE)
 
-        command_result_callback.assert_call(
+        command_result_callback.assert_next_change_event(
             (
                 command_id,
                 json.dumps([int(ResultCode.OK), "Resource assignment completed OK"]),
@@ -192,19 +192,19 @@ class TestSKASubarray:
         )
         assert result_code == ResultCode.QUEUED
 
-        obs_state_callback.assert_call(ObsState.RESOURCING)
+        obs_state_callback.assert_next_change_event(ObsState.RESOURCING)
 
-        command_status_callback.assert_call((command_id, "QUEUED"))
-        command_status_callback.assert_call((command_id, "IN_PROGRESS"))
+        command_status_callback.assert_next_change_event((command_id, "QUEUED"))
+        command_status_callback.assert_next_change_event((command_id, "IN_PROGRESS"))
 
-        command_progress_callback.assert_call((command_id, "33"))
-        command_progress_callback.assert_call((command_id, "66"))
+        command_progress_callback.assert_next_change_event((command_id, "33"))
+        command_progress_callback.assert_next_change_event((command_id, "66"))
 
-        command_status_callback.assert_call((command_id, "COMPLETED"))
+        command_status_callback.assert_next_change_event((command_id, "COMPLETED"))
 
-        obs_state_callback.assert_call(ObsState.IDLE)
+        obs_state_callback.assert_next_change_event(ObsState.IDLE)
 
-        command_result_callback.assert_call(
+        command_result_callback.assert_next_change_event(
             (
                 command_id,
                 json.dumps([int(ResultCode.OK), "Resource release completed OK"]),
@@ -217,19 +217,19 @@ class TestSKASubarray:
         [[result_code], [command_id]] = device_under_test.ReleaseAllResources()
         assert result_code == ResultCode.QUEUED
 
-        obs_state_callback.assert_call(ObsState.RESOURCING)
+        obs_state_callback.assert_next_change_event(ObsState.RESOURCING)
 
-        command_status_callback.assert_call((command_id, "QUEUED"))
-        command_status_callback.assert_call((command_id, "IN_PROGRESS"))
+        command_status_callback.assert_next_change_event((command_id, "QUEUED"))
+        command_status_callback.assert_next_change_event((command_id, "IN_PROGRESS"))
 
-        command_progress_callback.assert_call((command_id, "33"))
-        command_progress_callback.assert_call((command_id, "66"))
+        command_progress_callback.assert_next_change_event((command_id, "33"))
+        command_progress_callback.assert_next_change_event((command_id, "66"))
 
-        command_status_callback.assert_call((command_id, "COMPLETED"))
+        command_status_callback.assert_next_change_event((command_id, "COMPLETED"))
 
-        obs_state_callback.assert_call(ObsState.EMPTY)
+        obs_state_callback.assert_next_change_event(ObsState.EMPTY)
 
-        command_result_callback.assert_call(
+        command_result_callback.assert_next_change_event(
             (
                 command_id,
                 json.dumps([int(ResultCode.OK), "Resource release completed OK"]),
@@ -247,47 +247,47 @@ class TestSKASubarray:
         assert device_under_test.state() == DevState.OFF
 
         device_state_callback = tango_change_event_helper.subscribe("state")
-        device_state_callback.assert_call(DevState.OFF)
+        device_state_callback.assert_next_change_event(DevState.OFF)
 
         device_status_callback = tango_change_event_helper.subscribe("status")
-        device_status_callback.assert_call("The device is in OFF state.")
+        device_status_callback.assert_next_change_event("The device is in OFF state.")
 
         command_progress_callback = tango_change_event_helper.subscribe(
             "longRunningCommandProgress"
         )
-        command_progress_callback.assert_call(None)
+        command_progress_callback.assert_next_change_event(None)
 
         command_status_callback = tango_change_event_helper.subscribe(
             "longRunningCommandStatus"
         )
-        command_status_callback.assert_call(None)
+        command_status_callback.assert_next_change_event(None)
 
         command_result_callback = tango_change_event_helper.subscribe(
             "longRunningCommandResult"
         )
-        command_result_callback.assert_call(("", ""))
+        command_result_callback.assert_next_change_event(("", ""))
 
         [[result_code], [command_id]] = device_under_test.On()
         assert result_code == ResultCode.QUEUED
-        command_status_callback.assert_call((command_id, "QUEUED"))
-        command_status_callback.assert_call((command_id, "IN_PROGRESS"))
+        command_status_callback.assert_next_change_event((command_id, "QUEUED"))
+        command_status_callback.assert_next_change_event((command_id, "IN_PROGRESS"))
 
-        command_progress_callback.assert_call((command_id, "33"))
-        command_progress_callback.assert_call((command_id, "66"))
+        command_progress_callback.assert_next_change_event((command_id, "33"))
+        command_progress_callback.assert_next_change_event((command_id, "66"))
 
-        device_state_callback.assert_call(DevState.ON)
-        device_status_callback.assert_call("The device is in ON state.")
+        device_state_callback.assert_next_change_event(DevState.ON)
+        device_status_callback.assert_next_change_event("The device is in ON state.")
         assert device_under_test.state() == DevState.ON
 
-        command_status_callback.assert_call((command_id, "COMPLETED"))
+        command_status_callback.assert_next_change_event((command_id, "COMPLETED"))
 
-        command_result_callback.assert_call(
+        command_result_callback.assert_next_change_event(
             (command_id, json.dumps([int(ResultCode.OK), "On command completed OK"]))
         )
 
         # assignment of resources
         obs_state_callback = tango_change_event_helper.subscribe("obsState")
-        obs_state_callback.assert_call(ObsState.EMPTY)
+        obs_state_callback.assert_next_change_event(ObsState.EMPTY)
 
         resources_to_assign = ["BAND1"]
         [[result_code], [command_id]] = device_under_test.AssignResources(
@@ -295,19 +295,19 @@ class TestSKASubarray:
         )
         assert result_code == ResultCode.QUEUED
 
-        obs_state_callback.assert_call(ObsState.RESOURCING)
+        obs_state_callback.assert_next_change_event(ObsState.RESOURCING)
 
-        command_status_callback.assert_call((command_id, "QUEUED"))
-        command_status_callback.assert_call((command_id, "IN_PROGRESS"))
+        command_status_callback.assert_next_change_event((command_id, "QUEUED"))
+        command_status_callback.assert_next_change_event((command_id, "IN_PROGRESS"))
 
-        command_progress_callback.assert_call((command_id, "33"))
-        command_progress_callback.assert_call((command_id, "66"))
+        command_progress_callback.assert_next_change_event((command_id, "33"))
+        command_progress_callback.assert_next_change_event((command_id, "66"))
 
-        command_status_callback.assert_call((command_id, "COMPLETED"))
+        command_status_callback.assert_next_change_event((command_id, "COMPLETED"))
 
-        obs_state_callback.assert_call(ObsState.IDLE)
+        obs_state_callback.assert_next_change_event(ObsState.IDLE)
 
-        command_result_callback.assert_call(
+        command_result_callback.assert_next_change_event(
             (
                 command_id,
                 json.dumps([int(ResultCode.OK), "Resource assignment completed OK"]),
@@ -327,19 +327,19 @@ class TestSKASubarray:
         )
         assert result_code == ResultCode.QUEUED
 
-        obs_state_callback.assert_call(ObsState.CONFIGURING)
+        obs_state_callback.assert_next_change_event(ObsState.CONFIGURING)
 
-        command_status_callback.assert_call((command_id, "QUEUED"))
-        command_status_callback.assert_call((command_id, "IN_PROGRESS"))
+        command_status_callback.assert_next_change_event((command_id, "QUEUED"))
+        command_status_callback.assert_next_change_event((command_id, "IN_PROGRESS"))
 
-        command_progress_callback.assert_call((command_id, "33"))
-        command_progress_callback.assert_call((command_id, "66"))
+        command_progress_callback.assert_next_change_event((command_id, "33"))
+        command_progress_callback.assert_next_change_event((command_id, "66"))
 
-        command_status_callback.assert_call((command_id, "COMPLETED"))
+        command_status_callback.assert_next_change_event((command_id, "COMPLETED"))
 
-        obs_state_callback.assert_call(ObsState.READY)
+        obs_state_callback.assert_next_change_event(ObsState.READY)
 
-        command_result_callback.assert_call(
+        command_result_callback.assert_next_change_event(
             (command_id, json.dumps([int(ResultCode.OK), "Configure completed OK"]))
         )
 
@@ -349,19 +349,17 @@ class TestSKASubarray:
         [[result_code], [command_id]] = device_under_test.End()
         assert result_code == ResultCode.QUEUED
 
-        obs_state_callback.assert_not_called()
+        command_status_callback.assert_next_change_event((command_id, "QUEUED"))
+        command_status_callback.assert_next_change_event((command_id, "IN_PROGRESS"))
 
-        command_status_callback.assert_call((command_id, "QUEUED"))
-        command_status_callback.assert_call((command_id, "IN_PROGRESS"))
+        command_progress_callback.assert_next_change_event((command_id, "33"))
+        command_progress_callback.assert_next_change_event((command_id, "66"))
 
-        command_progress_callback.assert_call((command_id, "33"))
-        command_progress_callback.assert_call((command_id, "66"))
+        command_status_callback.assert_next_change_event((command_id, "COMPLETED"))
 
-        command_status_callback.assert_call((command_id, "COMPLETED"))
+        obs_state_callback.assert_next_change_event(ObsState.IDLE)
 
-        obs_state_callback.assert_call(ObsState.IDLE)
-
-        command_result_callback.assert_call(
+        command_result_callback.assert_next_change_event(
             (command_id, json.dumps([int(ResultCode.OK), "Deconfigure completed OK"]))
         )
 
@@ -376,47 +374,47 @@ class TestSKASubarray:
         assert device_under_test.state() == DevState.OFF
 
         device_state_callback = tango_change_event_helper.subscribe("state")
-        device_state_callback.assert_call(DevState.OFF)
+        device_state_callback.assert_next_change_event(DevState.OFF)
 
         device_status_callback = tango_change_event_helper.subscribe("status")
-        device_status_callback.assert_call("The device is in OFF state.")
+        device_status_callback.assert_next_change_event("The device is in OFF state.")
 
         command_progress_callback = tango_change_event_helper.subscribe(
             "longRunningCommandProgress"
         )
-        command_progress_callback.assert_call(None)
+        command_progress_callback.assert_next_change_event(None)
 
         command_status_callback = tango_change_event_helper.subscribe(
             "longRunningCommandStatus"
         )
-        command_status_callback.assert_call(None)
+        command_status_callback.assert_next_change_event(None)
 
         command_result_callback = tango_change_event_helper.subscribe(
             "longRunningCommandResult"
         )
-        command_result_callback.assert_call(("", ""))
+        command_result_callback.assert_next_change_event(("", ""))
 
         [[result_code], [command_id]] = device_under_test.On()
         assert result_code == ResultCode.QUEUED
-        command_status_callback.assert_call((command_id, "QUEUED"))
-        command_status_callback.assert_call((command_id, "IN_PROGRESS"))
+        command_status_callback.assert_next_change_event((command_id, "QUEUED"))
+        command_status_callback.assert_next_change_event((command_id, "IN_PROGRESS"))
 
-        command_progress_callback.assert_call((command_id, "33"))
-        command_progress_callback.assert_call((command_id, "66"))
+        command_progress_callback.assert_next_change_event((command_id, "33"))
+        command_progress_callback.assert_next_change_event((command_id, "66"))
 
-        device_state_callback.assert_call(DevState.ON)
-        device_status_callback.assert_call("The device is in ON state.")
+        device_state_callback.assert_next_change_event(DevState.ON)
+        device_status_callback.assert_next_change_event("The device is in ON state.")
         assert device_under_test.state() == DevState.ON
 
-        command_status_callback.assert_call((command_id, "COMPLETED"))
+        command_status_callback.assert_next_change_event((command_id, "COMPLETED"))
 
-        command_result_callback.assert_call(
+        command_result_callback.assert_next_change_event(
             (command_id, json.dumps([int(ResultCode.OK), "On command completed OK"]))
         )
 
         # assignment of resources
         obs_state_callback = tango_change_event_helper.subscribe("obsState")
-        obs_state_callback.assert_call(ObsState.EMPTY)
+        obs_state_callback.assert_next_change_event(ObsState.EMPTY)
 
         resources_to_assign = ["BAND1"]
         [[result_code], [command_id]] = device_under_test.AssignResources(
@@ -424,19 +422,19 @@ class TestSKASubarray:
         )
         assert result_code == ResultCode.QUEUED
 
-        obs_state_callback.assert_call(ObsState.RESOURCING)
+        obs_state_callback.assert_next_change_event(ObsState.RESOURCING)
 
-        command_status_callback.assert_call((command_id, "QUEUED"))
-        command_status_callback.assert_call((command_id, "IN_PROGRESS"))
+        command_status_callback.assert_next_change_event((command_id, "QUEUED"))
+        command_status_callback.assert_next_change_event((command_id, "IN_PROGRESS"))
 
-        command_progress_callback.assert_call((command_id, "33"))
-        command_progress_callback.assert_call((command_id, "66"))
+        command_progress_callback.assert_next_change_event((command_id, "33"))
+        command_progress_callback.assert_next_change_event((command_id, "66"))
 
-        command_status_callback.assert_call((command_id, "COMPLETED"))
+        command_status_callback.assert_next_change_event((command_id, "COMPLETED"))
 
-        obs_state_callback.assert_call(ObsState.IDLE)
+        obs_state_callback.assert_next_change_event(ObsState.IDLE)
 
-        command_result_callback.assert_call(
+        command_result_callback.assert_next_change_event(
             (
                 command_id,
                 json.dumps([int(ResultCode.OK), "Resource assignment completed OK"]),
@@ -454,19 +452,19 @@ class TestSKASubarray:
         )
         assert result_code == ResultCode.QUEUED
 
-        obs_state_callback.assert_call(ObsState.CONFIGURING)
+        obs_state_callback.assert_next_change_event(ObsState.CONFIGURING)
 
-        command_status_callback.assert_call((command_id, "QUEUED"))
-        command_status_callback.assert_call((command_id, "IN_PROGRESS"))
+        command_status_callback.assert_next_change_event((command_id, "QUEUED"))
+        command_status_callback.assert_next_change_event((command_id, "IN_PROGRESS"))
 
-        command_progress_callback.assert_call((command_id, "33"))
-        command_progress_callback.assert_call((command_id, "66"))
+        command_progress_callback.assert_next_change_event((command_id, "33"))
+        command_progress_callback.assert_next_change_event((command_id, "66"))
 
-        command_status_callback.assert_call((command_id, "COMPLETED"))
+        command_status_callback.assert_next_change_event((command_id, "COMPLETED"))
 
-        obs_state_callback.assert_call(ObsState.READY)
+        obs_state_callback.assert_next_change_event(ObsState.READY)
 
-        command_result_callback.assert_call(
+        command_result_callback.assert_next_change_event(
             (command_id, json.dumps([int(ResultCode.OK), "Configure completed OK"]))
         )
 
@@ -482,17 +480,17 @@ class TestSKASubarray:
         )
         assert result_code == ResultCode.QUEUED
 
-        command_status_callback.assert_call((command_id, "QUEUED"))
-        command_status_callback.assert_call((command_id, "IN_PROGRESS"))
+        command_status_callback.assert_next_change_event((command_id, "QUEUED"))
+        command_status_callback.assert_next_change_event((command_id, "IN_PROGRESS"))
 
-        command_progress_callback.assert_call((command_id, "33"))
-        command_progress_callback.assert_call((command_id, "66"))
+        command_progress_callback.assert_next_change_event((command_id, "33"))
+        command_progress_callback.assert_next_change_event((command_id, "66"))
 
-        command_status_callback.assert_call((command_id, "COMPLETED"))
+        command_status_callback.assert_next_change_event((command_id, "COMPLETED"))
 
-        obs_state_callback.assert_call(ObsState.SCANNING)
+        obs_state_callback.assert_next_change_event(ObsState.SCANNING)
 
-        command_result_callback.assert_call(
+        command_result_callback.assert_next_change_event(
             (
                 command_id,
                 json.dumps([int(ResultCode.OK), "Scan commencement completed OK"]),
@@ -503,17 +501,17 @@ class TestSKASubarray:
         [[result_code], [command_id]] = device_under_test.EndScan()
         assert result_code == ResultCode.QUEUED
 
-        command_status_callback.assert_call((command_id, "QUEUED"))
-        command_status_callback.assert_call((command_id, "IN_PROGRESS"))
+        command_status_callback.assert_next_change_event((command_id, "QUEUED"))
+        command_status_callback.assert_next_change_event((command_id, "IN_PROGRESS"))
 
-        command_progress_callback.assert_call((command_id, "33"))
-        command_progress_callback.assert_call((command_id, "66"))
+        command_progress_callback.assert_next_change_event((command_id, "33"))
+        command_progress_callback.assert_next_change_event((command_id, "66"))
 
-        command_status_callback.assert_call((command_id, "COMPLETED"))
+        command_status_callback.assert_next_change_event((command_id, "COMPLETED"))
 
-        obs_state_callback.assert_call(ObsState.READY)
+        obs_state_callback.assert_next_change_event(ObsState.READY)
 
-        command_result_callback.assert_call(
+        command_result_callback.assert_next_change_event(
             (command_id, json.dumps([int(ResultCode.OK), "End scan completed OK"]))
         )
 
@@ -526,47 +524,47 @@ class TestSKASubarray:
         assert device_under_test.state() == DevState.OFF
 
         device_state_callback = tango_change_event_helper.subscribe("state")
-        device_state_callback.assert_call(DevState.OFF)
+        device_state_callback.assert_next_change_event(DevState.OFF)
 
         device_status_callback = tango_change_event_helper.subscribe("status")
-        device_status_callback.assert_call("The device is in OFF state.")
+        device_status_callback.assert_next_change_event("The device is in OFF state.")
 
         command_progress_callback = tango_change_event_helper.subscribe(
             "longRunningCommandProgress"
         )
-        command_progress_callback.assert_call(None)
+        command_progress_callback.assert_next_change_event(None)
 
         command_status_callback = tango_change_event_helper.subscribe(
             "longRunningCommandStatus"
         )
-        command_status_callback.assert_call(None)
+        command_status_callback.assert_next_change_event(None)
 
         command_result_callback = tango_change_event_helper.subscribe(
             "longRunningCommandResult"
         )
-        command_result_callback.assert_call(("", ""))
+        command_result_callback.assert_next_change_event(("", ""))
 
         [[result_code], [command_id]] = device_under_test.On()
         assert result_code == ResultCode.QUEUED
-        command_status_callback.assert_call((command_id, "QUEUED"))
-        command_status_callback.assert_call((command_id, "IN_PROGRESS"))
+        command_status_callback.assert_next_change_event((command_id, "QUEUED"))
+        command_status_callback.assert_next_change_event((command_id, "IN_PROGRESS"))
 
-        command_progress_callback.assert_call((command_id, "33"))
-        command_progress_callback.assert_call((command_id, "66"))
+        command_progress_callback.assert_next_change_event((command_id, "33"))
+        command_progress_callback.assert_next_change_event((command_id, "66"))
 
-        device_state_callback.assert_call(DevState.ON)
-        device_status_callback.assert_call("The device is in ON state.")
+        device_state_callback.assert_next_change_event(DevState.ON)
+        device_status_callback.assert_next_change_event("The device is in ON state.")
         assert device_under_test.state() == DevState.ON
 
-        command_status_callback.assert_call((command_id, "COMPLETED"))
+        command_status_callback.assert_next_change_event((command_id, "COMPLETED"))
 
-        command_result_callback.assert_call(
+        command_result_callback.assert_next_change_event(
             (command_id, json.dumps([int(ResultCode.OK), "On command completed OK"]))
         )
 
         # assignment of resources
         obs_state_callback = tango_change_event_helper.subscribe("obsState")
-        obs_state_callback.assert_call(ObsState.EMPTY)
+        obs_state_callback.assert_next_change_event(ObsState.EMPTY)
 
         resources_to_assign = ["BAND1"]
         [[result_code], [command_id]] = device_under_test.AssignResources(
@@ -574,19 +572,19 @@ class TestSKASubarray:
         )
         assert result_code == ResultCode.QUEUED
 
-        obs_state_callback.assert_call(ObsState.RESOURCING)
+        obs_state_callback.assert_next_change_event(ObsState.RESOURCING)
 
-        command_status_callback.assert_call((command_id, "QUEUED"))
-        command_status_callback.assert_call((command_id, "IN_PROGRESS"))
+        command_status_callback.assert_next_change_event((command_id, "QUEUED"))
+        command_status_callback.assert_next_change_event((command_id, "IN_PROGRESS"))
 
-        command_progress_callback.assert_call((command_id, "33"))
-        command_progress_callback.assert_call((command_id, "66"))
+        command_progress_callback.assert_next_change_event((command_id, "33"))
+        command_progress_callback.assert_next_change_event((command_id, "66"))
 
-        command_status_callback.assert_call((command_id, "COMPLETED"))
+        command_status_callback.assert_next_change_event((command_id, "COMPLETED"))
 
-        obs_state_callback.assert_call(ObsState.IDLE)
+        obs_state_callback.assert_next_change_event(ObsState.IDLE)
 
-        command_result_callback.assert_call(
+        command_result_callback.assert_next_change_event(
             (
                 command_id,
                 json.dumps([int(ResultCode.OK), "Resource assignment completed OK"]),
@@ -608,21 +606,25 @@ class TestSKASubarray:
         )
         assert result_code == ResultCode.QUEUED
 
-        obs_state_callback.assert_call(ObsState.CONFIGURING)
+        obs_state_callback.assert_next_change_event(ObsState.CONFIGURING)
 
-        command_status_callback.assert_call((configure_command_id, "QUEUED"))
-        command_status_callback.assert_call((configure_command_id, "IN_PROGRESS"))
+        command_status_callback.assert_next_change_event(
+            (configure_command_id, "QUEUED")
+        )
+        command_status_callback.assert_next_change_event(
+            (configure_command_id, "IN_PROGRESS")
+        )
 
         [[result_code], [abort_command_id]] = device_under_test.Abort()
         assert result_code == ResultCode.STARTED
 
-        obs_state_callback.assert_call(ObsState.ABORTING)
+        obs_state_callback.assert_next_change_event(ObsState.ABORTING)
 
-        command_status_callback.assert_call(
+        command_status_callback.assert_next_change_event(
             (configure_command_id, "IN_PROGRESS", abort_command_id, "IN_PROGRESS")
         )
 
-        status_call = command_status_callback.get_call()
+        status_call = command_status_callback.get_next_change_event()
         if status_call == (
             configure_command_id,
             "ABORTED",
@@ -631,7 +633,9 @@ class TestSKASubarray:
         ):
             # event announcing abort of configure arrived first,
             # now we expect abort to completed
-            command_status_callback.assert_call((abort_command_id, "COMPLETED"))
+            command_status_callback.assert_next_change_event(
+                (abort_command_id, "COMPLETED")
+            )
         else:
             # event announcing completion of abort arrived first,
             # now we expect configure to abort.
@@ -641,9 +645,11 @@ class TestSKASubarray:
                 abort_command_id,
                 "COMPLETED",
             )
-            command_status_callback.assert_call((configure_command_id, "ABORTED"))
+            command_status_callback.assert_next_change_event(
+                (configure_command_id, "ABORTED")
+            )
 
-        obs_state_callback.assert_call(ObsState.ABORTED)
+        obs_state_callback.assert_next_change_event(ObsState.ABORTED)
 
         # command_progress_callback.assert_not_called()
         command_status_callback.assert_not_called()
@@ -652,22 +658,26 @@ class TestSKASubarray:
         # Reset from aborted state
         [[result_code], [reset_command_id]] = device_under_test.ObsReset()
         assert result_code == ResultCode.QUEUED
-        command_status_callback.assert_call((reset_command_id, "QUEUED"))
-        command_status_callback.assert_call((reset_command_id, "IN_PROGRESS"))
+        command_status_callback.assert_next_change_event((reset_command_id, "QUEUED"))
+        command_status_callback.assert_next_change_event(
+            (reset_command_id, "IN_PROGRESS")
+        )
 
-        obs_state_callback.assert_call(ObsState.RESETTING)
+        obs_state_callback.assert_next_change_event(ObsState.RESETTING)
 
-        call = command_progress_callback.get_call()
+        call = command_progress_callback.get_next_change_event()
         if call == (configure_command_id, "33"):
-            call = command_progress_callback.get_call()
+            call = command_progress_callback.get_next_change_event()
         assert call == (reset_command_id, "33")
-        command_progress_callback.assert_call((reset_command_id, "66"))
+        command_progress_callback.assert_next_change_event((reset_command_id, "66"))
 
-        command_status_callback.assert_call((reset_command_id, "COMPLETED"))
+        command_status_callback.assert_next_change_event(
+            (reset_command_id, "COMPLETED")
+        )
 
-        obs_state_callback.assert_call(ObsState.IDLE)
+        obs_state_callback.assert_next_change_event(ObsState.IDLE)
 
-        command_result_callback.assert_call(
+        command_result_callback.assert_next_change_event(
             (
                 reset_command_id,
                 json.dumps([int(ResultCode.OK), "Obs reset completed OK"]),
@@ -696,18 +706,19 @@ class TestSKASubarray:
 
         admin_mode_callback = tango_change_event_helper.subscribe("adminMode")
         op_state_callback = tango_change_event_helper.subscribe("state")
-        admin_mode_callback.assert_call(AdminMode.ONLINE)
-        op_state_callback.assert_call(DevState.OFF)
+        admin_mode_callback.assert_next_change_event(AdminMode.ONLINE)
+        op_state_callback.assert_next_change_event(DevState.OFF)
 
         device_under_test.adminMode = AdminMode.OFFLINE
-        admin_mode_callback.assert_call(AdminMode.OFFLINE)
-        op_state_callback.assert_call(DevState.DISABLE)
+        admin_mode_callback.assert_next_change_event(AdminMode.OFFLINE)
+        op_state_callback.assert_next_change_event(DevState.DISABLE)
         assert device_under_test.state() == DevState.DISABLE
         assert device_under_test.adminMode == AdminMode.OFFLINE
 
         device_under_test.adminMode = AdminMode.MAINTENANCE
-        admin_mode_callback.assert_call(AdminMode.MAINTENANCE)
-        op_state_callback.assert_calls([DevState.UNKNOWN, DevState.OFF])
+        admin_mode_callback.assert_next_change_event(AdminMode.MAINTENANCE)
+        op_state_callback.assert_next_change_event(DevState.UNKNOWN)
+        op_state_callback.assert_next_change_event(DevState.OFF)
         assert device_under_test.state() == DevState.OFF
         assert device_under_test.adminMode == AdminMode.MAINTENANCE
         # PROTECTED REGION END #    //  SKASubarray.test_adminMode

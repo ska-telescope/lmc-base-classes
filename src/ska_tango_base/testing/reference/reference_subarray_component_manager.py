@@ -4,7 +4,10 @@ from ska_tango_base.base import (
     check_communicating,
     check_on,
 )
-from ska_tango_base.testing import FakeBaseComponent, ReferenceBaseComponentManager
+from ska_tango_base.testing.reference import (
+    FakeBaseComponent,
+    ReferenceBaseComponentManager,
+)
 from ska_tango_base.control_model import PowerState
 from ska_tango_base.faults import CapabilityValidationError
 from ska_tango_base.subarray import SubarrayComponentManager

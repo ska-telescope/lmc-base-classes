@@ -4,7 +4,7 @@ from ska_tango_base.base import (
     check_on,
     TaskExecutorComponentManager,
 )
-from ska_tango_base.testing import FakeBaseComponent
+from ska_tango_base.testing.reference import FakeBaseComponent
 from ska_tango_base.csp.subarray import CspSubarrayComponentManager
 
 from ska_tango_base.commands import ResultCode

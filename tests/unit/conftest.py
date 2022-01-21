@@ -18,6 +18,8 @@ def device_properties():
     Fixture that returns device_properties to be provided to the device under test.
 
     This is a default implementation that provides no properties.
+
+    :return: properties of the device under test
     """
     return {}
 

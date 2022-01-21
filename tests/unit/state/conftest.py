@@ -34,6 +34,9 @@ def pytest_generate_tests(metafunc):
     that is marked with the `state_machine_tester` custom marker will
     have its tests parameterised by the states and actions in the
     specification provided by that mark.
+
+    :param metafunc: pytest object used to generate tests from a test
+        function
     """
     mark = metafunc.definition.get_closest_marker("state_machine_tester")
     if mark:
@@ -126,6 +129,9 @@ class StateMachineTester:
         :param state: the state that we are asserting to be the current
             state of the state machine under test
         :type state: string
+
+        :raises NotImplementedError: if now overriden by a concrete
+            subclass
         """
         raise NotImplementedError()
 
@@ -137,6 +143,9 @@ class StateMachineTester:
         :type machine_under_test: state machine object instance
         :param action: action to be performed on the state machine
         :type action: str
+
+        :raises NotImplementedError: if now overriden by a concrete
+            subclass
         """
         raise NotImplementedError()
 
@@ -148,6 +157,9 @@ class StateMachineTester:
         :type machine_under_test: state machine object instance
         :param action: action to be performed on the state machine
         :type action: str
+
+        :raises NotImplementedError: if now overriden by a concrete
+            subclass
         """
         raise NotImplementedError()
 
@@ -159,6 +171,9 @@ class StateMachineTester:
         :type machine_under_test: state machine object instance
         :param action: action to be performed on the state machine
         :type action: str
+
+        :raises NotImplementedError: if now overriden by a concrete
+            subclass
         """
         raise NotImplementedError()
 
@@ -168,9 +183,12 @@ class StateMachineTester:
 
         :param machine_under_test: the state machine under test
         :type machine_under_test: state machine object instance
-        :param target_state_kwargs: specification of the target state
+        :param target_state: specification of the target state
             of the machine under test
-        :type target_state_kwargs: Any
+        :type target_state: Any
+
+        :raises NotImplementedError: if now overriden by a concrete
+            subclass
         """
         raise NotImplementedError()
 
@@ -204,6 +222,9 @@ class TransitionsStateMachineTester(StateMachineTester):
         :type machine_under_test: state machine object instance
         :param action: action to be performed on the state machine
         :type action: str
+
+        :return: whether the action is allowed
+        :rtype: bool
         """
         return action in machine_under_test.get_triggers(machine_under_test.state)
 
@@ -239,8 +260,8 @@ class TransitionsStateMachineTester(StateMachineTester):
         this method will need to be overridden by some other method of
         putting the machine into the state under test.
 
-        :param machine: the state machine under test
-        :type machine: state machine object instance
+        :param machine_under_test: the state machine under test
+        :type machine_under_test: state machine object instance
         :param target_state: the state that we want to get the state
             machine under test into
         :type target_state: str
@@ -265,6 +286,9 @@ class StateModelTester(StateMachineTester):
         :param state: the state that we are asserting to be the current
             state of the state machine under test
         :type state: dict
+
+        :raises NotImplementedError: if now overriden by a concrete
+            subclass
         """
         raise NotImplementedError()
 
@@ -276,6 +300,8 @@ class StateModelTester(StateMachineTester):
         :type machine_under_test: object
         :param action: action to be performed on the state machine
         :type action: str
+
+        :return: whether the action is allowed
         """
         return machine_under_test.is_action_allowed(action)
 
@@ -326,6 +352,8 @@ def load_data(name):
         uses the name to find a JSON file containing the data to be
         loaded.
     :type name: string
+
+    :return: content of the named dataset
     """
     with open(f"tests/unit/state/data/{name}.json", "r") as json_file:
         return json.load(json_file)
@@ -339,6 +367,8 @@ def load_state_machine_spec(name):
         uses the name to find a JSON file containing the data to be
         loaded.
     :type name: string
+
+    :return: a state machine specification
     """
     machine_spec = load_data(name)
     for state in machine_spec["states"]:

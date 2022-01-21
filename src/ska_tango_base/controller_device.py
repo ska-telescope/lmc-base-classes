@@ -168,37 +168,63 @@ class SKAController(SKABaseDevice):
 
     def read_elementLoggerAddress(self):
         # PROTECTED REGION ID(SKAController.elementLoggerAddress_read) ENABLED START #
-        """Read FQDN of Element Logger device."""
+        """
+        Read FQDN of Element Logger device.
+
+        :return FQDN of Element Logger device
+        """
         return self._element_logger_address
         # PROTECTED REGION END #    //  SKAController.elementLoggerAddress_read
 
     def read_elementAlarmAddress(self):
         # PROTECTED REGION ID(SKAController.elementAlarmAddress_read) ENABLED START #
-        """Read FQDN of Element Alarm device."""
+        """
+        Read FQDN of Element Alarm device.
+
+        :return: FQDN of Element Alarm device
+        """
         return self._element_alarm_address
         # PROTECTED REGION END #    //  SKAController.elementAlarmAddress_read
 
     def read_elementTelStateAddress(self):
         # PROTECTED REGION ID(SKAController.elementTelStateAddress_read) ENABLED START #
-        """Read FQDN of Element TelState device."""
+        """
+        Read FQDN of Element TelState device.
+
+        :return: FQDN of Element TelState device
+        """
         return self._element_tel_state_address
         # PROTECTED REGION END #    //  SKAController.elementTelStateAddress_read
 
     def read_elementDatabaseAddress(self):
         # PROTECTED REGION ID(SKAController.elementDatabaseAddress_read) ENABLED START #
-        """Read FQDN of Element Database device."""
+        """
+        Read FQDN of Element Database device.
+
+        :return: FQDN of Element Database device
+        """
         return self._element_database_address
         # PROTECTED REGION END #    //  SKAController.elementDatabaseAddress_read
 
     def read_maxCapabilities(self):
         # PROTECTED REGION ID(SKAController.maxCapabilities_read) ENABLED START #
-        """Read maximum number of instances of each capability type."""
+        """
+        Read maximum number of instances of each capability type.
+
+        :return: list of maximum number of instances of each capability
+            type
+        """
         return convert_dict_to_list(self._max_capabilities)
         # PROTECTED REGION END #    //  SKAController.maxCapabilities_read
 
     def read_availableCapabilities(self):
         # PROTECTED REGION ID(SKAController.availableCapabilities_read) ENABLED START #
-        """Read list of available number of instances of each capability type."""
+        """
+        Read list of available number of instances of each capability type.
+
+        :return: list of available number of instances of each
+            capability type
+        """
         return convert_dict_to_list(self._available_capabilities)
         # PROTECTED REGION END #    //  SKAController.availableCapabilities_read
 

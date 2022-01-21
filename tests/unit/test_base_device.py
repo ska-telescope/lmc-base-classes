@@ -591,6 +591,12 @@ class TestSKABaseDevice(object):
 
         This implementation provides a concrete subclass of
         SKABaseDevice, and a memorized value for adminMode.
+
+        :param device_properties: fixture that returns device properties
+            of the device under test
+
+        :return: specification of how the device under test should be
+            configured
         """
         return {
             "device": SKABaseDevice,
@@ -605,7 +611,11 @@ class TestSKABaseDevice(object):
 
     @pytest.mark.skip("Not implemented")
     def test_properties(self, device_under_test):
-        """Test device properties."""
+        """
+        Test device properties.
+
+        :param device_under_test: a proxy to the device under test
+        """
         # PROTECTED REGION ID(SKABaseDevice.test_properties) ENABLED START #
         """
         Test device properties.
@@ -622,7 +632,11 @@ class TestSKABaseDevice(object):
     # PROTECTED REGION ID(SKABaseDevice.test_State_decorators) ENABLED START #
     # PROTECTED REGION END #    //  SKABaseDevice.test_State_decorators
     def test_State(self, device_under_test):
-        """Test for State."""
+        """
+        Test for State.
+
+        :param device_under_test: a proxy to the device under test
+        """
         # PROTECTED REGION ID(SKABaseDevice.test_State) ENABLED START #
         assert device_under_test.state() == DevState.OFF
 
@@ -631,7 +645,11 @@ class TestSKABaseDevice(object):
     # PROTECTED REGION ID(SKABaseDevice.test_Status_decorators) ENABLED START #
     # PROTECTED REGION END #    //  SKABaseDevice.test_Status_decorators
     def test_Status(self, device_under_test):
-        """Test for Status."""
+        """
+        Test for Status.
+
+        :param device_under_test: a proxy to the device under test
+        """
         # PROTECTED REGION ID(SKABaseDevice.test_Status) ENABLED START #
         assert device_under_test.Status() == "The device is in OFF state."
         # PROTECTED REGION END #    //  SKABaseDevice.test_Status
@@ -639,7 +657,11 @@ class TestSKABaseDevice(object):
     # PROTECTED REGION ID(SKABaseDevice.test_GetVersionInfo_decorators) ENABLED START #
     # PROTECTED REGION END #    //  SKABaseDevice.test_GetVersionInfo_decorators
     def test_GetVersionInfo(self, device_under_test):
-        """Test for GetVersionInfo."""
+        """
+        Test for GetVersionInfo.
+
+        :param device_under_test: a proxy to the device under test
+        """
         # PROTECTED REGION ID(SKABaseDevice.test_GetVersionInfo) ENABLED START #
         version_pattern = (
             f"{device_under_test.info().dev_class}, ska_tango_base, "
@@ -652,7 +674,11 @@ class TestSKABaseDevice(object):
         # PROTECTED REGION END #    //  SKABaseDevice.test_GetVersionInfo
 
     def test_Reset(self, device_under_test):
-        """Test for Reset."""
+        """
+        Test for Reset.
+
+        :param device_under_test: a proxy to the device under test
+        """
         # PROTECTED REGION ID(SKABaseDevice.test_Reset) ENABLED START #
         # The main test of this command is
         # TestSKABaseDevice_commands::test_ResetCommand
@@ -666,7 +692,13 @@ class TestSKABaseDevice(object):
         # PROTECTED REGION END #    //  SKABaseDevice.test_Reset
 
     def test_On(self, device_under_test, tango_change_event_helper):
-        """Test for On command."""
+        """
+        Test for On command.
+
+        :param device_under_test: a proxy to the device under test
+        :param tango_change_event_helper: helper fixture that simplifies
+            subscription to the device under test with a callback.
+        """
         assert device_under_test.state() == DevState.OFF
 
         device_state_callback = tango_change_event_helper.subscribe("state")
@@ -721,7 +753,13 @@ class TestSKABaseDevice(object):
         device_status_callback.assert_not_called()
 
     def test_Standby(self, device_under_test, tango_change_event_helper):
-        """Test for Standby command."""
+        """
+        Test for Standby command.
+
+        :param device_under_test: a proxy to the device under test
+        :param tango_change_event_helper: helper fixture that simplifies
+            subscription to the device under test with a callback.
+        """
         # Check that we can put it on standby
         assert device_under_test.state() == DevState.OFF
 
@@ -782,7 +820,13 @@ class TestSKABaseDevice(object):
         device_status_callback.assert_not_called()
 
     def test_Off(self, device_under_test, tango_change_event_helper):
-        """Test for Off command."""
+        """
+        Test for Off command.
+
+        :param device_under_test: a proxy to the device under test
+        :param tango_change_event_helper: helper fixture that simplifies
+            subscription to the device under test with a callback.
+        """
         assert device_under_test.state() == DevState.OFF
 
         device_state_callback = tango_change_event_helper.subscribe("state")
@@ -821,7 +865,11 @@ class TestSKABaseDevice(object):
     # PROTECTED REGION ID(SKABaseDevice.test_buildState_decorators) ENABLED START #
     # PROTECTED REGION END #    //  SKABaseDevice.test_buildState_decorators
     def test_buildState(self, device_under_test):
-        """Test for buildState."""
+        """
+        Test for buildState.
+
+        :param device_under_test: a proxy to the device under test
+        """
         # PROTECTED REGION ID(SKABaseDevice.test_buildState) ENABLED START #
         buildPattern = re.compile(
             r"ska_tango_base, [0-9]+.[0-9]+.[0-9]+, "
@@ -833,7 +881,11 @@ class TestSKABaseDevice(object):
     # PROTECTED REGION ID(SKABaseDevice.test_versionId_decorators) ENABLED START #
     # PROTECTED REGION END #    //  SKABaseDevice.test_versionId_decorators
     def test_versionId(self, device_under_test):
-        """Test for versionId."""
+        """
+        Test for versionId.
+
+        :param device_under_test: a proxy to the device under test
+        """
         # PROTECTED REGION ID(SKABaseDevice.test_versionId) ENABLED START #
         versionIdPattern = re.compile(r"[0-9]+.[0-9]+.[0-9]+")
         assert (re.match(versionIdPattern, device_under_test.versionId)) is not None
@@ -842,7 +894,11 @@ class TestSKABaseDevice(object):
     # PROTECTED REGION ID(SKABaseDevice.test_loggingLevel_decorators) ENABLED START #
     # PROTECTED REGION END #    //  SKABaseDevice.test_loggingLevel_decorators
     def test_loggingLevel(self, device_under_test):
-        """Test for loggingLevel."""
+        """
+        Test for loggingLevel.
+
+        :param device_under_test: a proxy to the device under test
+        """
         # PROTECTED REGION ID(SKABaseDevice.test_loggingLevel) ENABLED START #
         assert device_under_test.loggingLevel == LoggingLevel.INFO
 
@@ -858,7 +914,11 @@ class TestSKABaseDevice(object):
     # PROTECTED REGION ID(SKABaseDevice.test_loggingTargets_decorators) ENABLED START #
     # PROTECTED REGION END #    //  SKABaseDevice.test_loggingTargets_decorators
     def test_loggingTargets(self, device_under_test):
-        """Test for loggingTargets."""
+        """
+        Test for loggingTargets.
+
+        :param device_under_test: a proxy to the device under test
+        """
         # PROTECTED REGION ID(SKABaseDevice.test_loggingTargets) ENABLED START #
         # tango logging target must be enabled by default
         assert device_under_test.loggingTargets == ("tango::logger",)
@@ -921,7 +981,11 @@ class TestSKABaseDevice(object):
     # PROTECTED REGION ID(SKABaseDevice.test_healthState_decorators) ENABLED START #
     # PROTECTED REGION END #    //  SKABaseDevice.test_healthState_decorators
     def test_healthState(self, device_under_test):
-        """Test for healthState."""
+        """
+        Test for healthState.
+
+        :param device_under_test: a proxy to the device under test
+        """
         # PROTECTED REGION ID(SKABaseDevice.test_healthState) ENABLED START #
         assert device_under_test.healthState == HealthState.UNKNOWN
         # PROTECTED REGION END #    //  SKABaseDevice.test_healthState
@@ -929,7 +993,13 @@ class TestSKABaseDevice(object):
     # PROTECTED REGION ID(SKABaseDevice.test_adminMode_decorators) ENABLED START #
     # PROTECTED REGION END #    //  SKABaseDevice.test_adminMode_decorators
     def test_adminMode(self, device_under_test, tango_change_event_helper):
-        """Test for adminMode."""
+        """
+        Test for adminMode.
+
+        :param device_under_test: a proxy to the device under test
+        :param tango_change_event_helper: helper fixture that simplifies
+            subscription to the device under test with a callback.
+        """
         # PROTECTED REGION ID(SKABaseDevice.test_adminMode) ENABLED START #
         assert device_under_test.state() == DevState.OFF
 
@@ -975,7 +1045,11 @@ class TestSKABaseDevice(object):
     # PROTECTED REGION ID(SKABaseDevice.test_controlMode_decorators) ENABLED START #
     # PROTECTED REGION END #    //  SKABaseDevice.test_controlMode_decorators
     def test_controlMode(self, device_under_test):
-        """Test for controlMode."""
+        """
+        Test for controlMode.
+
+        :param device_under_test: a proxy to the device under test
+        """
         # PROTECTED REGION ID(SKABaseDevice.test_controlMode) ENABLED START #
         assert device_under_test.controlMode == ControlMode.REMOTE
         # PROTECTED REGION END #    //  SKABaseDevice.test_controlMode
@@ -983,7 +1057,11 @@ class TestSKABaseDevice(object):
     # PROTECTED REGION ID(SKABaseDevice.test_simulationMode_decorators) ENABLED START #
     # PROTECTED REGION END #    //  SKABaseDevice.test_simulationMode_decorators
     def test_simulationMode(self, device_under_test):
-        """Test for simulationMode."""
+        """
+        Test for simulationMode.
+
+        :param device_under_test: a proxy to the device under test
+        """
         # PROTECTED REGION ID(SKABaseDevice.test_simulationMode) ENABLED START #
         assert device_under_test.simulationMode == SimulationMode.FALSE
         # PROTECTED REGION END #    //  SKABaseDevice.test_simulationMode
@@ -991,20 +1069,32 @@ class TestSKABaseDevice(object):
     # PROTECTED REGION ID(SKABaseDevice.test_testMode_decorators) ENABLED START #
     # PROTECTED REGION END #    //  SKABaseDevice.test_testMode_decorators
     def test_testMode(self, device_under_test):
-        """Test for testMode."""
+        """
+        Test for testMode.
+
+        :param device_under_test: a proxy to the device under test
+        """
         # PROTECTED REGION ID(SKABaseDevice.test_testMode) ENABLED START #
         assert device_under_test.testMode == TestMode.NONE
         # PROTECTED REGION END #    //  SKABaseDevice.test_testMode
 
     def test_debugger_not_listening_by_default(self, device_under_test):
-        """Test that DebugDevice is not active until enabled."""
+        """
+        Test that DebugDevice is not active until enabled.
+
+        :param device_under_test: a proxy to the device under test
+        """
         assert not SKABaseDevice._global_debugger_listening
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
             with pytest.raises(ConnectionRefusedError):
                 s.connect(("localhost", _DEBUGGER_PORT))
 
     def test_DebugDevice_starts_listening_on_default_port(self, device_under_test):
-        """Test that enabling DebugDevice makes it listen on its default port."""
+        """
+        Test that enabling DebugDevice makes it listen on its default port.
+
+        :param device_under_test: a proxy to the device under test
+        """
         port = device_under_test.DebugDevice()
         assert port == _DEBUGGER_PORT
         assert SKABaseDevice._global_debugger_listening
@@ -1014,7 +1104,11 @@ class TestSKABaseDevice(object):
 
     @pytest.mark.usefixtures("patch_debugger_to_start_on_ephemeral_port")
     def test_DebugDevice_twice_does_not_raise(self, device_under_test):
-        """Test that it is safe to enable the DebugDevice when it is already enabled."""
+        """
+        Test that it is safe to enable the DebugDevice when it is already enabled.
+
+        :param device_under_test: a proxy to the device under test
+        """
         device_under_test.DebugDevice()
         device_under_test.DebugDevice()
         assert SKABaseDevice._global_debugger_listening
@@ -1023,7 +1117,11 @@ class TestSKABaseDevice(object):
     def test_DebugDevice_does_not_break_a_command(
         self, device_under_test, tango_change_event_helper
     ):
-        """Test that enabling the DebugDevice feature does not break device commands."""
+        """
+        Test that enabling the DebugDevice feature does not break device commands.
+
+        :param device_under_test: a proxy to the device under test
+        """
         device_under_test.DebugDevice()
         assert device_under_test.state() == DevState.OFF
 

@@ -15,6 +15,6 @@ class TestSubarrayObsStateMachine(TransitionsStateMachineTester):
         """
         Fixture that returns the state model under test in this class.
 
-        :returns: the state machine under test
+        :yield: the state machine under test
         """
         yield _SubarrayObsStateMachine()

@@ -186,7 +186,11 @@ def _validate_group(definition, group):
 
 
 def test_get_groups_from_json_valid(valid_group_configs):
-    """Test the ``get_groups_from_json`` helper function's handling of valid input."""
+    """
+    Test the ``get_groups_from_json`` helper function's handling of valid input.
+
+    :param valid_group_configs: fixture that returns valid group configs
+    """
     json_definitions = _jsonify_group_configs(valid_group_configs)
     groups = get_groups_from_json(json_definitions)
 
@@ -199,7 +203,11 @@ def test_get_groups_from_json_valid(valid_group_configs):
 
 
 def test_get_groups_from_json_invalid(bad_group_configs):
-    """Test the ``get_groups_from_json`` helper function's handling of invalid input."""
+    """
+    Test the ``get_groups_from_json`` helper function's handling of invalid input.
+
+    :param bad_group_configs: fixture that returns invalid group configs
+    """
     json_definitions = _jsonify_group_configs(bad_group_configs)
     with pytest.raises(GroupDefinitionsError):
         get_groups_from_json(json_definitions)
@@ -231,6 +239,10 @@ def test_for_testing_only(in_test, context):
     Test that a warning is raised if and only if we are NOT testing.
     This is achieved by patching the test, which cannot be done using
     the ``@decorator`` syntax.
+
+    :param in_test: whether we are in a test or not.
+    :param context: the testing context: either a pytest.warns, or a
+        null_context
     """
 
     def foo():
@@ -238,6 +250,8 @@ def test_for_testing_only(in_test, context):
         Return a known value.
 
         This is a dummy function for the decorator under test to wrap.
+
+        :return: a known value
         """
         return "foo"
 
@@ -256,6 +270,8 @@ def test_for_testing_only_decorator():
         Return a known value.
 
         This is a dummy function for the decorator under test to wrap.
+
+        :return: a known value
         """
         return "bah"
 

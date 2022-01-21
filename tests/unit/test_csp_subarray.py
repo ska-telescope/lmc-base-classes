@@ -40,7 +40,11 @@ class TestCspSubElementSubarray(object):
 
     @pytest.fixture(scope="class")
     def device_properties(self):
-        """Fixture that returns device properties of the device under test."""
+        """
+        Fixture that returns device properties of the device under test.
+
+        :return: properties of the device under test
+        """
         return {"CapabilityTypes": ["id"]}
 
     @pytest.fixture(scope="class")
@@ -54,6 +58,12 @@ class TestCspSubElementSubarray(object):
         This implementation provides a concrete subclass of the device
         class under test, some properties, and a memorized value for
         adminMode.
+
+        :param device_properties: fixture that returns device properties
+            of the device under test
+
+        :return: specification of how the device under test should be
+            configured
         """
         return {
             "device": CspSubElementSubarray,
@@ -68,7 +78,11 @@ class TestCspSubElementSubarray(object):
 
     @pytest.mark.skip(reason="Not implemented")
     def test_properties(self, device_under_test):
-        """Test the device properties."""
+        """
+        Test the device properties.
+
+        :param device_under_test: a proxy to the device under test
+        """
         # PROTECTED REGION ID(CspSubelementSubarray.test_properties) ENABLED START #
         # PROTECTED REGION END #    //  CspSubelementSubarray.test_properties
         pass
@@ -76,7 +90,11 @@ class TestCspSubElementSubarray(object):
     # PROTECTED REGION ID(CspSubelementSubarray.test_State_decorators) ENABLED START #
     # PROTECTED REGION END #    //  CspSubelementSubarray.test_State_decorators
     def test_State(self, device_under_test):
-        """Test for State."""
+        """
+        Test for State.
+
+        :param device_under_test: a proxy to the device under test
+        """
         # PROTECTED REGION ID(CspSubelementSubarray.test_State) ENABLED START #
         assert device_under_test.state() == DevState.OFF
         # PROTECTED REGION END #    //  CspSubelementSubarray.test_State
@@ -84,7 +102,11 @@ class TestCspSubElementSubarray(object):
     # PROTECTED REGION ID(CspSubelementSubarray.test_Status_decorators) ENABLED START #
     # PROTECTED REGION END #    //  CspSubelementSubarray.test_Status_decorators
     def test_Status(self, device_under_test):
-        """Test for Status."""
+        """
+        Test for Status.
+
+        :param device_under_test: a proxy to the device under test
+        """
         # PROTECTED REGION ID(CspSubelementSubarray.test_Status) ENABLED START #
         assert device_under_test.Status() == "The device is in OFF state."
         # PROTECTED REGION END #    //  CspSubelementSubarray.test_Status
@@ -92,7 +114,11 @@ class TestCspSubElementSubarray(object):
     # PROTECTED REGION ID(CspSubelementSubarray.test_GetVersionInfo_decorators) ENABLED START #
     # PROTECTED REGION END #    //  CspSubelementSubarray.test_GetVersionInfo_decorators
     def test_GetVersionInfo(self, device_under_test):
-        """Test for GetVersionInfo."""
+        """
+        Test for GetVersionInfo.
+
+        :param device_under_test: a proxy to the device under test
+        """
         # PROTECTED REGION ID(CspSubelementSubarray.test_GetVersionInfo) ENABLED START #
         version_pattern = (
             f"{device_under_test.info().dev_class}, ska_tango_base, "
@@ -105,7 +131,11 @@ class TestCspSubElementSubarray(object):
 
     # PROTECTED REGION ID(CspSubelementSubarray.test_configurationProgress_decorators) ENABLED START #
     def test_buildState(self, device_under_test):
-        """Test for buildState."""
+        """
+        Test for buildState.
+
+        :param device_under_test: a proxy to the device under test
+        """
         # PROTECTED REGION ID(CspSubelementSubarray.test_buildState) ENABLED START #
         buildPattern = re.compile(
             r"ska_tango_base, [0-9]+.[0-9]+.[0-9]+, "
@@ -117,7 +147,11 @@ class TestCspSubElementSubarray(object):
     # PROTECTED REGION ID(CspSubelementSubarray.test_versionId_decorators) ENABLED START #
     # PROTECTED REGION END #    //  CspSubelementSubarray.test_versionId_decorators
     def test_versionId(self, device_under_test):
-        """Test for versionId."""
+        """
+        Test for versionId.
+
+        :param device_under_test: a proxy to the device under test
+        """
         # PROTECTED REGION ID(CspSubelementSubarray.test_versionId) ENABLED START #
         versionIdPattern = re.compile(r"[0-9]+.[0-9]+.[0-9]+")
         assert (re.match(versionIdPattern, device_under_test.versionId)) is not None
@@ -126,7 +160,11 @@ class TestCspSubElementSubarray(object):
     # PROTECTED REGION ID(CspSubelementSubarray.test_healthState_decorators) ENABLED START #
     # PROTECTED REGION END #    //  CspSubelementSubarray.test_healthState_decorators
     def test_healthState(self, device_under_test):
-        """Test for healthState."""
+        """
+        Test for healthState.
+
+        :param device_under_test: a proxy to the device under test
+        """
         # PROTECTED REGION ID(CspSubelementSubarray.test_healthState) ENABLED START #
         assert device_under_test.healthState == HealthState.UNKNOWN
         # PROTECTED REGION END #    //  CspSubelementSubarray.test_healthState
@@ -134,7 +172,11 @@ class TestCspSubElementSubarray(object):
     # PROTECTED REGION ID(CspSubelementSubarray.test_adminMode_decorators) ENABLED START #
     # PROTECTED REGION END #    //  CspSubelementSubarray.test_adminMode_decorators
     def test_adminMode(self, device_under_test):
-        """Test for adminMode."""
+        """
+        Test for adminMode.
+
+        :param device_under_test: a proxy to the device under test
+        """
         # PROTECTED REGION ID(CspSubelementSubarray.test_adminMode) ENABLED START #
         assert device_under_test.adminMode == AdminMode.ONLINE
         # PROTECTED REGION END #    //  CspSubelementSubarray.test_adminMode
@@ -142,7 +184,11 @@ class TestCspSubElementSubarray(object):
     # PROTECTED REGION ID(CspSubelementSubarray.test_controlMode_decorators) ENABLED START #
     # PROTECTED REGION END #    //  CspSubelementSubarray.test_controlMode_decorators
     def test_controlMode(self, device_under_test):
-        """Test for controlMode."""
+        """
+        Test for controlMode.
+
+        :param device_under_test: a proxy to the device under test
+        """
         # PROTECTED REGION ID(CspSubelementSubarray.test_controlMode) ENABLED START #
         assert device_under_test.controlMode == ControlMode.REMOTE
         # PROTECTED REGION END #    //  CspSubelementSubarray.test_controlMode
@@ -150,7 +196,11 @@ class TestCspSubElementSubarray(object):
     # PROTECTED REGION ID(CspSubelementSubarray.test_simulationMode_decorators) ENABLED START #
     # PROTECTED REGION END #    //  CspSubelementSubarray.test_simulationMode_decorators
     def test_simulationMode(self, device_under_test):
-        """Test for simulationMode."""
+        """
+        Test for simulationMode.
+
+        :param device_under_test: a proxy to the device under test
+        """
         # PROTECTED REGION ID(CspSubelementSubarray.test_simulationMode) ENABLED START #
         assert device_under_test.simulationMode == SimulationMode.FALSE
         # PROTECTED REGION END #    //  CspSubelementSubarray.test_simulationMode
@@ -158,13 +208,23 @@ class TestCspSubElementSubarray(object):
     # PROTECTED REGION ID(CspSubelementSubarray.test_testMode_decorators) ENABLED START #
     # PROTECTED REGION END #    //  CspSubelementSubarray.test_testMode_decorators
     def test_testMode(self, device_under_test):
-        """Test for testMode."""
+        """
+        Test for testMode.
+
+        :param device_under_test: a proxy to the device under test
+        """
         # PROTECTED REGION ID(CspSubelementSubarray.test_testMode) ENABLED START #
         assert device_under_test.testMode == TestMode.NONE
         # PROTECTED REGION END #    //  CspSubelementSubarray.test_testMode
 
     def test_scanID(self, device_under_test, tango_change_event_helper):
-        """Test for scanID."""
+        """
+        Test for scanID.
+
+        :param device_under_test: a proxy to the device under test
+        :param tango_change_event_helper: helper fixture that simplifies
+            subscription to the device under test with a callback.
+        """
         assert device_under_test.state() == DevState.OFF
 
         device_state_callback = tango_change_event_helper.subscribe("state")
@@ -180,7 +240,11 @@ class TestCspSubElementSubarray(object):
     # PROTECTED REGION ID(CspSubelementSubarray.test_sdpDestinationAddresses_decorators) ENABLED START #
     # PROTECTED REGION END #    //  CspSubelementSubarray.test_sdpDestinationAddresses_decorators
     def test_sdpDestinationAddresses(self, device_under_test):
-        """Test for sdpDestinationAddresses."""
+        """
+        Test for sdpDestinationAddresses.
+
+        :param device_under_test: a proxy to the device under test
+        """
         # PROTECTED REGION ID(CspSubelementSubarray.test_sdpDestinationAddresses) ENABLED START #
         addresses_dict = {"outputHost": [], "outputMac": [], "outputPort": []}
         device_under_test.sdpDestinationAddresses = json.dumps(addresses_dict)
@@ -190,7 +254,11 @@ class TestCspSubElementSubarray(object):
     # PROTECTED REGION ID(CspSubelementSubarray.test_sdpLinkActive_decorators) ENABLED START #
     # PROTECTED REGION END #    //  CspSubelementSubarray.test_sdpLinkActive_decorators
     def test_sdpLinkActivity(self, device_under_test):
-        """Test for sdpLinkActive."""
+        """
+        Test for sdpLinkActive.
+
+        :param device_under_test: a proxy to the device under test
+        """
         # PROTECTED REGION ID(CspSubelementSubarray.test_sdpLinkActive) ENABLED START #
         actual = device_under_test.sdpLinkActive
         n_links = len(actual)
@@ -201,7 +269,11 @@ class TestCspSubElementSubarray(object):
     # PROTECTED REGION ID(CspSubelementSubarray.test_outputDataRateToSdp_decorators) ENABLED START #
     # PROTECTED REGION END #    //  CspSubelementSubarray.test_outputDataRateToSdp_decorators
     def test_outputDataRateToSdp(self, device_under_test):
-        """Test for outputDataRateToSdp."""
+        """
+        Test for outputDataRateToSdp.
+
+        :param device_under_test: a proxy to the device under test
+        """
         # PROTECTED REGION ID(CspSubelementSubarray.test_outputDataRateToSdp) ENABLED START #
         assert device_under_test.outputDataRateToSdp == 0
         # PROTECTED REGION END #    //  CspSubelementSubarray.test_outputDataRateToSdp
@@ -209,7 +281,11 @@ class TestCspSubElementSubarray(object):
     # PROTECTED REGION ID(CspSubelementSubarray.test_listOfDevicesCompletedTasks_decorators) ENABLED START #
     # PROTECTED REGION END #    //  CspSubelementSubarray.test_listOfDevicesCompletedTasks_decorators
     def test_listOfDevicesCompletedTasks(self, device_under_test):
-        """Test for listOfDevicesCompletedTasks."""
+        """
+        Test for listOfDevicesCompletedTasks.
+
+        :param device_under_test: a proxy to the device under test
+        """
         # PROTECTED REGION ID(CspSubelementSubarray.test_listOfDevicesCompletedTasks) ENABLED START #
         attr_value_as_dict = json.loads(device_under_test.listOfDevicesCompletedTasks)
         assert not bool(attr_value_as_dict)
@@ -221,7 +297,11 @@ class TestCspSubElementSubarray(object):
     # PROTECTED REGION ID(CspSubelementSubarray.test_assignResourcesMaximumDuration_decorators) ENABLED START #
     # PROTECTED REGION END #    //  CspSubelementSubarray.test_assignResourcesMaximumDuration_decorators
     def test_assignResourcesMaximumDuration(self, device_under_test):
-        """Test for assignResourcesMaximumDuration."""
+        """
+        Test for assignResourcesMaximumDuration.
+
+        :param device_under_test: a proxy to the device under test
+        """
         # PROTECTED REGION ID(CspSubelementSubarray.test_assignResourcesMaximumDuration) ENABLED START #
         device_under_test.assignResourcesMaximumDuration = 5
         assert device_under_test.assignResourcesMaximumDuration == 5
@@ -230,7 +310,11 @@ class TestCspSubElementSubarray(object):
     # PROTECTED REGION ID(CspSubelementSubarray.test_configureScanMeasuredDuration_decorators) ENABLED START #
     # PROTECTED REGION END #    //  CspSubelementSubarray.test_configureScanMeasuredDuration_decorators
     def test_configureScanMeasuredDuration(self, device_under_test):
-        """Test for configureScanMeasuredDuration."""
+        """
+        Test for configureScanMeasuredDuration.
+
+        :param device_under_test: a proxy to the device under test
+        """
         # PROTECTED REGION ID(CspSubelementSubarray.test_configureScanMeasuredDuration) ENABLED START #
         assert device_under_test.configureScanMeasuredDuration == 0
         # PROTECTED REGION END #    //  CspSubelementSubarray.test_configureScanMeasuredDuration
@@ -238,7 +322,11 @@ class TestCspSubElementSubarray(object):
     # PROTECTED REGION ID(CspSubelementSubarray.test_configurationProgress_decorators) ENABLED START #
     # PROTECTED REGION END #    //  CspSubelementSubarray.test_configurationProgress_decorators
     def test_configurationProgress(self, device_under_test):
-        """Test for configurationProgress."""
+        """
+        Test for configurationProgress.
+
+        :param device_under_test: a proxy to the device under test
+        """
         # PROTECTED REGION ID(CspSubelementSubarray.test_configurationProgress) ENABLED START #
         assert device_under_test.configurationProgress == 0
         # PROTECTED REGION END #    //  CspSubelementSubarray.test_configurationProgress
@@ -246,7 +334,11 @@ class TestCspSubElementSubarray(object):
     # PROTECTED REGION ID(CspSubelementSubarray.test_assignResourcesMeasuredDuration_decorators) ENABLED START #
     # PROTECTED REGION END #    //  CspSubelementSubarray.test_assignResourcesMeasuredDuration_decorators
     def test_assignResourcesMeasuredDuration(self, device_under_test):
-        """Test for assignResourcesMeasuredDuration."""
+        """
+        Test for assignResourcesMeasuredDuration.
+
+        :param device_under_test: a proxy to the device under test
+        """
         # PROTECTED REGION ID(CspSubelementSubarray.test_assignResourcesMeasuredDuration) ENABLED START #
         assert device_under_test.assignResourcesMeasuredDuration == 0
         # PROTECTED REGION END #    //  CspSubelementSubarray.test_assignResourcesMeasuredDuration
@@ -254,7 +346,11 @@ class TestCspSubElementSubarray(object):
     # PROTECTED REGION ID(CspSubelementSubarray.test_assignResourcesProgress_decorators) ENABLED START #
     # PROTECTED REGION END #    //  CspSubelementSubarray.test_assignResourcesProgress_decorators
     def test_assignResourcesProgress(self, device_under_test):
-        """Test for assignResourcesProgress."""
+        """
+        Test for assignResourcesProgress.
+
+        :param device_under_test: a proxy to the device under test
+        """
         # PROTECTED REGION ID(CspSubelementSubarray.test_assignResourcesProgress) ENABLED START #
         assert device_under_test.assignResourcesProgress == 0
         # PROTECTED REGION END #    //  CspSubelementSubarray.test_assignResourcesProgress
@@ -262,7 +358,11 @@ class TestCspSubElementSubarray(object):
     # PROTECTED REGION ID(CspSubelementSubarray.test_releaseResourcesMaximumDuration_decorators) ENABLED START #
     # PROTECTED REGION END #    //  CspSubelementSubarray.test_releaseResourcesMaximumDuration_decorators
     def test_releaseResourcesMaximumDuration(self, device_under_test):
-        """Test for releaseResourcesMaximumDuration."""
+        """
+        Test for releaseResourcesMaximumDuration.
+
+        :param device_under_test: a proxy to the device under test
+        """
         # PROTECTED REGION ID(CspSubelementSubarray.test_releaseResourcesMaximumDuration) ENABLED START #
         device_under_test.releaseResourcesMaximumDuration = 5
         assert device_under_test.releaseResourcesMaximumDuration == 5
@@ -271,7 +371,11 @@ class TestCspSubElementSubarray(object):
     # PROTECTED REGION ID(CspSubelementSubarray.test_releaseResourcesMeasuredDuration_decorators) ENABLED START #
     # PROTECTED REGION END #    //  CspSubelementSubarray.test_releaseResourcesMeasuredDuration_decorators
     def test_releaseResourcesMeasuredDuration(self, device_under_test):
-        """Test for releaseResourcesMeasuredDuration."""
+        """
+        Test for releaseResourcesMeasuredDuration.
+
+        :param device_under_test: a proxy to the device under test
+        """
         # PROTECTED REGION ID(CspSubelementSubarray.test_releaseResourcesMeasuredDuration) ENABLED START #
         assert device_under_test.releaseResourcesMeasuredDuration == 0
         # PROTECTED REGION END #    //  CspSubelementSubarray.test_releaseResourcesMeasuredDuration
@@ -279,7 +383,11 @@ class TestCspSubElementSubarray(object):
     # PROTECTED REGION ID(CspSubelementSubarray.test_releaseResourcesProgress_decorators) ENABLED START #
     # PROTECTED REGION END #    //  CspSubelementSubarray.test_releaseResourcesProgress_decorators
     def test_releaseResourcesProgress(self, device_under_test):
-        """Test for releaseResourcesProgress."""
+        """
+        Test for releaseResourcesProgress.
+
+        :param device_under_test: a proxy to the device under test
+        """
         # PROTECTED REGION ID(CspSubelementSubarray.test_releaseResourcesProgress) ENABLED START #
         assert device_under_test.releaseResourcesProgress == 0
         # PROTECTED REGION END #    //  CspSubelementSubarray.test_releaseResourcesProgress
@@ -287,7 +395,11 @@ class TestCspSubElementSubarray(object):
     # PROTECTED REGION ID(CspSubelementSubarray.test_timeoutExpiredFlag_decorators) ENABLED START #
     # PROTECTED REGION END #    //  CspSubelementSubarray.test_timeoutExpiredFlag_decorators
     def test_configureScanTimeoutExpiredFlag(self, device_under_test):
-        """Test for timeoutExpiredFlag."""
+        """
+        Test for timeoutExpiredFlag.
+
+        :param device_under_test: a proxy to the device under test
+        """
         # PROTECTED REGION ID(CspSubelementSubarray.test_timeoutExpiredFlag) ENABLED START #
         assert not device_under_test.configureScanTimeoutExpiredFlag
         # PROTECTED REGION END #    //  CspSubelementSubarray.test_timeoutExpiredFlag
@@ -295,7 +407,11 @@ class TestCspSubElementSubarray(object):
     # PROTECTED REGION ID(CspSubelementSubarray.test_timeoutExpiredFlag_decorators) ENABLED START #
     # PROTECTED REGION END #    //  CspSubelementSubarray.test_timeoutExpiredFlag_decorators
     def test_assignResourcesTimeoutExpiredFlag(self, device_under_test):
-        """Test for timeoutExpiredFlag."""
+        """
+        Test for timeoutExpiredFlag.
+
+        :param device_under_test: a proxy to the device under test
+        """
         # PROTECTED REGION ID(CspSubelementSubarray.test_timeoutExpiredFlag) ENABLED START #
         assert not device_under_test.assignResourcesTimeoutExpiredFlag
         # PROTECTED REGION END #    //  CspSubelementSubarray.test_timeoutExpiredFlag
@@ -303,7 +419,11 @@ class TestCspSubElementSubarray(object):
     # PROTECTED REGION ID(CspSubelementSubarray.test_timeoutExpiredFlag_decorators) ENABLED START #
     # PROTECTED REGION END #    //  CspSubelementSubarray.test_timeoutExpiredFlag_decorators
     def test_releaseResourcesTimeoutExpiredFlag(self, device_under_test):
-        """Test for timeoutExpiredFlag."""
+        """
+        Test for timeoutExpiredFlag.
+
+        :param device_under_test: a proxy to the device under test
+        """
         # PROTECTED REGION ID(CspSubelementSubarray.test_timeoutExpiredFlag) ENABLED START #
         assert not device_under_test.releaseResourcesTimeoutExpiredFlag
         # PROTECTED REGION END #    //  CspSubelementSubarray.test_timeoutExpiredFlag
@@ -314,7 +434,14 @@ class TestCspSubElementSubarray(object):
     def test_ConfigureScan_and_GoToIdle(
         self, device_under_test, tango_change_event_helper, command_alias
     ):
-        """Test for ConfigureScan."""
+        """
+        Test for ConfigureScan.
+
+        :param device_under_test: a proxy to the device under test
+        :param tango_change_event_helper: helper fixture that simplifies
+            subscription to the device under test with a callback.
+        :param command_alias: name of the specific command being tested.
+        """
         # PROTECTED REGION ID(CspSubelementSubarray.test_ConfigureScan) ENABLED START #
         assert device_under_test.state() == DevState.OFF
 
@@ -443,7 +570,11 @@ class TestCspSubElementSubarray(object):
     # PROTECTED REGION ID(CspSubelementSubarray.test_ConfigureScan_when_in_wrong_state_decorators) ENABLED START #
     # PROTECTED REGION END #    //  CspSubelementSubarray.test_ConfigureScan_when_in_wrong_state_decorators
     def test_ConfigureScan_when_in_wrong_state(self, device_under_test):
-        """Test for ConfigureScan when the device is in wrong state."""
+        """
+        Test for ConfigureScan when the device is in wrong state.
+
+        :param device_under_test: a proxy to the device under test
+        """
         # PROTECTED REGION ID(CspSubelementSubarray.test_ConfigureScan_when_in_wrong_state) ENABLED START #
         # The device in in OFF/EMPTY state, not valid to invoke ConfigureScan.
         with pytest.raises(
@@ -458,7 +589,13 @@ class TestCspSubElementSubarray(object):
     def test_ConfigureScan_with_wrong_configId_key(
         self, device_under_test, tango_change_event_helper
     ):
-        """Test that ConfigureScan handles a wrong configuration id key."""
+        """
+        Test that ConfigureScan handles a wrong configuration id key.
+
+        :param device_under_test: a proxy to the device under test
+        :param tango_change_event_helper: helper fixture that simplifies
+            subscription to the device under test with a callback.
+        """
         # PROTECTED REGION ID(CspSubelementSubarray.test_ConfigureScan_with_wrong_configId_key) ENABLED START #
 
         assert device_under_test.state() == DevState.OFF
@@ -542,7 +679,13 @@ class TestCspSubElementSubarray(object):
     def test_ConfigureScan_with_json_syntax_error(
         self, device_under_test, tango_change_event_helper
     ):
-        """Test for ConfigureScan when syntax error in json configuration."""
+        """
+        Test for ConfigureScan when syntax error in json configuration.
+
+        :param device_under_test: a proxy to the device under test
+        :param tango_change_event_helper: helper fixture that simplifies
+            subscription to the device under test with a callback.
+        """
         # PROTECTED REGION ID(CspSubelementSubarray.test_ConfigureScan_with_json_syntax_error) ENABLED START #
         assert device_under_test.state() == DevState.OFF
 

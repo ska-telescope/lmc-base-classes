@@ -53,7 +53,11 @@ class TestCspSubElementObsDevice(object):
 
     @pytest.fixture(scope="class")
     def device_properties(self):
-        """Fixture that returns properties of the device under test."""
+        """
+        Fixture that returns properties of the device under test.
+
+        :return: properties of the device under test
+        """
         return {"DeviceID": "11"}
 
     @pytest.fixture(scope="class")
@@ -64,6 +68,12 @@ class TestCspSubElementObsDevice(object):
         This implementation provides a concrete subclass of the device
         class under test, some properties, and a memorized value for
         adminMode.
+
+        :param device_properties: fixture that returns device properties
+            of the device under test
+
+        :return: specification of how the device under test should be
+            configured
         """
         return {
             "device": CspSubElementObsDevice,
@@ -79,7 +89,11 @@ class TestCspSubElementObsDevice(object):
     # PROTECTED REGION ID(CspSubelementObsDevice.test_State_decorators) ENABLED START #
     # PROTECTED REGION END #    //  CspSubelementObsDevice.test_State_decorators
     def test_State(self, device_under_test):
-        """Test for State."""
+        """
+        Test for State.
+
+        :param device_under_test: a proxy to the device under test
+        """
         # PROTECTED REGION ID(CspSubelementObsDevice.test_State) ENABLED START #
         assert device_under_test.state() == DevState.OFF
         # PROTECTED REGION END #    //  CspSubelementObsDevice.test_State
@@ -87,7 +101,11 @@ class TestCspSubElementObsDevice(object):
     # PROTECTED REGION ID(CspSubelementObsDevice.test_Status_decorators) ENABLED START #
     # PROTECTED REGION END #    //  CspSubelementObsDevice.test_Status_decorators
     def test_Status(self, device_under_test):
-        """Test for Status."""
+        """
+        Test for Status.
+
+        :param device_under_test: a proxy to the device under test
+        """
         # PROTECTED REGION ID(CspSubelementObsDevice.test_Status) ENABLED START #
         assert device_under_test.Status() == "The device is in OFF state."
         # PROTECTED REGION END #    //  CspSubelementObsDevice.test_Status
@@ -95,7 +113,11 @@ class TestCspSubElementObsDevice(object):
     # PROTECTED REGION ID(CspSubelementObsDevice.test_GetVersionInfo_decorators) ENABLED START #
     # PROTECTED REGION END #    //  CspSubelementObsDevice.test_GetVersionInfo_decorators
     def test_GetVersionInfo(self, device_under_test):
-        """Test for GetVersionInfo."""
+        """
+        Test for GetVersionInfo.
+
+        :param device_under_test: a proxy to the device under test
+        """
         # PROTECTED REGION ID(CspSubelementObsDevice.test_GetVersionInfo) ENABLED START #
         version_pattern = (
             f"{device_under_test.info().dev_class}, ska_tango_base, "
@@ -109,7 +131,11 @@ class TestCspSubElementObsDevice(object):
     # PROTECTED REGION ID(CspSubelementObsDevice.test_buildState_decorators) ENABLED START #
     # PROTECTED REGION END #    //  CspSubelementObsDevice.test_buildState_decorators
     def test_buildState(self, device_under_test):
-        """Test for buildState."""
+        """
+        Test for buildState.
+
+        :param device_under_test: a proxy to the device under test
+        """
         # PROTECTED REGION ID(CspSubelementObsDevice.test_buildState) ENABLED START #
         buildPattern = re.compile(
             r"ska_tango_base, [0-9]+.[0-9]+.[0-9]+, "
@@ -121,7 +147,11 @@ class TestCspSubElementObsDevice(object):
     # PROTECTED REGION ID(CspSubelementObsDevice.test_versionId_decorators) ENABLED START #
     # PROTECTED REGION END #    //  CspSubelementObsDevice.test_versionId_decorators
     def test_versionId(self, device_under_test):
-        """Test for versionId."""
+        """
+        Test for versionId.
+
+        :param device_under_test: a proxy to the device under test
+        """
         # PROTECTED REGION ID(CspSubelementObsDevice.test_versionId) ENABLED START #
         versionIdPattern = re.compile(r"[0-9]+.[0-9]+.[0-9]+")
         assert (re.match(versionIdPattern, device_under_test.versionId)) is not None
@@ -130,7 +160,11 @@ class TestCspSubElementObsDevice(object):
     # PROTECTED REGION ID(CspSubelementObsDevice.test_healthState_decorators) ENABLED START #
     # PROTECTED REGION END #    //  CspSubelementObsDevice.test_healthState_decorators
     def test_healthState(self, device_under_test):
-        """Test for healthState."""
+        """
+        Test for healthState.
+
+        :param device_under_test: a proxy to the device under test
+        """
         # PROTECTED REGION ID(CspSubelementObsDevice.test_healthState) ENABLED START #
         assert device_under_test.healthState == HealthState.UNKNOWN
         # PROTECTED REGION END #    //  CspSubelementObsDevice.test_healthState
@@ -138,7 +172,11 @@ class TestCspSubElementObsDevice(object):
     # PROTECTED REGION ID(CspSubelementObsDevice.test_adminMode_decorators) ENABLED START #
     # PROTECTED REGION END #    //  CspSubelementObsDevice.test_adminMode_decorators
     def test_adminMode(self, device_under_test):
-        """Test for adminMode."""
+        """
+        Test for adminMode.
+
+        :param device_under_test: a proxy to the device under test
+        """
         # PROTECTED REGION ID(CspSubelementObsDevice.test_adminMode) ENABLED START #
         assert device_under_test.adminMode == AdminMode.ONLINE
         # PROTECTED REGION END #    //  CspSubelementObsDevice.test_adminMode
@@ -146,7 +184,11 @@ class TestCspSubElementObsDevice(object):
     # PROTECTED REGION ID(CspSubelementObsDevice.test_controlMode_decorators) ENABLED START #
     # PROTECTED REGION END #    //  CspSubelementObsDevice.test_controlMode_decorators
     def test_controlMode(self, device_under_test):
-        """Test for controlMode."""
+        """
+        Test for controlMode.
+
+        :param device_under_test: a proxy to the device under test
+        """
         # PROTECTED REGION ID(CspSubelementObsDevice.test_controlMode) ENABLED START #
         assert device_under_test.controlMode == ControlMode.REMOTE
         # PROTECTED REGION END #    //  CspSubelementObsDevice.test_controlMode
@@ -154,7 +196,11 @@ class TestCspSubElementObsDevice(object):
     # PROTECTED REGION ID(CspSubelementObsDevice.test_simulationMode_decorators) ENABLED START #
     # PROTECTED REGION END #    //  CspSubelementObsDevice.test_simulationMode_decorators
     def test_simulationMode(self, device_under_test):
-        """Test for simulationMode."""
+        """
+        Test for simulationMode.
+
+        :param device_under_test: a proxy to the device under test
+        """
         # PROTECTED REGION ID(CspSubelementObsDevice.test_simulationMode) ENABLED START #
         assert device_under_test.simulationMode == SimulationMode.FALSE
         # PROTECTED REGION END #    //  CspSubelementObsDevice.test_simulationMode
@@ -162,7 +208,11 @@ class TestCspSubElementObsDevice(object):
     # PROTECTED REGION ID(CspSubelementObsDevice.test_testMode_decorators) ENABLED START #
     # PROTECTED REGION END #    //  CspSubelementObsDevice.test_testMode_decorators
     def test_testMode(self, device_under_test):
-        """Test for testMode."""
+        """
+        Test for testMode.
+
+        :param device_under_test: a proxy to the device under test
+        """
         # PROTECTED REGION ID(CspSubelementObsDevice.test_testMode) ENABLED START #
         assert device_under_test.testMode == TestMode.NONE
         # PROTECTED REGION END #    //  CspSubelementObsDevice.test_testMode
@@ -170,7 +220,13 @@ class TestCspSubElementObsDevice(object):
     # PROTECTED REGION ID(CspSubelementObsDevice.test_scanID_decorators) ENABLED START #
     # PROTECTED REGION END #    //  CspSubelementObsDevice.test_scanID_decorators
     def test_scanID(self, device_under_test, tango_change_event_helper):
-        """Test for scanID."""
+        """
+        Test for scanID.
+
+        :param device_under_test: a proxy to the device under test
+        :param tango_change_event_helper: helper fixture that simplifies
+            subscription to the device under test with a callback.
+        """
         # PROTECTED REGION ID(CspSubelementObsDevice.test_scanID) ENABLED START #
         assert device_under_test.state() == DevState.OFF
 
@@ -188,7 +244,11 @@ class TestCspSubElementObsDevice(object):
     # PROTECTED REGION ID(CspSubelementObsDevice.test_deviceID_decorators) ENABLED START #
     # PROTECTED REGION END #    //  CspSubelementObsDevice.test_deviceID_decorators
     def test_deviceID(self, device_under_test, device_properties):
-        """Test for deviceID."""
+        """
+        Test for deviceID.
+
+        :param device_under_test: a proxy to the device under test
+        """
         # PROTECTED REGION ID(CspSubelementObsDevice.test_scanID) ENABLED START #
         assert device_under_test.deviceID == int(device_properties["DeviceID"])
         # PROTECTED REGION END #    //  CspSubelementObsDevice.test_scanID
@@ -196,7 +256,11 @@ class TestCspSubElementObsDevice(object):
     # PROTECTED REGION ID(CspSubelementObsDevice.test_sdpDestinationAddresses_decorators) ENABLED START #
     # PROTECTED REGION END #    //  CspSubelementObsDevice.test_sdpDestinationAddresses_decorators
     def test_sdpDestinationAddresses(self, device_under_test):
-        """Test for sdpDestinationAddresses."""
+        """
+        Test for sdpDestinationAddresses.
+
+        :param device_under_test: a proxy to the device under test
+        """
         # PROTECTED REGION ID(CspSubelementObsDevice.test_sdpDestinationAddresses) ENABLED START #
         addresses_dict = {"outputHost": [], "outputMac": [], "outputPort": []}
         assert device_under_test.sdpDestinationAddresses == json.dumps(addresses_dict)
@@ -205,7 +269,11 @@ class TestCspSubElementObsDevice(object):
     # PROTECTED REGION ID(CspSubelementObsDevice.test_sdpLinkActive_decorators) ENABLED START #
     # PROTECTED REGION END #    //  CspSubelementObsDevice.test_sdpLinkActive_decorators
     def test_sdpLinkActivity(self, device_under_test):
-        """Test for sdpLinkActive."""
+        """
+        Test for sdpLinkActive.
+
+        :param device_under_test: a proxy to the device under test
+        """
         # PROTECTED REGION ID(CspSubelementObsDevice.test_sdpLinkActive) ENABLED START #
         actual = device_under_test.sdpLinkActive
         n_links = len(actual)
@@ -216,7 +284,11 @@ class TestCspSubElementObsDevice(object):
     # PROTECTED REGION ID(CspSubelementObsDevice.test_sdpLinkCapacity_decorators) ENABLED START #
     # PROTECTED REGION END #    //  CspSubelementObsDevice.test_sdpLinkCapacity_decorators
     def test_sdpLinkCapacity(self, device_under_test):
-        """Test for sdpLinkCapacity."""
+        """
+        Test for sdpLinkCapacity.
+
+        :param device_under_test: a proxy to the device under test
+        """
         # PROTECTED REGION ID(CspSubelementObsDevice.test_sdpLinkCapacity) ENABLED START #
         assert device_under_test.sdpLinkCapacity == 0
         # PROTECTED REGION END #    //  CspSubelementObsDevice.test_sdpLinkCapacity
@@ -224,7 +296,11 @@ class TestCspSubElementObsDevice(object):
     # PROTECTED REGION ID(CspSubelementObsDevice.test_healthFailureMessage_decorators) ENABLED START #
     # PROTECTED REGION END #    //  CspSubelementObsDevice.test_healthFailureMessage_decorators
     def test_healthFailureMessage(self, device_under_test):
-        """Test for healthFailureMessage."""
+        """
+        Test for healthFailureMessage.
+
+        :param device_under_test: a proxy to the device under test
+        """
         # PROTECTED REGION ID(CspSubelementObsDevice.test_healthFailureMessage) ENABLED START #
         assert device_under_test.healthFailureMessage == ""
         # PROTECTED REGION END #    //  CspSubelementObsDevice.test_healthFailureMessage
@@ -234,7 +310,13 @@ class TestCspSubElementObsDevice(object):
     def test_ConfigureScan_and_GoToIdle(
         self, device_under_test, tango_change_event_helper
     ):
-        """Test for ConfigureScan."""
+        """
+        Test for ConfigureScan.
+
+        :param device_under_test: a proxy to the device under test
+        :param tango_change_event_helper: helper fixture that simplifies
+            subscription to the device under test with a callback.
+        """
         # PROTECTED REGION ID(CspSubelementObsDevice.test_ConfigureScan) ENABLED START #
         assert device_under_test.state() == DevState.OFF
 
@@ -336,7 +418,11 @@ class TestCspSubElementObsDevice(object):
     # PROTECTED REGION ID(CspSubelementObsDevice.test_ConfigureScan_when_in_wrong_state_decorators) ENABLED START #
     # PROTECTED REGION END #    //  CspSubelementObsDevice.test_ConfigureScan_when_in_wrong_state_decorators
     def test_ConfigureScan_when_in_wrong_state(self, device_under_test):
-        """Test for ConfigureScan when the device is in wrong state."""
+        """
+        Test for ConfigureScan when the device is in wrong state.
+
+        :param device_under_test: a proxy to the device under test
+        """
         # PROTECTED REGION ID(CspSubelementObsDevice.test_ConfigureScan_when_in_wrong_state) ENABLED START #
         # The device in in OFF/IDLE state, not valid to invoke ConfigureScan.
 
@@ -352,6 +438,8 @@ class TestCspSubElementObsDevice(object):
 
         Specifically, test when input argument specifies a wrong json
         configuration and the device is in IDLE state.
+
+        :param device_under_test: a proxy to the device under test
         """
         # PROTECTED REGION ID(CspSubelementObsDevice.test_ConfigureScan_with_wrong_input_args_when_idle) ENABLED START #
         device_under_test.On()
@@ -367,7 +455,11 @@ class TestCspSubElementObsDevice(object):
     # PROTECTED REGION ID(CspSubelementObsDevice.test_ConfigureScan_with_json_syntax_error) ENABLED START #
     # PROTECTED REGION END #    //  CspSubelementObsDevice.test_ConfigureScan_with_json_syntax_error_decorators
     def test_ConfigureScan_with_json_syntax_error(self, device_under_test):
-        """Test for ConfigureScan when syntax error in json configuration."""
+        """
+        Test for ConfigureScan when syntax error in json configuration.
+
+        :param device_under_test: a proxy to the device under test
+        """
         # PROTECTED REGION ID(CspSubelementObsDevice.test_ConfigureScan_with_json_syntax_error) ENABLED START #
         device_under_test.On()
         assert device_under_test.obsState == ObsState.IDLE
@@ -380,7 +472,11 @@ class TestCspSubElementObsDevice(object):
     # PROTECTED REGION ID(CspSubelementObsDevice.test_GoToIdle_when_in_wrong_state_decorators) ENABLED START #
     # PROTECTED REGION END #    //  CspSubelementObsDevice.test_GoToIdle_when_in_wrong_state_decorators
     def test_GoToIdle_when_in_wrong_state(self, device_under_test):
-        """Test for GoToIdle when the device is in wrong state."""
+        """
+        Test for GoToIdle when the device is in wrong state.
+
+        :param device_under_test: a proxy to the device under test
+        """
         # PROTECTED REGION ID(CspSubelementObsDevice.test_GoToIdle_when_in_wrong_state) ENABLED START #
         # The device in in OFF/IDLE state, not valid to invoke GoToIdle.
         with pytest.raises(
@@ -393,7 +489,13 @@ class TestCspSubElementObsDevice(object):
     # PROTECTED REGION ID(CspSubelementObsDevice.test_Scan_decorators) ENABLED START #
     # PROTECTED REGION END #    //  CspSubelementObsDevice.test_Scan_decorators
     def test_Scan_and_EndScan(self, device_under_test, tango_change_event_helper):
-        """Test for Scan."""
+        """
+        Test for Scan.
+
+        :param device_under_test: a proxy to the device under test
+        :param tango_change_event_helper: helper fixture that simplifies
+            subscription to the device under test with a callback.
+        """
         # PROTECTED REGION ID(CspSubelementObsDevice.test_Scan) ENABLED START #
 
         assert device_under_test.state() == DevState.OFF
@@ -519,7 +621,13 @@ class TestCspSubElementObsDevice(object):
     def test_Scan_when_in_wrong_state(
         self, device_under_test, tango_change_event_helper
     ):
-        """Test for Scan when the device is in wrong state."""
+        """
+        Test for Scan when the device is in wrong state.
+
+        :param device_under_test: a proxy to the device under test
+        :param tango_change_event_helper: helper fixture that simplifies
+            subscription to the device under test with a callback.
+        """
         # PROTECTED REGION ID(CspSubelementObsDevice.test_Scan_when_in_wrong_state) ENABLED START #
         # Set the device in ON/IDLE state
         assert device_under_test.state() == DevState.OFF
@@ -543,7 +651,13 @@ class TestCspSubElementObsDevice(object):
     def test_Scan_with_wrong_argument(
         self, device_under_test, tango_change_event_helper
     ):
-        """Test for Scan when a wrong input argument is passed."""
+        """
+        Test for Scan when a wrong input argument is passed.
+
+        :param device_under_test: a proxy to the device under test
+        :param tango_change_event_helper: helper fixture that simplifies
+            subscription to the device under test with a callback.
+        """
         # PROTECTED REGION ID(CspSubelementObsDevice.test_Scan_with_wrong_argument) ENABLED START #
         # Set the device in ON/IDLE state
         assert device_under_test.state() == DevState.OFF
@@ -583,7 +697,13 @@ class TestCspSubElementObsDevice(object):
     def test_EndScan_when_in_wrong_state(
         self, device_under_test, tango_change_event_helper
     ):
-        """Test for EndScan when the device is in wrong state."""
+        """
+        Test for EndScan when the device is in wrong state.
+
+        :param device_under_test: a proxy to the device under test
+        :param tango_change_event_helper: helper fixture that simplifies
+            subscription to the device under test with a callback.
+        """
         # PROTECTED REGION ID(CspSubelementObsDevice.test_EndScan_when_in_wrong_state) ENABLED START #
         # Set the device in ON/READY state
         assert device_under_test.state() == DevState.OFF
@@ -621,7 +741,13 @@ class TestCspSubElementObsDevice(object):
     # PROTECTED REGION ID(CspSubelementObsDevice.test_Abort_decorators) ENABLED START #
     # PROTECTED REGION END #    //  CspSubelementObsDevice.test_Abort_decorators
     def test_abort_and_obsreset(self, device_under_test, tango_change_event_helper):
-        """Test for Abort."""
+        """
+        Test for Abort.
+
+        :param device_under_test: a proxy to the device under test
+        :param tango_change_event_helper: helper fixture that simplifies
+            subscription to the device under test with a callback.
+        """
         # PROTECTED REGION ID(CspSubelementObsDevice.test_Abort) ENABLED START #
         assert device_under_test.state() == DevState.OFF
 
@@ -758,7 +884,11 @@ class TestCspSubElementObsDevice(object):
     # PROTECTED REGION ID(CspSubelementObsDevice.test_ObsReset_when_in_wrong_state_decorators) ENABLED START #
     # PROTECTED REGION END #    //  CspSubelementObsDevice.test_ObsReset_when_in_wrong_state_decorators
     def test_ObsReset_when_in_wrong_state(self, device_under_test):
-        """Test for ObsReset when the device is in wrong state."""
+        """
+        Test for ObsReset when the device is in wrong state.
+
+        :param device_under_test: a proxy to the device under test
+        """
         # PROTECTED REGION ID(CspSubelementObsDevice.test_ObsReset_when_in_wrong_state) ENABLED START #
         # Set the device in ON/IDLE state
         device_under_test.On()

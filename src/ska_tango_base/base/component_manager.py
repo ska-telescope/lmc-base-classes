@@ -312,13 +312,9 @@ class TaskExecutorComponentManager(BaseComponentManager):
         """
         Initialise a new ComponentManager instance.
 
-        :param communication_state_callback: callback to be called when
-            the status of communications between the component manager
-            and its component changes.
-        :param component_power_mode_changed_callback: callback to be
-            called when the power mode of the component changes.
-        :param component_fault_callback: callback to be called when the
-            fault status of the component changes.
+        :param args: additional positional arguments
+        :param max_workers: option maximum number of workers in the pool
+        :param kwargs: additional keyword arguments
         """
         self._task_executor = TaskExecutor(max_workers)
         super().__init__(*args, **kwargs)

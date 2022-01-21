@@ -40,15 +40,18 @@ class _OpStateMachine(Machine):
       the component is in low-power standby mode
     * **ON**: the device is monitoring its telescope component and the
       component is turned on
-    * **FAULT**: the device is monitoring its telescope component and
-      the component has failed or is in an inconsistent state.
+    * **FAULT_STANDBY**: the device is monitoring its telescope
+      component and the component is in low-power standby mode and has
+      experienced a fault.
+    * **FAULT_ON**: the device is monitoring its telescope component and
+      the component is turned on and has experienced a fault.
 
     There are also corresponding initialising states: **INIT_DISABLE**,
-    **INIT_UNKNOWN**, **INIT_OFF**, **INIT_STANDBY**, **INIT_ON** and
-    **INIT_FAULT**. These states allow for the underlying system
-    component to change its state during long-running initialisation,
-    and for a device to transition to an appropriate state at the end of
-    initialisation.
+    **INIT_UNKNOWN**, **INIT_OFF**, **INIT_STANDBY**, **INIT_ON**,
+    **INIT_FAULT_STANDBY** and **INIT_FAULT_ON**. These states allow for
+    the underlying system component to change its state during
+    long-running initialisation, and for a device to transition to an
+    appropriate state at the end of initialisation.
 
     Finally, there is an **_UNINITIALISED** starting state, representing
     a device that hasn't started initialising yet.
@@ -69,6 +72,9 @@ class _OpStateMachine(Machine):
     * **component_standby**: the component has switched to low-power
       standby mode
     * **component_on**: the component has been switched on
+    * **component_fault**: the component has experienced a fault
+    * **component_no_fault**: the component has stopped experiencing a
+      fault
 
     A diagram of the state machine is shown below. Essentially, the
     machine has three "super-states", representing a device before,
@@ -107,13 +113,15 @@ class _OpStateMachine(Machine):
             "INIT_OFF",
             "INIT_STANDBY",
             "INIT_ON",
-            "INIT_FAULT",
+            "INIT_FAULT_STANDBY",
+            "INIT_FAULT_ON",
             "DISABLE",
             "UNKNOWN",
             "OFF",
             "STANDBY",
             "ON",
-            "FAULT",
+            "FAULT_STANDBY",
+            "FAULT_ON",
         ]
 
         transitions = [
@@ -132,7 +140,8 @@ class _OpStateMachine(Machine):
                     "INIT_OFF",
                     "INIT_STANDBY",
                     "INIT_ON",
-                    "INIT_FAULT",
+                    "INIT_FAULT_STANDBY",
+                    "INIT_FAULT_ON",
                 ],
                 "trigger": "component_disconnected",
                 "dest": "INIT_DISABLE",
@@ -144,7 +153,8 @@ class _OpStateMachine(Machine):
                     "INIT_OFF",
                     "INIT_STANDBY",
                     "INIT_ON",
-                    "INIT_FAULT",
+                    "INIT_FAULT_STANDBY",
+                    "INIT_FAULT_ON",
                 ],
                 "trigger": "component_unknown",
                 "dest": "INIT_UNKNOWN",
@@ -156,7 +166,8 @@ class _OpStateMachine(Machine):
                     "INIT_OFF",
                     "INIT_STANDBY",
                     "INIT_ON",
-                    "INIT_FAULT",
+                    "INIT_FAULT_STANDBY",
+                    "INIT_FAULT_ON",
                 ],
                 "trigger": "component_off",
                 "dest": "INIT_OFF",
@@ -168,22 +179,17 @@ class _OpStateMachine(Machine):
                     "INIT_OFF",
                     "INIT_STANDBY",
                     "INIT_ON",
-                    "INIT_FAULT",
                 ],
                 "trigger": "component_standby",
                 "dest": "INIT_STANDBY",
             },
             {
                 "source": [
-                    "INIT_DISABLE",
-                    "INIT_UNKNOWN",
-                    "INIT_OFF",
-                    "INIT_STANDBY",
-                    "INIT_ON",
-                    "INIT_FAULT",
+                    "INIT_FAULT_STANDBY",
+                    "INIT_FAULT_ON",
                 ],
-                "trigger": "component_on",
-                "dest": "INIT_ON",
+                "trigger": "component_standby",
+                "dest": "INIT_FAULT_STANDBY",
             },
             {
                 "source": [
@@ -192,10 +198,37 @@ class _OpStateMachine(Machine):
                     "INIT_OFF",
                     "INIT_STANDBY",
                     "INIT_ON",
-                    "INIT_FAULT",
                 ],
+                "trigger": "component_on",
+                "dest": "INIT_ON",
+            },
+            {
+                "source": [
+                    "INIT_FAULT_STANDBY",
+                    "INIT_FAULT_ON",
+                ],
+                "trigger": "component_on",
+                "dest": "INIT_FAULT_ON",
+            },
+            {
+                "source": ["INIT_STANDBY", "INIT_FAULT_STANDBY"],
                 "trigger": "component_fault",
-                "dest": "INIT_FAULT",
+                "dest": "INIT_FAULT_STANDBY",
+            },
+            {
+                "source": ["INIT_ON", "INIT_FAULT_ON"],
+                "trigger": "component_fault",
+                "dest": "INIT_FAULT_ON",
+            },
+            {
+                "source": ["INIT_STANDBY", "INIT_FAULT_STANDBY"],
+                "trigger": "component_no_fault",
+                "dest": "INIT_STANDBY",
+            },
+            {
+                "source": ["INIT_ON", "INIT_FAULT_ON"],
+                "trigger": "component_no_fault",
+                "dest": "INIT_ON",
             },
             # Completion of initialisation
             {
@@ -224,61 +257,95 @@ class _OpStateMachine(Machine):
                 "dest": "ON",
             },
             {
-                "source": "INIT_FAULT",
+                "source": "INIT_FAULT_STANDBY",
                 "trigger": "init_completed",
-                "dest": "FAULT",
+                "dest": "FAULT_STANDBY",
+            },
+            {
+                "source": "INIT_FAULT_ON",
+                "trigger": "init_completed",
+                "dest": "FAULT_ON",
             },
             # Changes in the state of the monitored component post-initialisation
             {
-                "source": ["DISABLE", "UNKNOWN", "OFF", "STANDBY", "ON", "FAULT"],
+                "source": [
+                    "DISABLE",
+                    "UNKNOWN",
+                    "OFF",
+                    "STANDBY",
+                    "ON",
+                    "FAULT_STANDBY",
+                    "FAULT_ON",
+                ],
                 "trigger": "component_disconnected",
                 "dest": "DISABLE",
             },
             {
-                "source": ["DISABLE", "UNKNOWN", "OFF", "STANDBY", "ON", "FAULT"],
+                "source": [
+                    "DISABLE",
+                    "UNKNOWN",
+                    "OFF",
+                    "STANDBY",
+                    "ON",
+                    "FAULT_STANDBY",
+                    "FAULT_ON",
+                ],
                 "trigger": "component_unknown",
                 "dest": "UNKNOWN",
             },
             {
-                "source": ["DISABLE", "UNKNOWN", "OFF", "STANDBY", "ON", "FAULT"],
+                "source": [
+                    "DISABLE",
+                    "UNKNOWN",
+                    "OFF",
+                    "STANDBY",
+                    "ON",
+                    "FAULT",
+                    "FAULT_STANDBY",
+                    "FAULT_ON",
+                ],
                 "trigger": "component_off",
                 "dest": "OFF",
             },
             {
-                "source": ["DISABLE", "UNKNOWN", "OFF", "STANDBY", "ON", "FAULT"],
+                "source": ["DISABLE", "UNKNOWN", "OFF", "STANDBY", "ON"],
                 "trigger": "component_standby",
                 "dest": "STANDBY",
             },
             {
-                "source": ["DISABLE", "UNKNOWN", "OFF", "STANDBY", "ON", "FAULT"],
+                "source": ["FAULT_STANDBY", "FAULT_ON"],
+                "trigger": "component_standby",
+                "dest": "FAULT_STANDBY",
+            },
+            {
+                "source": ["DISABLE", "UNKNOWN", "OFF", "STANDBY", "ON"],
                 "trigger": "component_on",
                 "dest": "ON",
             },
             {
-                "source": ["DISABLE", "UNKNOWN", "OFF", "STANDBY", "ON", "FAULT"],
+                "source": ["FAULT_STANDBY", "FAULT_ON"],
+                "trigger": "component_on",
+                "dest": "FAULT_ON",
+            },
+            {
+                "source": ["STANDBY", "FAULT_STANDBY"],
                 "trigger": "component_fault",
-                "dest": "FAULT",
-            },
-            # Transitions governing what device commands are permitted
-            {
-                "source": "FAULT",
-                "trigger": "reset_invoked",
-                "dest": "=",
+                "dest": "FAULT_STANDBY",
             },
             {
-                "source": ["OFF", "STANDBY", "ON"],
-                "trigger": "off_invoked",
-                "dest": "=",
+                "source": ["ON", "FAULT_ON"],
+                "trigger": "component_fault",
+                "dest": "FAULT_ON",
             },
             {
-                "source": ["OFF", "STANDBY", "ON"],
-                "trigger": "standby_invoked",
-                "dest": "=",
+                "source": ["STANDBY", "FAULT_STANDBY"],
+                "trigger": "component_no_fault",
+                "dest": "STANDBY",
             },
             {
-                "source": ["OFF", "STANDBY", "ON"],
-                "trigger": "on_invoked",
-                "dest": "=",
+                "source": ["ON", "FAULT_ON"],
+                "trigger": "component_no_fault",
+                "dest": "ON",
             },
         ]
 
@@ -335,14 +402,15 @@ class OpStateModel:
       telescope component that it is supposed to manage (for example
       because its admin mode was set to OFFLINE). Note, this action
       indicates a device-initiated, deliberate disconnect; a lost
-      connection would be indicated by a "component_fault" or
-      "component_unknown" action, depending on circumstances.
+      connection would be indicated by a "component_unknown" action.
     * **component_unknown**: the device is unable to determine the state
       of its component.
     * **component_off**: the component has been switched off
     * **component_standby**: the component has switched to low-power
       standby mode
     * **component_on**: the component has been switched on
+    * **component_fault**: the component has experienced a fault
+    * **component_no_fault**: the component has stopped experiencing a fault
 
     A diagram of the operational state model, as implemented, is shown
     below.
@@ -392,13 +460,15 @@ class OpStateModel:
         "INIT_OFF": DevState.INIT,
         "INIT_STANDBY": DevState.INIT,
         "INIT_ON": DevState.INIT,
-        "INIT_FAULT": DevState.INIT,
+        "INIT_FAULT_STANDBY": DevState.INIT,
+        "INIT_FAULT_ON": DevState.INIT,
         "DISABLE": DevState.DISABLE,
         "UNKNOWN": DevState.UNKNOWN,
         "OFF": DevState.OFF,
         "STANDBY": DevState.STANDBY,
         "ON": DevState.ON,
-        "FAULT": DevState.FAULT,
+        "FAULT_STANDBY": DevState.FAULT,
+        "FAULT_ON": DevState.FAULT,
     }
 
     def _op_state_changed(self, machine_state):

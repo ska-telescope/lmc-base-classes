@@ -47,7 +47,7 @@ class FakeBaseComponent:
         time_to_return=0.05,
         time_to_complete=0.15,
         power=PowerState.OFF,
-        fault=False,
+        fault=None,
         **state_kwargs,
     ):
         """
@@ -147,16 +147,11 @@ class FakeBaseComponent:
     def _simulate_power_command_execution(
         self, command_name, power_state, task_callback, task_abort_event
     ):
-        if self._state["fault"]:
-            result = (
-                ResultCode.FAILED,
-                f"{command_name} command failed; component is in fault.",
-            )
-        else:
-            result = (ResultCode.OK, f"{command_name} command completed OK")
-
         self._simulate_task_execution(
-            task_callback, task_abort_event, result, power=power_state
+            task_callback,
+            task_abort_event,
+            (ResultCode.OK, f"{command_name} command completed OK"),
+            power=power_state,
         )
 
     def off(self, task_callback, task_abort_event):
@@ -316,7 +311,7 @@ class ReferenceBaseComponentManager(TaskExecutorComponentManager):
             component_state_callback,
             *args,
             power=PowerState.UNKNOWN,
-            fault=False,
+            fault=None,
             **kwargs,
         )
 

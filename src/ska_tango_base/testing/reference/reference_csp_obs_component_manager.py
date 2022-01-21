@@ -41,7 +41,7 @@ class FakeCspObsComponent(FakeBaseComponent):
         time_to_return=0.05,
         time_to_complete=0.1,
         power=PowerState.OFF,
-        fault=False,
+        fault=None,
         configured=False,
         scanning=False,
         obsfault=False,

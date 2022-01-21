@@ -155,11 +155,6 @@ class SKASubarray(SKAObsDevice):
         configured=None,
         scanning=None,
     ):
-        if fault:
-            self.op_state_model.perform_action("component_fault")
-        # TODO: If fault is False we do nothing, and wait for a power update.
-        # This is not a very safe design, and should be reconsidered.
-
         if power is not None:
             action_map = {
                 PowerState.UNKNOWN: None,
@@ -170,6 +165,12 @@ class SKASubarray(SKAObsDevice):
             action = action_map[power]
             if action is not None:
                 self.op_state_model.perform_action(action_map[power])
+
+        if fault is not None:
+            if fault:
+                self.op_state_model.perform_action("component_fault")
+            else:
+                self.op_state_model.perform_action("component_no_fault")
 
         if resourced is not None:
             if resourced:

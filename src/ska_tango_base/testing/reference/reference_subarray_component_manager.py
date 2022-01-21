@@ -113,7 +113,7 @@ class FakeSubarrayComponent(FakeBaseComponent):
         time_to_return=0.05,
         time_to_complete=0.1,
         power=PowerState.OFF,
-        fault=False,
+        fault=None,
         resourced=False,
         configured=False,
         scanning=False,

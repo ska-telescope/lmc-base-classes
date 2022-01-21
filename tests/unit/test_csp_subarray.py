@@ -128,7 +128,7 @@ class TestCspSubElementSubarray(object):
     def test_healthState(self, device_under_test):
         """Test for healthState."""
         # PROTECTED REGION ID(CspSubelementSubarray.test_healthState) ENABLED START #
-        assert device_under_test.healthState == HealthState.OK
+        assert device_under_test.healthState == HealthState.UNKNOWN
         # PROTECTED REGION END #    //  CspSubelementSubarray.test_healthState
 
     # PROTECTED REGION ID(CspSubelementSubarray.test_adminMode_decorators) ENABLED START #
@@ -447,7 +447,8 @@ class TestCspSubElementSubarray(object):
         # PROTECTED REGION ID(CspSubelementSubarray.test_ConfigureScan_when_in_wrong_state) ENABLED START #
         # The device in in OFF/EMPTY state, not valid to invoke ConfigureScan.
         with pytest.raises(
-            DevFailed, match="Command not permitted in observation state EMPTY"
+            DevFailed,
+            match="ConfigureScan command not permitted in observation state EMPTY",
         ):
             device_under_test.ConfigureScan('{"id":"sbi-mvp01-20200325-00002"}')
         # PROTECTED REGION END #    //  CspSubelementSubarray.test_ConfigureScan_when_in_wrong_state

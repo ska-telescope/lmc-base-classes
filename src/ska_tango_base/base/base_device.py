@@ -25,10 +25,8 @@ import queue
 import socket
 import sys
 import threading
-import time
 import traceback
 import typing
-import uuid
 import warnings
 
 from functools import partial
@@ -62,7 +60,7 @@ from ska_tango_base.control_model import (
     LoggingLevel,
 )
 from ska_tango_base.executor import TaskStatus
-from ska_tango_base.utils import get_groups_from_json
+from ska_tango_base.utils import get_groups_from_json, generate_command_id
 from ska_tango_base.faults import (
     GroupDefinitionsError,
     LoggingTargetError,
@@ -407,11 +405,8 @@ class _CommandTracker:
         self._most_recent_result = None
         self._commands = {}
 
-    def _get_new_command_id(self, command_name):
-        return f"{time.time()}_{uuid.uuid4().fields[-1]}_{command_name}"
-
     def new_command(self, command_name, completed_callback=None):
-        command_id = self._get_new_command_id(command_name)
+        command_id = generate_command_id(command_name)
 
         self._commands[command_id] = {
             "name": command_name,
@@ -452,6 +447,11 @@ class _CommandTracker:
                 self._result_callback(command_id, result)
 
     def _commands_by_keyword(self, keyword):
+        assert keyword in [
+            "name",
+            "status",
+            "progress",
+        ], f"Unsupported keyword {keyword} in _commands_by_keyword"
         with self.__lock:
             return list(
                 (command_id, self._commands[command_id][keyword])
@@ -499,10 +499,9 @@ class _CommandTracker:
         return self._most_recent_result
 
     def get_command_status(self, command_id):
-        if command_id not in self._commands:
-            return TaskStatus.NOT_FOUND
-
-        return self._commands[command_id]["status"]
+        if command_id in self._commands:
+            return self._commands[command_id]["status"]
+        return TaskStatus.NOT_FOUND
 
 
 class SKABaseDevice(Device):
@@ -795,7 +794,7 @@ class SKABaseDevice(Device):
         dtype=("str",),
         max_dim_x=2,  # Always the last result (unique_id, JSON-encoded result)
         access=AttrWriteType.READ,
-        doc="unique_id, json-encoded result"
+        doc="unique_id, json-encoded result. \n"
         "Clients can subscribe to on_change event and wait for the ID they are interested in.",
     )
     """Device attribute for long running commands."""
@@ -905,7 +904,7 @@ class SKABaseDevice(Device):
 
             self._init_logging()
 
-            self._health_state = HealthState.OK
+            self._health_state = HealthState.UNKNOWN
             self._control_mode = ControlMode.REMOTE
             self._simulation_mode = SimulationMode.FALSE
             self._test_mode = TestMode.NONE

@@ -132,7 +132,7 @@ class TestCspSubElementObsDevice(object):
     def test_healthState(self, device_under_test):
         """Test for healthState."""
         # PROTECTED REGION ID(CspSubelementObsDevice.test_healthState) ENABLED START #
-        assert device_under_test.healthState == HealthState.OK
+        assert device_under_test.healthState == HealthState.UNKNOWN
         # PROTECTED REGION END #    //  CspSubelementObsDevice.test_healthState
 
     # PROTECTED REGION ID(CspSubelementObsDevice.test_adminMode_decorators) ENABLED START #
@@ -340,7 +340,7 @@ class TestCspSubElementObsDevice(object):
         # PROTECTED REGION ID(CspSubelementObsDevice.test_ConfigureScan_when_in_wrong_state) ENABLED START #
         # The device in in OFF/IDLE state, not valid to invoke ConfigureScan.
 
-        with pytest.raises(DevFailed, match="Component is not ON"):
+        with pytest.raises(DevFailed, match="Component is not powered ON"):
             device_under_test.ConfigureScan('{"id":"sbi-mvp01-20200325-00002"}')
         # PROTECTED REGION END #    //  CspSubelementObsDevice.test_ConfigureScan_when_in_wrong_state
 
@@ -384,7 +384,7 @@ class TestCspSubElementObsDevice(object):
         # PROTECTED REGION ID(CspSubelementObsDevice.test_GoToIdle_when_in_wrong_state) ENABLED START #
         # The device in in OFF/IDLE state, not valid to invoke GoToIdle.
         with pytest.raises(
-            DevFailed, match="Command not permitted in observation state IDLE"
+            DevFailed, match="GoToIdle command not permitted in observation state IDLE"
         ):
             device_under_test.GoToIdle()
 
@@ -533,7 +533,7 @@ class TestCspSubElementObsDevice(object):
         device_state_callback.assert_next_change_event(DevState.ON)
 
         with pytest.raises(
-            DevFailed, match="Command not permitted in observation state IDLE"
+            DevFailed, match="Scan command not permitted in observation state IDLE"
         ):
             device_under_test.Scan("32")
         # PROTECTED REGION END #    //  CspSubelementObsDevice.test_Scan_when_in_wrong_state
@@ -612,7 +612,7 @@ class TestCspSubElementObsDevice(object):
         assert device_under_test.configurationId == config_id
 
         with pytest.raises(
-            DevFailed, match="Command not permitted in observation state READY"
+            DevFailed, match="EndScan command not permitted in observation state READY"
         ):
             device_under_test.EndScan()
 
@@ -763,7 +763,7 @@ class TestCspSubElementObsDevice(object):
         # Set the device in ON/IDLE state
         device_under_test.On()
         with pytest.raises(
-            DevFailed, match="Command not permitted in observation state IDLE"
+            DevFailed, match="ObsReset command not permitted in observation state IDLE"
         ):
             device_under_test.ObsReset()
         # PROTECTED REGION END #    //  CspSubelementObsDevice.test_ObsReset_when_in_wrong_state

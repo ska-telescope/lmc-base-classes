@@ -512,7 +512,7 @@ class CspSubElementSubarray(SKASubarray):
         # So let's raise an exception ourselves.
         if self._obs_state not in [ObsState.IDLE, ObsState.READY]:
             raise StateModelError(
-                f"Command not permitted in observation state {self._obs_state.name}"
+                f"ConfigureScan command not permitted in observation state {self._obs_state.name}"
             )
         return True
 
@@ -594,7 +594,7 @@ class CspSubElementSubarray(SKASubarray):
         # So let's raise an exception ourselves.
         if self._obs_state not in [ObsState.IDLE, ObsState.READY]:
             raise StateModelError(
-                f"Command not permitted in observation state {self._obs_state.name}"
+                f"GoToIdle command not permitted in observation state {self._obs_state.name}"
             )
         return True
 

@@ -7,6 +7,8 @@ import json
 import pydoc
 import traceback
 import sys
+import time
+import uuid
 import warnings
 
 from datetime import datetime
@@ -539,3 +541,15 @@ def for_testing_only(func, _testing_check=lambda: "pytest" in sys.modules):
         return func(*args, **kwargs)
 
     return _wrapper
+
+
+def generate_command_id(command_name: str) -> str:
+    """
+    Generate a unique command ID for a given command name.
+
+    :param command_name: name of the command for which an ID is to be
+        generated.
+
+    :return: a unique command ID string
+    """
+    return f"{time.time()}_{uuid.uuid4().fields[-1]}_{command_name}"

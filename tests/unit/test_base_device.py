@@ -923,7 +923,7 @@ class TestSKABaseDevice(object):
     def test_healthState(self, device_under_test):
         """Test for healthState."""
         # PROTECTED REGION ID(SKABaseDevice.test_healthState) ENABLED START #
-        assert device_under_test.healthState == HealthState.OK
+        assert device_under_test.healthState == HealthState.UNKNOWN
         # PROTECTED REGION END #    //  SKABaseDevice.test_healthState
 
     # PROTECTED REGION ID(SKABaseDevice.test_adminMode_decorators) ENABLED START #

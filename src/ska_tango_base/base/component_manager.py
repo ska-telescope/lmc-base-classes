@@ -121,7 +121,7 @@ def check_on(func):
         :return: whatever the wrapped function returns
         """
         if component.power_state != PowerState.ON:
-            raise ComponentError("Component is not ON")
+            raise ComponentError("Component is not powered ON")
         return func(component, *args, **kwargs)
 
     return _wrapper

@@ -304,7 +304,7 @@ class SKASubarray(SKAObsDevice):
         # So let's raise an exception ourselves.
         if self._obs_state not in [ObsState.EMPTY, ObsState.IDLE]:
             raise StateModelError(
-                f"Command not permitted in observation state {self._obs_state.name}"
+                f"AssignResources command not permitted in observation state {self._obs_state.name}"
             )
         return True
 
@@ -348,7 +348,7 @@ class SKASubarray(SKAObsDevice):
         # So let's raise an exception ourselves.
         if self._obs_state not in [ObsState.EMPTY, ObsState.IDLE]:
             raise StateModelError(
-                f"Command not permitted in observation state {self._obs_state.name}"
+                f"ReleaseResources command not permitted in observation state {self._obs_state.name}"
             )
         return True
 
@@ -389,7 +389,7 @@ class SKASubarray(SKAObsDevice):
         # So let's raise an exception ourselves.
         if self._obs_state not in [ObsState.EMPTY, ObsState.IDLE]:
             raise StateModelError(
-                f"Command not permitted in observation state {self._obs_state.name}"
+                f"ReleaseAllResources command not permitted in observation state {self._obs_state.name}"
             )
         return True
 
@@ -426,7 +426,7 @@ class SKASubarray(SKAObsDevice):
         # So let's raise an exception ourselves.
         if self._obs_state not in [ObsState.IDLE, ObsState.READY]:
             raise StateModelError(
-                f"Command not permitted in observation state {self._obs_state.name}"
+                f"Configure command not permitted in observation state {self._obs_state.name}"
             )
         return True
 
@@ -469,7 +469,7 @@ class SKASubarray(SKAObsDevice):
         # So let's raise an exception ourselves.
         if self._obs_state != ObsState.READY:
             raise StateModelError(
-                f"Command not permitted in observation state {self._obs_state.name}"
+                f"Scan command not permitted in observation state {self._obs_state.name}"
             )
         return True
 
@@ -512,7 +512,7 @@ class SKASubarray(SKAObsDevice):
         # So let's raise an exception ourselves.
         if self._obs_state != ObsState.SCANNING:
             raise StateModelError(
-                f"Command not permitted in observation state {self._obs_state.name}"
+                f"EndScan command not permitted in observation state {self._obs_state.name}"
             )
         return True
 
@@ -549,7 +549,7 @@ class SKASubarray(SKAObsDevice):
         # So let's raise an exception ourselves.
         if self._obs_state not in [ObsState.IDLE, ObsState.READY]:
             raise StateModelError(
-                f"Command not permitted in observation state {self._obs_state.name}"
+                f"End command not permitted in observation state {self._obs_state.name}"
             )
         return True
 
@@ -590,7 +590,7 @@ class SKASubarray(SKAObsDevice):
             ObsState.RESETTING,
         ]:
             raise StateModelError(
-                f"Command not permitted in observation state {self._obs_state.name}"
+                f"Abort command not permitted in observation state {self._obs_state.name}"
             )
         return True
 
@@ -624,7 +624,7 @@ class SKASubarray(SKAObsDevice):
         # So let's raise an exception ourselves.
         if self._obs_state not in [ObsState.FAULT, ObsState.ABORTED]:
             raise StateModelError(
-                f"Command not permitted in observation state {self._obs_state.name}"
+                f"ObsReset command not permitted in observation state {self._obs_state.name}"
             )
         return True
 
@@ -661,7 +661,7 @@ class SKASubarray(SKAObsDevice):
         # So let's raise an exception ourselves.
         if self._obs_state not in [ObsState.FAULT, ObsState.ABORTED]:
             raise StateModelError(
-                f"Command not permitted in observation state {self._obs_state.name}"
+                f"Restart command not permitted in observation state {self._obs_state.name}"
             )
         return True
 

@@ -429,7 +429,7 @@ class CspSubElementObsDevice(SKAObsDevice):
         # So let's raise an exception ourselves.
         if self._obs_state not in [ObsState.IDLE, ObsState.READY]:
             raise StateModelError(
-                f"Command not permitted in observation state {self._obs_state.name}"
+                f"ConfigureScan command not permitted in observation state {self._obs_state.name}"
             )
         return True
 
@@ -478,7 +478,7 @@ class CspSubElementObsDevice(SKAObsDevice):
         # So let's raise an exception ourselves.
         if self._obs_state != ObsState.READY:
             raise StateModelError(
-                f"Command not permitted in observation state {self._obs_state.name}"
+                f"Scan command not permitted in observation state {self._obs_state.name}"
             )
         return True
 
@@ -527,7 +527,7 @@ class CspSubElementObsDevice(SKAObsDevice):
         # So let's raise an exception ourselves.
         if self._obs_state != ObsState.SCANNING:
             raise StateModelError(
-                f"Command not permitted in observation state {self._obs_state.name}"
+                f"EndScan command not permitted in observation state {self._obs_state.name}"
             )
         return True
 
@@ -565,7 +565,7 @@ class CspSubElementObsDevice(SKAObsDevice):
         # So let's raise an exception ourselves.
         if self._obs_state != ObsState.READY:
             raise StateModelError(
-                f"Command not permitted in observation state {self._obs_state.name}"
+                f"GoToIdle command not permitted in observation state {self._obs_state.name}"
             )
         return True
 
@@ -605,7 +605,7 @@ class CspSubElementObsDevice(SKAObsDevice):
         # So let's raise an exception ourselves.
         if self._obs_state not in [ObsState.FAULT, ObsState.ABORTED]:
             raise StateModelError(
-                f"Command not permitted in observation state {self._obs_state.name}"
+                f"ObsReset command not permitted in observation state {self._obs_state.name}"
             )
         return True
 
@@ -649,7 +649,7 @@ class CspSubElementObsDevice(SKAObsDevice):
             ObsState.RESETTING,
         ]:
             raise StateModelError(
-                f"Command not permitted in observation state {self._obs_state.name}"
+                f"Abort command not permitted in observation state {self._obs_state.name}"
             )
         return True
 

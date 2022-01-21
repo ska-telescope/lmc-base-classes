@@ -117,7 +117,7 @@ class TestSKATelState(object):
     def test_healthState(self, device_under_test):
         """Test for healthState."""
         # PROTECTED REGION ID(SKATelState.test_healthState) ENABLED START #
-        assert device_under_test.healthState == HealthState.OK
+        assert device_under_test.healthState == HealthState.UNKNOWN
         # PROTECTED REGION END #    //  SKATelState.test_healthState
 
     # PROTECTED REGION ID(SKATelState.test_adminMode_decorators) ENABLED START #

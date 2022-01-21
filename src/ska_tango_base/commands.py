@@ -281,7 +281,7 @@ class SubmittedSlowCommand(SlowCommand):
 
     def do(self, *args, **kwargs):
         """
-        Stateless hook for On() command functionality.
+        Stateless hook for command functionality.
 
         :param args: positional args to the component manager method
         :param kwargs: keyword args to the component manager method

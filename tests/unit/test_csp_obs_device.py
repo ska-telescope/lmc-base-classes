@@ -770,8 +770,13 @@ class TestCspSubElementObsDevice(object):
 
 
 @pytest.mark.forked
-def test_multiple_devices_in_same_process():
+def test_multiple_devices_in_same_process(mocker):
     """Test that we can run this device with other devices in a single process."""
+    # Patch abstract method/s; it doesn't matter what we patch them with, so long as
+    # they don't raise NotImplementedError.
+    mocker.patch.object(SKAObsDevice, "create_component_manager")
+    mocker.patch.object(CspSubElementObsDevice, "create_component_manager")
+
     devices_info = (
         {"class": CspSubElementObsDevice, "devices": [{"name": "test/se/1"}]},
         {"class": SKAObsDevice, "devices": [{"name": "test/obsdevice/1"}]},

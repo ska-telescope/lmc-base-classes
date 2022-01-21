@@ -987,13 +987,10 @@ class SKABaseDevice(Device):
 
     def create_component_manager(self):
         """Create and return a component manager for this device."""
-        # TODO: This should really raise NotImplementedError, but that would break some
-        # tests so let's not worry about it just yet.
-        return None
-        # raise NotImplementedError(
-        #     "SKABaseDevice is abstract; implement 'create_component_manager` method in "
-        #     "a subclass."
-        # )
+        raise NotImplementedError(
+            "SKABaseDevice is abstract; implement 'create_component_manager` method in "
+            "a subclass."
+        )
 
     def register_command_object(self, command_name, command_object):
         """

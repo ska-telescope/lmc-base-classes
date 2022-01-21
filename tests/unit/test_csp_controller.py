@@ -410,8 +410,13 @@ class TestCspSubElementController(object):
 
 
 @pytest.mark.forked
-def test_multiple_devices_in_same_process():
+def test_multiple_devices_in_same_process(mocker):
     """Test that we can run this device with other devices in a single process."""
+    # Patch abstract method/s; it doesn't matter what we patch them with, so long as
+    # they don't raise NotImplementedError.
+    mocker.patch.object(SKAController, "create_component_manager")
+    mocker.patch.object(CspSubElementController, "create_component_manager")
+
     # The order here is important - base class last, so that we can
     # test that the subclass isn't breaking anything.
     devices_info = (

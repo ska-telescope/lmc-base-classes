@@ -82,6 +82,7 @@ devices_to_test = [
 class TestMultiDevice:
     """Multi device tests."""
 
+    @pytest.mark.forked
     def test_device(self):
         """Test our Multidevice."""
         with DeviceTestContext(

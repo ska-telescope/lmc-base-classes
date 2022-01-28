@@ -1,28 +1,51 @@
 """Component Manager for Multi Device."""
 import logging
-from threading import Event
 import time
-from typing import Callable, List
-import tango
+from functools import partial
+from threading import Event
+from typing import Callable, List, Optional
 
 from ska_tango_base.base.component_manager import TaskExecutorComponentManager
 from ska_tango_base.executor import TaskStatus
+
+from .utils import LongRunningDeviceInterface
 
 
 class MultiDeviceComponentManager(TaskExecutorComponentManager):
     """Component Manager for Multi Device."""
 
-    @staticmethod
+    def __init__(
+        self,
+        *args,
+        client_devices: List,
+        max_workers: Optional[int] = None,
+        logger: logging.Logger = None,
+        **kwargs,
+    ):
+        """Init MultiDeviceComponentManager.
+
+        :param client_devices: The list of client devices.
+        :type client_devices: List
+        """
+        self.client_devices = client_devices
+        self.logger = logger
+
+        self.clients_interface = None
+        if self.client_devices:
+            self.clients_interface = LongRunningDeviceInterface(
+                self.client_devices, self.logger
+            )
+
+        super().__init__(*args, max_workers=max_workers, logger=logger, **kwargs)
+
     def _non_aborting_lrc(
-        logger: logging.Logger,
+        self,
         sleep_time: float,
         task_callback: Callable = None,
         task_abort_event: Event = None,
     ):
         """Take a long time to run.
 
-        :param logger: logger
-        :type logger: logging.Logger
         :param sleep_time: Time to sleep between iterations
         :type sleep_time: float
         :param task_callback: Update state, defaults to None
@@ -34,7 +57,7 @@ class MultiDeviceComponentManager(TaskExecutorComponentManager):
         while retries > 0:
             retries -= 1
             time.sleep(sleep_time)  # This command takes long
-            logger.info(
+            self.logger.info(
                 "In NonAbortingTask repeating %s",
                 retries,
             )
@@ -50,18 +73,31 @@ class MultiDeviceComponentManager(TaskExecutorComponentManager):
         """
         task_status, response = self.submit_task(
             self._non_aborting_lrc,
-            args=[self.logger, argin],
+            args=[argin],
             task_callback=task_callback,
         )
         return task_status, response
 
-    @staticmethod
-    def _aborting_lrc(logger, sleep_time, task_callback=None, task_abort_event=None):
+    def _aborting_lrc(
+        self,
+        sleep_time: float,
+        task_callback: Callable = None,
+        task_abort_event: Event = None,
+    ):
+        """Abort the task.
+
+        :param sleep_time: Time to sleep between iterations
+        :type sleep_time: float
+        :param task_callback: Update task state, defaults to None
+        :type task_callback: Callable, optional
+        :param task_abort_event: Check for abort, defaults to None
+        :type task_abort_event: Event, optional
+        """
         retries = 45
         while (not task_abort_event.is_set()) and retries > 0:
             retries -= 1
             time.sleep(sleep_time)  # This command takes long
-            logger.info("In NonAbortingTask repeating %s", retries)
+            self.logger.info("In NonAbortingTask repeating %s", retries)
 
         if retries == 0:  # Normal finish
             task_callback(
@@ -83,7 +119,7 @@ class MultiDeviceComponentManager(TaskExecutorComponentManager):
         :type task_callback: Callable, optional
         """
         task_status, response = self.submit_task(
-            self._aborting_lrc, args=[self.logger, argin], task_callback=task_callback
+            self._aborting_lrc, args=[argin], task_callback=task_callback
         )
         return task_status, response
 
@@ -159,10 +195,39 @@ class MultiDeviceComponentManager(TaskExecutorComponentManager):
         return task_status, response
 
     @staticmethod
-    def _call_children(
+    def _simulate_work(
         logger: logging.Logger,
         sleep_time: float,
-        client_devices: List,
+        task_callback: Callable = None,
+        task_abort_event: Event = None,
+    ):
+        """Simulate some work for the leaf devices.
+
+        :param logger: logger
+        :type logger: logging.Logger
+        :param sleep_time: Time to sleep between progress
+        :type sleep_time: float
+        :param task_callback: Update task state, defaults to None
+        :type task_callback: Callable, optional
+        :param task_abort_event: Check for abort, defaults to None
+        :type task_abort_event: Event, optional
+        """
+        task_callback(status=TaskStatus.IN_PROGRESS)
+        time.sleep(sleep_time)
+        logger.info("Finished in leaf device %s", sleep_time)
+        task_callback(status=TaskStatus.COMPLETED, result="Finished leaf node")
+
+    def _all_children_completed_cb(self, task_callback, command_name, command_ids):
+        self.logger.info("All children %s completed", self.client_devices)
+        task_callback(
+            status=TaskStatus.COMPLETED,
+            result=f"All children completed {self.client_devices}",
+        )
+
+    def _call_children(
+        self,
+        logger: logging.Logger,
+        sleep_time: float,
         task_callback: Callable = None,
         task_abort_event: Event = None,
     ):
@@ -172,43 +237,41 @@ class MultiDeviceComponentManager(TaskExecutorComponentManager):
         :type logger: logging.Logger
         :param sleep_time: How long children should sleep
         :type sleep_time: float
-        :param client_devices: List of child devices
-        :type client_devices: List
         :param task_callback: Update task status
         :type task_callback: Callable, optional
         :param task_abort_event: Check for abort, defaults to None
         :type task_abort_event: Event, optional
         """
-        if client_devices:
-            for device in client_devices:
-                logger.info("Calling child %s", device)
-                proxy = tango.DeviceProxy(device)
-                proxy.CallChildren(sleep_time)
-            task_callback(
-                status=TaskStatus.COMPLETED,
-                result=f"Called children {client_devices}",
-            )
-        else:
-            task_callback(status=TaskStatus.IN_PROGRESS)
-            logger.info("Waiting in leaf device %s", sleep_time)
-            time.sleep(sleep_time)
-            task_callback(status=TaskStatus.COMPLETED, result="Finished leaf node")
+        self.clients_interface.execute_long_running_command(
+            "CallChildren",
+            sleep_time,
+            on_completion_callback=partial(
+                self._all_children_completed_cb, task_callback
+            ),
+        )
 
-    def call_children(
-        self, argin: float, client_devices: List, task_callback: Callable = None
-    ):
-        """Call child devices.
+    def call_children(self, argin: float, task_callback: Callable = None):
+        """Call child devices or sleep.
+
+        If there are child devices, call them.
+        If no children, sleep a bit to simulate some work.
 
         :param argin: Time to sleep if this device does not have children.
         :type argin: float
-        :param client_devices: List of client devices
-        :type client_devices: List
         :param task_callback: Update task status
         :type task_callback: Callable
         """
-        task_status, response = self.submit_task(
-            self._call_children,
-            args=[self.logger, argin, client_devices],
-            task_callback=task_callback,
-        )
+        if self.client_devices:
+            task_status, response = self.submit_task(
+                self._call_children,
+                args=[self.logger, argin],
+                task_callback=task_callback,
+            )
+        else:
+            task_status, response = self.submit_task(
+                self._simulate_work,
+                args=[self.logger, argin],
+                task_callback=task_callback,
+            )
+
         return task_status, response

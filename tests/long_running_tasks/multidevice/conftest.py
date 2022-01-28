@@ -1,10 +1,9 @@
 """Fixtures for tests."""
-import pytest
 import socket
 
+import pytest
 import tango
-
-from tango.test_context import get_host_ip, MultiDeviceTestContext
+from tango.test_context import MultiDeviceTestContext, get_host_ip
 
 
 @pytest.fixture(scope="module")

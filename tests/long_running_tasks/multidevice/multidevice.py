@@ -1,15 +1,11 @@
 """Device to test multi layered commands."""
-from tango.server import command, device_property
 from tango import DebugIt
+from tango.server import command, device_property
 
 from ska_tango_base.base.base_device import SKABaseDevice
-from .multidevice_component_manager import MultiDeviceComponentManager
+from ska_tango_base.commands import FastCommand, ResultCode, SubmittedSlowCommand
 
-from ska_tango_base.commands import (
-    FastCommand,
-    ResultCode,
-    SubmittedSlowCommand,
-)
+from .multidevice_component_manager import MultiDeviceComponentManager
 
 
 class LongRunningCommandBaseTestDevice(SKABaseDevice):
@@ -20,7 +16,7 @@ class LongRunningCommandBaseTestDevice(SKABaseDevice):
     def create_component_manager(self):
         """Create a component manager."""
         return MultiDeviceComponentManager(
-            # client_devices = self.client_devices,
+            client_devices=self.client_devices,
             max_workers=2,
             logger=self.logger,
             communication_state_callback=self._communication_state_changed,
@@ -168,5 +164,5 @@ class LongRunningCommandBaseTestDevice(SKABaseDevice):
     def CallChildren(self, argin):
         """Command to call `CallChildren` on children, or block if not."""
         handler = self.get_command_object("CallChildren")
-        (return_code, message) = handler(argin, self.client_devices)
+        (return_code, message) = handler(argin)
         return f"{return_code}", message

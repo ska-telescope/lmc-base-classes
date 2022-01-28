@@ -1,12 +1,12 @@
 """Test various Tango devices with long running commmands working together."""
 import pytest
-
 from tango import EventType
 from tango.test_context import DeviceTestContext
 
+from ska_tango_base.commands import ResultCode
+
 from .multidevice import LongRunningCommandBaseTestDevice
 from .utils import LRCAttributesStore
-from ska_tango_base.commands import ResultCode
 
 # Testing a chain of calls
 # On command `CallChildren`
@@ -86,23 +86,23 @@ def test_device():
         LongRunningCommandBaseTestDevice, process=True
     ) as top_device:
 
-        top_device_attr_store = LRCAttributesStore()
+        top_device_event_store = LRCAttributesStore()
         top_device.subscribe_event(
             "longRunningCommandResult",
             EventType.CHANGE_EVENT,
-            top_device_attr_store,
+            top_device_event_store,
             wait=True,
         )
 
         top_device.subscribe_event(
             "longRunningCommandProgress",
             EventType.CHANGE_EVENT,
-            top_device_attr_store,
+            top_device_event_store,
             wait=True,
         )
 
         # Get the empty initial value
-        top_device_attr_store.get_attribute_value("longRunningCommandResult")
+        top_device_event_store.get_attribute_value("longRunningCommandResult")
 
         # Short
         result_code, result = top_device.Short(5)
@@ -114,7 +114,7 @@ def test_device():
         assert ResultCode(int(result_code)) == ResultCode.QUEUED
         assert command_id.endswith("NonAbortingLongRunning")
 
-        next_result = top_device_attr_store.get_attribute_value(
+        next_result = top_device_event_store.get_attribute_value(
             "longRunningCommandResult", fetch_timeout=10
         )
         assert next_result[0].endswith("NonAbortingLongRunning")
@@ -127,7 +127,7 @@ def test_device():
 
         top_device.AbortCommands()
 
-        next_result = top_device_attr_store.get_attribute_value(
+        next_result = top_device_event_store.get_attribute_value(
             "longRunningCommandResult", fetch_timeout=10
         )
         assert next_result[0].endswith("AbortingLongRunning")
@@ -138,7 +138,7 @@ def test_device():
         assert ResultCode(int(result_code)) == ResultCode.QUEUED
         assert command_id.endswith("LongRunningException")
 
-        next_result = top_device_attr_store.get_attribute_value(
+        next_result = top_device_event_store.get_attribute_value(
             "longRunningCommandResult", fetch_timeout=10
         )
         assert next_result[0].endswith("LongRunningException")
@@ -151,7 +151,7 @@ def test_device():
 
         for i in [1, 25, 50, 74, 100]:
             next_result = list(
-                top_device_attr_store.get_attribute_value(
+                top_device_event_store.get_attribute_value(
                     "longRunningCommandProgress", fetch_timeout=10
                 )
             )
@@ -159,19 +159,72 @@ def test_device():
             assert next_result[next_result.index(command_id) + 1] == f"{i}"
 
 
-@pytest.mark.skip("WIP")
 @pytest.mark.forked
 def test_multi_layer(multi_device_tango_context):
     """Test the long running commands between devices."""
     top_device = multi_device_tango_context.get_device("test/toplevel/1")
-    top_device.CallChildren(0.5)
+    mid_device = multi_device_tango_context.get_device("test/midlevel/3")
+    low_device = multi_device_tango_context.get_device("test/lowlevel/6")
 
-    lowest_device = multi_device_tango_context.get_device("test/lowlevel/6")
-
-    low_device_attr_store = LRCAttributesStore()
-    lowest_device.subscribe_event(
+    top_device_event_store = LRCAttributesStore()
+    top_device.subscribe_event(
         "longRunningCommandResult",
         EventType.CHANGE_EVENT,
-        low_device_attr_store,
+        top_device_event_store,
         wait=True,
+    )
+
+    mid_device_event_store = LRCAttributesStore()
+    mid_device.subscribe_event(
+        "longRunningCommandResult",
+        EventType.CHANGE_EVENT,
+        mid_device_event_store,
+        wait=True,
+    )
+
+    low_device_event_store = LRCAttributesStore()
+    low_device.subscribe_event(
+        "longRunningCommandResult",
+        EventType.CHANGE_EVENT,
+        low_device_event_store,
+        wait=True,
+    )
+
+    # remove initial empty values
+    low_device_event_store.get_attribute_value("longRunningCommandResult")
+    mid_device_event_store.get_attribute_value("longRunningCommandResult")
+    top_device_event_store.get_attribute_value("longRunningCommandResult")
+
+    # Start toplevel
+    top_device.CallChildren(2)
+
+    # Make sure nobody finishes too quick
+    assert top_device.longRunningCommandResult == ("", "")
+    assert mid_device.longRunningCommandResult == ("", "")
+    assert low_device.longRunningCommandResult == ("", "")
+
+    # Wait for lowest level device to finish
+    command_id, message = low_device_event_store.get_attribute_value(
+        "longRunningCommandResult", fetch_timeout=10
+    )
+    assert command_id.endswith("CallChildren")
+    assert message == '"Finished leaf node"'
+
+    # Wait for mid level device to finish
+    command_id, message = mid_device_event_store.get_attribute_value(
+        "longRunningCommandResult", fetch_timeout=10
+    )
+    assert command_id.endswith("CallChildren")
+    assert (
+        message == "\"All children completed ['test/lowlevel/5', 'test/lowlevel/6']\""
+    )
+
+    # Wait for top level device to finish
+    command_id, message = top_device_event_store.get_attribute_value(
+        "longRunningCommandResult", fetch_timeout=10
+    )
+    assert command_id.endswith("CallChildren")
+    assert (
+        message
+        == "\"All children completed ['test/midlevel/1', 'test/midlevel/2', 'test/midlevel/3']\""
     )

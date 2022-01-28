@@ -77,7 +77,7 @@ class MultiDeviceComponentManager(TaskExecutorComponentManager):
                 logger.info("About to raise an error")
                 raise RuntimeError("Something went wrong")
             except RuntimeError as err:
-                task_callback(status=TaskStatus.FAILED, result=f"{err}")
+                task_callback(status=TaskStatus.COMPLETED, result=f"{err}")
 
         task_status, response = self.submit_task(
             noop_exc, args=[self.logger], task_callback=task_callback

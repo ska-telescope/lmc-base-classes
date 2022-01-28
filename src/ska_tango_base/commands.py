@@ -301,9 +301,8 @@ class SubmittedSlowCommand(SlowCommand):
             functools.partial(self._command_tracker.update_command_info, command_id),
             **kwargs,
         )
+
         if status == TaskStatus.QUEUED:
             return ResultCode.QUEUED, command_id
         elif status == TaskStatus.REJECTED:
             return ResultCode.REJECTED, message
-        elif status == TaskStatus.FAILED:
-            return ResultCode.FAILED, message

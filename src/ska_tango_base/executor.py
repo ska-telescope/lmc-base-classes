@@ -2,6 +2,7 @@
 import concurrent.futures
 from enum import IntEnum
 import threading
+import traceback
 from typing import Optional
 
 
@@ -44,9 +45,6 @@ class TaskStatus(IntEnum):
     The task was rejected.
     """
 
-    FAILED = 7
-    """The task has failed."""
-
 
 class TaskExecutor:
     """An asynchronous executor of tasks."""
@@ -77,7 +75,7 @@ class TaskExecutor:
         """
         with self._submit_lock:
             try:
-                future = self._executor.submit(
+                self._executor.submit(
                     self._run,
                     func,
                     args,
@@ -85,17 +83,6 @@ class TaskExecutor:
                     task_callback,
                     self._abort_event,
                 )
-                # If the submitted task fails immediately with an exception
-                # (such as a bad function signature), then
-                # fail the task with that exception.
-                # Otherwise the exception gets swallowed making it very
-                # hard to debug
-                if future.done():
-                    if future.exception():
-                        message = f"{future.exception()}"
-                        if task_callback is not None:
-                            task_callback(status=TaskStatus.FAILED, result=message)
-                        return TaskStatus.FAILED, message
             except RuntimeError:
                 if task_callback is not None:
                     message = "Queue is aborting"
@@ -140,6 +127,8 @@ class TaskExecutor:
         # Let the submit method finish before we start. This prevents this thread from
         # calling back with "IN PROGRESS" before the submit method has called back with
         # "QUEUED".
+        with self._submit_lock:
+            pass
 
         if abort_event.is_set():
             if task_callback is not None:
@@ -148,11 +137,14 @@ class TaskExecutor:
             # Don't set the task to IN_PROGRESS yet, in case func is itself implemented
             # asynchronously. We leave it to func to set the task to IN_PROGRESS, and
             # eventually to set it to COMPLETE
-            args = args or []
-            kwargs = kwargs or {}
-            func(
-                *args,
-                task_callback=task_callback,
-                task_abort_event=abort_event,
-                **kwargs,
-            )
+            try:
+                args = args or []
+                kwargs = kwargs or {}
+                func(
+                    *args,
+                    task_callback=task_callback,
+                    task_abort_event=abort_event,
+                    **kwargs
+                )
+            except Exception:
+                traceback.print_exc()

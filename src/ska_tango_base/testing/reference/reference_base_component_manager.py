@@ -45,7 +45,7 @@ class FakeBaseComponent:
     def __init__(
         self,
         time_to_return=0.05,
-        time_to_complete=0.15,
+        time_to_complete=0.4,
         power=PowerState.OFF,
         fault=None,
         **state_kwargs,
@@ -53,16 +53,14 @@ class FakeBaseComponent:
         """
         Initialise a new instance.
 
-        :param power_state: initial power state of this component
-        :param fault_state: initial fault state of this component
         :param time_to_return: the amount of time to delay before
             returning from a command method. This simulates latency in
             communication.
         :param time_to_complete: the amount of time to delay before the
             component calls a task callback to let it know that the task
             has been completed
-        :param time_to_update: the amount of time before the expected
-            change of state will be reported.
+        :param power: initial power state of this component
+        :param fault: initial fault state of this component
         """
         self._state_change_callback = None
         self._state_lock = threading.Lock()

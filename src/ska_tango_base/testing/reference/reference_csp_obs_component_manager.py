@@ -39,7 +39,7 @@ class FakeCspObsComponent(FakeBaseComponent):
     def __init__(
         self,
         time_to_return=0.05,
-        time_to_complete=0.1,
+        time_to_complete=0.4,
         power=PowerState.OFF,
         fault=None,
         configured=False,
@@ -47,14 +47,7 @@ class FakeCspObsComponent(FakeBaseComponent):
         obsfault=False,
         **kwargs,
     ):
-        """
-        Initialise a new instance.
-
-        :param _power_mode: initial power mode of this component
-            (for testing only)
-        :param _faulty: whether this component should initially
-            simulate a fault (for testing only)
-        """
+        """Initialise a new instance."""
         self._scan_id = 0
         self._config_id = ""
 

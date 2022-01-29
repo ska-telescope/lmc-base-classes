@@ -167,22 +167,37 @@ class TestSKASubarray:
         )
         command_result_callback.assert_next_change_event(("", ""))
 
-        [[result_code], [command_id]] = device_under_test.On()
+        [[result_code], [on_command_id]] = device_under_test.On()
         assert result_code == ResultCode.QUEUED
-        command_status_callback.assert_next_change_event((command_id, "QUEUED"))
-        command_status_callback.assert_next_change_event((command_id, "IN_PROGRESS"))
 
-        command_progress_callback.assert_next_change_event((command_id, "33"))
-        command_progress_callback.assert_next_change_event((command_id, "66"))
+        command_status_callback.assert_change_event_sequence_sample(
+            [
+                (on_command_id, "QUEUED"),
+                (on_command_id, "IN_PROGRESS"),
+                (on_command_id, "COMPLETED"),
+            ]
+        )
+
+        command_progress_callback.assert_change_event_sequence_sample(
+            [
+                None,
+                (on_command_id, "33"),
+                (on_command_id, "66"),
+            ]
+        )
 
         device_state_callback.assert_next_change_event(DevState.ON)
         device_status_callback.assert_next_change_event("The device is in ON state.")
         assert device_under_test.state() == DevState.ON
 
-        command_status_callback.assert_next_change_event((command_id, "COMPLETED"))
-
-        command_result_callback.assert_next_change_event(
-            (command_id, json.dumps([int(ResultCode.OK), "On command completed OK"]))
+        command_result_callback.assert_change_event_sequence_sample(
+            [
+                ("", ""),
+                (
+                    on_command_id,
+                    json.dumps([int(ResultCode.OK), "On command completed OK"]),
+                ),
+            ]
         )
 
         # TODO: Everything above here is just to turn on the device and clear the queue
@@ -193,81 +208,168 @@ class TestSKASubarray:
         obs_state_callback.assert_next_change_event(ObsState.EMPTY)
 
         resources_to_assign = ["BAND1", "BAND2"]
-        [[result_code], [command_id]] = device_under_test.AssignResources(
+        [[result_code], [assign_command_id]] = device_under_test.AssignResources(
             json.dumps(resources_to_assign)
         )
         assert result_code == ResultCode.QUEUED
 
-        obs_state_callback.assert_next_change_event(ObsState.RESOURCING)
+        obs_state_callback.assert_change_event_sequence_sample(
+            [ObsState.RESOURCING, ObsState.IDLE]
+        )
 
-        command_status_callback.assert_next_change_event((command_id, "QUEUED"))
-        command_status_callback.assert_next_change_event((command_id, "IN_PROGRESS"))
+        command_status_callback.assert_change_event_sequence_sample(
+            [
+                (on_command_id, "COMPLETED", assign_command_id, "QUEUED"),
+                (on_command_id, "COMPLETED", assign_command_id, "IN_PROGRESS"),
+                (on_command_id, "COMPLETED", assign_command_id, "COMPLETED"),
+            ]
+        )
 
-        command_progress_callback.assert_next_change_event((command_id, "33"))
-        command_progress_callback.assert_next_change_event((command_id, "66"))
+        command_progress_callback.assert_change_event_sequence_sample(
+            [
+                None,
+                (assign_command_id, "33"),
+                (assign_command_id, "66"),
+            ]
+        )
 
-        command_status_callback.assert_next_change_event((command_id, "COMPLETED"))
-
-        obs_state_callback.assert_next_change_event(ObsState.IDLE)
-
-        command_result_callback.assert_next_change_event(
-            (
-                command_id,
-                json.dumps([int(ResultCode.OK), "Resource assignment completed OK"]),
-            )
+        command_result_callback.assert_change_event_sequence_sample(
+            [
+                ("", ""),
+                (
+                    assign_command_id,
+                    json.dumps(
+                        [int(ResultCode.OK), "Resource assignment completed OK"]
+                    ),
+                ),
+            ]
         )
 
         assert list(device_under_test.assignedResources) == resources_to_assign
 
         # Test partial release of resources
         resources_to_release = ["BAND1"]
-        [[result_code], [command_id]] = device_under_test.ReleaseResources(
+        [[result_code], [release_command_id]] = device_under_test.ReleaseResources(
             json.dumps(resources_to_release)
         )
         assert result_code == ResultCode.QUEUED
 
-        obs_state_callback.assert_next_change_event(ObsState.RESOURCING)
+        obs_state_callback.assert_change_event_sequence_sample(
+            [ObsState.RESOURCING, ObsState.IDLE]
+        )
 
-        command_status_callback.assert_next_change_event((command_id, "QUEUED"))
-        command_status_callback.assert_next_change_event((command_id, "IN_PROGRESS"))
+        command_status_callback.assert_change_event_sequence_sample(
+            [
+                (
+                    on_command_id,
+                    "COMPLETED",
+                    assign_command_id,
+                    "COMPLETED",
+                    release_command_id,
+                    "QUEUED",
+                ),
+                (
+                    on_command_id,
+                    "COMPLETED",
+                    assign_command_id,
+                    "COMPLETED",
+                    release_command_id,
+                    "IN_PROGRESS",
+                ),
+                (
+                    on_command_id,
+                    "COMPLETED",
+                    assign_command_id,
+                    "COMPLETED",
+                    release_command_id,
+                    "COMPLETED",
+                ),
+            ]
+        )
 
-        command_progress_callback.assert_next_change_event((command_id, "33"))
-        command_progress_callback.assert_next_change_event((command_id, "66"))
+        command_progress_callback.assert_change_event_sequence_sample(
+            [
+                None,
+                (release_command_id, "33"),
+                (release_command_id, "66"),
+            ]
+        )
 
-        command_status_callback.assert_next_change_event((command_id, "COMPLETED"))
-
-        obs_state_callback.assert_next_change_event(ObsState.IDLE)
-
-        command_result_callback.assert_next_change_event(
-            (
-                command_id,
-                json.dumps([int(ResultCode.OK), "Resource release completed OK"]),
-            )
+        command_result_callback.assert_change_event_sequence_sample(
+            [
+                ("", ""),
+                (
+                    release_command_id,
+                    json.dumps([int(ResultCode.OK), "Resource release completed OK"]),
+                ),
+            ]
         )
 
         assert list(device_under_test.assignedResources) == ["BAND2"]
+        assert device_under_test.obsState == ObsState.IDLE
 
         # Test release all
-        [[result_code], [command_id]] = device_under_test.ReleaseAllResources()
+        [
+            [result_code],
+            [releaseall_command_id],
+        ] = device_under_test.ReleaseAllResources()
         assert result_code == ResultCode.QUEUED
 
-        obs_state_callback.assert_next_change_event(ObsState.RESOURCING)
+        obs_state_callback.assert_change_event_sequence_sample(
+            [ObsState.RESOURCING, ObsState.EMPTY]
+        )
 
-        command_status_callback.assert_next_change_event((command_id, "QUEUED"))
-        command_status_callback.assert_next_change_event((command_id, "IN_PROGRESS"))
+        command_status_callback.assert_change_event_sequence_sample(
+            [
+                (
+                    on_command_id,
+                    "COMPLETED",
+                    assign_command_id,
+                    "COMPLETED",
+                    release_command_id,
+                    "COMPLETED",
+                    releaseall_command_id,
+                    "QUEUED",
+                ),
+                (
+                    on_command_id,
+                    "COMPLETED",
+                    assign_command_id,
+                    "COMPLETED",
+                    release_command_id,
+                    "COMPLETED",
+                    releaseall_command_id,
+                    "IN_PROGRESS",
+                ),
+                (
+                    on_command_id,
+                    "COMPLETED",
+                    assign_command_id,
+                    "COMPLETED",
+                    release_command_id,
+                    "COMPLETED",
+                    releaseall_command_id,
+                    "COMPLETED",
+                ),
+            ]
+        )
 
-        command_progress_callback.assert_next_change_event((command_id, "33"))
-        command_progress_callback.assert_next_change_event((command_id, "66"))
+        command_progress_callback.assert_change_event_sequence_sample(
+            [
+                None,
+                (releaseall_command_id, "33"),
+                (releaseall_command_id, "66"),
+            ]
+        )
 
-        command_status_callback.assert_next_change_event((command_id, "COMPLETED"))
-
-        obs_state_callback.assert_next_change_event(ObsState.EMPTY)
-
-        command_result_callback.assert_next_change_event(
-            (
-                command_id,
-                json.dumps([int(ResultCode.OK), "Resource release completed OK"]),
-            )
+        command_result_callback.assert_change_event_sequence_sample(
+            [
+                ("", ""),
+                (
+                    releaseall_command_id,
+                    json.dumps([int(ResultCode.OK), "Resource release completed OK"]),
+                ),
+            ]
         )
 
         assert not device_under_test.assignedResources
@@ -307,22 +409,37 @@ class TestSKASubarray:
         )
         command_result_callback.assert_next_change_event(("", ""))
 
-        [[result_code], [command_id]] = device_under_test.On()
+        [[result_code], [on_command_id]] = device_under_test.On()
         assert result_code == ResultCode.QUEUED
-        command_status_callback.assert_next_change_event((command_id, "QUEUED"))
-        command_status_callback.assert_next_change_event((command_id, "IN_PROGRESS"))
 
-        command_progress_callback.assert_next_change_event((command_id, "33"))
-        command_progress_callback.assert_next_change_event((command_id, "66"))
+        command_status_callback.assert_change_event_sequence_sample(
+            [
+                (on_command_id, "QUEUED"),
+                (on_command_id, "IN_PROGRESS"),
+                (on_command_id, "COMPLETED"),
+            ]
+        )
+
+        command_progress_callback.assert_change_event_sequence_sample(
+            [
+                None,
+                (on_command_id, "33"),
+                (on_command_id, "66"),
+            ]
+        )
 
         device_state_callback.assert_next_change_event(DevState.ON)
         device_status_callback.assert_next_change_event("The device is in ON state.")
         assert device_under_test.state() == DevState.ON
 
-        command_status_callback.assert_next_change_event((command_id, "COMPLETED"))
-
-        command_result_callback.assert_next_change_event(
-            (command_id, json.dumps([int(ResultCode.OK), "On command completed OK"]))
+        command_result_callback.assert_change_event_sequence_sample(
+            [
+                ("", ""),
+                (
+                    on_command_id,
+                    json.dumps([int(ResultCode.OK), "On command completed OK"]),
+                ),
+            ]
         )
 
         # assignment of resources
@@ -330,28 +447,41 @@ class TestSKASubarray:
         obs_state_callback.assert_next_change_event(ObsState.EMPTY)
 
         resources_to_assign = ["BAND1"]
-        [[result_code], [command_id]] = device_under_test.AssignResources(
+        [[result_code], [assign_command_id]] = device_under_test.AssignResources(
             json.dumps(resources_to_assign)
         )
         assert result_code == ResultCode.QUEUED
 
-        obs_state_callback.assert_next_change_event(ObsState.RESOURCING)
+        obs_state_callback.assert_change_event_sequence_sample(
+            [ObsState.RESOURCING, ObsState.IDLE]
+        )
 
-        command_status_callback.assert_next_change_event((command_id, "QUEUED"))
-        command_status_callback.assert_next_change_event((command_id, "IN_PROGRESS"))
+        command_status_callback.assert_change_event_sequence_sample(
+            [
+                (on_command_id, "COMPLETED", assign_command_id, "QUEUED"),
+                (on_command_id, "COMPLETED", assign_command_id, "IN_PROGRESS"),
+                (on_command_id, "COMPLETED", assign_command_id, "COMPLETED"),
+            ]
+        )
 
-        command_progress_callback.assert_next_change_event((command_id, "33"))
-        command_progress_callback.assert_next_change_event((command_id, "66"))
+        command_progress_callback.assert_change_event_sequence_sample(
+            [
+                None,
+                (assign_command_id, "33"),
+                (assign_command_id, "66"),
+            ]
+        )
 
-        command_status_callback.assert_next_change_event((command_id, "COMPLETED"))
-
-        obs_state_callback.assert_next_change_event(ObsState.IDLE)
-
-        command_result_callback.assert_next_change_event(
-            (
-                command_id,
-                json.dumps([int(ResultCode.OK), "Resource assignment completed OK"]),
-            )
+        command_result_callback.assert_change_event_sequence_sample(
+            [
+                ("", ""),
+                (
+                    assign_command_id,
+                    json.dumps(
+                        [int(ResultCode.OK), "Resource assignment completed OK"]
+                    ),
+                ),
+            ]
         )
 
         assert list(device_under_test.assignedResources) == resources_to_assign
@@ -362,45 +492,121 @@ class TestSKASubarray:
         assert list(device_under_test.configuredCapabilities) == ["BAND1:0", "BAND2:0"]
 
         configuration_to_apply = {"BAND1": 2}
-        [[result_code], [command_id]] = device_under_test.Configure(
+        [[result_code], [config_command_id]] = device_under_test.Configure(
             json.dumps(configuration_to_apply)
         )
         assert result_code == ResultCode.QUEUED
 
-        obs_state_callback.assert_next_change_event(ObsState.CONFIGURING)
+        obs_state_callback.assert_change_event_sequence_sample(
+            [ObsState.CONFIGURING, ObsState.READY]
+        )
 
-        command_status_callback.assert_next_change_event((command_id, "QUEUED"))
-        command_status_callback.assert_next_change_event((command_id, "IN_PROGRESS"))
+        command_status_callback.assert_change_event_sequence_sample(
+            [
+                (
+                    on_command_id,
+                    "COMPLETED",
+                    assign_command_id,
+                    "COMPLETED",
+                    config_command_id,
+                    "QUEUED",
+                ),
+                (
+                    on_command_id,
+                    "COMPLETED",
+                    assign_command_id,
+                    "COMPLETED",
+                    config_command_id,
+                    "IN_PROGRESS",
+                ),
+                (
+                    on_command_id,
+                    "COMPLETED",
+                    assign_command_id,
+                    "COMPLETED",
+                    config_command_id,
+                    "COMPLETED",
+                ),
+            ]
+        )
 
-        command_progress_callback.assert_next_change_event((command_id, "33"))
-        command_progress_callback.assert_next_change_event((command_id, "66"))
+        command_progress_callback.assert_change_event_sequence_sample(
+            [
+                None,
+                (config_command_id, "33"),
+                (config_command_id, "66"),
+            ]
+        )
 
-        command_status_callback.assert_next_change_event((command_id, "COMPLETED"))
-
-        obs_state_callback.assert_next_change_event(ObsState.READY)
-
-        command_result_callback.assert_next_change_event(
-            (command_id, json.dumps([int(ResultCode.OK), "Configure completed OK"]))
+        command_result_callback.assert_change_event_sequence_sample(
+            [
+                ("", ""),
+                (
+                    config_command_id,
+                    json.dumps([int(ResultCode.OK), "Configure completed OK"]),
+                ),
+            ]
         )
 
         assert list(device_under_test.configuredCapabilities) == ["BAND1:2", "BAND2:0"]
 
         # test deconfigure
-        [[result_code], [command_id]] = device_under_test.End()
+        [[result_code], [end_command_id]] = device_under_test.End()
         assert result_code == ResultCode.QUEUED
 
-        command_status_callback.assert_next_change_event((command_id, "QUEUED"))
-        command_status_callback.assert_next_change_event((command_id, "IN_PROGRESS"))
+        command_status_callback.assert_change_event_sequence_sample(
+            [
+                (
+                    on_command_id,
+                    "COMPLETED",
+                    assign_command_id,
+                    "COMPLETED",
+                    config_command_id,
+                    "COMPLETED",
+                    end_command_id,
+                    "QUEUED",
+                ),
+                (
+                    on_command_id,
+                    "COMPLETED",
+                    assign_command_id,
+                    "COMPLETED",
+                    config_command_id,
+                    "COMPLETED",
+                    end_command_id,
+                    "IN_PROGRESS",
+                ),
+                (
+                    on_command_id,
+                    "COMPLETED",
+                    assign_command_id,
+                    "COMPLETED",
+                    config_command_id,
+                    "COMPLETED",
+                    end_command_id,
+                    "COMPLETED",
+                ),
+            ]
+        )
 
-        command_progress_callback.assert_next_change_event((command_id, "33"))
-        command_progress_callback.assert_next_change_event((command_id, "66"))
-
-        command_status_callback.assert_next_change_event((command_id, "COMPLETED"))
+        command_progress_callback.assert_change_event_sequence_sample(
+            [
+                None,
+                (end_command_id, "33"),
+                (end_command_id, "66"),
+            ]
+        )
 
         obs_state_callback.assert_next_change_event(ObsState.IDLE)
 
-        command_result_callback.assert_next_change_event(
-            (command_id, json.dumps([int(ResultCode.OK), "Deconfigure completed OK"]))
+        command_result_callback.assert_change_event_sequence_sample(
+            [
+                ("", ""),
+                (
+                    end_command_id,
+                    json.dumps([int(ResultCode.OK), "Deconfigure completed OK"]),
+                ),
+            ]
         )
 
         assert list(device_under_test.configuredCapabilities) == ["BAND1:0", "BAND2:0"]
@@ -440,22 +646,37 @@ class TestSKASubarray:
         )
         command_result_callback.assert_next_change_event(("", ""))
 
-        [[result_code], [command_id]] = device_under_test.On()
+        [[result_code], [on_command_id]] = device_under_test.On()
         assert result_code == ResultCode.QUEUED
-        command_status_callback.assert_next_change_event((command_id, "QUEUED"))
-        command_status_callback.assert_next_change_event((command_id, "IN_PROGRESS"))
 
-        command_progress_callback.assert_next_change_event((command_id, "33"))
-        command_progress_callback.assert_next_change_event((command_id, "66"))
+        command_status_callback.assert_change_event_sequence_sample(
+            [
+                (on_command_id, "QUEUED"),
+                (on_command_id, "IN_PROGRESS"),
+                (on_command_id, "COMPLETED"),
+            ]
+        )
+
+        command_progress_callback.assert_change_event_sequence_sample(
+            [
+                None,
+                (on_command_id, "33"),
+                (on_command_id, "66"),
+            ]
+        )
 
         device_state_callback.assert_next_change_event(DevState.ON)
         device_status_callback.assert_next_change_event("The device is in ON state.")
         assert device_under_test.state() == DevState.ON
 
-        command_status_callback.assert_next_change_event((command_id, "COMPLETED"))
-
-        command_result_callback.assert_next_change_event(
-            (command_id, json.dumps([int(ResultCode.OK), "On command completed OK"]))
+        command_result_callback.assert_change_event_sequence_sample(
+            [
+                ("", ""),
+                (
+                    on_command_id,
+                    json.dumps([int(ResultCode.OK), "On command completed OK"]),
+                ),
+            ]
         )
 
         # assignment of resources
@@ -463,28 +684,41 @@ class TestSKASubarray:
         obs_state_callback.assert_next_change_event(ObsState.EMPTY)
 
         resources_to_assign = ["BAND1"]
-        [[result_code], [command_id]] = device_under_test.AssignResources(
+        [[result_code], [assign_command_id]] = device_under_test.AssignResources(
             json.dumps(resources_to_assign)
         )
         assert result_code == ResultCode.QUEUED
 
-        obs_state_callback.assert_next_change_event(ObsState.RESOURCING)
+        obs_state_callback.assert_change_event_sequence_sample(
+            [ObsState.RESOURCING, ObsState.IDLE]
+        )
 
-        command_status_callback.assert_next_change_event((command_id, "QUEUED"))
-        command_status_callback.assert_next_change_event((command_id, "IN_PROGRESS"))
+        command_status_callback.assert_change_event_sequence_sample(
+            [
+                (on_command_id, "COMPLETED", assign_command_id, "QUEUED"),
+                (on_command_id, "COMPLETED", assign_command_id, "IN_PROGRESS"),
+                (on_command_id, "COMPLETED", assign_command_id, "COMPLETED"),
+            ]
+        )
 
-        command_progress_callback.assert_next_change_event((command_id, "33"))
-        command_progress_callback.assert_next_change_event((command_id, "66"))
+        command_progress_callback.assert_change_event_sequence_sample(
+            [
+                None,
+                (assign_command_id, "33"),
+                (assign_command_id, "66"),
+            ]
+        )
 
-        command_status_callback.assert_next_change_event((command_id, "COMPLETED"))
-
-        obs_state_callback.assert_next_change_event(ObsState.IDLE)
-
-        command_result_callback.assert_next_change_event(
-            (
-                command_id,
-                json.dumps([int(ResultCode.OK), "Resource assignment completed OK"]),
-            )
+        command_result_callback.assert_change_event_sequence_sample(
+            [
+                ("", ""),
+                (
+                    assign_command_id,
+                    json.dumps(
+                        [int(ResultCode.OK), "Resource assignment completed OK"]
+                    ),
+                ),
+            ]
         )
 
         assert list(device_under_test.assignedResources) == resources_to_assign
@@ -493,25 +727,60 @@ class TestSKASubarray:
         assert list(device_under_test.configuredCapabilities) == ["BAND1:0", "BAND2:0"]
 
         configuration_to_apply = {"BAND1": 2}
-        [[result_code], [command_id]] = device_under_test.Configure(
+        [[result_code], [config_command_id]] = device_under_test.Configure(
             json.dumps(configuration_to_apply)
         )
         assert result_code == ResultCode.QUEUED
 
-        obs_state_callback.assert_next_change_event(ObsState.CONFIGURING)
+        obs_state_callback.assert_change_event_sequence_sample(
+            [ObsState.CONFIGURING, ObsState.READY]
+        )
 
-        command_status_callback.assert_next_change_event((command_id, "QUEUED"))
-        command_status_callback.assert_next_change_event((command_id, "IN_PROGRESS"))
+        command_status_callback.assert_change_event_sequence_sample(
+            [
+                (
+                    on_command_id,
+                    "COMPLETED",
+                    assign_command_id,
+                    "COMPLETED",
+                    config_command_id,
+                    "QUEUED",
+                ),
+                (
+                    on_command_id,
+                    "COMPLETED",
+                    assign_command_id,
+                    "COMPLETED",
+                    config_command_id,
+                    "IN_PROGRESS",
+                ),
+                (
+                    on_command_id,
+                    "COMPLETED",
+                    assign_command_id,
+                    "COMPLETED",
+                    config_command_id,
+                    "COMPLETED",
+                ),
+            ]
+        )
 
-        command_progress_callback.assert_next_change_event((command_id, "33"))
-        command_progress_callback.assert_next_change_event((command_id, "66"))
+        command_progress_callback.assert_change_event_sequence_sample(
+            [
+                None,
+                (config_command_id, "33"),
+                (config_command_id, "66"),
+            ]
+        )
 
-        command_status_callback.assert_next_change_event((command_id, "COMPLETED"))
-
-        obs_state_callback.assert_next_change_event(ObsState.READY)
-
-        command_result_callback.assert_next_change_event(
-            (command_id, json.dumps([int(ResultCode.OK), "Configure completed OK"]))
+        command_result_callback.assert_change_event_sequence_sample(
+            [
+                ("", ""),
+                (
+                    config_command_id,
+                    json.dumps([int(ResultCode.OK), "Configure completed OK"]),
+                ),
+            ]
         )
 
         assert list(device_under_test.configuredCapabilities) == ["BAND1:2", "BAND2:0"]
@@ -521,44 +790,129 @@ class TestSKASubarray:
         # to handle this.
 
         dummy_scan_arg = 5
-        [[result_code], [command_id]] = device_under_test.Scan(
+        [[result_code], [scan_command_id]] = device_under_test.Scan(
             json.dumps(dummy_scan_arg)
         )
         assert result_code == ResultCode.QUEUED
 
-        command_status_callback.assert_next_change_event((command_id, "QUEUED"))
-        command_status_callback.assert_next_change_event((command_id, "IN_PROGRESS"))
+        command_status_callback.assert_change_event_sequence_sample(
+            [
+                (
+                    on_command_id,
+                    "COMPLETED",
+                    assign_command_id,
+                    "COMPLETED",
+                    config_command_id,
+                    "COMPLETED",
+                    scan_command_id,
+                    "QUEUED",
+                ),
+                (
+                    on_command_id,
+                    "COMPLETED",
+                    assign_command_id,
+                    "COMPLETED",
+                    config_command_id,
+                    "COMPLETED",
+                    scan_command_id,
+                    "IN_PROGRESS",
+                ),
+                (
+                    on_command_id,
+                    "COMPLETED",
+                    assign_command_id,
+                    "COMPLETED",
+                    config_command_id,
+                    "COMPLETED",
+                    scan_command_id,
+                    "COMPLETED",
+                ),
+            ]
+        )
 
-        command_progress_callback.assert_next_change_event((command_id, "33"))
-        command_progress_callback.assert_next_change_event((command_id, "66"))
-
-        command_status_callback.assert_next_change_event((command_id, "COMPLETED"))
+        command_progress_callback.assert_change_event_sequence_sample(
+            [
+                None,
+                (scan_command_id, "33"),
+                (scan_command_id, "66"),
+            ]
+        )
 
         obs_state_callback.assert_next_change_event(ObsState.SCANNING)
 
-        command_result_callback.assert_next_change_event(
-            (
-                command_id,
-                json.dumps([int(ResultCode.OK), "Scan commencement completed OK"]),
-            )
+        command_result_callback.assert_change_event_sequence_sample(
+            [
+                ("", ""),
+                (
+                    scan_command_id,
+                    json.dumps([int(ResultCode.OK), "Scan commencement completed OK"]),
+                ),
+            ]
         )
 
         # test end scan
-        [[result_code], [command_id]] = device_under_test.EndScan()
+        [[result_code], [endscan_command_id]] = device_under_test.EndScan()
         assert result_code == ResultCode.QUEUED
 
-        command_status_callback.assert_next_change_event((command_id, "QUEUED"))
-        command_status_callback.assert_next_change_event((command_id, "IN_PROGRESS"))
+        command_status_callback.assert_change_event_sequence_sample(
+            [
+                (
+                    on_command_id,
+                    "COMPLETED",
+                    assign_command_id,
+                    "COMPLETED",
+                    config_command_id,
+                    "COMPLETED",
+                    scan_command_id,
+                    "COMPLETED",
+                    endscan_command_id,
+                    "QUEUED",
+                ),
+                (
+                    on_command_id,
+                    "COMPLETED",
+                    assign_command_id,
+                    "COMPLETED",
+                    config_command_id,
+                    "COMPLETED",
+                    scan_command_id,
+                    "COMPLETED",
+                    endscan_command_id,
+                    "IN_PROGRESS",
+                ),
+                (
+                    on_command_id,
+                    "COMPLETED",
+                    assign_command_id,
+                    "COMPLETED",
+                    config_command_id,
+                    "COMPLETED",
+                    scan_command_id,
+                    "COMPLETED",
+                    endscan_command_id,
+                    "COMPLETED",
+                ),
+            ]
+        )
 
-        command_progress_callback.assert_next_change_event((command_id, "33"))
-        command_progress_callback.assert_next_change_event((command_id, "66"))
-
-        command_status_callback.assert_next_change_event((command_id, "COMPLETED"))
+        command_progress_callback.assert_change_event_sequence_sample(
+            [
+                None,
+                (endscan_command_id, "33"),
+                (endscan_command_id, "66"),
+            ]
+        )
 
         obs_state_callback.assert_next_change_event(ObsState.READY)
 
-        command_result_callback.assert_next_change_event(
-            (command_id, json.dumps([int(ResultCode.OK), "End scan completed OK"]))
+        command_result_callback.assert_change_event_sequence_sample(
+            [
+                ("", ""),
+                (
+                    endscan_command_id,
+                    json.dumps([int(ResultCode.OK), "End scan completed OK"]),
+                ),
+            ]
         )
 
     # PROTECTED REGION ID(SKASubarray.test_Reset_decorators) ENABLED START #
@@ -596,22 +950,37 @@ class TestSKASubarray:
         )
         command_result_callback.assert_next_change_event(("", ""))
 
-        [[result_code], [command_id]] = device_under_test.On()
+        [[result_code], [on_command_id]] = device_under_test.On()
         assert result_code == ResultCode.QUEUED
-        command_status_callback.assert_next_change_event((command_id, "QUEUED"))
-        command_status_callback.assert_next_change_event((command_id, "IN_PROGRESS"))
 
-        command_progress_callback.assert_next_change_event((command_id, "33"))
-        command_progress_callback.assert_next_change_event((command_id, "66"))
+        command_status_callback.assert_change_event_sequence_sample(
+            [
+                (on_command_id, "QUEUED"),
+                (on_command_id, "IN_PROGRESS"),
+                (on_command_id, "COMPLETED"),
+            ]
+        )
+
+        command_progress_callback.assert_change_event_sequence_sample(
+            [
+                None,
+                (on_command_id, "33"),
+                (on_command_id, "66"),
+            ]
+        )
 
         device_state_callback.assert_next_change_event(DevState.ON)
         device_status_callback.assert_next_change_event("The device is in ON state.")
         assert device_under_test.state() == DevState.ON
 
-        command_status_callback.assert_next_change_event((command_id, "COMPLETED"))
-
-        command_result_callback.assert_next_change_event(
-            (command_id, json.dumps([int(ResultCode.OK), "On command completed OK"]))
+        command_result_callback.assert_change_event_sequence_sample(
+            [
+                ("", ""),
+                (
+                    on_command_id,
+                    json.dumps([int(ResultCode.OK), "On command completed OK"]),
+                ),
+            ]
         )
 
         # assignment of resources
@@ -619,28 +988,41 @@ class TestSKASubarray:
         obs_state_callback.assert_next_change_event(ObsState.EMPTY)
 
         resources_to_assign = ["BAND1"]
-        [[result_code], [command_id]] = device_under_test.AssignResources(
+        [[result_code], [assign_command_id]] = device_under_test.AssignResources(
             json.dumps(resources_to_assign)
         )
         assert result_code == ResultCode.QUEUED
 
-        obs_state_callback.assert_next_change_event(ObsState.RESOURCING)
+        obs_state_callback.assert_change_event_sequence_sample(
+            [ObsState.RESOURCING, ObsState.IDLE]
+        )
 
-        command_status_callback.assert_next_change_event((command_id, "QUEUED"))
-        command_status_callback.assert_next_change_event((command_id, "IN_PROGRESS"))
+        command_status_callback.assert_change_event_sequence_sample(
+            [
+                (on_command_id, "COMPLETED", assign_command_id, "QUEUED"),
+                (on_command_id, "COMPLETED", assign_command_id, "IN_PROGRESS"),
+                (on_command_id, "COMPLETED", assign_command_id, "COMPLETED"),
+            ]
+        )
 
-        command_progress_callback.assert_next_change_event((command_id, "33"))
-        command_progress_callback.assert_next_change_event((command_id, "66"))
+        command_progress_callback.assert_change_event_sequence_sample(
+            [
+                None,
+                (assign_command_id, "33"),
+                (assign_command_id, "66"),
+            ]
+        )
 
-        command_status_callback.assert_next_change_event((command_id, "COMPLETED"))
-
-        obs_state_callback.assert_next_change_event(ObsState.IDLE)
-
-        command_result_callback.assert_next_change_event(
-            (
-                command_id,
-                json.dumps([int(ResultCode.OK), "Resource assignment completed OK"]),
-            )
+        command_result_callback.assert_change_event_sequence_sample(
+            [
+                ("", ""),
+                (
+                    assign_command_id,
+                    json.dumps(
+                        [int(ResultCode.OK), "Resource assignment completed OK"]
+                    ),
+                ),
+            ]
         )
 
         assert list(device_under_test.assignedResources) == resources_to_assign
@@ -660,80 +1042,123 @@ class TestSKASubarray:
 
         obs_state_callback.assert_next_change_event(ObsState.CONFIGURING)
 
-        command_status_callback.assert_next_change_event(
-            (configure_command_id, "QUEUED")
-        )
-        command_status_callback.assert_next_change_event(
-            (configure_command_id, "IN_PROGRESS")
-        )
-
         [[result_code], [abort_command_id]] = device_under_test.Abort()
         assert result_code == ResultCode.STARTED
 
-        obs_state_callback.assert_next_change_event(ObsState.ABORTING)
-
-        command_status_callback.assert_next_change_event(
-            (configure_command_id, "IN_PROGRESS", abort_command_id, "IN_PROGRESS")
+        obs_state_callback.assert_change_event_sequence_sample(
+            [ObsState.ABORTING, ObsState.ABORTED]
         )
 
-        status_call = command_status_callback.get_next_change_event()
-        if status_call == (
-            configure_command_id,
-            "ABORTED",
-            abort_command_id,
-            "IN_PROGRESS",
-        ):
-            # event announcing abort of configure arrived first,
-            # now we expect abort to completed
-            command_status_callback.assert_next_change_event(
-                (abort_command_id, "COMPLETED")
-            )
-        else:
-            # event announcing completion of abort arrived first,
-            # now we expect configure to abort.
-            assert status_call == (
-                configure_command_id,
-                "IN_PROGRESS",
-                abort_command_id,
-                "COMPLETED",
-            )
-            command_status_callback.assert_next_change_event(
-                (configure_command_id, "ABORTED")
-            )
+        command_status_callback.assert_change_event_sequence_sample(
+            [
+                (
+                    on_command_id,
+                    "COMPLETED",
+                    assign_command_id,
+                    "COMPLETED",
+                    configure_command_id,
+                    "QUEUED",
+                ),
+                (
+                    on_command_id,
+                    "COMPLETED",
+                    assign_command_id,
+                    "COMPLETED",
+                    configure_command_id,
+                    "IN_PROGRESS",
+                ),
+                (
+                    on_command_id,
+                    "COMPLETED",
+                    assign_command_id,
+                    "COMPLETED",
+                    configure_command_id,
+                    "ABORTED",
+                    abort_command_id,
+                    "IN_PROGRESS",
+                ),
+                (
+                    on_command_id,
+                    "COMPLETED",
+                    assign_command_id,
+                    "COMPLETED",
+                    configure_command_id,
+                    "ABORTED",
+                    abort_command_id,
+                    "COMPLETED",
+                ),
+            ]
+        )
 
-        obs_state_callback.assert_next_change_event(ObsState.ABORTED)
-
-        # command_progress_callback.assert_not_called()
         command_status_callback.assert_not_called()
         command_result_callback.assert_not_called()
 
         # Reset from aborted state
         [[result_code], [reset_command_id]] = device_under_test.ObsReset()
         assert result_code == ResultCode.QUEUED
-        command_status_callback.assert_next_change_event((reset_command_id, "QUEUED"))
-        command_status_callback.assert_next_change_event(
-            (reset_command_id, "IN_PROGRESS")
+
+        command_status_callback.assert_change_event_sequence_sample(
+            [
+                (
+                    on_command_id,
+                    "COMPLETED",
+                    assign_command_id,
+                    "COMPLETED",
+                    configure_command_id,
+                    "ABORTED",
+                    abort_command_id,
+                    "COMPLETED",
+                    reset_command_id,
+                    "QUEUED",
+                ),
+                (
+                    on_command_id,
+                    "COMPLETED",
+                    assign_command_id,
+                    "COMPLETED",
+                    configure_command_id,
+                    "ABORTED",
+                    abort_command_id,
+                    "COMPLETED",
+                    reset_command_id,
+                    "IN_PROGRESS",
+                ),
+                (
+                    on_command_id,
+                    "COMPLETED",
+                    assign_command_id,
+                    "COMPLETED",
+                    configure_command_id,
+                    "ABORTED",
+                    abort_command_id,
+                    "COMPLETED",
+                    reset_command_id,
+                    "COMPLETED",
+                ),
+            ]
         )
 
-        obs_state_callback.assert_next_change_event(ObsState.RESETTING)
-
-        call = command_progress_callback.get_next_change_event()
-        if call == (configure_command_id, "33"):
-            call = command_progress_callback.get_next_change_event()
-        assert call == (reset_command_id, "33")
-        command_progress_callback.assert_next_change_event((reset_command_id, "66"))
-
-        command_status_callback.assert_next_change_event(
-            (reset_command_id, "COMPLETED")
+        obs_state_callback.assert_change_event_sequence_sample(
+            [ObsState.RESETTING, ObsState.IDLE]
         )
 
-        obs_state_callback.assert_next_change_event(ObsState.IDLE)
+        command_progress_callback.assert_change_event_sequence_sample(
+            [
+                None,
+                (configure_command_id, "33"),
+                (reset_command_id, "33"),
+                (reset_command_id, "66"),
+            ]
+        )
 
-        command_result_callback.assert_next_change_event(
-            (
-                reset_command_id,
-                json.dumps([int(ResultCode.OK), "Obs reset completed OK"]),
-            )
+        command_result_callback.assert_change_event_sequence_sample(
+            [
+                ("", ""),
+                (
+                    reset_command_id,
+                    json.dumps([int(ResultCode.OK), "Obs reset completed OK"]),
+                ),
+            ]
         )
 
         assert list(device_under_test.configuredCapabilities) == ["BAND1:0", "BAND2:0"]

@@ -42,12 +42,7 @@ class FakeSubarrayComponent(FakeBaseComponent):
         """A simple class for managing subarray resources."""
 
         def __init__(self):
-            """
-            Initialise a new instance.
-
-            :param callback: callback to call when the resource pool
-                goes from empty to non-empty or vice-versa
-            """
+            """Initialise a new instance."""
             self._resources = set()
 
         def __len__(self):
@@ -111,7 +106,7 @@ class FakeSubarrayComponent(FakeBaseComponent):
         self,
         capability_types,
         time_to_return=0.05,
-        time_to_complete=0.1,
+        time_to_complete=0.4,
         power=PowerState.OFF,
         fault=None,
         resourced=False,
@@ -125,10 +120,6 @@ class FakeSubarrayComponent(FakeBaseComponent):
 
         :param capability_types: a list strings representing
             capability types.
-        :param _power_mode: initial power mode of this component
-            (for testing only)
-        :param _faulty: whether this component should initially
-            simulate a fault (for testing only)
         """
         self._resource_pool = self._ResourcePool()
 
@@ -328,7 +319,6 @@ class FakeSubarrayComponent(FakeBaseComponent):
         """
         Start scanning.
 
-        :param scan_id: unique ID of this scan
         :param task_callback: a callback to be called whenever the
             status of this task changes.
         :param task_abort_event: a threading.Event that can be checked

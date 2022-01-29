@@ -35,7 +35,8 @@ class TestTaskExecutor:
         :param executor: the task executor under test
         :param max_workers: the maximum number of worker threads in the
             task executor
-        :param mocker: fixture that wraps unittest.Mock
+        :param callbacks: a dictionary of mocks, passed as callbacks to
+            the command tracker under test
         """
 
         def _claim_lock(lock, task_callback, task_abort_event):
@@ -93,7 +94,8 @@ class TestTaskExecutor:
         :param executor: the task executor under test
         :param max_workers: the maximum number of worker threads in the
             task executor
-        :param mocker: fixture that wraps unittest.Mock
+        :param callbacks: a dictionary of mocks, passed as callbacks to
+            the command tracker under test
         """
 
         def _claim_lock(lock, task_callback, task_abort_event):

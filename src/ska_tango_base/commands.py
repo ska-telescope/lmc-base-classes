@@ -108,10 +108,6 @@ class _BaseCommand:
 
         This is implemented to simply call the do() hook, thus running
         the user-specified functionality therein.
-
-        :param argin: the argument passed to the Tango command, if
-            present
-        :type argin: ANY
         """
         raise NotImplementedError(
             "_BaseCommand is abstract; __call__() needs to be implemented by a "
@@ -124,10 +120,6 @@ class _BaseCommand:
 
         This class provides stub functionality; subclasses should
         subclass this method with their command functionality.
-
-        :param argin: the argument passed to the Tango command, if
-            present
-        :type argin: ANY
         """
         raise NotImplementedError(
             "BaseCommand is abstract; do() needs to be implemented by a subclass."

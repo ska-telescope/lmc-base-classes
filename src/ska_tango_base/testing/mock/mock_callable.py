@@ -294,3 +294,37 @@ class MockChangeEventCallback(MockCallable):
         assert (
             call_quality == quality
         ), f"Call quality {call_quality} does not match expected quality {quality}"
+
+    def assert_change_event_sequence_sample(
+        self: MockChangeEventCallback,
+        possible_values: list[Any],
+    ) -> None:
+        """
+        Assert that observed change events are an ordered sample from a known sequence.
+
+        This is useful where we know the exact sequence of changes that
+        will occur, but we can't know for which of these changes a
+        change event will be pushed. This would occur, for example, if
+        change events are pushed from a polling loop; if multiple
+        changes occur within a polling period, a change event will only
+        be pushed for the last of these. Thus, we only know the sequence
+        of change events that *might* be pushed. The actual change
+        events will be an ordered sample from that full sequence.
+
+        (This implementation assumes that the last event in the sequence
+        will definitely be pushed.)
+
+        :param possible_values: ordered list of possible change events
+        """
+        actual_values = []
+        actual_value = None
+        for possible_value in possible_values:
+            if actual_value is None:
+                actual_value = self.get_next_change_event()
+                actual_values.append(actual_value)
+            if possible_value == actual_value:
+                actual_value = None
+        assert actual_value is None, (
+            f"Call values {actual_values} is not an ordered sample of possible values "
+            f"{possible_values}"
+        )

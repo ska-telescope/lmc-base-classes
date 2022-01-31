@@ -103,8 +103,9 @@ class TestSubarrayComponentManager:
         """
         Fixture that returns the component manager under test.
 
-        :param mock_op_state_model: a mock state model for testing
         :param logger: a logger for the component manager
+        :param callbacks: a dictionary of mocks, passed as callbacks to
+            the command tracker under test
 
         :return: the component manager under test
         """
@@ -279,10 +280,8 @@ class TestSubarrayComponentManager:
         Test that commands succeed when there is a connection to the component.
 
         :param component_manager: the component manager under test
-        :param mock_op_state_model: a mock state model for testing
-        :param command: the name of the command under test
-        :param action: the action that is expected to be performed on
-            the state model
+        :param callbacks: a dictionary of mocks, passed as callbacks to
+            the command tracker under test
         """
         assert component_manager.communication_state == CommunicationStatus.DISABLED
         callbacks["communication_state"].assert_not_called()

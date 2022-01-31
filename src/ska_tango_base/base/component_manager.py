@@ -241,9 +241,6 @@ class BaseComponentManager:
         Handle a change in communication status.
 
         This is a helper method for use by subclasses.
-
-        :param communication_state: the new communication status of the
-            component manager.
         """
         callback_kwargs = {}
 
@@ -264,8 +261,8 @@ class BaseComponentManager:
         """
         Turn the component off.
 
-        :param callback: callback to be called when the status of the
-            command changes
+        :param task_callback: callback to be called when the status of
+            the command changes
         """
         raise NotImplementedError("BaseComponentManager is abstract.")
 
@@ -274,8 +271,8 @@ class BaseComponentManager:
         """
         Put the component into low-power standby mode.
 
-        :param callback: callback to be called when the status of the
-            command changes
+        :param task_callback: callback to be called when the status of
+            the command changes
         """
         raise NotImplementedError("BaseComponentManager is abstract.")
 
@@ -284,8 +281,8 @@ class BaseComponentManager:
         """
         Turn the component on.
 
-        :param callback: callback to be called when the status of the
-            command changes
+        :param task_callback: callback to be called when the status of
+            the command changes
         """
         raise NotImplementedError("BaseComponentManager is abstract.")
 
@@ -294,8 +291,8 @@ class BaseComponentManager:
         """
         Reset the component (from fault state).
 
-        :param callback: callback to be called when the status of the
-            command changes
+        :param task_callback: callback to be called when the status of
+            the command changes
         """
         raise NotImplementedError("BaseComponentManager is abstract.")
 

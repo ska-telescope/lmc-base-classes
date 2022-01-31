@@ -145,6 +145,7 @@ def test_device():
         assert next_result[1] == '"Something went wrong"'
 
 
+@pytest.mark.forked
 def test_progress():
     """Test the progress."""
     with DeviceTestContext(

@@ -54,13 +54,11 @@ class MultiDeviceComponentManager(TaskExecutorComponentManager):
         :type task_abort_event: Event, optional
         """
         retries = 45
+        self.logger.info("NonAbortingTask started")
         while retries > 0:
             retries -= 1
             time.sleep(sleep_time)  # This command takes long
-            self.logger.info(
-                "In NonAbortingTask repeating %s",
-                retries,
-            )
+        self.logger.info("NonAbortingTask finished")
         task_callback(status=TaskStatus.COMPLETED, result="non_aborting_lrc OK")
 
     def non_aborting_lrc(self, argin: float, task_callback: Callable = None):
@@ -94,17 +92,19 @@ class MultiDeviceComponentManager(TaskExecutorComponentManager):
         :type task_abort_event: Event, optional
         """
         retries = 45
+        self.logger.info("NonAbortingTask started")
         while (not task_abort_event.is_set()) and retries > 0:
             retries -= 1
             time.sleep(sleep_time)  # This command takes long
-            self.logger.info("In NonAbortingTask repeating %s", retries)
 
         if retries == 0:  # Normal finish
+            self.logger.info("NonAbortingTask finished normal")
             task_callback(
                 status=TaskStatus.COMPLETED,
                 result=f"NonAbortingTask completed {sleep_time}",
             )
         else:  # Aborted finish
+            self.logger.info("NonAbortingTask finished aborted")
             task_callback(
                 status=TaskStatus.ABORTED,
                 result=f"NonAbortingTask Aborted {sleep_time}",

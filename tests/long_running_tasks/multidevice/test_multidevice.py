@@ -144,8 +144,24 @@ def test_device():
         assert next_result[0].endswith("LongRunningException")
         assert next_result[1] == '"Something went wrong"'
 
+
+def test_progress():
+    """Test the progress."""
+    with DeviceTestContext(
+        LongRunningCommandBaseTestDevice, process=True
+    ) as top_device:
+
+        top_device_event_store = LRCAttributesStore()
+
+        top_device.subscribe_event(
+            "longRunningCommandProgress",
+            EventType.CHANGE_EVENT,
+            top_device_event_store,
+            wait=True,
+        )
+
         # Progress
-        result_code, command_id = top_device.TestProgress(0.1)
+        result_code, command_id = top_device.TestProgress(0.3)
         assert ResultCode(int(result_code)) == ResultCode.QUEUED
         assert command_id.endswith("TestProgress")
 

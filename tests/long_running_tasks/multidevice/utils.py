@@ -15,6 +15,7 @@ class LRCAttributesStore:
 
     def __init__(self) -> None:
         """Create the queues."""
+        self.prev_read_value = None
         self.queues = {}
         self.attributes = [
             "longrunningcommandsinqueue",
@@ -57,7 +58,12 @@ class LRCAttributesStore:
         :return: An attribute value fromthe queue
         :rtype: Any
         """
-        return self.queues[attribute_name.lower()].get(timeout=fetch_timeout)
+        while True:
+            # Flush duplicates
+            next_value = self.queues[attribute_name.lower()].get(timeout=fetch_timeout)
+            if self.prev_read_value != next_value:
+                self.prev_read_value = next_value
+                return next_value
 
 
 @dataclass

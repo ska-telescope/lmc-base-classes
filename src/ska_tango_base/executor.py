@@ -3,7 +3,7 @@ import concurrent.futures
 from enum import IntEnum
 import threading
 import traceback
-from typing import Optional
+from typing import Callable, Optional
 
 
 class TaskStatus(IntEnum):
@@ -63,7 +63,13 @@ class TaskExecutor:
         self._abort_event = threading.Event()
         self._submit_lock = threading.Lock()
 
-    def submit(self, func, args=None, kwargs=None, task_callback=None) -> bool:
+    def submit(
+        self,
+        func: Callable,
+        args=None,
+        kwargs=None,
+        task_callback: Optional[Callable] = None,
+    ) -> bool:
         """
         Submit a new task.
 
@@ -93,7 +99,7 @@ class TaskExecutor:
                     task_callback(status=TaskStatus.QUEUED)
                 return TaskStatus.QUEUED, "Task queued"
 
-    def abort(self, task_callback):
+    def abort(self, task_callback: Optional[Callable] = None):
         """
         Tell this executor to abort execution.
 

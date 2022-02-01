@@ -395,6 +395,7 @@ class _CommandTracker:
         status_changed_callback,
         progress_changed_callback,
         result_callback,
+        exception_callback=None,
         removal_time=10.0,
     ):
         """Initialise a new instance."""
@@ -404,6 +405,8 @@ class _CommandTracker:
         self._progress_changed_callback = progress_changed_callback
         self._result_callback = result_callback
         self._most_recent_result = None
+        self._exception_callback = exception_callback
+        self._most_recent_exception = None
         self._commands = {}
         self._removal_time = removal_time
 
@@ -432,8 +435,19 @@ class _CommandTracker:
         status=None,
         progress=None,
         result=None,
+        exception=None,
     ):
         with self.__lock:
+            if exception is not None:
+                self._most_recent_exception = (command_id, exception)
+                if self._exception_callback is not None:
+                    self._exception_callback(command_id, exception)
+            if result is not None:
+                self._most_recent_result = (command_id, result)
+                self._result_callback(command_id, result)
+            if progress is not None:
+                self._commands[command_id]["progress"] = progress
+                self._progress_changed_callback(self.command_progresses)
             if status is not None:
                 self._commands[command_id]["status"] = status
                 self._status_changed_callback(self.command_statuses)
@@ -444,16 +458,13 @@ class _CommandTracker:
                     ]
                     if completed_callback is not None:
                         completed_callback()
-                if status in [TaskStatus.ABORTED, TaskStatus.COMPLETED]:
+                if status in [
+                    TaskStatus.ABORTED,
+                    TaskStatus.COMPLETED,
+                    TaskStatus.FAILED,
+                ]:
                     self._commands[command_id]["progress"] = None
                     self._schedule_removal(command_id)
-
-            if progress is not None:
-                self._commands[command_id]["progress"] = progress
-                self._progress_changed_callback(self.command_progresses)
-            if result is not None:
-                self._most_recent_result = (command_id, result)
-                self._result_callback(command_id, result)
 
     def _commands_by_keyword(self, keyword):
         assert keyword in [
@@ -503,10 +514,20 @@ class _CommandTracker:
         """
         Return the result of the most recently completed command.
 
-        :return: a (command_id, result_code, message_string) tuple. If
-            no command has completed yet, then ("", "", "") is returned.
+        :return: a (command_id, result) tuple. If no command has
+            completed yet, then None.
         """
         return self._most_recent_result
+
+    @property
+    def command_exception(self):
+        """
+        Return the most recent exception, if any.
+
+        :return: a (command_id, exception) tuple. If no command has
+            raised an uncaught exception, then None.
+        """
+        return self._most_recent_exception
 
     def get_command_status(self, command_id):
         if command_id in self._commands:
@@ -876,6 +897,12 @@ class SKABaseDevice(Device):
 
     def _update_command_result(self, command_id, command_result):
         self._command_result = (command_id, json.dumps(command_result))
+
+    def _update_command_exception(self, command_id, command_exception):
+        self.logger.error(
+            f"Command '{command_id}' raised exception {command_exception}"
+        )
+        self._command_result = (command_id, str(command_exception))
 
     def _communication_state_changed(self, communication_state):
         action_map = {

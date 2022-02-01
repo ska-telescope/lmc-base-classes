@@ -2,7 +2,6 @@
 import concurrent.futures
 from enum import IntEnum
 import threading
-import traceback
 from typing import Optional
 
 
@@ -45,6 +44,19 @@ class TaskStatus(IntEnum):
     The task was rejected.
     """
 
+    FAILED = 7
+    """
+    The task failed to complete.
+
+    Note that this should not be used for a task that executes to
+    completion, but does not achieve its goal. This kind of
+    domain-specific notion of "succeeded" versus "failed" should be
+    passed as a task result. Here, FAILED means that the task executor
+    has detected a failure of the task to run to completion. For
+    example, execution of the task might have resulted in the raising of
+    an uncaught exception.
+    """
+
 
 class TaskExecutor:
     """An asynchronous executor of tasks."""
@@ -63,7 +75,7 @@ class TaskExecutor:
         self._abort_event = threading.Event()
         self._submit_lock = threading.Lock()
 
-    def submit(self, func, args=None, kwargs=None, task_callback=None) -> bool:
+    def submit(self, func, args=None, kwargs=None, task_callback=None):
         """
         Submit a new task.
 
@@ -146,5 +158,6 @@ class TaskExecutor:
                     task_abort_event=abort_event,
                     **kwargs
                 )
-            except Exception:
-                traceback.print_exc()
+            except Exception as exc:
+                if task_callback is not None:
+                    task_callback(status=TaskStatus.FAILED, exception=exc)

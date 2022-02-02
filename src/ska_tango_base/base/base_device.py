@@ -21,7 +21,6 @@ import itertools
 import json
 import logging
 import logging.handlers
-import queue
 import socket
 import sys
 import threading
@@ -984,8 +983,6 @@ class SKABaseDevice(Device):
                 self.logger.debug(
                     "No Groups loaded for device: {}".format(self.get_name())
                 )
-
-            self._omni_queue = queue.Queue()
 
             self._init_state_model()
 

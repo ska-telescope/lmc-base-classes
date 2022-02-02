@@ -3,7 +3,6 @@ from __future__ import annotations
 
 import collections
 import logging
-import time
 
 import pytest
 import tango
@@ -33,7 +32,6 @@ def tango_context(device_test_config):
 
     tango_context = DeviceTestContext(**device_test_config)
     tango_context.start()
-    time.sleep(0.15)  # required because of PushChanges segfault workaround
     yield tango_context
     tango_context.stop()
 

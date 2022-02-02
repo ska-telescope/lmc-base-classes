@@ -199,15 +199,15 @@ class SlowCommand(_BaseCommand):
             self._callback(False)
 
 
-class DeviceInitCommand(FastCommand):
+class DeviceInitCommand(SlowCommand):
     """
-    A ``FastCommand`` with a fixed initialisation interface.
+    A ``SlowCommand`` with a fixed initialisation interface.
 
     Although most commands have lots of flexibility in how they are
     initialised, device ``InitCommand`` instances are always called in
     the same way. This class fixes that interface. ``InitCommand``
     instances should inherit from this command, rather than directly
-    from ``FastCommand``, to ensure that their initialisation signature
+    from ``SlowCommand``, to ensure that their initialisation signature
     is correct.
     """
 
@@ -219,7 +219,12 @@ class DeviceInitCommand(FastCommand):
         :param logger: a logger for this command to log with.
         """
         self._device = device
-        super().__init__(logger=logger)
+
+        def _callback(running):
+            if running:
+                device.op_state_model.perform_action("init_completed")
+
+        super().__init__(callback=_callback, logger=logger)
 
 
 class SubmittedSlowCommand(SlowCommand):

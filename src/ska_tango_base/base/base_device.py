@@ -21,7 +21,6 @@ import itertools
 import json
 import logging
 import logging.handlers
-import queue
 import socket
 import sys
 import threading
@@ -67,8 +66,9 @@ from ska_tango_base.faults import (
     LoggingLevelError,
 )
 
-MAX_CONCURRENT_COMMANDS = 16
-MAX_COMMANDS = 64
+
+MAX_REPORTED_CONCURRENT_COMMANDS = 16
+MAX_REPORTED_QUEUED_COMMANDS = 64
 
 
 LOG_FILE_SIZE = 1024 * 1024  # Log file size 1MB.
@@ -395,6 +395,7 @@ class _CommandTracker:
         status_changed_callback,
         progress_changed_callback,
         result_callback,
+        exception_callback=None,
         removal_time=10.0,
     ):
         """Initialise a new instance."""
@@ -404,6 +405,8 @@ class _CommandTracker:
         self._progress_changed_callback = progress_changed_callback
         self._result_callback = result_callback
         self._most_recent_result = None
+        self._exception_callback = exception_callback
+        self._most_recent_exception = None
         self._commands = {}
         self._removal_time = removal_time
 
@@ -432,8 +435,19 @@ class _CommandTracker:
         status=None,
         progress=None,
         result=None,
+        exception=None,
     ):
         with self.__lock:
+            if exception is not None:
+                self._most_recent_exception = (command_id, exception)
+                if self._exception_callback is not None:
+                    self._exception_callback(command_id, exception)
+            if result is not None:
+                self._most_recent_result = (command_id, result)
+                self._result_callback(command_id, result)
+            if progress is not None:
+                self._commands[command_id]["progress"] = progress
+                self._progress_changed_callback(self.command_progresses)
             if status is not None:
                 self._commands[command_id]["status"] = status
                 self._status_changed_callback(self.command_statuses)
@@ -444,16 +458,13 @@ class _CommandTracker:
                     ]
                     if completed_callback is not None:
                         completed_callback()
-                if status in [TaskStatus.ABORTED, TaskStatus.COMPLETED]:
+                if status in [
+                    TaskStatus.ABORTED,
+                    TaskStatus.COMPLETED,
+                    TaskStatus.FAILED,
+                ]:
                     self._commands[command_id]["progress"] = None
                     self._schedule_removal(command_id)
-
-            if progress is not None:
-                self._commands[command_id]["progress"] = progress
-                self._progress_changed_callback(self.command_progresses)
-            if result is not None:
-                self._most_recent_result = (command_id, result)
-                self._result_callback(command_id, result)
 
     def _commands_by_keyword(self, keyword):
         assert keyword in [
@@ -503,10 +514,20 @@ class _CommandTracker:
         """
         Return the result of the most recently completed command.
 
-        :return: a (command_id, result_code, message_string) tuple. If
-            no command has completed yet, then ("", "", "") is returned.
+        :return: a (command_id, result) tuple. If no command has
+            completed yet, then None.
         """
         return self._most_recent_result
+
+    @property
+    def command_exception(self):
+        """
+        Return the most recent exception, if any.
+
+        :return: a (command_id, exception) tuple. If no command has
+            raised an uncaught exception, then None.
+        """
+        return self._most_recent_exception
 
     def get_command_status(self, command_id):
         if command_id in self._commands:
@@ -534,6 +555,7 @@ class SKABaseDevice(Device):
             """
             message = "SKABaseDevice Init command completed OK"
             self.logger.info(message)
+            self._completed()
             return (ResultCode.OK, message)
 
     _logging_config_lock = threading.Lock()
@@ -776,7 +798,7 @@ class SKABaseDevice(Device):
 
     longRunningCommandsInQueue = attribute(
         dtype=("str",),
-        max_dim_x=MAX_COMMANDS,
+        max_dim_x=MAX_REPORTED_QUEUED_COMMANDS,
         access=AttrWriteType.READ,
         polling_period=250,
         archive_period=1000,
@@ -787,7 +809,7 @@ class SKABaseDevice(Device):
 
     longRunningCommandIDsInQueue = attribute(
         dtype=("str",),
-        max_dim_x=MAX_COMMANDS,
+        max_dim_x=MAX_REPORTED_QUEUED_COMMANDS,
         access=AttrWriteType.READ,
         polling_period=250,
         archive_period=1000,
@@ -798,7 +820,7 @@ class SKABaseDevice(Device):
 
     longRunningCommandStatus = attribute(
         dtype=("str",),
-        max_dim_x=MAX_CONCURRENT_COMMANDS * 2,  # 2 per command
+        max_dim_x=MAX_REPORTED_CONCURRENT_COMMANDS * 2,  # 2 per command
         access=AttrWriteType.READ,
         polling_period=250,
         archive_period=1000,
@@ -809,7 +831,7 @@ class SKABaseDevice(Device):
 
     longRunningCommandProgress = attribute(
         dtype=("str",),
-        max_dim_x=MAX_CONCURRENT_COMMANDS * 2,  # 2 per command
+        max_dim_x=MAX_REPORTED_CONCURRENT_COMMANDS * 2,  # 2 per command
         access=AttrWriteType.READ,
         polling_period=250,
         archive_period=1000,
@@ -855,10 +877,10 @@ class SKABaseDevice(Device):
             command_ids, command_names = zip(*commands_in_queue)
             self._command_ids_in_queue = [
                 str(command_id) for command_id in command_ids
-            ][:MAX_COMMANDS]
+            ][:MAX_REPORTED_QUEUED_COMMANDS]
             self._commands_in_queue = [
                 str(command_name) for command_name in command_names
-            ][:MAX_COMMANDS]
+            ][:MAX_REPORTED_QUEUED_COMMANDS]
         else:
             self._command_ids_in_queue = []
             self._commands_in_queue = []
@@ -867,15 +889,21 @@ class SKABaseDevice(Device):
         statuses = [(uid, status.name) for (uid, status) in command_statuses]
         self._command_statuses = [
             str(item) for item in itertools.chain.from_iterable(statuses)
-        ][: (MAX_CONCURRENT_COMMANDS * 2)]
+        ][: (MAX_REPORTED_CONCURRENT_COMMANDS * 2)]
 
     def _update_command_progresses(self, command_progresses):
         self._command_progresses = [
             str(item) for item in itertools.chain.from_iterable(command_progresses)
-        ][: (MAX_CONCURRENT_COMMANDS * 2)]
+        ][: (MAX_REPORTED_CONCURRENT_COMMANDS * 2)]
 
     def _update_command_result(self, command_id, command_result):
         self._command_result = (command_id, json.dumps(command_result))
+
+    def _update_command_exception(self, command_id, command_exception):
+        self.logger.error(
+            f"Command '{command_id}' raised exception {command_exception}"
+        )
+        self._command_result = (command_id, str(command_exception))
 
     def _communication_state_changed(self, communication_state):
         action_map = {
@@ -956,8 +984,6 @@ class SKABaseDevice(Device):
                     "No Groups loaded for device: {}".format(self.get_name())
                 )
 
-            self._omni_queue = queue.Queue()
-
             self._init_state_model()
 
             self.component_manager = self.create_component_manager()
@@ -966,7 +992,6 @@ class SKABaseDevice(Device):
                 self,
                 logger=self.logger,
             )()
-            self.op_state_model.perform_action("init_completed")
 
             self.init_command_objects()
         except Exception as exc:
@@ -1563,19 +1588,17 @@ class SKABaseDevice(Device):
                 (ResultCode.OK, str)
             """
             command_id = argin
-            result = self._command_tracker.get_command_status(command_id)
-            return (ResultCode.OK, f"{result}")
+            return self._command_tracker.get_command_status(command_id)
 
     @command(
         dtype_in=str,
-        dtype_out="DevVarLongStringArray",
+        dtype_out=str,
     )
     @DebugIt()
     def CheckLongRunningCommandStatus(self, argin):
         """Check the status of a long running command by ID."""
         handler = self.get_command_object("CheckLongRunningCommandStatus")
-        (return_code, command_status) = handler(argin)
-        return [[return_code], [command_status]]
+        return handler(argin)
 
     class DebugDeviceCommand(FastCommand):
         """A class for the SKABaseDevice's DebugDevice() command."""

@@ -55,6 +55,7 @@ class SKASubarray(SKAObsDevice):
 
             message = "SKASubarray Init command completed OK"
             self.logger.info(message)
+            self._completed()
             return (ResultCode.OK, message)
 
     class AbortCommand(SlowCommand):

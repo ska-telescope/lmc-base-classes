@@ -253,6 +253,7 @@ class CspSubElementController(SKAController):
 
             message = "CspSubElementController Init command completed OK"
             self._device.logger.info(message)
+            self._completed()
             return (ResultCode.OK, message)
 
     def always_executed_hook(self):

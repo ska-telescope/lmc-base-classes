@@ -11,7 +11,6 @@
 # Imports
 import re
 import pytest
-import time
 
 from tango import DevState, DevFailed
 from tango.test_context import MultiDeviceTestContext
@@ -569,7 +568,5 @@ def test_multiple_devices_in_same_process(mocker):
     with MultiDeviceTestContext(devices_info, process=False) as context:
         proxy1 = context.get_device("test/se/1")
         proxy2 = context.get_device("test/control/1")
-
-        time.sleep(0.15)  # required because of PushChanges segfault workaround
         assert proxy1.state() == DevState.DISABLE
         assert proxy2.state() == DevState.DISABLE

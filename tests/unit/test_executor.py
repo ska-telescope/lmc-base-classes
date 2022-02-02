@@ -155,3 +155,26 @@ class TestTaskExecutor:
         locks[max_workers + 1].release()
 
         callbacks[max_workers + 1].assert_next_call(status=TaskStatus.COMPLETED)
+
+    def test_exception(self, executor, callbacks):
+        """
+        Test that the executor handles an uncaught exception correctly.
+
+        :param executor: the task executor under test
+        :param callbacks: a dictionary of mocks, passed as callbacks to
+            the command tracker under test
+        """
+        exception_to_raise = ValueError("Exception under test")
+
+        def _raise_exception(task_callback, task_abort_event):
+            if task_callback is not None:
+                task_callback(status=TaskStatus.IN_PROGRESS)
+            raise exception_to_raise
+
+        executor.submit(_raise_exception, task_callback=callbacks[0])
+
+        callbacks[0].assert_next_call(status=TaskStatus.QUEUED)
+        callbacks[0].assert_next_call(status=TaskStatus.IN_PROGRESS)
+        callbacks[0].assert_next_call(
+            status=TaskStatus.FAILED, exception=exception_to_raise
+        )

@@ -415,6 +415,7 @@ class TestCommandTracker:
             "status": mocker.Mock(),
             "progress": mocker.Mock(),
             "result": mocker.Mock(),
+            "exception": mocker.Mock(),
         }
 
     @pytest.fixture
@@ -439,6 +440,7 @@ class TestCommandTracker:
             status_changed_callback=callbacks["status"],
             progress_changed_callback=callbacks["progress"],
             result_callback=callbacks["result"],
+            exception_callback=callbacks["exception"],
             removal_time=removal_time,
         )
 
@@ -458,6 +460,7 @@ class TestCommandTracker:
         callbacks["status"].assert_not_called()
         callbacks["progress"].assert_not_called()
         callbacks["result"].assert_not_called()
+        callbacks["exception"].assert_not_called()
 
         first_command_id = command_tracker.new_command("first_command")
         assert command_tracker.commands_in_queue == [
@@ -468,6 +471,8 @@ class TestCommandTracker:
         ]
         assert command_tracker.command_progresses == []
         assert command_tracker.command_result is None
+        assert command_tracker.command_exception is None
+
         callbacks["queue"].assert_called_once_with(
             [(first_command_id, "first_command")]
         )
@@ -475,6 +480,7 @@ class TestCommandTracker:
         callbacks["status"].assert_not_called()
         callbacks["progress"].assert_not_called()
         callbacks["result"].assert_not_called()
+        callbacks["exception"].assert_not_called()
 
         command_tracker.update_command_info(
             first_command_id, status=TaskStatus.IN_PROGRESS
@@ -487,6 +493,8 @@ class TestCommandTracker:
         ]
         assert command_tracker.command_progresses == []
         assert command_tracker.command_result is None
+        assert command_tracker.command_exception is None
+
         callbacks["queue"].assert_not_called()
         callbacks["status"].assert_called_once_with(
             [(first_command_id, TaskStatus.IN_PROGRESS)]
@@ -494,6 +502,7 @@ class TestCommandTracker:
         callbacks["status"].reset_mock()
         callbacks["progress"].assert_not_called()
         callbacks["result"].assert_not_called()
+        callbacks["exception"].assert_not_called()
 
         second_command_id = command_tracker.new_command("second_command")
         assert command_tracker.commands_in_queue == [
@@ -506,6 +515,8 @@ class TestCommandTracker:
         ]
         assert command_tracker.command_progresses == []
         assert command_tracker.command_result is None
+        assert command_tracker.command_exception is None
+
         callbacks["queue"].assert_called_once_with(
             [(first_command_id, "first_command"), (second_command_id, "second_command")]
         )
@@ -513,6 +524,7 @@ class TestCommandTracker:
         callbacks["status"].assert_not_called()
         callbacks["progress"].assert_not_called()
         callbacks["result"].assert_not_called()
+        callbacks["exception"].assert_not_called()
 
         command_tracker.update_command_info(first_command_id, progress=50)
         assert command_tracker.commands_in_queue == [
@@ -525,11 +537,14 @@ class TestCommandTracker:
         ]
         assert command_tracker.command_progresses == [(first_command_id, 50)]
         assert command_tracker.command_result is None
+        assert command_tracker.command_exception is None
+
         callbacks["queue"].assert_not_called()
         callbacks["status"].assert_not_called()
         callbacks["progress"].assert_called_once_with([(first_command_id, 50)])
         callbacks["progress"].reset_mock()
         callbacks["result"].assert_not_called()
+        callbacks["exception"].assert_not_called()
 
         command_tracker.update_command_info(
             first_command_id, result=(ResultCode.OK, "a message string")
@@ -543,6 +558,8 @@ class TestCommandTracker:
             first_command_id,
             (ResultCode.OK, "a message string"),
         )
+        assert command_tracker.command_exception is None
+
         callbacks["queue"].assert_not_called()
         callbacks["status"].assert_not_called()
         callbacks["progress"].assert_not_called()
@@ -551,6 +568,7 @@ class TestCommandTracker:
             first_command_id, (ResultCode.OK, "a message string")
         )
         callbacks["result"].reset_mock()
+        callbacks["exception"].assert_not_called()
 
         command_tracker.update_command_info(
             first_command_id, status=TaskStatus.COMPLETED
@@ -571,6 +589,8 @@ class TestCommandTracker:
             first_command_id,
             (ResultCode.OK, "a message string"),
         )
+        assert command_tracker.command_exception is None
+
         callbacks["queue"].assert_called_once_with(
             [(second_command_id, "second_command")]
         )
@@ -584,6 +604,70 @@ class TestCommandTracker:
         callbacks["status"].reset_mock()
         callbacks["progress"].assert_not_called()
         callbacks["result"].assert_not_called()
+        callbacks["exception"].assert_not_called()
+
+        command_tracker.update_command_info(
+            second_command_id, status=TaskStatus.IN_PROGRESS
+        )
+        assert command_tracker.commands_in_queue == [
+            (second_command_id, "second_command")
+        ]
+        assert command_tracker.command_statuses == [
+            (second_command_id, TaskStatus.IN_PROGRESS)
+        ]
+        assert command_tracker.command_progresses == []
+        assert command_tracker.command_result == (
+            first_command_id,
+            (ResultCode.OK, "a message string"),
+        )
+        assert command_tracker.command_exception is None
+
+        callbacks["queue"].assert_not_called()
+        callbacks["status"].assert_called_once_with(
+            [
+                (second_command_id, TaskStatus.IN_PROGRESS),
+            ]
+        )
+        callbacks["status"].reset_mock()
+        callbacks["progress"].assert_not_called()
+        callbacks["result"].assert_not_called()
+        callbacks["exception"].assert_not_called()
+
+        exception_to_raise = ValueError("Exception under test")
+
+        command_tracker.update_command_info(
+            second_command_id,
+            status=TaskStatus.FAILED,
+            exception=exception_to_raise,
+        )
+        assert command_tracker.commands_in_queue == [
+            (second_command_id, "second_command")
+        ]
+        assert command_tracker.command_statuses == [
+            (second_command_id, TaskStatus.FAILED)
+        ]
+        assert command_tracker.command_progresses == []
+        assert command_tracker.command_result == (
+            first_command_id,
+            (ResultCode.OK, "a message string"),
+        )
+        assert command_tracker.command_exception == (
+            second_command_id,
+            exception_to_raise,
+        )
+
+        callbacks["queue"].assert_not_called()
+        callbacks["status"].assert_called_once_with(
+            [
+                (second_command_id, TaskStatus.FAILED),
+            ]
+        )
+        callbacks["status"].reset_mock()
+        callbacks["progress"].assert_not_called()
+        callbacks["result"].assert_not_called()
+        callbacks["exception"].assert_called_once_with(
+            second_command_id, exception_to_raise
+        )
 
 
 class TestSKABaseDevice(object):

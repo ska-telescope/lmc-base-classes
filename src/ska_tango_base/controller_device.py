@@ -73,6 +73,7 @@ class SKAController(SKABaseDevice):
 
             message = "SKAController Init command completed OK"
             self.logger.info(message)
+            self._completed()
             return (ResultCode.OK, message)
 
     # PROTECTED REGION ID(SKAController.class_variable) ENABLED START #

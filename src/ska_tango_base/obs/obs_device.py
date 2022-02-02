@@ -52,6 +52,7 @@ class SKAObsDevice(SKABaseDevice):
 
             message = "SKAObsDevice Init command completed OK"
             self.logger.info(message)
+            self._completed()
             return (ResultCode.OK, message)
 
     # PROTECTED REGION ID(SKAObsDevice.class_variable) ENABLED START #

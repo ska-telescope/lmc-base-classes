@@ -220,6 +220,7 @@ class CspSubElementObsDevice(SKAObsDevice):
 
             message = "CspSubElementObsDevice Init command completed OK"
             self.logger.info(message)
+            self._completed()
             return (ResultCode.OK, message)
 
     def always_executed_hook(self):

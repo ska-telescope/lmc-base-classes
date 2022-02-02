@@ -555,6 +555,7 @@ class SKABaseDevice(Device):
             """
             message = "SKABaseDevice Init command completed OK"
             self.logger.info(message)
+            self._completed()
             return (ResultCode.OK, message)
 
     _logging_config_lock = threading.Lock()
@@ -993,7 +994,6 @@ class SKABaseDevice(Device):
                 self,
                 logger=self.logger,
             )()
-            self.op_state_model.perform_action("init_completed")
 
             self.init_command_objects()
         except Exception as exc:

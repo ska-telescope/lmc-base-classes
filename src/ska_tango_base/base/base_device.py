@@ -67,8 +67,9 @@ from ska_tango_base.faults import (
     LoggingLevelError,
 )
 
-MAX_CONCURRENT_COMMANDS = 16
-MAX_COMMANDS = 64
+
+MAX_REPORTED_CONCURRENT_COMMANDS = 16
+MAX_REPORTED_QUEUED_COMMANDS = 64
 
 
 LOG_FILE_SIZE = 1024 * 1024  # Log file size 1MB.
@@ -798,7 +799,7 @@ class SKABaseDevice(Device):
 
     longRunningCommandsInQueue = attribute(
         dtype=("str",),
-        max_dim_x=MAX_COMMANDS,
+        max_dim_x=MAX_REPORTED_QUEUED_COMMANDS,
         access=AttrWriteType.READ,
         polling_period=250,
         archive_period=1000,
@@ -809,7 +810,7 @@ class SKABaseDevice(Device):
 
     longRunningCommandIDsInQueue = attribute(
         dtype=("str",),
-        max_dim_x=MAX_COMMANDS,
+        max_dim_x=MAX_REPORTED_QUEUED_COMMANDS,
         access=AttrWriteType.READ,
         polling_period=250,
         archive_period=1000,
@@ -820,7 +821,7 @@ class SKABaseDevice(Device):
 
     longRunningCommandStatus = attribute(
         dtype=("str",),
-        max_dim_x=MAX_CONCURRENT_COMMANDS * 2,  # 2 per command
+        max_dim_x=MAX_REPORTED_CONCURRENT_COMMANDS * 2,  # 2 per command
         access=AttrWriteType.READ,
         polling_period=250,
         archive_period=1000,
@@ -831,7 +832,7 @@ class SKABaseDevice(Device):
 
     longRunningCommandProgress = attribute(
         dtype=("str",),
-        max_dim_x=MAX_CONCURRENT_COMMANDS * 2,  # 2 per command
+        max_dim_x=MAX_REPORTED_CONCURRENT_COMMANDS * 2,  # 2 per command
         access=AttrWriteType.READ,
         polling_period=250,
         archive_period=1000,
@@ -877,10 +878,10 @@ class SKABaseDevice(Device):
             command_ids, command_names = zip(*commands_in_queue)
             self._command_ids_in_queue = [
                 str(command_id) for command_id in command_ids
-            ][:MAX_COMMANDS]
+            ][:MAX_REPORTED_QUEUED_COMMANDS]
             self._commands_in_queue = [
                 str(command_name) for command_name in command_names
-            ][:MAX_COMMANDS]
+            ][:MAX_REPORTED_QUEUED_COMMANDS]
         else:
             self._command_ids_in_queue = []
             self._commands_in_queue = []
@@ -889,12 +890,12 @@ class SKABaseDevice(Device):
         statuses = [(uid, status.name) for (uid, status) in command_statuses]
         self._command_statuses = [
             str(item) for item in itertools.chain.from_iterable(statuses)
-        ][: (MAX_CONCURRENT_COMMANDS * 2)]
+        ][: (MAX_REPORTED_CONCURRENT_COMMANDS * 2)]
 
     def _update_command_progresses(self, command_progresses):
         self._command_progresses = [
             str(item) for item in itertools.chain.from_iterable(command_progresses)
-        ][: (MAX_CONCURRENT_COMMANDS * 2)]
+        ][: (MAX_REPORTED_CONCURRENT_COMMANDS * 2)]
 
     def _update_command_result(self, command_id, command_result):
         self._command_result = (command_id, json.dumps(command_result))
@@ -1590,19 +1591,17 @@ class SKABaseDevice(Device):
                 (ResultCode.OK, str)
             """
             command_id = argin
-            result = self._command_tracker.get_command_status(command_id)
-            return (ResultCode.OK, f"{result}")
+            return self._command_tracker.get_command_status(command_id)
 
     @command(
         dtype_in=str,
-        dtype_out="DevVarLongStringArray",
+        dtype_out=str,
     )
     @DebugIt()
     def CheckLongRunningCommandStatus(self, argin):
         """Check the status of a long running command by ID."""
         handler = self.get_command_object("CheckLongRunningCommandStatus")
-        (return_code, command_status) = handler(argin)
-        return [[return_code], [command_status]]
+        return handler(argin)
 
     class DebugDeviceCommand(FastCommand):
         """A class for the SKABaseDevice's DebugDevice() command."""

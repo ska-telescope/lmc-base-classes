@@ -240,11 +240,9 @@ class MockChangeEventCallback(MockCallable):
         assert not kwargs
 
         event = args[0]
-        if event.err:
-            self._logger.warning(
-                f"Received failed change event: error stack is {event.errors}."
-            )
-            return None
+        assert (
+            not event.err
+        ), f"Received failed change event: error stack is {event.errors}."
 
         attribute_data = event.attr_value
         return (attribute_data.name, attribute_data.value, attribute_data.quality)

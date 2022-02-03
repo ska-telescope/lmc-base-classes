@@ -1,0 +1,51 @@
+@startuml
+
+class SubmittedSlowCommand {
++ command_tracker
++ component_manager
++ method_name
++ do()
+}
+note bottom: Uses component_manager\nand command_tracker\nto update task state attributes\nin the Tango device
+
+
+class _CommandTracker
+note bottom: Keeps track of the\ncommand state and progress
+
+class SampleDevice {
+- _component_manager
+- _command_tracker
+- _commands__SlowCommand__
++ ...
++ ...()
+}
+
+class SampleDevice extends SKABaseDevice 
+
+class BaseComponentManager
+
+class TaskExecutor {
++ ...
++ submit()
++ abort()
++ ...()
+}
+note right: Uses `ThreadPoolExecutor` for task execution
+
+class TaskExecutorComponentManager {
++ ...
++ submit_task()
++ abort_tasks()
+- _task_executor
++ ...()
+}
+
+class TaskExecutorComponentManager extends BaseComponentManager
+
+SampleDevice::_component_manager --> TaskExecutorComponentManager
+SampleDevice::_command_tracker --> _CommandTracker
+SampleDevice::_commands__SlowCommand__ --> SubmittedSlowCommand
+TaskExecutorComponentManager::_task_executor --> TaskExecutor
+
+
+@enduml

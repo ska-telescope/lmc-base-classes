@@ -1,8 +1,8 @@
-==============
-CSP subpackage
-==============
+==================
+Testing subpackage
+==================
 
-.. automodule:: ska_tango_base.csp
+.. automodule:: ska_tango_base.testing
 
 
 .. toctree::

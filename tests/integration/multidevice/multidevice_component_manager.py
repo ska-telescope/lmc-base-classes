@@ -190,7 +190,9 @@ class MultiDeviceComponentManager(TaskExecutorComponentManager):
         :type task_callback: Callable
         """
         task_status, response = self.submit_task(
-            self._show_progress, args=[self.logger, sleep_time], task_callback=task_callback
+            self._show_progress,
+            args=[self.logger, sleep_time],
+            task_callback=task_callback,
         )
         return task_status, response
 

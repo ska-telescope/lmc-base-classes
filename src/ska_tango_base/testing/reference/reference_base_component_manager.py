@@ -4,8 +4,11 @@ This module provided reference implementations of a BaseComponentManager.
 It is provided for explanatory purposes, and to support testing of this
 package.
 """
+import queue
 import threading
 from time import sleep
+
+from tango import EnsureOmniThread
 
 from ska_tango_base.base import (
     TaskExecutorComponentManager,
@@ -71,39 +74,19 @@ class FakeBaseComponent:
         self._time_to_return = time_to_return or 0
         self._time_to_complete = time_to_complete or 0
 
-    def set_state_change_callback(self, state_change_callback):
-        """
-        Set a callback to be called when the state of this component changes.
+        self._queue = queue.SimpleQueue()
+        self._worker = threading.Thread(target=self._do_simulated_work)
+        self._stop = False
+        self._worker.start()
 
-        :param state_change_callback: a callback to be call when the
-            state of the component changes
-        """
-        self._state_change_callback = state_change_callback
-        if state_change_callback is None:
-            return
+    def terminate(self):
+        self._stop = True
+        self._worker.join()
 
-        # Let's wait a short time before we call this callback.
-        self._simulate_latency()
-
-        self._state_change_callback(**self._state)
-
-    def _simulate_latency(self):
-        sleep(self._time_to_return)
-
-    def _simulate_task_execution(
-        self, task_callback, task_abort_event, result, **state_kwargs
-    ):
-
-        # Simulate the synchronous latency cost of communicating with this component.
-        self._simulate_latency()
-
-        # Kick off asynchronous processing, then return immediately. The asynchronous
-        # processing will immediately report the task as IN_PROGRESS. Shortly afterwards
-        # it will report 33% progress, then 66% progress. We'll then see a state change
-        # resulting from the task execution e.g. if the task was to turn the component
-        # on, then we'll see the component come on. Finally, the asynchronous processing
-        # will report the task as COMPLETE, and publish a result.
-        def simulate_async_task_execution():
+    def _do_simulated_work(self):
+        def _simulate_async_task_execution(
+            task_callback, task_abort_event, result, **state_kwargs
+        ):
             if task_callback is not None:
                 task_callback(status=TaskStatus.IN_PROGRESS)
 
@@ -140,7 +123,53 @@ class FakeBaseComponent:
             if task_callback is not None:
                 task_callback(status=TaskStatus.COMPLETED, result=result)
 
-        threading.Thread(target=simulate_async_task_execution).start()
+        with EnsureOmniThread():
+            while not self._stop:
+                try:
+                    (
+                        task_callback,
+                        task_abort_event,
+                        result,
+                        state_kwargs,
+                    ) = self._queue.get(timeout=1)
+                except queue.Empty:
+                    continue
+                else:
+                    _simulate_async_task_execution(
+                        task_callback, task_abort_event, result, **state_kwargs
+                    )
+
+    def set_state_change_callback(self, state_change_callback):
+        """
+        Set a callback to be called when the state of this component changes.
+
+        :param state_change_callback: a callback to be call when the
+            state of the component changes
+        """
+        self._state_change_callback = state_change_callback
+        if state_change_callback is None:
+            return
+
+        # Let's wait a short time before we call this callback.
+        self._simulate_latency()
+
+        self._state_change_callback(**self._state)
+
+    def _simulate_latency(self):
+        sleep(self._time_to_return)
+
+    def _simulate_task_execution(
+        self, task_callback, task_abort_event, result, **state_kwargs
+    ):
+        # Simulate the synchronous latency cost of communicating with this component.
+        self._simulate_latency()
+        # Kick off asynchronous processing, then return immediately. The asynchronous
+        # processing will immediately report the task as IN_PROGRESS. Shortly afterwards
+        # it will report 33% progress, then 66% progress. We'll then see a state change
+        # resulting from the task execution e.g. if the task was to turn the component
+        # on, then we'll see the component come on. Finally, the asynchronous processing
+        # will report the task as COMPLETE, and publish a result.
+        self._queue.put((task_callback, task_abort_event, result, state_kwargs))
 
     def _simulate_power_command_execution(
         self, command_name, power_state, task_callback, task_abort_event
@@ -363,6 +392,10 @@ class ReferenceBaseComponentManager(TaskExecutorComponentManager):
         ):
             self._update_communication_state(CommunicationStatus.ESTABLISHED)
             self._component.set_state_change_callback(self._update_component_state)
+
+    def terminate(self):
+        self._component.terminate()
+        super().terminate()
 
     @property
     def power_state(self):

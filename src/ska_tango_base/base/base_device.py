@@ -21,6 +21,7 @@ import itertools
 import json
 import logging
 import logging.handlers
+import queue
 import socket
 import sys
 import threading
@@ -33,7 +34,14 @@ from urllib.parse import urlparse
 from urllib.request import url2pathname
 
 # Tango imports
-from tango import AttrWriteType, DebugIt, DevState
+from tango import (
+    AttrWriteType,
+    AutoTangoMonitor,
+    DebugIt,
+    DevState,
+    EnsureOmniThread,
+    is_omni_thread,
+)
 from tango.server import run, Device, attribute, command, device_property
 
 # SKA specific imports
@@ -408,7 +416,27 @@ class _CommandTracker:
         self._exception_callback = exception_callback
         self._most_recent_exception = None
         self._commands = {}
+
         self._removal_time = removal_time
+        self._removal_queue = queue.SimpleQueue()
+        self._remover = threading.Thread(target=self._remove_loop)
+        self._stop = False
+        self._remover.start()
+
+    def terminate(self):
+        self._stop = True
+        self._remover.join()
+
+    def _remove_loop(self):
+        with EnsureOmniThread():
+            while not self._stop:
+                try:
+                    command_id = self._removal_queue.get(timeout=1.0)
+                except queue.Empty:
+                    continue
+                else:
+                    del self._commands[command_id]
+                    self._queue_changed_callback(self.commands_in_queue)
 
     def new_command(self, command_name, completed_callback=None):
         command_id = generate_command_id(command_name)
@@ -423,11 +451,9 @@ class _CommandTracker:
         return command_id
 
     def _schedule_removal(self, command_id):
-        def remove(command_id):
-            del self._commands[command_id]
-            self._queue_changed_callback(self.commands_in_queue)
-
-        threading.Timer(self._removal_time, remove, (command_id,)).start()
+        threading.Timer(
+            self._removal_time, self._removal_queue.put, (command_id,)
+        ).start()
 
     def update_command_info(
         self,
@@ -734,8 +760,6 @@ class SKABaseDevice(Device):
 
     healthState = attribute(
         dtype=HealthState,
-        polling_period=250,
-        archive_period=1000,
         doc="The health state reported for this device. "
         "It interprets the current device"
         " condition and condition of all managed devices to set this. "
@@ -748,8 +772,6 @@ class SKABaseDevice(Device):
         access=AttrWriteType.READ_WRITE,
         memorized=True,
         hw_memorized=True,
-        polling_period=250,
-        archive_period=1000,
         doc="The admin mode reported for this device. It may interpret the current "
         "device condition and condition of all managed devices to set this. "
         "Most possibly an aggregate attribute.",
@@ -761,8 +783,8 @@ class SKABaseDevice(Device):
         access=AttrWriteType.READ_WRITE,
         memorized=True,
         hw_memorized=True,
-        polling_period=250,
-        archive_period=1000,
+        # polling_period=250,
+        # archive_period=1000,
         doc="The control mode of the device. REMOTE, LOCAL"
         "\nTango Device accepts only from a ‘local’ client and ignores commands and "
         "queries received from TM or any other ‘remote’ clients. The Local clients"
@@ -775,8 +797,6 @@ class SKABaseDevice(Device):
         access=AttrWriteType.READ_WRITE,
         memorized=True,
         hw_memorized=True,
-        polling_period=250,
-        archive_period=1000,
         doc="Reports the simulation mode of the device. \nSome devices may implement "
         "both modes, while others will have simulators that set simulationMode "
         "to True while the real devices always set simulationMode to False.",
@@ -788,8 +808,6 @@ class SKABaseDevice(Device):
         access=AttrWriteType.READ_WRITE,
         memorized=True,
         hw_memorized=True,
-        polling_period=250,
-        archive_period=1000,
         doc="The test mode of the device. \n"
         "Either no test mode or an "
         "indication of the test mode.",
@@ -800,8 +818,6 @@ class SKABaseDevice(Device):
         dtype=("str",),
         max_dim_x=MAX_REPORTED_QUEUED_COMMANDS,
         access=AttrWriteType.READ,
-        polling_period=250,
-        archive_period=1000,
         doc="Keep track of which commands are in the queue. \n"
         "Pop off from front as they complete.",
     )
@@ -811,8 +827,6 @@ class SKABaseDevice(Device):
         dtype=("str",),
         max_dim_x=MAX_REPORTED_QUEUED_COMMANDS,
         access=AttrWriteType.READ,
-        polling_period=250,
-        archive_period=1000,
         doc="Every client that executes a command will receive a command ID as response. \n"
         "Keep track of IDs in the queue. Pop off from front as they complete.",
     )
@@ -822,8 +836,6 @@ class SKABaseDevice(Device):
         dtype=("str",),
         max_dim_x=MAX_REPORTED_CONCURRENT_COMMANDS * 2,  # 2 per command
         access=AttrWriteType.READ,
-        polling_period=250,
-        archive_period=1000,
         doc="ID, status pair of the currently executing command. \n"
         "Clients can subscribe to on_change event and wait for the ID they are interested in.",
     )
@@ -833,8 +845,6 @@ class SKABaseDevice(Device):
         dtype=("str",),
         max_dim_x=MAX_REPORTED_CONCURRENT_COMMANDS * 2,  # 2 per command
         access=AttrWriteType.READ,
-        polling_period=250,
-        archive_period=1000,
         doc="ID, progress of the currently executing command. \n"
         "Clients can subscribe to on_change event and wait for the ID they are interested in..",
     )
@@ -844,8 +854,6 @@ class SKABaseDevice(Device):
         dtype=("str",),
         max_dim_x=2,  # Always the last result (unique_id, JSON-encoded result)
         access=AttrWriteType.READ,
-        polling_period=250,
-        archive_period=1000,
         doc="unique_id, json-encoded result. \n"
         "Clients can subscribe to on_change event and wait for the ID they are interested in.",
     )
@@ -865,14 +873,34 @@ class SKABaseDevice(Device):
         :param state: the new state value
         :type state: :py:class:`tango.DevState`
         """
-        self.set_state(state)
-        self.push_change_event("state")
-        self.push_archive_event("state")
-        self.set_status(status or f"The device is in {state} state.")
-        self.push_change_event("status")
-        self.push_archive_event("status")
+        assert is_omni_thread()
+
+        with AutoTangoMonitor(self):
+            self.set_state(state)
+            self.push_change_event("state")
+            self.push_archive_event("state")
+
+            self.set_status(status or f"The device is in {state} state.")
+            self.push_change_event("status")
+            self.push_archive_event("status")
+
+    def _update_admin_mode(self, admin_mode):
+        assert is_omni_thread()
+        self._admin_mode = admin_mode
+        with AutoTangoMonitor(self):
+            self.push_change_event("adminMode", self._admin_mode)
+            self.push_archive_event("adminMode", self._admin_mode)
+
+    def _update_health_state(self, health_state):
+        assert is_omni_thread()
+        self._health_state = health_state
+        with AutoTangoMonitor(self):
+            self.push_change_event("healthState", self._health_state)
+            self.push_archive_event("healthState", self._health_state)
 
     def _update_commands_in_queue(self, commands_in_queue):
+        assert is_omni_thread()
+
         if commands_in_queue:
             command_ids, command_names = zip(*commands_in_queue)
             self._command_ids_in_queue = [
@@ -884,20 +912,52 @@ class SKABaseDevice(Device):
         else:
             self._command_ids_in_queue = []
             self._commands_in_queue = []
+        with AutoTangoMonitor(self):
+            self.push_change_event(
+                "longRunningCommandsInQueue", self._commands_in_queue
+            )
+            self.push_archive_event(
+                "longRunningCommandsInQueue", self._commands_in_queue
+            )
+            self.push_change_event(
+                "longRunningCommandIDsInQueue", self._command_ids_in_queue
+            )
+            self.push_archive_event(
+                "longRunningCommandIDsInQueue", self._command_ids_in_queue
+            )
 
     def _update_command_statuses(self, command_statuses):
+        assert is_omni_thread()
+
         statuses = [(uid, status.name) for (uid, status) in command_statuses]
         self._command_statuses = [
             str(item) for item in itertools.chain.from_iterable(statuses)
         ][: (MAX_REPORTED_CONCURRENT_COMMANDS * 2)]
+        with AutoTangoMonitor(self):
+            self.push_change_event("longRunningCommandStatus", self._command_statuses)
+            self.push_archive_event("longRunningCommandStatus", self._command_statuses)
 
     def _update_command_progresses(self, command_progresses):
+        assert is_omni_thread()
+
         self._command_progresses = [
             str(item) for item in itertools.chain.from_iterable(command_progresses)
         ][: (MAX_REPORTED_CONCURRENT_COMMANDS * 2)]
+        with AutoTangoMonitor(self):
+            self.push_change_event(
+                "longRunningCommandProgress", self._command_progresses
+            )
+            self.push_archive_event(
+                "longRunningCommandProgress", self._command_progresses
+            )
 
     def _update_command_result(self, command_id, command_result):
+        assert is_omni_thread()
+
         self._command_result = (command_id, json.dumps(command_result))
+        with AutoTangoMonitor(self):
+            self.push_change_event("longRunningCommandResult", self._command_result)
+            self.push_archive_event("longRunningCommandResult", self._command_result)
 
     def _update_command_exception(self, command_id, command_exception):
         self.logger.error(
@@ -950,6 +1010,7 @@ class SKABaseDevice(Device):
 
             self._init_logging()
 
+            self._admin_mode = AdminMode.OFFLINE
             self._health_state = HealthState.UNKNOWN
             self._control_mode = ControlMode.REMOTE
             self._simulation_mode = SimulationMode.FALSE
@@ -967,10 +1028,22 @@ class SKABaseDevice(Device):
             self._version_id = release.version
             self._methods_patched_for_debugger = False
 
-            self.set_change_event("state", True, True)
-            self.set_archive_event("state", True, True)
-            self.set_change_event("status", True, True)
-            self.set_archive_event("status", True, True)
+            for attribute_name in [
+                "state",
+                "status",
+                "adminMode",
+                "controlMode",
+                "simulationMode",
+                "testMode",
+                "healthState",
+                "longRunningCommandsInQueue",
+                "longRunningCommandIDsInQueue",
+                "longRunningCommandStatus",
+                "longRunningCommandProgress",
+                "longRunningCommandResult",
+            ]:
+                self.set_change_event(attribute_name, True)
+                self.set_archive_event(attribute_name, True)
 
             try:
                 # create Tango Groups dict, according to property
@@ -1016,7 +1089,9 @@ class SKABaseDevice(Device):
             logger=self.logger,
             callback=self._update_state,
         )
-        self.admin_mode_model = AdminModeModel(logger=self.logger)
+        self.admin_mode_model = AdminModeModel(
+            logger=self.logger, callback=self._update_admin_mode
+        )
 
     def create_component_manager(self):
         """Create and return a component manager for this device."""
@@ -1106,6 +1181,8 @@ class SKABaseDevice(Device):
         memory or other resources allocated in the init_device method to
         be released prior to device deletion.
         """
+        self.component_manager.terminate()
+        self.command_tracker.terminate()
         # PROTECTED REGION END #    //  SKABaseDevice.delete_device
 
     # ------------------
@@ -1218,7 +1295,7 @@ class SKABaseDevice(Device):
         :return: Admin Mode of the device
         :rtype: AdminMode
         """
-        return self.admin_mode_model.admin_mode
+        return self._admin_mode
         # PROTECTED REGION END #    //  SKABaseDevice.adminMode_read
 
     def write_adminMode(self, value):

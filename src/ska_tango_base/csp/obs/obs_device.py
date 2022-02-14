@@ -21,7 +21,7 @@ from tango.server import run, attribute, command, device_property
 # SKA specific imports
 from ska_tango_base import SKAObsDevice
 from ska_tango_base.commands import ResultCode, SlowCommand, SubmittedSlowCommand
-from ska_tango_base.control_model import ObsState, PowerState
+from ska_tango_base.control_model import ObsState
 from ska_tango_base.csp.obs import CspSubElementObsStateModel
 from ska_tango_base.executor import TaskStatus
 from ska_tango_base.faults import StateModelError
@@ -685,22 +685,7 @@ class CspSubElementObsDevice(SKAObsDevice):
         configured=None,
         scanning=None,
     ):
-        if power is not None:
-            action_map = {
-                PowerState.UNKNOWN: None,
-                PowerState.OFF: "component_off",
-                PowerState.STANDBY: "component_standby",
-                PowerState.ON: "component_on",
-            }
-            action = action_map[power]
-            if action is not None:
-                self.op_state_model.perform_action(action_map[power])
-
-        if fault is not None:
-            if fault:
-                self.op_state_model.perform_action("component_fault")
-            else:
-                self.op_state_model.perform_action("component_no_fault")
+        super()._component_state_changed(fault=fault, power=power)
 
         if configured is not None:
             if configured:

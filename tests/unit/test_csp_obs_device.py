@@ -328,13 +328,9 @@ class TestCspSubElementObsDevice(object):
         command_progress_callback = tango_change_event_helper.subscribe(
             "longRunningCommandProgress"
         )
-        command_progress_callback.assert_next_change_event(None)
-
         command_status_callback = tango_change_event_helper.subscribe(
             "longRunningCommandStatus"
         )
-        command_status_callback.assert_next_change_event(None)
-
         command_result_callback = tango_change_event_helper.subscribe(
             "longRunningCommandResult"
         )
@@ -343,34 +339,23 @@ class TestCspSubElementObsDevice(object):
         [[result_code], [on_command_id]] = device_under_test.On()
         assert result_code == ResultCode.QUEUED
 
-        command_status_callback.assert_change_event_sequence_sample(
-            [
-                (on_command_id, "QUEUED"),
-                (on_command_id, "IN_PROGRESS"),
-                (on_command_id, "COMPLETED"),
-            ]
-        )
+        command_status_callback.assert_next_change_event((on_command_id, "QUEUED"))
+        command_status_callback.assert_next_change_event((on_command_id, "IN_PROGRESS"))
 
-        command_progress_callback.assert_change_event_sequence_sample(
-            [
-                None,
-                (on_command_id, "33"),
-                (on_command_id, "66"),
-            ]
-        )
+        command_progress_callback.assert_next_change_event((on_command_id, "33"))
+        command_progress_callback.assert_next_change_event((on_command_id, "66"))
+
+        command_status_callback.assert_next_change_event((on_command_id, "COMPLETED"))
 
         device_state_callback.assert_next_change_event(DevState.ON)
         device_status_callback.assert_next_change_event("The device is in ON state.")
         assert device_under_test.state() == DevState.ON
 
-        command_result_callback.assert_change_event_sequence_sample(
-            [
-                ("", ""),
-                (
-                    on_command_id,
-                    json.dumps([int(ResultCode.OK), "On command completed OK"]),
-                ),
-            ]
+        command_result_callback.assert_next_change_event(
+            (
+                on_command_id,
+                json.dumps([int(ResultCode.OK), "On command completed OK"]),
+            ),
         )
 
         # assignment of resources
@@ -389,34 +374,29 @@ class TestCspSubElementObsDevice(object):
         )
         assert result_code == ResultCode.QUEUED
 
-        obs_state_callback.assert_change_event_sequence_sample(
-            [ObsState.CONFIGURING, ObsState.READY]
+        command_status_callback.assert_next_change_event(
+            (on_command_id, "COMPLETED", config_command_id, "QUEUED"),
+        )
+        command_status_callback.assert_next_change_event(
+            (on_command_id, "COMPLETED", config_command_id, "IN_PROGRESS"),
         )
 
-        command_status_callback.assert_change_event_sequence_sample(
-            [
-                (on_command_id, "COMPLETED", config_command_id, "QUEUED"),
-                (on_command_id, "COMPLETED", config_command_id, "IN_PROGRESS"),
-                (on_command_id, "COMPLETED", config_command_id, "COMPLETED"),
-            ]
+        obs_state_callback.assert_next_change_event(ObsState.CONFIGURING)
+
+        command_progress_callback.assert_next_change_event((config_command_id, "33"))
+        command_progress_callback.assert_next_change_event((config_command_id, "66"))
+
+        obs_state_callback.assert_next_change_event(ObsState.READY)
+
+        command_status_callback.assert_next_change_event(
+            (on_command_id, "COMPLETED", config_command_id, "COMPLETED"),
         )
 
-        command_progress_callback.assert_change_event_sequence_sample(
-            [
-                None,
-                (config_command_id, "33"),
-                (config_command_id, "66"),
-            ]
-        )
-
-        command_result_callback.assert_change_event_sequence_sample(
-            [
-                ("", ""),
-                (
-                    config_command_id,
-                    json.dumps([int(ResultCode.OK), "Configure completed OK"]),
-                ),
-            ]
+        command_result_callback.assert_next_change_event(
+            (
+                config_command_id,
+                json.dumps([int(ResultCode.OK), "Configure completed OK"]),
+            ),
         )
 
         assert device_under_test.configurationId == config_id
@@ -425,55 +405,48 @@ class TestCspSubElementObsDevice(object):
         [[result_code], [gotoidle_command_id]] = device_under_test.GoToIdle()
         assert result_code == ResultCode.QUEUED
 
-        # command status changes rapidly from QUEUED to IN_PROGRESS to COMPLETED.
-        # We usually won't get to see all three of these.
-        command_status_callback.assert_change_event_sequence_sample(
-            [
-                (
-                    on_command_id,
-                    "COMPLETED",
-                    config_command_id,
-                    "COMPLETED",
-                    gotoidle_command_id,
-                    "QUEUED",
-                ),
-                (
-                    on_command_id,
-                    "COMPLETED",
-                    config_command_id,
-                    "COMPLETED",
-                    gotoidle_command_id,
-                    "IN_PROGRESS",
-                ),
-                (
-                    on_command_id,
-                    "COMPLETED",
-                    config_command_id,
-                    "COMPLETED",
-                    gotoidle_command_id,
-                    "COMPLETED",
-                ),
-            ]
+        command_status_callback.assert_next_change_event(
+            (
+                on_command_id,
+                "COMPLETED",
+                config_command_id,
+                "COMPLETED",
+                gotoidle_command_id,
+                "QUEUED",
+            )
+        )
+        command_status_callback.assert_next_change_event(
+            (
+                on_command_id,
+                "COMPLETED",
+                config_command_id,
+                "COMPLETED",
+                gotoidle_command_id,
+                "IN_PROGRESS",
+            )
         )
 
-        command_progress_callback.assert_change_event_sequence_sample(
-            [
-                None,
-                (gotoidle_command_id, "33"),
-                (gotoidle_command_id, "66"),
-            ]
-        )
+        command_progress_callback.assert_next_change_event((gotoidle_command_id, "33"))
+        command_progress_callback.assert_next_change_event((gotoidle_command_id, "66"))
 
         obs_state_callback.assert_next_change_event(ObsState.IDLE)
 
-        command_result_callback.assert_change_event_sequence_sample(
-            [
-                ("", ""),
-                (
-                    gotoidle_command_id,
-                    json.dumps([int(ResultCode.OK), "Deconfigure completed OK"]),
-                ),
-            ]
+        command_status_callback.assert_next_change_event(
+            (
+                on_command_id,
+                "COMPLETED",
+                config_command_id,
+                "COMPLETED",
+                gotoidle_command_id,
+                "COMPLETED",
+            )
+        )
+
+        command_result_callback.assert_next_change_event(
+            (
+                gotoidle_command_id,
+                json.dumps([int(ResultCode.OK), "Deconfigure completed OK"]),
+            ),
         )
 
         assert device_under_test.configurationId == ""
@@ -574,13 +547,9 @@ class TestCspSubElementObsDevice(object):
         command_progress_callback = tango_change_event_helper.subscribe(
             "longRunningCommandProgress"
         )
-        command_progress_callback.assert_next_change_event(None)
-
         command_status_callback = tango_change_event_helper.subscribe(
             "longRunningCommandStatus"
         )
-        command_status_callback.assert_next_change_event(None)
-
         command_result_callback = tango_change_event_helper.subscribe(
             "longRunningCommandResult"
         )
@@ -589,34 +558,23 @@ class TestCspSubElementObsDevice(object):
         [[result_code], [on_command_id]] = device_under_test.On()
         assert result_code == ResultCode.QUEUED
 
-        command_status_callback.assert_change_event_sequence_sample(
-            [
-                (on_command_id, "QUEUED"),
-                (on_command_id, "IN_PROGRESS"),
-                (on_command_id, "COMPLETED"),
-            ]
-        )
+        command_status_callback.assert_next_change_event((on_command_id, "QUEUED"))
+        command_status_callback.assert_next_change_event((on_command_id, "IN_PROGRESS"))
 
-        command_progress_callback.assert_change_event_sequence_sample(
-            [
-                None,
-                (on_command_id, "33"),
-                (on_command_id, "66"),
-            ]
-        )
+        command_progress_callback.assert_next_change_event((on_command_id, "33"))
+        command_progress_callback.assert_next_change_event((on_command_id, "66"))
+
+        command_status_callback.assert_next_change_event((on_command_id, "COMPLETED"))
 
         device_state_callback.assert_next_change_event(DevState.ON)
         device_status_callback.assert_next_change_event("The device is in ON state.")
         assert device_under_test.state() == DevState.ON
 
-        command_result_callback.assert_change_event_sequence_sample(
-            [
-                ("", ""),
-                (
-                    on_command_id,
-                    json.dumps([int(ResultCode.OK), "On command completed OK"]),
-                ),
-            ]
+        command_result_callback.assert_next_change_event(
+            (
+                on_command_id,
+                json.dumps([int(ResultCode.OK), "On command completed OK"]),
+            ),
         )
 
         obs_state_callback = tango_change_event_helper.subscribe("obsState")
@@ -631,24 +589,22 @@ class TestCspSubElementObsDevice(object):
         )
         assert result_code == ResultCode.QUEUED
 
-        obs_state_callback.assert_change_event_sequence_sample(
-            [ObsState.CONFIGURING, ObsState.READY]
+        command_status_callback.assert_next_change_event(
+            (on_command_id, "COMPLETED", config_command_id, "QUEUED"),
+        )
+        command_status_callback.assert_next_change_event(
+            (on_command_id, "COMPLETED", config_command_id, "IN_PROGRESS"),
         )
 
-        command_status_callback.assert_change_event_sequence_sample(
-            [
-                (on_command_id, "COMPLETED", config_command_id, "QUEUED"),
-                (on_command_id, "COMPLETED", config_command_id, "IN_PROGRESS"),
-                (on_command_id, "COMPLETED", config_command_id, "COMPLETED"),
-            ]
-        )
+        obs_state_callback.assert_next_change_event(ObsState.CONFIGURING)
 
-        command_progress_callback.assert_change_event_sequence_sample(
-            [
-                None,
-                (config_command_id, "33"),
-                (config_command_id, "66"),
-            ]
+        command_progress_callback.assert_next_change_event((config_command_id, "33"))
+        command_progress_callback.assert_next_change_event((config_command_id, "66"))
+
+        obs_state_callback.assert_next_change_event(ObsState.READY)
+
+        command_status_callback.assert_next_change_event(
+            (on_command_id, "COMPLETED", config_command_id, "COMPLETED"),
         )
 
         command_result_callback.assert_next_change_event(
@@ -667,53 +623,48 @@ class TestCspSubElementObsDevice(object):
         [[result_code], [scan_command_id]] = device_under_test.Scan(str(scan_id))
         assert result_code == ResultCode.QUEUED
 
-        command_status_callback.assert_change_event_sequence_sample(
-            [
-                (
-                    on_command_id,
-                    "COMPLETED",
-                    config_command_id,
-                    "COMPLETED",
-                    scan_command_id,
-                    "QUEUED",
-                ),
-                (
-                    on_command_id,
-                    "COMPLETED",
-                    config_command_id,
-                    "COMPLETED",
-                    scan_command_id,
-                    "IN_PROGRESS",
-                ),
-                (
-                    on_command_id,
-                    "COMPLETED",
-                    config_command_id,
-                    "COMPLETED",
-                    scan_command_id,
-                    "COMPLETED",
-                ),
-            ]
+        command_status_callback.assert_next_change_event(
+            (
+                on_command_id,
+                "COMPLETED",
+                config_command_id,
+                "COMPLETED",
+                scan_command_id,
+                "QUEUED",
+            ),
+        )
+        command_status_callback.assert_next_change_event(
+            (
+                on_command_id,
+                "COMPLETED",
+                config_command_id,
+                "COMPLETED",
+                scan_command_id,
+                "IN_PROGRESS",
+            ),
         )
 
-        command_progress_callback.assert_change_event_sequence_sample(
-            [
-                None,
-                (scan_command_id, "33"),
-                (scan_command_id, "66"),
-            ]
+        command_progress_callback.assert_next_change_event((scan_command_id, "33"))
+        command_progress_callback.assert_next_change_event((scan_command_id, "66"))
+
+        command_status_callback.assert_next_change_event(
+            (
+                on_command_id,
+                "COMPLETED",
+                config_command_id,
+                "COMPLETED",
+                scan_command_id,
+                "COMPLETED",
+            ),
         )
 
         obs_state_callback.assert_next_change_event(ObsState.SCANNING)
 
-        command_result_callback.assert_change_event_sequence_sample(
-            [
-                ("", ""),
-                (
-                    scan_command_id,
-                    json.dumps([int(ResultCode.OK), "Scan commencement completed OK"]),
-                ),
-            ]
+        command_result_callback.assert_next_change_event(
+            (
+                scan_command_id,
+                json.dumps([int(ResultCode.OK), "Scan commencement completed OK"]),
+            ),
         )
 
         assert device_under_test.scanId == scan_id
@@ -722,59 +673,54 @@ class TestCspSubElementObsDevice(object):
         [[result_code], [endscan_command_id]] = device_under_test.EndScan()
         assert result_code == ResultCode.QUEUED
 
-        command_status_callback.assert_change_event_sequence_sample(
-            [
-                (
-                    on_command_id,
-                    "COMPLETED",
-                    config_command_id,
-                    "COMPLETED",
-                    scan_command_id,
-                    "COMPLETED",
-                    endscan_command_id,
-                    "QUEUED",
-                ),
-                (
-                    on_command_id,
-                    "COMPLETED",
-                    config_command_id,
-                    "COMPLETED",
-                    scan_command_id,
-                    "COMPLETED",
-                    endscan_command_id,
-                    "IN_PROGRESS",
-                ),
-                (
-                    on_command_id,
-                    "COMPLETED",
-                    config_command_id,
-                    "COMPLETED",
-                    scan_command_id,
-                    "COMPLETED",
-                    endscan_command_id,
-                    "COMPLETED",
-                ),
-            ]
+        command_status_callback.assert_next_change_event(
+            (
+                on_command_id,
+                "COMPLETED",
+                config_command_id,
+                "COMPLETED",
+                scan_command_id,
+                "COMPLETED",
+                endscan_command_id,
+                "QUEUED",
+            ),
+        )
+        command_status_callback.assert_next_change_event(
+            (
+                on_command_id,
+                "COMPLETED",
+                config_command_id,
+                "COMPLETED",
+                scan_command_id,
+                "COMPLETED",
+                endscan_command_id,
+                "IN_PROGRESS",
+            ),
         )
 
-        command_progress_callback.assert_change_event_sequence_sample(
-            [
-                None,
-                (endscan_command_id, "33"),
-                (endscan_command_id, "66"),
-            ]
+        command_progress_callback.assert_next_change_event((endscan_command_id, "33"))
+        command_progress_callback.assert_next_change_event((endscan_command_id, "66"))
+
+        command_status_callback.assert_next_change_event(
+            (
+                on_command_id,
+                "COMPLETED",
+                config_command_id,
+                "COMPLETED",
+                scan_command_id,
+                "COMPLETED",
+                endscan_command_id,
+                "COMPLETED",
+            ),
         )
 
         obs_state_callback.assert_next_change_event(ObsState.READY)
 
-        command_result_callback.assert_change_event_sequence_sample(
-            [
-                ("", ""),
-                (
-                    endscan_command_id,
-                    json.dumps([int(ResultCode.OK), "End scan completed OK"]),
-                ),
-            ]
+        command_result_callback.assert_next_change_event(
+            (
+                endscan_command_id,
+                json.dumps([int(ResultCode.OK), "End scan completed OK"]),
+            ),
         )
 
         assert device_under_test.scanId == 0
@@ -799,7 +745,7 @@ class TestCspSubElementObsDevice(object):
         device_state_callback = tango_change_event_helper.subscribe("state")
         device_state_callback.assert_next_change_event(DevState.OFF)
 
-        [[result_code], [command_id]] = device_under_test.On()
+        [[result_code], [_]] = device_under_test.On()
         assert result_code == ResultCode.QUEUED
 
         device_state_callback.assert_next_change_event(DevState.ON)
@@ -829,7 +775,7 @@ class TestCspSubElementObsDevice(object):
         device_state_callback = tango_change_event_helper.subscribe("state")
         device_state_callback.assert_next_change_event(DevState.OFF)
 
-        [[result_code], [command_id]] = device_under_test.On()
+        [[result_code], [_]] = device_under_test.On()
         assert result_code == ResultCode.QUEUED
 
         device_state_callback.assert_next_change_event(DevState.ON)
@@ -839,14 +785,14 @@ class TestCspSubElementObsDevice(object):
 
         config_id = "sbi-mvp01-20200325-00002"
 
-        [[result_code], [command_id]] = device_under_test.ConfigureScan(
+        [[result_code], [_]] = device_under_test.ConfigureScan(
             json.dumps({"id": config_id})
         )
         assert result_code == ResultCode.QUEUED
 
-        obs_state_callback.assert_change_event_sequence_sample(
-            [ObsState.IDLE, ObsState.CONFIGURING, ObsState.READY]
-        )
+        obs_state_callback.assert_next_change_event(ObsState.IDLE)
+        obs_state_callback.assert_next_change_event(ObsState.CONFIGURING)
+        obs_state_callback.assert_next_change_event(ObsState.READY)
 
         assert device_under_test.configurationId == config_id
 
@@ -876,7 +822,7 @@ class TestCspSubElementObsDevice(object):
         device_state_callback = tango_change_event_helper.subscribe("state")
         device_state_callback.assert_next_change_event(DevState.OFF)
 
-        [[result_code], [command_id]] = device_under_test.On()
+        [[result_code], [_]] = device_under_test.On()
         assert result_code == ResultCode.QUEUED
 
         device_state_callback.assert_next_change_event(DevState.ON)
@@ -886,14 +832,13 @@ class TestCspSubElementObsDevice(object):
 
         config_id = "sbi-mvp01-20200325-00002"
 
-        [[result_code], [command_id]] = device_under_test.ConfigureScan(
+        [[result_code], [_]] = device_under_test.ConfigureScan(
             json.dumps({"id": config_id})
         )
         assert result_code == ResultCode.QUEUED
 
-        obs_state_callback.assert_change_event_sequence_sample(
-            [ObsState.CONFIGURING, ObsState.READY]
-        )
+        obs_state_callback.assert_next_change_event(ObsState.CONFIGURING)
+        obs_state_callback.assert_next_change_event(ObsState.READY)
 
         assert device_under_test.configurationId == config_id
 
@@ -926,49 +871,33 @@ class TestCspSubElementObsDevice(object):
         command_progress_callback = tango_change_event_helper.subscribe(
             "longRunningCommandProgress"
         )
-        command_progress_callback.assert_next_change_event(None)
-
         command_status_callback = tango_change_event_helper.subscribe(
             "longRunningCommandStatus"
         )
-        command_status_callback.assert_next_change_event(None)
-
         command_result_callback = tango_change_event_helper.subscribe(
             "longRunningCommandResult"
         )
         command_result_callback.assert_next_change_event(("", ""))
-
         [[result_code], [on_command_id]] = device_under_test.On()
         assert result_code == ResultCode.QUEUED
 
-        command_status_callback.assert_change_event_sequence_sample(
-            [
-                (on_command_id, "QUEUED"),
-                (on_command_id, "IN_PROGRESS"),
-                (on_command_id, "COMPLETED"),
-            ]
-        )
+        command_status_callback.assert_next_change_event((on_command_id, "QUEUED"))
+        command_status_callback.assert_next_change_event((on_command_id, "IN_PROGRESS"))
 
-        command_progress_callback.assert_change_event_sequence_sample(
-            [
-                None,
-                (on_command_id, "33"),
-                (on_command_id, "66"),
-            ]
-        )
+        command_progress_callback.assert_next_change_event((on_command_id, "33"))
+        command_progress_callback.assert_next_change_event((on_command_id, "66"))
+
+        command_status_callback.assert_next_change_event((on_command_id, "COMPLETED"))
 
         device_state_callback.assert_next_change_event(DevState.ON)
         device_status_callback.assert_next_change_event("The device is in ON state.")
         assert device_under_test.state() == DevState.ON
 
-        command_result_callback.assert_change_event_sequence_sample(
-            [
-                ("", ""),
-                (
-                    on_command_id,
-                    json.dumps([int(ResultCode.OK), "On command completed OK"]),
-                ),
-            ]
+        command_result_callback.assert_next_change_event(
+            (
+                on_command_id,
+                json.dumps([int(ResultCode.OK), "On command completed OK"]),
+            ),
         )
 
         obs_state_callback = tango_change_event_helper.subscribe("obsState")
@@ -983,37 +912,51 @@ class TestCspSubElementObsDevice(object):
         )
         assert result_code == ResultCode.QUEUED
 
+        command_status_callback.assert_next_change_event(
+            (on_command_id, "COMPLETED", configure_command_id, "QUEUED"),
+        )
+        command_status_callback.assert_next_change_event(
+            (on_command_id, "COMPLETED", configure_command_id, "IN_PROGRESS"),
+        )
+
         obs_state_callback.assert_next_change_event(ObsState.CONFIGURING)
 
         [[result_code], [abort_command_id]] = device_under_test.Abort()
         assert result_code == ResultCode.STARTED
 
-        obs_state_callback.assert_change_event_sequence_sample(
-            [ObsState.ABORTING, ObsState.ABORTED]
+        command_status_callback.assert_next_change_event(
+            (
+                on_command_id,
+                "COMPLETED",
+                configure_command_id,
+                "IN_PROGRESS",
+                abort_command_id,
+                "IN_PROGRESS",
+            ),
+        )
+        command_status_callback.assert_next_change_event(
+            (
+                on_command_id,
+                "COMPLETED",
+                configure_command_id,
+                "IN_PROGRESS",
+                abort_command_id,
+                "COMPLETED",
+            ),
+        )
+        command_status_callback.assert_next_change_event(
+            (
+                on_command_id,
+                "COMPLETED",
+                configure_command_id,
+                "ABORTED",
+                abort_command_id,
+                "COMPLETED",
+            ),
         )
 
-        command_status_callback.assert_change_event_sequence_sample(
-            [
-                (on_command_id, "COMPLETED", configure_command_id, "QUEUED"),
-                (on_command_id, "COMPLETED", configure_command_id, "IN_PROGRESS"),
-                (
-                    on_command_id,
-                    "COMPLETED",
-                    configure_command_id,
-                    "ABORTED",
-                    abort_command_id,
-                    "IN_PROGRESS",
-                ),
-                (
-                    on_command_id,
-                    "COMPLETED",
-                    configure_command_id,
-                    "ABORTED",
-                    abort_command_id,
-                    "COMPLETED",
-                ),
-            ]
-        )
+        obs_state_callback.assert_next_change_event(ObsState.ABORTING)
+        obs_state_callback.assert_next_change_event(ObsState.ABORTED)
 
         command_status_callback.assert_not_called()
         command_result_callback.assert_not_called()
@@ -1021,53 +964,54 @@ class TestCspSubElementObsDevice(object):
         # Reset from aborted state
         [[result_code], [reset_command_id]] = device_under_test.ObsReset()
         assert result_code == ResultCode.QUEUED
-        command_status_callback.assert_change_event_sequence_sample(
-            [
-                (
-                    on_command_id,
-                    "COMPLETED",
-                    configure_command_id,
-                    "ABORTED",
-                    abort_command_id,
-                    "COMPLETED",
-                    reset_command_id,
-                    "QUEUED",
-                ),
-                (
-                    on_command_id,
-                    "COMPLETED",
-                    configure_command_id,
-                    "ABORTED",
-                    abort_command_id,
-                    "COMPLETED",
-                    reset_command_id,
-                    "IN_PROGRESS",
-                ),
-                (
-                    on_command_id,
-                    "COMPLETED",
-                    configure_command_id,
-                    "ABORTED",
-                    abort_command_id,
-                    "COMPLETED",
-                    reset_command_id,
-                    "COMPLETED",
-                ),
-            ]
+
+        command_status_callback.assert_next_change_event(
+            (
+                on_command_id,
+                "COMPLETED",
+                configure_command_id,
+                "ABORTED",
+                abort_command_id,
+                "COMPLETED",
+                reset_command_id,
+                "QUEUED",
+            )
+        )
+        command_status_callback.assert_next_change_event(
+            (
+                on_command_id,
+                "COMPLETED",
+                configure_command_id,
+                "ABORTED",
+                abort_command_id,
+                "COMPLETED",
+                reset_command_id,
+                "IN_PROGRESS",
+            )
         )
 
         obs_state_callback.assert_next_change_event(ObsState.RESETTING)
 
         obs_state_callback.assert_next_change_event(ObsState.IDLE)
 
-        command_result_callback.assert_change_event_sequence_sample(
-            [
-                ("", ""),
-                (
-                    reset_command_id,
-                    json.dumps([int(ResultCode.OK), "Obs reset completed OK"]),
-                ),
-            ]
+        command_status_callback.assert_next_change_event(
+            (
+                on_command_id,
+                "COMPLETED",
+                configure_command_id,
+                "ABORTED",
+                abort_command_id,
+                "COMPLETED",
+                reset_command_id,
+                "COMPLETED",
+            )
+        )
+
+        command_result_callback.assert_next_change_event(
+            (
+                reset_command_id,
+                json.dumps([int(ResultCode.OK), "Obs reset completed OK"]),
+            ),
         )
 
         assert device_under_test.obsState == ObsState.IDLE

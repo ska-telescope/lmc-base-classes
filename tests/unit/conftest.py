@@ -30,7 +30,7 @@ def tango_context(device_test_config):
     if component_manager_patch is not None:
         device_test_config["device"].create_component_manager = component_manager_patch
 
-    tango_context = DeviceTestContext(**device_test_config)
+    tango_context = DeviceTestContext(**device_test_config, debug=5)
     tango_context.start()
     yield tango_context
     tango_context.stop()

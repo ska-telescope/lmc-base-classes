@@ -34,12 +34,14 @@ class TestReferenceBaseComponentManager:
 
         :return: the component manager under test
         """
-        return ReferenceBaseComponentManager(
+        reference_base_component_manager = ReferenceBaseComponentManager(
             logger,
             callbacks["communication_state"],
             callbacks["component_state"],
             _component=component,
         )
+        yield reference_base_component_manager
+        reference_base_component_manager.terminate()
 
     def test_state_changes_with_start_and_stop_communicating(
         self,

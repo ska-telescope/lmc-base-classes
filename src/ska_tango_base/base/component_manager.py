@@ -194,6 +194,14 @@ class BaseComponentManager:
         """
         raise NotImplementedError("BaseComponentManager is abstract.")
 
+    def terminate(self):
+        """
+        Called when the device is deleted. Override this if you have
+        things that must be done in order to exit cleanly; for example,
+        stopping any non-daemon threads.
+        """
+        pass
+
     @property
     def communication_state(self: BaseComponentManager) -> CommunicationStatus:
         """
@@ -338,3 +346,6 @@ class TaskExecutorComponentManager(BaseComponentManager):
             of this abort task changes.
         """
         return self._task_executor.abort(task_callback)
+
+    def terminate(self):
+        self._task_executor.terminate()

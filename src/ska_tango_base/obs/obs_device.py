@@ -42,8 +42,14 @@ class SKAObsDevice(SKABaseDevice):
                 information purpose only.
             :rtype: (ResultCode, str)
             """
-            self._device.set_change_event("obsState", True, True)
-            self._device.set_archive_event("obsState", True, True)
+            for attribute_name in [
+                "obsState",
+                "obsMode",
+                "configurationProgress",
+                "configurationDelayExpected",
+            ]:
+                self._device.set_change_event(attribute_name, True)
+                self._device.set_archive_event(attribute_name, True)
 
             self._device._obs_state = ObsState.EMPTY
             self._device._obs_mode = ObsMode.IDLE
@@ -69,16 +75,12 @@ class SKAObsDevice(SKABaseDevice):
 
     obsState = attribute(
         dtype=ObsState,
-        polling_period=250,
-        archive_period=1000,
         doc="Observing State",
     )
     """Device attribute."""
 
     obsMode = attribute(
         dtype=ObsMode,
-        polling_period=250,
-        archive_period=1000,
         doc="Observing Mode",
     )
     """Device attribute."""
@@ -88,8 +90,6 @@ class SKAObsDevice(SKABaseDevice):
         unit="%",
         max_value=100,
         min_value=0,
-        polling_period=250,
-        archive_period=1000,
         doc="Percentage configuration progress",
     )
     """Device attribute."""
@@ -97,8 +97,6 @@ class SKAObsDevice(SKABaseDevice):
     configurationDelayExpected = attribute(
         dtype="uint16",
         unit="seconds",
-        polling_period=250,
-        archive_period=1000,
         doc="Configuration delay expected in seconds",
     )
     """Device attribute."""
@@ -118,6 +116,8 @@ class SKAObsDevice(SKABaseDevice):
         :type obs_state: :py:class:`~ska_tango_base.control_model.ObsState`
         """
         self._obs_state = obs_state
+        self.push_change_event("obsState", obs_state)
+        self.push_archive_event("obsState", obs_state)
 
     def always_executed_hook(self):
         # PROTECTED REGION ID(SKAObsDevice.always_executed_hook) ENABLED START #

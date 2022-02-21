@@ -129,7 +129,7 @@ def test_device():
             "longRunningCommandResult", fetch_timeout=10
         )
         assert next_result[0].endswith("AbortingLongRunning")
-        assert next_result[1] == '"NonAbortingTask Aborted 0.1"'
+        assert next_result[1] == '"AbortingTask Aborted 0.1"'
 
         # LongRunningException
         result_code, command_id = top_device.LongRunningException()

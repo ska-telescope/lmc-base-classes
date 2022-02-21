@@ -13,7 +13,7 @@ long running commands (LRCs) to allow concurrent access to TANGO devices.
    In this context it also means a command which is implemented to execute
    asynchronously. Long running, slow command and asynchronous command are used
    interchangeably in this text and the code base. In the event where the meaning
-   differ it will be explained but all refer blocking calls.
+   differ it will be explained but all refer to non-blocking calls.
 
 This means that devices return immediately with a response while busy with the
 actual task in the background or parked on a queue pending the next available worker.

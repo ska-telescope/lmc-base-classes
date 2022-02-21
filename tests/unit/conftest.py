@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import collections
 import logging
+import time
 
 import pytest
 import tango
@@ -48,6 +49,10 @@ def device_under_test(tango_context):
     :return: a proxy to the device under test
     :rtype: :py:class:`tango.DeviceProxy`
     """
+    # Give the PushChanges polled command time to run once.
+    time.sleep(0.15)
+    # TODO: This would be better handled by waiting for the state to be OFF.
+
     return tango_context.device
 
 

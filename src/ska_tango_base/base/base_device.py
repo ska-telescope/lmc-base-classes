@@ -21,6 +21,7 @@ import itertools
 import json
 import logging
 import logging.handlers
+import queue
 import socket
 import sys
 import threading
@@ -734,8 +735,6 @@ class SKABaseDevice(Device):
 
     healthState = attribute(
         dtype=HealthState,
-        polling_period=250,
-        archive_period=1000,
         doc="The health state reported for this device. "
         "It interprets the current device"
         " condition and condition of all managed devices to set this. "
@@ -748,8 +747,6 @@ class SKABaseDevice(Device):
         access=AttrWriteType.READ_WRITE,
         memorized=True,
         hw_memorized=True,
-        polling_period=250,
-        archive_period=1000,
         doc="The admin mode reported for this device. It may interpret the current "
         "device condition and condition of all managed devices to set this. "
         "Most possibly an aggregate attribute.",
@@ -761,8 +758,6 @@ class SKABaseDevice(Device):
         access=AttrWriteType.READ_WRITE,
         memorized=True,
         hw_memorized=True,
-        polling_period=250,
-        archive_period=1000,
         doc="The control mode of the device. REMOTE, LOCAL"
         "\nTango Device accepts only from a ‘local’ client and ignores commands and "
         "queries received from TM or any other ‘remote’ clients. The Local clients"
@@ -775,8 +770,6 @@ class SKABaseDevice(Device):
         access=AttrWriteType.READ_WRITE,
         memorized=True,
         hw_memorized=True,
-        polling_period=250,
-        archive_period=1000,
         doc="Reports the simulation mode of the device. \nSome devices may implement "
         "both modes, while others will have simulators that set simulationMode "
         "to True while the real devices always set simulationMode to False.",
@@ -788,8 +781,6 @@ class SKABaseDevice(Device):
         access=AttrWriteType.READ_WRITE,
         memorized=True,
         hw_memorized=True,
-        polling_period=250,
-        archive_period=1000,
         doc="The test mode of the device. \n"
         "Either no test mode or an "
         "indication of the test mode.",
@@ -800,8 +791,6 @@ class SKABaseDevice(Device):
         dtype=("str",),
         max_dim_x=MAX_REPORTED_QUEUED_COMMANDS,
         access=AttrWriteType.READ,
-        polling_period=250,
-        archive_period=1000,
         doc="Keep track of which commands are in the queue. \n"
         "Pop off from front as they complete.",
     )
@@ -811,8 +800,6 @@ class SKABaseDevice(Device):
         dtype=("str",),
         max_dim_x=MAX_REPORTED_QUEUED_COMMANDS,
         access=AttrWriteType.READ,
-        polling_period=250,
-        archive_period=1000,
         doc="Every client that executes a command will receive a command ID as response. \n"
         "Keep track of IDs in the queue. Pop off from front as they complete.",
     )
@@ -822,8 +809,6 @@ class SKABaseDevice(Device):
         dtype=("str",),
         max_dim_x=MAX_REPORTED_CONCURRENT_COMMANDS * 2,  # 2 per command
         access=AttrWriteType.READ,
-        polling_period=250,
-        archive_period=1000,
         doc="ID, status pair of the currently executing command. \n"
         "Clients can subscribe to on_change event and wait for the ID they are interested in.",
     )
@@ -833,8 +818,6 @@ class SKABaseDevice(Device):
         dtype=("str",),
         max_dim_x=MAX_REPORTED_CONCURRENT_COMMANDS * 2,  # 2 per command
         access=AttrWriteType.READ,
-        polling_period=250,
-        archive_period=1000,
         doc="ID, progress of the currently executing command. \n"
         "Clients can subscribe to on_change event and wait for the ID they are interested in..",
     )
@@ -844,8 +827,6 @@ class SKABaseDevice(Device):
         dtype=("str",),
         max_dim_x=2,  # Always the last result (unique_id, JSON-encoded result)
         access=AttrWriteType.READ,
-        polling_period=250,
-        archive_period=1000,
         doc="unique_id, json-encoded result. \n"
         "Clients can subscribe to on_change event and wait for the ID they are interested in.",
     )
@@ -872,6 +853,16 @@ class SKABaseDevice(Device):
         self.push_change_event("status")
         self.push_archive_event("status")
 
+    def _update_admin_mode(self, admin_mode):
+        self._admin_mode = admin_mode
+        self.push_change_event("adminMode", self._admin_mode)
+        self.push_archive_event("adminMode", self._admin_mode)
+
+    def _update_health_state(self, health_state):
+        self._health_state = health_state
+        self.push_change_event("healthState", self._health_state)
+        self.push_archive_event("healthState", self._health_state)
+
     def _update_commands_in_queue(self, commands_in_queue):
         if commands_in_queue:
             command_ids, command_names = zip(*commands_in_queue)
@@ -884,26 +875,42 @@ class SKABaseDevice(Device):
         else:
             self._command_ids_in_queue = []
             self._commands_in_queue = []
+        self.push_change_event("longRunningCommandsInQueue", self._commands_in_queue)
+        self.push_archive_event("longRunningCommandsInQueue", self._commands_in_queue)
+        self.push_change_event(
+            "longRunningCommandIDsInQueue", self._command_ids_in_queue
+        )
+        self.push_archive_event(
+            "longRunningCommandIDsInQueue", self._command_ids_in_queue
+        )
 
     def _update_command_statuses(self, command_statuses):
         statuses = [(uid, status.name) for (uid, status) in command_statuses]
         self._command_statuses = [
             str(item) for item in itertools.chain.from_iterable(statuses)
         ][: (MAX_REPORTED_CONCURRENT_COMMANDS * 2)]
+        self.push_change_event("longRunningCommandStatus", self._command_statuses)
+        self.push_archive_event("longRunningCommandStatus", self._command_statuses)
 
     def _update_command_progresses(self, command_progresses):
         self._command_progresses = [
             str(item) for item in itertools.chain.from_iterable(command_progresses)
         ][: (MAX_REPORTED_CONCURRENT_COMMANDS * 2)]
+        self.push_change_event("longRunningCommandProgress", self._command_progresses)
+        self.push_archive_event("longRunningCommandProgress", self._command_progresses)
 
     def _update_command_result(self, command_id, command_result):
         self._command_result = (command_id, json.dumps(command_result))
+        self.push_change_event("longRunningCommandResult", self._command_result)
+        self.push_archive_event("longRunningCommandResult", self._command_result)
 
     def _update_command_exception(self, command_id, command_exception):
         self.logger.error(
             f"Command '{command_id}' raised exception {command_exception}"
         )
         self._command_result = (command_id, str(command_exception))
+        self.push_change_event("longRunningCommandResult", self._command_result)
+        self.push_archive_event("longRunningCommandResult", self._command_result)
 
     def _communication_state_changed(self, communication_state):
         action_map = {
@@ -948,8 +955,11 @@ class SKABaseDevice(Device):
         try:
             super().init_device()
 
+            self._omni_queue = queue.Queue()
+
             self._init_logging()
 
+            self._admin_mode = AdminMode.OFFLINE
             self._health_state = HealthState.UNKNOWN
             self._control_mode = ControlMode.REMOTE
             self._simulation_mode = SimulationMode.FALSE
@@ -967,10 +977,22 @@ class SKABaseDevice(Device):
             self._version_id = release.version
             self._methods_patched_for_debugger = False
 
-            self.set_change_event("state", True, True)
-            self.set_archive_event("state", True, True)
-            self.set_change_event("status", True, True)
-            self.set_archive_event("status", True, True)
+            for attribute_name in [
+                "state",
+                "status",
+                "adminMode",
+                "healthState",
+                "controlMode",
+                "simulationMode",
+                "testMode",
+                "longRunningCommandsInQueue",
+                "longRunningCommandIDsInQueue",
+                "longRunningCommandStatus",
+                "longRunningCommandProgress",
+                "longRunningCommandResult",
+            ]:
+                self.set_change_event(attribute_name, True)
+                self.set_archive_event(attribute_name, True)
 
             try:
                 # create Tango Groups dict, according to property
@@ -1016,7 +1038,9 @@ class SKABaseDevice(Device):
             logger=self.logger,
             callback=self._update_state,
         )
-        self.admin_mode_model = AdminModeModel(logger=self.logger)
+        self.admin_mode_model = AdminModeModel(
+            logger=self.logger, callback=self._update_admin_mode
+        )
 
     def create_component_manager(self):
         """Create and return a component manager for this device."""
@@ -1218,7 +1242,7 @@ class SKABaseDevice(Device):
         :return: Admin Mode of the device
         :rtype: AdminMode
         """
-        return self.admin_mode_model.admin_mode
+        return self._admin_mode
         # PROTECTED REGION END #    //  SKABaseDevice.adminMode_read
 
     def write_adminMode(self, value):
@@ -1721,6 +1745,40 @@ class SKABaseDevice(Device):
         """
         command = self.get_command_object("DebugDevice")
         return command()
+
+    def set_state(self, state):
+        self._omni_queue.put(("set", "state", state))
+
+    def set_status(self, status):
+        self._omni_queue.put(("set", "status", status))
+
+    def push_change_event(self, name, value=None):
+        self._omni_queue.put(("change", name, value))
+
+    def push_archive_event(self, name, value=None):
+        self._omni_queue.put(("archive", name, value))
+
+    @command(polling_period=100)
+    def PushChanges(self):
+        while not self._omni_queue.empty():
+            (event_type, name, value) = self._omni_queue.get_nowait()
+            if event_type == "set":
+                if name == "state":
+                    super().set_state(value)
+                elif name == "status":
+                    super().set_status(value)
+                else:
+                    assert False
+            elif event_type == "change":
+                if name.lower() in ["state", "status"]:
+                    super().push_change_event(name)
+                else:
+                    super().push_change_event(name, value)
+            elif event_type == "archive":
+                if name.lower() in ["state", "status"]:
+                    super().push_archive_event(name)
+                else:
+                    super().push_archive_event(name, value)
 
 
 # ----------

@@ -92,22 +92,22 @@ class MultiDeviceComponentManager(TaskExecutorComponentManager):
         :type task_abort_event: Event, optional
         """
         retries = 45
-        self.logger.info("NonAbortingTask started")
+        self.logger.info("AbortingTask started")
         while (not task_abort_event.is_set()) and retries > 0:
             retries -= 1
             time.sleep(sleep_time)  # This command takes long
 
         if retries == 0:  # Normal finish
-            self.logger.info("NonAbortingTask finished normal")
+            self.logger.info("AbortingTask finished normal")
             task_callback(
                 status=TaskStatus.COMPLETED,
-                result=f"NonAbortingTask completed {sleep_time}",
+                result=f"AbortingTask completed {sleep_time}",
             )
         else:  # Aborted finish
-            self.logger.info("NonAbortingTask finished aborted")
+            self.logger.info("AbortingTask finished aborted")
             task_callback(
                 status=TaskStatus.ABORTED,
-                result=f"NonAbortingTask Aborted {sleep_time}",
+                result=f"AbortingTask Aborted {sleep_time}",
             )
 
     def aborting_lrc(self, sleep_time: float, task_callback: Callable = None):

@@ -14,12 +14,7 @@ class CspObsComponentManager(BaseComponentManager):
     a subclass specific to the component managed by the device.
     """
 
-    def __init__(self, op_state_model, obs_state_model, *args, **kwargs):
-        """Initialise a new ``CspObsComponentManager`` instance."""
-        self.obs_state_model = obs_state_model
-        super().__init__(op_state_model, *args, **kwargs)
-
-    def configure_scan(self, configuration):
+    def configure_scan(self, configuration, task_callback):
         """
         Configure the component.
 
@@ -28,23 +23,23 @@ class CspObsComponentManager(BaseComponentManager):
         """
         raise NotImplementedError("CspObsComponentManager is abstract.")
 
-    def deconfigure(self):
+    def deconfigure(self, task_callback):
         """Deconfigure this component."""
         raise NotImplementedError("CspObsComponentManager is abstract.")
 
-    def scan(self, args):
+    def scan(self, args, task_callback):
         """Start scanning."""
         raise NotImplementedError("CspObsComponentManager is abstract.")
 
-    def end_scan(self):
+    def end_scan(self, task_callback):
         """End scanning."""
         raise NotImplementedError("CspObsComponentManager is abstract.")
 
-    def abort(self):
+    def abort(self, task_callback):
         """Tell the component to abort whatever it was doing."""
         raise NotImplementedError("CspObsComponentManager is abstract.")
 
-    def obsreset(self):
+    def obsreset(self, task_callback):
         """Reset the configuration but do not release resources."""
         raise NotImplementedError("CspObsComponentManager is abstract.")
 
@@ -62,39 +57,3 @@ class CspObsComponentManager(BaseComponentManager):
     def config_id(self, config_id):
         """Set the configuration id."""
         raise NotImplementedError("CspObsComponentManager is abstract.")
-
-    def component_configured(self, configured):
-        """
-        Handle notification that the component has started or stopped configuring.
-
-        This is callback hook.
-
-        :param configured: whether this component is configured
-        :type configured: bool
-        """
-        if configured:
-            self.obs_state_model.perform_action("component_configured")
-        else:
-            self.obs_state_model.perform_action("component_unconfigured")
-
-    def component_scanning(self, scanning):
-        """
-        Handle notification that the component has started or stopped scanning.
-
-        This is a callback hook.
-
-        :param scanning: whether this component is scanning
-        :type scanning: bool
-        """
-        if scanning:
-            self.obs_state_model.perform_action("component_scanning")
-        else:
-            self.obs_state_model.perform_action("component_not_scanning")
-
-    def component_obsfault(self):
-        """
-        Handle notification that the component has obsfaulted.
-
-        This is a callback hook.
-        """
-        self.obs_state_model.perform_action("component_obsfault")

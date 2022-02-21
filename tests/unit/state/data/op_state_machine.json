@@ -1,0 +1,491 @@
+{
+    "states": {
+        "_UNINITIALISED": {},
+        "INIT_UNKNOWN": {},
+        "INIT_DISABLE": {},
+        "INIT_OFF": {},
+        "INIT_STANDBY": {},
+        "INIT_ON": {},
+        "INIT_FAULT_STANDBY": {},
+        "INIT_FAULT_ON": {},
+        "UNKNOWN": {},
+        "DISABLE": {},
+        "OFF": {},
+        "STANDBY": {},
+        "ON": {},
+        "FAULT_STANDBY": {},
+        "FAULT_ON": {}
+    },
+    "transitions": [
+        {
+            "from": "_UNINITIALISED",
+            "to": "INIT_DISABLE",
+            "trigger": "init_invoked"
+        },
+        {
+            "from": "INIT_DISABLE",
+            "to": "INIT_DISABLE",
+            "trigger": "component_disconnected"
+        },
+        {
+            "from": "INIT_DISABLE",
+            "to": "INIT_UNKNOWN",
+            "trigger": "component_unknown"
+        },
+        {
+            "from": "INIT_DISABLE",
+            "to": "INIT_OFF",
+            "trigger": "component_off"
+        },
+        {
+            "from": "INIT_DISABLE",
+            "to": "INIT_STANDBY",
+            "trigger": "component_standby"
+        },
+        {
+            "from": "INIT_DISABLE",
+            "to": "INIT_ON",
+            "trigger": "component_on"
+        },
+        {
+            "from": "INIT_UNKNOWN",
+            "to": "INIT_DISABLE",
+            "trigger": "component_disconnected"
+        },
+        {
+            "from": "INIT_UNKNOWN",
+            "to": "INIT_UNKNOWN",
+            "trigger": "component_unknown"
+        },
+        {
+            "from": "INIT_UNKNOWN",
+            "to": "INIT_OFF",
+            "trigger": "component_off"
+        },
+        {
+            "from": "INIT_UNKNOWN",
+            "to": "INIT_STANDBY",
+            "trigger": "component_standby"
+        },
+        {
+            "from": "INIT_UNKNOWN",
+            "to": "INIT_ON",
+            "trigger": "component_on"
+        },
+        {
+            "from": "INIT_OFF",
+            "to": "INIT_DISABLE",
+            "trigger": "component_disconnected"
+        },
+        {
+            "from": "INIT_OFF",
+            "to": "INIT_UNKNOWN",
+            "trigger": "component_unknown"
+        },
+        {
+            "from": "INIT_OFF",
+            "to": "INIT_OFF",
+            "trigger": "component_off"
+        },
+        {
+            "from": "INIT_OFF",
+            "to": "INIT_STANDBY",
+            "trigger": "component_standby"
+        },
+        {
+            "from": "INIT_OFF",
+            "to": "INIT_ON",
+            "trigger": "component_on"
+        },
+        {
+            "from": "INIT_STANDBY",
+            "to": "INIT_DISABLE",
+            "trigger": "component_disconnected"
+        },
+        {
+            "from": "INIT_STANDBY",
+            "to": "INIT_UNKNOWN",
+            "trigger": "component_unknown"
+        },
+        {
+            "from": "INIT_STANDBY",
+            "to": "INIT_OFF",
+            "trigger": "component_off"
+        },
+        {
+            "from": "INIT_STANDBY",
+            "to": "INIT_STANDBY",
+            "trigger": "component_standby"
+        },
+        {
+            "from": "INIT_STANDBY",
+            "to": "INIT_ON",
+            "trigger": "component_on"
+        },
+        {
+            "from": "INIT_STANDBY",
+            "to": "INIT_FAULT_STANDBY",
+            "trigger": "component_fault"
+        },
+        {
+            "from": "INIT_STANDBY",
+            "to": "INIT_STANDBY",
+            "trigger": "component_no_fault"
+        },
+        {
+            "from": "INIT_ON",
+            "to": "INIT_DISABLE",
+            "trigger": "component_disconnected"
+        },
+        {
+            "from": "INIT_ON",
+            "to": "INIT_UNKNOWN",
+            "trigger": "component_unknown"
+        },
+        {
+            "from": "INIT_ON",
+            "to": "INIT_OFF",
+            "trigger": "component_off"
+        },
+        {
+            "from": "INIT_ON",
+            "to": "INIT_STANDBY",
+            "trigger": "component_standby"
+        },
+        {
+            "from": "INIT_ON",
+            "to": "INIT_ON",
+            "trigger": "component_on"
+        },
+        {
+            "from": "INIT_ON",
+            "to": "INIT_FAULT_ON",
+            "trigger": "component_fault"
+        },
+        {
+            "from": "INIT_ON",
+            "to": "INIT_ON",
+            "trigger": "component_no_fault"
+        },
+        {
+            "from": "INIT_FAULT_STANDBY",
+            "to": "INIT_DISABLE",
+            "trigger": "component_disconnected"
+        },
+        {
+            "from": "INIT_FAULT_STANDBY",
+            "to": "INIT_UNKNOWN",
+            "trigger": "component_unknown"
+        },
+        {
+            "from": "INIT_FAULT_STANDBY",
+            "to": "INIT_OFF",
+            "trigger": "component_off"
+        },
+        {
+            "from": "INIT_FAULT_STANDBY",
+            "to": "INIT_FAULT_STANDBY",
+            "trigger": "component_standby"
+        },
+        {
+            "from": "INIT_FAULT_STANDBY",
+            "to": "INIT_FAULT_ON",
+            "trigger": "component_on"
+        },
+        {
+            "from": "INIT_FAULT_STANDBY",
+            "to": "INIT_FAULT_STANDBY",
+            "trigger": "component_fault"
+        },
+        {
+            "from": "INIT_FAULT_STANDBY",
+            "to": "INIT_STANDBY",
+            "trigger": "component_no_fault"
+        },
+        {
+            "from": "INIT_FAULT_ON",
+            "to": "INIT_DISABLE",
+            "trigger": "component_disconnected"
+        },
+        {
+            "from": "INIT_FAULT_ON",
+            "to": "INIT_UNKNOWN",
+            "trigger": "component_unknown"
+        },
+        {
+            "from": "INIT_FAULT_ON",
+            "to": "INIT_OFF",
+            "trigger": "component_off"
+        },
+        {
+            "from": "INIT_FAULT_ON",
+            "to": "INIT_FAULT_STANDBY",
+            "trigger": "component_standby"
+        },
+        {
+            "from": "INIT_FAULT_ON",
+            "to": "INIT_FAULT_ON",
+            "trigger": "component_on"
+        },
+        {
+            "from": "INIT_FAULT_ON",
+            "to": "INIT_FAULT_ON",
+            "trigger": "component_fault"
+        },
+        {
+            "from": "INIT_FAULT_ON",
+            "to": "INIT_ON",
+            "trigger": "component_no_fault"
+        },
+        {
+            "from": "INIT_UNKNOWN",
+            "to": "UNKNOWN",
+            "trigger": "init_completed"
+        },
+        {
+            "from": "INIT_DISABLE",
+            "to": "DISABLE",
+            "trigger": "init_completed"
+        },
+        {
+            "from": "INIT_OFF",
+            "to": "OFF",
+            "trigger": "init_completed"
+        },
+        {
+            "from": "INIT_STANDBY",
+            "to": "STANDBY",
+            "trigger": "init_completed"
+        },
+        {
+            "from": "INIT_ON",
+            "to": "ON",
+            "trigger": "init_completed"
+        },
+        {
+            "from": "INIT_FAULT_STANDBY",
+            "to": "FAULT_STANDBY",
+            "trigger": "init_completed"
+        },
+        {
+            "from": "INIT_FAULT_ON",
+            "to": "FAULT_ON",
+            "trigger": "init_completed"
+        },
+        {
+            "from": "DISABLE",
+            "to": "DISABLE",
+            "trigger": "component_disconnected"
+        },
+        {
+            "from": "DISABLE",
+            "to": "UNKNOWN",
+            "trigger": "component_unknown"
+        },
+        {
+            "from": "DISABLE",
+            "to": "OFF",
+            "trigger": "component_off"
+        },
+        {
+            "from": "DISABLE",
+            "to": "STANDBY",
+            "trigger": "component_standby"
+        },
+        {
+            "from": "DISABLE",
+            "to": "ON",
+            "trigger": "component_on"
+        },
+        {
+            "from": "UNKNOWN",
+            "to": "DISABLE",
+            "trigger": "component_disconnected"
+        },
+        {
+            "from": "UNKNOWN",
+            "to": "UNKNOWN",
+            "trigger": "component_unknown"
+        },
+        {
+            "from": "UNKNOWN",
+            "to": "OFF",
+            "trigger": "component_off"
+        },
+        {
+            "from": "UNKNOWN",
+            "to": "STANDBY",
+            "trigger": "component_standby"
+        },
+        {
+            "from": "UNKNOWN",
+            "to": "ON",
+            "trigger": "component_on"
+        },
+        {
+            "from": "OFF",
+            "to": "DISABLE",
+            "trigger": "component_disconnected"
+        },
+        {
+            "from": "OFF",
+            "to": "UNKNOWN",
+            "trigger": "component_unknown"
+        },
+        {
+            "from": "OFF",
+            "to": "OFF",
+            "trigger": "component_off"
+        },
+        {
+            "from": "OFF",
+            "to": "STANDBY",
+            "trigger": "component_standby"
+        },
+        {
+            "from": "OFF",
+            "to": "ON",
+            "trigger": "component_on"
+        },
+        {
+            "from": "STANDBY",
+            "to": "DISABLE",
+            "trigger": "component_disconnected"
+        },
+        {
+            "from": "STANDBY",
+            "to": "UNKNOWN",
+            "trigger": "component_unknown"
+        },
+        {
+            "from": "STANDBY",
+            "to": "OFF",
+            "trigger": "component_off"
+        },
+        {
+            "from": "STANDBY",
+            "to": "STANDBY",
+            "trigger": "component_standby"
+        },
+        {
+            "from": "STANDBY",
+            "to": "ON",
+            "trigger": "component_on"
+        },
+        {
+            "from": "STANDBY",
+            "to": "FAULT_STANDBY",
+            "trigger": "component_fault"
+        },
+        {
+            "from": "STANDBY",
+            "to": "STANDBY",
+            "trigger": "component_no_fault"
+        },
+        {
+            "from": "ON",
+            "to": "DISABLE",
+            "trigger": "component_disconnected"
+        },
+        {
+            "from": "ON",
+            "to": "UNKNOWN",
+            "trigger": "component_unknown"
+        },
+        {
+            "from": "ON",
+            "to": "OFF",
+            "trigger": "component_off"
+        },
+        {
+            "from": "ON",
+            "to": "STANDBY",
+            "trigger": "component_standby"
+        },
+        {
+            "from": "ON",
+            "to": "ON",
+            "trigger": "component_on"
+        },
+        {
+            "from": "ON",
+            "to": "FAULT_ON",
+            "trigger": "component_fault"
+        },
+        {
+            "from": "ON",
+            "to": "ON",
+            "trigger": "component_no_fault"
+        },
+        {
+            "from": "FAULT_STANDBY",
+            "to": "DISABLE",
+            "trigger": "component_disconnected"
+        },
+        {
+            "from": "FAULT_STANDBY",
+            "to": "UNKNOWN",
+            "trigger": "component_unknown"
+        },
+        {
+            "from": "FAULT_STANDBY",
+            "to": "OFF",
+            "trigger": "component_off"
+        },
+        {
+            "from": "FAULT_STANDBY",
+            "to": "FAULT_STANDBY",
+            "trigger": "component_standby"
+        },
+        {
+            "from": "FAULT_STANDBY",
+            "to": "FAULT_ON",
+            "trigger": "component_on"
+        },
+        {
+            "from": "FAULT_STANDBY",
+            "to": "FAULT_STANDBY",
+            "trigger": "component_fault"
+        },
+        {
+            "from": "FAULT_STANDBY",
+            "to": "STANDBY",
+            "trigger": "component_no_fault"
+        },
+        {
+            "from": "FAULT_ON",
+            "to": "DISABLE",
+            "trigger": "component_disconnected"
+        },
+        {
+            "from": "FAULT_ON",
+            "to": "UNKNOWN",
+            "trigger": "component_unknown"
+        },
+        {
+            "from": "FAULT_ON",
+            "to": "OFF",
+            "trigger": "component_off"
+        },
+        {
+            "from": "FAULT_ON",
+            "to": "FAULT_STANDBY",
+            "trigger": "component_standby"
+        },
+        {
+            "from": "FAULT_ON",
+            "to": "FAULT_ON",
+            "trigger": "component_on"
+        },
+        {
+            "from": "FAULT_ON",
+            "to": "FAULT_ON",
+            "trigger": "component_fault"
+        },
+        {
+            "from": "FAULT_ON",
+            "to": "ON",
+            "trigger": "component_no_fault"
+        }
+    ]
+}

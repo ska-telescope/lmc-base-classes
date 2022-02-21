@@ -19,7 +19,7 @@ from tango.server import run, attribute, command, device_property
 
 # SKA specific imports
 from ska_tango_base import SKABaseDevice
-from ska_tango_base.commands import BaseCommand
+from ska_tango_base.commands import FastCommand
 
 # PROTECTED REGION END #    //  SKAAlarmHandler.additionnal_import
 
@@ -101,23 +101,23 @@ class SKAAlarmHandler(SKABaseDevice):
         super().init_command_objects()
         self.register_command_object(
             "GetAlarmRule",
-            self.GetAlarmRuleCommand(self, self.op_state_model, self.logger),
+            self.GetAlarmRuleCommand(self.logger),
         )
         self.register_command_object(
             "GetAlarmData",
-            self.GetAlarmDataCommand(self, self.op_state_model, self.logger),
+            self.GetAlarmDataCommand(self.logger),
         )
         self.register_command_object(
             "GetAlarmAdditionalInfo",
-            self.GetAlarmAdditionalInfoCommand(self, self.op_state_model, self.logger),
+            self.GetAlarmAdditionalInfoCommand(self.logger),
         )
         self.register_command_object(
             "GetAlarmStats",
-            self.GetAlarmStatsCommand(self, self.op_state_model, self.logger),
+            self.GetAlarmStatsCommand(self.logger),
         )
         self.register_command_object(
             "GetAlertStats",
-            self.GetAlertStatsCommand(self, self.op_state_model, self.logger),
+            self.GetAlertStatsCommand(self.logger),
         )
 
     def always_executed_hook(self):
@@ -221,7 +221,7 @@ class SKAAlarmHandler(SKABaseDevice):
     # Commands
     # --------
 
-    class GetAlarmRuleCommand(BaseCommand):
+    class GetAlarmRuleCommand(FastCommand):
         """A class for the SKAAlarmHandler's GetAlarmRule() command."""
 
         def do(self, argin):
@@ -233,7 +233,7 @@ class SKAAlarmHandler(SKABaseDevice):
             """
             return ""
 
-    class GetAlarmDataCommand(BaseCommand):
+    class GetAlarmDataCommand(FastCommand):
         """A class for the SKAAlarmHandler's GetAlarmData() command."""
 
         def do(self, argin):
@@ -245,7 +245,7 @@ class SKAAlarmHandler(SKABaseDevice):
             """
             return ""
 
-    class GetAlarmAdditionalInfoCommand(BaseCommand):
+    class GetAlarmAdditionalInfoCommand(FastCommand):
         """A class for the SKAAlarmHandler's GetAlarmAdditionalInfo() command."""
 
         def do(self, argin):
@@ -257,7 +257,7 @@ class SKAAlarmHandler(SKABaseDevice):
             """
             return ""
 
-    class GetAlarmStatsCommand(BaseCommand):
+    class GetAlarmStatsCommand(FastCommand):
         """A class for the SKAAlarmHandler's GetAlarmStats() command."""
 
         def do(self):
@@ -269,7 +269,7 @@ class SKAAlarmHandler(SKABaseDevice):
             """
             return ""
 
-    class GetAlertStatsCommand(BaseCommand):
+    class GetAlertStatsCommand(FastCommand):
         """A class for the SKAAlarmHandler's GetAlertStats() command."""
 
         def do(self):

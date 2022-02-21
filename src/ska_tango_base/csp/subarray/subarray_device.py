@@ -25,13 +25,9 @@ from tango import AttrWriteType
 
 # SKA import
 from ska_tango_base import SKASubarray
-from ska_tango_base.commands import (
-    CompletionCommand,
-    ObservationCommand,
-    ResponseCommand,
-    ResultCode,
-)
-from ska_tango_base.csp.subarray import CspSubarrayComponentManager
+from ska_tango_base.commands import ResultCode, SubmittedSlowCommand
+from ska_tango_base.control_model import ObsState
+from ska_tango_base.faults import StateModelError
 
 # Additional import
 # PROTECTED REGION END #    //  CspSubElementSubarray.additionnal_import
@@ -194,24 +190,31 @@ class CspSubElementSubarray(SKASubarray):
     # General methods
     # ---------------
 
-    def create_component_manager(self):
-        """Create and return the component manager for this device."""
-        return CspSubarrayComponentManager(self.op_state_model, self.obs_state_model)
-
     def init_command_objects(self):
         """Set up the command objects."""
         super().init_command_objects()
 
-        device_args = (
-            self.component_manager,
-            self.op_state_model,
-            self.obs_state_model,
-            self.logger,
+        self.register_command_object(
+            "ConfigureScan",
+            self.ConfigureScanCommand(
+                self._command_tracker,
+                self.component_manager,
+                callback=lambda running: self.obs_state_model.perform_action(
+                    f"configure_{'invoked' if running else 'completed'}"
+                ),
+                logger=self.logger,
+            ),
         )
         self.register_command_object(
-            "ConfigureScan", self.ConfigureScanCommand(*device_args)
+            "GoToIdle",
+            SubmittedSlowCommand(
+                "GoToIdle",
+                self._command_tracker,
+                self.component_manager,
+                "deconfigure",
+                logger=self.logger,
+            ),
         )
-        self.register_command_object("GoToIdle", self.GoToIdleCommand(*device_args))
 
     class InitCommand(SKASubarray.InitCommand):
         """A class for the CspSubElementObsDevice's init_device() "command"."""
@@ -227,64 +230,74 @@ class CspSubElementSubarray(SKASubarray):
             """
             super().do()
 
-            device = self.target
-            device._scan_id = 0
+            self._device._scan_id = 0
 
-            device._sdp_addresses = {
+            self._device._sdp_addresses = {
                 "outputHost": [],
                 "outputMac": [],
                 "outputPort": [],
             }
-            device._sdp_links_active = [
+            self._device._sdp_links_active = [
                 False,
             ]
-            device._sdp_output_data_rate = 0.0
+            self._device._sdp_output_data_rate = 0.0
 
-            device._config_id = ""
+            self._device._config_id = ""
 
             # JSON string, deliberately left in Tango layer
-            device._last_scan_configuration = ""
+            self._device._last_scan_configuration = ""
 
             # _list_of_devices_completed_task: for each task/command reports
             # the list of the devices that successfully completed the task.
             # Implemented as a defualt dictionary:
             # keys: the command name in lower case (configurescan, assignresources, etc.)
             # values: the list of devices' FQDN
-            device._list_of_devices_completed_task = defaultdict(list)
+            self._device._list_of_devices_completed_task = defaultdict(list)
 
             # _cmd_progress: command execution's progress percentage
             # implemented as a default dictionary:
             # keys: the command name in lower case(configurescan,..)
             # values: the progress percentage (default 0)
-            device._cmd_progress = defaultdict(int)
+            self._device._cmd_progress = defaultdict(int)
 
             # _cmd_maximun_duration: command execution's expected maximum duration (sec.)
             # implemented as a default dictionary:
             # keys: the command name in lower case(configurescan, assignresources,..)
             # values: the expected maximum duration in sec.
-            device._cmd_maximum_duration = defaultdict(float)
+            self._device._cmd_maximum_duration = defaultdict(float)
 
             # _cmd_measure_duration: command execution's measured duration (sec.)
             # implemented as a default dictionary:
             # keys: the command name in lower case(configurescan, assignresources,..)
             # values: the measured execution time (sec.)
-            device._cmd_measured_duration = defaultdict(float)
+            self._device._cmd_measured_duration = defaultdict(float)
 
             # _timeout_expired: boolean flag to signal timeout during command execution.
             # To check and reset before a command execution.
             # keys: the command name in lower case(configurescan, assignresources,..)
             # values: True/False
-            device._timeout_expired = defaultdict(bool)
+            self._device._timeout_expired = defaultdict(bool)
             # configure the flags to push event from the device server
-            device.set_change_event("configureScanTimeoutExpiredFlag", True, True)
-            device.set_archive_event("configureScanTimeoutExpiredFlag", True, True)
-            device.set_change_event("assignResourcesTimeoutExpiredFlag", True, True)
-            device.set_archive_event("assignResourcesTimeoutExpiredFlag", True, True)
-            device.set_change_event("releaseResourcesTimeoutExpiredFlag", True, True)
-            device.set_archive_event("releaseResourcesTimeoutExpiredFlag", True, True)
+            self._device.set_change_event("configureScanTimeoutExpiredFlag", True, True)
+            self._device.set_archive_event(
+                "configureScanTimeoutExpiredFlag", True, True
+            )
+            self._device.set_change_event(
+                "assignResourcesTimeoutExpiredFlag", True, True
+            )
+            self._device.set_archive_event(
+                "assignResourcesTimeoutExpiredFlag", True, True
+            )
+            self._device.set_change_event(
+                "releaseResourcesTimeoutExpiredFlag", True, True
+            )
+            self._device.set_archive_event(
+                "releaseResourcesTimeoutExpiredFlag", True, True
+            )
 
             message = "CspSubElementSubarray Init command completed OK"
-            device.logger.info(message)
+            self._device.logger.info(message)
+            self._completed()
             return (ResultCode.OK, message)
 
     def always_executed_hook(self):
@@ -437,47 +450,27 @@ class CspSubElementSubarray(SKASubarray):
     # Commands
     # --------
 
-    class ConfigureScanCommand(ObservationCommand, ResponseCommand, CompletionCommand):
+    class ConfigureScanCommand(SubmittedSlowCommand):
         """A class for the CspSubElementObsDevices's ConfigureScan command."""
 
-        def __init__(self, target, op_state_model, obs_state_model, logger=None):
+        def __init__(self, command_tracker, component_manager, callback, logger=None):
             """
             Initialise a new ConfigureScanCommand instance.
 
-            :param target: the object that this base command acts upon. For
-                example, the device's component manager.
-            :type target: object
-            :param op_state_model: the op state model that this command
-                uses to check that it is allowed to run
-            :type op_state_model: :py:class:`OpStateModel`
-            :param obs_state_model: the observation state model that
-                 this command uses to check that it is allowed to run,
-                 and that it drives with actions.
-            :type obs_state_model: :py:class:`SubarrayObsStateModel`
-            :param logger: the logger to be used by this Command. If not
-                provided, then a default module logger will be used.
-            :type logger: a logger that implements the standard library
-                logger interface
+            :param command_tracker: the device's command tracker
+            :param component_manager: the device's component manager
+            :param callback: callback to be called when this command
+                states and finishes
+            :param logger: a logger for this command object to yuse
             """
             super().__init__(
-                target, obs_state_model, "configure", op_state_model, logger=logger
+                "ConfigureScan",
+                command_tracker,
+                component_manager,
+                "configure",
+                callback=callback,
+                logger=logger,
             )
-
-        def do(self, argin):
-            """
-            Stateless hook for ConfigureScan() command functionality.
-
-            :param argin: The configuration
-            :type argin: dict
-
-            :return: A tuple containing a return code and a string
-                message indicating status. The message is for
-                information purpose only.
-            :rtype: (ResultCode, str)
-            """
-            component_manager = self.target
-            component_manager.configure(argin)
-            return (ResultCode.OK, "Configure command completed OK")
 
         def validate_input(self, argin):
             """
@@ -506,44 +499,23 @@ class CspSubElementSubarray(SKASubarray):
                 "ConfigureScan arguments validation successful",
             )
 
-    class GoToIdleCommand(ObservationCommand, ResponseCommand):
-        """A class for the CspSubElementObsDevices's GoToIdle command."""
+    def is_ConfigureScan_allowed(self):
+        """
+        Return whether the `Configure` command may be called in the current state.
 
-        def __init__(self, target, op_state_model, obs_state_model, logger=None):
-            """
-            Initialise a new GoToIdleCommand instance.
-
-            :param target: the object that this base command acts upon. For
-                example, the device's component manager.
-            :type target: object
-            :param op_state_model: the op state model that this command
-                uses to check that it is allowed to run
-            :type op_state_model: :py:class:`OpStateModel`
-            :param obs_state_model: the observation state model that
-                 this command uses to check that it is allowed to run,
-                 and that it drives with actions.
-            :type obs_state_model: :py:class:`SubarrayObsStateModel`
-            :param logger: the logger to be used by this Command. If not
-                provided, then a default module logger will be used.
-            :type logger: a logger that implements the standard library
-                logger interface
-            """
-            super().__init__(
-                target, obs_state_model, "end", op_state_model, logger=logger
+        :return: whether the command may be called in the current device
+            state
+        :rtype: bool
+        """
+        # If we return False here, Tango will raise an exception that incorrectly blames
+        # refusal on device state.
+        # e.g. "ConfigureScan not allowed when the device is in ON state".
+        # So let's raise an exception ourselves.
+        if self._obs_state not in [ObsState.IDLE, ObsState.READY]:
+            raise StateModelError(
+                f"ConfigureScan command not permitted in observation state {self._obs_state.name}"
             )
-
-        def do(self):
-            """
-            Stateless hook for GoToIdle() command functionality.
-
-            :return: A tuple containing a return code and a string
-                message indicating status. The message is for
-                information purpose only.
-            :rtype: (ResultCode, str)
-            """
-            component_manager = self.target
-            component_manager.deconfigure()
-            return (ResultCode.OK, "GoToIdle command completed OK")
+        return True
 
     @command(
         dtype_in="DevString",
@@ -566,16 +538,26 @@ class CspSubElementSubarray(SKASubarray):
             The message is for information purpose only.
         :rtype: (ResultCode, str)
         """
-        command = self.get_command_object("ConfigureScan")
+        handler = self.get_command_object("ConfigureScan")
 
-        (configuration, result_code, message) = command.validate_input(argin)
+        (configuration, result_code, message) = handler.validate_input(argin)
         if result_code == ResultCode.OK:
             # store the configuration on command success
             self._last_scan_configuration = argin
-            (result_code, message) = command(configuration)
+            (result_code, message) = handler(configuration)
 
         return [[result_code], [message]]
         # PROTECTED REGION END #    //  CspSubElementSubarray.Configure
+
+    def is_Configure_allowed(self):
+        """
+        Return whether the `Configure` command may be called in the current state.
+
+        :return: whether the command may be called in the current device
+            state
+        :rtype: bool
+        """
+        return self.is_ConfigureScan_allowed()
 
     @command(
         dtype_in="DevString",
@@ -599,6 +581,24 @@ class CspSubElementSubarray(SKASubarray):
         return self.ConfigureScan(argin)
         # PROTECTED REGION END #    //  CspSubElementSubarray.Configure
 
+    def is_GoToIdle_allowed(self):
+        """
+        Return whether the `GoToIdle` command may be called in the current device state.
+
+        :return: whether the command may be called in the current device
+            state
+        :rtype: bool
+        """
+        # If we return False here, Tango will raise an exception that incorrectly blames
+        # refusal on device state.
+        # e.g. "ConfigureScan not allowed when the device is in ON state".
+        # So let's raise an exception ourselves.
+        if self._obs_state not in [ObsState.IDLE, ObsState.READY]:
+            raise StateModelError(
+                f"GoToIdle command not permitted in observation state {self._obs_state.name}"
+            )
+        return True
+
     @command(
         dtype_out="DevVarLongStringArray",
         doc_out="A tuple containing a return code and a string  message indicating status."
@@ -616,9 +616,9 @@ class CspSubElementSubarray(SKASubarray):
         """
         self._last_scan_configuration = ""
 
-        command = self.get_command_object("GoToIdle")
-        (return_code, message) = command()
-        return [[return_code], [message]]
+        handler = self.get_command_object("GoToIdle")
+        (result_code, message) = handler()
+        return [[result_code], [message]]
 
     @command(
         dtype_out="DevVarLongStringArray",

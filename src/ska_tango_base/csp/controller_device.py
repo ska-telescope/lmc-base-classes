@@ -24,9 +24,8 @@ from tango.server import run, attribute, command, device_property
 # SKA specific imports
 
 from ska_tango_base import SKAController
-from ska_tango_base.commands import ResultCode, ResponseCommand, StateModelCommand
+from ska_tango_base.commands import ResultCode, FastCommand
 from ska_tango_base.control_model import AdminMode
-from ska_tango_base.faults import CommandError
 
 # PROTECTED REGION END #    //  CspSubElementController.additionnal_import
 
@@ -202,20 +201,16 @@ class CspSubElementController(SKAController):
         """Set up the command objects."""
         super().init_command_objects()
         self.register_command_object(
-            "LoadFirmware",
-            self.LoadFirmwareCommand(
-                self, self.op_state_model, self.admin_mode_model, self.logger
-            ),
-        )
-        device_args = (self, self.op_state_model, self.logger)
-        self.register_command_object(
-            "PowerOnDevices", self.PowerOnDevicesCommand(*device_args)
+            "LoadFirmware", self.LoadFirmwareCommand(logger=self.logger)
         )
         self.register_command_object(
-            "PowerOffDevices", self.PowerOffDevicesCommand(*device_args)
+            "PowerOnDevices", self.PowerOnDevicesCommand(logger=self.logger)
         )
         self.register_command_object(
-            "ReInitDevices", self.ReInitDevicesCommand(*device_args)
+            "PowerOffDevices", self.PowerOffDevicesCommand(logger=self.logger)
+        )
+        self.register_command_object(
+            "ReInitDevices", self.ReInitDevicesCommand(logger=self.logger)
         )
 
     class InitCommand(SKAController.InitCommand):
@@ -232,34 +227,33 @@ class CspSubElementController(SKAController):
             """
             super().do()
 
-            device = self.target
-
             # _cmd_progress: command execution's progress percentage
             # implemented as a default dictionary:
             # keys: the command name in lower case(on, off, standby,..)
             # values: the progress percentage (default 0)
-            device._cmd_progress = defaultdict(int)
+            self._device._cmd_progress = defaultdict(int)
 
             # _cmd_maximun_duration: command execution's expected maximum duration (msec.)
             # implemented as a default dictionary:
             # keys: the command name in lower case(on, off, standby,..)
             # values: the expected maximum duration in sec.
-            device._cmd_maximum_duration = defaultdict(float)
+            self._device._cmd_maximum_duration = defaultdict(float)
 
             # _cmd_measure_duration: command execution's measured duration (msec.)
             # implemented as a default dictionary:
             # keys: the command name in lower case(on, off, standby,..)
             # values: the measured execution time (sec.)
-            device._cmd_measured_duration = defaultdict(float)
+            self._device._cmd_measured_duration = defaultdict(float)
 
-            device._total_output_rate_to_sdp = 0.0
+            self._device._total_output_rate_to_sdp = 0.0
 
             # initialise using defaults in device properties
-            device._power_delay_standy_on = device.PowerDelayStandbyOn
-            device._power_delay_standy_off = device.PowerDelayStandbyOff
+            self._device._power_delay_standby_on = self._device.PowerDelayStandbyOn
+            self._device._power_delay_standby_off = self._device.PowerDelayStandbyOff
 
             message = "CspSubElementController Init command completed OK"
-            device.logger.info(message)
+            self._device.logger.info(message)
+            self._completed()
             return (ResultCode.OK, message)
 
     def always_executed_hook(self):
@@ -290,13 +284,13 @@ class CspSubElementController(SKAController):
     def read_powerDelayStandbyOn(self):
         # PROTECTED REGION ID(CspSubElementController.powerDelayStandbyOn_read) ENABLED START #
         """Return the powerDelayStandbyOn attribute."""
-        return self._power_delay_standy_on
+        return self._power_delay_standby_on
         # PROTECTED REGION END #    //  CspSubElementController.powerDelayStandbyOn_read
 
     def write_powerDelayStandbyOn(self, value):
         # PROTECTED REGION ID(CspSubElementController.powerDelayStandbyOn_write) ENABLED START #
         """Set the powerDelayStandbyOn attribute."""
-        self._power_delay_standy_on = value
+        self._power_delay_standby_on = value
         # PROTECTED REGION END #    //  CspSubElementController.powerDelayStandbyOn_write
 
     def read_onProgress(self):
@@ -380,13 +374,13 @@ class CspSubElementController(SKAController):
     def read_powerDelayStandbyOff(self):
         # PROTECTED REGION ID(CspSubElementController.powerDelayStandbyOff_read) ENABLED START #
         """Return the powerDelayStandbyOff attribute."""
-        return self._power_delay_standy_off
+        return self._power_delay_standby_off
         # PROTECTED REGION END #    //  CspSubElementController.powerDelayStandbyOff_read
 
     def write_powerDelayStandbyOff(self, value):
         # PROTECTED REGION ID(CspSubElementController.powerDelayStandbyOff_write) ENABLED START #
         """Set the powerDelayStandbyOff attribute."""
-        self._power_delay_standy_off = value
+        self._power_delay_standby_off = value
         # PROTECTED REGION END #    //  CspSubElementController.powerDelayStandbyOff_write
 
     def read_loadFirmwareProgress(self):
@@ -416,35 +410,12 @@ class CspSubElementController(SKAController):
     # --------
     # Commands
     # --------
-    class LoadFirmwareCommand(StateModelCommand, ResponseCommand):
+    class LoadFirmwareCommand(FastCommand):
         """A class for the LoadFirmware command."""
 
-        def __init__(
-            self, target, op_state_model, admin_mode_model, *args, logger=None, **kwargs
-        ):
-            """
-            Initialise a new LoadFirmwareCommand instance.
-
-            :param target: the object that this base command acts upon. For
-                example, the device's component manager.
-            :type target: object
-            :param op_state_model: the op state model that this command
-                uses.
-            :type op_state_model: OpStateModel
-            :param admin_mode_model: the admin model that this command
-                uses.
-            :type admin_mode_model: AdminModeModel
-            :param args: other positional arguments
-            :param kwargs: other keyword arguments
-            :param logger: the logger to be used by this Command. If not
-                provided, then a default module logger will be used.
-            :type logger: a logger that implements the standard library
-                logger interface
-            """
-            self._admin_mode_model = admin_mode_model
-            super().__init__(
-                target, op_state_model, None, *args, logger=logger, **kwargs
-            )
+        def __init__(self, logger=None):
+            """Initialise a new LoadFirmwareCommand instance."""
+            super().__init__(logger=logger)
 
         def do(self, argin):
             """
@@ -460,41 +431,12 @@ class CspSubElementController(SKAController):
             message = "LoadFirmware command completed OK"
             return (ResultCode.OK, message)
 
-        def is_allowed(self, raise_if_disallowed=False):
-            """
-            Check if the command is in the proper state to be executed.
-
-            The controller device has to be in op state OFF and admin
-            mode MAINTENACE to process the LoadFirmware command.
-
-            :param raise_if_disallowed: whether to raise an error or
-                simply return False if the command is disallowed
-
-            :raises CommandError: if command not allowed
-            :return: ``True`` if the command is allowed.
-            :rtype: boolean
-            """
-            allowed = (
-                self.state_model.op_state == tango.DevState.OFF
-                and self._admin_mode_model.admin_mode == AdminMode.MAINTENANCE
-            )
-            if allowed:
-                return True
-            if raise_if_disallowed:
-                raise CommandError(
-                    f"{self.name} not allowed in {self.state_model.op_state}"
-                    f"/{self._admin_mode_model.admin_mode.name}"
-                )
-            return False
-
-    class PowerOnDevicesCommand(StateModelCommand, ResponseCommand):
+    class PowerOnDevicesCommand(FastCommand):
         """A class for the CspSubElementController's PowerOnDevices command."""
 
-        def __init__(self, target, op_state_model, *args, logger=None, **kwargs):
+        def __init__(self, logger=None):
             """Initialise a new `PowerOnDevicesCommand``` instance."""
-            super().__init__(
-                target, op_state_model, None, *args, logger=logger, **kwargs
-            )
+            super().__init__(logger=logger)
 
         def do(self, argin):
             """
@@ -510,36 +452,12 @@ class CspSubElementController(SKAController):
             message = "PowerOnDevices command completed OK"
             return (ResultCode.OK, message)
 
-        def is_allowed(self, raise_if_disallowed=False):
-            """
-            Check if the command is in the proper state to be executed.
-
-            The controller device has to be in ON to process the
-            PowerOnDevices command.
-
-            :param raise_if_disallowed: whether to raise an error or
-                simply return False if the command is disallowed
-
-            :raises CommandError: if command not allowed
-            :return: ``True`` if the command is allowed.
-            :rtype: boolean
-            """
-            if self.state_model.op_state == tango.DevState.ON:
-                return True
-            if raise_if_disallowed:
-                raise CommandError(
-                    f"{self.name} not allowed in {self.state_model.op_state}"
-                )
-            return False
-
-    class PowerOffDevicesCommand(StateModelCommand, ResponseCommand):
+    class PowerOffDevicesCommand(FastCommand):
         """A class for the CspSubElementController's PowerOffDevices command."""
 
-        def __init__(self, target, op_state_model, *args, logger=None, **kwargs):
+        def __init__(self, logger=None):
             """Initialise a new ``PowerOffDevicesCommand`` instance."""
-            super().__init__(
-                target, op_state_model, None, *args, logger=logger, **kwargs
-            )
+            super().__init__(logger=logger)
 
         def do(self, argin):
             """
@@ -555,36 +473,12 @@ class CspSubElementController(SKAController):
             message = "PowerOffDevices command completed OK"
             return (ResultCode.OK, message)
 
-        def is_allowed(self, raise_if_disallowed=False):
-            """
-            Check if the command is in the proper state to be executed.
-
-            The controller device has to be in ON to process the
-            PowerOffDevices command.
-
-            :param raise_if_disallowed: whether to raise an error or
-                simply return False if the command is disallowed
-
-            :raises CommandError: if command not allowed
-            :return: ``True`` if the command is allowed.
-            :rtype: boolean
-            """
-            if self.state_model.op_state == tango.DevState.ON:
-                return True
-            if raise_if_disallowed:
-                raise CommandError(
-                    f"{self.name} not allowed in {self.state_model.op_state}"
-                )
-            return False
-
-    class ReInitDevicesCommand(StateModelCommand, ResponseCommand):
+    class ReInitDevicesCommand(FastCommand):
         """A class for the CspSubElementController's ReInitDevices command."""
 
-        def __init__(self, target, op_state_model, *args, logger=None, **kwargs):
+        def __init__(self, logger=None):
             """Initialise a new ``ReInitDevicesCommand`` instance."""
-            super().__init__(
-                target, op_state_model, None, *args, logger=logger, **kwargs
-            )
+            super().__init__(logger=logger)
 
         def do(self, argin):
             """
@@ -600,28 +494,6 @@ class CspSubElementController(SKAController):
             message = "ReInitDevices command completed OK"
             return (ResultCode.OK, message)
 
-        def is_allowed(self, raise_if_disallowed=False):
-            """
-            Check if the command is in the proper state to be executed.
-
-            The controller device has to be in ON to process the
-            ReInitDevices command.
-
-            :param raise_if_disallowed: whether to raise an error or
-                simply return False if the command is disallowed
-
-            :raises CommandError: if command not allowed
-            :return: ``True`` if the command is allowed.
-            :rtype: boolean
-            """
-            if self.state_model.op_state == tango.DevState.ON:
-                return True
-            if raise_if_disallowed:
-                raise CommandError(
-                    f"{self.name} not allowed in {self.state_model.op_state}."
-                )
-            return True
-
     def is_LoadFirmware_allowed(self):
         """
         Check if the LoadFirmware command is allowed in the current state.
@@ -629,8 +501,10 @@ class CspSubElementController(SKAController):
         :return: ``True`` if command is allowed
         :rtype: boolean
         """
-        command = self.get_command_object("LoadFirmware")
-        return command.is_allowed(True)
+        return (
+            self.get_state() == tango.DevState.OFF
+            and self.admin_mode_model.admin_mode == AdminMode.MAINTENANCE
+        )
 
     @command(
         dtype_in="DevVarStringArray",
@@ -660,9 +534,9 @@ class CspSubElementController(SKAController):
             information purpose only.
         :rtype: (ResultCode, str)
         """
-        command = self.get_command_object("LoadFirmware")
-        (return_code, message) = command(argin)
-        return [[return_code], [message]]
+        handler = self.get_command_object("LoadFirmware")
+        (result_code, message) = handler(argin)
+        return [[result_code], [message]]
         # PROTECTED REGION END #    //  CspSubElementController.LoadFirmware
 
     def is_PowerOnDevices_allowed(self):
@@ -672,8 +546,7 @@ class CspSubElementController(SKAController):
         :return: ``True`` if command is allowed
         :rtype: boolean
         """
-        command = self.get_command_object("PowerOnDevices")
-        return command.is_allowed(True)
+        return self.get_state() == tango.DevState.ON
 
     @command(
         dtype_in="DevVarStringArray",
@@ -695,9 +568,9 @@ class CspSubElementController(SKAController):
             information purpose only.
         :rtype: (ResultCode, str)
         """
-        command = self.get_command_object("PowerOnDevices")
-        (return_code, message) = command(argin)
-        return [[return_code], [message]]
+        handler = self.get_command_object("PowerOnDevices")
+        (result_code, message) = handler(argin)
+        return [[result_code], [message]]
         # PROTECTED REGION END #    //  CspSubElementController.PowerOnDevices
 
     def is_PowerOffDevices_allowed(self):
@@ -707,8 +580,7 @@ class CspSubElementController(SKAController):
         :return: ``True`` if command is allowed
         :rtype: boolean
         """
-        command = self.get_command_object("PowerOffDevices")
-        return command.is_allowed(True)
+        return self.get_state() == tango.DevState.ON
 
     @command(
         dtype_in="DevVarStringArray",
@@ -730,9 +602,9 @@ class CspSubElementController(SKAController):
             information purpose only.
         :rtype: (ResultCode, str)
         """
-        command = self.get_command_object("PowerOffDevices")
-        (return_code, message) = command(argin)
-        return [[return_code], [message]]
+        handler = self.get_command_object("PowerOffDevices")
+        (result_code, message) = handler(argin)
+        return [[result_code], [message]]
 
         # PROTECTED REGION END #    //  CspSubElementController.PowerOffDevices
 
@@ -743,8 +615,7 @@ class CspSubElementController(SKAController):
         :return: ``True`` if command is allowed
         :rtype: boolean
         """
-        command = self.get_command_object("ReInitDevices")
-        return command.is_allowed(True)
+        return self.get_state() == tango.DevState.ON
 
     @command(
         dtype_in="DevVarStringArray",
@@ -774,9 +645,9 @@ class CspSubElementController(SKAController):
             information purpose only.
         :rtype: (ResultCode, str)
         """
-        command = self.get_command_object("ReInitDevices")
-        (return_code, message) = command(argin)
-        return [[return_code], [message]]
+        handler = self.get_command_object("ReInitDevices")
+        (result_code, message) = handler(argin)
+        return [[result_code], [message]]
         # PROTECTED REGION END #    //  CspSubElementController.ReInitDevices
 
 

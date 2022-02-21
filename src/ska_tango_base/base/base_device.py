@@ -13,13 +13,19 @@ device.
 """
 # PROTECTED REGION ID(SKABaseDevice.additionnal_import) ENABLED START #
 # Standard imports
+from __future__ import annotations
+
 import enum
 import inspect
+import itertools
+import json
 import logging
 import logging.handlers
+import queue
 import socket
 import sys
 import threading
+import traceback
 import typing
 import warnings
 
@@ -35,30 +41,36 @@ from tango.server import run, Device, attribute, command, device_property
 import debugpy
 import ska_ser_logging
 from ska_tango_base import release
-from ska_tango_base.base import AdminModeModel, OpStateModel, BaseComponentManager
+from ska_tango_base.base import AdminModeModel, OpStateModel
 from ska_tango_base.commands import (
-    BaseCommand,
-    CompletionCommand,
-    StateModelCommand,
-    ResponseCommand,
+    FastCommand,
+    DeviceInitCommand,
     ResultCode,
+    SlowCommand,
+    SubmittedSlowCommand,
 )
 from ska_tango_base.control_model import (
     AdminMode,
+    CommunicationStatus,
     ControlMode,
+    PowerState,
     SimulationMode,
     TestMode,
     HealthState,
     LoggingLevel,
 )
-
-from ska_tango_base.utils import get_groups_from_json
+from ska_tango_base.executor import TaskStatus
+from ska_tango_base.utils import get_groups_from_json, generate_command_id
 from ska_tango_base.faults import (
     GroupDefinitionsError,
     LoggingTargetError,
     LoggingLevelError,
 )
-from ska_tango_base.base.task_queue_manager import MAX_WORKER_COUNT, MAX_QUEUE_SIZE
+
+
+MAX_REPORTED_CONCURRENT_COMMANDS = 16
+MAX_REPORTED_QUEUED_COMMANDS = 64
+
 
 LOG_FILE_SIZE = 1024 * 1024  # Log file size 1MB.
 _DEBUGGER_PORT = 5678
@@ -375,33 +387,163 @@ class LoggingUtils:
 __all__ = ["SKABaseDevice", "main"]
 
 
+class _CommandTracker:
+    """A class for keeping track of the state and progress of commands."""
+
+    def __init__(
+        self,
+        queue_changed_callback,
+        status_changed_callback,
+        progress_changed_callback,
+        result_callback,
+        exception_callback=None,
+        removal_time=10.0,
+    ):
+        """Initialise a new instance."""
+        self.__lock = threading.RLock()
+        self._queue_changed_callback = queue_changed_callback
+        self._status_changed_callback = status_changed_callback
+        self._progress_changed_callback = progress_changed_callback
+        self._result_callback = result_callback
+        self._most_recent_result = None
+        self._exception_callback = exception_callback
+        self._most_recent_exception = None
+        self._commands = {}
+        self._removal_time = removal_time
+
+    def new_command(self, command_name, completed_callback=None):
+        command_id = generate_command_id(command_name)
+
+        self._commands[command_id] = {
+            "name": command_name,
+            "status": TaskStatus.STAGING,
+            "progress": None,
+            "completed_callback": completed_callback,
+        }
+        self._queue_changed_callback(self.commands_in_queue)
+        return command_id
+
+    def _schedule_removal(self, command_id):
+        def remove(command_id):
+            del self._commands[command_id]
+            self._queue_changed_callback(self.commands_in_queue)
+
+        threading.Timer(self._removal_time, remove, (command_id,)).start()
+
+    def update_command_info(
+        self,
+        command_id,
+        status=None,
+        progress=None,
+        result=None,
+        exception=None,
+    ):
+        with self.__lock:
+            if exception is not None:
+                self._most_recent_exception = (command_id, exception)
+                if self._exception_callback is not None:
+                    self._exception_callback(command_id, exception)
+            if result is not None:
+                self._most_recent_result = (command_id, result)
+                self._result_callback(command_id, result)
+            if progress is not None:
+                self._commands[command_id]["progress"] = progress
+                self._progress_changed_callback(self.command_progresses)
+            if status is not None:
+                self._commands[command_id]["status"] = status
+                self._status_changed_callback(self.command_statuses)
+
+                if status == TaskStatus.COMPLETED:
+                    completed_callback = self._commands[command_id][
+                        "completed_callback"
+                    ]
+                    if completed_callback is not None:
+                        completed_callback()
+                if status in [
+                    TaskStatus.ABORTED,
+                    TaskStatus.COMPLETED,
+                    TaskStatus.FAILED,
+                ]:
+                    self._commands[command_id]["progress"] = None
+                    self._schedule_removal(command_id)
+
+    def _commands_by_keyword(self, keyword):
+        assert keyword in [
+            "name",
+            "status",
+            "progress",
+        ], f"Unsupported keyword {keyword} in _commands_by_keyword"
+        with self.__lock:
+            return list(
+                (command_id, self._commands[command_id][keyword])
+                for command_id in self._commands
+                if self._commands[command_id][keyword] is not None
+            )
+
+    @property
+    def commands_in_queue(self) -> list[str]:
+        """
+        Return a list of commands in the queue.
+
+        :return: a list of (command_id, command_name) tuples, ordered by
+            when invoked.
+        """
+        return self._commands_by_keyword("name")
+
+    @property
+    def command_statuses(self) -> list[tuple[str, TaskStatus]]:
+        """
+        Return a list of command statuses for commands in the queue.
+
+        :return: a list of (command_id, status) tuples, ordered by when
+            invoked.
+        """
+        return self._commands_by_keyword("status")
+
+    @property
+    def command_progresses(self) -> list[tuple[str, int]]:
+        """
+        Return a list of command progresses for commands in the queue.
+
+        :return: a list of (command_id, progress) tuples, ordered by
+            when invoked.
+        """
+        return self._commands_by_keyword("progress")
+
+    @property
+    def command_result(self):
+        """
+        Return the result of the most recently completed command.
+
+        :return: a (command_id, result) tuple. If no command has
+            completed yet, then None.
+        """
+        return self._most_recent_result
+
+    @property
+    def command_exception(self):
+        """
+        Return the most recent exception, if any.
+
+        :return: a (command_id, exception) tuple. If no command has
+            raised an uncaught exception, then None.
+        """
+        return self._most_recent_exception
+
+    def get_command_status(self, command_id):
+        if command_id in self._commands:
+            return self._commands[command_id]["status"]
+        return TaskStatus.NOT_FOUND
+
+
 class SKABaseDevice(Device):
     """A generic base device for SKA."""
 
     _global_debugger_listening = False
     _global_debugger_allocated_port = 0
 
-    class InitCommand(ResponseCommand, CompletionCommand):
+    class InitCommand(DeviceInitCommand):
         """A class for the SKABaseDevice's init_device() "command"."""
-
-        def __init__(self, target, op_state_model, logger=None):
-            """
-            Create a new InitCommand.
-
-            :param target: the object that this command acts upon; for
-                example, the SKABaseDevice device for which this class
-                implements the command
-            :type target: object
-            :param op_state_model: the state model that this command
-                 uses to check that it is allowed to run, and that it
-                 drives with actions.
-            :type op_state_model: :py:class:`OpStateModel`
-            :param logger: the logger to be used by this Command. If not
-                provided, then a default module logger will be used.
-            :type logger: a logger that implements the standard library
-                logger interface
-            """
-            super().__init__(target, op_state_model, "init", logger=logger)
 
         def do(self):
             """
@@ -412,53 +554,9 @@ class SKABaseDevice(Device):
                 information purpose only.
             :rtype: (ResultCode, str)
             """
-            device = self.target
-
-            device.set_change_event("adminMode", True, True)
-            device.set_archive_event("adminMode", True, True)
-            device.set_change_event("state", True, True)
-            device.set_archive_event("state", True, True)
-            device.set_change_event("status", True, True)
-            device.set_archive_event("status", True, True)
-
-            device.set_change_event("longRunningCommandsInQueue", True, True)
-            device.set_archive_event("longRunningCommandsInQueue", True, True)
-            device.set_change_event("longRunningCommandIDsInQueue", True, True)
-            device.set_archive_event("longRunningCommandIDsInQueue", True, True)
-            device.set_change_event("longRunningCommandStatus", True, True)
-            device.set_archive_event("longRunningCommandStatus", True, True)
-            device.set_change_event("longRunningCommandProgress", True, True)
-            device.set_archive_event("longRunningCommandProgress", True, True)
-            device.set_change_event("longRunningCommandResult", True, True)
-            device.set_archive_event("longRunningCommandResult", True, True)
-
-            device._health_state = HealthState.OK
-            device._control_mode = ControlMode.REMOTE
-            device._simulation_mode = SimulationMode.FALSE
-            device._test_mode = TestMode.NONE
-
-            device._build_state = "{}, {}, {}".format(
-                release.name, release.version, release.description
-            )
-            device._version_id = release.version
-            device._methods_patched_for_debugger = False
-
-            try:
-                # create Tango Groups dict, according to property
-                self.logger.debug(
-                    "Groups definitions: {}".format(device.GroupDefinitions)
-                )
-                device.groups = get_groups_from_json(device.GroupDefinitions)
-                self.logger.info(
-                    "Groups loaded: {}".format(sorted(device.groups.keys()))
-                )
-            except GroupDefinitionsError:
-                self.logger.debug(
-                    "No Groups loaded for device: {}".format(device.get_name())
-                )
-
             message = "SKABaseDevice Init command completed OK"
             self.logger.info(message)
+            self._completed()
             return (ResultCode.OK, message)
 
     _logging_config_lock = threading.Lock()
@@ -691,7 +789,7 @@ class SKABaseDevice(Device):
 
     longRunningCommandsInQueue = attribute(
         dtype=("str",),
-        max_dim_x=MAX_QUEUE_SIZE,
+        max_dim_x=MAX_REPORTED_QUEUED_COMMANDS,
         access=AttrWriteType.READ,
         doc="Keep track of which commands are in the queue. \n"
         "Pop off from front as they complete.",
@@ -700,7 +798,7 @@ class SKABaseDevice(Device):
 
     longRunningCommandIDsInQueue = attribute(
         dtype=("str",),
-        max_dim_x=MAX_QUEUE_SIZE,
+        max_dim_x=MAX_REPORTED_QUEUED_COMMANDS,
         access=AttrWriteType.READ,
         doc="Every client that executes a command will receive a command ID as response. \n"
         "Keep track of IDs in the queue. Pop off from front as they complete.",
@@ -709,7 +807,7 @@ class SKABaseDevice(Device):
 
     longRunningCommandStatus = attribute(
         dtype=("str",),
-        max_dim_x=MAX_WORKER_COUNT * 2,  # 2 per thread
+        max_dim_x=MAX_REPORTED_CONCURRENT_COMMANDS * 2,  # 2 per command
         access=AttrWriteType.READ,
         doc="ID, status pair of the currently executing command. \n"
         "Clients can subscribe to on_change event and wait for the ID they are interested in.",
@@ -718,7 +816,7 @@ class SKABaseDevice(Device):
 
     longRunningCommandProgress = attribute(
         dtype=("str",),
-        max_dim_x=MAX_WORKER_COUNT * 2,  # 2 per thread
+        max_dim_x=MAX_REPORTED_CONCURRENT_COMMANDS * 2,  # 2 per command
         access=AttrWriteType.READ,
         doc="ID, progress of the currently executing command. \n"
         "Clients can subscribe to on_change event and wait for the ID they are interested in..",
@@ -727,32 +825,17 @@ class SKABaseDevice(Device):
 
     longRunningCommandResult = attribute(
         dtype=("str",),
-        max_dim_x=3,  # Always the last result (unique_id, result_code, task_result)
+        max_dim_x=2,  # Always the last result (unique_id, JSON-encoded result)
         access=AttrWriteType.READ,
-        doc="unique_id, result_code, task_result. \n"
+        doc="unique_id, json-encoded result. \n"
         "Clients can subscribe to on_change event and wait for the ID they are interested in.",
     )
     """Device attribute for long running commands."""
 
-    # ---------------
-    # General methods
-    # ---------------
-
-    def _update_admin_mode(self, admin_mode):
-        """
-        Perform Tango operations in response to a change in admin mode.
-
-        This helper method is passed to the admin mode model as a
-        callback, so that the model can trigger actions in the Tango
-        device.
-
-        :param admin_mode: the new admin_mode value
-        :type admin_mode: :py:class:`~ska_tango_base.control_model.AdminMode`
-        """
-        self.push_change_event("adminMode", admin_mode)
-        self.push_archive_event("adminMode", admin_mode)
-
-    def _update_state(self, state):
+    # ---------
+    # Callbacks
+    # ---------
+    def _update_state(self, state, status=None):
         """
         Perform Tango operations in response to a change in op state.
 
@@ -763,33 +846,103 @@ class SKABaseDevice(Device):
         :param state: the new state value
         :type state: :py:class:`tango.DevState`
         """
-        if state != self.get_state():
-            self.logger.info(f"Device state changed from {self.get_state()} to {state}")
-            self.set_state(state)
-            self.set_status(f"The device is in {state} state.")
-
-    def set_state(self, state):
-        """
-        Set the device state, ensuring that change events are pushed.
-
-        :param state: the new state
-        :type state: :py:class:`tango.DevState`
-        """
-        super().set_state(state)
+        self.set_state(state)
         self.push_change_event("state")
         self.push_archive_event("state")
-
-    def set_status(self, status):
-        """
-        Set the device status, ensuring that change events are pushed.
-
-        :param status: the new status
-        :type status: str
-        """
-        super().set_status(status)
+        self.set_status(status or f"The device is in {state} state.")
         self.push_change_event("status")
         self.push_archive_event("status")
 
+    def _update_admin_mode(self, admin_mode):
+        self._admin_mode = admin_mode
+        self.push_change_event("adminMode", self._admin_mode)
+        self.push_archive_event("adminMode", self._admin_mode)
+
+    def _update_health_state(self, health_state):
+        self._health_state = health_state
+        self.push_change_event("healthState", self._health_state)
+        self.push_archive_event("healthState", self._health_state)
+
+    def _update_commands_in_queue(self, commands_in_queue):
+        if commands_in_queue:
+            command_ids, command_names = zip(*commands_in_queue)
+            self._command_ids_in_queue = [
+                str(command_id) for command_id in command_ids
+            ][:MAX_REPORTED_QUEUED_COMMANDS]
+            self._commands_in_queue = [
+                str(command_name) for command_name in command_names
+            ][:MAX_REPORTED_QUEUED_COMMANDS]
+        else:
+            self._command_ids_in_queue = []
+            self._commands_in_queue = []
+        self.push_change_event("longRunningCommandsInQueue", self._commands_in_queue)
+        self.push_archive_event("longRunningCommandsInQueue", self._commands_in_queue)
+        self.push_change_event(
+            "longRunningCommandIDsInQueue", self._command_ids_in_queue
+        )
+        self.push_archive_event(
+            "longRunningCommandIDsInQueue", self._command_ids_in_queue
+        )
+
+    def _update_command_statuses(self, command_statuses):
+        statuses = [(uid, status.name) for (uid, status) in command_statuses]
+        self._command_statuses = [
+            str(item) for item in itertools.chain.from_iterable(statuses)
+        ][: (MAX_REPORTED_CONCURRENT_COMMANDS * 2)]
+        self.push_change_event("longRunningCommandStatus", self._command_statuses)
+        self.push_archive_event("longRunningCommandStatus", self._command_statuses)
+
+    def _update_command_progresses(self, command_progresses):
+        self._command_progresses = [
+            str(item) for item in itertools.chain.from_iterable(command_progresses)
+        ][: (MAX_REPORTED_CONCURRENT_COMMANDS * 2)]
+        self.push_change_event("longRunningCommandProgress", self._command_progresses)
+        self.push_archive_event("longRunningCommandProgress", self._command_progresses)
+
+    def _update_command_result(self, command_id, command_result):
+        self._command_result = (command_id, json.dumps(command_result))
+        self.push_change_event("longRunningCommandResult", self._command_result)
+        self.push_archive_event("longRunningCommandResult", self._command_result)
+
+    def _update_command_exception(self, command_id, command_exception):
+        self.logger.error(
+            f"Command '{command_id}' raised exception {command_exception}"
+        )
+        self._command_result = (command_id, str(command_exception))
+        self.push_change_event("longRunningCommandResult", self._command_result)
+        self.push_archive_event("longRunningCommandResult", self._command_result)
+
+    def _communication_state_changed(self, communication_state):
+        action_map = {
+            CommunicationStatus.DISABLED: "component_disconnected",
+            CommunicationStatus.NOT_ESTABLISHED: "component_unknown",
+            CommunicationStatus.ESTABLISHED: None,  # wait for a component state update
+        }
+        action = action_map[communication_state]
+        if action is not None:
+            self.op_state_model.perform_action(action)
+
+    def _component_state_changed(self, fault=None, power=None):
+        if power is not None:
+            action_map = {
+                PowerState.UNKNOWN: None,
+                PowerState.OFF: "component_off",
+                PowerState.STANDBY: "component_standby",
+                PowerState.ON: "component_on",
+            }
+            action = action_map[power]
+            if action is not None:
+                self.op_state_model.perform_action(action_map[power])
+
+        if fault is not None:
+            if fault:
+                self.op_state_model.perform_action("component_fault")
+            else:
+                self.op_state_model.perform_action("component_no_fault")
+
+    # ---------------
+    # General methods
+    # ---------------
     def init_device(self):
         """
         Initialise the tango device after startup.
@@ -802,33 +955,99 @@ class SKABaseDevice(Device):
         try:
             super().init_device()
 
+            self._omni_queue = queue.Queue()
+
             self._init_logging()
+
+            self._admin_mode = AdminMode.OFFLINE
+            self._health_state = HealthState.UNKNOWN
+            self._control_mode = ControlMode.REMOTE
+            self._simulation_mode = SimulationMode.FALSE
+            self._test_mode = TestMode.NONE
+
+            self._command_ids_in_queue = []
+            self._commands_in_queue = []
+            self._command_statuses = []
+            self._command_progresses = []
+            self._command_result = ("", "")
+
+            self._build_state = "{}, {}, {}".format(
+                release.name, release.version, release.description
+            )
+            self._version_id = release.version
+            self._methods_patched_for_debugger = False
+
+            for attribute_name in [
+                "state",
+                "status",
+                "adminMode",
+                "healthState",
+                "controlMode",
+                "simulationMode",
+                "testMode",
+                "longRunningCommandsInQueue",
+                "longRunningCommandIDsInQueue",
+                "longRunningCommandStatus",
+                "longRunningCommandProgress",
+                "longRunningCommandResult",
+            ]:
+                self.set_change_event(attribute_name, True)
+                self.set_archive_event(attribute_name, True)
+
+            try:
+                # create Tango Groups dict, according to property
+                self.logger.debug(
+                    "Groups definitions: {}".format(self.GroupDefinitions)
+                )
+                self.groups = get_groups_from_json(self.GroupDefinitions)
+                self.logger.info("Groups loaded: {}".format(sorted(self.groups.keys())))
+            except GroupDefinitionsError:
+                self.logger.debug(
+                    "No Groups loaded for device: {}".format(self.get_name())
+                )
+
             self._init_state_model()
+
             self.component_manager = self.create_component_manager()
-            self.InitCommand(self, self.op_state_model, self.logger)()
+            self.op_state_model.perform_action("init_invoked")
+            self.InitCommand(
+                self,
+                logger=self.logger,
+            )()
+
             self.init_command_objects()
         except Exception as exc:
-            self.set_state(DevState.FAULT)
-            self.set_status("The device is in FAULT state - init_device failed.")
             if hasattr(self, "logger"):
                 self.logger.exception("init_device() failed.")
             else:
+                traceback.print_exc()
                 print(f"ERROR: init_device failed, and no logger: {exc}.")
+            self._update_state(
+                DevState.FAULT, "The device is in FAULT state - init_device failed."
+            )
 
     def _init_state_model(self):
         """Initialise the state model for the device."""
+        self._command_tracker = _CommandTracker(
+            queue_changed_callback=self._update_commands_in_queue,
+            status_changed_callback=self._update_command_statuses,
+            progress_changed_callback=self._update_command_progresses,
+            result_callback=self._update_command_result,
+        )
         self.op_state_model = OpStateModel(
             logger=self.logger,
             callback=self._update_state,
         )
         self.admin_mode_model = AdminModeModel(
-            logger=self.logger,
-            callback=self._update_admin_mode,
+            logger=self.logger, callback=self._update_admin_mode
         )
 
     def create_component_manager(self):
         """Create and return a component manager for this device."""
-        return BaseComponentManager(self.op_state_model)
+        raise NotImplementedError(
+            "SKABaseDevice is abstract; implement 'create_component_manager` method in "
+            "a subclass."
+        )
 
     def register_command_object(self, command_name, command_object):
         """
@@ -860,26 +1079,36 @@ class SKABaseDevice(Device):
         """Register command objects (handlers) for this device's commands."""
         self._command_objects = {}
 
-        component_args = (self.component_manager, self.op_state_model, self.logger)
-        lrc_args = (self.component_manager, self.logger)
-        self.register_command_object("Standby", self.StandbyCommand(*component_args))
-        self.register_command_object("Off", self.OffCommand(*component_args))
-        self.register_command_object("On", self.OnCommand(*component_args))
-        self.register_command_object("Reset", self.ResetCommand(*component_args))
+        for (command_name, method_name) in [
+            ("Off", "off"),
+            ("Standby", "standby"),
+            ("On", "on"),
+            ("Reset", "reset"),
+        ]:
+            self.register_command_object(
+                command_name,
+                SubmittedSlowCommand(
+                    command_name,
+                    self._command_tracker,
+                    self.component_manager,
+                    method_name,
+                    logger=None,
+                ),
+            )
+
         self.register_command_object(
-            "AbortCommands", self.AbortCommandsCommand(*lrc_args)
+            "AbortCommands",
+            self.AbortCommandsCommand(self.component_manager, self.logger),
         )
         self.register_command_object(
             "CheckLongRunningCommandStatus",
-            self.CheckLongRunningCommandStatusCommand(*lrc_args),
-        )
-
-        device_args = (self, self.op_state_model, self.logger)
-        self.register_command_object(
-            "GetVersionInfo", self.GetVersionInfoCommand(*device_args)
+            self.CheckLongRunningCommandStatusCommand(
+                self._command_tracker, self.logger
+            ),
         )
         self.register_command_object(
-            "DebugDevice", self.DebugDeviceCommand(*device_args)
+            "DebugDevice",
+            self.DebugDeviceCommand(self, logger=self.logger),
         )
 
     def always_executed_hook(self):
@@ -1013,7 +1242,7 @@ class SKABaseDevice(Device):
         :return: Admin Mode of the device
         :rtype: AdminMode
         """
-        return self.admin_mode_model.admin_mode
+        return self._admin_mode
         # PROTECTED REGION END #    //  SKABaseDevice.adminMode_read
 
     def write_adminMode(self, value):
@@ -1030,16 +1259,13 @@ class SKABaseDevice(Device):
             self.admin_mode_model.perform_action("to_notfitted")
         elif value == AdminMode.OFFLINE:
             self.admin_mode_model.perform_action("to_offline")
-            if self.component_manager.is_communicating:
-                self.component_manager.stop_communicating()
+            self.component_manager.stop_communicating()
         elif value == AdminMode.MAINTENANCE:
             self.admin_mode_model.perform_action("to_maintenance")
-            if not self.component_manager.is_communicating:
-                self.component_manager.start_communicating()
+            self.component_manager.start_communicating()
         elif value == AdminMode.ONLINE:
             self.admin_mode_model.perform_action("to_online")
-            if not self.component_manager.is_communicating:
-                self.component_manager.start_communicating()
+            self.component_manager.start_communicating()
         elif value == AdminMode.RESERVED:
             self.admin_mode_model.perform_action("to_reserved")
         else:
@@ -1113,7 +1339,7 @@ class SKABaseDevice(Device):
 
         :return: tasks in the queue
         """
-        return self.component_manager.tasks_in_queue
+        return self._commands_in_queue
 
     def read_longRunningCommandIDsInQueue(self):
         # PROTECTED REGION ID(SKABaseDevice.longRunningCommandIDsInQueue_read) ENABLED START #
@@ -1122,7 +1348,7 @@ class SKABaseDevice(Device):
 
         :return: unique ids for the enqueued commands
         """
-        return self.component_manager.task_ids_in_queue
+        return self._command_ids_in_queue
 
     def read_longRunningCommandStatus(self):
         # PROTECTED REGION ID(SKABaseDevice.longRunningCommandStatus_read) ENABLED START #
@@ -1131,7 +1357,7 @@ class SKABaseDevice(Device):
 
         :return: ID, status pairs of the currently executing commands
         """
-        return self.component_manager.task_status
+        return self._command_statuses
 
     def read_longRunningCommandProgress(self):
         # PROTECTED REGION ID(SKABaseDevice.longRunningCommandProgress_read) ENABLED START #
@@ -1140,7 +1366,7 @@ class SKABaseDevice(Device):
 
         :return: ID, progress of the currently executing command.
         """
-        return self.component_manager.task_progress
+        return self._command_progresses
 
     def read_longRunningCommandResult(self):
         # PROTECTED REGION ID(SKABaseDevice.longRunningCommandResult_read) ENABLED START #
@@ -1149,30 +1375,14 @@ class SKABaseDevice(Device):
 
         :return: ID, ResultCode, result.
         """
-        return self.component_manager.task_result
+        return self._command_result
 
     # --------
     # Commands
     # --------
-
-    class GetVersionInfoCommand(BaseCommand):
-        """A class for the SKABaseDevice's GetVersionInfo() command."""
-
-        def do(self):
-            """
-            Stateless hook for device GetVersionInfo() command.
-
-            :return: A tuple containing a return code and a string
-                message indicating status. The message is for
-                information purpose only.
-            :rtype: (ResultCode, str)
-            """
-            device = self.target
-            return [f"{device.__class__.__name__}, {device.read_buildState()}"]
-
     @command(
-        dtype_out="DevVarLongStringArray",
-        doc_out="(ResultCode, 'Command unique ID')",
+        dtype_out=("str",),
+        doc_out="Version strings",
     )
     @DebugIt()
     def GetVersionInfo(self):
@@ -1185,44 +1395,18 @@ class SKABaseDevice(Device):
 
         :return: The result code and the command unique ID
         """
-        handler = self.get_command_object("GetVersionInfo")
-        unique_id, result_code = self.component_manager.enqueue(handler)
-        return [[result_code], [unique_id]]
+        return [f"{self.__class__.__name__}, {self.read_buildState()}"]
         # PROTECTED REGION END #    //  SKABaseDevice.GetVersionInfo
 
-    class ResetCommand(StateModelCommand, ResponseCommand):
-        """A class for the SKABaseDevice's Reset() command."""
+    def is_Reset_allowed(self):
+        """
+        Return whether the `Reset` command may be called in the current device state.
 
-        def __init__(self, target, op_state_model, logger=None):
-            """
-            Create a new ResetCommand.
-
-            :param target: the object that this command acts upon; for
-                example, the device's component manager
-            :type target: object
-            :param op_state_model: the state model that this command
-                uses to check that it is allowed to run, and that it
-                drives with actions.
-            :type op_state_model: :py:class:`OpStateModel`
-            :param logger: the logger to be used by this Command. If not
-                provided, then a default module logger will be used.
-            :type logger: a logger that implements the standard library
-                logger interface
-            """
-            super().__init__(target, op_state_model, "reset", logger=logger)
-
-        def do(self):
-            """
-            Stateless hook for device reset.
-
-            :return: A tuple containing a return code and a string
-                message indicating status. The message is for
-                information purpose only.
-            :rtype: (ResultCode, str)
-            """
-            result_code, message = self.target.reset()
-            self.logger.info(message)
-            return (result_code, message)
+        :return: whether the command may be called in the current device
+            state
+        :rtype: bool
+        """
+        return self.get_state() == DevState.FAULT
 
     @command(
         dtype_out="DevVarLongStringArray",
@@ -1242,48 +1426,25 @@ class SKABaseDevice(Device):
         :rtype: (ResultCode, str)
         """
         handler = self.get_command_object("Reset")
-        unique_id, return_code = self.component_manager.enqueue(handler)
+        result_code, unique_id = handler()
+        return [[result_code], [unique_id]]
 
-        return [[return_code], [unique_id]]
+    def is_Standby_allowed(self):
+        """
+        Return whether the `Standby` command may be called in the current device state.
 
-    class StandbyCommand(StateModelCommand, ResponseCommand):
-        """A class for the SKABaseDevice's Standby() command."""
+        :return: whether the command may be called in the current device
+            state
+        :rtype: bool
+        """
+        return self.get_state() in [
+            DevState.OFF,
+            DevState.STANDBY,
+            DevState.ON,
+            DevState.UNKNOWN,
+        ]
 
-        def __init__(self, target, op_state_model, logger=None):
-            """
-            Initialise a new StandbyCommand instance.
-
-            :param target: the object that this command acts upon; for
-                example, the device's component manager
-            :type target: object
-            :param op_state_model: the state model that this command uses
-                 to check that it is allowed to run, and that it drives
-                 with actions.
-            :type op_state_model: :py:class:`OpStateModel`
-            :param logger: the logger to be used by this Command. If not
-                provided, then a default module logger will be used.
-            :type logger: a logger that implements the standard library
-                logger interface
-            """
-            super().__init__(target, op_state_model, "standby", logger=logger)
-
-        def do(self):
-            """
-            Stateless hook for Standby() command functionality.
-
-            :return: A tuple containing a return code and a string
-                message indicating status. The message is for
-                information purpose only.
-            :rtype: (ResultCode, str)
-            """
-            result_code, message = self.target.standby()
-            self.logger.info(message)
-            return (result_code, message)
-
-    @command(
-        dtype_out="DevVarLongStringArray",
-        doc_out="(ReturnType, 'informational message')",
-    )
+    @command(dtype_out="DevVarLongStringArray")
     @DebugIt()
     def Standby(self):
         """
@@ -1297,44 +1458,27 @@ class SKABaseDevice(Device):
             information purpose only.
         :rtype: (ResultCode, str)
         """
+        if self.get_state() == DevState.STANDBY:
+            return [[ResultCode.REJECTED], ["Device is already in STANDBY state."]]
+
         handler = self.get_command_object("Standby")
-        unique_id, return_code = self.component_manager.enqueue(handler)
+        result_code, unique_id = handler()
+        return [[result_code], [unique_id]]
 
-        return [[return_code], [unique_id]]
+    def is_Off_allowed(self):
+        """
+        Return whether the `Off` command may be called in the current device state.
 
-    class OffCommand(StateModelCommand, ResponseCommand):
-        """A class for the SKABaseDevice's Off() command."""
-
-        def __init__(self, target, op_state_model, logger=None):
-            """
-            Initialise a new OffCommand instance.
-
-            :param target: the object that this command acts upon; for
-                example, the device's component manager
-            :type target: object
-            :param op_state_model: the state model that this command uses
-                 to check that it is allowed to run, and that it drives
-                 with actions.
-            :type op_state_model: :py:class:`OpStateModel`
-            :param logger: the logger to be used by this Command. If not
-                provided, then a default module logger will be used.
-            :type logger: a logger that implements the standard library
-                logger interface
-            """
-            super().__init__(target, op_state_model, "off", logger=logger)
-
-        def do(self):
-            """
-            Stateless hook for Off() command functionality.
-
-            :return: A tuple containing a return code and a string
-                message indicating status. The message is for
-                information purpose only.
-            :rtype: (ResultCode, str)
-            """
-            result_code, message = self.target.off()
-            self.logger.info(message)
-            return (result_code, message)
+        :return: whether the command may be called in the current device
+            state
+        :rtype: bool
+        """
+        return self.get_state() in [
+            DevState.OFF,
+            DevState.STANDBY,
+            DevState.ON,
+            DevState.UNKNOWN,
+        ]
 
     @command(
         dtype_out="DevVarLongStringArray",
@@ -1353,44 +1497,28 @@ class SKABaseDevice(Device):
             information purpose only.
         :rtype: (ResultCode, str)
         """
+        if self.get_state() == DevState.OFF:
+            return [[ResultCode.REJECTED], ["Device is already in OFF state."]]
+
         handler = self.get_command_object("Off")
-        unique_id, return_code = self.component_manager.enqueue(handler)
+        result_code, unique_id = handler()
 
-        return [[return_code], [unique_id]]
+        return [[result_code], [unique_id]]
 
-    class OnCommand(StateModelCommand, ResponseCommand):
-        """A class for the SKABaseDevice's On() command."""
+    def is_On_allowed(self):
+        """
+        Return whether the `On` command may be called in the current device state.
 
-        def __init__(self, target, op_state_model, logger=None):
-            """
-            Initialise a new OnCommand instance.
-
-            :param target: the object that this command acts upon; for
-                example, the device's component manager
-            :type target: object
-            :param op_state_model: the state model that this command uses
-                 to check that it is allowed to run, and that it drives
-                 with actions.
-            :type op_state_model: :py:class:`OpStateModel`
-            :param logger: the logger to be used by this Command. If not
-                provided, then a default module logger will be used.
-            :type logger: a logger that implements the standard library
-                logger interface
-            """
-            super().__init__(target, op_state_model, "on", logger=logger)
-
-        def do(self):
-            """
-            Stateless hook for On() command functionality.
-
-            :return: A tuple containing a return code and a string
-                message indicating status. The message is for
-                information purpose only.
-            :rtype: (ResultCode, str)
-            """
-            result_code, message = self.target.on()
-            self.logger.info(message)
-            return (result_code, message)
+        :return: whether the command may be called in the current device
+            state
+        :rtype: bool
+        """
+        return self.get_state() in [
+            DevState.OFF,
+            DevState.STANDBY,
+            DevState.ON,
+            DevState.UNKNOWN,
+        ]
 
     @command(
         dtype_out="DevVarLongStringArray",
@@ -1409,12 +1537,14 @@ class SKABaseDevice(Device):
             information purpose only.
         :rtype: (ResultCode, str)
         """
+        if self.get_state() == DevState.ON:
+            return [[ResultCode.REJECTED], ["Device is already in ON state."]]
+
         handler = self.get_command_object("On")
-        unique_id, return_code = self.component_manager.enqueue(handler)
+        result_code, unique_id = handler()
+        return [[result_code], [unique_id]]
 
-        return [[return_code], [unique_id]]
-
-    class AbortCommandsCommand(ResponseCommand):
+    class AbortCommandsCommand(SlowCommand):
         """The command class for the AbortCommand command."""
 
         def __init__(self, component_manager, logger=None):
@@ -1429,7 +1559,8 @@ class SKABaseDevice(Device):
             :type logger: a logger that implements the standard library
                 logger interface
             """
-            super().__init__(target=component_manager, logger=logger)
+            self._component_manager = component_manager
+            super().__init__(None, logger=logger)
 
         def do(self):
             """
@@ -1438,8 +1569,8 @@ class SKABaseDevice(Device):
             Abort the currently executing LRC and remove all enqueued
             LRCs.
             """
-            self.target.abort_tasks()
-            return (ResultCode.OK, "Aborting")
+            self._component_manager.abort_tasks()
+            return (ResultCode.STARTED, "Aborting commands")
 
     @command(
         dtype_out="DevVarLongStringArray",
@@ -1451,22 +1582,20 @@ class SKABaseDevice(Device):
         (return_code, message) = handler()
         return [[return_code], [message]]
 
-    class CheckLongRunningCommandStatusCommand(ResponseCommand):
+    class CheckLongRunningCommandStatusCommand(FastCommand):
         """The command class for the CheckLongRunningCommandStatus command."""
 
-        def __init__(self, component_manager, logger=None):
+        def __init__(self, command_tracker, logger=None):
             """
             Initialise a new CheckLongRunningCommandStatusCommand instance.
 
-            :param component_manager: contains the queue manager which
-                manages the worker thread and the LRC attributes
-            :type component_manager: object
             :param logger: the logger to be used by this Command. If not
                 provided, then a default module logger will be used.
             :type logger: a logger that implements the standard library
                 logger interface
             """
-            super().__init__(target=component_manager, logger=logger)
+            self._command_tracker = command_tracker
+            super().__init__(logger=logger)
 
         def do(self, argin):
             """
@@ -1478,26 +1607,35 @@ class SKABaseDevice(Device):
 
             :param argin: The command ID
             :type argin: str
-            :return: The resultcode for this command and the string of the TaskState
+            :return: The resultcode for this command and the string of the TaskStatus
             :rtype: tuple
                 (ResultCode.OK, str)
             """
-            result = self.target.get_task_state(argin)
-            return (ResultCode.OK, f"{result}")
+            command_id = argin
+            return self._command_tracker.get_command_status(command_id)
 
     @command(
         dtype_in=str,
-        dtype_out="DevVarLongStringArray",
+        dtype_out=str,
     )
     @DebugIt()
     def CheckLongRunningCommandStatus(self, argin):
         """Check the status of a long running command by ID."""
         handler = self.get_command_object("CheckLongRunningCommandStatus")
-        (return_code, command_state) = handler(argin)
-        return [[return_code], [command_state]]
+        return handler(argin)
 
-    class DebugDeviceCommand(BaseCommand):
+    class DebugDeviceCommand(FastCommand):
         """A class for the SKABaseDevice's DebugDevice() command."""
+
+        def __init__(self, device, logger=None):
+            """
+            Initialise a new instance.
+
+            :param device: the device to which this command belongs.
+            :param logger: a logger for this command to use.
+            """
+            self._device = device
+            super().__init__(logger)
 
         def do(self):
             """
@@ -1517,10 +1655,9 @@ class SKABaseDevice(Device):
                 allocated_port = self.start_debugger_and_get_port(_DEBUGGER_PORT)
                 SKABaseDevice._global_debugger_listening = True
                 SKABaseDevice._global_debugger_allocated_port = allocated_port
-            device = self.target
-            if not device._methods_patched_for_debugger:
+            if not self._device._methods_patched_for_debugger:
                 self.monkey_patch_all_methods_for_debugger()
-                device._methods_patched_for_debugger = True
+                self._device._methods_patched_for_debugger = True
             else:
                 self.logger.warning("Triggering debugger breakpoint...")
                 debugpy.breakpoint()
@@ -1551,10 +1688,9 @@ class SKABaseDevice(Device):
         def get_all_methods(self):
             """Return a list of the device's methods."""
             methods = []
-            device = self.target
-            for name, method in inspect.getmembers(device, inspect.ismethod):
-                methods.append((device, name, method))
-            for command_object in device._command_objects.values():
+            for name, method in inspect.getmembers(self._device, inspect.ismethod):
+                methods.append((self._device, name, method))
+            for command_object in self._device._command_objects.values():
                 for name, method in inspect.getmembers(
                     command_object, inspect.ismethod
                 ):
@@ -1609,6 +1745,40 @@ class SKABaseDevice(Device):
         """
         command = self.get_command_object("DebugDevice")
         return command()
+
+    def set_state(self, state):
+        self._omni_queue.put(("set", "state", state))
+
+    def set_status(self, status):
+        self._omni_queue.put(("set", "status", status))
+
+    def push_change_event(self, name, value=None):
+        self._omni_queue.put(("change", name, value))
+
+    def push_archive_event(self, name, value=None):
+        self._omni_queue.put(("archive", name, value))
+
+    @command(polling_period=100)
+    def PushChanges(self):
+        while not self._omni_queue.empty():
+            (event_type, name, value) = self._omni_queue.get_nowait()
+            if event_type == "set":
+                if name == "state":
+                    super().set_state(value)
+                elif name == "status":
+                    super().set_status(value)
+                else:
+                    assert False
+            elif event_type == "change":
+                if name.lower() in ["state", "status"]:
+                    super().push_change_event(name)
+                else:
+                    super().push_change_event(name, value)
+            elif event_type == "archive":
+                if name.lower() in ["state", "status"]:
+                    super().push_archive_event(name)
+                else:
+                    super().push_archive_event(name, value)
 
 
 # ----------

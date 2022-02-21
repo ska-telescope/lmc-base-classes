@@ -10,8 +10,9 @@
 
 # Imports
 import re
-import pytest
+import time
 
+import pytest
 from tango import DevState, DevFailed
 from tango.test_context import MultiDeviceTestContext
 
@@ -566,6 +567,7 @@ def test_multiple_devices_in_same_process(mocker):
     )
 
     with MultiDeviceTestContext(devices_info, process=False) as context:
+        time.sleep(0.15)  # TODO: Allow time for PushChanges to run once
         proxy1 = context.get_device("test/se/1")
         proxy2 = context.get_device("test/control/1")
         assert proxy1.state() == DevState.DISABLE

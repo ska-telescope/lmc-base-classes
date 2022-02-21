@@ -248,8 +248,8 @@ class CspSubElementController(SKAController):
             self._device._total_output_rate_to_sdp = 0.0
 
             # initialise using defaults in device properties
-            self._device._power_delay_standy_on = self._device.PowerDelayStandbyOn
-            self._device._power_delay_standy_off = self._device.PowerDelayStandbyOff
+            self._device._power_delay_standby_on = self._device.PowerDelayStandbyOn
+            self._device._power_delay_standby_off = self._device.PowerDelayStandbyOff
 
             message = "CspSubElementController Init command completed OK"
             self._device.logger.info(message)
@@ -284,13 +284,13 @@ class CspSubElementController(SKAController):
     def read_powerDelayStandbyOn(self):
         # PROTECTED REGION ID(CspSubElementController.powerDelayStandbyOn_read) ENABLED START #
         """Return the powerDelayStandbyOn attribute."""
-        return self._power_delay_standy_on
+        return self._power_delay_standby_on
         # PROTECTED REGION END #    //  CspSubElementController.powerDelayStandbyOn_read
 
     def write_powerDelayStandbyOn(self, value):
         # PROTECTED REGION ID(CspSubElementController.powerDelayStandbyOn_write) ENABLED START #
         """Set the powerDelayStandbyOn attribute."""
-        self._power_delay_standy_on = value
+        self._power_delay_standby_on = value
         # PROTECTED REGION END #    //  CspSubElementController.powerDelayStandbyOn_write
 
     def read_onProgress(self):
@@ -374,13 +374,13 @@ class CspSubElementController(SKAController):
     def read_powerDelayStandbyOff(self):
         # PROTECTED REGION ID(CspSubElementController.powerDelayStandbyOff_read) ENABLED START #
         """Return the powerDelayStandbyOff attribute."""
-        return self._power_delay_standy_off
+        return self._power_delay_standby_off
         # PROTECTED REGION END #    //  CspSubElementController.powerDelayStandbyOff_read
 
     def write_powerDelayStandbyOff(self, value):
         # PROTECTED REGION ID(CspSubElementController.powerDelayStandbyOff_write) ENABLED START #
         """Set the powerDelayStandbyOff attribute."""
-        self._power_delay_standy_off = value
+        self._power_delay_standby_off = value
         # PROTECTED REGION END #    //  CspSubElementController.powerDelayStandbyOff_write
 
     def read_loadFirmwareProgress(self):

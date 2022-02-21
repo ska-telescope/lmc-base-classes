@@ -813,35 +813,20 @@ class TestSKABaseDevice(object):
 
         [[result_code], [command_id]] = device_under_test.On()
         assert result_code == ResultCode.QUEUED
+        command_status_callback.assert_next_change_event((command_id, "QUEUED"))
+        command_status_callback.assert_next_change_event((command_id, "IN_PROGRESS"))
 
-        command_status_callback.assert_change_event_sequence_sample(
-            [
-                (command_id, "QUEUED"),
-                (command_id, "IN_PROGRESS"),
-                (command_id, "COMPLETED"),
-            ]
-        )
+        command_progress_callback.assert_next_change_event((command_id, "33"))
+        command_progress_callback.assert_next_change_event((command_id, "66"))
 
-        command_progress_callback.assert_change_event_sequence_sample(
-            [
-                None,
-                (command_id, "33"),
-                (command_id, "66"),
-            ]
-        )
+        command_status_callback.assert_next_change_event((command_id, "COMPLETED"))
 
         device_state_callback.assert_next_change_event(DevState.ON)
         device_status_callback.assert_next_change_event("The device is in ON state.")
         assert device_under_test.state() == DevState.ON
 
-        command_result_callback.assert_change_event_sequence_sample(
-            [
-                ("", ""),
-                (
-                    command_id,
-                    json.dumps([int(ResultCode.OK), "On command completed OK"]),
-                ),
-            ]
+        command_result_callback.assert_next_change_event(
+            (command_id, json.dumps([int(ResultCode.OK), "On command completed OK"]))
         )
 
         # Check what happens if we call On() when the device is already ON.
@@ -891,21 +876,13 @@ class TestSKABaseDevice(object):
         [[result_code], [command_id]] = device_under_test.Standby()
         assert result_code == ResultCode.QUEUED
 
-        command_status_callback.assert_change_event_sequence_sample(
-            [
-                (command_id, "QUEUED"),
-                (command_id, "IN_PROGRESS"),
-                (command_id, "COMPLETED"),
-            ]
-        )
+        command_status_callback.assert_next_change_event((command_id, "QUEUED"))
+        command_status_callback.assert_next_change_event((command_id, "IN_PROGRESS"))
 
-        command_progress_callback.assert_change_event_sequence_sample(
-            [
-                None,
-                (command_id, "33"),
-                (command_id, "66"),
-            ]
-        )
+        command_progress_callback.assert_next_change_event((command_id, "33"))
+        command_progress_callback.assert_next_change_event((command_id, "66"))
+
+        command_status_callback.assert_next_change_event((command_id, "COMPLETED"))
 
         device_state_callback.assert_next_change_event(DevState.STANDBY)
         device_status_callback.assert_next_change_event(
@@ -913,14 +890,11 @@ class TestSKABaseDevice(object):
         )
         assert device_under_test.state() == DevState.STANDBY
 
-        command_result_callback.assert_change_event_sequence_sample(
-            [
-                ("", ""),
-                (
-                    command_id,
-                    json.dumps([int(ResultCode.OK), "Standby command completed OK"]),
-                ),
-            ]
+        command_result_callback.assert_next_change_event(
+            (
+                command_id,
+                json.dumps([int(ResultCode.OK), "Standby command completed OK"]),
+            )
         )
 
         # Check what happens if we call Standby() when the device is already STANDBY.
@@ -971,13 +945,11 @@ class TestSKABaseDevice(object):
         assert result_code == ResultCode.REJECTED
         assert message == "Device is already in OFF state."
 
-        # TODO: Why is the device pushing these again?
-        command_status_callback.assert_next_change_event(None)
-        command_progress_callback.assert_next_change_event(None)
-        command_result_callback.assert_next_change_event(("", ""))
-
         device_state_callback.assert_not_called()
         device_status_callback.assert_not_called()
+        command_progress_callback.assert_not_called()
+        command_status_callback.assert_not_called()
+        command_result_callback.assert_not_called()
 
     # PROTECTED REGION ID(SKABaseDevice.test_buildState_decorators) ENABLED START #
     # PROTECTED REGION END #    //  SKABaseDevice.test_buildState_decorators

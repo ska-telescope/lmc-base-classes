@@ -27,56 +27,60 @@ from .utils import LRCAttributesStore
 #       test/lowlevel/6
 
 
-devices_to_test = [
-    {
-        "class": ExampleMultiDevice,
-        "devices": [
-            {
-                "name": "test/toplevel/1",
-                "properties": {
-                    "client_devices": [
-                        "test/midlevel/1",
-                        "test/midlevel/2",
-                        "test/midlevel/3",
-                    ],
+@pytest.fixture(scope="module")
+def devices_to_test(request):
+    """Fixture for devices to test."""
+
+    return [
+        {
+            "class": ExampleMultiDevice,
+            "devices": [
+                {
+                    "name": "test/toplevel/1",
+                    "properties": {
+                        "client_devices": [
+                            "test/midlevel/1",
+                            "test/midlevel/2",
+                            "test/midlevel/3",
+                        ],
+                    },
                 },
-            },
-            {
-                "name": "test/midlevel/1",
-                "properties": {
-                    "client_devices": [
-                        "test/lowlevel/1",
-                        "test/lowlevel/2",
-                    ],
+                {
+                    "name": "test/midlevel/1",
+                    "properties": {
+                        "client_devices": [
+                            "test/lowlevel/1",
+                            "test/lowlevel/2",
+                        ],
+                    },
                 },
-            },
-            {
-                "name": "test/midlevel/2",
-                "properties": {
-                    "client_devices": [
-                        "test/lowlevel/3",
-                        "test/lowlevel/4",
-                    ],
+                {
+                    "name": "test/midlevel/2",
+                    "properties": {
+                        "client_devices": [
+                            "test/lowlevel/3",
+                            "test/lowlevel/4",
+                        ],
+                    },
                 },
-            },
-            {
-                "name": "test/midlevel/3",
-                "properties": {
-                    "client_devices": [
-                        "test/lowlevel/5",
-                        "test/lowlevel/6",
-                    ],
+                {
+                    "name": "test/midlevel/3",
+                    "properties": {
+                        "client_devices": [
+                            "test/lowlevel/5",
+                            "test/lowlevel/6",
+                        ],
+                    },
                 },
-            },
-            {"name": "test/lowlevel/1"},
-            {"name": "test/lowlevel/2"},
-            {"name": "test/lowlevel/3"},
-            {"name": "test/lowlevel/4"},
-            {"name": "test/lowlevel/5"},
-            {"name": "test/lowlevel/6"},
-        ],
-    },
-]
+                {"name": "test/lowlevel/1"},
+                {"name": "test/lowlevel/2"},
+                {"name": "test/lowlevel/3"},
+                {"name": "test/lowlevel/4"},
+                {"name": "test/lowlevel/5"},
+                {"name": "test/lowlevel/6"},
+            ],
+        },
+    ]
 
 
 @pytest.mark.forked

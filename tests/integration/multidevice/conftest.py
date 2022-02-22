@@ -9,7 +9,9 @@ from tango.test_context import MultiDeviceTestContext, get_host_ip
 @pytest.fixture(scope="module")
 def devices_to_test(request):
     """Fixture for devices to test."""
-    yield getattr(request.module, "devices_to_test")
+    raise NotImplementedError(
+        "You have to specify the devices to test by overriding the 'devices_to_test' fixture."
+    )
 
 
 @pytest.fixture(scope="function")

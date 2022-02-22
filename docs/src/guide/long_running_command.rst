@@ -2,11 +2,14 @@
 Long Running Commands
 =====================
 
-Some SKA commands interact with hardware systems that have some inherent delays
-in their responses. Such commands block concurrent access to TANGO devices and
-affect the overall performance (responsiveness) of the device to other requests.
-To address this, the base device has a worker thread/queue implementation for
-long running commands (LRCs) to allow concurrent access to TANGO devices.
+Many SKA device commands involve actions whose duration is inherently slow or unpredictable. 
+For example, a command might need to interact with hardware, other devices, or other external
+systems over a network; read to or write from a file system; or perform intensive computation.
+If a TANGO device blocks while such a command runs, then there is a period of time in which it
+cannot respond to other requests. Its overall performance declines, and timeouts may even occur.
+
+To address this, the base device provides long running commands (LRC) support, in the form of
+an interface and mechanism for running such commands asynchronously.
 
 .. note:: Long Running Command: A TANGO command for which the execution time
    is in the order of seconds (CS Guidelines recommends less than 10 ms).
@@ -92,8 +95,12 @@ Multiple Clients Invoke Multiple Long Running Commands
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 .. uml:: lrc_scenario.uml
 
-How to implement a long running command
----------------------------------------
+How to implement a long running command using the provided executor
+-------------------------------------------------------------------
+A task executor has been provisioned to handle the asynchronous execution of tasks
+put on the queue. Your sample component manager will be asynchronous if it inherits
+from the provisioned executor. You can also swap out the default executor with any
+asynchronous mechanism for your component manager.
 
 Create a component manager
 ^^^^^^^^^^^^^^^^^^^^^^^^^^

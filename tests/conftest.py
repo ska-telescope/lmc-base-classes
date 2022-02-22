@@ -3,11 +3,12 @@ from __future__ import annotations
 
 import collections
 import logging
+import socket
 import time
 
 import pytest
 import tango
-from tango.test_context import DeviceTestContext
+from tango.test_context import DeviceTestContext, MultiDeviceTestContext, get_host_ip
 
 from ska_tango_base.testing.mock import MockCallable, MockChangeEventCallback
 
@@ -120,3 +121,68 @@ def tango_change_event_helper(device_under_test, change_event_callbacks):
 def logger():
     """Fixture that returns a default logger for tests."""
     return logging.Logger("Test logger")
+
+
+@pytest.fixture(scope="module")
+def devices_to_test(request):
+    """Fixture for devices to test."""
+    raise NotImplementedError(
+        "You have to specify the devices to test by overriding the 'devices_to_test' fixture."
+    )
+
+
+@pytest.fixture(scope="function")
+def multi_device_tango_context(
+    mocker, devices_to_test  # pylint: disable=redefined-outer-name
+):
+    """
+    Create and return a TANGO MultiDeviceTestContext object.
+
+    tango.DeviceProxy patched to work around a name-resolving issue.
+    """
+
+    def _get_open_port():
+        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        s.bind(("", 0))
+        s.listen(1)
+        port = s.getsockname()[1]
+        s.close()
+        return port
+
+    HOST = get_host_ip()
+    PORT = _get_open_port()
+    _DeviceProxy = tango.DeviceProxy
+    mocker.patch(
+        "tango.DeviceProxy",
+        wraps=lambda fqdn, *args, **kwargs: _DeviceProxy(
+            "tango://{0}:{1}/{2}#dbase=no".format(HOST, PORT, fqdn), *args, **kwargs
+        ),
+    )
+    with MultiDeviceTestContext(
+        devices_to_test, host=HOST, port=PORT, process=True
+    ) as context:
+        yield context
+
+
+@pytest.fixture()
+def multi_tango_change_event_helper(multi_device_tango_context, change_event_callbacks):
+    """
+    Return a helper to simplify subscription to the multiple devices under test with a callback.
+
+    :param multi_device_tango_context: A MultiDeviceTestContext where several devices are defined
+    :param change_event_callbacks: dictionary of callbacks with
+        asynchrony support, specifically for receiving Tango device
+        change events.
+    """
+
+    class _TangoChangeEventHelper:
+        def subscribe(self, device_name, attribute_name):
+            device_under_test = multi_device_tango_context.get_device(device_name)
+            device_under_test.subscribe_event(
+                attribute_name,
+                tango.EventType.CHANGE_EVENT,
+                change_event_callbacks[attribute_name],
+            )
+            return change_event_callbacks[attribute_name]
+
+    return _TangoChangeEventHelper()

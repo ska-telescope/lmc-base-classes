@@ -26,6 +26,7 @@ The basic model is:
 from __future__ import annotations
 
 import functools
+import logging
 import threading
 from typing import Any, Callable, Optional, TypeVar, cast
 
@@ -86,7 +87,7 @@ def check_communicating(func: Wrapped) -> Wrapped:
     return cast(Wrapped, _wrapper)
 
 
-def check_on(func):
+def check_on(func: Wrapped):
     """
     Return a function that checks the component state then calls another function.
 
@@ -144,9 +145,9 @@ class BaseComponentManager:
 
     def __init__(
         self,
-        logger,
-        communication_state_callback,
-        component_state_callback,
+        logger: logging.Logger,
+        communication_state_callback: Callable[[CommunicationStatus]],
+        component_state_callback: Callable,
         **state,
     ):
         """
@@ -257,7 +258,7 @@ class BaseComponentManager:
             self._component_state_callback(**kwargs)
 
     @check_communicating
-    def off(self, task_callback):
+    def off(self, task_callback: Callable):
         """
         Turn the component off.
 
@@ -267,7 +268,7 @@ class BaseComponentManager:
         raise NotImplementedError("BaseComponentManager is abstract.")
 
     @check_communicating
-    def standby(self, task_callback):
+    def standby(self, task_callback: Callable):
         """
         Put the component into low-power standby mode.
 
@@ -277,7 +278,7 @@ class BaseComponentManager:
         raise NotImplementedError("BaseComponentManager is abstract.")
 
     @check_communicating
-    def on(self, task_callback):
+    def on(self, task_callback: Callable):
         """
         Turn the component on.
 
@@ -287,7 +288,7 @@ class BaseComponentManager:
         raise NotImplementedError("BaseComponentManager is abstract.")
 
     @check_communicating
-    def reset(self, task_callback):
+    def reset(self, task_callback: Callable):
         """
         Reset the component (from fault state).
 
@@ -316,7 +317,13 @@ class TaskExecutorComponentManager(BaseComponentManager):
         self._task_executor = TaskExecutor(max_workers)
         super().__init__(*args, **kwargs)
 
-    def submit_task(self, func, args=None, kwargs=None, task_callback=None):
+    def submit_task(
+        self,
+        func: Callable,
+        args=None,
+        kwargs=None,
+        task_callback: Optional[Callable] = None,
+    ):
         """
         Submit a task to the task executor.
 
@@ -330,7 +337,7 @@ class TaskExecutorComponentManager(BaseComponentManager):
             func, args, kwargs, task_callback=task_callback
         )
 
-    def abort_tasks(self, task_callback=None):
+    def abort_tasks(self, task_callback: Optional[Callable] = None):
         """
         Tell the task executor to abort all tasks.
 

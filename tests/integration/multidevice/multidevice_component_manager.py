@@ -61,17 +61,17 @@ class MultiDeviceComponentManager(TaskExecutorComponentManager):
         self.logger.info("NonAbortingTask finished")
         task_callback(status=TaskStatus.COMPLETED, result="non_aborting_lrc OK")
 
-    def non_aborting_lrc(self, argin: float, task_callback: Callable = None):
+    def non_aborting_lrc(self, sleep_time: float, task_callback: Callable = None):
         """Take a long time to complete.
 
-        :param argin: How long to sleep per iteration
-        :type argin: float
+        :param sleep_time: How long to sleep per iteration
+        :type sleep_time: float
         :param task_callback: Update task state, defaults to None
         :type task_callback: Callable, optional
         """
         task_status, response = self.submit_task(
             self._non_aborting_lrc,
-            args=[argin],
+            args=[sleep_time],
             task_callback=task_callback,
         )
         return task_status, response
@@ -92,34 +92,34 @@ class MultiDeviceComponentManager(TaskExecutorComponentManager):
         :type task_abort_event: Event, optional
         """
         retries = 45
-        self.logger.info("NonAbortingTask started")
+        self.logger.info("AbortingTask started")
         while (not task_abort_event.is_set()) and retries > 0:
             retries -= 1
             time.sleep(sleep_time)  # This command takes long
 
         if retries == 0:  # Normal finish
-            self.logger.info("NonAbortingTask finished normal")
+            self.logger.info("AbortingTask finished normal")
             task_callback(
                 status=TaskStatus.COMPLETED,
-                result=f"NonAbortingTask completed {sleep_time}",
+                result=f"AbortingTask completed {sleep_time}",
             )
         else:  # Aborted finish
-            self.logger.info("NonAbortingTask finished aborted")
+            self.logger.info("AbortingTask finished aborted")
             task_callback(
                 status=TaskStatus.ABORTED,
-                result=f"NonAbortingTask Aborted {sleep_time}",
+                result=f"AbortingTask Aborted {sleep_time}",
             )
 
-    def aborting_lrc(self, argin: float, task_callback: Callable = None):
+    def aborting_lrc(self, sleep_time: float, task_callback: Callable = None):
         """Abort a task in progress.
 
-        :param argin: How long to sleep per iteration
-        :type argin: int
+        :param sleep_time: How long to sleep per iteration
+        :type sleep_time: int
         :param task_callback: Update task state, defaults to None
         :type task_callback: Callable, optional
         """
         task_status, response = self.submit_task(
-            self._aborting_lrc, args=[argin], task_callback=task_callback
+            self._aborting_lrc, args=[sleep_time], task_callback=task_callback
         )
         return task_status, response
 
@@ -181,16 +181,18 @@ class MultiDeviceComponentManager(TaskExecutorComponentManager):
             time.sleep(sleep_time)
         task_callback(status=TaskStatus.COMPLETED, result="Progress completed")
 
-    def show_progress(self, argin, task_callback=None):
+    def show_progress(self, sleep_time, task_callback=None):
         """Illustrate progress.
 
-        :param argin: Time to sleep between each progress update
-        :type argin: float
+        :param sleep_time: Time to sleep between each progress update
+        :type sleep_time: float
         :param task_callback: Update task status
         :type task_callback: Callable
         """
         task_status, response = self.submit_task(
-            self._show_progress, args=[self.logger, argin], task_callback=task_callback
+            self._show_progress,
+            args=[self.logger, sleep_time],
+            task_callback=task_callback,
         )
         return task_status, response
 
@@ -250,27 +252,27 @@ class MultiDeviceComponentManager(TaskExecutorComponentManager):
             ),
         )
 
-    def call_children(self, argin: float, task_callback: Callable = None):
+    def call_children(self, sleep_time: float, task_callback: Callable = None):
         """Call child devices or sleep.
 
         If there are child devices, call them.
         If no children, sleep a bit to simulate some work.
 
-        :param argin: Time to sleep if this device does not have children.
-        :type argin: float
+        :param sleep_time: Time to sleep if this device does not have children.
+        :type sleep_time: float
         :param task_callback: Update task status
         :type task_callback: Callable
         """
         if self.client_devices:
             task_status, response = self.submit_task(
                 self._call_children,
-                args=[self.logger, argin],
+                args=[self.logger, sleep_time],
                 task_callback=task_callback,
             )
         else:
             task_status, response = self.submit_task(
                 self._simulate_work,
-                args=[self.logger, argin],
+                args=[self.logger, sleep_time],
                 task_callback=task_callback,
             )
 

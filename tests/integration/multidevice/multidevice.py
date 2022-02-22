@@ -8,7 +8,7 @@ from ska_tango_base.commands import FastCommand, ResultCode, SubmittedSlowComman
 from .multidevice_component_manager import MultiDeviceComponentManager
 
 
-class LongRunningCommandBaseTestDevice(SKABaseDevice):
+class ExampleMultiDevice(SKABaseDevice):
     """Implement commands to test queued work."""
 
     client_devices = device_property(dtype="DevVarStringArray")
@@ -29,7 +29,7 @@ class LongRunningCommandBaseTestDevice(SKABaseDevice):
 
         self.register_command_object(
             "Short",
-            self.ShortCommand(logger=self.logger),
+            self.AddTwoCommand(logger=self.logger),
         )
 
         self.register_command_object(
@@ -92,12 +92,12 @@ class LongRunningCommandBaseTestDevice(SKABaseDevice):
             ),
         )
 
-    class ShortCommand(FastCommand):
+    class AddTwoCommand(FastCommand):
         """The command class for the Short command."""
 
         def do(self, argin):
             """Do command."""
-            self.logger.info("In ShortCommand")
+            self.logger.info("In AddTwoCommand")
             result = argin + 2
             return ResultCode.OK, result
 

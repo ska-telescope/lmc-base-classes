@@ -5,7 +5,7 @@ from tango.test_context import DeviceTestContext
 
 from ska_tango_base.commands import ResultCode
 
-from .multidevice import LongRunningCommandBaseTestDevice
+from .multidevice import ExampleMultiDevice
 from .utils import LRCAttributesStore
 
 # Testing a chain of calls
@@ -29,7 +29,7 @@ from .utils import LRCAttributesStore
 
 devices_to_test = [
     {
-        "class": LongRunningCommandBaseTestDevice,
+        "class": ExampleMultiDevice,
         "devices": [
             {
                 "name": "test/toplevel/1",
@@ -82,9 +82,7 @@ devices_to_test = [
 @pytest.mark.forked
 def test_device():
     """Test our Multidevice."""
-    with DeviceTestContext(
-        LongRunningCommandBaseTestDevice, process=True
-    ) as top_device:
+    with DeviceTestContext(ExampleMultiDevice, process=True) as top_device:
 
         top_device_event_store = LRCAttributesStore()
         top_device.subscribe_event(
@@ -131,7 +129,7 @@ def test_device():
             "longRunningCommandResult", fetch_timeout=10
         )
         assert next_result[0].endswith("AbortingLongRunning")
-        assert next_result[1] == '"NonAbortingTask Aborted 0.1"'
+        assert next_result[1] == '"AbortingTask Aborted 0.1"'
 
         # LongRunningException
         result_code, command_id = top_device.LongRunningException()
@@ -148,9 +146,7 @@ def test_device():
 @pytest.mark.forked
 def test_progress():
     """Test the progress."""
-    with DeviceTestContext(
-        LongRunningCommandBaseTestDevice, process=True
-    ) as top_device:
+    with DeviceTestContext(ExampleMultiDevice, process=True) as top_device:
 
         top_device_event_store = LRCAttributesStore()
 

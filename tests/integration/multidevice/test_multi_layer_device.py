@@ -1,6 +1,5 @@
 """Test various Tango devices with long running commmands working together."""
 import pytest
-from tango import EventType
 
 from .multidevice import ExampleMultiDevice
 
@@ -26,7 +25,6 @@ from .multidevice import ExampleMultiDevice
 @pytest.fixture(scope="module")
 def devices_to_test(request):
     """Fixture for devices to test."""
-
     return [
         {
             "class": ExampleMultiDevice,
@@ -82,7 +80,6 @@ def devices_to_test(request):
 @pytest.mark.forked
 def test_multi_layer(multi_device_tango_context, multi_tango_change_event_helper):
     """Test the long running commands between devices."""
-
     top_device = multi_device_tango_context.get_device("test/toplevel/1")
 
     top_device_lrc_result_cb = multi_tango_change_event_helper.subscribe(

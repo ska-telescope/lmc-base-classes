@@ -1,6 +1,5 @@
 """Test various Tango devices with long running commmands working together."""
 import pytest
-from tango import EventType
 
 from ska_tango_base.commands import ResultCode
 
@@ -32,7 +31,6 @@ def device_test_config(device_properties):
 @pytest.mark.forked
 def test_device(device_under_test, tango_change_event_helper):
     """Test our Multidevice."""
-
     lrc_result_cb = tango_change_event_helper.subscribe("longRunningCommandResult")
     lrc_result_cb.get_next_change_event()
 
@@ -45,7 +43,6 @@ def test_device(device_under_test, tango_change_event_helper):
 @pytest.mark.forked
 def test_non_abort(device_under_test, tango_change_event_helper):
     """Test non abort."""
-
     lrc_result_cb = tango_change_event_helper.subscribe("longRunningCommandResult")
     lrc_result_cb.get_next_change_event()
 
@@ -62,7 +59,6 @@ def test_non_abort(device_under_test, tango_change_event_helper):
 @pytest.mark.forked
 def test_abort(device_under_test, tango_change_event_helper):
     """Test abort."""
-
     lrc_result_cb = tango_change_event_helper.subscribe("longRunningCommandResult")
     lrc_result_cb.get_next_change_event()
 
@@ -80,8 +76,7 @@ def test_abort(device_under_test, tango_change_event_helper):
 
 @pytest.mark.forked
 def test_exception(device_under_test, tango_change_event_helper):
-    """Test exception"""
-
+    """Test exception."""
     lrc_result_cb = tango_change_event_helper.subscribe("longRunningCommandResult")
     lrc_result_cb.get_next_change_event()
 
@@ -97,8 +92,7 @@ def test_exception(device_under_test, tango_change_event_helper):
 
 @pytest.mark.forked
 def test_progress(device_under_test, tango_change_event_helper):
-    """Test progress"""
-
+    """Test progress."""
     lrc_progress_cb = tango_change_event_helper.subscribe("longRunningCommandProgress")
     lrc_progress_cb.get_next_change_event()
 

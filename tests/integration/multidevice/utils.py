@@ -3,7 +3,6 @@ import logging
 import uuid
 from ast import List
 from dataclasses import dataclass
-from queue import Queue
 from typing import Any, Callable, Dict
 
 import tango

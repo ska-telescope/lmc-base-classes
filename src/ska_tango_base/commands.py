@@ -32,6 +32,8 @@ The following command classes are provided:
 import enum
 import functools
 import logging
+from typing import Callable, Optional, Type
+from ska_tango_base.base.component_manager import BaseComponentManager
 
 from ska_tango_base.executor import TaskStatus
 
@@ -90,7 +92,7 @@ class _BaseCommand:
     runs the command.
     """
 
-    def __init__(self, logger=None):
+    def __init__(self, logger: Optional[logging.Logger] = None):
         """
         Initialise a new BaseCommand instance.
 
@@ -160,7 +162,7 @@ class SlowCommand(_BaseCommand):
     throughput.
     """
 
-    def __init__(self, callback, logger=None):
+    def __init__(self, callback: Callable, logger: Optional[logging.Logger] = None):
         """
         Initialise a new BaseCommand instance.
 
@@ -249,12 +251,12 @@ class SubmittedSlowCommand(SlowCommand):
 
     def __init__(
         self,
-        command_name,
+        command_name: str,
         command_tracker,
-        component_manager,
-        method_name,
-        callback=None,
-        logger=None,
+        component_manager: Type[BaseComponentManager],
+        method_name: str,
+        callback: Optional[Callable] = None,
+        logger: Optional[logging.Logger] = None,
     ):
         """
         Initialise a new instance.

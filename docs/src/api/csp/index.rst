@@ -2,9 +2,6 @@
 CSP subpackage
 ==============
 
-.. automodule:: ska_tango_base.csp
-
-
 .. toctree::
   :caption: Subpackages
   :maxdepth: 2

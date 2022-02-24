@@ -2,55 +2,34 @@
 Long Running Commands
 =====================
 
-Some SKA commands interact with hardware systems that have some inherent delays
-in their responses. Such commands block concurrent access to TANGO devices and
-affect the overall performance (responsiveness) of the device to other requests.
-To address this, the base device has a worker thread/queue implementation for
-long running commands (LRCs) to allow concurrent access to TANGO devices.
+Many SKA device commands involve actions whose duration is inherently slow or unpredictable. 
+For example, a command might need to interact with hardware, other devices, or other external
+systems over a network; read to or write from a file system; or perform intensive computation.
+If a TANGO device blocks while such a command runs, then there is a period of time in which it
+cannot respond to other requests. Its overall performance declines, and timeouts may even occur.
+
+To address this, the base device provides long running commands (LRC) support, in the form of
+an interface and mechanism for running such commands asynchronously.
 
 .. note:: Long Running Command: A TANGO command for which the execution time
    is in the order of seconds (CS Guidelines recommends less than 10 ms).
    In this context it also means a command which is implemented to execute
-   asynchronously. Long running and asynchronous are used interchangeably in 
-   this text and the code base. In the event where the meaning differ it will
-   be explained but both mean non-blocking.
+   asynchronously. Long running, slow command and asynchronous command are used
+   interchangeably in this text and the code base. In the event where the meaning
+   differ it will be explained but all refer to non-blocking calls.
 
 This means that devices return immediately with a response while busy with the
 actual task in the background or parked on a queue pending the next available worker.
-The number of commands that can be enqueued depends on a configurable maximum queue 
-size of the device. Commands enqueued when the queue is full will be rejected.
-
 
 New attributes and commands have been added to the base device to support the
 mechanism to execute long running TANGO commands asynchronously.
-
-Reference Design for the Implementation of Long Running Commands
-----------------------------------------------------------------
-A message queue solution is the backbone to the implementation of the LRC design. The goal
-is to have a hybrid solution which will have the queue usage as an opt in. With the default option,
-note that the enqueued commands will block short running commands, reply to attribute reads and writes,
-process subscription requests until completed. That said, the SKABaseDevice meets the following 
-requirements for executing long running commands:
-
-* With no queue (default):
-    * start executing LRC if another LRC is not currently executing
-    * reject the LRC if another LRC is currently executing
-* With queue enabled:
-    * enqueue the LRC if the queue is not full
-    * reject the LRC if the queue is full
-    * execute the LRCs in the order which they have been enqueued (FIFO)
-* Interrupt LRCs:
-    * abort the execution of currently executing LRCs 
-    * flush enqueued LRCs
 
 Monitoring Progress of Long Running Commands
 --------------------------------------------
 In addition to the listed requirements above, the device should provide monitoring points
 to allow clients determine when a LRC is received, executing or completed (success or fail).
-LRCs can assume any of the following defined task states: QUEUED, IN_PROGRESS, ABORTED,
-COMPLETED, FAILED, NOT_ALLOWED. NOT_FOUND is returned for command IDs that are non-existent.
-
-.. uml:: lrc_command_state.uml
+LRCs can assume any of the following defined task states: STAGING, QUEUED, IN_PROGRESS, ABORTED,
+NOT_FOUND, COMPLETED, REJECTED, FAILED.
 
 A new set of attributes and commands have been added to the base device to enable
 monitoring and reporting of result, status and progress of LRCs.
@@ -106,9 +85,8 @@ Reset and GetVersionInfo.
 
 The device has change events configured for all the LRC attributes which clients can use to track
 their requests. **The client has the responsibility of subscribing to events to receive changes on
-command status and results**. To make monitoring easier, there's an interface (LongRunningDeviceInterface)
-which can be used to track attribute subscriptions and command IDs for a list of specified devices.
-More about this interface can be found in `utils <https://gitlab.com/ska-telescope/ska-tango-base/-/blob/main/src/ska_tango_base/utils.py#L566>`_.
+command status and results**.
+
 
 UML Illustration
 ----------------
@@ -117,67 +95,156 @@ Multiple Clients Invoke Multiple Long Running Commands
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 .. uml:: lrc_scenario.uml
 
-Implementing a TANGO Command as Long Running
---------------------------------------------
-The LRC update is a drop-in replacement of the current base device implementation.
-The base device provisions a QueueManager which has no threads and no queue. Existing device 
-implementations will execute commands in the same manner unless your component manager
-specifies otherwise. Summarised in a few points, you would do the following to implement
-TANGO commands as long running:
+How to implement a long running command using the provided executor
+-------------------------------------------------------------------
+A task executor has been provisioned to handle the asynchronous execution of tasks
+put on the queue. Your sample component manager will be asynchronous if it inherits
+from the provisioned executor. You can also swap out the default executor with any
+asynchronous mechanism for your component manager.
 
-1. Create a component manager with queue size and thread determined.
+Create a component manager
+^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-2. Create the command class for your tango command.
-
-3. Use the component manager to enqueue your command in the command class.
-
-Example Device Implementing Long Running Command
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 .. code-block:: py
 
-   class DeviceWithLongRunningCommands(SKABaseDevice):
-    ...
-    def create_component_manager(self):
+    class SampleComponentManager(TaskExecutorComponentManager):
+        """A sample component manager"""
 
-        return SampleComponentManager(
-            op_state_model=self.op_state_model,
-            logger=self.logger,
-            max_queue_size=20,
-            num_workers=3,
-            push_change_event=self.push_change_event,
+        def __init__(
+            self,
+            *args,
+            max_workers: Optional[int] = None,
+            logger: logging.Logger = None,
+            **kwargs,
+        ):
+            """Init SampleComponentManager."""
+            
+            # Set up your class
+
+            super().__init__(*args, max_workers=max_workers, logger=logger, **kwargs)
+
+Add a method that should be executed in a background thread
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. code-block:: py
+
+    # class SampleComponentManager
+
+        def _a_very_slow_method(
+            logger: logging.Logger,
+            task_callback: Callable = None,
+            task_abort_event: Event = None,
+        ):
+            """This is a long running method
+
+            :param logger: logger
+            :type logger: logging.Logger
+            :param task_callback: Update task state, defaults to None
+            :type task_callback: Callable, optional
+            :param task_abort_event: Check for abort, defaults to None
+            :type task_abort_event: Event, optional
+            """
+            # Indicate that the task has started
+            task_callback(status=TaskStatus.IN_PROGRESS)
+            for current_iteration in range(100):
+                # Update the task progress
+                task_callback(progress=current_iteration)
+                
+                # Do something
+                time.sleep(10)
+
+                # Periodically check that tasks have not been ABORTED
+                if task_abort_event.is_set():
+                    # Indicate that the task has been aborted
+                    task_callback(status=TaskStatus.ABORTED, result="This task aborted")
+                    return
+
+            # Indicate that the task has completed
+            task_callback(status=TaskStatus.COMPLETED, result="This slow task has completed")
+
+Add a method to submit the slow method
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. code-block:: py
+
+    # class SampleComponentManager
+
+        def submit_slow_method(self, task_callback: Callable = None):
+            """Submit the slow task. 
+
+            This method returns immediately after it submitted
+            `self._a_very_slow_method` for execution.
+
+            :param task_callback: Update task state, defaults to None
+            :type task_callback: Callable, optional
+            """
+            task_status, response = self.submit_task(
+                self._a_very_slow_method, args=[], task_callback=task_callback
+            )
+            return task_status, response
+
+
+Create the component manager in your Tango device
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. code-block:: py
+
+    class SampleDevice(SKABaseDevice):
+        """A sample Tango device"""
+
+        def create_component_manager(self):
+            """Create a component manager."""
+            return SampleComponentManager(
+                max_workers=2,
+                logger=self.logger,
+                communication_state_callback=self._communication_state_changed,
+                component_state_callback=self._component_state_changed,
+            )
+
+Init the command object
+^^^^^^^^^^^^^^^^^^^^^^^
+
+.. code-block:: py
+
+    # class SampleDevice(SKABaseDevice):
+
+        def init_command_objects(self):
+            """Initialise the command handlers."""
+            super().init_command_objects()
+
+            ...
+
+            self.register_command_object(
+                "VerySlow",
+                SubmittedSlowCommand(
+                    "VerySlow",
+                    self._command_tracker,
+                    self.component_manager,
+                    "submit_slow_method",
+                    callback=None,
+                    logger=self.logger,
+                ),
+            )
+
+Create the Tango Command
+^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. code-block:: py
+
+    # class SampleDevice(SKABaseDevice):
+
+        @command(
+            dtype_in=None,
+            dtype_out="DevVarStringArray",
         )
+        @DebugIt()
+        def VerySlow(self):
+            """A very slow command."""
+            handler = self.get_command_object("VerySlow")
+            (return_code, message) = handler()
+            return f"{return_code}", message
 
-.. note:: SampleComponentManager does not have access to the tango layer.
-   In order to send LRC attribute updates, provide a copy of the device's `push_change_event`
-   method to its constructor.
+Class diagram
+-------------
 
-then to enqueue your command:
-
-.. code-block:: py
-
-   class PerformLongTaskCommand(ResponseCommand):
-        """The command class for PerformLongTask command."""
-
-        def do(self):
-            """Download telescope data from the internet"""
-            download_tel_data()
-
-    @command(
-        dtype_in=None,
-        dtype_out="DevVarLongStringArray",
-    )
-    @DebugIt()
-    def PerformLongTask(self):
-        """Command that queues a task that downloads data
-        
-        :return: A tuple containing a return code and a string
-            message indicating status. The message is for
-            information purpose only.
-        :rtype: (ResultCode, str)
-        """
-        handler = self.get_command_object("PerformLongTask")
-
-        # Enqueue here
-        unique_id, result_code = self.component_manager.enqueue(handler)
-
-        return [[result_code], [unique_id]]
+.. uml:: lrc_class_diagram.uml

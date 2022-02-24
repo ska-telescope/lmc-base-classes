@@ -10,6 +10,7 @@ API
   Obs subpackage<obs/index>
   CSP subpackage<csp/index>
   Subarray subpackage<subarray/index>
+  Testing subpackage<testing/index>
 
 
 .. toctree::
@@ -32,4 +33,4 @@ API
   Faults<faults>
   Release<release>
   Utils<utils>
-  QueueManager<queue_manager>
+  Executor<executor>

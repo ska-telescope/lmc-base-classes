@@ -205,11 +205,10 @@ Writing a command class involves the following steps.
      classes in the :py:mod:`ska_tango_base.commands` module. 
 
      .. inheritance-diagram::
-        ska_tango_base.commands.BaseCommand
-        ska_tango_base.commands.StateModelCommand
-        ska_tango_base.commands.ResponseCommand
-        ska_tango_base.commands.CompletionCommand
-        ska_tango_base.commands.ObservationCommand
+        ska_tango_base.commands.FastCommand
+        ska_tango_base.commands.SlowCommand
+        ska_tango_base.commands.DeviceInitCommand
+        ska_tango_base.commands.SubmittedSlowCommand
         :parts: 1
 
 3. **Implement class methods.**

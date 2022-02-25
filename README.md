@@ -247,6 +247,11 @@ Tango devices can be launched with a `-v` parameter to set the logging level. Fo
 
 ## Version History
 
+#### 0.13.0
+- MCCS-876 Updated implementation of long running commands
+  - SAR-341 Updated docs
+  - SAR-351 Updated tests
+
 #### 0.12.1
 - SAR-303
   - Fixed PYPI URL

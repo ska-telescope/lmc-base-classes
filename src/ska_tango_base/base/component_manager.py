@@ -32,7 +32,7 @@ import threading
 from typing import Any, Callable, Optional, TypeVar, cast
 
 from ska_tango_base.control_model import CommunicationStatus, PowerState
-from ska_tango_base.executor import TaskExecutor
+from ska_tango_base.executor import TaskExecutor, TaskStatus
 from ska_tango_base.faults import ComponentError
 
 Wrapped = TypeVar("Wrapped", bound=Callable[..., Any])
@@ -91,7 +91,7 @@ def check_communicating(func: Wrapped) -> Wrapped:
     return cast(Wrapped, _wrapper)
 
 
-def check_on(func: Wrapped):
+def check_on(func: Wrapped) -> Wrapped:
     """
     Return a function that checks the component state then calls another function.
 
@@ -112,7 +112,7 @@ def check_on(func: Wrapped):
     """
 
     @functools.wraps(func)
-    def _wrapper(component, *args, **kwargs):
+    def _wrapper(component: Any, *args: Any, **kwargs: Any) -> Wrapped:
         """
         Check that the component is on and not faulty before calling the function.
 
@@ -123,13 +123,15 @@ def check_on(func: Wrapped):
         :param args: positional arguments to the wrapped function
         :param kwargs: keyword arguments to the wrapped function
 
+        :raises ComponentError: when not powered on
+
         :return: whatever the wrapped function returns
         """
         if component.power_state != PowerState.ON:
             raise ComponentError("Component is not powered ON")
         return func(component, *args, **kwargs)
 
-    return _wrapper
+    return cast(Wrapped, _wrapper)
 
 
 class BaseComponentManager:
@@ -148,20 +150,22 @@ class BaseComponentManager:
     """
 
     def __init__(
-        self,
+        self: BaseComponentManager,
         logger: logging.Logger,
-        communication_state_callback: Callable[[CommunicationStatus]],
+        communication_state_callback: Callable[[CommunicationStatus], None],
         component_state_callback: Callable,
-        **state,
-    ):
+        **state: Any,
+    ) -> None:
         """
         Initialise a new ComponentManager instance.
 
+        :param logger: the logger to be used by this manager
         :param communication_state_callback: callback to be called when
             the status of communications between the component manager
             and its component changes.
         :param component_state_callback: callback to be called when the
             monitored state of the component changes
+        :param state: key/value pairs
         """
         self.logger = logger
 
@@ -173,7 +177,7 @@ class BaseComponentManager:
         self._component_state = dict(state)
         self._component_state_callback = component_state_callback
 
-    def start_communicating(self):
+    def start_communicating(self: BaseComponentManager) -> None:
         """
         Establish communication with the component, then start monitoring.
 
@@ -184,10 +188,12 @@ class BaseComponentManager:
         * Subscribe to component events (if using "pull" model)
         * Start a polling loop to monitor the component (if using a
           "push" model)
+
+        :raises NotImplementedError: Not implemented it's an abstract class
         """
         raise NotImplementedError("BaseComponentManager is abstract.")
 
-    def stop_communicating(self):
+    def stop_communicating(self: BaseComponentManager) -> None:
         """
         Cease monitoring the component, and break off all communication with it.
 
@@ -196,6 +202,8 @@ class BaseComponentManager:
         * If you are communicating over a connection, disconnect.
         * If you have subscribed to events, unsubscribe.
         * If you are running a polling loop, stop it.
+
+        :raises NotImplementedError: Not implemented it's an abstract class
         """
         raise NotImplementedError("BaseComponentManager is abstract.")
 
@@ -225,7 +233,9 @@ class BaseComponentManager:
                 self._communication_state = communication_state
                 self._push_communication_state_update(communication_state)
 
-    def _push_communication_state_update(self, communication_state):
+    def _push_communication_state_update(
+        self: BaseComponentManager, communication_state: CommunicationStatus
+    ) -> None:
         if self._communication_state_callback is not None:
             self._communication_state_callback(communication_state)
 
@@ -240,12 +250,14 @@ class BaseComponentManager:
 
     def _update_component_state(
         self: BaseComponentManager,
-        **kwargs,
+        **kwargs: Any,
     ) -> None:
         """
         Handle a change in component state.
 
         This is a helper method for use by subclasses.
+
+        :param kwargs: key/values for state
         """
         callback_kwargs = {}
 
@@ -257,47 +269,64 @@ class BaseComponentManager:
             if callback_kwargs:
                 self._push_component_state_update(**callback_kwargs)
 
-    def _push_component_state_update(self, **kwargs):
+    def _push_component_state_update(self: BaseComponentManager, **kwargs: Any) -> None:
         if self._component_state_callback is not None:
             self._component_state_callback(**kwargs)
 
     @check_communicating
-    def off(self, task_callback: Callable):
+    def off(self: BaseComponentManager, task_callback: Callable) -> None:
         """
         Turn the component off.
 
         :param task_callback: callback to be called when the status of
             the command changes
+
+        :raises NotImplementedError: Not implemented it's an abstract class
         """
         raise NotImplementedError("BaseComponentManager is abstract.")
 
     @check_communicating
-    def standby(self, task_callback: Callable):
+    def standby(self: BaseComponentManager, task_callback: Callable) -> None:
         """
         Put the component into low-power standby mode.
 
         :param task_callback: callback to be called when the status of
             the command changes
+
+        :raises NotImplementedError: Not implemented it's an abstract class
         """
         raise NotImplementedError("BaseComponentManager is abstract.")
 
     @check_communicating
-    def on(self, task_callback: Callable):
+    def on(self: BaseComponentManager, task_callback: Callable) -> None:
         """
         Turn the component on.
 
         :param task_callback: callback to be called when the status of
             the command changes
+
+        :raises NotImplementedError: Not implemented it's an abstract class
         """
         raise NotImplementedError("BaseComponentManager is abstract.")
 
     @check_communicating
-    def reset(self, task_callback: Callable):
+    def reset(self: BaseComponentManager, task_callback: Callable) -> None:
         """
         Reset the component (from fault state).
 
         :param task_callback: callback to be called when the status of
             the command changes
+
+        :raises NotImplementedError: Not implemented it's an abstract class
+        """
+        raise NotImplementedError("BaseComponentManager is abstract.")
+
+    @check_communicating
+    def abort_tasks(self: BaseComponentManager) -> tuple[TaskStatus, str]:
+        """
+        Abort all tasks queued & running.
+
+        :raises NotImplementedError: Not implemented it's an abstract class
         """
         raise NotImplementedError("BaseComponentManager is abstract.")
 
@@ -306,11 +335,11 @@ class TaskExecutorComponentManager(BaseComponentManager):
     """A component manager with support for asynchronous tasking."""
 
     def __init__(
-        self,
-        *args,
+        self: TaskExecutorComponentManager,
+        *args: Any,
         max_workers: Optional[int] = None,
-        **kwargs,
-    ):
+        **kwargs: Any,
+    ) -> None:
         """
         Initialise a new ComponentManager instance.
 
@@ -322,12 +351,12 @@ class TaskExecutorComponentManager(BaseComponentManager):
         super().__init__(*args, **kwargs)
 
     def submit_task(
-        self,
+        self: TaskExecutorComponentManager,
         func: Callable,
-        args=None,
-        kwargs=None,
+        args: Optional[Any] = None,
+        kwargs: Optional[Any] = None,
         task_callback: Optional[Callable] = None,
-    ):
+    ) -> tuple[TaskStatus, str]:
         """
         Submit a task to the task executor.
 
@@ -336,16 +365,22 @@ class TaskExecutorComponentManager(BaseComponentManager):
         :param kwargs: keyword arguments to the function
         :param task_callback: callback to be called whenever the status
             of the task changes.
+
+        :return: tuple of taskstatus & message
         """
         return self._task_executor.submit(
             func, args, kwargs, task_callback=task_callback
         )
 
-    def abort_tasks(self, task_callback: Optional[Callable] = None):
+    def abort_tasks(
+        self: TaskExecutorComponentManager, task_callback: Optional[Callable] = None
+    ) -> tuple[TaskStatus, str]:
         """
         Tell the task executor to abort all tasks.
 
         :param task_callback: callback to be called whenever the status
             of this abort task changes.
+
+        :return: tuple of taskstatus & message
         """
         return self._task_executor.abort(task_callback)

@@ -6,6 +6,11 @@ state machine to manage device "obs state", represented by the
 :py:class:`ska_tango_base.control_model.ObsState` enum, and published by
 Tango devices via the ``obsState`` attribute.
 """
+from __future__ import annotations
+
+import logging
+from typing import Callable, Optional, cast
+
 from ska_tango_base.control_model import ObsState
 from ska_tango_base.faults import StateModelError
 from ska_tango_base.utils import for_testing_only
@@ -25,27 +30,23 @@ class ObsStateModel:
     """
 
     def __init__(
-        self,
-        state_machine_factory,
-        logger,
-        callback=None,
-    ):
+        self: ObsStateModel,
+        state_machine_factory: Callable,
+        logger: logging.Logger,
+        callback: Optional[Callable] = None,
+    ) -> None:
         """
         Initialise the model.
 
         :param state_machine_factory: a callable that returns a
             state machine for this model to use
-        :type state_machine_factory: callable
         :param logger: the logger to be used by this state model.
-        :type logger: a logger that implements the standard library
-            logger interface
         :param callback: A callback to be called when a state machine
             transitions state
-        :type callback: callable
         """
         self.logger = logger
 
-        self._obs_state = None
+        self._obs_state = cast(ObsState, None)
         self._callback = callback
 
         self._obs_state_machine = state_machine_factory(
@@ -53,16 +54,15 @@ class ObsStateModel:
         )
 
     @property
-    def obs_state(self):
+    def obs_state(self: ObsStateModel) -> ObsState:
         """
         Return the obs_state.
 
         :returns: obs_state of this state model
-        :rtype: ObsState
         """
         return self._obs_state
 
-    def _obs_state_changed(self, machine_state):
+    def _obs_state_changed(self: ObsStateModel, machine_state: str) -> None:
         """
         Handle notification that the observation state machine has changed state.
 
@@ -71,7 +71,6 @@ class ObsStateModel:
 
         :param machine_state: the new state of the observation state
             machine
-        :type machine_state: str
         """
         obs_state = ObsState[machine_state]
         if self._obs_state != obs_state:
@@ -79,23 +78,21 @@ class ObsStateModel:
             if self._callback is not None:
                 self._callback(obs_state)
 
-    def is_action_allowed(self, action, raise_if_disallowed=False):
+    def is_action_allowed(
+        self: ObsStateModel, action: str, raise_if_disallowed: bool = False
+    ) -> bool:
         """
         Return whether a given action is allowed in the current state.
 
         :param action: an action, as given in the transitions table
-        :type action: str
-
         :param raise_if_disallowed: whether to raise an exception if the
             action is disallowed, or merely return False (optional,
             defaults to False)
-        :type raise_if_disallowed: bool
 
         :raises StateModelError: if the action is unknown to the state
             machine
 
         :return: whether the action is allowed in the current state
-        :rtype: bool
         """
         if action in self._obs_state_machine.get_triggers(
             self._obs_state_machine.state
@@ -108,7 +105,7 @@ class ObsStateModel:
             )
         return False
 
-    def perform_action(self, action: str):
+    def perform_action(self: ObsStateModel, action: str) -> None:
         """
         Perform an action on the state model.
 
@@ -118,7 +115,7 @@ class ObsStateModel:
         self._obs_state_machine.trigger(action)
 
     @for_testing_only
-    def _straight_to_state(self, obs_state_name):
+    def _straight_to_state(self: ObsStateModel, obs_state_name: ObsState) -> None:
         """
         Take this model straight to the specified state.
 
@@ -141,7 +138,5 @@ class ObsStateModel:
             assert model.obs_state == ObsState.ABORTING
 
         :param obs_state_name: the target obs_state
-        :type obs_state_name:
-            :py:class:`~ska_tango_base.control_model.ObsState`
         """
         getattr(self._obs_state_machine, f"to_{obs_state_name}")()

@@ -195,8 +195,8 @@ class FakeBaseComponent:
         """
         Simulate a change in component power state.
 
-        This could occur as a result of the Off command, or because
-        of some external event/action.
+        This could occur as a result of the Off command, or because of
+        some external event/action.
         """
         self._update_state(power=power_state)
 

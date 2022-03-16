@@ -1,4 +1,9 @@
-# pylint: skip-file  # TODO: Incrementally lint this repo
+# -*- coding: utf-8 -*-
+#
+# This file is part of the SKA Tango Base project
+#
+# Distributed under the terms of the BSD 3-clause new license.
+# See LICENSE.txt for more info.
 """
 This module provides abstract base classes for device commands, and a ResultCode enum.
 
@@ -30,12 +35,18 @@ The following command classes are provided:
     assumes the current device structure: i.e. a command tracker, and a
     component manager with support for submitting tasks.
 """
+from __future__ import annotations
+
 import enum
 import functools
 import logging
-from typing import Callable, Optional, Type
+from typing import Any, Callable, Optional
+
+from tango.server import Device
 
 from ska_tango_base.base.component_manager import BaseComponentManager
+
+# from ska_tango_base.base.base_device import _CommandTracker
 from ska_tango_base.executor import TaskStatus
 
 module_logger = logging.getLogger(__name__)
@@ -93,36 +104,44 @@ class _BaseCommand:
     runs the command.
     """
 
-    def __init__(self, logger: Optional[logging.Logger] = None):
+    def __init__(self: _BaseCommand, logger: Optional[logging.Logger] = None) -> None:
         """
         Initialise a new BaseCommand instance.
 
         :param logger: the logger to be used by this Command. If not
             provided, then a default module logger will be used.
-        :type logger: a logger that implements the standard library
-            logger interface
         """
         self._name = self.__class__.__name__
         self.logger = logger or module_logger
 
-    def __call__(self, *args, **kwargs):
+    def __call__(self: _BaseCommand, *args: Any, **kwargs: Any) -> Any:
         """
         Invoke the command.
 
         This is implemented to simply call the do() hook, thus running
         the user-specified functionality therein.
+
+        :param args: positional args to the component manager method
+        :param kwargs: keyword args to the component manager method
+
+        :raises NotImplementedError: method does not exist
         """
         raise NotImplementedError(
             "_BaseCommand is abstract; __call__() needs to be implemented by a "
             "subclass; try FastCommand or SlowCommand instead."
         )
 
-    def do(self, *args, **kwargs):
+    def do(self: _BaseCommand, *args: Any, **kwargs: Any) -> Any:
         """
         Perform the user-specified functionality of the command.
 
         This class provides stub functionality; subclasses should
         subclass this method with their command functionality.
+
+        :param args: positional args to the component manager method
+        :param kwargs: keyword args to the component manager method
+
+        :raises NotImplementedError: method does not exist
         """
         raise NotImplementedError(
             "BaseCommand is abstract; do() needs to be implemented by a subclass."
@@ -137,12 +156,19 @@ class FastCommand(_BaseCommand):
     safely run synchronously.
     """
 
-    def __call__(self, *args, **kwargs):
+    def __call__(self: FastCommand, *args: Any, **kwargs: Any) -> Any:
         """
         Invoke the command.
 
         This is implemented to simply call the do() hook, thus running
         the user-specified functionality therein.
+
+        :param args: positional args to the component manager method
+        :param kwargs: keyword args to the component manager method
+
+        :raises Exception: method does not exist
+
+        :return: result of command
         """
         try:
             return self.do(*args, **kwargs)
@@ -164,8 +190,10 @@ class SlowCommand(_BaseCommand):
     """
 
     def __init__(
-        self, callback: Callable, logger: Optional[logging.Logger] = None
-    ):
+        self: SlowCommand,
+        callback: Optional[Callable],
+        logger: Optional[logging.Logger] = None,
+    ) -> None:
         """
         Initialise a new BaseCommand instance.
 
@@ -176,12 +204,19 @@ class SlowCommand(_BaseCommand):
         self._callback = callback
         super().__init__(logger=logger)
 
-    def __call__(self, *args, **kwargs):
+    def __call__(self: SlowCommand, *args: Any, **kwargs: Any) -> Any:
         """
         Invoke the command.
 
         This is implemented to simply call the do() hook, thus running
         the user-specified functionality therein.
+
+        :param args: positional args to the component manager method
+        :param kwargs: keyword args to the component manager method
+
+        :raises Exception: method does not exist
+
+        :return: result of command submission
         """
         self._invoked()
         try:
@@ -193,11 +228,11 @@ class SlowCommand(_BaseCommand):
             self._completed()
             raise
 
-    def _invoked(self):
+    def _invoked(self: SlowCommand) -> None:
         if self._callback is not None:
             self._callback(True)
 
-    def _completed(self):
+    def _completed(self: SlowCommand) -> None:
         if self._callback is not None:
             self._callback(False)
 
@@ -214,7 +249,9 @@ class DeviceInitCommand(SlowCommand):
     is correct.
     """
 
-    def __init__(self, device, logger=None):
+    def __init__(
+        self: DeviceInitCommand, device: Device, logger: Optional[logging.Logger] = None
+    ) -> None:
         """
         Initialise a new instance.
 
@@ -223,7 +260,7 @@ class DeviceInitCommand(SlowCommand):
         """
         self._device = device
 
-        def _callback(running):
+        def _callback(running: bool) -> None:
             if running:
                 device.op_state_model.perform_action("init_completed")
 
@@ -252,15 +289,16 @@ class SubmittedSlowCommand(SlowCommand):
     :param logger: a logger for this command to log with.
     """
 
-    def __init__(
-        self,
+    # TODO: resolve the _CommandTracker or leave as ignore
+    def __init__(  # type: ignore[no-untyped-def]
+        self: SubmittedSlowCommand,
         command_name: str,
-        command_tracker,
-        component_manager: Type[BaseComponentManager],
+        command_tracker,  # noqa: F821
+        component_manager: BaseComponentManager,
         method_name: str,
         callback: Optional[Callable] = None,
         logger: Optional[logging.Logger] = None,
-    ):
+    ) -> None:
         """
         Initialise a new instance.
 
@@ -281,7 +319,10 @@ class SubmittedSlowCommand(SlowCommand):
         self._method_name = method_name
         super().__init__(callback=callback, logger=logger)
 
-    def do(self, *args, **kwargs):
+    # TODO: resolve the return issue
+    def do(  # type: ignore[return]
+        self: SubmittedSlowCommand, *args: Any, **kwargs: Any
+    ) -> tuple[ResultCode, str]:
         """
         Stateless hook for command functionality.
 
@@ -292,7 +333,6 @@ class SubmittedSlowCommand(SlowCommand):
             REJECTED), and a string message containing a command_id (if
             the command has been accepted) or an informational message
             (if the command was rejected)
-        :rtype: (ResultCode, str)
         """
         command_id = self._command_tracker.new_command(
             self._command_name, completed_callback=self._completed

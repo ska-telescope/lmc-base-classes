@@ -11,6 +11,7 @@ https://confluence.skatelescope.org/pages/viewpage.action?pageId=105416556
 The enumerated types mapping to the states and modes are included here, as well as
 other useful enumerations.
 """
+from __future__ import annotations
 
 import enum
 

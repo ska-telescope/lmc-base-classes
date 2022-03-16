@@ -2,10 +2,6 @@
 FROM artefact.skao.int/ska-tango-images-pytango-builder:9.3.28 AS buildenv
 FROM artefact.skao.int/ska-tango-images-pytango-runtime:9.3.16 AS runtime
 
-FROM $BUILD_IMAGE AS buildenv 
-
-FROM $BASE_IMAGE
-
 # Install Poetry
 USER root 
 RUN curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/get-poetry.py | POETRY_HOME=/opt/poetry python -
@@ -21,4 +17,7 @@ RUN /opt/poetry/bin/poetry install --no-dev
 USER tango
 
 # create ipython profile too so that itango doesn't fail if ipython hasn't run yet
-#RUN ipython profile create
+RUN ipython profile create
+
+RUN python3 -m pip install -e . --user
+CMD ["SKABaseDevice"]

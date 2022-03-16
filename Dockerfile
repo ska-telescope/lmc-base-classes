@@ -17,7 +17,7 @@ RUN /opt/poetry/bin/poetry install --no-dev
 USER tango
 
 # create ipython profile too so that itango doesn't fail if ipython hasn't run yet
-RUN ipython profile create
+#RUN ipython profile create
 
 RUN python3 -m pip install -e . --user
 CMD ["SKABaseDevice"]

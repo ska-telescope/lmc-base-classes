@@ -13,6 +13,7 @@ url = 'https://artefact.skao.int/repository/pypi-internal/simple'
 [tool.poetry.dependencies]
 python = "^3.7"
 backoff = "^1.11.1"
+debugpy = "^1.5.1"
 future = "^0.18.2"
 jsonschema = "^3.2.0"
 numpy = "^1.19.2"

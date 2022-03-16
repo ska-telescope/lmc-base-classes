@@ -33,7 +33,6 @@ include .make/helm.mk
 include .make/python.mk
 include .make/raw.mk
 include .make/base.mk
-
 include .make/docs.mk
 
 # include your own private variables for custom deployment configuration
@@ -63,7 +62,6 @@ docs-pre-build:
 .PHONY: python-post-format python-post-lint
 
 
-<<<<<<< HEAD
 generate-diagrams-in-docker: ## Generate state machine diagrams using a container.
 	@docker run --rm -v $(PWD):/project $(IMAGE_FOR_DIAGRAMS) bash -c "cd /project && make generate-diagrams-in-docker-internals"
 
@@ -84,5 +82,3 @@ help:  ## show this help.
 	@grep -hE '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'
 
 .PHONY: test test-in-docker lint-in-docker help
-=======
->>>>>>> 347fafc (MCCS-934 typehint and static type check)

@@ -3,4 +3,4 @@ sphinx
 sphinx-autodoc-typehints
 sphinx-rtd-theme
 sphinxcontrib-plantuml
-
+typing_extensions

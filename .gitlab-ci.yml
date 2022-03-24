@@ -2,6 +2,7 @@
 # Docker, when used with GitLab CI, runs each job in a separate and isolated container using the predefined image that is set up in .gitlab-ci.yml.
 # In this case we use the latest python docker image to build and test this project.
 image: artefact.skao.int/ska-tango-images-pytango-builder:9.3.28
+#image: $SKA_K8S_TOOLS_DOCKER_BUILDER_IMAGE
 
 # cache is used to specify a list of files and directories which should be cached between jobs. You can only use paths that are within the project workspace.
 # If cache is defined outside the scope of jobs, it means it is set globally and all jobs will use that definition

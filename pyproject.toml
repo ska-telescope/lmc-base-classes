@@ -2,7 +2,7 @@
 name = "ska-tango-base"
 version = "0.13.0"
 description = "SKA Tango base classes"
-authors = ["MCCS & Karoo teams"]
+authors = ["SKA India and SARAO and CSIRO and INAF and STFC"]
 license = "BSD-Clause-3"
 documentation = "https://developer.skatelescope.org/projects/ska-tango-base"
 

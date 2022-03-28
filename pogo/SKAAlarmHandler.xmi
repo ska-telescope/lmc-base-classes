@@ -118,7 +118,7 @@
         <type xsi:type="pogoDsl:VoidType"/>
       </argin>
       <argout description="[ name: EltTelState ]">
-        <type xsi:type="pogoDsl:DevVarLongStringArray"/>
+        <type xsi:type="pogoDsl:LongStringArrayType"/>
       </argout>
       <status abstract="false" inherited="true" concrete="true"/>
     </commands>

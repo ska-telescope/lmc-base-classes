@@ -35,6 +35,7 @@ def test_device_init(device_under_test):
     state = device_under_test.State()
     assert state == tango.DevState.DISABLE
 
+
 @pytest.mark.forked
 def test_device(device_under_test, tango_change_event_helper):
     """Test our Multidevice."""

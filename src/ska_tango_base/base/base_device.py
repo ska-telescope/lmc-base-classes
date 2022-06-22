@@ -835,9 +835,7 @@ class SKABaseDevice(Device):
     # ---------
     # Callbacks
     # ---------
-    def _update_state_during_init(
-        self: SKABaseDevice, state: DevState, status: Optional[str] = None
-    ) -> None:
+    def _update_state_during_init(self, state, status=None):
         """
         Perform Tango operations in response to a change in op state.
 

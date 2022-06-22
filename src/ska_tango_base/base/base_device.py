@@ -835,6 +835,26 @@ class SKABaseDevice(Device):
     # ---------
     # Callbacks
     # ---------
+    def _update_state_during_init(
+        self: SKABaseDevice, state: DevState, status: Optional[str] = None
+    ) -> None:
+        """
+        Perform Tango operations in response to a change in op state.
+
+        This helper method is passed to the op state model as a
+        callback, so that the model can trigger actions in the Tango
+        device during the initialisation phase.
+
+        :param state: the new state value
+        :param status: an optional new status string
+        """
+        super().set_state(state)
+        self.push_change_event("state")
+        self.push_archive_event("state")
+        super().set_status(status or f"The device is in {state} state.")
+        self.push_change_event("status")
+        self.push_archive_event("status")
+
     def _update_state(self, state, status=None):
         """
         Perform Tango operations in response to a change in op state.
@@ -1022,9 +1042,10 @@ class SKABaseDevice(Device):
             else:
                 traceback.print_exc()
                 print(f"ERROR: init_device failed, and no logger: {exc}.")
-            self._update_state(
+            self._update_state_during_init(
                 DevState.FAULT, "The device is in FAULT state - init_device failed."
             )
+        self.op_state_model.set_state_changed_callback(self._update_state)
 
     def _init_state_model(self):
         """Initialise the state model for the device."""

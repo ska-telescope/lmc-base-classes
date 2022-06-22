@@ -1055,7 +1055,7 @@ class SKABaseDevice(Device):
         )
         self.op_state_model = OpStateModel(
             logger=self.logger,
-            callback=self._update_state,
+            callback=self._update_state_during_init,
         )
         self.admin_mode_model = AdminModeModel(
             logger=self.logger, callback=self._update_admin_mode

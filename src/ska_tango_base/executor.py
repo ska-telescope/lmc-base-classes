@@ -1,4 +1,9 @@
-# pylint: skip-file  # TODO: Incrementally lint this repo
+# -*- coding: utf-8 -*-
+#
+# This file is part of the SKA Tango Base project
+#
+# Distributed under the terms of the BSD 3-clause new license.
+# See LICENSE.txt for more info.
 """This module provides for asynchronous execution of tasks."""
 from __future__ import annotations
 
@@ -159,7 +164,7 @@ class TaskExecutor:
         args: Any,
         kwargs: Any,
         task_callback: Callable,
-        abort_event: Any,
+        abort_event: threading.Event,
     ) -> None:
         # Let the submit method finish before we start. This prevents this thread from
         # calling back with "IN PROGRESS" before the submit method has called back with
@@ -181,7 +186,7 @@ class TaskExecutor:
                     *args,
                     task_callback=task_callback,
                     task_abort_event=abort_event,
-                    **kwargs
+                    **kwargs,
                 )
             except Exception as exc:
                 if task_callback is not None:

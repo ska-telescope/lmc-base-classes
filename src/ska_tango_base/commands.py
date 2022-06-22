@@ -43,13 +43,54 @@ import logging
 from typing import Any, Callable, Optional
 
 from tango.server import Device
+from typing_extensions import Protocol
 
 from ska_tango_base.base.component_manager import BaseComponentManager
-
-# from ska_tango_base.base.base_device import _CommandTracker
 from ska_tango_base.executor import TaskStatus
 
+__all__ = [
+    "ResultCode",
+    "FastCommand",
+    "SlowCommand",
+    "DeviceInitCommand",
+    "SubmittedSlowCommand",
+]
+
 module_logger = logging.getLogger(__name__)
+
+
+class CommandTrackerProtocol(Protocol):
+    def new_command(
+        self: CommandTrackerProtocol,
+        command_name: str,
+        completed_callback: Optional[Callable[[], None]] = None,
+    ) -> str:
+        """
+        Create a new command.
+
+        :param command_name: the command name
+        :param completed_callback: an optional callback for command completion
+        """
+        ...
+
+    def update_command_info(
+        self: CommandTrackerProtocol,
+        command_id: str,
+        status: Optional[TaskStatus] = None,
+        progress: Optional[int] = None,
+        result: Optional[tuple[ResultCode, str]] = None,
+        exception: Optional[Exception] = None,
+    ) -> None:
+        """
+        Update status information on the command.
+
+        :param command_id: the unique command id
+        :param status: the status of the asynchronous task
+        :param progress: the progress of the asynchronous task
+        :param result: the result of the completed asynchronous task
+        :param exception: any exception caught in the running task
+        """
+        ...
 
 
 class ResultCode(enum.IntEnum):
@@ -289,11 +330,10 @@ class SubmittedSlowCommand(SlowCommand):
     :param logger: a logger for this command to log with.
     """
 
-    # TODO: resolve the _CommandTracker or leave as ignore
-    def __init__(  # type: ignore[no-untyped-def]
+    def __init__(
         self: SubmittedSlowCommand,
         command_name: str,
-        command_tracker,  # noqa: F821
+        command_tracker: CommandTrackerProtocol,
         component_manager: BaseComponentManager,
         method_name: str,
         callback: Optional[Callable] = None,
@@ -319,8 +359,7 @@ class SubmittedSlowCommand(SlowCommand):
         self._method_name = method_name
         super().__init__(callback=callback, logger=logger)
 
-    # TODO: resolve the return issue
-    def do(  # type: ignore[return]
+    def do(
         self: SubmittedSlowCommand, *args: Any, **kwargs: Any
     ) -> tuple[ResultCode, str]:
         """
@@ -338,15 +377,18 @@ class SubmittedSlowCommand(SlowCommand):
             self._command_name, completed_callback=self._completed
         )
         method = getattr(self._component_manager, self._method_name)
-        status, message = method(
+        result = method(
             *args,
             functools.partial(
                 self._command_tracker.update_command_info, command_id
             ),
             **kwargs,
         )
-
+        status, message = result
         if status == TaskStatus.QUEUED:
             return ResultCode.QUEUED, command_id
         elif status == TaskStatus.REJECTED:
             return ResultCode.REJECTED, message
+        # TODO: Drew, can this else block happen or just remove the elif????
+        else:
+            return ResultCode.FAILED, "Command failed"

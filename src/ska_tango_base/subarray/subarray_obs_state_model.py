@@ -1,3 +1,9 @@
+# -*- coding: utf-8 -*-
+#
+# This file is part of the SKA Tango Base project
+#
+# Distributed under the terms of the BSD 3-clause new license.
+# See LICENSE.txt for more info.
 """
 This module specifies the observation state model for SKA subarray Tango devices.
 
@@ -132,7 +138,7 @@ class _SubarrayObsStateMachine(Machine):
     def __init__(
         self: _SubarrayObsStateMachine,
         callback: Optional[Callable] = None,
-        **extra_kwargs: Any
+        **extra_kwargs: Any,
     ) -> None:
         """
         Initialise the model.

@@ -1,17 +1,35 @@
+<<<<<<< HEAD
 # pylint: skip-file  # TODO: Incrementally lint this repo
+=======
+# -*- coding: utf-8 -*-
+#
+# This file is part of the SKA Low MCCS project
+#
+#
+# Distributed under the terms of the BSD 3-clause new license.
+# See LICENSE for more info.
+>>>>>>> 50f357b (MCCS-934 type hints, static type checking & standard templates)
 """
 This module provided reference implementations of a BaseComponentManager.
 
 It is provided for explanatory purposes, and to support testing of this
 package.
 """
+from __future__ import annotations
+
+import logging
 import threading
 from time import sleep
+from typing import Any, Callable, Optional, Tuple
 
+<<<<<<< HEAD
 from ska_tango_base.base import (
     TaskExecutorComponentManager,
     check_communicating,
 )
+=======
+from ska_tango_base.base import TaskExecutorComponentManager, check_communicating
+>>>>>>> 50f357b (MCCS-934 type hints, static type checking & standard templates)
 from ska_tango_base.commands import ResultCode
 from ska_tango_base.control_model import CommunicationStatus, PowerState
 from ska_tango_base.executor import TaskStatus
@@ -43,13 +61,13 @@ class FakeBaseComponent:
     """
 
     def __init__(
-        self,
-        time_to_return=0.05,
-        time_to_complete=0.4,
-        power=PowerState.OFF,
-        fault=None,
-        **state_kwargs,
-    ):
+        self: FakeBaseComponent,
+        time_to_return: float = 0.05,
+        time_to_complete: float = 0.4,
+        power: PowerState = PowerState.OFF,
+        fault: Optional[bool] = None,
+        **state_kwargs: Any,
+    ) -> None:
         """
         Initialise a new instance.
 
@@ -61,8 +79,9 @@ class FakeBaseComponent:
             has been completed
         :param power: initial power state of this component
         :param fault: initial fault state of this component
+        :param state_kwargs: extra keyword arguments
         """
-        self._state_change_callback = None
+        self._state_change_callback: Optional[Callable[..., None]] = None
         self._state_lock = threading.Lock()
         self._state = dict(state_kwargs)
         self._state["power"] = power
@@ -71,7 +90,10 @@ class FakeBaseComponent:
         self._time_to_return = time_to_return or 0
         self._time_to_complete = time_to_complete or 0
 
-    def set_state_change_callback(self, state_change_callback):
+    def set_state_change_callback(
+        self: FakeBaseComponent,
+        state_change_callback: Optional[Callable[..., None]],
+    ) -> None:
         """
         Set a callback to be called when the state of this component changes.
 
@@ -79,7 +101,7 @@ class FakeBaseComponent:
             state of the component changes
         """
         self._state_change_callback = state_change_callback
-        if state_change_callback is None:
+        if self._state_change_callback is None:
             return
 
         # Let's wait a short time before we call this callback.
@@ -87,12 +109,16 @@ class FakeBaseComponent:
 
         self._state_change_callback(**self._state)
 
-    def _simulate_latency(self):
+    def _simulate_latency(self: FakeBaseComponent) -> None:
         sleep(self._time_to_return)
 
     def _simulate_task_execution(
-        self, task_callback, task_abort_event, result, **state_kwargs
-    ):
+        self: FakeBaseComponent,
+        task_callback: Callable,
+        task_abort_event: threading.Event,
+        result: Any,
+        **state_kwargs: Any,
+    ) -> None:
 
         # Simulate the synchronous latency cost of communicating with this component.
         self._simulate_latency()
@@ -103,7 +129,7 @@ class FakeBaseComponent:
         # resulting from the task execution e.g. if the task was to turn the component
         # on, then we'll see the component come on. Finally, the asynchronous processing
         # will report the task as COMPLETE, and publish a result.
-        def simulate_async_task_execution():
+        def simulate_async_task_execution() -> None:
             if task_callback is not None:
                 task_callback(status=TaskStatus.IN_PROGRESS)
 
@@ -143,8 +169,12 @@ class FakeBaseComponent:
         threading.Thread(target=simulate_async_task_execution).start()
 
     def _simulate_power_command_execution(
-        self, command_name, power_state, task_callback, task_abort_event
-    ):
+        self: FakeBaseComponent,
+        command_name: str,
+        power_state: PowerState,
+        task_callback: Callable,
+        task_abort_event: threading.Event,
+    ) -> None:
         self._simulate_task_execution(
             task_callback,
             task_abort_event,
@@ -152,7 +182,11 @@ class FakeBaseComponent:
             power=power_state,
         )
 
-    def off(self, task_callback, task_abort_event):
+    def off(
+        self: FakeBaseComponent,
+        task_callback: Callable,
+        task_abort_event: threading.Event,
+    ) -> None:
         """
         Turn the component off.
 
@@ -165,7 +199,11 @@ class FakeBaseComponent:
             "Off", PowerState.OFF, task_callback, task_abort_event
         )
 
-    def standby(self, task_callback, task_abort_event):
+    def standby(
+        self: FakeBaseComponent,
+        task_callback: Callable,
+        task_abort_event: threading.Event,
+    ) -> None:
         """
         Put the component into low-power standby mode.
 
@@ -178,7 +216,11 @@ class FakeBaseComponent:
             "Standby", PowerState.STANDBY, task_callback, task_abort_event
         )
 
-    def on(self, task_callback, task_abort_event):
+    def on(
+        self: FakeBaseComponent,
+        task_callback: Callable,
+        task_abort_event: threading.Event,
+    ) -> None:
         """
         Turn the component on.
 
@@ -191,16 +233,22 @@ class FakeBaseComponent:
             "On", PowerState.ON, task_callback, task_abort_event
         )
 
-    def simulate_power_state(self, power_state):
+    def simulate_power_state(self: FakeBaseComponent, power_state: PowerState) -> None:
         """
         Simulate a change in component power state.
 
         This could occur as a result of the Off command, or because of
         some external event/action.
+
+        :param power_state: the power state
         """
         self._update_state(power=power_state)
 
-    def reset(self, task_callback, task_abort_event):
+    def reset(
+        self: FakeBaseComponent,
+        task_callback: Callable,
+        task_abort_event: threading.Event,
+    ) -> None:
         """
         Reset the component (from fault state).
 
@@ -216,7 +264,7 @@ class FakeBaseComponent:
             fault=False,
         )
 
-    def simulate_fault(self, fault_state):
+    def simulate_fault(self: FakeBaseComponent, fault_state: bool) -> None:
         """
         Tell the component to simulate (or stop simulating) a fault.
 
@@ -224,7 +272,7 @@ class FakeBaseComponent:
         """
         self._update_state(fault=fault_state)
 
-    def _update_state(self, **kwargs):
+    def _update_state(self: FakeBaseComponent, **kwargs: Any) -> None:
         callback_kwargs = {}
         with self._state_lock:
             for key, value in kwargs.items():
@@ -236,7 +284,7 @@ class FakeBaseComponent:
             self._state_change_callback(**callback_kwargs)
 
     @property
-    def faulty(self):
+    def faulty(self: FakeBaseComponent) -> bool:
         """
         Return whether this component is faulty.
 
@@ -245,7 +293,7 @@ class FakeBaseComponent:
         return self._state["fault"]
 
     @property
-    def power_state(self):
+    def power_state(self: FakeBaseComponent) -> PowerState:
         """
         Return the power state of this component.
 
@@ -279,18 +327,21 @@ class ReferenceBaseComponentManager(TaskExecutorComponentManager):
     """
 
     def __init__(
-        self,
-        logger,
-        communication_state_callback,
-        component_state_callback,
-        *args,
-        _component=None,
-        **kwargs,
-    ):
+        self: ReferenceBaseComponentManager,
+        logger: logging.Logger,
+        communication_state_callback: Callable[[], None],
+        component_state_callback: Callable[[], None],
+        *args: Any,
+        _component: Optional[FakeBaseComponent] = None,
+        **kwargs: Any,
+    ) -> None:
         """
         Initialise a new ComponentManager instance.
 
         :param logger: a logger for this component manager
+        :param communication_state_callback: callback for communication state
+        :param component_state_callback: callback for component state
+        :param args: extra arguments
         :param _component: allows setting of the component to be
             managed. Note: the component will normally be a part of the
             external system under control, such as a piece of hardware
@@ -298,6 +349,7 @@ class ReferenceBaseComponentManager(TaskExecutorComponentManager):
             "component" software object to pass in here. Instead, you
             would pass in information needed to establish communication
             with your component, such as an FQDN, or an IP address/port.
+        :param kwargs: extra keyword arguments
         """
         self._fail_communicate = False
 
@@ -313,7 +365,7 @@ class ReferenceBaseComponentManager(TaskExecutorComponentManager):
             **kwargs,
         )
 
-    def start_communicating(self):
+    def start_communicating(self: ReferenceBaseComponentManager) -> None:
         """Establish communication with the component, then start monitoring."""
         if self.communication_state == CommunicationStatus.ESTABLISHED:
             return
@@ -336,7 +388,7 @@ class ReferenceBaseComponentManager(TaskExecutorComponentManager):
         self._update_communication_state(CommunicationStatus.ESTABLISHED)
         self._component.set_state_change_callback(self._update_component_state)
 
-    def stop_communicating(self):
+    def stop_communicating(self: ReferenceBaseComponentManager) -> None:
         """Break off communication with the component."""
         if self.communication_state == CommunicationStatus.DISABLED:
             return
@@ -345,7 +397,9 @@ class ReferenceBaseComponentManager(TaskExecutorComponentManager):
         self._update_component_state(power=PowerState.UNKNOWN, fault=None)
         self._update_communication_state(CommunicationStatus.DISABLED)
 
-    def simulate_communication_failure(self, fail_communicate):
+    def simulate_communication_failure(
+        self: ReferenceBaseComponentManager, fail_communicate: bool
+    ) -> None:
         """
         Simulate (or stop simulating) a failure to communicate with the component.
 
@@ -371,7 +425,7 @@ class ReferenceBaseComponentManager(TaskExecutorComponentManager):
             )
 
     @property
-    def power_state(self):
+    def power_state(self: ReferenceBaseComponentManager) -> PowerState:
         """
         Power mode of the component.
 
@@ -383,7 +437,7 @@ class ReferenceBaseComponentManager(TaskExecutorComponentManager):
         return self._component_state["power"]
 
     @property
-    def fault_state(self):
+    def fault_state(self: ReferenceBaseComponentManager) -> bool:
         """
         Whether the component is currently faulting.
 
@@ -392,6 +446,7 @@ class ReferenceBaseComponentManager(TaskExecutorComponentManager):
         return self._component_state["fault"]
 
     @check_communicating
+<<<<<<< HEAD
     def off(self, task_callback=None):
         """Turn the component off."""
         return self.submit_task(
@@ -418,3 +473,63 @@ class ReferenceBaseComponentManager(TaskExecutorComponentManager):
         return self.submit_task(
             self._component.reset, task_callback=task_callback
         )
+=======
+    def off(
+        self: ReferenceBaseComponentManager,
+        task_callback: Optional[Callable[[], None]] = None,
+    ) -> Tuple[TaskStatus, str]:
+        """
+        Turn the component off.
+
+        :param task_callback: a callback to be called whenever the
+            status of this task changes.
+
+        :return: TaskStatus and message
+        """
+        return self.submit_task(self._component.off, task_callback=task_callback)
+
+    @check_communicating
+    def standby(
+        self: ReferenceBaseComponentManager,
+        task_callback: Optional[Callable[[], None]] = None,
+    ) -> Tuple[TaskStatus, str]:
+        """
+        Put the component into low-power standby mode.
+
+        :param task_callback: a callback to be called whenever the
+            status of this task changes.
+
+        :return: TaskStatus and message
+        """
+        return self.submit_task(self._component.standby, task_callback=task_callback)
+
+    @check_communicating
+    def on(
+        self: ReferenceBaseComponentManager,
+        task_callback: Optional[Callable[[], None]] = None,
+    ) -> Tuple[TaskStatus, str]:
+        """
+        Turn the component on.
+
+        :param task_callback: a callback to be called whenever the
+            status of this task changes.
+
+        :return: TaskStatus and message
+        """
+        return self.submit_task(self._component.on, task_callback=task_callback)
+
+    @check_communicating
+    def reset(
+        self: ReferenceBaseComponentManager,
+        task_callback: Optional[Callable[[], None]] = None,
+    ) -> Tuple[TaskStatus, str]:
+        """
+        Reset the component (from fault state).
+
+        :param task_callback: a callback to be called whenever the
+            status of this task changes.
+
+        :return: TaskStatus and message
+        """
+        return self.submit_task(self._component.reset, task_callback=task_callback)
+>>>>>>> 50f357b (MCCS-934 type hints, static type checking & standard templates)

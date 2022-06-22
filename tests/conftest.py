@@ -4,8 +4,11 @@ from __future__ import annotations
 
 import logging
 import socket
-
+import time
+from typing import Any, Callable, Hashable
+from typing_extensions import Protocol
 import pytest
+
 import tango
 from ska_tango_testing.mock import MockCallableGroup
 from ska_tango_testing.mock.tango import MockTangoEventCallbackGroup
@@ -15,9 +18,14 @@ from tango.test_context import (
     get_host_ip,
 )
 
+from ska_tango_base.testing.mock import MockCallable, MockChangeEventCallback
+
+class Subscribable(Protocol):
+    def subscribe(self, attribute_name: str):
+        ...
 
 @pytest.fixture(scope="class")
-def device_properties():
+def device_properties() -> dict[str, Any]:
     """
     Fixture that returns device_properties to be provided to the device under test.
 
@@ -46,7 +54,7 @@ def tango_context(device_test_config):
 
 
 @pytest.fixture()
-def device_under_test(tango_context):
+def device_under_test(tango_context) -> tango.DeviceProxy:
     """
     Return a device proxy to the device under test.
 
@@ -67,7 +75,7 @@ def pytest_itemcollected(item):
 
 
 @pytest.fixture()
-def callbacks():
+def callbacks() -> dict[Hashable, MockCallable]:
     """
     Return a dictionary of callbacks with asynchrony support.
 
@@ -98,6 +106,41 @@ def change_event_callbacks() -> MockTangoEventCallbackGroup:
         "longRunningCommandResult",
         "longRunningCommandStatus",
     )
+
+    class _ChangeEventDict:
+        def __init__(self):
+            self._dict = {}
+
+        def __getitem__(self, key):
+            if key not in self._dict:
+                self._dict[key] = MockChangeEventCallback(key)
+            return self._dict[key]
+
+    return _ChangeEventDict()
+
+
+@pytest.fixture()
+def tango_change_event_helper(device_under_test, change_event_callbacks) -> Subscribable:
+    """
+    Return a helper to simplify subscription to the device under test with a callback.
+
+    :param device_under_test: a proxy to the device under test
+    :param change_event_callbacks: dictionary of callbacks with
+        asynchrony support, specifically for receiving Tango device
+        change events.
+    """
+
+    class _TangoChangeEventHelper:
+        def subscribe(self, attribute_name):
+            device_under_test.subscribe_event(
+                attribute_name,
+                tango.EventType.CHANGE_EVENT,
+                change_event_callbacks[attribute_name],
+            )
+            return change_event_callbacks[attribute_name]
+
+    return _TangoChangeEventHelper()
+>>>>>>> 7ddac93 (MCCS-934 type hints, static type checking & standard templates)
 
 
 @pytest.fixture()

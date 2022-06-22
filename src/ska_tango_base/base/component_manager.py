@@ -1,4 +1,9 @@
-# pylint: skip-file  # TODO: Incrementally lint this repo
+# -*- coding: utf-8 -*-
+#
+# This file is part of the SKA Tango Base project
+#
+# Distributed under the terms of the BSD 3-clause new license.
+# See LICENSE.txt for more info.
 """
 This module provides an abstract component manager for SKA Tango base devices.
 
@@ -152,8 +157,10 @@ class BaseComponentManager:
     def __init__(
         self: BaseComponentManager,
         logger: logging.Logger,
-        communication_state_callback: Callable[[CommunicationStatus], None],
-        component_state_callback: Callable,
+        communication_state_callback: Optional[
+            Callable[[CommunicationStatus], None]
+        ] = None,
+        component_state_callback: Optional[Callable[..., None]] = None,
         **state: Any,
     ) -> None:
         """
@@ -240,7 +247,7 @@ class BaseComponentManager:
             self._communication_state_callback(communication_state)
 
     @property
-    def component_state(self: BaseComponentManager) -> dict:
+    def component_state(self: BaseComponentManager) -> dict[str, Any]:
         """
         Return the state of this component manager's component.
 
@@ -274,7 +281,9 @@ class BaseComponentManager:
             self._component_state_callback(**kwargs)
 
     @check_communicating
-    def off(self: BaseComponentManager, task_callback: Callable) -> None:
+    def off(
+        self: BaseComponentManager, task_callback: Callable
+    ) -> tuple[TaskStatus, str]:
         """
         Turn the component off.
 
@@ -286,7 +295,9 @@ class BaseComponentManager:
         raise NotImplementedError("BaseComponentManager is abstract.")
 
     @check_communicating
-    def standby(self: BaseComponentManager, task_callback: Callable) -> None:
+    def standby(
+        self: BaseComponentManager, task_callback: Callable
+    ) -> tuple[TaskStatus, str]:
         """
         Put the component into low-power standby mode.
 
@@ -298,7 +309,9 @@ class BaseComponentManager:
         raise NotImplementedError("BaseComponentManager is abstract.")
 
     @check_communicating
-    def on(self: BaseComponentManager, task_callback: Callable) -> None:
+    def on(
+        self: BaseComponentManager, task_callback: Callable
+    ) -> tuple[TaskStatus, str]:
         """
         Turn the component on.
 
@@ -310,7 +323,9 @@ class BaseComponentManager:
         raise NotImplementedError("BaseComponentManager is abstract.")
 
     @check_communicating
-    def reset(self: BaseComponentManager, task_callback: Callable) -> None:
+    def reset(
+        self: BaseComponentManager, task_callback: Callable
+    ) -> tuple[TaskStatus, str]:
         """
         Reset the component (from fault state).
 

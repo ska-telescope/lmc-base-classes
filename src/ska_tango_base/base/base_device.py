@@ -131,7 +131,7 @@ class TangoLoggingServiceHandler(logging.Handler):
         super().__init__()
         self.tango_logger = tango_logger
 
-    def emit(self: TangoLoggingServiceHandler, record: Any) -> None:
+    def emit(self: TangoLoggingServiceHandler, record: logging.LogRecord) -> None:
         try:
             msg = self.format(record)
             tango_level = _PYTHON_TO_TANGO_LOGGING_LEVEL[record.levelno]
@@ -181,7 +181,7 @@ class LoggingUtils:
 
         :raises LoggingTargetError: for invalid target string that cannot be corrected
         """
-        default_target_names = {
+        default_target_names: dict[str, str | None] = {
             "console": "cout",
             "file": f"{device_name.replace('/', '_')}.log",
             "syslog": None,
@@ -218,7 +218,7 @@ class LoggingUtils:
     @staticmethod
     def get_syslog_address_and_socktype(
         url: str,
-    ) -> tuple[str | tuple[str, int], Any | None]:  # noqa: F821
+    ) -> tuple[Union[tuple[str, int], str], socket.SocketKind | None]:  # noqa: F821
         """
         Parse syslog URL and extract address and socktype parameters for SysLogHandler.
 
@@ -390,19 +390,19 @@ class LoggingUtils:
         logger.info("Logging targets set to %s", targets)
 
 
-__all__ = ["SKABaseDevice", "main"]
+__all__ = ["SKABaseDevice", "main", "CommandTracker"]
 
 
-class _CommandTracker:
+class CommandTracker:
     """A class for keeping track of the state and progress of commands."""
 
     def __init__(
-        self: _CommandTracker,
-        queue_changed_callback: Callable,
-        status_changed_callback: Callable,
-        progress_changed_callback: Callable,
-        result_callback: Callable,
-        exception_callback: Optional[Callable] = None,
+        self: CommandTracker,
+        queue_changed_callback: Callable[[list[tuple[str, str]]], None],
+        status_changed_callback: Callable[[list[tuple[str, TaskStatus]]], None],
+        progress_changed_callback: Callable[[list[tuple[str, int]]], None],
+        result_callback: Callable[[str, tuple[ResultCode, str]], None],
+        exception_callback: Optional[Callable[[str, Exception], None]] = None,
         removal_time: float = 10.0,
     ) -> None:
         """
@@ -420,17 +420,27 @@ class _CommandTracker:
         self._status_changed_callback = status_changed_callback
         self._progress_changed_callback = progress_changed_callback
         self._result_callback = result_callback
-        self._most_recent_result: Optional[tuple[str, ResultCode]] = None
+        self._most_recent_result: Optional[
+            tuple[str, Optional[tuple[ResultCode, str]]]
+        ] = None
         self._exception_callback = exception_callback
         self._most_recent_exception: Optional[tuple[str, Exception]] = None
-        self._commands: dict = {}
+        self._commands: dict[str, Any] = {}
         self._removal_time = removal_time
 
     def new_command(
-        self: _CommandTracker,
+        self: CommandTracker,
         command_name: str,
-        completed_callback: Optional[Callable] = None,
+        completed_callback: Optional[Callable[[], None]] = None,
     ) -> str:
+        """
+        Create a new command.
+
+        :param command_name: the command name
+        :param completed_callback: an optional callback for command completion
+
+        :return: a unique command id
+        """
         command_id = generate_command_id(command_name)
 
         self._commands[command_id] = {
@@ -442,7 +452,7 @@ class _CommandTracker:
         self._queue_changed_callback(self.commands_in_queue)
         return command_id
 
-    def _schedule_removal(self: _CommandTracker, command_id: str) -> None:
+    def _schedule_removal(self: CommandTracker, command_id: str) -> None:
         def remove(command_id: str) -> None:
             del self._commands[command_id]
             self._queue_changed_callback(self.commands_in_queue)
@@ -450,13 +460,22 @@ class _CommandTracker:
         threading.Timer(self._removal_time, remove, (command_id,)).start()
 
     def update_command_info(
-        self: _CommandTracker,
+        self: CommandTracker,
         command_id: str,
         status: Optional[TaskStatus] = None,
         progress: Optional[int] = None,
-        result: Optional[ResultCode] = None,
+        result: Optional[tuple[ResultCode, str]] = None,
         exception: Optional[Exception] = None,
     ) -> None:
+        """
+        Update status information on the command.
+
+        :param command_id: the unique command id
+        :param status: the status of the asynchronous task
+        :param progress: the progress of the asynchronous task
+        :param result: the result of the completed asynchronous task
+        :param exception: any exception caught in the running task
+        """
         with self.__lock:
             if exception is not None:
                 self._most_recent_exception = (command_id, exception)
@@ -487,7 +506,7 @@ class _CommandTracker:
                     self._schedule_removal(command_id)
 
     def _commands_by_keyword(
-        self: _CommandTracker, keyword: str
+        self: CommandTracker, keyword: str
     ) -> list[tuple[str, Any]]:
         assert keyword in [
             "name",
@@ -502,7 +521,7 @@ class _CommandTracker:
             )
 
     @property
-    def commands_in_queue(self: _CommandTracker) -> list[tuple[str, str]]:
+    def commands_in_queue(self: CommandTracker) -> list[tuple[str, str]]:
         """
         Return a list of commands in the queue.
 
@@ -512,7 +531,7 @@ class _CommandTracker:
         return self._commands_by_keyword("name")
 
     @property
-    def command_statuses(self: _CommandTracker) -> list[tuple[str, TaskStatus]]:
+    def command_statuses(self: CommandTracker) -> list[tuple[str, TaskStatus]]:
         """
         Return a list of command statuses for commands in the queue.
 
@@ -522,7 +541,7 @@ class _CommandTracker:
         return self._commands_by_keyword("status")
 
     @property
-    def command_progresses(self: _CommandTracker) -> list[tuple[str, int]]:
+    def command_progresses(self: CommandTracker) -> list[tuple[str, int]]:
         """
         Return a list of command progresses for commands in the queue.
 
@@ -532,7 +551,9 @@ class _CommandTracker:
         return self._commands_by_keyword("progress")
 
     @property
-    def command_result(self: _CommandTracker) -> Optional[tuple[str, ResultCode]]:
+    def command_result(
+        self: CommandTracker,
+    ) -> Optional[tuple[str, Optional[tuple[ResultCode, str]]]]:
         """
         Return the result of the most recently completed command.
 
@@ -542,7 +563,7 @@ class _CommandTracker:
         return self._most_recent_result
 
     @property
-    def command_exception(self: _CommandTracker) -> Optional[tuple[str, Exception]]:
+    def command_exception(self: CommandTracker) -> Optional[tuple[str, Exception]]:
         """
         Return the most recent exception, if any.
 
@@ -551,7 +572,14 @@ class _CommandTracker:
         """
         return self._most_recent_exception
 
-    def get_command_status(self: _CommandTracker, command_id: str) -> TaskStatus:
+    def get_command_status(self: CommandTracker, command_id: str) -> TaskStatus:
+        """
+        Return the current status of a running command.
+
+        :param command_id: the unique command id
+
+        :return: a status of the asynchronous task.
+        """
         if command_id in self._commands:
             return self._commands[command_id]["status"]
         return TaskStatus.NOT_FOUND
@@ -589,9 +617,9 @@ class SKABaseDevice(Device):
         class EnsureTagsFilter(logging.Filter):
             """Ensure all records have a "tags" field - empty string, if not provided."""
 
-            def filter(self: EnsureTagsFilter, record: Any) -> bool:
+            def filter(self: EnsureTagsFilter, record: logging.LogRecord) -> bool:
                 if not hasattr(record, "tags"):
-                    record.tags = ""
+                    record.tags = ""  # type: ignore[attr-defined]
                 return True
 
         # There may be multiple devices in a single device server - these will all be
@@ -614,15 +642,14 @@ class SKABaseDevice(Device):
         device_name_tag = f"tango-device:{device_name}"
 
         class TangoDeviceTagsFilter(logging.Filter):
-            def filter(self: TangoDeviceTagsFilter, record: Any) -> bool:
-                record.tags = device_name_tag
+            def filter(self: TangoDeviceTagsFilter, record: logging.LogRecord) -> bool:
+                record.tags = device_name_tag  # type: ignore[attr-defined]
                 return True
 
         self.logger.addFilter(TangoDeviceTagsFilter())
         # before setting targets, give Python logger a reference to the log4tango logger
         # to support the TangoLoggingServiceHandler target option
 
-        # TODO investigate this type: ignore
         self.logger.tango_logger = self.get_logger()  # type: ignore[attr-defined]
 
         # initialise using defaults in device properties
@@ -734,6 +761,7 @@ class SKABaseDevice(Device):
         :param state: the new state value
         :param status: an optional new status string
         """
+        print(f"base update state {state} !!!!!!!!!!!!!!!!!!!!")
         self.set_state(state)
         self.push_change_event("state")
         self.push_archive_event("state")
@@ -805,7 +833,7 @@ class SKABaseDevice(Device):
         )
 
     def _update_command_result(
-        self: SKABaseDevice, command_id: str, command_result: ResultCode
+        self: SKABaseDevice, command_id: str, command_result: tuple[ResultCode, str]
     ) -> None:
         self._command_result = (command_id, json.dumps(command_result))
         self.push_change_event(
@@ -875,6 +903,10 @@ class SKABaseDevice(Device):
         alone.  Override the ``do()`` method on the nested class
         ``InitCommand`` instead.
         """
+        print(
+            "Base device init_device start ###############################",
+            self.get_state(),
+        )
         try:
             super().init_device()
 
@@ -949,10 +981,14 @@ class SKABaseDevice(Device):
                 DevState.FAULT,
                 "The device is in FAULT state - init_device failed.",
             )
+        print(
+            "Base device init_device stop ###############################",
+            self.get_state(),
+        )
 
     def _init_state_model(self: SKABaseDevice) -> None:
         """Initialise the state model for the device."""
-        self._command_tracker = _CommandTracker(
+        self._command_tracker = CommandTracker(
             queue_changed_callback=self._update_commands_in_queue,
             status_changed_callback=self._update_command_statuses,
             progress_changed_callback=self._update_command_progresses,
@@ -961,7 +997,7 @@ class SKABaseDevice(Device):
         )
         self.op_state_model = OpStateModel(
             logger=self.logger,
-            callback=self._update_state,
+            callback=self._update_state_during_init,
         )
         self.admin_mode_model = AdminModeModel(
             logger=self.logger, callback=self._update_admin_mode
@@ -1017,7 +1053,9 @@ class SKABaseDevice(Device):
         )
 
     def register_command_object(
-        self: SKABaseDevice, command_name: str, command_object: Callable
+        self: SKABaseDevice,
+        command_name: str,
+        command_object: FastCommand | SlowCommand,
     ) -> None:
         """
         Register an object as a handler for a command.
@@ -1029,7 +1067,9 @@ class SKABaseDevice(Device):
         """
         self._command_objects[command_name] = command_object
 
-    def get_command_object(self: SKABaseDevice, command_name: str) -> Callable:
+    def get_command_object(
+        self: SKABaseDevice, command_name: str
+    ) -> FastCommand | SlowCommand:
         """
         Return the command object (handler) for a given command.
 
@@ -1042,7 +1082,7 @@ class SKABaseDevice(Device):
 
     def init_command_objects(self: SKABaseDevice) -> None:
         """Register command objects (handlers) for this device's commands."""
-        self._command_objects: dict = {}
+        self._command_objects: dict[str, FastCommand | SlowCommand] = {}
 
         for (command_name, method_name) in [
             ("Off", "off"),
@@ -1097,10 +1137,7 @@ class SKABaseDevice(Device):
     # Attributes
     # ----------
 
-    @attribute(
-        dtype="str",
-        doc="Build state of this device",
-    )
+    @attribute(dtype="str")
     def buildState(self: SKABaseDevice) -> str:
         """
         Read the Build State of the device.
@@ -1109,10 +1146,7 @@ class SKABaseDevice(Device):
         """
         return self._build_state
 
-    @attribute(
-        dtype="str",
-        doc="Version Id of this device",
-    )
+    @attribute(dtype="str")
     def versionId(self: SKABaseDevice) -> str:
         """
         Read the Version Id of the device.
@@ -1121,15 +1155,12 @@ class SKABaseDevice(Device):
         """
         return self._version_id
 
-    @attribute(
-        dtype=LoggingLevel,
-        doc="Current logging level for this device - "
-        "initialises to LoggingLevelDefault on startup",
-    )
+    @attribute(dtype=LoggingLevel)
     def loggingLevel(self: SKABaseDevice) -> LoggingLevel:
         """
         Read the logging level of the device.
 
+        Initialises to LoggingLevelDefault on startup.
         See :py:class:`~ska_tango_base.control_model.LoggingLevel`
 
         :return:  Logging level of the device.
@@ -1147,18 +1178,13 @@ class SKABaseDevice(Device):
         """
         self.set_logging_level(value)
 
-    @attribute(
-        dtype=("str",),
-        max_dim_x=4,
-        doc="Logging targets for this device, excluding ska_ser_logging defaults"
-        " - initialises to LoggingTargetsDefault on startup",
-    )
+    @attribute(dtype=("str",), max_dim_x=4)
     def loggingTargets(self: SKABaseDevice) -> list[str]:
         """
         Read the additional logging targets of the device.
 
         Note that this excludes the handlers provided by the ska_ser_logging
-        library defaults.
+        library defaults - initialises to LoggingTargetsDefault on startup.
 
         :return:  Logging level of the device.
         """
@@ -1176,32 +1202,25 @@ class SKABaseDevice(Device):
         """
         self.set_logging_targets(value)
 
-    @attribute(
-        dtype=HealthState,
-        doc="The health state reported for this device. "
-        "It interprets the current device"
-        " condition and condition of all managed devices to set this. "
-        "Most possibly an aggregate attribute.",
-    )
+    @attribute(dtype=HealthState)
     def healthState(self: SKABaseDevice) -> HealthState:
         """
         Read the Health State of the device.
+
+        It interprets the current device condition and condition of
+        all managed devices to set this. Most possibly an aggregate attribute.
 
         :return: Health State of the device
         """
         return self._health_state
 
-    @attribute(
-        dtype=AdminMode,
-        memorized=True,
-        hw_memorized=True,
-        doc="The admin mode reported for this device. It may interpret the current "
-        "device condition and condition of all managed devices to set this. "
-        "Most possibly an aggregate attribute.",
-    )
+    @attribute(dtype=AdminMode, memorized=True, hw_memorized=True)
     def adminMode(self: SKABaseDevice) -> AdminMode:
         """
         Read the Admin Mode of the device.
+
+        It may interpret the current device condition and condition of all managed
+         devices to set this. Most possibly an aggregate attribute.
 
         :return: Admin Mode of the device
         """
@@ -1232,18 +1251,15 @@ class SKABaseDevice(Device):
         else:
             raise ValueError(f"Unknown adminMode {value}")
 
-    @attribute(
-        dtype=ControlMode,
-        memorized=True,
-        hw_memorized=True,
-        doc="The control mode of the device. REMOTE, LOCAL"
-        "\nTango Device accepts only from a ‘local’ client and ignores commands and "
-        "queries received from TM or any other ‘remote’ clients. The Local clients"
-        " has to release LOCAL control before REMOTE clients can take control again.",
-    )
+    @attribute(dtype=ControlMode, memorized=True, hw_memorized=True)
     def controlMode(self: SKABaseDevice) -> ControlMode:
         """
         Read the Control Mode of the device.
+
+        The control mode of the device are REMOTE, LOCAL
+        Tango Device accepts only from a ‘local’ client and ignores commands and
+        queries received from TM or any other ‘remote’ clients. The Local clients
+        has to release LOCAL control before REMOTE clients can take control again.
 
         :return: Control Mode of the device
         """
@@ -1258,17 +1274,14 @@ class SKABaseDevice(Device):
         """
         self._control_mode = value
 
-    @attribute(
-        dtype=SimulationMode,
-        memorized=True,
-        hw_memorized=True,
-        doc="Reports the simulation mode of the device. \nSome devices may implement "
-        "both modes, while others will have simulators that set simulationMode "
-        "to True while the real devices always set simulationMode to False.",
-    )
+    @attribute(dtype=SimulationMode, memorized=True, hw_memorized=True)
     def simulationMode(self: SKABaseDevice) -> SimulationMode:
         """
         Read the Simulation Mode of the device.
+
+        Some devices may implement
+        both modes, while others will have simulators that set simulationMode
+        to True while the real devices always set simulationMode to False.
 
         :return: Simulation Mode of the device.
         """
@@ -1283,17 +1296,12 @@ class SKABaseDevice(Device):
         """
         self._simulation_mode = value
 
-    @attribute(
-        dtype=TestMode,
-        memorized=True,
-        hw_memorized=True,
-        doc="The test mode of the device. \n"
-        "Either no test mode or an "
-        "indication of the test mode.",
-    )
+    @attribute(dtype=TestMode, memorized=True, hw_memorized=True)
     def testMode(self: SKABaseDevice) -> TestMode:
         """
         Read the Test Mode of the device.
+
+        Either no test mode or an indication of the test mode.
 
         :return: Test Mode of the device
         """
@@ -1308,57 +1316,55 @@ class SKABaseDevice(Device):
         """
         self._test_mode = value
 
-    @attribute(
-        dtype=("str",),
-        max_dim_x=MAX_REPORTED_QUEUED_COMMANDS,
-        doc="Keep track of which commands are in the queue. \n"
-        "Pop off from front as they complete.",
-    )
+    @attribute(dtype=("str",), max_dim_x=MAX_REPORTED_QUEUED_COMMANDS)
     def longRunningCommandsInQueue(self: SKABaseDevice) -> list[str]:
         """
         Read the long running commands in the queue.
+
+         Keep track of which commands are in the queue.
+         Pop off from front as they complete.
 
         :return: tasks in the queue
         """
         return self._commands_in_queue
 
-    @attribute(
-        dtype=("str",),
-        max_dim_x=MAX_REPORTED_QUEUED_COMMANDS,
-        doc="Every client that executes a command will receive a command ID as response. \n"
-        "Keep track of IDs in the queue. Pop off from front as they complete.",
-    )
+    @attribute(dtype=("str",), max_dim_x=MAX_REPORTED_QUEUED_COMMANDS)
     def longRunningCommandIDsInQueue(self: SKABaseDevice) -> list[str]:
         """
         Read the IDs of the long running commands in the queue.
+
+        Every client that executes a command will receive a command ID as response.
+        Keep track of IDs in the queue. Pop off from front as they complete.
 
         :return: unique ids for the enqueued commands
         """
         return self._command_ids_in_queue
 
     @attribute(
-        dtype=("str",),
-        max_dim_x=MAX_REPORTED_CONCURRENT_COMMANDS * 2,  # 2 per command
-        doc="ID, status pair of the currently executing command. \n"
-        "Clients can subscribe to on_change event and wait for the ID they are interested in.",
+        dtype=("str",), max_dim_x=MAX_REPORTED_CONCURRENT_COMMANDS * 2  # 2 per command
     )
     def longRunningCommandStatus(self: SKABaseDevice) -> list[str]:
         """
         Read the status of the currently executing long running commands.
+
+        ID, status pair of the currently executing command.
+        Clients can subscribe to on_change event and wait for the
+        ID they are interested in.
 
         :return: ID, status pairs of the currently executing commands
         """
         return self._command_statuses
 
     @attribute(
-        dtype=("str",),
-        max_dim_x=MAX_REPORTED_CONCURRENT_COMMANDS * 2,  # 2 per command
-        doc="ID, progress of the currently executing command. \n"
-        "Clients can subscribe to on_change event and wait for the ID they are interested in..",
+        dtype=("str",), max_dim_x=MAX_REPORTED_CONCURRENT_COMMANDS * 2  # 2 per command
     )
     def longRunningCommandProgress(self: SKABaseDevice) -> list[str]:
         """
         Read the progress of the currently executing long running command.
+
+        ID, progress of the currently executing command.
+        Clients can subscribe to on_change event and wait
+        for the ID they are interested in.
 
         :return: ID, progress of the currently executing command.
         """
@@ -1367,24 +1373,23 @@ class SKABaseDevice(Device):
     @attribute(
         dtype=("str",),
         max_dim_x=2,  # Always the last result (unique_id, JSON-encoded result)
-        doc="unique_id, json-encoded result. \n"
-        "Clients can subscribe to on_change event and wait for the ID they are interested in.",
     )
     def longRunningCommandResult(self: SKABaseDevice) -> tuple[str, str]:
         """
         Read the result of the completed long running command.
 
-        :return: ID, ResultCode, result.
+        Reports unique_id, json-encoded result.
+        Clients can subscribe to on_change event and wait for
+        the ID they are interested in.
+
+        :return: ID, result.
         """
         return self._command_result
 
     # --------
     # Commands
     # --------
-    @command(
-        dtype_out=("str",),
-        doc_out="Version strings",
-    )
+    @command(dtype_out=("str",))
     @DebugIt()
     def GetVersionInfo(self: SKABaseDevice) -> list[str]:
         """
@@ -1410,10 +1415,7 @@ class SKABaseDevice(Device):
             DevState.FAULT,
         ]
 
-    @command(
-        dtype_out="DevVarLongStringArray",
-        doc_out="(ReturnType, 'informational message')",
-    )
+    @command(dtype_out="DevVarLongStringArray")
     @DebugIt()
     def Reset(self: SKABaseDevice) -> DevVarLongStringArrayType:
         """
@@ -1506,10 +1508,7 @@ class SKABaseDevice(Device):
             DevState.UNKNOWN,
         ]
 
-    @command(
-        dtype_out="DevVarLongStringArray",
-        doc_out="(ReturnType, 'informational message')",
-    )
+    @command(dtype_out="DevVarLongStringArray")
     @DebugIt()
     def Off(self: SKABaseDevice) -> DevVarLongStringArrayType:
         """
@@ -1544,10 +1543,7 @@ class SKABaseDevice(Device):
             DevState.UNKNOWN,
         ]
 
-    @command(
-        dtype_out="DevVarLongStringArray",
-        doc_out="(ReturnType, 'informational message')",
-    )
+    @command(dtype_out="DevVarLongStringArray")
     @DebugIt()
     def On(self: SKABaseDevice) -> DevVarLongStringArrayType:
         """
@@ -1602,9 +1598,7 @@ class SKABaseDevice(Device):
             self._component_manager.abort_tasks()
             return (ResultCode.STARTED, "Aborting commands")
 
-    @command(
-        dtype_out="DevVarLongStringArray",
-    )
+    @command(dtype_out="DevVarLongStringArray")
     @DebugIt()
     def AbortCommands(self: SKABaseDevice) -> DevVarLongStringArrayType:
         """
@@ -1623,7 +1617,7 @@ class SKABaseDevice(Device):
 
         def __init__(
             self: SKABaseDevice.CheckLongRunningCommandStatusCommand,
-            command_tracker: _CommandTracker,
+            command_tracker: CommandTracker,
             logger: Optional[logging.Logger] = None,
         ) -> None:
             """
@@ -1654,10 +1648,7 @@ class SKABaseDevice(Device):
             enum_status = self._command_tracker.get_command_status(command_id)
             return TaskStatus(enum_status).name
 
-    @command(
-        dtype_in=str,
-        dtype_out=str,
-    )
+    @command(dtype_in=str, dtype_out=str)
     @DebugIt()
     def CheckLongRunningCommandStatus(self: SKABaseDevice, argin: str) -> str:
         """
@@ -1818,7 +1809,7 @@ class SKABaseDevice(Device):
             """
 
             def debug_thread_wrapper(
-                orig_method: Callable, *args: list, **kwargs: dict
+                orig_method: Callable, *args: Any, **kwargs: Any
             ) -> Callable:
                 debugpy.debug_this_thread()
                 return orig_method(*args, **kwargs)
@@ -1883,6 +1874,7 @@ class SKABaseDevice(Device):
             (event_type, name, value) = self._omni_queue.get_nowait()
             if event_type == "set":
                 if name == "state":
+                    print(f"PushChanges {value}")
                     super().set_state(value)
                 elif name == "status":
                     super().set_status(value)

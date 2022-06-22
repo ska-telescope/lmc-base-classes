@@ -6,21 +6,30 @@ IMAGE_FOR_DIAGRAMS = artefact.skao.int/ska-tango-images-pytango-builder:9.3.28
 
 # E203 and W503 conflict with black, line line set to 110 for long intersphinx doc strings
 # A003 shadowing python builtin
-PYTHON_SWITCHES_FOR_FLAKE8 = --extend-ignore=BLK,T --enable=DAR104 --ignore=A003,E203,FS003,W503,N802 --max-complexity=10 \
+PYTHON_SWITCHES_FOR_FLAKE8 = --extend-ignore=BLK,T --enable=DAR104 --ignore=A003,E203,FS003,W503,N802 --max-complexity=11 \
     --docstring-style=SPHINX  --max-line-length=110 --rst-roles=py:attr,py:class,py:const,py:exc,py:func,py:meth,py:mod \
     --rst-directives=uml
 
 PYTHON_SWITCHES_FOR_ISORT = --skip-glob=*/__init__.py
 PYTHON_SWITCHES_FOR_BLACK = --line-length 88
 PYTHON_TEST_FILE = tests
+PYTHON_VARS_AFTER_PYTEST = --forked
+
 ## Paths containing python to be formatted and linted
 ## Replace with src & tests when all completed
 PYTHON_LINT_TARGET = src/ska_tango_base/base \
-    src/ska_tango_base/obs/obs_state_model.py \
-    src/ska_tango_base/subarray/subarray_obs_state_model.py \
+    src/ska_tango_base/obs \
+    src/ska_tango_base/subarray \
     src/ska_tango_base/commands.py \
     src/ska_tango_base/executor.py \
-    src/ska_tango_base/testing/mock/mock_callable.py
+    src/ska_tango_base/testing/mock/mock_callable.py \
+    src/ska_tango_base/testing/reference/reference_base_component_manager.py \
+    src/ska_tango_base/testing/reference/reference_subarray_component_manager.py \
+    tests/unit/test_base_device.py \
+    tests/unit/test_base_component_manager.py \
+    tests/unit/test_obs_device.py \
+    tests/unit/test_subarray_device.py \
+    tests/unit/test_subarray_component_manager.py
 
 DOCS_SPHINXOPTS=-n -W --keep-going
 

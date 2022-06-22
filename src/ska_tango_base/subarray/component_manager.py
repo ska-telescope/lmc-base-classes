@@ -1,5 +1,16 @@
+# -*- coding: utf-8 -*-
+#
+# This file is part of the SKA Tango Base project
+#
+# Distributed under the terms of the BSD 3-clause new license.
+# See LICENSE.txt for more info.
 """This module provides an abstract component manager for SKA Tango subarray devices."""
+from __future__ import annotations
+
+from typing import Any, Callable, Optional
+
 from ska_tango_base.base import BaseComponentManager
+from ska_tango_base.executor import TaskStatus
 
 
 class SubarrayComponentManager(BaseComponentManager):
@@ -16,57 +27,142 @@ class SubarrayComponentManager(BaseComponentManager):
     * Monitoring its component, e.g. detect that a scan has completed
     """
 
-    def assign(self, resources, task_callback):
+    def assign(
+        self: SubarrayComponentManager,
+        resources: set[str],
+        task_callback: Optional[Callable[[], None]] = None,
+    ) -> tuple[TaskStatus, str]:
         """
         Assign resources to the component.
 
         :param resources: resources to be assigned
+        :param task_callback: callback to be called when the status of
+            the command changes
+
+        :raises NotImplementedError: This is an abstract class
         """
         raise NotImplementedError("SubarrayComponentManager is abstract.")
 
-    def release(self, resources, task_callback):
+    def release(
+        self: SubarrayComponentManager,
+        resources: set[str],
+        task_callback: Optional[Callable[[], None]],
+    ) -> tuple[TaskStatus, str]:
         """
         Release resources from the component.
 
         :param resources: resources to be released
+        :param task_callback: callback to be called when the status of
+            the command changes
+
+        :raises NotImplementedError: This is an abstract class
         """
         raise NotImplementedError("SubarrayComponentManager is abstract.")
 
-    def release_all(self, task_callback):
-        """Release all resources."""
+    def release_all(
+        self: SubarrayComponentManager, task_callback: Optional[Callable]
+    ) -> tuple[TaskStatus, str]:
+        """
+        Release all resources.
+
+        :param task_callback: callback to be called when the status of
+            the command changes
+
+        :raises NotImplementedError: This is an abstract class
+        """
         raise NotImplementedError("SubarrayComponentManager is abstract.")
 
-    def configure(self, configuration, task_callback):
+    def configure(
+        self, configuration: dict[str, Any], task_callback: Optional[Callable[[], None]]
+    ) -> tuple[TaskStatus, str]:
         """
         Configure the component.
 
         :param configuration: the configuration to be configured
-        :type configuration: dict
+        :param task_callback: callback to be called when the status of
+            the command changes
+
+        :raises NotImplementedError: This is an abstract class
         """
         raise NotImplementedError("SubarrayComponentManager is abstract.")
 
-    def deconfigure(self, task_callback):
-        """Deconfigure this component."""
+    def deconfigure(
+        self: SubarrayComponentManager, task_callback: Optional[Callable]
+    ) -> tuple[TaskStatus, str]:
+        """
+        Deconfigure this component.
+
+        :param task_callback: callback to be called when the status of
+            the command changes
+
+        :raises NotImplementedError: This is an abstract class
+        """
         raise NotImplementedError("SubarrayComponentManager is abstract.")
 
-    def scan(self, args, task_callback):
-        """Start scanning."""
+    def scan(
+        self: SubarrayComponentManager, args: str, task_callback: Optional[Callable]
+    ) -> tuple[TaskStatus, str]:
+        """
+        Start scanning.
+
+        :param args: scan parameters encoded in a json string
+        :param task_callback: callback to be called when the status of
+            the command changes
+
+        :raises NotImplementedError: This is an abstract class
+        """
         raise NotImplementedError("SubarrayComponentManager is abstract.")
 
-    def end_scan(self, task_callback):
-        """End scanning."""
+    def end_scan(
+        self: SubarrayComponentManager, task_callback: Optional[Callable]
+    ) -> tuple[TaskStatus, str]:
+        """
+        End scanning.
+
+        :param task_callback: callback to be called when the status of
+            the command changes
+
+        :raises NotImplementedError: This is an abstract class
+        """
         raise NotImplementedError("SubarrayComponentManager is abstract.")
 
-    def abort(self, task_callback):
-        """Tell the component to abort whatever it was doing."""
+    def abort(
+        self: SubarrayComponentManager, task_callback: Optional[Callable]
+    ) -> tuple[TaskStatus, str]:
+        """
+        Tell the component to abort whatever it was doing.
+
+        :param task_callback: callback to be called when the status of
+            the command changes
+
+        :raises NotImplementedError: This is an abstract class
+        """
         raise NotImplementedError("SubarrayComponentManager is abstract.")
 
-    def obsreset(self, task_callback):
-        """Reset the component to unconfigured but do not release resources."""
+    def obsreset(
+        self: SubarrayComponentManager, task_callback: Optional[Callable]
+    ) -> tuple[TaskStatus, str]:
+        """
+        Reset the component to unconfigured but do not release resources.
+
+        :param task_callback: callback to be called when the status of
+            the command changes
+
+        :raises NotImplementedError: This is an abstract class
+        """
         raise NotImplementedError("SubarrayComponentManager is abstract.")
 
-    def restart(self, task_callback):
-        """Deconfigure and release all resources."""
+    def restart(
+        self: SubarrayComponentManager, task_callback: Optional[Callable]
+    ) -> tuple[TaskStatus, str]:
+        """
+        Deconfigure and release all resources.
+
+        :param task_callback: callback to be called when the status of
+            the command changes
+
+        :raises NotImplementedError: This is an abstract class
+        """
         raise NotImplementedError("SubarrayComponentManager is abstract.")
 
     @property

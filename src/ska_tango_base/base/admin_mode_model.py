@@ -1,4 +1,9 @@
-# pylint: skip-file  # TODO: Incrementally lint this repo
+# -*- coding: utf-8 -*-
+#
+# This file is part of the SKA Tango Base project
+#
+# Distributed under the terms of the BSD 3-clause new license.
+# See LICENSE.txt for more info.
 """
 This module specifies the admin mode model for SKA LMC Tango devices.
 
@@ -10,7 +15,7 @@ reported by Tango devices through the ``AdminMode`` attribute.
 from __future__ import annotations
 
 import logging
-from typing import Callable, Optional, cast
+from typing import Callable, Optional
 
 from transitions.extensions import LockedMachine as Machine
 
@@ -31,7 +36,7 @@ class _AdminModeMachine(Machine):
 
     def __init__(
         self: _AdminModeMachine,
-        callback: Optional[Callable] = None,
+        callback: Optional[Callable[[AdminMode], None]] = None,
         **extra_kwargs: dict,
     ) -> None:
         """
@@ -96,6 +101,9 @@ class _AdminModeMachine(Machine):
         """
         if self._callback is not None:
             self._callback(self.state)
+            print(
+                f"AdminStateMachine._state_changed sets {self.state} #################"
+            )
 
 
 class AdminModeModel:
@@ -155,7 +163,7 @@ class AdminModeModel:
     def __init__(
         self: AdminModeModel,
         logger: logging.Logger,
-        callback: Optional[Callable] = None,
+        callback: Optional[Callable[[AdminMode], None]] = None,
     ) -> None:
         """
         Initialise the state model.
@@ -166,7 +174,7 @@ class AdminModeModel:
         """
         self.logger = logger
 
-        self._admin_mode: Optional[AdminMode] = None
+        self._admin_mode = AdminMode.OFFLINE
         self._callback = callback
 
         self._admin_mode_machine = _AdminModeMachine(
@@ -180,7 +188,7 @@ class AdminModeModel:
 
         :returns: admin_mode of this state model
         """
-        return cast(AdminMode, self._admin_mode)
+        return self._admin_mode
 
     def _admin_mode_changed(self: AdminModeModel, machine_state: str) -> None:
         """

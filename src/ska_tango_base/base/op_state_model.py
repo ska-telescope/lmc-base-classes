@@ -1,4 +1,9 @@
-# pylint: skip-file  # TODO: Incrementally lint this repo
+# -*- coding: utf-8 -*-
+#
+# This file is part of the SKA Tango Base project
+#
+# Distributed under the terms of the BSD 3-clause new license.
+# See LICENSE.txt for more info.
 """
 This module specifies the operational state ("opState") model for SKA LMC Tango devices.
 
@@ -372,6 +377,7 @@ class _OpStateMachine(Machine):
         """
         if self._callback is not None:
             self._callback(self.state)
+            print(f"opstatemachine._state_changed sets {self.state} ############")
 
 
 class OpStateModel:
@@ -438,11 +444,8 @@ class OpStateModel:
         Initialise the operational state model.
 
         :param logger: the logger to be used by this state model.
-        :type logger: a logger that implements the standard library
-            logger interface
         :param callback: A callback to be called when the state machine
             for op_state reports a change of state
-        :type callback: callable
         """
         self.logger = logger
 
@@ -491,6 +494,7 @@ class OpStateModel:
             machine
         """
         op_state = self._op_state_mapping[machine_state]
+        print(f"op_state {op_state} with machine state {machine_state}")
         if self._op_state != op_state:
             self._op_state = op_state
             if self._callback is not None:
@@ -529,6 +533,7 @@ class OpStateModel:
 
         :param action: an action, as given in the transitions table
         """
+        print(f"perform_action {action} #######################")
         _ = self.is_action_allowed(action, raise_if_disallowed=True)
         self._op_state_machine.trigger(action)
 

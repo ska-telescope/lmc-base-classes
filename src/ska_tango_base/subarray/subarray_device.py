@@ -1,10 +1,9 @@
-# pylint: skip-file  # TODO: Incrementally lint this repo
 # -*- coding: utf-8 -*-
 #
-# This file is part of the SKASubarray project
+# This file is part of the SKA Tango Base project
 #
-#
-#
+# Distributed under the terms of the BSD 3-clause new license.
+# See LICENSE.txt for more info.
 """
 SKASubarray.
 
@@ -13,28 +12,26 @@ resources into/from Subarray, configuring capabilities, and exposes the
 related information like assigned resources, configured capabilities,
 etc.
 """
-# PROTECTED REGION ID(SKASubarray.additionnal_import) ENABLED START #
+from __future__ import annotations
+
 import functools
 import json
-from typing import List
+import logging
+from typing import Callable, List, Optional, Tuple
 
 from tango import DebugIt
-from tango.server import attribute, command, device_property, run
+from tango.server import attribute, command, device_property
 
-from ska_tango_base.commands import (
-    ResultCode,
-    SlowCommand,
-    SubmittedSlowCommand,
-)
+# SKA specific imports
+from ska_tango_base import SKAObsDevice
+from ska_tango_base.base.base_device import CommandTracker
+from ska_tango_base.commands import ResultCode, SlowCommand, SubmittedSlowCommand
 from ska_tango_base.control_model import ObsState
 from ska_tango_base.executor import TaskStatus
 from ska_tango_base.faults import StateModelError
-from ska_tango_base.obs import SKAObsDevice
-from ska_tango_base.subarray.subarray_obs_state_model import (
-    SubarrayObsStateModel,
-)
+from ska_tango_base.subarray import SubarrayComponentManager, SubarrayObsStateModel
 
-# PROTECTED REGION END #    //  SKASubarray.additionnal_imports
+DevVarLongStringArrayType = Tuple[List[ResultCode], List[Optional[str]]]
 
 __all__ = ["SKASubarray", "main"]
 
@@ -45,14 +42,13 @@ class SKASubarray(SKAObsDevice):
     class InitCommand(SKAObsDevice.InitCommand):
         """A class for the SKASubarray's init_device() "command"."""
 
-        def do(self):
+        def do(self: SKASubarray.InitCommand) -> tuple[ResultCode, str]:
             """
             Stateless hook for device initialisation.
 
             :return: A tuple containing a return code and a string
                 message indicating status. The message is for
                 information purpose only.
-            :rtype: (ResultCode, str)
             """
             super().do()
 
@@ -67,8 +63,12 @@ class SKASubarray(SKAObsDevice):
         """A class for SKASubarray's Abort() command."""
 
         def __init__(
-            self, command_tracker, component_manager, callback, logger=None
-        ):
+            self: SKASubarray.AbortCommand,
+            command_tracker: CommandTracker,
+            component_manager: SubarrayComponentManager,
+            callback: Callable[[], None],
+            logger: Optional[logging.Logger] = None,
+        ) -> None:
             """
             Initialise a new AbortCommand instance.
 
@@ -82,14 +82,15 @@ class SKASubarray(SKAObsDevice):
             self._component_manager = component_manager
             super().__init__(callback=callback, logger=logger)
 
-        def do(self):
+        def do(  # type: ignore[override]
+            self: SKASubarray.AbortCommand,
+        ) -> tuple[ResultCode, str]:
             """
             Stateless hook for Abort() command functionality.
 
             :return: A tuple containing a return code and a string
                 message indicating status. The message is for
                 information purpose only.
-            :rtype: (ResultCode, str)
             """
             command_id = self._command_tracker.new_command(
                 "Abort", completed_callback=self._completed
@@ -103,19 +104,18 @@ class SKASubarray(SKAObsDevice):
             assert status == TaskStatus.IN_PROGRESS
             return ResultCode.STARTED, command_id
 
-    # PROTECTED REGION ID(SKASubarray.class_variable) ENABLED START #
-    def _init_state_model(self):
+    def _init_state_model(self: SKASubarray) -> None:
         """Set up the state model for the device."""
         super()._init_state_model()
         self.obs_state_model = SubarrayObsStateModel(
             logger=self.logger, callback=self._update_obs_state
         )
 
-    def init_command_objects(self):
+    def init_command_objects(self: SKASubarray) -> None:
         """Set up the command objects."""
         super().init_command_objects()
 
-        def _callback(hook, running):
+        def _callback(hook: Callable, running: bool) -> None:
             action = "invoked" if running else "completed"
             self.obs_state_model.perform_action(f"{hook}_{action}")
 
@@ -158,13 +158,13 @@ class SKASubarray(SKAObsDevice):
         )
 
     def _component_state_changed(
-        self,
-        fault=None,
-        power=None,
-        resourced=None,
-        configured=None,
-        scanning=None,
-    ):
+        self: SKASubarray,
+        fault: Optional[bool] = None,
+        power: Optional[bool] = None,
+        resourced: Optional[bool] = None,
+        configured: Optional[bool] = None,
+        scanning: Optional[bool] = None,
+    ) -> None:
         super()._component_state_changed(fault=fault, power=power)
 
         if resourced is not None:
@@ -194,50 +194,18 @@ class SKASubarray(SKAObsDevice):
         dtype="str",
     )
 
-    # ----------
-    # Attributes
-    # ----------
-    activationTime = attribute(
-        dtype="double",
-        unit="s",
-        standard_unit="s",
-        display_unit="s",
-        doc="Time of activation in seconds since Unix epoch.",
-    )
-    """Device attribute."""
-
-    assignedResources = attribute(
-        dtype=("str",),
-        max_dim_x=100,
-        doc="The list of resources assigned to the subarray.",
-    )
-    """Device attribute."""
-
-    configuredCapabilities = attribute(
-        dtype=("str",),
-        max_dim_x=10,
-        doc="A list of capability types with no. of instances "
-        "in use on this subarray; "
-        "e.g.\nCorrelators:512, PssBeams:4, "
-        "PstBeams:4, VlbiBeams:0.",
-    )
-    """Device attribute."""
-
     # ---------------
     # General methods
     # ---------------
-    def always_executed_hook(self):
-        # PROTECTED REGION ID(SKASubarray.always_executed_hook) ENABLED START #
+    def always_executed_hook(self: SKASubarray) -> None:
         """
         Perform actions that are executed before every device command.
 
         This is a Tango hook.
         """
         pass
-        # PROTECTED REGION END #    //  SKASubarray.always_executed_hook
 
-    def delete_device(self):
-        # PROTECTED REGION ID(SKASubarray.delete_device) ENABLED START #
+    def delete_device(self: SKASubarray) -> None:
         """
         Clean up any resources prior to device deletion.
 
@@ -247,52 +215,65 @@ class SKASubarray(SKAObsDevice):
         be released prior to device deletion.
         """
         pass
-        # PROTECTED REGION END #    //  SKASubarray.delete_device
 
-    # ------------------
-    # Attributes methods
-    # ------------------
-    def read_activationTime(self):
-        # PROTECTED REGION ID(SKASubarray.activationTime_read) ENABLED START #
+    # ----------
+    # Attributes
+    # ----------
+    @attribute(
+        dtype="double",
+        unit="s",
+        standard_unit="s",
+        display_unit="s",
+    )
+    def activationTime(self: SKASubarray) -> float:
         """
-        Read the time since device is activated.
+        Read the time of activation in seconds since Unix epoch.
 
         :return: Time of activation in seconds since Unix epoch.
         """
         return self._activation_time
-        # PROTECTED REGION END #    //  SKASubarray.activationTime_read
 
-    def read_assignedResources(self):
-        # PROTECTED REGION ID(SKASubarray.assignedResources_read) ENABLED START #
+    @attribute(
+        dtype=("str",),
+        max_dim_x=100,
+    )
+    def assignedResources(self: SKASubarray) -> list[str]:
         """
         Read the resources assigned to the device.
+
+        The list of resources assigned to the subarray.
 
         :return: Resources assigned to the device.
         """
         return self.component_manager.assigned_resources
-        # PROTECTED REGION END #    //  SKASubarray.assignedResources_read
 
-    def read_configuredCapabilities(self):
-        # PROTECTED REGION ID(SKASubarray.configuredCapabilities_read) ENABLED START #
+    @attribute(
+        dtype=("str",),
+        max_dim_x=10,
+    )
+    def configuredCapabilities(self: SKASubarray) -> list[str]:
         """
         Read capabilities configured in the Subarray.
+
+        A list of capability types with no. of instances in use on this subarray;
+        e.g. Correlators:512, PssBeams:4 PstBeams:4, VlbiBeams:0.
 
         :return: A list of capability types with no. of instances used
             in the Subarray
         """
         return self.component_manager.configured_capabilities
-        # PROTECTED REGION END #    //  SKASubarray.configuredCapabilities_read
 
     # --------
     # Commands
     # --------
-    def is_AssignResources_allowed(self):
+    def is_AssignResources_allowed(self: SKASubarray) -> bool:
         """
         Return whether the `AssignResource` command may be called in the current state.
 
+        :raises StateModelError: command not permitted in observation state
+
         :return: whether the command may be called in the current device
             state
-        :rtype: bool
         """
         # If we return False here, Tango will raise an exception that incorrectly blames
         # refusal on device state.
@@ -309,7 +290,7 @@ class SKASubarray(SKAObsDevice):
         dtype_out="DevVarLongStringArray",
     )
     @DebugIt()
-    def AssignResources(self, argin: List[str]):
+    def AssignResources(self: SKASubarray, argin: str) -> DevVarLongStringArrayType:
         """
         Assign resources to this subarray.
 
@@ -322,20 +303,20 @@ class SKASubarray(SKAObsDevice):
             code indicates that the command was accepted, the message is the unique ID
             of the task that will execute the command. If the result code indicates that
             the command was not excepted, the message explains why.
-        :rtype: ([ResultCode], [str])
         """
         handler = self.get_command_object("AssignResources")
         args = json.loads(argin)
         (result_code, message) = handler(args)
-        return [[result_code], [message]]
+        return ([result_code], [message])
 
-    def is_ReleaseResources_allowed(self):
+    def is_ReleaseResources_allowed(self: SKASubarray) -> bool:
         """
         Return whether the `ReleaseResources` command may be called in current state.
 
+        :raises StateModelError: command not permitted in observation state
+
         :return: whether the command may be called in the current device
             state
-        :rtype: bool
         """
         # If we return False here, Tango will raise an exception that incorrectly blames
         # refusal on device state.
@@ -352,7 +333,7 @@ class SKASubarray(SKAObsDevice):
         dtype_out="DevVarLongStringArray",
     )
     @DebugIt()
-    def ReleaseResources(self, argin: List[str]):
+    def ReleaseResources(self: SKASubarray, argin: str) -> DevVarLongStringArrayType:
         """
         Delta removal of assigned resources.
 
@@ -362,20 +343,20 @@ class SKASubarray(SKAObsDevice):
         :param argin: the resources to be released
 
         :return: A tuple containing a result code and the unique ID of the command
-        :rtype: ([ResultCode], [str])
         """
         handler = self.get_command_object("ReleaseResources")
         args = json.loads(argin)
         (result_code, message) = handler(args)
-        return [[result_code], [message]]
+        return ([result_code], [message])
 
-    def is_ReleaseAllResources_allowed(self):
+    def is_ReleaseAllResources_allowed(self: SKASubarray) -> bool:
         """
         Return whether `ReleaseAllResources` may be called in the current device state.
 
+        :raises StateModelError: command not permitted in observation state
+
         :return: whether the command may be called in the current device
             state
-        :rtype: bool
         """
         # If we return False here, Tango will raise an exception that incorrectly blames
         # refusal on device state.
@@ -392,7 +373,7 @@ class SKASubarray(SKAObsDevice):
         doc_out="([Command ResultCode], [Unique ID of the command])",
     )
     @DebugIt()
-    def ReleaseAllResources(self):
+    def ReleaseAllResources(self: SKASubarray) -> DevVarLongStringArrayType:
         """
         Remove all resources to tear down to an empty subarray.
 
@@ -400,19 +381,19 @@ class SKASubarray(SKAObsDevice):
         the command class.
 
         :return: A tuple containing a result code and the unique ID of the command
-        :rtype: ([ResultCode], [str])
         """
         handler = self.get_command_object("ReleaseAllResources")
         (result_code, message) = handler()
-        return [[result_code], [message]]
+        return ([result_code], [message])
 
-    def is_Configure_allowed(self):
+    def is_Configure_allowed(self: SKASubarray) -> bool:
         """
         Return whether `Configure` may be called in the current device state.
 
+        :raises StateModelError: command not permitted in observation state
+
         :return: whether the command may be called in the current device
             state
-        :rtype: bool
         """
         # If we return False here, Tango will raise an exception that incorrectly blames
         # refusal on device state.
@@ -426,36 +407,34 @@ class SKASubarray(SKAObsDevice):
 
     @command(
         dtype_in="DevString",
-        doc_in="JSON-encoded string with the scan configuration",
         dtype_out="DevVarLongStringArray",
-        doc_out="([Command ResultCode], [Unique ID of the command])",
     )
     @DebugIt()
-    def Configure(self, argin):
+    def Configure(self: SKASubarray, argin: str) -> DevVarLongStringArrayType:
         """
         Configure the capabilities of this subarray.
 
         To modify behaviour for this command, modify the do() method of
         the command class.
 
-        :param argin: configuration specification
-        :type argin: str
+        :param argin: JSON-encoded string with the scan configuration",
+            configuration specification
 
         :return: A tuple containing a result code and the unique ID of the command
-        :rtype: ([ResultCode], [str])
         """
         handler = self.get_command_object("Configure")
         args = json.loads(argin)
         (result_code, message) = handler(args)
-        return [[result_code], [message]]
+        return ([result_code], [message])
 
-    def is_Scan_allowed(self):
+    def is_Scan_allowed(self: SKASubarray) -> bool:
         """
         Return whether the `Scan` command may be called in the current device state.
 
+        :raises StateModelError: command not permitted in observation state
+
         :return: whether the command may be called in the current device
             state
-        :rtype: bool
         """
         # If we return False here, Tango will raise an exception that incorrectly blames
         # refusal on device state.
@@ -469,35 +448,33 @@ class SKASubarray(SKAObsDevice):
 
     @command(
         dtype_in="DevString",
-        doc_in="JSON-encoded string with the per-scan configuration",
         dtype_out="DevVarLongStringArray",
-        doc_out="([Command ResultCode], [Unique ID of the command])",
     )
     @DebugIt()
-    def Scan(self, argin: List[str]):
+    def Scan(self: SKASubarray, argin: str) -> DevVarLongStringArrayType:
         """
         Start scanning.
 
         To modify behaviour for this command, modify the do() method of
         the command class.
 
-        :param argin: Information about the scan
+        :param argin: JSON-encoded string with the per-scan configuration
 
         :return: A tuple containing a result code and the unique ID of the command
-        :rtype: ([ResultCode], [str])
         """
         handler = self.get_command_object("Scan")
         args = json.loads(argin)
         (result_code, message) = handler(args)
-        return [[result_code], [message]]
+        return ([result_code], [message])
 
-    def is_EndScan_allowed(self):
+    def is_EndScan_allowed(self: SKASubarray) -> bool:
         """
         Return whether the `EndScan` command may be called in the current device state.
 
+        :raises StateModelError: command not permitted in observation state
+
         :return: whether the command may be called in the current device
             state
-        :rtype: bool
         """
         # If we return False here, Tango will raise an exception that incorrectly blames
         # refusal on device state.
@@ -511,10 +488,9 @@ class SKASubarray(SKAObsDevice):
 
     @command(
         dtype_out="DevVarLongStringArray",
-        doc_out="([Command ResultCode], [Unique ID of the command])",
     )
     @DebugIt()
-    def EndScan(self):
+    def EndScan(self: SKASubarray) -> DevVarLongStringArrayType:
         """
         End the scan.
 
@@ -522,19 +498,19 @@ class SKASubarray(SKAObsDevice):
         the command class.
 
         :return: A tuple containing a result code and the unique ID of the command
-        :rtype: ([ResultCode], [str])
         """
         handler = self.get_command_object("EndScan")
         (result_code, message) = handler()
-        return [[result_code], [message]]
+        return ([result_code], [message])
 
-    def is_End_allowed(self):
+    def is_End_allowed(self: SKASubarray) -> bool:
         """
         Return whether the `End` command may be called in the current device state.
 
+        :raises StateModelError: command not permitted in observation state
+
         :return: whether the command may be called in the current device
             state
-        :rtype: bool
         """
         # If we return False here, Tango will raise an exception that incorrectly blames
         # refusal on device state.
@@ -548,8 +524,7 @@ class SKASubarray(SKAObsDevice):
 
     @command(dtype_out="DevVarLongStringArray")
     @DebugIt()
-    def End(self):
-        # PROTECTED REGION ID(SKASubarray.EndSB) ENABLED START #
+    def End(self: SKASubarray) -> DevVarLongStringArrayType:
         """
         End the scan block.
 
@@ -557,19 +532,19 @@ class SKASubarray(SKAObsDevice):
         the command class.
 
         :return: A tuple containing a result code and the unique ID of the command
-        :rtype: ([ResultCode], [str])
         """
         handler = self.get_command_object("End")
         (result_code, message) = handler()
-        return [[result_code], [message]]
+        return ([result_code], [message])
 
-    def is_Abort_allowed(self):
+    def is_Abort_allowed(self: SKASubarray) -> bool:
         """
         Return whether the `Abort` command may be called in the current device state.
 
+        :raises StateModelError: command not permitted in observation state
+
         :return: whether the command may be called in the current device
             state
-        :rtype: bool
         """
         # If we return False here, Tango will raise an exception that incorrectly blames
         # refusal on device state.
@@ -589,7 +564,7 @@ class SKASubarray(SKAObsDevice):
 
     @command(dtype_out="DevVarLongStringArray")
     @DebugIt()
-    def Abort(self):
+    def Abort(self: SKASubarray) -> DevVarLongStringArrayType:
         """
         Abort any long-running command such as ``Configure()`` or ``Scan()``.
 
@@ -597,19 +572,19 @@ class SKASubarray(SKAObsDevice):
         the command class.
 
         :return: A tuple containing a result code and the unique ID of the command
-        :rtype: ([ResultCode], [str])
         """
         handler = self.get_command_object("Abort")
         (result_code, message) = handler()
-        return [[result_code], [message]]
+        return ([result_code], [message])
 
-    def is_ObsReset_allowed(self):
+    def is_ObsReset_allowed(self: SKASubarray) -> bool:
         """
         Return whether the `ObsReset` command may be called in the current device state.
 
+        :raises StateModelError: command not permitted in observation state
+
         :return: whether the command may be called in the current device
             state
-        :rtype: bool
         """
         # If we return False here, Tango will raise an exception that incorrectly blames
         # refusal on device state.
@@ -623,10 +598,9 @@ class SKASubarray(SKAObsDevice):
 
     @command(
         dtype_out="DevVarLongStringArray",
-        doc_out="([Command ResultCode], [Unique ID of the command])",
     )
     @DebugIt()
-    def ObsReset(self):
+    def ObsReset(self: SKASubarray) -> DevVarLongStringArrayType:
         """
         Reset the current observation process.
 
@@ -634,19 +608,19 @@ class SKASubarray(SKAObsDevice):
         the command class.
 
         :return: A tuple containing a result code and the unique ID of the command
-        :rtype: ([ResultCode], [str])
         """
         handler = self.get_command_object("ObsReset")
         (result_code, message) = handler()
-        return [[result_code], [message]]
+        return ([result_code], [message])
 
-    def is_Restart_allowed(self):
+    def is_Restart_allowed(self: SKASubarray) -> bool:
         """
         Return whether the `Restart` command may be called in the current device state.
 
+        :raises StateModelError: command not permitted in observation state
+
         :return: whether the command may be called in the current device
             state
-        :rtype: bool
         """
         # If we return False here, Tango will raise an exception that incorrectly blames
         # refusal on device state.
@@ -660,10 +634,9 @@ class SKASubarray(SKAObsDevice):
 
     @command(
         dtype_out="DevVarLongStringArray",
-        doc_out="([Command ResultCode], [Unique ID of the command])",
     )
     @DebugIt()
-    def Restart(self):
+    def Restart(self: SKASubarray) -> DevVarLongStringArrayType:
         """
         Restart the subarray. That is, deconfigure and release all resources.
 
@@ -671,28 +644,25 @@ class SKASubarray(SKAObsDevice):
         the command class.
 
         :return: A tuple containing a result code and the unique ID of the command
-        :rtype: ([ResultCode], [str])
         """
         handler = self.get_command_object("Restart")
         (result_code, message) = handler()
-        return [[result_code], [message]]
+        return ([result_code], [message])
 
 
 # ----------
 # Run server
 # ----------
-def main(args=None, **kwargs):
-    # PROTECTED REGION ID(SKASubarray.main) ENABLED START #
+def main(*args: str, **kwargs: str) -> int:
     """
-    Launch an SKASubarray device.
+    Entry point for module.
 
-    :param args: positional args to tango.server.run
-    :param kwargs: named args to tango.server.run
+    :param args: positional arguments
+    :param kwargs: named arguments
 
     :return: exit code
     """
-    return run((SKASubarray,), args=args, **kwargs)
-    # PROTECTED REGION END #    //  SKASubarray.main
+    return SKASubarray.run_server(args=args or None, **kwargs)
 
 
 if __name__ == "__main__":

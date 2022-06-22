@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # pylint: skip-file  # TODO: Incrementally lint this repo
 """This module models component management for SKA subarray devices."""
 from typing import List
@@ -5,6 +6,26 @@ from typing import List
 from ska_tango_base.base import check_communicating, check_on
 from ska_tango_base.commands import ResultCode
 from ska_tango_base.control_model import PowerState
+=======
+# -*- coding: utf-8 -*-
+#
+# This file is part of the SKA Low MCCS project
+#
+#
+# Distributed under the terms of the BSD 3-clause new license.
+# See LICENSE for more info.
+"""This module models component management for SKA subarray devices."""
+from __future__ import annotations
+
+import logging
+import threading
+from typing import Any, Callable, Optional
+
+from ska_tango_base.base import check_communicating, check_on
+from ska_tango_base.commands import ResultCode
+from ska_tango_base.control_model import CommunicationStatus, PowerState
+from ska_tango_base.executor import TaskStatus
+>>>>>>> 50f357b (MCCS-934 type hints, static type checking & standard templates)
 from ska_tango_base.faults import CapabilityValidationError
 from ska_tango_base.subarray import SubarrayComponentManager
 from ska_tango_base.testing.reference import (
@@ -41,11 +62,11 @@ class FakeSubarrayComponent(FakeBaseComponent):
     class _ResourcePool:
         """A simple class for managing subarray resources."""
 
-        def __init__(self):
+        def __init__(self: FakeSubarrayComponent._ResourcePool) -> None:
             """Initialise a new instance."""
-            self._resources = set()
+            self._resources: set = set()
 
-        def __len__(self):
+        def __len__(self: FakeSubarrayComponent._ResourcePool) -> int:
             """
             Return the number of resources currently assigned.
 
@@ -53,42 +74,44 @@ class FakeSubarrayComponent(FakeBaseComponent):
             whether there are any assigned resources: ``if len()``.
 
             :return: number of resources assigned
-            :rtype: int
             """
             return len(self._resources)
 
-        def assign(self, resources):
+        def assign(
+            self: FakeSubarrayComponent._ResourcePool, resources: set[str]
+        ) -> None:
             """
             Assign some resources.
 
             :param resources: resources to be assigned
-            :type resources: set(str)
             """
             self._resources |= set(resources)
 
-        def release(self, resources):
+        def release(
+            self: FakeSubarrayComponent._ResourcePool, resources: set[str]
+        ) -> None:
             """
             Release some resources.
 
             :param resources: resources to be released
-            :type resources: set(str)
             """
             self._resources -= set(resources)
 
-        def release_all(self):
+        def release_all(self: FakeSubarrayComponent._ResourcePool) -> None:
             """Release all resources."""
             self._resources.clear()
 
-        def get(self):
+        def get(self: FakeSubarrayComponent._ResourcePool) -> set[str]:
             """
             Get current resources.
 
             :return: current resources.
-            :rtype: set(str)
             """
             return set(self._resources)
 
-        def check(self, resources):
+        def check(
+            self: FakeSubarrayComponent._ResourcePool, resources: set[str]
+        ) -> bool:
             """
             Check that this pool contains specified resources.
 
@@ -96,30 +119,40 @@ class FakeSubarrayComponent(FakeBaseComponent):
             need to check that the subarray has the resources needed to
             effect a configuration.
 
+            :param resources: resources to be checked
+
             :return: whether this resource pool contains the specified
                 resources
-            :rtype: bool
             """
             return resources in self._resources
 
     def __init__(
-        self,
-        capability_types,
-        time_to_return=0.05,
-        time_to_complete=0.4,
-        power=PowerState.OFF,
-        fault=None,
-        resourced=False,
-        configured=False,
-        scanning=False,
-        obsfault=False,
-        **kwargs,
-    ):
+        self: FakeSubarrayComponent,
+        capability_types: list[str],
+        time_to_return: float = 0.05,
+        time_to_complete: float = 0.4,
+        power: PowerState = PowerState.OFF,
+        fault: Optional[bool] = None,
+        resourced: bool = False,
+        configured: bool = False,
+        scanning: bool = False,
+        obsfault: bool = False,
+        **kwargs: Any,
+    ) -> None:
         """
         Initialise a new instance.
 
         :param capability_types: a list strings representing
             capability types.
+        :param time_to_return: time
+        :param time_to_complete: time
+        :param power: power state
+        :param fault: is in fault
+        :param resourced: is resourced
+        :param configured: is configured
+        :param scanning: is scanning
+        :param obsfault: is obs in fault
+        :param kwargs: additional arguments
         """
         self._resource_pool = self._ResourcePool()
 
@@ -145,9 +178,13 @@ class FakeSubarrayComponent(FakeBaseComponent):
             **kwargs,
         )
 
-    @property
+    @property  # type: ignore[misc]
     @check_on
+<<<<<<< HEAD
     def configured_capabilities(self) -> List[str]:
+=======
+    def configured_capabilities(self: FakeSubarrayComponent) -> list[str]:
+>>>>>>> 7ddac93 (MCCS-934 type hints, static type checking & standard templates)
         """
         Return the configured capabilities of this component.
 
@@ -158,18 +195,17 @@ class FakeSubarrayComponent(FakeBaseComponent):
         for capability_type, capability_instances in list(
             self._configured_capabilities.items()
         ):
-            configured_capabilities.append(
-                "{}:{}".format(capability_type, capability_instances)
-            )
+            configured_capabilities.append(f"{capability_type}:{capability_instances}")
         return sorted(configured_capabilities)
 
-    def _validate_capability_types(self, capability_types):
+    def _validate_capability_types(
+        self: FakeSubarrayComponent, capability_types: list[str]
+    ) -> None:
         """
         Check the validity of the input parameter passed to the Configure command.
 
         :param capability_types: a list strings representing
             capability types.
-        :type capability_types: list
 
         :raises CapabilityValidationError: If any of the capabilities
             requested are not valid.
@@ -180,13 +216,22 @@ class FakeSubarrayComponent(FakeBaseComponent):
 
         if invalid_capabilities:
             raise CapabilityValidationError(
+<<<<<<< HEAD
                 "Invalid capability types requested {}".format(
                     invalid_capabilities
                 )
+=======
+                f"Invalid capability types requested {invalid_capabilities}"
+>>>>>>> 50f357b (MCCS-934 type hints, static type checking & standard templates)
             )
 
     @check_on
-    def assign(self, resources, task_callback, task_abort_event):
+    def assign(
+        self: FakeSubarrayComponent,
+        resources: set[str],
+        task_callback: Optional[Callable[[], None]],
+        task_abort_event: threading.Event,
+    ) -> None:
         """
         Assign resources.
 
@@ -213,7 +258,12 @@ class FakeSubarrayComponent(FakeBaseComponent):
         )
 
     @check_on
-    def release(self, resources, task_callback, task_abort_event):
+    def release(
+        self: FakeSubarrayComponent,
+        resources: set[str],
+        task_callback: Optional[Callable[[], None]],
+        task_abort_event: threading.Event,
+    ) -> None:
         """
         Release resources.
 
@@ -240,7 +290,11 @@ class FakeSubarrayComponent(FakeBaseComponent):
         )
 
     @check_on
-    def release_all(self, task_callback, task_abort_event):
+    def release_all(
+        self: FakeSubarrayComponent,
+        task_callback: Optional[Callable[[], None]],
+        task_abort_event: threading.Event,
+    ) -> None:
         """
         Release all resources.
 
@@ -263,12 +317,16 @@ class FakeSubarrayComponent(FakeBaseComponent):
         )
 
     @check_on
-    def configure(self, configuration, task_callback, task_abort_event):
+    def configure(
+        self: FakeSubarrayComponent,
+        configuration: dict,
+        task_callback: Optional[Callable[[], None]],
+        task_abort_event: threading.Event,
+    ) -> None:
         """
         Configure the component.
 
         :param configuration: the configuration to be configured
-        :type configuration: dict
         :param task_callback: a callback to be called whenever the
             status of this task changes.
         :param task_abort_event: a threading.Event that can be checked
@@ -300,7 +358,11 @@ class FakeSubarrayComponent(FakeBaseComponent):
         )
 
     @check_on
-    def deconfigure(self, task_callback, task_abort_event):
+    def deconfigure(
+        self: FakeSubarrayComponent,
+        task_callback: Optional[Callable[[], None]],
+        task_abort_event: threading.Event,
+    ) -> None:
         """
         Deconfigure this component.
 
@@ -324,10 +386,16 @@ class FakeSubarrayComponent(FakeBaseComponent):
         )
 
     @check_on
-    def scan(self, args, task_callback, task_abort_event):
+    def scan(
+        self: FakeSubarrayComponent,
+        args: Any,
+        task_callback: Optional[Callable[[], None]],
+        task_abort_event: threading.Event,
+    ) -> None:
         """
         Start scanning.
 
+        :param args: additional arguments
         :param task_callback: a callback to be called whenever the
             status of this task changes.
         :param task_abort_event: a threading.Event that can be checked
@@ -345,7 +413,11 @@ class FakeSubarrayComponent(FakeBaseComponent):
         )
 
     @check_on
-    def end_scan(self, task_callback, task_abort_event):
+    def end_scan(
+        self: FakeSubarrayComponent,
+        task_callback: Optional[Callable[[], None]],
+        task_abort_event: threading.Event,
+    ) -> None:
         """
         End scanning.
 
@@ -366,17 +438,25 @@ class FakeSubarrayComponent(FakeBaseComponent):
         )
 
     @check_on
-    def simulate_scan_stopped(self):
+    def simulate_scan_stopped(self: FakeSubarrayComponent) -> None:
         """Tell the component to simulate spontaneous stopping its scan."""
         self._update_state(scanning=False)
 
     @check_on
-    def simulate_obsfault(self, obsfault):
-        """Tell the component to simulate an obsfault."""
+    def simulate_obsfault(self: FakeSubarrayComponent, obsfault: bool) -> None:
+        """
+        Tell the component to simulate an obsfault.
+
+        :param obsfault: fault indicator
+        """
         self._update_state(obsfault=obsfault)
 
     @check_on
-    def obsreset(self, task_callback, task_abort_event):
+    def obsreset(
+        self: FakeSubarrayComponent,
+        task_callback: Optional[Callable[[], None]],
+        task_abort_event: threading.Event,
+    ) -> None:
         """
         Reset an observation that has faulted or been aborted.
 
@@ -399,7 +479,11 @@ class FakeSubarrayComponent(FakeBaseComponent):
         )
 
     @check_on
-    def restart(self, task_callback, task_abort_event):
+    def restart(
+        self: FakeSubarrayComponent,
+        task_callback: Optional[Callable[[], None]],
+        task_abort_event: threading.Event,
+    ) -> None:
         """
         Restart the component after it has faulted or been aborted.
 
@@ -439,12 +523,14 @@ class ReferenceSubarrayComponentManager(
     """
 
     def __init__(
-        self,
-        capability_types,
-        logger,
-        communication_state_callback,
-        component_state_callback,
-        _component=None,
+        self: ReferenceSubarrayComponentManager,
+        capability_types: list[str],
+        logger: logging.Logger,
+        communication_state_callback: Optional[
+            Callable[[CommunicationStatus], None]
+        ] = None,
+        component_state_callback: Optional[Callable[[], None]] = None,
+        _component: Optional[object] = None,
     ):
         """
         Initialise a new ReferenceSubarrayComponentManager instance.
@@ -471,43 +557,74 @@ class ReferenceSubarrayComponentManager(
         )
 
     @check_communicating
-    def assign(self, resources, task_callback=None):
+    def assign(
+        self: ReferenceSubarrayComponentManager,
+        resources: set[str],
+        task_callback: Optional[Callable[[], None]] = None,
+    ) -> tuple[TaskStatus, str]:
         """
         Assign resources to the component.
 
         :param resources: resources to be assigned
-        :type resources: list(str)
+        :param task_callback: a callback to be called whenever the
+            status of this task changes.
+
+        :return: task status and message
         """
         return self.submit_task(
             self._component.assign, (resources,), task_callback=task_callback
         )
 
     @check_communicating
-    def release(self, resources, task_callback=None):
+    def release(
+        self: ReferenceSubarrayComponentManager,
+        resources: set[str],
+        task_callback: Optional[Callable[[], None]] = None,
+    ) -> tuple[TaskStatus, str]:
         """
         Release resources from the component.
 
         :param resources: resources to be released
-        :type resources: list(str)
+        :param task_callback: a callback to be called whenever the
+            status of this task changes.
+
+        :return: task status and message
         """
         return self.submit_task(
             self._component.release, (resources,), task_callback=task_callback
         )
 
     @check_communicating
-    def release_all(self, task_callback=None):
-        """Release all resources."""
+    def release_all(
+        self: ReferenceSubarrayComponentManager,
+        task_callback: Optional[Callable[[], None]] = None,
+    ) -> tuple[TaskStatus, str]:
+        """
+        Release all resources.
+
+        :param task_callback: a callback to be called whenever the
+            status of this task changes.
+
+        :return: task status and message
+        """
         return self.submit_task(
             self._component.release_all, task_callback=task_callback
         )
 
     @check_communicating
-    def configure(self, configuration, task_callback=None):
+    def configure(
+        self: ReferenceSubarrayComponentManager,
+        configuration: dict[str, Any],
+        task_callback: Optional[Callable[[], None]] = None,
+    ) -> tuple[TaskStatus, str]:
         """
         Configure the component.
 
         :param configuration: the configuration to be configured
-        :type configuration: dict
+        :param task_callback: a callback to be called whenever the
+            status of this task changes.
+
+        :return: task status and message
         """
         return self.submit_task(
             self._component.configure,
@@ -516,53 +633,129 @@ class ReferenceSubarrayComponentManager(
         )
 
     @check_communicating
-    def deconfigure(self, task_callback=None):
-        """Deconfigure this component."""
+    def deconfigure(
+        self: ReferenceSubarrayComponentManager,
+        task_callback: Optional[Callable[[], None]] = None,
+    ) -> tuple[TaskStatus, str]:
+        """
+        Deconfigure this component.
+
+        :param task_callback: a callback to be called whenever the
+            status of this task changes.
+
+        :return: task status and message
+        """
         return self.submit_task(
             self._component.deconfigure, task_callback=task_callback
         )
 
     @check_communicating
-    def scan(self, args, task_callback=None):
-        """Start scanning."""
+    def scan(
+        self: ReferenceSubarrayComponentManager,
+        args: Any,
+        task_callback: Optional[Callable[[], None]] = None,
+    ) -> tuple[TaskStatus, str]:
+        """
+        Start scanning.
+
+        :param args: additional arguments
+        :param task_callback: a callback to be called whenever the
+            status of this task changes.
+
+        :return: task status and message
+        """
         return self.submit_task(
             self._component.scan, (args,), task_callback=task_callback
         )
 
     @check_communicating
+<<<<<<< HEAD
     def end_scan(self, task_callback=None):
         """End scanning."""
         return self.submit_task(
             self._component.end_scan, task_callback=task_callback
         )
+=======
+    def end_scan(
+        self: ReferenceSubarrayComponentManager,
+        task_callback: Optional[Callable[[], None]] = None,
+    ) -> tuple[TaskStatus, str]:
+        """
+        End scanning.
+
+        :param task_callback: a callback to be called whenever the
+            status of this task changes.
+
+        :return: task status and message
+        """
+        return self.submit_task(self._component.end_scan, task_callback=task_callback)
+>>>>>>> 50f357b (MCCS-934 type hints, static type checking & standard templates)
 
     @check_communicating
-    def abort(self, task_callback=None):
-        """Tell the component to abort the observation."""
-        return self.abort_tasks(task_callback=task_callback)
+    def abort(
+        self: ReferenceSubarrayComponentManager,
+        task_callback: Optional[Callable[[], None]] = None,
+    ) -> tuple[TaskStatus, str]:
+        """
+        Tell the component to abort the observation.
+
+        :param task_callback: a callback to be called whenever the
+            status of this task changes.
+
+        :return: task status and message
+        """
+        return self.abort_tasks()
 
     @check_communicating
+<<<<<<< HEAD
     def obsreset(self, task_callback=None):
         """Deconfigure the component but do not release resources."""
         return self.submit_task(
             self._component.obsreset, task_callback=task_callback
         )
+=======
+    def obsreset(
+        self: ReferenceSubarrayComponentManager,
+        task_callback: Optional[Callable[[], None]] = None,
+    ) -> tuple[TaskStatus, str]:
+        """
+        Deconfigure the component but do not release resources.
+
+        :param task_callback: a callback to be called whenever the
+            status of this task changes.
+
+        :return: task status and message
+        """
+        return self.submit_task(self._component.obsreset, task_callback=task_callback)
+>>>>>>> 50f357b (MCCS-934 type hints, static type checking & standard templates)
 
     @check_communicating
-    def restart(self, task_callback=None):
+    def restart(
+        self: ReferenceSubarrayComponentManager,
+        task_callback: Optional[Callable[[], None]] = None,
+    ) -> tuple[TaskStatus, str]:
         """
         Tell the component to restart.
 
         It will return to a state in which it is unconfigured and empty
         of assigned resources.
+
+        :param task_callback: a callback to be called whenever the
+            status of this task changes.
+
+        :return: task status and message
         """
         return self.submit_task(
             self._component.restart, task_callback=task_callback
         )
 
-    @property
+    @property  # type: ignore[misc]
     @check_communicating
+<<<<<<< HEAD
     def assigned_resources(self) -> List[str]:
+=======
+    def assigned_resources(self: ReferenceSubarrayComponentManager) -> list[str]:
+>>>>>>> 7ddac93 (MCCS-934 type hints, static type checking & standard templates)
         """
         Return the resources assigned to the component.
 
@@ -570,9 +763,13 @@ class ReferenceSubarrayComponentManager(
         """
         return sorted(self._component._resource_pool.get())
 
-    @property
+    @property  # type: ignore[misc]
     @check_communicating
+<<<<<<< HEAD
     def configured_capabilities(self) -> List[str]:
+=======
+    def configured_capabilities(self: ReferenceSubarrayComponentManager) -> list[str]:
+>>>>>>> 7ddac93 (MCCS-934 type hints, static type checking & standard templates)
         """
         Return the configured capabilities of the component.
 

@@ -1,7 +1,15 @@
-# pylint: skip-file  # TODO: Incrementally lint this repo
+# -*- coding: utf-8 -*-
+#
+# This file is part of the SKA Tango Base project
+#
+# Distributed under the terms of the BSD 3-clause new license.
+# See LICENSE.txt for more info.
 """Tests of the ska_tango_base.executor module."""
+from __future__ import annotations
+
 from threading import Lock
 from time import sleep
+from typing import Callable
 
 import pytest
 from ska_tango_testing.mock import MockCallableGroup
@@ -13,7 +21,7 @@ class TestTaskExecutor:
     """Tests of the TaskExecutor class."""
 
     @pytest.fixture()
-    def max_workers(self):
+    def max_workers(self: TestTaskExecutor) -> int:
         """
         Return the maximum number of worker threads.
 
@@ -22,11 +30,13 @@ class TestTaskExecutor:
         return 3
 
     @pytest.fixture()
-    def executor(self, max_workers):
+    def executor(self: TestTaskExecutor, max_workers: int) -> TaskExecutor:
         """
         Return the TaskExecutor under test.
 
         :param max_workers: maximum number of worker threads.
+
+        :return: a TaskExecutor
         """
         return TaskExecutor(max_workers)
 
@@ -42,7 +52,12 @@ class TestTaskExecutor:
         job_callbacks = [f"job_{i}" for i in range(max_workers + 2)]
         return MockCallableGroup(*job_callbacks, "abort")
 
-    def test_task_execution(self, executor, max_workers, callbacks):
+    def test_task_execution(
+        self: TestTaskExecutor,
+        executor: TaskExecutor,
+        max_workers: int,
+        callbacks: dict[Hashable, Callable],
+    ) -> None:
         """
         Test that we can execute tasks.
 
@@ -95,7 +110,12 @@ class TestTaskExecutor:
         for i in range(1, max_workers + 1):
             callbacks[f"job_{i}"].assert_call(status=TaskStatus.COMPLETED)
 
-    def test_abort(self, executor, max_workers, callbacks):
+    def test_abort(
+        self: TestTaskExecutor,
+        executor: TaskExecutor,
+        max_workers: int,
+        callbacks: dict[Callable],
+    ) -> None:
         """
         Test that we can abort execution.
 
@@ -186,7 +206,9 @@ class TestTaskExecutor:
             status=TaskStatus.COMPLETED
         )
 
-    def test_exception(self, executor, callbacks):
+    def test_exception(
+        self: TestTaskExecutor, executor: TaskExecutor, callbacks: dict[Callable]
+    ) -> None:
         """
         Test that the executor handles an uncaught exception correctly.
 

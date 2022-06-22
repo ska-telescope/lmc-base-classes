@@ -1,8 +1,19 @@
-# pylint: skip-file  # TODO: Incrementally lint this repo
+# -*- coding: utf-8 -*-
+#
+# This file is part of the SKA Tango Base project
+#
+# Distributed under the terms of the BSD 3-clause new license.
+# See LICENSE.txt for more info.
 """Tests for the :py:mod:`ska_tango_base.component_manager` module."""
+from __future__ import annotations
+
 import itertools
+import logging
+import unittest.mock
+from typing import Callable, Hashable
 
 import pytest
+import pytest_mock
 
 from ska_tango_base.commands import ResultCode
 from ska_tango_base.control_model import CommunicationStatus, PowerState
@@ -17,7 +28,9 @@ class TestResourcePool:
     """Test suite for the SubarrayComponentManager._ResourcePool."""
 
     @pytest.fixture
-    def resource_pool(self):  # , mock_callback):
+    def resource_pool(
+        self: TestResourcePool,
+    ) -> FakeSubarrayComponent._ResourcePool:  # , mock_callback):
         """
         Fixture that yields the component's resource manager.
 
@@ -26,8 +39,14 @@ class TestResourcePool:
         """
         return FakeSubarrayComponent._ResourcePool()
 
-    def test_assign(self, resource_pool):
-        """Test that the ResourceManager assigns resource correctly."""
+    def test_assign(
+        self: TestResourcePool, resource_pool: FakeSubarrayComponent._ResourcePool
+    ) -> None:
+        """
+        Test that the ResourceManager assigns resource correctly.
+
+        :param resource_pool: resource pool for testing purposes
+        """
         # create a resource manager and check that it is empty
         assert not len(resource_pool)
         assert resource_pool.get() == set()
@@ -56,8 +75,14 @@ class TestResourcePool:
         assert len(resource_pool) == 4
         assert resource_pool.get() == set(["A", "B", "C", "D"])
 
-    def test_release(self, resource_pool):
-        """Test that the ResourceManager releases resource correctly."""
+    def test_release(
+        self: TestResourcePool, resource_pool: FakeSubarrayComponent._ResourcePool
+    ) -> None:
+        """
+        Test that the ResourceManager releases resource correctly.
+
+        :param resource_pool: a resource pool
+        """
         resource_pool.assign(["A", "B", "C", "D"])
 
         # okay to release resources not assigned; does nothing
@@ -90,25 +115,43 @@ class TestSubarrayComponentManager:
     """Tests of the ``SubarrayComponentManager`` class."""
 
     @pytest.fixture()
-    def mock_capability_types(self):
-        """Return some mock capability types."""
+    def mock_capability_types(self: TestSubarrayComponentManager) -> list[str]:
+        """
+        Return some mock capability types.
+
+        :return: a list of capabilities
+        """
         return ["foo", "bah"]
 
     @pytest.fixture()
-    def component(self, mock_capability_types):
-        """Return a component for testing."""
+    def component(
+        self: TestSubarrayComponentManager, mock_capability_types: list[str]
+    ) -> FakeSubarrayComponent:
+        """
+        Return a component for testing.
+
+        :param mock_capability_types: capability types
+
+        :return: a component for testing purposes
+        """
         return FakeSubarrayComponent(mock_capability_types)
 
     @pytest.fixture()
     def component_manager(
-        self, logger, callbacks, component, mock_capability_types
-    ):
+        self: TestSubarrayComponentManager,
+        logger: logging.Logger,
+        callbacks: dict[Hashable, unittest.mock.Mock],
+        component: FakeSubarrayComponent,
+        mock_capability_types: list[str],
+    ) -> ReferenceSubarrayComponentManager:
         """
         Fixture that returns the component manager under test.
 
         :param logger: a logger for the component manager
         :param callbacks: a dictionary of mocks, passed as callbacks to
             the command tracker under test
+        :param component: a subarray component for testing purposes
+        :param mock_capability_types: a list of capabilities
 
         :return: the component manager under test
         """
@@ -121,32 +164,52 @@ class TestSubarrayComponentManager:
         )
 
     @pytest.fixture()
-    def mock_resource_factory(self, mocker):
-        """Return a factory that provides mock resources."""
+    def mock_resource_factory(
+        self: TestSubarrayComponentManager, mocker: pytest_mock.MockerFixture
+    ) -> unittest.mock.Mock:
+        """
+        Return a factory that provides mock resources.
+
+        :param mocker: the mocker
+
+        :return: a factory that provides mock resources
+        """
         return mocker.Mock
 
     @pytest.fixture()
-    def mock_config_factory(self):
-        """Return a factory that provides mock arguments to the configure() method."""
-        mock_config_generator = (
-            {"foo": i, "bah": i} for i in itertools.count(1)
-        )
+    def mock_config_factory(self: TestSubarrayComponentManager) -> Callable:
+        """
+        Return a factory that provides mock arguments to the configure() method.
+
+        :return: a factory that provides mock configure arguments
+        """
+        mock_config_generator = ({"foo": i, "bah": i} for i in itertools.count(1))
         return lambda: next(mock_config_generator)
 
     @pytest.fixture()
-    def mock_scan_args(self, mocker):
-        """Return mock arguments to the scan() method."""
+    def mock_scan_args(
+        self: TestSubarrayComponentManager, mocker: pytest_mock.MockerFixture
+    ) -> unittest.mock.Mock:
+        """
+        Return mock arguments to the scan() method.
+
+        :param mocker: the mocker
+
+        :return: mock scan arguments
+        """
         return mocker.Mock()
 
     def test_state_changes_with_start_and_stop_communicating(
-        self,
-        component_manager,
-        callbacks,
-    ):
+        self: TestSubarrayComponentManager,
+        component_manager: ReferenceSubarrayComponentManager,
+        callbacks: dict[Hashable, unittest.mock.Mock],
+    ) -> None:
         """
         Test that state is updated when the component is connected / disconnected.
 
         :param component_manager: the component manager under test
+        :param callbacks: a dictionary of mocks, passed as callbacks to
+            the command tracker under test
         """
         assert (
             component_manager.communication_state
@@ -180,12 +243,16 @@ class TestSubarrayComponentManager:
         )
 
     def test_simulate_communication_failure(
-        self, component_manager, callbacks
-    ):
+        self: TestSubarrayComponentManager,
+        component_manager: ReferenceSubarrayComponentManager,
+        callbacks: dict[Hashable, unittest.mock.Mock],
+    ) -> None:
         """
         Test that we can simulate connection failure.
 
         :param component_manager: the component manager under test
+        :param callbacks: a dictionary of mocks, passed as callbacks to
+            the command tracker under test
         """
         assert (
             component_manager.communication_state
@@ -238,12 +305,17 @@ class TestSubarrayComponentManager:
 
     @pytest.mark.parametrize("command", ["off", "standby", "on"])
     def test_command_fails_when_disconnected(
-        self, component_manager, callbacks, command
-    ):
+        self: TestSubarrayComponentManager,
+        component_manager: ReferenceSubarrayComponentManager,
+        callbacks: dict[Hashable, unittest.mock.Mock],
+        command: str,
+    ) -> None:
         """
         Test that commands fail when there is not connection to the component.
 
         :param component_manager: the component manager under test
+        :param callbacks: a dictionary of mocks, passed as callbacks to
+            the command tracker under test
         :param command: the command under test
         """
         assert (
@@ -318,10 +390,10 @@ class TestSubarrayComponentManager:
             getattr(component_manager, command)()
 
     def test_command_succeeds_when_connected(
-        self,
-        component_manager,
-        callbacks,
-    ):
+        self: TestSubarrayComponentManager,
+        component_manager: ReferenceSubarrayComponentManager,
+        callbacks: dict[Hashable, unittest.mock.Mock],
+    ) -> None:
         """
         Test that commands succeed when there is a connection to the component.
 
@@ -382,12 +454,12 @@ class TestSubarrayComponentManager:
         "power_state", [PowerState.OFF, PowerState.STANDBY, PowerState.ON]
     )
     def test_simulate_power_state(
-        self,
-        component_manager,
-        component,
-        callbacks,
-        power_state,
-    ):
+        self: TestSubarrayComponentManager,
+        component_manager: ReferenceSubarrayComponentManager,
+        component: FakeSubarrayComponent,
+        callbacks: dict[Hashable, unittest.mock.Mock],
+        power_state: PowerState,
+    ) -> None:
         """
         Test how changes to the components result in actions on the state model.
 
@@ -396,6 +468,10 @@ class TestSubarrayComponentManager:
         component is off?
 
         :param component_manager: the component manager under test
+        :param component: a base component for testing purposes
+        :param callbacks: a dictionary of mocks, passed as callbacks to
+            the command tracker under test
+        :param power_state: the power state under test
         """
         component_manager.start_communicating()
         callbacks.assert_call(
@@ -413,11 +489,11 @@ class TestSubarrayComponentManager:
             callbacks.assert_call("component_state", power=power_state)
 
     def test_simulate_fault(
-        self,
-        component_manager,
-        component,
-        callbacks,
-    ):
+        self: TestSubarrayComponentManager,
+        component_manager: ReferenceSubarrayComponentManager,
+        component: FakeSubarrayComponent,
+        callbacks: dict[Hashable, unittest.mock.Mock],
+    ) -> None:
         """
         Test how changes to the components result in actions on the state model.
 
@@ -426,6 +502,9 @@ class TestSubarrayComponentManager:
         component is off?
 
         :param component_manager: the component manager under test
+        :param component: a subarray component for testing purposes
+        :param callbacks: a dictionary of mocks, passed as callbacks to
+            the command tracker under test
         """
         component_manager.start_communicating()
         callbacks.assert_call(
@@ -443,12 +522,19 @@ class TestSubarrayComponentManager:
         callbacks.assert_call("component_state", fault=False)
 
     def test_reset_from_fault(
-        self,
-        component_manager,
-        component,
-        callbacks,
-    ):
-        """Test that the component manager can reset a faulty component."""
+        self: TestSubarrayComponentManager,
+        component_manager: ReferenceSubarrayComponentManager,
+        component: FakeSubarrayComponent,
+        callbacks: dict[Hashable, unittest.mock.Mock],
+    ) -> None:
+        """
+        Test that the component manager can reset a faulty component.
+
+        :param component_manager: the component manager under test
+        :param component: a subarray component for testing purposes
+        :param callbacks: a dictionary of mocks, passed as callbacks to
+            the command tracker under test
+        """
         component_manager.start_communicating()
         callbacks.assert_call(
             "communication_state", CommunicationStatus.NOT_ESTABLISHED
@@ -465,15 +551,22 @@ class TestSubarrayComponentManager:
         callbacks.assert_call("component_state", fault=False)
 
     def test_assign_release(
-        self,
-        component_manager,
-        callbacks,
+        self: TestSubarrayComponentManager,
+        component_manager: ReferenceSubarrayComponentManager,
+        callbacks: dict[Hashable, unittest.mock.Mock],
         # initial_power_mode,
         # initial_fault,
         # mock_obs_state_model,
-        mock_resource_factory,
-    ):
-        """Test management of a component during assignment of resources."""
+        mock_resource_factory: unittest.mock.Mock,
+    ) -> None:
+        """
+        Test management of a component during assignment of resources.
+
+        :param component_manager: the component manager under test
+        :param callbacks: a dictionary of mocks, passed as callbacks to
+            the command tracker under test
+        :param mock_resource_factory: a resource factory
+        """
         component_manager.start_communicating()
         callbacks.assert_call(
             "communication_state", CommunicationStatus.NOT_ESTABLISHED
@@ -508,16 +601,24 @@ class TestSubarrayComponentManager:
         callbacks.assert_call("component_state", resourced=False)
 
     def test_configure(
-        self,
-        component_manager,
-        callbacks,
+        self: TestSubarrayComponentManager,
+        component_manager: ReferenceSubarrayComponentManager,
+        callbacks: dict[Hashable, unittest.mock.Mock],
         # initial_power_mode,
         # initial_fault,
         # mock_obs_state_model,
-        mock_resource_factory,
-        mock_config_factory,
-    ):
-        """Test management of a component through configuration."""
+        mock_resource_factory: unittest.mock.Mock,
+        mock_config_factory: Callable,
+    ) -> None:
+        """
+        Test management of a component through configuration.
+
+        :param component_manager: the component manager under test
+        :param callbacks: a dictionary of mocks, passed as callbacks to
+            the command tracker under test
+        :param mock_resource_factory: a resource factory
+        :param mock_config_factory: a configure factory
+        """
         component_manager.start_communicating()
         callbacks.assert_call(
             "communication_state", CommunicationStatus.NOT_ESTABLISHED
@@ -547,19 +648,29 @@ class TestSubarrayComponentManager:
         callbacks.assert_call("component_state", configured=False)
 
     def test_scan(
-        self,
-        component_manager,
-        component,
-        callbacks,
+        self: TestSubarrayComponentManager,
+        component_manager: ReferenceSubarrayComponentManager,
+        component: FakeSubarrayComponent,
+        callbacks: dict[Hashable, unittest.mock.Mock],
         # component,
         # initial_power_mode,
         # initial_fault,
         # mock_obs_state_model,
-        mock_resource_factory,
-        mock_config_factory,
-        mock_scan_args,
-    ):
-        """Test management of a scanning component."""
+        mock_resource_factory: unittest.mock.Mock,
+        mock_config_factory: Callable,
+        mock_scan_args: list[str],
+    ) -> None:
+        """
+        Test management of a scanning component.
+
+        :param component_manager: the component manager under test
+        :param component: a subarray component for testing purposes
+        :param callbacks: a dictionary of mocks, passed as callbacks to
+            the command tracker under test
+        :param mock_resource_factory: a resource factory
+        :param mock_config_factory: a configure factory
+        :param mock_scan_args: mock scan arguments
+        """
         component_manager.start_communicating()
         callbacks.assert_call(
             "communication_state", CommunicationStatus.NOT_ESTABLISHED
@@ -597,18 +708,28 @@ class TestSubarrayComponentManager:
         callbacks.assert_call("component_state", configured=False)
 
     def test_obsfault_reset(
-        self,
-        component_manager,
-        component,
-        callbacks,
+        self: TestSubarrayComponentManager,
+        component_manager: ReferenceSubarrayComponentManager,
+        component: FakeSubarrayComponent,
+        callbacks: dict[Hashable, unittest.mock.Mock],
         # initial_power_mode,
         # initial_fault,
         # mock_obs_state_model,
-        mock_resource_factory,
-        mock_config_factory,
-        mock_scan_args,
-    ):
-        """Test management of a faulting component."""
+        mock_resource_factory: unittest.mock.Mock,
+        mock_config_factory: Callable,
+        mock_scan_args: str,
+    ) -> None:
+        """
+        Test management of a faulting component.
+
+        :param component_manager: the component manager under test
+        :param component: a subarray component for testing purposes
+        :param callbacks: a dictionary of mocks, passed as callbacks to
+            the command tracker under test
+        :param mock_resource_factory: a resource factory
+        :param mock_config_factory: a configure factory
+        :param mock_scan_args: mock scan arguments
+        """
         component_manager.start_communicating()
         callbacks.assert_call(
             "communication_state", CommunicationStatus.NOT_ESTABLISHED
@@ -653,15 +774,25 @@ class TestSubarrayComponentManager:
         )
 
     def test_obsfault_restart(
-        self,
-        component_manager,
-        component,
-        callbacks,
-        mock_resource_factory,
-        mock_config_factory,
-        mock_scan_args,
-    ):
-        """Test management of a faulting component."""
+        self: TestSubarrayComponentManager,
+        component_manager: ReferenceSubarrayComponentManager,
+        component: FakeSubarrayComponent,
+        callbacks: dict[Hashable, unittest.mock.Mock],
+        mock_resource_factory: unittest.mock.Mock,
+        mock_config_factory: Callable,
+        mock_scan_args: str,
+    ) -> None:
+        """
+        Test management of a faulting component.
+
+        :param component_manager: the component manager under test
+        :param component: a subarray component for testing purposes
+        :param callbacks: a dictionary of mocks, passed as callbacks to
+            the command tracker under test
+        :param mock_resource_factory: a resource factory
+        :param mock_config_factory: a configure factory
+        :param mock_scan_args: mock scan arguments
+        """
         component_manager.start_communicating()
         callbacks.assert_call(
             "communication_state", CommunicationStatus.NOT_ESTABLISHED

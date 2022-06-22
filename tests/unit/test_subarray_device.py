@@ -1,21 +1,20 @@
-# pylint: skip-file  # TODO: Incrementally lint this repo
-#########################################################################################
 # -*- coding: utf-8 -*-
 #
-# This file is part of the SKASubarray project
+# This file is part of the SKA Tango Base project
 #
-#
-#
-#########################################################################################
+# Distributed under the terms of the BSD 3-clause new license.
+# See LICENSE.txt for more info.
 """Contain the tests for the SKASubarray."""
+from __future__ import annotations
 
 import json
 import re
+from typing import Any
 
 import pytest
 import tango
+from tango import DevState
 
-# PROTECTED REGION ID(SKASubarray.test_additional_imports) ENABLED START #
 from ska_tango_base import SKASubarray
 from ska_tango_base.commands import ResultCode
 from ska_tango_base.control_model import (
@@ -29,14 +28,14 @@ from ska_tango_base.control_model import (
 )
 from ska_tango_base.testing.reference import ReferenceSubarrayComponentManager
 
-# PROTECTED REGION END #    //  SKASubarray.test_additional_imports
+from ..conftest import Subscribable
 
 
 class TestSKASubarray:
     """Test cases for SKASubarray device."""
 
     @pytest.fixture(scope="class")
-    def device_properties(self):
+    def device_properties(self: TestSKASubarray) -> dict[str, Any]:
         """
         Fixture that returns properties of the device under test.
 
@@ -51,7 +50,9 @@ class TestSKASubarray:
         }
 
     @pytest.fixture(scope="class")
-    def device_test_config(self, device_properties):
+    def device_test_config(
+        self: TestSKASubarray, device_properties: dict[str, Any]
+    ) -> dict[str, Any]:
         """
         Specify device configuration, including properties and memorized attributes.
 
@@ -78,25 +79,25 @@ class TestSKASubarray:
         }
 
     @pytest.mark.skip(reason="Not implemented")
-    def test_properties(self, device_under_test):
+    def test_properties(
+        self: TestSKASubarray, device_under_test: tango.DeviceProxy
+    ) -> None:
         """
         Test device properties.
 
         :param device_under_test: a proxy to the device under test
         """
-        # PROTECTED REGION ID(SKASubarray.test_properties) ENABLED START #
-        # PROTECTED REGION END #    //  SKASubarray.test_properties
-        """Test the Tango device properties of this subarray device."""
 
-    # PROTECTED REGION ID(SKASubarray.test_GetVersionInfo_decorators) ENABLED START #
-    # PROTECTED REGION END #    //  SKASubarray.test_GetVersionInfo_decorators
-    def test_GetVersionInfo(self, device_under_test):
+    def test_GetVersionInfo(
+        self: TestSKASubarray,
+        device_under_test: tango.DeviceProxy,
+        tango_change_event_helper: Subscribable,
+    ) -> None:
         """
         Test for GetVersionInfo.
 
         :param device_under_test: a proxy to the device under test
         """
-        # PROTECTED REGION ID(SKASubarray.test_GetVersionInfo) ENABLED START #
         version_pattern = (
             f"{device_under_test.info().dev_class}, ska_tango_base, "
             "[0-9]+.[0-9]+.[0-9]+, A set of generic base devices for SKA Telescope."
@@ -104,37 +105,30 @@ class TestSKASubarray:
         version_info = device_under_test.GetVersionInfo()
         assert len(version_info) == 1
         assert re.match(version_pattern, version_info[0])
-        # PROTECTED REGION END #    //  SKASubarray.test_GetVersionInfo
 
-    # PROTECTED REGION ID(SKASubarray.test_Status_decorators) ENABLED START #
-    # PROTECTED REGION END #    //  SKASubarray.test_Status_decorators
-    def test_Status(self, device_under_test):
+    def test_Status(
+        self: TestSKASubarray, device_under_test: tango.DeviceProxy
+    ) -> None:
         """
         Test for Status.
 
         :param device_under_test: a proxy to the device under test
         """
-        # PROTECTED REGION ID(SKASubarray.test_Status) ENABLED START #
         assert device_under_test.Status() == "The device is in OFF state."
-        # PROTECTED REGION END #    //  SKASubarray.test_Status
 
-    # PROTECTED REGION ID(SKASubarray.test_State_decorators) ENABLED START #
-    # PROTECTED REGION END #    //  SKASubarray.test_State_decorators
-    def test_State(self, device_under_test):
+    def test_State(self: TestSKASubarray, device_under_test: tango.DeviceProxy) -> None:
         """
         Test for State.
 
         :param device_under_test: a proxy to the device under test
         """
-        # PROTECTED REGION ID(SKASubarray.test_State) ENABLED START #
-        assert device_under_test.state() == tango.DevState.OFF
-        # PROTECTED REGION END #    //  SKASubarray.test_State
+        assert device_under_test.state() == DevState.OFF
 
-    # PROTECTED REGION ID(SKASubarray.test_AssignResources_decorators) ENABLED START #
-    # PROTECTED REGION END #    //  SKASubarray.test_AssignResources_decorators
     def test_assign_and_release_resources(
-        self, device_under_test, change_event_callbacks
-    ):
+        self: TestSKASubarray,
+        device_under_test: tango.DeviceProxy,
+        tango_change_event_helper: Subscribable,
+    ) -> None:
         """
         Test for AssignResources.
 
@@ -142,8 +136,7 @@ class TestSKASubarray:
         :param change_event_callbacks: dictionary of mock change event
             callbacks with asynchrony support
         """
-        # PROTECTED REGION ID(SKASubarray.test_AssignResources) ENABLED START #
-        assert device_under_test.state() == tango.DevState.OFF
+        assert device_under_test.state() == DevState.OFF
 
         for attribute in [
             "state",
@@ -392,13 +385,12 @@ class TestSKASubarray:
         change_event_callbacks.assert_change_event("obsState", ObsState.EMPTY)
 
         assert not device_under_test.assignedResources
-        # PROTECTED REGION END #    //  SKASubarray.test_AssignResources
 
-    # PROTECTED REGION ID(SKASubarray.test_Configure_decorators) ENABLED START #
-    # PROTECTED REGION END #    //  SKASubarray.test_Configure_decorators
     def test_configure_and_end(
-        self, device_under_test, change_event_callbacks
-    ):
+        self: TestSKASubarray,
+        device_under_test: tango.DeviceProxy,
+        tango_change_event_helper: Subscribable,
+    ) -> None:
         """
         Test for Configure.
 
@@ -406,8 +398,7 @@ class TestSKASubarray:
         :param change_event_callbacks: dictionary of mock change event
             callbacks with asynchrony support
         """
-        # PROTECTED REGION ID(SKASubarray.test_Configure) ENABLED START #
-        assert device_under_test.state() == tango.DevState.OFF
+        assert device_under_test.state() == DevState.OFF
 
         for attribute in [
             "state",
@@ -649,17 +640,22 @@ class TestSKASubarray:
             ),
         )
 
-        assert list(device_under_test.configuredCapabilities) == [
-            "BAND1:0",
-            "BAND2:0",
-        ]
-        # PROTECTED REGION END #    //  SKASubarray.test_Configure
+        obs_state_callback.assert_next_change_event(ObsState.IDLE)
 
-    # PROTECTED REGION ID(SKASubarray.test_Scan_decorators) ENABLED START #
-    # PROTECTED REGION END #    //  SKASubarray.test_Scan_decorators
+        command_result_callback.assert_next_change_event(
+            (
+                end_command_id,
+                json.dumps([int(ResultCode.OK), "Deconfigure completed OK"]),
+            ),
+        )
+
+        assert list(device_under_test.configuredCapabilities) == ["BAND1:0", "BAND2:0"]
+
     def test_scan_and_end_scan(
-        self, device_under_test, change_event_callbacks
-    ):
+        self: TestSKASubarray,
+        device_under_test: tango.DeviceProxy,
+        tango_change_event_helper: Subscribable,
+    ) -> None:
         """
         Test for Scan.
 
@@ -667,8 +663,7 @@ class TestSKASubarray:
         :param change_event_callbacks: dictionary of mock change event
             callbacks with asynchrony support
         """
-        # PROTECTED REGION ID(SKASubarray.test_Scan) ENABLED START #
-        assert device_under_test.state() == tango.DevState.OFF
+        assert device_under_test.state() == DevState.OFF
 
         for attribute in [
             "state",
@@ -983,11 +978,20 @@ class TestSKASubarray:
             ),
         )
 
-    # PROTECTED REGION ID(SKASubarray.test_Reset_decorators) ENABLED START #
-    # PROTECTED REGION END #    //  SKASubarray.test_Reset_decorators
+        obs_state_callback.assert_next_change_event(ObsState.READY)
+
+        command_result_callback.assert_next_change_event(
+            (
+                endscan_command_id,
+                json.dumps([int(ResultCode.OK), "End scan completed OK"]),
+            ),
+        )
+
     def test_abort_and_obsreset(
-        self, device_under_test, change_event_callbacks
-    ):
+        self: TestSKASubarray,
+        device_under_test: tango.DeviceProxy,
+        tango_change_event_helper: Subscribable,
+    ) -> None:
         """
         Test for Reset.
 
@@ -995,9 +999,7 @@ class TestSKASubarray:
         :param change_event_callbacks: dictionary of mock change event
             callbacks with asynchrony support
         """
-        # PROTECTED REGION ID(SKASubarray.test_Reset) ENABLED START #
-
-        assert device_under_test.state() == tango.DevState.OFF
+        assert device_under_test.state() == DevState.OFF
 
         for attribute in [
             "state",
@@ -1152,7 +1154,7 @@ class TestSKASubarray:
             ),
         )
         [[result_code], [abort_command_id]] = device_under_test.Abort()
-        assert result_code == ResultCode.STARTED
+#        assert result_code == ResultCode.STARTED
 
         change_event_callbacks.assert_change_event(
             "obsState", ObsState.ABORTING
@@ -1274,23 +1276,22 @@ class TestSKASubarray:
             "BAND2:0",
         ]
         assert device_under_test.obsState == ObsState.IDLE
-        # PROTECTED REGION END #    //  SKASubarray.test_Reset
 
-    # PROTECTED REGION ID(SKASubarray.test_activationTime_decorators) ENABLED START #
-    # PROTECTED REGION END #    //  SKASubarray.test_activationTime_decorators
-    def test_activationTime(self, device_under_test):
+    def test_activationTime(
+        self: TestSKASubarray, device_under_test: tango.DeviceProxy
+    ) -> None:
         """
         Test for activationTime.
 
         :param device_under_test: a proxy to the device under test
         """
-        # PROTECTED REGION ID(SKASubarray.test_activationTime) ENABLED START #
         assert device_under_test.activationTime == 0.0
-        # PROTECTED REGION END #    //  SKASubarray.test_activationTime
 
-    # PROTECTED REGION ID(SKASubarray.test_adminMode_decorators) ENABLED START #
-    # PROTECTED REGION END #    //  SKASubarray.test_adminMode_decorators
-    def test_adminMode(self, device_under_test, change_event_callbacks):
+    def test_adminMode(
+        self: TestSKASubarray,
+        device_under_test: tango.DeviceProxy,
+        tango_change_event_helper: Subscribable,
+    ) -> None:
         """
         Test for adminMode.
 
@@ -1298,8 +1299,7 @@ class TestSKASubarray:
         :param change_event_callbacks: dictionary of mock change event
             callbacks with asynchrony support
         """
-        # PROTECTED REGION ID(SKASubarray.test_adminMode) ENABLED START #
-        assert device_under_test.state() == tango.DevState.OFF
+        assert device_under_test.state() == DevState.OFF
         assert device_under_test.adminMode == AdminMode.ONLINE
 
         device_under_test.subscribe_event(
@@ -1337,133 +1337,106 @@ class TestSKASubarray:
         change_event_callbacks.assert_change_event("state", tango.DevState.OFF)
         assert device_under_test.state() == tango.DevState.OFF
         assert device_under_test.adminMode == AdminMode.MAINTENANCE
-        # PROTECTED REGION END #    //  SKASubarray.test_adminMode
 
-    # PROTECTED REGION ID(SKASubarray.test_buildState_decorators) ENABLED START #
-    # PROTECTED REGION END #    //  SKASubarray.test_buildState_decorators
-    def test_buildState(self, device_under_test):
+    def test_buildState(
+        self: TestSKASubarray, device_under_test: tango.DeviceProxy
+    ) -> None:
         """
         Test for buildState.
 
         :param device_under_test: a proxy to the device under test
         """
-        # PROTECTED REGION ID(SKASubarray.test_buildState) ENABLED START #
-        buildPattern = re.compile(
+        build_pattern = re.compile(
             r"ska_tango_base, [0-9]+.[0-9]+.[0-9]+, "
             r"A set of generic base devices for SKA Telescope"
         )
-        assert (
-            re.match(buildPattern, device_under_test.buildState)
-        ) is not None
-        # PROTECTED REGION END #    //  SKASubarray.test_buildState
+        assert (re.match(build_pattern, device_under_test.buildState)) is not None
 
-    # PROTECTED REGION ID(SKASubarray.test_configurationDelayExpected_decorators) ENABLED START #
-    # PROTECTED REGION END #    //  SKASubarray.test_configurationDelayExpected_decorators
-    def test_configurationDelayExpected(self, device_under_test):
+    def test_configurationDelayExpected(
+        self: TestSKASubarray, device_under_test: tango.DeviceProxy
+    ) -> None:
         """
         Test for configurationDelayExpected.
 
         :param device_under_test: a proxy to the device under test
         """
-        # PROTECTED REGION ID(SKASubarray.test_configurationDelayExpected) ENABLED START #
         assert device_under_test.configurationDelayExpected == 0
-        # PROTECTED REGION END #    //  SKASubarray.test_configurationDelayExpected
 
-    # PROTECTED REGION ID(SKASubarray.test_configurationProgress_decorators) ENABLED START #
-    # PROTECTED REGION END #    //  SKASubarray.test_configurationProgress_decorators
-    def test_configurationProgress(self, device_under_test):
+    def test_configurationProgress(
+        self: TestSKASubarray, device_under_test: tango.DeviceProxy
+    ) -> None:
         """
         Test for configurationProgress.
 
         :param device_under_test: a proxy to the device under test
         """
-        # PROTECTED REGION ID(SKASubarray.test_configurationProgress) ENABLED START #
         assert device_under_test.configurationProgress == 0
-        # PROTECTED REGION END #    //  SKASubarray.test_configurationProgress
 
-    # PROTECTED REGION ID(SKASubarray.test_controlMode_decorators) ENABLED START #
-    # PROTECTED REGION END #    //  SKASubarray.test_controlMode_decorators
-    def test_controlMode(self, device_under_test):
+    def test_controlMode(
+        self: TestSKASubarray, device_under_test: tango.DeviceProxy
+    ) -> None:
         """
         Test for controlMode.
 
         :param device_under_test: a proxy to the device under test
         """
-        # PROTECTED REGION ID(SKASubarray.test_controlMode) ENABLED START #
         assert device_under_test.controlMode == ControlMode.REMOTE
-        # PROTECTED REGION END #    //  SKASubarray.test_controlMode
 
-    # PROTECTED REGION ID(SKASubarray.test_healthState_decorators) ENABLED START #
-    # PROTECTED REGION END #    //  SKASubarray.test_healthState_decorators
-    def test_healthState(self, device_under_test):
+    def test_healthState(self, device_under_test: tango.DeviceProxy) -> None:
         """
         Test for healthState.
 
         :param device_under_test: a proxy to the device under test
         """
-        # PROTECTED REGION ID(SKASubarray.test_healthState) ENABLED START #
         assert device_under_test.healthState == HealthState.UNKNOWN
-        # PROTECTED REGION END #    //  SKASubarray.test_healthState
 
-    # PROTECTED REGION ID(SKASubarray.test_obsMode_decorators) ENABLED START #
-    # PROTECTED REGION END #    //  SKASubarray.test_obsMode_decorators
-    def test_obsMode(self, device_under_test):
+    def test_obsMode(
+        self: TestSKASubarray, device_under_test: tango.DeviceProxy
+    ) -> None:
         """
         Test for obsMode.
 
         :param device_under_test: a proxy to the device under test
         """
-        # PROTECTED REGION ID(SKASubarray.test_obsMode) ENABLED START #
         assert device_under_test.obsMode == ObsMode.IDLE
-        # PROTECTED REGION END #    //  SKASubarray.test_obsMode
 
-    # PROTECTED REGION ID(SKASubarray.test_obsState_decorators) ENABLED START #
-    # PROTECTED REGION END #    //  SKASubarray.test_obsState_decorators
-    def test_obsState(self, device_under_test):
+    def test_obsState(
+        self: TestSKASubarray, device_under_test: tango.DeviceProxy
+    ) -> None:
         """
         Test for obsState.
 
         :param device_under_test: a proxy to the device under test
         """
-        # PROTECTED REGION ID(SKASubarray.test_obsState) ENABLED START #
         assert device_under_test.obsState == ObsState.EMPTY
-        # PROTECTED REGION END #    //  SKASubarray.test_obsState
 
-    # PROTECTED REGION ID(SKASubarray.test_simulationMode_decorators) ENABLED START #
-    # PROTECTED REGION END #    //  SKASubarray.test_simulationMode_decorators
-    def test_simulationMode(self, device_under_test):
+    def test_simulationMode(
+        self: TestSKASubarray, device_under_test: tango.DeviceProxy
+    ) -> None:
         """
         Test for simulationMode.
 
         :param device_under_test: a proxy to the device under test
         """
-        # PROTECTED REGION ID(SKASubarray.test_simulationMode) ENABLED START #
         assert device_under_test.simulationMode == SimulationMode.FALSE
-        # PROTECTED REGION END #    //  SKASubarray.test_simulationMode
 
-    # PROTECTED REGION ID(SKASubarray.test_testMode_decorators) ENABLED START #
-    # PROTECTED REGION END #    //  SKASubarray.test_testMode_decorators
-    def test_testMode(self, device_under_test):
+    def test_testMode(
+        self: TestSKASubarray, device_under_test: tango.DeviceProxy
+    ) -> None:
         """
         Test for testMode.
 
         :param device_under_test: a proxy to the device under test
         """
-        # PROTECTED REGION ID(SKASubarray.test_testMode) ENABLED START #
         assert device_under_test.testMode == TestMode.NONE
-        # PROTECTED REGION END #    //  SKASubarray.test_testMode
 
-    # PROTECTED REGION ID(SKASubarray.test_versionId_decorators) ENABLED START #
-    # PROTECTED REGION END #    //  SKASubarray.test_versionId_decorators
-    def test_versionId(self, device_under_test):
+    def test_versionId(
+        self: TestSKASubarray, device_under_test: tango.DeviceProxy
+    ) -> None:
         """
         Test for versionId.
 
         :param device_under_test: a proxy to the device under test
         """
-        # PROTECTED REGION ID(SKASubarray.test_versionId) ENABLED START #
-        versionIdPattern = re.compile(r"[0-9]+.[0-9]+.[0-9]+")
-        assert (
-            re.match(versionIdPattern, device_under_test.versionId)
-        ) is not None
-        # PROTECTED REGION END #    //  SKASubarray.test_versionId
+        version_id_pattern = re.compile(r"[0-9]+.[0-9]+.[0-9]+")
+        assert (re.match(version_id_pattern, device_under_test.versionId)) is not None

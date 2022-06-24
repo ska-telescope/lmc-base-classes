@@ -1044,7 +1044,8 @@ class SKABaseDevice(Device):
             self._update_state_during_init(
                 DevState.FAULT, "The device is in FAULT state - init_device failed."
             )
-#        self.op_state_model.set_state_changed_callback(self._update_state)
+
+    #        self.op_state_model.set_state_changed_callback(self._update_state)
 
     def _init_state_model(self):
         """Initialise the state model for the device."""

@@ -977,6 +977,7 @@ class SKABaseDevice(Device):
 
             self._init_logging()
 
+            self._init_active = True
             self._admin_mode = AdminMode.OFFLINE
             self._health_state = HealthState.UNKNOWN
             self._control_mode = ControlMode.REMOTE
@@ -1043,7 +1044,7 @@ class SKABaseDevice(Device):
             self._update_state_during_init(
                 DevState.FAULT, "The device is in FAULT state - init_device failed."
             )
-        self.op_state_model.set_state_changed_callback(self._update_state)
+#        self.op_state_model.set_state_changed_callback(self._update_state)
 
     def _init_state_model(self):
         """Initialise the state model for the device."""
@@ -1779,6 +1780,10 @@ class SKABaseDevice(Device):
 
     @command(polling_period=100)
     def PushChanges(self):
+        # do this once only
+        if self._init_active:
+            self._init_active = False
+            self.op_state_model.set_state_changed_callback(self._update_state)
         while not self._omni_queue.empty():
             (event_type, name, value) = self._omni_queue.get_nowait()
             if event_type == "set":

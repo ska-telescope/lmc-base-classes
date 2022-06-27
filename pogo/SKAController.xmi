@@ -64,7 +64,7 @@
       </argout>
       <status abstract="false" inherited="true" concrete="true"/>
     </commands>
-    <commands name="isCapabilityAchievable" description="" execMethod="is_capability_achievable" displayLevel="OPERATOR" polledPeriod="0" isDynamic="false">
+    <commands name="IsCapabilityAchievable" description="" execMethod="is_capability_achievable" displayLevel="OPERATOR" polledPeriod="0" isDynamic="false">
       <argin description="[nrInstances][Capability types]">
         <type xsi:type="pogoDsl:LongStringArrayType"/>
       </argin>

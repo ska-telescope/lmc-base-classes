@@ -280,7 +280,7 @@ class SKAController(SKABaseDevice):
     )
     @DebugIt()
     def IsCapabilityAchievable(self, argin):
-        # PROTECTED REGION ID(SKAController.isCapabilityAchievable) ENABLED START #
+        # PROTECTED REGION ID(SKAController.IsCapabilityAchievable) ENABLED START #
         """
         Check if provided capabilities can be achieved by the resource(s).
 
@@ -299,7 +299,7 @@ class SKAController(SKABaseDevice):
         """
         handler = self.get_command_object("IsCapabilityAchievable")
         return handler(argin)
-        # PROTECTED REGION END #    //  SKAController.isCapabilityAchievable
+        # PROTECTED REGION END #    //  SKAController.IsCapabilityAchievable
 
 
 # ----------

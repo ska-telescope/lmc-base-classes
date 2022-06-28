@@ -247,6 +247,9 @@ Tango devices can be launched with a `-v` parameter to set the logging level. Fo
 
 ## Version History
 
+#### 0.14.0
+- KAR-399 Renamed SKAController command isCapabilityAchievable to IsCapabilityAchievable.
+
 #### 0.13.0
 - MCCS-876 Updated implementation of long running commands
   - SAR-341 Updated docs

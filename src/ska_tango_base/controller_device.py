@@ -253,7 +253,7 @@ class SKAController(SKABaseDevice):
             :return: Whether the capability is achievable
             :rtype: bool
             """
-            command_name = "isCapabilityAchievable"
+            command_name = "IsCapabilityAchievable"
             capabilities_instances, capability_types = argin
             validate_input_sizes(command_name, argin)
             validate_capability_types(

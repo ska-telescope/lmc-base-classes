@@ -524,16 +524,6 @@ class OpStateModel:
         _ = self.is_action_allowed(action, raise_if_disallowed=True)
         self._op_state_machine.trigger(action)
 
-    def set_state_changed_callback(self, state_change_callback):
-        """
-        Set a callback to be called when the state of this component changes.
-
-        :param state_change_callback: a callback to be call when the
-            state of the component changes
-        :type state_change_callback: callable
-        """
-        self._callback = state_change_callback
-
     @for_testing_only
     def _straight_to_state(self, op_state_name):
         """

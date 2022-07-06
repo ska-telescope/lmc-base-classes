@@ -31,7 +31,7 @@ def device_test_config(device_properties):
 
 @pytest.mark.forked
 def test_device_init(device_under_test):
-    """Test our Multidevice."""
+    """Test device initialisation."""
     state = device_under_test.State()
     assert state == tango.DevState.DISABLE
 

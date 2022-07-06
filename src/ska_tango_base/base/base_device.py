@@ -34,7 +34,7 @@ from urllib.parse import urlparse
 from urllib.request import url2pathname
 
 # Tango imports
-from tango import AttrWriteType, DebugIt, DevState
+from tango import AttrWriteType, DebugIt, DevState, is_omni_thread
 from tango.server import run, Device, attribute, command, device_property
 
 # SKA specific imports
@@ -835,24 +835,6 @@ class SKABaseDevice(Device):
     # ---------
     # Callbacks
     # ---------
-    def _update_state_during_init(self, state, status=None):
-        """
-        Perform Tango operations in response to a change in op state.
-
-        This helper method is passed to the op state model as a
-        callback, so that the model can trigger actions in the Tango
-        device during the initialisation phase.
-
-        :param state: the new state value
-        :param status: an optional new status string
-        """
-        super().set_state(state)
-        self.push_change_event("state")
-        self.push_archive_event("state")
-        super().set_status(status or f"The device is in {state} state.")
-        self.push_change_event("status")
-        self.push_archive_event("status")
-
     def _update_state(self, state, status=None):
         """
         Perform Tango operations in response to a change in op state.
@@ -975,9 +957,12 @@ class SKABaseDevice(Device):
 
             self._omni_queue = queue.Queue()
 
+            # this can be removed when cppTango issue #935 is implemented
+            self._init_active = True
+            self.poll_command("PushChanges", 5)
+
             self._init_logging()
 
-            self._init_active = True
             self._admin_mode = AdminMode.OFFLINE
             self._health_state = HealthState.UNKNOWN
             self._control_mode = ControlMode.REMOTE
@@ -1041,7 +1026,7 @@ class SKABaseDevice(Device):
             else:
                 traceback.print_exc()
                 print(f"ERROR: init_device failed, and no logger: {exc}.")
-            self._update_state_during_init(
+            self._update_state(
                 DevState.FAULT, "The device is in FAULT state - init_device failed."
             )
 
@@ -1057,7 +1042,7 @@ class SKABaseDevice(Device):
         )
         self.op_state_model = OpStateModel(
             logger=self.logger,
-            callback=self._update_state_during_init,
+            callback=self._update_state,
         )
         self.admin_mode_model = AdminModeModel(
             logger=self.logger, callback=self._update_admin_mode
@@ -1768,23 +1753,41 @@ class SKABaseDevice(Device):
         return command()
 
     def set_state(self, state):
-        self._omni_queue.put(("set", "state", state))
+        if is_omni_thread() and self._omni_queue.empty():
+            super().set_state(state)
+        else:
+            self._omni_queue.put(("set", "state", state))
 
     def set_status(self, status):
-        self._omni_queue.put(("set", "status", status))
+        if is_omni_thread() and self._omni_queue.empty():
+            super().set_status(status)
+        else:
+            self._omni_queue.put(("set", "status", status))
 
     def push_change_event(self, name, value=None):
-        self._omni_queue.put(("change", name, value))
+        if is_omni_thread() and self._omni_queue.empty():
+            if name.lower() in ["state", "status"]:
+                super().push_change_event(name)
+            else:
+                super().push_change_event(name, value)
+        else:
+            self._omni_queue.put(("change", name, value))
 
     def push_archive_event(self, name, value=None):
-        self._omni_queue.put(("archive", name, value))
+        if is_omni_thread() and self._omni_queue.empty():
+            if name.lower() in ["state", "status"]:
+                super().push_archive_event(name)
+            else:
+                super().push_archive_event(name, value)
+        else:
+            self._omni_queue.put(("archive", name, value))
 
-    @command(polling_period=100)
+    @command(polling_period=5)
     def PushChanges(self):
-        # do this once only
+        # this can be removed when cppTango issue #935 is implemented
         if self._init_active:
             self._init_active = False
-            self.op_state_model.set_state_changed_callback(self._update_state)
+            self.poll_command("PushChanges", 100)
         while not self._omni_queue.empty():
             (event_type, name, value) = self._omni_queue.get_nowait()
             if event_type == "set":

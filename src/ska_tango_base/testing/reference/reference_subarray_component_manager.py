@@ -704,6 +704,7 @@ class ReferenceSubarrayComponentManager(
 
         :return: task status and message
         """
+        print("£££££££££££££££££££££££££££££££££", self.abort_tasks)
         return self.abort_tasks()
 
     @check_communicating

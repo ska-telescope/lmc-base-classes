@@ -78,6 +78,7 @@ class SKASubarray(SKAObsDevice):
                 states and finishes
             :param logger: a logger for this command object to yuse
             """
+            print("Abort __init__ **************************")
             self._command_tracker = command_tracker
             self._component_manager = component_manager
             super().__init__(callback=callback, logger=logger)
@@ -92,16 +93,19 @@ class SKASubarray(SKAObsDevice):
                 message indicating status. The message is for
                 information purpose only.
             """
+            print("Abort do **************************")
             command_id = self._command_tracker.new_command(
                 "Abort", completed_callback=self._completed
             )
+            print("Abort do **************************", self._component_manager.abort)
             status, _ = self._component_manager.abort(
                 functools.partial(
                     self._command_tracker.update_command_info, command_id
                 )
             )
-
             assert status == TaskStatus.IN_PROGRESS
+            print("Abort do **************************")
+
             return ResultCode.STARTED, command_id
 
     def _init_state_model(self: SKASubarray) -> None:

@@ -282,7 +282,7 @@ class BaseComponentManager:
 
     @check_communicating
     def off(
-        self: BaseComponentManager, task_callback: Callable
+        self: BaseComponentManager, task_callback: Optional[Callable] = None
     ) -> tuple[TaskStatus, str]:
         """
         Turn the component off.
@@ -296,7 +296,7 @@ class BaseComponentManager:
 
     @check_communicating
     def standby(
-        self: BaseComponentManager, task_callback: Callable
+        self: BaseComponentManager, task_callback: Optional[Callable] = None
     ) -> tuple[TaskStatus, str]:
         """
         Put the component into low-power standby mode.
@@ -310,7 +310,7 @@ class BaseComponentManager:
 
     @check_communicating
     def on(
-        self: BaseComponentManager, task_callback: Callable
+        self: BaseComponentManager, task_callback: Optional[Callable] = None
     ) -> tuple[TaskStatus, str]:
         """
         Turn the component on.
@@ -324,7 +324,7 @@ class BaseComponentManager:
 
     @check_communicating
     def reset(
-        self: BaseComponentManager, task_callback: Callable
+        self: BaseComponentManager, task_callback: Optional[Callable] = None
     ) -> tuple[TaskStatus, str]:
         """
         Reset the component (from fault state).
@@ -398,4 +398,6 @@ class TaskExecutorComponentManager(BaseComponentManager):
 
         :return: tuple of taskstatus & message
         """
+        if task_callback:
+            task_callback(status=TaskStatus.IN_PROGRESS)
         return self._task_executor.abort(task_callback)

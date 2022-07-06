@@ -533,9 +533,11 @@ class OpStateModel:
 
         :param action: an action, as given in the transitions table
         """
-        print(f"perform_action {action} #######################")
         _ = self.is_action_allowed(action, raise_if_disallowed=True)
         self._op_state_machine.trigger(action)
+
+    def set_change_callback(self: OpStateModel, callback: Callable):
+        self._callback = callback
 
     @for_testing_only
     def _straight_to_state(self: OpStateModel, op_state_name: str) -> None:

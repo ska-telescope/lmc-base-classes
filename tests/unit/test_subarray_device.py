@@ -1154,7 +1154,8 @@ class TestSKASubarray:
             ),
         )
         [[result_code], [abort_command_id]] = device_under_test.Abort()
-#        assert result_code == ResultCode.STARTED
+        assert result_code == ResultCode.STARTED
+        print("returned from device_under_test abort )))))))))))))))))))))))))))))))))")
 
         change_event_callbacks.assert_change_event(
             "obsState", ObsState.ABORTING

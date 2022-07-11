@@ -1607,12 +1607,12 @@ class SKABaseDevice(Device):
 
             :param argin: The command ID
             :type argin: str
-            :return: The resultcode for this command and the string of the TaskStatus
-            :rtype: tuple
-                (ResultCode.OK, str)
+            :return: The string of the TaskStatus
+            :rtype: string
             """
             command_id = argin
-            return self._command_tracker.get_command_status(command_id)
+            enum_status = self._command_tracker.get_command_status(command_id)
+            return TaskStatus(enum_status).name
 
     @command(
         dtype_in=str,

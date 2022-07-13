@@ -247,6 +247,9 @@ Tango devices can be launched with a `-v` parameter to set the logging level. Fo
 
 ## Version History
 
+#### Unreleased changes
+- PERENTIE-1350 Remove misleading `CspSubarrayComponentManager.__init__` function
+
 #### 0.13.1
 - KAR-399 Renamed SKAController command isCapabilityAchievable to IsCapabilityAchievable.
 

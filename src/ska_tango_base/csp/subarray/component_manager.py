@@ -14,15 +14,6 @@ class CspSubarrayComponentManager(SubarrayComponentManager):
     a subclass specific to the component managed by the device.
     """
 
-    def __init__(self, op_state_model, obs_state_model, *args, **kwargs):
-        """Initialise a new ``CspSubarrayComponentManager`` instance."""
-        super().__init__(
-            op_state_model,
-            obs_state_model,
-            *args,
-            **kwargs,
-        )
-
     @property
     def config_id(self):
         """Return the configuration id."""

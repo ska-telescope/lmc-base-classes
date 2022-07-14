@@ -1,6 +1,7 @@
 """Test various Tango devices with long running commmands working together."""
 import pytest
 
+import tango
 from ska_tango_base.commands import ResultCode
 
 from .multidevice import ExampleMultiDevice
@@ -26,6 +27,13 @@ def device_test_config(device_properties):
         "properties": device_properties,
         "memorized": None,
     }
+
+
+@pytest.mark.forked
+def test_device_init(device_under_test):
+    """Test device initialisation."""
+    state = device_under_test.State()
+    assert state == tango.DevState.DISABLE
 
 
 @pytest.mark.forked

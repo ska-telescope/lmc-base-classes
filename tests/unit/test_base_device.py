@@ -896,6 +896,7 @@ class TestSKABaseDevice(object):
                 json.dumps([int(ResultCode.OK), "Standby command completed OK"]),
             )
         )
+        assert device_under_test.CheckLongRunningCommandStatus(command_id) == 'COMPLETED'
 
         # Check what happens if we call Standby() when the device is already STANDBY.
         [[result_code], [message]] = device_under_test.Standby()

@@ -247,7 +247,12 @@ Tango devices can be launched with a `-v` parameter to set the logging level. Fo
 
 ## Version History
 
-#### Unreleased changes
+#### Unreleased
+
+#### 0.13.2
+- CT-738 fix check long running status
+- AT3-140 fix base TANGO xmi files
+- MCCS-1053 Fix the problem of device in UNKNOWN state upon test startup
 - PERENTIE-1350 Remove misleading `CspSubarrayComponentManager.__init__` function
 
 #### 0.13.1

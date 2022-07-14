@@ -4,7 +4,7 @@
     <description description="Subarray device for SKA CSP SubElement" title="CspSubElementSubarray" sourcePath="/home/toor/ska-git/ska-tango-base/pogo" language="PythonHL" filestogenerate="XMI   file,Code files,Protected Regions" license="BSD3" copyright="" hasMandatoryProperty="false" hasConcreteProperty="false" hasAbstractCommand="false" hasAbstractAttribute="false">
       <inheritances classname="Device_Impl" sourcePath=""/>
       <inheritances classname="SKAObsDevice" sourcePath="./"/>
-      <inheritances classname="SKASubarray" sourcePath="/home/toor/ska-git/ska-tango-base/pogo"/>
+      <inheritances classname="SKASubarray" sourcePath="./"/>
       <identification contact="at inaf.it - elisabetta.giani" author="elisabetta.giani" emailDomain="inaf.it" classFamily="SkaBase" siteSpecific="" platform="All Platforms" bus="Not Applicable" manufacturer="none" reference=""/>
     </description>
     <deviceProperties name="CapabilityTypes" description="List of Capability types e.g. capCorr, capPss,&#xA;capPstBf, capVlbi, this will be used to dynamically&#xA;define groups for subarray.">
@@ -56,7 +56,7 @@
         <type xsi:type="pogoDsl:VoidType"/>
       </argin>
       <argout description="[ name: EltTelState">
-        <type xsi:type="pogoDsl:DevVarLongStringArray"/>
+        <type xsi:type="pogoDsl:LongStringArrayType"/>
       </argout>
       <status abstract="false" inherited="true" concrete="true"/>
     </commands>

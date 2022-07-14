@@ -4,7 +4,7 @@
     <description description="General observing device for SKA CSP Subelement." title="CspSubElementObsDevice" sourcePath="/home/toor/tmp/ska-tango-base/pogo" language="PythonHL" filestogenerate="XMI   file,Code files,Protected Regions" license="BSD3" copyright="" hasMandatoryProperty="false" hasConcreteProperty="true" hasAbstractCommand="false" hasAbstractAttribute="false">
       <inheritances classname="Device_Impl" sourcePath=""/>
       <inheritances classname="SKABaseDevice" sourcePath="./"/>
-      <inheritances classname="SKAObsDevice" sourcePath="/home/toor/ska-git/ska-tango-base/pogo"/>
+      <inheritances classname="SKAObsDevice" sourcePath="./"/>
       <identification contact="at inaf.it - elisabetta.giani" author="elisabetta.giani" emailDomain="inaf.it" classFamily="SkaBase" siteSpecific="" platform="All Platforms" bus="Not Applicable" manufacturer="none" reference=""/>
     </description>
     <deviceProperties name="SkaLevel" description="Indication of importance of the device in the SKA hierarchy &#xA;to support drill-down navigation: 1..6, with 1 highest.&#xA;Default is 4, making provision for &#xA;EltController, EltAlarms, EltTelState = 1&#xA;SubEltController = 2&#xA;Subarray, Capability = 2/3&#xA;Others = 4 (or 5 or 6)">
@@ -53,7 +53,7 @@
         <type xsi:type="pogoDsl:VoidType"/>
       </argin>
       <argout description="[ name: EltTelState">
-        <type xsi:type="pogoDsl:DevVarLongStringArray"/>
+        <type xsi:type="pogoDsl:LongStringArrayType"/>
       </argout>
       <status abstract="false" inherited="true" concrete="true"/>
     </commands>

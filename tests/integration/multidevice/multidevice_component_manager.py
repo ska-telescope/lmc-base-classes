@@ -139,11 +139,8 @@ class MultiDeviceComponentManager(TaskExecutorComponentManager):
         :type task_abort_event: Event, optional
         :raises RuntimeError: Just to indicate an issue
         """
-        try:
-            logger.info("About to raise an error")
-            raise RuntimeError("Something went wrong")
-        except RuntimeError as err:
-            task_callback(status=TaskStatus.COMPLETED, result=f"{err}")
+        logger.info("About to raise an error")
+        raise RuntimeError("Something went wrong")
 
     def throw_exc(self, task_callback: Callable = None):
         """Illustrate exceptions.

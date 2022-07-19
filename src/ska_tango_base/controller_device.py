@@ -1,3 +1,4 @@
+# pylint: skip-file  # TODO: Incrementally lint this repo
 # -*- coding: utf-8 -*-
 #
 # This file is part of the SKAController project
@@ -11,19 +12,16 @@ SKAController.
 Controller device
 """
 # PROTECTED REGION ID(SKAController.additionnal_import) ENABLED START #
-# Tango imports
 from tango import DebugIt
-from tango.server import run, attribute, command, device_property
+from tango.server import attribute, command, device_property, run
 
-# SKA specific imports
 from ska_tango_base import SKABaseDevice
-from ska_tango_base.commands import FastCommand, DeviceInitCommand, ResultCode
+from ska_tango_base.commands import DeviceInitCommand, FastCommand, ResultCode
 from ska_tango_base.utils import (
+    convert_dict_to_list,
     validate_capability_types,
     validate_input_sizes,
-    convert_dict_to_list,
 )
-
 
 # PROTECTED REGION END #    //  SKAController.additionnal_imports
 
@@ -63,13 +61,16 @@ class SKAController(SKABaseDevice):
             self._device._max_capabilities = {}
             if self._device.MaxCapabilities:
                 for max_capability in self._device.MaxCapabilities:
-                    capability_type, max_capability_instances = max_capability.split(
-                        ":"
-                    )
+                    (
+                        capability_type,
+                        max_capability_instances,
+                    ) = max_capability.split(":")
                     self._device._max_capabilities[capability_type] = int(
                         max_capability_instances
                     )
-            self._device._available_capabilities = self._device._max_capabilities.copy()
+            self._device._available_capabilities = (
+                self._device._max_capabilities.copy()
+            )
 
             message = "SKAController Init command completed OK"
             self.logger.info(message)

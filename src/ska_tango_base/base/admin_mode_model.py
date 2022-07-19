@@ -1,3 +1,4 @@
+# pylint: skip-file  # TODO: Incrementally lint this repo
 """
 This module specifies the admin mode model for SKA LMC Tango devices.
 
@@ -11,7 +12,6 @@ from transitions.extensions import LockedMachine as Machine
 from ska_tango_base.control_model import AdminMode
 from ska_tango_base.faults import StateModelError
 from ska_tango_base.utils import for_testing_only
-
 
 __all__ = ["AdminModeModel"]
 
@@ -160,7 +160,9 @@ class AdminModeModel:
         self._admin_mode = None
         self._callback = callback
 
-        self._admin_mode_machine = _AdminModeMachine(callback=self._admin_mode_changed)
+        self._admin_mode_machine = _AdminModeMachine(
+            callback=self._admin_mode_changed
+        )
 
     @property
     def admin_mode(self):

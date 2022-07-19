@@ -1,3 +1,4 @@
+# pylint: skip-file  # TODO: Incrementally lint this repo
 # -*- coding: utf-8 -*-
 #
 # This file is part of the SKACapability project
@@ -10,13 +11,11 @@ SKACapability.
 Capability handling device
 """
 # PROTECTED REGION ID(SKACapability.additionnal_import) ENABLED START #
-# Tango imports
 from tango import DebugIt
-from tango.server import run, attribute, command, device_property
+from tango.server import attribute, command, device_property, run
 
-# SKA specific imports
-from ska_tango_base import SKAObsDevice
 from ska_tango_base.commands import DeviceInitCommand, FastCommand, ResultCode
+from ska_tango_base.obs import SKAObsDevice
 
 # PROTECTED REGION END #    //  SKACapability.additionnal_imports
 

@@ -36,7 +36,9 @@ class MultiDeviceComponentManager(TaskExecutorComponentManager):
                 self.client_devices, self.logger
             )
 
-        super().__init__(*args, max_workers=max_workers, logger=logger, **kwargs)
+        super().__init__(
+            *args, max_workers=max_workers, logger=logger, **kwargs
+        )
 
     def _non_aborting_lrc(
         self,
@@ -59,9 +61,13 @@ class MultiDeviceComponentManager(TaskExecutorComponentManager):
             retries -= 1
             time.sleep(sleep_time)  # This command takes long
         self.logger.info("NonAbortingTask finished")
-        task_callback(status=TaskStatus.COMPLETED, result="non_aborting_lrc OK")
+        task_callback(
+            status=TaskStatus.COMPLETED, result="non_aborting_lrc OK"
+        )
 
-    def non_aborting_lrc(self, sleep_time: float, task_callback: Callable = None):
+    def non_aborting_lrc(
+        self, sleep_time: float, task_callback: Callable = None
+    ):
         """Take a long time to complete.
 
         :param sleep_time: How long to sleep per iteration
@@ -216,7 +222,9 @@ class MultiDeviceComponentManager(TaskExecutorComponentManager):
         logger.info("Finished in leaf device %s", sleep_time)
         task_callback(status=TaskStatus.COMPLETED, result="Finished leaf node")
 
-    def _all_children_completed_cb(self, task_callback, command_name, command_ids):
+    def _all_children_completed_cb(
+        self, task_callback, command_name, command_ids
+    ):
         self.logger.info("All children %s completed", self.client_devices)
         task_callback(
             status=TaskStatus.COMPLETED,

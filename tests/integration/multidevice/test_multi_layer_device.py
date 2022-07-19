@@ -78,7 +78,9 @@ def devices_to_test(request):
 
 
 @pytest.mark.forked
-def test_multi_layer(multi_device_tango_context, multi_tango_change_event_helper):
+def test_multi_layer(
+    multi_device_tango_context, multi_tango_change_event_helper
+):
     """Test the long running commands between devices."""
     top_device = multi_device_tango_context.get_device("test/toplevel/1")
 
@@ -106,7 +108,8 @@ def test_multi_layer(multi_device_tango_context, multi_tango_change_event_helper
     command_id, message = mid_device_lrc_result_cb.get_next_change_event()
     assert command_id.endswith("CallChildren")
     assert (
-        message == "\"All children completed ['test/lowlevel/5', 'test/lowlevel/6']\""
+        message
+        == "\"All children completed ['test/lowlevel/5', 'test/lowlevel/6']\""
     )
 
     # Wait for top level device to finish

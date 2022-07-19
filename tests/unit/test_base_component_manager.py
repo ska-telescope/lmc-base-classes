@@ -1,3 +1,4 @@
+# pylint: skip-file  # TODO: Incrementally lint this repo
 """Tests for the :py:mod:`ska_tango_base.base.component_manager` module."""
 import pytest
 
@@ -51,7 +52,10 @@ class TestReferenceBaseComponentManager:
 
         :param component_manager: the component manager under test
         """
-        assert component_manager.communication_state == CommunicationStatus.DISABLED
+        assert (
+            component_manager.communication_state
+            == CommunicationStatus.DISABLED
+        )
         callbacks["communication_state"].assert_not_called()
         callbacks["component_state"].assert_not_called()
 
@@ -62,21 +66,34 @@ class TestReferenceBaseComponentManager:
         callbacks["communication_state"].assert_next_call(
             CommunicationStatus.ESTABLISHED
         )
-        assert component_manager.communication_state == CommunicationStatus.ESTABLISHED
+        assert (
+            component_manager.communication_state
+            == CommunicationStatus.ESTABLISHED
+        )
 
         callbacks["component_state"].assert_next_call(power=PowerState.OFF)
 
         component_manager.stop_communicating()
-        callbacks["communication_state"].assert_next_call(CommunicationStatus.DISABLED)
-        assert component_manager.communication_state == CommunicationStatus.DISABLED
+        callbacks["communication_state"].assert_next_call(
+            CommunicationStatus.DISABLED
+        )
+        assert (
+            component_manager.communication_state
+            == CommunicationStatus.DISABLED
+        )
 
-    def test_simulate_communication_failure(self, component_manager, callbacks):
+    def test_simulate_communication_failure(
+        self, component_manager, callbacks
+    ):
         """
         Test that we can simulate connection failure.
 
         :param component_manager: the component manager under test
         """
-        assert component_manager.communication_state == CommunicationStatus.DISABLED
+        assert (
+            component_manager.communication_state
+            == CommunicationStatus.DISABLED
+        )
         callbacks["communication_state"].assert_not_called()
         callbacks["component_state"].assert_not_called()
 
@@ -87,7 +104,8 @@ class TestReferenceBaseComponentManager:
             CommunicationStatus.NOT_ESTABLISHED
         )
         assert (
-            component_manager.communication_state == CommunicationStatus.NOT_ESTABLISHED
+            component_manager.communication_state
+            == CommunicationStatus.NOT_ESTABLISHED
         )
         callbacks["communication_state"].assert_not_called()
 
@@ -97,7 +115,10 @@ class TestReferenceBaseComponentManager:
         callbacks["communication_state"].assert_next_call(
             CommunicationStatus.ESTABLISHED
         )
-        assert component_manager.communication_state == CommunicationStatus.ESTABLISHED
+        assert (
+            component_manager.communication_state
+            == CommunicationStatus.ESTABLISHED
+        )
 
         callbacks["component_state"].assert_next_call(power=PowerState.OFF)
 
@@ -106,13 +127,19 @@ class TestReferenceBaseComponentManager:
             CommunicationStatus.NOT_ESTABLISHED
         )
         assert (
-            component_manager.communication_state == CommunicationStatus.NOT_ESTABLISHED
+            component_manager.communication_state
+            == CommunicationStatus.NOT_ESTABLISHED
         )
         callbacks["component_state"].assert_not_called()
 
         component_manager.stop_communicating()
-        callbacks["communication_state"].assert_next_call(CommunicationStatus.DISABLED)
-        assert component_manager.communication_state == CommunicationStatus.DISABLED
+        callbacks["communication_state"].assert_next_call(
+            CommunicationStatus.DISABLED
+        )
+        assert (
+            component_manager.communication_state
+            == CommunicationStatus.DISABLED
+        )
 
     @pytest.mark.parametrize("command", ["off", "standby", "on"])
     def test_command_fails_when_disconnected(
@@ -124,12 +151,16 @@ class TestReferenceBaseComponentManager:
         :param component_manager: the component manager under test
         :param command: the command under test
         """
-        assert component_manager.communication_state == CommunicationStatus.DISABLED
+        assert (
+            component_manager.communication_state
+            == CommunicationStatus.DISABLED
+        )
         callbacks["communication_state"].assert_not_called()
         callbacks["component_state"].assert_not_called()
 
         with pytest.raises(
-            ConnectionError, match="Communication with component is not established."
+            ConnectionError,
+            match="Communication with component is not established.",
         ):
             getattr(component_manager, command)()
 
@@ -139,13 +170,15 @@ class TestReferenceBaseComponentManager:
             CommunicationStatus.NOT_ESTABLISHED
         )
         assert (
-            component_manager.communication_state == CommunicationStatus.NOT_ESTABLISHED
+            component_manager.communication_state
+            == CommunicationStatus.NOT_ESTABLISHED
         )
         callbacks["communication_state"].assert_not_called()
         callbacks["component_state"].assert_not_called()
 
         with pytest.raises(
-            ConnectionError, match="Communication with component is not established."
+            ConnectionError,
+            match="Communication with component is not established.",
         ):
             getattr(component_manager, command)()
 
@@ -153,7 +186,10 @@ class TestReferenceBaseComponentManager:
         callbacks["communication_state"].assert_next_call(
             CommunicationStatus.ESTABLISHED
         )
-        assert component_manager.communication_state == CommunicationStatus.ESTABLISHED
+        assert (
+            component_manager.communication_state
+            == CommunicationStatus.ESTABLISHED
+        )
         callbacks["component_state"].assert_next_call(power=PowerState.OFF)
 
         component_manager.simulate_communication_failure(True)
@@ -161,21 +197,29 @@ class TestReferenceBaseComponentManager:
             CommunicationStatus.NOT_ESTABLISHED
         )
         assert (
-            component_manager.communication_state == CommunicationStatus.NOT_ESTABLISHED
+            component_manager.communication_state
+            == CommunicationStatus.NOT_ESTABLISHED
         )
         callbacks["component_state"].assert_not_called()
 
         with pytest.raises(
-            ConnectionError, match="Communication with component is not established."
+            ConnectionError,
+            match="Communication with component is not established.",
         ):
             getattr(component_manager, command)()
 
         component_manager.stop_communicating()
-        callbacks["communication_state"].assert_next_call(CommunicationStatus.DISABLED)
-        assert component_manager.communication_state == CommunicationStatus.DISABLED
+        callbacks["communication_state"].assert_next_call(
+            CommunicationStatus.DISABLED
+        )
+        assert (
+            component_manager.communication_state
+            == CommunicationStatus.DISABLED
+        )
 
         with pytest.raises(
-            ConnectionError, match="Communication with component is not established."
+            ConnectionError,
+            match="Communication with component is not established.",
         ):
             getattr(component_manager, command)()
 
@@ -191,7 +235,10 @@ class TestReferenceBaseComponentManager:
         :param callbacks: a dictionary of mocks, passed as callbacks to
             the command tracker under test
         """
-        assert component_manager.communication_state == CommunicationStatus.DISABLED
+        assert (
+            component_manager.communication_state
+            == CommunicationStatus.DISABLED
+        )
         callbacks["communication_state"].assert_not_called()
         callbacks["component_state"].assert_not_called()
 
@@ -202,12 +249,17 @@ class TestReferenceBaseComponentManager:
         callbacks["communication_state"].assert_next_call(
             CommunicationStatus.ESTABLISHED
         )
-        assert component_manager.communication_state == CommunicationStatus.ESTABLISHED
+        assert (
+            component_manager.communication_state
+            == CommunicationStatus.ESTABLISHED
+        )
         callbacks["component_state"].assert_next_call(power=PowerState.OFF)
 
         component_manager.standby(callbacks["standby_task"])
         callbacks["standby_task"].assert_next_call(status=TaskStatus.QUEUED)
-        callbacks["standby_task"].assert_next_call(status=TaskStatus.IN_PROGRESS)
+        callbacks["standby_task"].assert_next_call(
+            status=TaskStatus.IN_PROGRESS
+        )
         callbacks["standby_task"].assert_next_call(progress=33)
         callbacks["standby_task"].assert_next_call(progress=66)
         callbacks["standby_task"].assert_next_call(

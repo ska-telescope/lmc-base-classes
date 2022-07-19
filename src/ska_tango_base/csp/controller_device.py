@@ -1,3 +1,4 @@
+# pylint: skip-file  # TODO: Incrementally lint this repo
 # -*- coding: utf-8 -*-
 #
 # This file is part of the CspSubElementController project
@@ -13,18 +14,14 @@ CspSubElementController.
 Controller device for SKA CSP Subelement.
 """
 # PROTECTED REGION ID(CspSubElementController.additionnal_import) ENABLED START #
-# Python standard library
 from collections import defaultdict
 
-# Tango imports
 import tango
-from tango import DebugIt, AttrWriteType
-from tango.server import run, attribute, command, device_property
-
-# SKA specific imports
+from tango import AttrWriteType, DebugIt
+from tango.server import attribute, command, device_property, run
 
 from ska_tango_base import SKAController
-from ska_tango_base.commands import ResultCode, FastCommand
+from ska_tango_base.commands import FastCommand, ResultCode
 from ska_tango_base.control_model import AdminMode
 
 # PROTECTED REGION END #    //  CspSubElementController.additionnal_import
@@ -248,8 +245,12 @@ class CspSubElementController(SKAController):
             self._device._total_output_rate_to_sdp = 0.0
 
             # initialise using defaults in device properties
-            self._device._power_delay_standby_on = self._device.PowerDelayStandbyOn
-            self._device._power_delay_standby_off = self._device.PowerDelayStandbyOff
+            self._device._power_delay_standby_on = (
+                self._device.PowerDelayStandbyOn
+            )
+            self._device._power_delay_standby_off = (
+                self._device.PowerDelayStandbyOff
+            )
 
             message = "CspSubElementController Init command completed OK"
             self._device.logger.info(message)

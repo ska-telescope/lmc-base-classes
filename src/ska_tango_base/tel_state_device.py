@@ -1,3 +1,4 @@
+# pylint: skip-file  # TODO: Incrementally lint this repo
 # -*- coding: utf-8 -*-
 #
 # This file is part of the SKATelState project
@@ -10,11 +11,8 @@ SKATelState.
 A generic base device for Telescope State for SKA.
 """
 # PROTECTED REGION ID(SKATelState.additionnal_import) ENABLED START #
-# Tango imports
-# from tango import DebugIt
-from tango.server import run, device_property
+from tango.server import device_property, run
 
-# SKA specific imports
 from ska_tango_base import SKABaseDevice
 
 # PROTECTED REGION END #    //  SKATelState.additionnal_imports

@@ -1,3 +1,4 @@
+# pylint: skip-file  # TODO: Incrementally lint this repo
 """Tests of the ska_tango_base.executor module."""
 from threading import Lock
 from time import sleep
@@ -55,7 +56,9 @@ class TestTaskExecutor:
             locks[i].acquire()
 
         for i in range(max_workers + 1):
-            executor.submit(_claim_lock, args=[locks[i]], task_callback=callbacks[i])
+            executor.submit(
+                _claim_lock, args=[locks[i]], task_callback=callbacks[i]
+            )
 
         for i in range(max_workers + 1):
             callbacks[i].assert_next_call(status=TaskStatus.QUEUED)
@@ -114,7 +117,9 @@ class TestTaskExecutor:
             locks[i].acquire()
 
         for i in range(max_workers + 1):
-            executor.submit(_claim_lock, args=[locks[i]], task_callback=callbacks[i])
+            executor.submit(
+                _claim_lock, args=[locks[i]], task_callback=callbacks[i]
+            )
 
         for i in range(max_workers + 1):
             callbacks[i].assert_next_call(status=TaskStatus.QUEUED)
@@ -150,11 +155,15 @@ class TestTaskExecutor:
             task_callback=callbacks[max_workers + 1],
         )
         callbacks[max_workers + 1].assert_next_call(status=TaskStatus.QUEUED)
-        callbacks[max_workers + 1].assert_next_call(status=TaskStatus.IN_PROGRESS)
+        callbacks[max_workers + 1].assert_next_call(
+            status=TaskStatus.IN_PROGRESS
+        )
 
         locks[max_workers + 1].release()
 
-        callbacks[max_workers + 1].assert_next_call(status=TaskStatus.COMPLETED)
+        callbacks[max_workers + 1].assert_next_call(
+            status=TaskStatus.COMPLETED
+        )
 
     def test_exception(self, executor, callbacks):
         """

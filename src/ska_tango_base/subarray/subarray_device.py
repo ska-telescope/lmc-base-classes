@@ -1,3 +1,4 @@
+# pylint: skip-file  # TODO: Incrementally lint this repo
 # -*- coding: utf-8 -*-
 #
 # This file is part of the SKASubarray project
@@ -17,17 +18,20 @@ import functools
 import json
 
 from tango import DebugIt
-from tango.server import run, attribute, command
-from tango.server import device_property
+from tango.server import attribute, command, device_property, run
 
-# SKA specific imports
-from ska_tango_base import SKAObsDevice
-from ska_tango_base.commands import ResultCode, SlowCommand, SubmittedSlowCommand
+from ska_tango_base.commands import (
+    ResultCode,
+    SlowCommand,
+    SubmittedSlowCommand,
+)
 from ska_tango_base.control_model import ObsState
 from ska_tango_base.executor import TaskStatus
 from ska_tango_base.faults import StateModelError
-from ska_tango_base.subarray import SubarrayObsStateModel
-
+from ska_tango_base.obs import SKAObsDevice
+from ska_tango_base.subarray.subarray_obs_state_model import (
+    SubarrayObsStateModel,
+)
 
 # PROTECTED REGION END #    //  SKASubarray.additionnal_imports
 
@@ -61,7 +65,9 @@ class SKASubarray(SKAObsDevice):
     class AbortCommand(SlowCommand):
         """A class for SKASubarray's Abort() command."""
 
-        def __init__(self, command_tracker, component_manager, callback, logger=None):
+        def __init__(
+            self, command_tracker, component_manager, callback, logger=None
+        ):
             """
             Initialise a new AbortCommand instance.
 
@@ -88,7 +94,9 @@ class SKASubarray(SKAObsDevice):
                 "Abort", completed_callback=self._completed
             )
             status, _ = self._component_manager.abort(
-                functools.partial(self._command_tracker.update_command_info, command_id)
+                functools.partial(
+                    self._command_tracker.update_command_info, command_id
+                )
             )
 
             assert status == TaskStatus.IN_PROGRESS

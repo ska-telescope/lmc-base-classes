@@ -1,3 +1,4 @@
+# pylint: skip-file  # TODO: Incrementally lint this repo
 # -*- coding: utf-8 -*-
 #
 # This file is part of the SKAObsDevice project
@@ -14,10 +15,8 @@ from SKAObsDevice instead of just SKABaseDevice.
 
 # Additional import
 # PROTECTED REGION ID(SKAObsDevice.additionnal_import) ENABLED START #
-# Tango imports
-from tango.server import run, attribute
+from tango.server import attribute, run
 
-# SKA specific imports
 from ska_tango_base import SKABaseDevice
 from ska_tango_base.commands import DeviceInitCommand, ResultCode
 from ska_tango_base.control_model import ObsMode, ObsState

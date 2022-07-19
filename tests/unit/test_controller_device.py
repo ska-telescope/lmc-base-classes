@@ -1,3 +1,4 @@
+# pylint: skip-file  # TODO: Incrementally lint this repo
 #########################################################################################
 # -*- coding: utf-8 -*-
 #
@@ -15,11 +16,6 @@ from tango import DevState
 
 # PROTECTED REGION ID(SKAController.test_additional_imports) ENABLED START #
 from ska_tango_base import SKAController
-
-from ska_tango_base.testing.reference import (
-    ReferenceBaseComponentManager,
-)
-
 from ska_tango_base.control_model import (
     AdminMode,
     ControlMode,
@@ -27,6 +23,7 @@ from ska_tango_base.control_model import (
     SimulationMode,
     TestMode,
 )
+from ska_tango_base.testing.reference import ReferenceBaseComponentManager
 
 # PROTECTED REGION END #    //  SKAController.test_additional_imports
 
@@ -139,9 +136,12 @@ class TestSKAController(object):
     # PROTECTED REGION ID(SKAController.test_isCapabilityAchievable_failure_decorators) ENABLED START #
     # PROTECTED REGION END #    //  SKAController.test_isCapabilityAchievable_failure_decorators
     @pytest.mark.parametrize(
-        ("capability", "success"), [([[2], ["BAND1"]], False), ([[1], ["BAND1"]], True)]
+        ("capability", "success"),
+        [([[2], ["BAND1"]], False), ([[1], ["BAND1"]], True)],
     )
-    def test_isCapabilityAchievable(self, device_under_test, capability, success):
+    def test_isCapabilityAchievable(
+        self, device_under_test, capability, success
+    ):
         """
         Test for isCapabilityAchievable to test failure condition.
 
@@ -212,7 +212,9 @@ class TestSKAController(object):
             r"ska_tango_base, [0-9]+.[0-9]+.[0-9]+, "
             r"A set of generic base devices for SKA Telescope"
         )
-        assert (re.match(buildPattern, device_under_test.buildState)) is not None
+        assert (
+            re.match(buildPattern, device_under_test.buildState)
+        ) is not None
         # PROTECTED REGION END #    //  SKAController.test_buildState
 
     # PROTECTED REGION ID(SKAController.test_versionId_decorators) ENABLED START #
@@ -225,7 +227,9 @@ class TestSKAController(object):
         """
         # PROTECTED REGION ID(SKAController.test_versionId) ENABLED START #
         versionIdPattern = re.compile(r"[0-9]+.[0-9]+.[0-9]+")
-        assert (re.match(versionIdPattern, device_under_test.versionId)) is not None
+        assert (
+            re.match(versionIdPattern, device_under_test.versionId)
+        ) is not None
         # PROTECTED REGION END #    //  SKAController.test_versionId
 
     # PROTECTED REGION ID(SKAController.test_healthState_decorators) ENABLED START #
@@ -309,5 +313,8 @@ class TestSKAController(object):
         :param device_under_test: a proxy to the device under test
         """
         # PROTECTED REGION ID(SKAController.test_availableCapabilities) ENABLED START #
-        assert device_under_test.availableCapabilities == ("BAND1:1", "BAND2:1")
+        assert device_under_test.availableCapabilities == (
+            "BAND1:1",
+            "BAND2:1",
+        )
         # PROTECTED REGION END #    //  SKAController.test_availableCapabilities

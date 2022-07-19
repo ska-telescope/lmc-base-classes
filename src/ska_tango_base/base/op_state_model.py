@@ -1,3 +1,4 @@
+# pylint: skip-file  # TODO: Incrementally lint this repo
 """
 This module specifies the operational state ("opState") model for SKA LMC Tango devices.
 
@@ -14,7 +15,6 @@ from transitions.extensions import LockedMachine as Machine
 
 from ska_tango_base.faults import StateModelError
 from ska_tango_base.utils import for_testing_only
-
 
 __all__ = ["OpStateModel"]
 
@@ -441,7 +441,9 @@ class OpStateModel:
         self._op_state = None
         self._callback = callback
 
-        self._op_state_machine = _OpStateMachine(callback=self._op_state_changed)
+        self._op_state_machine = _OpStateMachine(
+            callback=self._op_state_changed
+        )
 
     @property
     def op_state(self):
@@ -505,7 +507,9 @@ class OpStateModel:
         :return: whether the action is allowed in the current state
         :rtype: bool
         """
-        if action in self._op_state_machine.get_triggers(self._op_state_machine.state):
+        if action in self._op_state_machine.get_triggers(
+            self._op_state_machine.state
+        ):
             return True
 
         if raise_if_disallowed:

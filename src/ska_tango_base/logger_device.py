@@ -1,3 +1,4 @@
+# pylint: skip-file  # TODO: Incrementally lint this repo
 # -*- coding: utf-8 -*-
 #
 # This file is part of the SKALogger project
@@ -12,11 +13,9 @@ to store logs using Python logging. It configures the log levels of
 remote logging for selected devices.
 """
 # PROTECTED REGION ID(SKALogger.additionnal_import) ENABLED START #
-# Tango imports
-from tango import DebugIt, DeviceProxy, DevFailed
-from tango.server import run, command
+from tango import DebugIt, DevFailed, DeviceProxy
+from tango.server import command, run
 
-# SKA specific imports
 from ska_tango_base import SKABaseDevice
 from ska_tango_base.commands import FastCommand, ResultCode
 from ska_tango_base.control_model import LoggingLevel

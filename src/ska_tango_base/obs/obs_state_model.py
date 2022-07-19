@@ -10,7 +10,6 @@ from ska_tango_base.control_model import ObsState
 from ska_tango_base.faults import StateModelError
 from ska_tango_base.utils import for_testing_only
 
-
 __all__ = ["ObsStateModel"]
 
 

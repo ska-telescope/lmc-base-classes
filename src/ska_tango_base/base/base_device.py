@@ -1,3 +1,4 @@
+# pylint: skip-file  # TODO: Incrementally lint this repo
 # -*- coding: utf-8 -*-
 #
 # This file is part of the SKABaseDevice project
@@ -12,7 +13,6 @@ It exposes the generic attributes, properties and commands of an SKA
 device.
 """
 # PROTECTED REGION ID(SKABaseDevice.additionnal_import) ENABLED START #
-# Standard imports
 from __future__ import annotations
 
 import enum
@@ -28,23 +28,21 @@ import threading
 import traceback
 import typing
 import warnings
-
 from functools import partial
 from urllib.parse import urlparse
 from urllib.request import url2pathname
 
-# Tango imports
-from tango import AttrWriteType, DebugIt, DevState, is_omni_thread
-from tango.server import run, Device, attribute, command, device_property
-
-# SKA specific imports
 import debugpy
 import ska_ser_logging
+from tango import AttrWriteType, DebugIt, DevState, is_omni_thread
+from tango.server import Device, attribute, command, device_property, run
+
 from ska_tango_base import release
-from ska_tango_base.base import AdminModeModel, OpStateModel
+from ska_tango_base.base.admin_mode_model import AdminModeModel
+from ska_tango_base.base.op_state_model import OpStateModel
 from ska_tango_base.commands import (
-    FastCommand,
     DeviceInitCommand,
+    FastCommand,
     ResultCode,
     SlowCommand,
     SubmittedSlowCommand,
@@ -53,20 +51,19 @@ from ska_tango_base.control_model import (
     AdminMode,
     CommunicationStatus,
     ControlMode,
+    HealthState,
+    LoggingLevel,
     PowerState,
     SimulationMode,
     TestMode,
-    HealthState,
-    LoggingLevel,
 )
 from ska_tango_base.executor import TaskStatus
-from ska_tango_base.utils import get_groups_from_json, generate_command_id
 from ska_tango_base.faults import (
     GroupDefinitionsError,
-    LoggingTargetError,
     LoggingLevelError,
+    LoggingTargetError,
 )
-
+from ska_tango_base.utils import generate_command_id, get_groups_from_json
 
 MAX_REPORTED_CONCURRENT_COMMANDS = 16
 MAX_REPORTED_QUEUED_COMMANDS = 64
@@ -146,7 +143,9 @@ class TangoLoggingServiceHandler(logging.Handler):
     def __repr__(self):
         python_level = logging.getLevelName(self.level)
         if self.tango_logger:
-            tango_level = _Log4TangoLoggingLevel(self.tango_logger.get_level()).name
+            tango_level = _Log4TangoLoggingLevel(
+                self.tango_logger.get_level()
+            ).name
             name = self.tango_logger.get_name()
         else:
             tango_level = "UNKNOWN"
@@ -269,7 +268,9 @@ class LoggingUtils:
             socktype = None
             if not address:
                 raise LoggingTargetError(
-                    "Invalid syslog URL - empty file path from '{}'".format(url)
+                    "Invalid syslog URL - empty file path from '{}'".format(
+                        url
+                    )
                 )
             if parsed.scheme == "":
                 warnings.warn(
@@ -294,7 +295,9 @@ class LoggingUtils:
                 )
             address = (parsed.hostname, port)
             socktype = (
-                socket.SOCK_DGRAM if parsed.scheme == "udp" else socket.SOCK_STREAM
+                socket.SOCK_DGRAM
+                if parsed.scheme == "udp"
+                else socket.SOCK_STREAM
             )
         else:
             raise LoggingTargetError(
@@ -326,7 +329,9 @@ class LoggingUtils:
             target_type, target_name = target.split("::", 1)
         else:
             raise LoggingTargetError(
-                "Invalid target requested - missing '::' separator: {}".format(target)
+                "Invalid target requested - missing '::' separator: {}".format(
+                    target
+                )
             )
         if target_type == "console":
             handler = logging.StreamHandler(sys.stdout)
@@ -875,8 +880,12 @@ class SKABaseDevice(Device):
         else:
             self._command_ids_in_queue = []
             self._commands_in_queue = []
-        self.push_change_event("longRunningCommandsInQueue", self._commands_in_queue)
-        self.push_archive_event("longRunningCommandsInQueue", self._commands_in_queue)
+        self.push_change_event(
+            "longRunningCommandsInQueue", self._commands_in_queue
+        )
+        self.push_archive_event(
+            "longRunningCommandsInQueue", self._commands_in_queue
+        )
         self.push_change_event(
             "longRunningCommandIDsInQueue", self._command_ids_in_queue
         )
@@ -889,28 +898,45 @@ class SKABaseDevice(Device):
         self._command_statuses = [
             str(item) for item in itertools.chain.from_iterable(statuses)
         ][: (MAX_REPORTED_CONCURRENT_COMMANDS * 2)]
-        self.push_change_event("longRunningCommandStatus", self._command_statuses)
-        self.push_archive_event("longRunningCommandStatus", self._command_statuses)
+        self.push_change_event(
+            "longRunningCommandStatus", self._command_statuses
+        )
+        self.push_archive_event(
+            "longRunningCommandStatus", self._command_statuses
+        )
 
     def _update_command_progresses(self, command_progresses):
         self._command_progresses = [
-            str(item) for item in itertools.chain.from_iterable(command_progresses)
+            str(item)
+            for item in itertools.chain.from_iterable(command_progresses)
         ][: (MAX_REPORTED_CONCURRENT_COMMANDS * 2)]
-        self.push_change_event("longRunningCommandProgress", self._command_progresses)
-        self.push_archive_event("longRunningCommandProgress", self._command_progresses)
+        self.push_change_event(
+            "longRunningCommandProgress", self._command_progresses
+        )
+        self.push_archive_event(
+            "longRunningCommandProgress", self._command_progresses
+        )
 
     def _update_command_result(self, command_id, command_result):
         self._command_result = (command_id, json.dumps(command_result))
-        self.push_change_event("longRunningCommandResult", self._command_result)
-        self.push_archive_event("longRunningCommandResult", self._command_result)
+        self.push_change_event(
+            "longRunningCommandResult", self._command_result
+        )
+        self.push_archive_event(
+            "longRunningCommandResult", self._command_result
+        )
 
     def _update_command_exception(self, command_id, command_exception):
         self.logger.error(
             f"Command '{command_id}' raised exception {command_exception}"
         )
         self._command_result = (command_id, str(command_exception))
-        self.push_change_event("longRunningCommandResult", self._command_result)
-        self.push_archive_event("longRunningCommandResult", self._command_result)
+        self.push_change_event(
+            "longRunningCommandResult", self._command_result
+        )
+        self.push_archive_event(
+            "longRunningCommandResult", self._command_result
+        )
 
     def _communication_state_changed(self, communication_state):
         action_map = {
@@ -1004,7 +1030,9 @@ class SKABaseDevice(Device):
                     "Groups definitions: {}".format(self.GroupDefinitions)
                 )
                 self.groups = get_groups_from_json(self.GroupDefinitions)
-                self.logger.info("Groups loaded: {}".format(sorted(self.groups.keys())))
+                self.logger.info(
+                    "Groups loaded: {}".format(sorted(self.groups.keys()))
+                )
             except GroupDefinitionsError:
                 self.logger.debug(
                     "No Groups loaded for device: {}".format(self.get_name())
@@ -1027,7 +1055,8 @@ class SKABaseDevice(Device):
                 traceback.print_exc()
                 print(f"ERROR: init_device failed, and no logger: {exc}.")
             self._update_state(
-                DevState.FAULT, "The device is in FAULT state - init_device failed."
+                DevState.FAULT,
+                "The device is in FAULT state - init_device failed.",
             )
 
     #        self.op_state_model.set_state_changed_callback(self._update_state)
@@ -1199,7 +1228,8 @@ class SKABaseDevice(Device):
             _LMC_TO_TANGO_LOGGING_LEVEL[lmc_logging_level]
         )
         self.logger.info(
-            "Logging level set to %s on Python and Tango loggers", lmc_logging_level
+            "Logging level set to %s on Python and Tango loggers",
+            lmc_logging_level,
         )
         # PROTECTED REGION END #    //  SKABaseDevice.loggingLevel_write
 
@@ -1227,7 +1257,9 @@ class SKABaseDevice(Device):
         :param value: Logging targets for logger
         """
         device_name = self.get_name()
-        valid_targets = LoggingUtils.sanitise_logging_targets(value, device_name)
+        valid_targets = LoggingUtils.sanitise_logging_targets(
+            value, device_name
+        )
         LoggingUtils.update_logging_handlers(valid_targets, self.logger)
         # PROTECTED REGION END #    //  SKABaseDevice.loggingTargets_write
 
@@ -1466,7 +1498,10 @@ class SKABaseDevice(Device):
         :rtype: (ResultCode, str)
         """
         if self.get_state() == DevState.STANDBY:
-            return [[ResultCode.REJECTED], ["Device is already in STANDBY state."]]
+            return [
+                [ResultCode.REJECTED],
+                ["Device is already in STANDBY state."],
+            ]
 
         handler = self.get_command_object("Standby")
         result_code, unique_id = handler()
@@ -1659,7 +1694,9 @@ class SKABaseDevice(Device):
             :rtype: DevUShort
             """
             if not SKABaseDevice._global_debugger_listening:
-                allocated_port = self.start_debugger_and_get_port(_DEBUGGER_PORT)
+                allocated_port = self.start_debugger_and_get_port(
+                    _DEBUGGER_PORT
+                )
                 SKABaseDevice._global_debugger_listening = True
                 SKABaseDevice._global_debugger_allocated_port = allocated_port
             if not self._device._methods_patched_for_debugger:
@@ -1689,13 +1726,17 @@ class SKABaseDevice(Device):
                     patched.append(
                         f"{owner} {method.__func__.__qualname__} in {method.__func__.__module__}"
                     )
-            self.logger.info("Patched %s of %s methods", len(patched), len(all_methods))
+            self.logger.info(
+                "Patched %s of %s methods", len(patched), len(all_methods)
+            )
             self.logger.debug("Patched methods: %s", sorted(patched))
 
         def get_all_methods(self):
             """Return a list of the device's methods."""
             methods = []
-            for name, method in inspect.getmembers(self._device, inspect.ismethod):
+            for name, method in inspect.getmembers(
+                self._device, inspect.ismethod
+            ):
                 methods.append((self._device, name, method))
             for command_object in self._device._command_objects.values():
                 for name, method in inspect.getmembers(
@@ -1714,7 +1755,11 @@ class SKABaseDevice(Device):
             The `typing.types.FunctionType` check excludes the Boost
             methods.
             """
-            skip_module_names = ["tango.device_server", "tango.server", "logging"]
+            skip_module_names = [
+                "tango.device_server",
+                "tango.server",
+                "logging",
+            ]
             skip_owner_types = [SKABaseDevice.DebugDeviceCommand]
             return (
                 isinstance(method.__func__, typing.types.FunctionType)
@@ -1740,7 +1785,8 @@ class SKABaseDevice(Device):
             setattr(owner, name, patched_method)
 
     @command(
-        dtype_out="DevUShort", doc_out="The TCP port the debugger is listening on."
+        dtype_out="DevUShort",
+        doc_out="The TCP port the debugger is listening on.",
     )
     @DebugIt()
     def DebugDevice(self):

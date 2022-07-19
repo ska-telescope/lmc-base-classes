@@ -14,15 +14,12 @@ SHELL = /bin/bash
 # value for CAR_OCI_REGISTRY_HOST (=artefact.skao.int) and overwrites
 # PROJECT to give a final Docker tag of artefact.skao.int/ska-tango-base
 PROJECT = ska-tango-base
-IMAGE_FOR_DIAGRAMS = artefact.skao.int/ska-tango-images-pytango-builder:9.3.10
+IMAGE_FOR_DIAGRAMS = artefact.skao.int/ska-tango-images-pytango-builder:9.3.28
 
 # use setup.py
 #PYTHON_BUILD_TYPE = non_tag_setup
 
 # TODO: use black, isort and pylint and then remove these
-PYTHON_SWITCHES_FOR_ISORT = --skip tests --skip src -w 79 
-PYTHON_SWITCHES_FOR_BLACK = --exclude src --exclude tests 
-PYTHON_SWITCHES_FOR_PYLINT = --ignore=tests,src
 PYTHON_LINT_TARGET = src tests 
 
 #
@@ -54,9 +51,7 @@ python-post-test: ## test ska_tango_base Python code
 	scripts/validate-metadata.sh
 	 
 python-pre-test:
-	python3 -m pip install pytest-timeout
-	ls -d ./dist/*
-	python3 -m pip install --extra-index-url https://artefact.skao.int/repository/pypi-all/simple -U $$(ls -d ./dist/*.whl) 
+	if [ "$$(ls -A ./dist/)" ]; then python3 -m pip install --extra-index-url https://artefact.skao.int/repository/pypi-all/simple -U $$(ls -d ./dist/*.whl); fi
 
 test-in-docker: build ## Build the docker image and run tests inside it.
 	@docker run --rm $(IMAGE):$(VERSION) make test

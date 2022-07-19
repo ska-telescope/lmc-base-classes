@@ -10,14 +10,9 @@ __all__ = (
 )
 
 from .controller_device import CspSubElementController
-
 from .obs import (
-    CspSubElementObsStateModel,
     CspObsComponentManager,
     CspSubElementObsDevice,
+    CspSubElementObsStateModel,
 )
-
-from .subarray import (
-    CspSubarrayComponentManager,
-    CspSubElementSubarray,
-)
+from .subarray import CspSubarrayComponentManager, CspSubElementSubarray

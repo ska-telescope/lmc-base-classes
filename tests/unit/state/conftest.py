@@ -1,11 +1,12 @@
+# pylint: skip-file  # TODO: Incrementally lint this repo
 """This module defines the test harness for all ska_tango_base tests."""
-from collections import defaultdict
 import itertools
 import json
-import pytest
-from transitions import MachineError
+from collections import defaultdict
 
+import pytest
 from tango import DevState
+from transitions import MachineError
 
 from ska_tango_base.control_model import AdminMode, ObsState
 from ska_tango_base.faults import StateModelError
@@ -42,7 +43,9 @@ def pytest_generate_tests(metafunc):
     if mark:
         spec = mark.args[0]
 
-        states = {state: spec["states"][state] or state for state in spec["states"]}
+        states = {
+            state: spec["states"][state] or state for state in spec["states"]
+        }
 
         triggers = set()
         expected = defaultdict(lambda: None)
@@ -111,12 +114,16 @@ class StateMachineTester:
         # Test that the action under test does what we expect it to
         if expected_state is None:
             # Action should fail and the state should not change
-            assert not self.is_action_allowed(machine_under_test, action_under_test)
+            assert not self.is_action_allowed(
+                machine_under_test, action_under_test
+            )
             self.check_action_fails(machine_under_test, action_under_test)
             self.assert_state(machine_under_test, state_under_test)
         else:
             # Action should succeed
-            assert self.is_action_allowed(machine_under_test, action_under_test)
+            assert self.is_action_allowed(
+                machine_under_test, action_under_test
+            )
             self.perform_action(machine_under_test, action_under_test)
             self.assert_state(machine_under_test, expected_state)
 
@@ -226,7 +233,9 @@ class TransitionsStateMachineTester(StateMachineTester):
         :return: whether the action is allowed
         :rtype: bool
         """
-        return action in machine_under_test.get_triggers(machine_under_test.state)
+        return action in machine_under_test.get_triggers(
+            machine_under_test.state
+        )
 
     def perform_action(self, machine_under_test, action):
         """

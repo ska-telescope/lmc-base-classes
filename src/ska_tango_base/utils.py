@@ -1,30 +1,31 @@
+# pylint: skip-file  # TODO: Incrementally lint this repo
 """General utilities that may be useful to SKA devices and clients."""
-from builtins import str
 import ast
 import functools
 import inspect
 import json
 import pydoc
-import traceback
 import sys
 import time
+import traceback
 import uuid
 import warnings
-
+from builtins import str
+from contextlib import contextmanager
 from datetime import datetime
 
 import tango
 from tango import (
-    DeviceProxy,
-    DbDatum,
-    DbDevInfo,
     AttrQuality,
     AttrWriteType,
-    Except,
+    DbDatum,
+    DbDevInfo,
+    DeviceProxy,
+    DevState,
     ErrSeverity,
+    Except,
 )
-from tango import DevState
-from contextlib import contextmanager
+
 from ska_tango_base.faults import GroupDefinitionsError, SKABaseError
 
 int_types = {
@@ -37,7 +38,10 @@ int_types = {
     tango._tango.CmdArgType.DevShort,
 }
 
-float_types = {tango._tango.CmdArgType.DevDouble, tango._tango.CmdArgType.DevFloat}
+float_types = {
+    tango._tango.CmdArgType.DevDouble,
+    tango._tango.CmdArgType.DevFloat,
+}
 
 # TBD - investigate just using (command argin data_type)
 tango_type_conversion = {
@@ -121,7 +125,9 @@ def exception_manager(cls, callback=None):
         calframe = inspect.getouterframes(curframe, 2)
 
         # Form exception message
-        message = "{}: {}".format(type(anything).__name__, tango.DevFailed.message)
+        message = "{}: {}".format(
+            type(anything).__name__, tango.DevFailed.message
+        )
 
         # Retrieve class
         class_name = str(cls.__class__.__name__)
@@ -206,16 +212,22 @@ def coerce_value(value):
     return value
 
 
-def get_dp_attribute(device_proxy, attribute, with_value=False, with_context=False):
+def get_dp_attribute(
+    device_proxy, attribute, with_value=False, with_context=False
+):
     """Get an attribute from a DeviceProxy."""
     attr_dict = {
         "name": attribute.name,
         "polling_frequency": attribute.events.per_event.period,
         "min_value": (
-            attribute.min_value if attribute.min_value != "Not specified" else None
+            attribute.min_value
+            if attribute.min_value != "Not specified"
+            else None
         ),
         "max_value": (
-            attribute.max_value if attribute.max_value != "Not specified" else None
+            attribute.max_value
+            if attribute.max_value != "Not specified"
+            else None
         ),
         "readonly": attribute.writable
         not in [
@@ -244,7 +256,9 @@ def get_dp_attribute(device_proxy, attribute, with_value=False, with_context=Fal
         attr_dict["data_type"] = "other"
 
     if with_context:
-        device_type, device_id = get_tango_device_type_id(device_proxy.dev_name())
+        device_type, device_id = get_tango_device_type_id(
+            device_proxy.dev_name()
+        )
         attr_dict["component_type"] = device_type
         attr_dict["component_id"] = device_id
 
@@ -252,7 +266,9 @@ def get_dp_attribute(device_proxy, attribute, with_value=False, with_context=Fal
         try:
             attr_value = device_proxy.read_attribute(attribute.name)
             attr_dict["value"] = coerce_value(attr_value.value)
-            attr_dict["is_alarm"] = attr_value.quality == AttrQuality.ATTR_ALARM
+            attr_dict["is_alarm"] = (
+                attr_value.quality == AttrQuality.ATTR_ALARM
+            )
             ts = datetime.fromtimestamp(attr_value.time.tv_sec)
             ts.replace(microsecond=attr_value.time.tv_usec)
             attr_dict["timestamp"] = ts.isoformat()
@@ -409,7 +425,9 @@ def get_groups_from_json(json_definitions):
     except Exception as exc:
         # the exc_info is included for detailed traceback
         ska_error = SKABaseError(exc)
-        raise GroupDefinitionsError(ska_error).with_traceback(sys.exc_info()[2])
+        raise GroupDefinitionsError(ska_error).with_traceback(
+            sys.exc_info()[2]
+        )
 
 
 def _validate_group(definition):
@@ -420,7 +438,9 @@ def _validate_group(definition):
     """
     error_message = "Missing 'group_name' key - {}".format(definition)
     assert "group_name" in definition, error_message
-    error_message = "Missing 'devices' or 'subgroups' key - {}".format(definition)
+    error_message = "Missing 'devices' or 'subgroups' key - {}".format(
+        definition
+    )
     assert "devices" in definition or "subgroups" in definition, error_message
 
     definition["group_name"] = definition["group_name"].strip()
@@ -461,7 +481,9 @@ def _build_group(definition):
     return group
 
 
-def validate_capability_types(command_name, requested_capabilities, valid_capabilities):
+def validate_capability_types(
+    command_name, requested_capabilities, valid_capabilities
+):
     """
     Check the validity of the capability types passed to the specified command.
 
@@ -474,12 +496,16 @@ def validate_capability_types(command_name, requested_capabilities, valid_capabi
         types.
     :type valid_capabilities: list(str)
     """
-    invalid_capabilities = list(set(requested_capabilities) - set(valid_capabilities))
+    invalid_capabilities = list(
+        set(requested_capabilities) - set(valid_capabilities)
+    )
 
     if invalid_capabilities:
         Except.throw_exception(
             "Command failed!",
-            "Invalid capability types requested {}".format(invalid_capabilities),
+            "Invalid capability types requested {}".format(
+                invalid_capabilities
+            ),
             command_name,
             ErrSeverity.ERR,
         )
@@ -537,7 +563,9 @@ def for_testing_only(func, _testing_check=lambda: "pytest" in sys.modules):
         the decorator.
         """
         if not _testing_check():
-            warnings.warn(f"{func.__name__} should only be used for testing purposes.")
+            warnings.warn(
+                f"{func.__name__} should only be used for testing purposes."
+            )
         return func(*args, **kwargs)
 
     return _wrapper

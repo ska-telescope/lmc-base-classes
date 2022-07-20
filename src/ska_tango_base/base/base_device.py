@@ -1039,6 +1039,7 @@ class SKABaseDevice(Device):
             status_changed_callback=self._update_command_statuses,
             progress_changed_callback=self._update_command_progresses,
             result_callback=self._update_command_result,
+            exception_callback=self._update_command_exception,
         )
         self.op_state_model = OpStateModel(
             logger=self.logger,

@@ -95,7 +95,7 @@ def test_exception(device_under_test, tango_change_event_helper):
 
     next_result = lrc_result_cb.get_next_change_event()
     assert next_result[0].endswith("LongRunningException")
-    assert next_result[1] == '"Something went wrong"'
+    assert next_result[1] == "Something went wrong"
 
 
 @pytest.mark.forked

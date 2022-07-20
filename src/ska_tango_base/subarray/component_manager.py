@@ -46,7 +46,7 @@ class SubarrayComponentManager(BaseComponentManager):
     def release(
         self: SubarrayComponentManager,
         resources: set[str],
-        task_callback: Optional[Callable[[], None]],
+        task_callback: Optional[Callable[[], None]] = None,
     ) -> tuple[TaskStatus, str]:
         """
         Release resources from the component.
@@ -60,7 +60,7 @@ class SubarrayComponentManager(BaseComponentManager):
         raise NotImplementedError("SubarrayComponentManager is abstract.")
 
     def release_all(
-        self: SubarrayComponentManager, task_callback: Optional[Callable]
+        self: SubarrayComponentManager, task_callback: Optional[Callable] = None
     ) -> tuple[TaskStatus, str]:
         """
         Release all resources.
@@ -73,7 +73,9 @@ class SubarrayComponentManager(BaseComponentManager):
         raise NotImplementedError("SubarrayComponentManager is abstract.")
 
     def configure(
-        self, configuration: dict[str, Any], task_callback: Optional[Callable[[], None]]
+        self,
+        configuration: dict[str, Any],
+        task_callback: Optional[Callable[[], None]] = None,
     ) -> tuple[TaskStatus, str]:
         """
         Configure the component.
@@ -87,7 +89,7 @@ class SubarrayComponentManager(BaseComponentManager):
         raise NotImplementedError("SubarrayComponentManager is abstract.")
 
     def deconfigure(
-        self: SubarrayComponentManager, task_callback: Optional[Callable]
+        self: SubarrayComponentManager, task_callback: Optional[Callable] = None
     ) -> tuple[TaskStatus, str]:
         """
         Deconfigure this component.
@@ -100,7 +102,9 @@ class SubarrayComponentManager(BaseComponentManager):
         raise NotImplementedError("SubarrayComponentManager is abstract.")
 
     def scan(
-        self: SubarrayComponentManager, args: str, task_callback: Optional[Callable]
+        self: SubarrayComponentManager,
+        args: str,
+        task_callback: Optional[Callable] = None,
     ) -> tuple[TaskStatus, str]:
         """
         Start scanning.
@@ -114,7 +118,7 @@ class SubarrayComponentManager(BaseComponentManager):
         raise NotImplementedError("SubarrayComponentManager is abstract.")
 
     def end_scan(
-        self: SubarrayComponentManager, task_callback: Optional[Callable]
+        self: SubarrayComponentManager, task_callback: Optional[Callable] = None
     ) -> tuple[TaskStatus, str]:
         """
         End scanning.
@@ -127,7 +131,7 @@ class SubarrayComponentManager(BaseComponentManager):
         raise NotImplementedError("SubarrayComponentManager is abstract.")
 
     def abort(
-        self: SubarrayComponentManager, task_callback: Optional[Callable]
+        self: SubarrayComponentManager, task_callback: Optional[Callable] = None
     ) -> tuple[TaskStatus, str]:
         """
         Tell the component to abort whatever it was doing.
@@ -140,7 +144,7 @@ class SubarrayComponentManager(BaseComponentManager):
         raise NotImplementedError("SubarrayComponentManager is abstract.")
 
     def obsreset(
-        self: SubarrayComponentManager, task_callback: Optional[Callable]
+        self: SubarrayComponentManager, task_callback: Optional[Callable] = None
     ) -> tuple[TaskStatus, str]:
         """
         Reset the component to unconfigured but do not release resources.
@@ -153,7 +157,7 @@ class SubarrayComponentManager(BaseComponentManager):
         raise NotImplementedError("SubarrayComponentManager is abstract.")
 
     def restart(
-        self: SubarrayComponentManager, task_callback: Optional[Callable]
+        self: SubarrayComponentManager, task_callback: Optional[Callable] = None
     ) -> tuple[TaskStatus, str]:
         """
         Deconfigure and release all resources.

@@ -748,27 +748,6 @@ class SKABaseDevice(Device):
     # ---------
     # Callbacks
     # ---------
-    def _update_state_during_init(
-        self: SKABaseDevice, state: DevState, status: Optional[str] = None
-    ) -> None:
-        """
-        Perform Tango operations in response to a change in op state.
-
-        This helper method is passed to the op state model as a
-        callback, so that the model can trigger actions in the Tango
-        device.
-
-        :param state: the new state value
-        :param status: an optional new status string
-        """
-        print(f"base update state during init{state} !!!!!!!!!!!!!!!!!!!!")
-        super().set_state(state)
-        super().push_change_event("state")
-        super().push_archive_event("state")
-        super().set_status(status or f"The device is in {state} state.")
-        super().push_change_event("status")
-        super().push_archive_event("status")
-
     def _update_state(
         self: SKABaseDevice, state: DevState, status: Optional[str] = None
     ) -> None:
@@ -782,7 +761,6 @@ class SKABaseDevice(Device):
         :param state: the new state value
         :param status: an optional new status string
         """
-        print(f"base update state {state} !!!!!!!!!!!!!!!!!!!!")
         self.set_state(state)
         self.push_change_event("state")
         self.push_archive_event("state")
@@ -924,12 +902,6 @@ class SKABaseDevice(Device):
         alone.  Override the ``do()`` method on the nested class
         ``InitCommand`` instead.
         """
-        print(
-            "Base device init_device start ###############################",
-            self.get_state(),
-        )
-        self.poll_command("PushChanges", 5)
-        print(dir(tango))
         try:
             super().init_device()
 
@@ -1000,15 +972,10 @@ class SKABaseDevice(Device):
             else:
                 traceback.print_exc()
                 print(f"ERROR: init_device failed, and no logger: {exc}.")
-            #self._update_state_during_init(
             self._update_state(
                 DevState.FAULT,
                 "The device is in FAULT state - init_device failed.",
             )
-        print(
-            "Base device init_device stop ###############################",
-            self.get_state(),
-        )
 
     def _init_state_model(self: SKABaseDevice) -> None:
         """Initialise the state model for the device."""
@@ -1021,7 +988,6 @@ class SKABaseDevice(Device):
         )
         self.op_state_model = OpStateModel(
             logger=self.logger,
-            #callback=self._update_state_during_init,
             callback=self._update_state,
         )
         self.admin_mode_model = AdminModeModel(
@@ -1240,7 +1206,7 @@ class SKABaseDevice(Device):
         return self._health_state
 
     @attribute(dtype=AdminMode, memorized=True, hw_memorized=True)
-#    @attribute(dtype=AdminMode)
+    #    @attribute(dtype=AdminMode)
     def adminMode(self: SKABaseDevice) -> AdminMode:
         """
         Read the Admin Mode of the device.
@@ -1900,7 +1866,6 @@ class SKABaseDevice(Device):
             (event_type, name, value) = self._omni_queue.get_nowait()
             if event_type == "set":
                 if name == "state":
-                    print(f"PushChanges {value}")
                     super().set_state(value)
                 elif name == "status":
                     super().set_status(value)

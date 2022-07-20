@@ -130,7 +130,9 @@ class FakeBaseComponent:
         # on, then we'll see the component come on. Finally, the asynchronous processing
         # will report the task as COMPLETE, and publish a result.
         def simulate_async_task_execution() -> None:
-            print("simulating tasks durrr..............................................")
+            print(
+                "simulating tasks durrr.............................................."
+            )
             if task_callback is not None:
                 task_callback(status=TaskStatus.IN_PROGRESS)
 

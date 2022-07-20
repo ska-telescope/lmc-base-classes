@@ -1,3 +1,4 @@
+# pylint: skip-file  # TODO: Incrementally lint this repo
 #########################################################################################
 # -*- coding: utf-8 -*-
 #
@@ -15,10 +16,6 @@ from tango import DevState
 
 # PROTECTED REGION ID(SKATelState.test_additional_imports) ENABLED START #
 from ska_tango_base import SKATelState
-
-from ska_tango_base.testing.reference import (
-    ReferenceBaseComponentManager,
-)
 from ska_tango_base.control_model import (
     AdminMode,
     ControlMode,
@@ -26,6 +23,7 @@ from ska_tango_base.control_model import (
     SimulationMode,
     TestMode,
 )
+from ska_tango_base.testing.reference import ReferenceBaseComponentManager
 
 # PROTECTED REGION END #    //  SKATelState.test_additional_imports
 
@@ -126,7 +124,9 @@ class TestSKATelState(object):
             r"ska_tango_base, [0-9]+.[0-9]+.[0-9]+, "
             r"A set of generic base devices for SKA Telescope"
         )
-        assert (re.match(buildPattern, device_under_test.buildState)) is not None
+        assert (
+            re.match(buildPattern, device_under_test.buildState)
+        ) is not None
         # PROTECTED REGION END #    //  SKATelState.test_buildState
 
     # PROTECTED REGION ID(SKATelState.test_versionId_decorators) ENABLED START #
@@ -139,7 +139,9 @@ class TestSKATelState(object):
         """
         # PROTECTED REGION ID(SKATelState.test_versionId) ENABLED START #
         versionIdPattern = re.compile(r"[0-9]+.[0-9]+.[0-9]+")
-        assert (re.match(versionIdPattern, device_under_test.versionId)) is not None
+        assert (
+            re.match(versionIdPattern, device_under_test.versionId)
+        ) is not None
         # PROTECTED REGION END #    //  SKATelState.test_versionId
 
     # PROTECTED REGION ID(SKATelState.test_healthState_decorators) ENABLED START #

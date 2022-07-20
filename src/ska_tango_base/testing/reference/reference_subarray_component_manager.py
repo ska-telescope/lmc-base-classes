@@ -1,16 +1,14 @@
+# pylint: skip-file  # TODO: Incrementally lint this repo
 """This module models component management for SKA subarray devices."""
+from ska_tango_base.base import check_communicating, check_on
 from ska_tango_base.commands import ResultCode
-from ska_tango_base.base import (
-    check_communicating,
-    check_on,
-)
+from ska_tango_base.control_model import PowerState
+from ska_tango_base.faults import CapabilityValidationError
+from ska_tango_base.subarray import SubarrayComponentManager
 from ska_tango_base.testing.reference import (
     FakeBaseComponent,
     ReferenceBaseComponentManager,
 )
-from ska_tango_base.control_model import PowerState
-from ska_tango_base.faults import CapabilityValidationError
-from ska_tango_base.subarray import SubarrayComponentManager
 
 
 class FakeSubarrayComponent(FakeBaseComponent):
@@ -181,7 +179,9 @@ class FakeSubarrayComponent(FakeBaseComponent):
 
         if invalid_capabilities:
             raise CapabilityValidationError(
-                "Invalid capability types requested {}".format(invalid_capabilities)
+                "Invalid capability types requested {}".format(
+                    invalid_capabilities
+                )
             )
 
     @check_on
@@ -278,14 +278,19 @@ class FakeSubarrayComponent(FakeBaseComponent):
         # # integer number of instances required.
         # # E.g., config = {"BAND1": 5, "BAND2": 3}
         if self._state["fault"]:
-            result = (ResultCode.FAILED, "Configure failed; component is in fault.")
+            result = (
+                ResultCode.FAILED,
+                "Configure failed; component is in fault.",
+            )
         else:
             capability_types = list(configuration.keys())
             self._validate_capability_types(capability_types)
 
             # Perform the configuration.
             for capability_type, capability_instances in configuration.items():
-                self._configured_capabilities[capability_type] += capability_instances
+                self._configured_capabilities[
+                    capability_type
+                ] += capability_instances
 
             result = (ResultCode.OK, "Configure completed OK")
 
@@ -304,7 +309,10 @@ class FakeSubarrayComponent(FakeBaseComponent):
             for whether this task has been aborted.
         """
         if self._state["fault"]:
-            result = (ResultCode.FAILED, "Deconfigure failed; component is in fault.")
+            result = (
+                ResultCode.FAILED,
+                "Deconfigure failed; component is in fault.",
+            )
         else:
             self._configured_capabilities = {
                 k: 0 for k in self._configured_capabilities
@@ -346,7 +354,10 @@ class FakeSubarrayComponent(FakeBaseComponent):
             for whether this task has been aborted.
         """
         if self._state["fault"]:
-            result = (ResultCode.FAILED, "End scan failed; component is in fault.")
+            result = (
+                ResultCode.FAILED,
+                "End scan failed; component is in fault.",
+            )
         else:
             result = (ResultCode.OK, "End scan completed OK")
         self._simulate_task_execution(
@@ -373,7 +384,9 @@ class FakeSubarrayComponent(FakeBaseComponent):
         :param task_abort_event: a threading.Event that can be checked
             for whether this task has been aborted.
         """
-        self._configured_capabilities = {k: 0 for k in self._configured_capabilities}
+        self._configured_capabilities = {
+            k: 0 for k in self._configured_capabilities
+        }
         result = (ResultCode.OK, "Obs reset completed OK")
         self._simulate_task_execution(
             task_callback,
@@ -394,7 +407,9 @@ class FakeSubarrayComponent(FakeBaseComponent):
         :param task_abort_event: a threading.Event that can be checked
             for whether this task has been aborted.
         """
-        self._configured_capabilities = {k: 0 for k in self._configured_capabilities}
+        self._configured_capabilities = {
+            k: 0 for k in self._configured_capabilities
+        }
         self._resource_pool.release_all()
         result = (ResultCode.OK, "Restart completed OK")
         self._simulate_task_execution(
@@ -494,7 +509,9 @@ class ReferenceSubarrayComponentManager(
         :type configuration: dict
         """
         return self.submit_task(
-            self._component.configure, (configuration,), task_callback=task_callback
+            self._component.configure,
+            (configuration,),
+            task_callback=task_callback,
         )
 
     @check_communicating
@@ -514,7 +531,9 @@ class ReferenceSubarrayComponentManager(
     @check_communicating
     def end_scan(self, task_callback=None):
         """End scanning."""
-        return self.submit_task(self._component.end_scan, task_callback=task_callback)
+        return self.submit_task(
+            self._component.end_scan, task_callback=task_callback
+        )
 
     @check_communicating
     def abort(self, task_callback=None):
@@ -524,7 +543,9 @@ class ReferenceSubarrayComponentManager(
     @check_communicating
     def obsreset(self, task_callback=None):
         """Deconfigure the component but do not release resources."""
-        return self.submit_task(self._component.obsreset, task_callback=task_callback)
+        return self.submit_task(
+            self._component.obsreset, task_callback=task_callback
+        )
 
     @check_communicating
     def restart(self, task_callback=None):
@@ -534,7 +555,9 @@ class ReferenceSubarrayComponentManager(
         It will return to a state in which it is unconfigured and empty
         of assigned resources.
         """
-        return self.submit_task(self._component.restart, task_callback=task_callback)
+        return self.submit_task(
+            self._component.restart, task_callback=task_callback
+        )
 
     @property
     @check_communicating

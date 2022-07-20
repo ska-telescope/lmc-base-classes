@@ -1,15 +1,16 @@
+# pylint: skip-file  # TODO: Incrementally lint this repo
 """Tests for the ``csp_subelement_component_manager`` module."""
 import itertools
 
 import pytest
 
 from ska_tango_base.commands import ResultCode
+from ska_tango_base.control_model import CommunicationStatus, PowerState
+from ska_tango_base.executor import TaskStatus
 from ska_tango_base.testing.reference import (
     FakeCspSubarrayComponent,
     ReferenceCspSubarrayComponentManager,
 )
-from ska_tango_base.control_model import CommunicationStatus, PowerState
-from ska_tango_base.executor import TaskStatus
 
 
 class TestCspSubelementSubarrayComponentManager:
@@ -23,7 +24,9 @@ class TestCspSubelementSubarrayComponentManager:
     @pytest.fixture()
     def mock_config_factory(self):
         """Return a factory that provides mock arguments to the configure() method."""
-        mock_config_generator = ({"id": f"mock_id_{i}"} for i in itertools.count(1))
+        mock_config_generator = (
+            {"id": f"mock_id_{i}"} for i in itertools.count(1)
+        )
         return lambda: next(mock_config_generator)
 
     @pytest.fixture()
@@ -69,7 +72,10 @@ class TestCspSubelementSubarrayComponentManager:
 
         :param component_manager: the component manager under test
         """
-        assert component_manager.communication_state == CommunicationStatus.DISABLED
+        assert (
+            component_manager.communication_state
+            == CommunicationStatus.DISABLED
+        )
         callbacks["communication_state"].assert_not_called()
         callbacks["component_state"].assert_not_called()
 
@@ -80,21 +86,34 @@ class TestCspSubelementSubarrayComponentManager:
         callbacks["communication_state"].assert_next_call(
             CommunicationStatus.ESTABLISHED
         )
-        assert component_manager.communication_state == CommunicationStatus.ESTABLISHED
+        assert (
+            component_manager.communication_state
+            == CommunicationStatus.ESTABLISHED
+        )
 
         callbacks["component_state"].assert_next_call(power=PowerState.OFF)
 
         component_manager.stop_communicating()
-        callbacks["communication_state"].assert_next_call(CommunicationStatus.DISABLED)
-        assert component_manager.communication_state == CommunicationStatus.DISABLED
+        callbacks["communication_state"].assert_next_call(
+            CommunicationStatus.DISABLED
+        )
+        assert (
+            component_manager.communication_state
+            == CommunicationStatus.DISABLED
+        )
 
-    def test_simulate_communication_failure(self, component_manager, callbacks):
+    def test_simulate_communication_failure(
+        self, component_manager, callbacks
+    ):
         """
         Test that we can simulate connection failure.
 
         :param component_manager: the component manager under test
         """
-        assert component_manager.communication_state == CommunicationStatus.DISABLED
+        assert (
+            component_manager.communication_state
+            == CommunicationStatus.DISABLED
+        )
         callbacks["communication_state"].assert_not_called()
         callbacks["component_state"].assert_not_called()
 
@@ -105,7 +124,8 @@ class TestCspSubelementSubarrayComponentManager:
             CommunicationStatus.NOT_ESTABLISHED
         )
         assert (
-            component_manager.communication_state == CommunicationStatus.NOT_ESTABLISHED
+            component_manager.communication_state
+            == CommunicationStatus.NOT_ESTABLISHED
         )
         callbacks["communication_state"].assert_not_called()
 
@@ -115,7 +135,10 @@ class TestCspSubelementSubarrayComponentManager:
         callbacks["communication_state"].assert_next_call(
             CommunicationStatus.ESTABLISHED
         )
-        assert component_manager.communication_state == CommunicationStatus.ESTABLISHED
+        assert (
+            component_manager.communication_state
+            == CommunicationStatus.ESTABLISHED
+        )
 
         callbacks["component_state"].assert_next_call(power=PowerState.OFF)
 
@@ -124,13 +147,19 @@ class TestCspSubelementSubarrayComponentManager:
             CommunicationStatus.NOT_ESTABLISHED
         )
         assert (
-            component_manager.communication_state == CommunicationStatus.NOT_ESTABLISHED
+            component_manager.communication_state
+            == CommunicationStatus.NOT_ESTABLISHED
         )
         callbacks["component_state"].assert_not_called()
 
         component_manager.stop_communicating()
-        callbacks["communication_state"].assert_next_call(CommunicationStatus.DISABLED)
-        assert component_manager.communication_state == CommunicationStatus.DISABLED
+        callbacks["communication_state"].assert_next_call(
+            CommunicationStatus.DISABLED
+        )
+        assert (
+            component_manager.communication_state
+            == CommunicationStatus.DISABLED
+        )
 
     @pytest.mark.parametrize("command", ["off", "standby", "on"])
     def test_command_fails_when_disconnected(
@@ -142,12 +171,16 @@ class TestCspSubelementSubarrayComponentManager:
         :param component_manager: the component manager under test
         :param command: the command under test
         """
-        assert component_manager.communication_state == CommunicationStatus.DISABLED
+        assert (
+            component_manager.communication_state
+            == CommunicationStatus.DISABLED
+        )
         callbacks["communication_state"].assert_not_called()
         callbacks["component_state"].assert_not_called()
 
         with pytest.raises(
-            ConnectionError, match="Communication with component is not established."
+            ConnectionError,
+            match="Communication with component is not established.",
         ):
             getattr(component_manager, command)()
 
@@ -157,13 +190,15 @@ class TestCspSubelementSubarrayComponentManager:
             CommunicationStatus.NOT_ESTABLISHED
         )
         assert (
-            component_manager.communication_state == CommunicationStatus.NOT_ESTABLISHED
+            component_manager.communication_state
+            == CommunicationStatus.NOT_ESTABLISHED
         )
         callbacks["communication_state"].assert_not_called()
         callbacks["component_state"].assert_not_called()
 
         with pytest.raises(
-            ConnectionError, match="Communication with component is not established."
+            ConnectionError,
+            match="Communication with component is not established.",
         ):
             getattr(component_manager, command)()
 
@@ -171,7 +206,10 @@ class TestCspSubelementSubarrayComponentManager:
         callbacks["communication_state"].assert_next_call(
             CommunicationStatus.ESTABLISHED
         )
-        assert component_manager.communication_state == CommunicationStatus.ESTABLISHED
+        assert (
+            component_manager.communication_state
+            == CommunicationStatus.ESTABLISHED
+        )
         callbacks["component_state"].assert_next_call(power=PowerState.OFF)
 
         component_manager.simulate_communication_failure(True)
@@ -179,21 +217,29 @@ class TestCspSubelementSubarrayComponentManager:
             CommunicationStatus.NOT_ESTABLISHED
         )
         assert (
-            component_manager.communication_state == CommunicationStatus.NOT_ESTABLISHED
+            component_manager.communication_state
+            == CommunicationStatus.NOT_ESTABLISHED
         )
         callbacks["component_state"].assert_not_called()
 
         with pytest.raises(
-            ConnectionError, match="Communication with component is not established."
+            ConnectionError,
+            match="Communication with component is not established.",
         ):
             getattr(component_manager, command)()
 
         component_manager.stop_communicating()
-        callbacks["communication_state"].assert_next_call(CommunicationStatus.DISABLED)
-        assert component_manager.communication_state == CommunicationStatus.DISABLED
+        callbacks["communication_state"].assert_next_call(
+            CommunicationStatus.DISABLED
+        )
+        assert (
+            component_manager.communication_state
+            == CommunicationStatus.DISABLED
+        )
 
         with pytest.raises(
-            ConnectionError, match="Communication with component is not established."
+            ConnectionError,
+            match="Communication with component is not established.",
         ):
             getattr(component_manager, command)()
 
@@ -209,7 +255,10 @@ class TestCspSubelementSubarrayComponentManager:
         :param callbacks: a dictionary of mocks, passed as callbacks to
             the command tracker under test
         """
-        assert component_manager.communication_state == CommunicationStatus.DISABLED
+        assert (
+            component_manager.communication_state
+            == CommunicationStatus.DISABLED
+        )
         callbacks["communication_state"].assert_not_called()
         callbacks["component_state"].assert_not_called()
 
@@ -220,12 +269,17 @@ class TestCspSubelementSubarrayComponentManager:
         callbacks["communication_state"].assert_next_call(
             CommunicationStatus.ESTABLISHED
         )
-        assert component_manager.communication_state == CommunicationStatus.ESTABLISHED
+        assert (
+            component_manager.communication_state
+            == CommunicationStatus.ESTABLISHED
+        )
         callbacks["component_state"].assert_next_call(power=PowerState.OFF)
 
         component_manager.standby(callbacks["standby_task"])
         callbacks["standby_task"].assert_next_call(status=TaskStatus.QUEUED)
-        callbacks["standby_task"].assert_next_call(status=TaskStatus.IN_PROGRESS)
+        callbacks["standby_task"].assert_next_call(
+            status=TaskStatus.IN_PROGRESS
+        )
         callbacks["standby_task"].assert_next_call(progress=33)
         callbacks["standby_task"].assert_next_call(progress=66)
         callbacks["standby_task"].assert_next_call(
@@ -502,7 +556,9 @@ class TestCspSubelementSubarrayComponentManager:
         callbacks["component_state"].assert_next_call(obsfault=True)
 
         component_manager.obsreset()
-        callbacks["component_state"].assert_next_call(obsfault=False, configured=False)
+        callbacks["component_state"].assert_next_call(
+            obsfault=False, configured=False
+        )
 
         component_manager.configure(mock_configuration)
         callbacks["component_state"].assert_next_call(configured=True)

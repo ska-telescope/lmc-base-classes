@@ -1,3 +1,4 @@
+# pylint: skip-file  # TODO: Incrementally lint this repo
 #########################################################################################
 # -*- coding: utf-8 -*-
 #
@@ -8,18 +9,13 @@
 #########################################################################################
 """Contain the tests for the SKAAlarmHandler."""
 
-# Imports
 import re
 
 import pytest
 
 from ska_tango_base import SKAAlarmHandler
-
-from ska_tango_base.testing.reference import (
-    ReferenceBaseComponentManager,
-)
 from ska_tango_base.control_model import AdminMode
-
+from ska_tango_base.testing.reference import ReferenceBaseComponentManager
 
 # PROTECTED REGION ID(SKAAlarmHandler.test_additional_imports) ENABLED START #
 # PROTECTED REGION END #    //  SKAAlarmHandler.test_additional_imports
@@ -218,7 +214,9 @@ class TestSKAAlarmHandler(object):
             r"ska_tango_base, [0-9]+.[0-9]+.[0-9]+, "
             r"A set of generic base devices for SKA Telescope"
         )
-        assert (re.match(buildPattern, device_under_test.buildState)) is not None
+        assert (
+            re.match(buildPattern, device_under_test.buildState)
+        ) is not None
         # PROTECTED REGION END #    //  SKAAlarmHandler.test_buildState
 
     # PROTECTED REGION ID(SKAAlarmHandler.test_versionId_decorators) ENABLED START #
@@ -231,7 +229,9 @@ class TestSKAAlarmHandler(object):
         """
         # PROTECTED REGION ID(SKAAlarmHandler.test_versionId) ENABLED START #
         versionIdPattern = re.compile(r"[0-9]+.[0-9]+.[0-9]+")
-        assert (re.match(versionIdPattern, device_under_test.versionId)) is not None
+        assert (
+            re.match(versionIdPattern, device_under_test.versionId)
+        ) is not None
         # PROTECTED REGION END #    //  SKAAlarmHandler.test_versionId
 
     # PROTECTED REGION ID(SKAAlarmHandler.test_activeAlerts_decorators) ENABLED START #

@@ -1,3 +1,4 @@
+# pylint: skip-file  # TODO: Incrementally lint this repo
 """
 This module provides abstract base classes for device commands, and a ResultCode enum.
 
@@ -33,8 +34,8 @@ import enum
 import functools
 import logging
 from typing import Callable, Optional, Type
-from ska_tango_base.base.component_manager import BaseComponentManager
 
+from ska_tango_base.base.component_manager import BaseComponentManager
 from ska_tango_base.executor import TaskStatus
 
 module_logger = logging.getLogger(__name__)
@@ -162,7 +163,9 @@ class SlowCommand(_BaseCommand):
     throughput.
     """
 
-    def __init__(self, callback: Callable, logger: Optional[logging.Logger] = None):
+    def __init__(
+        self, callback: Callable, logger: Optional[logging.Logger] = None
+    ):
         """
         Initialise a new BaseCommand instance.
 
@@ -297,7 +300,9 @@ class SubmittedSlowCommand(SlowCommand):
         method = getattr(self._component_manager, self._method_name)
         status, message = method(
             *args,
-            functools.partial(self._command_tracker.update_command_info, command_id),
+            functools.partial(
+                self._command_tracker.update_command_info, command_id
+            ),
             **kwargs,
         )
 

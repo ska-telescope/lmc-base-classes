@@ -1,3 +1,4 @@
+# pylint: skip-file  # TODO: Incrementally lint this repo
 """This module provides for asynchronous execution of tasks."""
 import concurrent.futures
 import threading

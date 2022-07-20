@@ -5,6 +5,5 @@ __all__ = (
     "CspSubElementSubarray",
 )
 
-# Note: order of imports is important - start with lowest in the hierarchy
 from .component_manager import CspSubarrayComponentManager
 from .subarray_device import CspSubElementSubarray

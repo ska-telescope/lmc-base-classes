@@ -1,3 +1,4 @@
+# pylint: skip-file  # TODO: Incrementally lint this repo
 """This module tests the ``csp_subelement_obs_state_model`` module."""
 import pytest
 
@@ -5,7 +6,7 @@ from ska_tango_base.csp.obs.obs_state_model import (
     _CspSubElementObsStateMachine,
 )
 
-from .conftest import load_state_machine_spec, TransitionsStateMachineTester
+from .conftest import TransitionsStateMachineTester, load_state_machine_spec
 
 
 @pytest.mark.state_machine_tester(

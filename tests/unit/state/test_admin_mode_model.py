@@ -1,10 +1,11 @@
+# pylint: skip-file  # TODO: Incrementally lint this repo
 """This module contains the tests for the ``admin_mode_model`` module."""
 import pytest
 
-from ska_tango_base.control_model import AdminMode
 from ska_tango_base.base import AdminModeModel
+from ska_tango_base.control_model import AdminMode
 
-from .conftest import load_state_machine_spec, StateModelTester
+from .conftest import StateModelTester, load_state_machine_spec
 
 
 @pytest.mark.state_machine_tester(load_state_machine_spec("admin_mode_model"))
@@ -46,4 +47,6 @@ class TestAdminModeModel(StateModelTester):
             want to get the state machine under test into
         :type target_state: keyword dictionary
         """
-        machine_under_test._straight_to_state(admin_mode=AdminMode[target_state])
+        machine_under_test._straight_to_state(
+            admin_mode=AdminMode[target_state]
+        )

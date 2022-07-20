@@ -1,13 +1,15 @@
+# pylint: skip-file  # TODO: Incrementally lint this repo
 """Tests for skabase.utils."""
-from contextlib import nullcontext
 import json
+from contextlib import nullcontext
+
 import pytest
 
 from ska_tango_base.utils import (
-    get_groups_from_json,
-    get_tango_device_type_id,
     GroupDefinitionsError,
     for_testing_only,
+    get_groups_from_json,
+    get_tango_device_type_id,
 )
 
 TEST_GROUPS = {
@@ -65,15 +67,22 @@ TEST_GROUPS = {
     "bk4_bad_keys": {"bad_group_name_key": "bk4", "devices": ["my/dev/41"]},
     "bk5_bad_nested_keys": {
         "group_name": "bk5",
-        "subgroups": [{"group_name": "bk5-1", "bad_devices_key": ["my/dev/3-1"]}],
+        "subgroups": [
+            {"group_name": "bk5-1", "bad_devices_key": ["my/dev/3-1"]}
+        ],
     },
     "bk6_bad_nested_keys": {
         "group_name": "bk6",
-        "subgroups": [{"bad_group_name_key": "bk6-1", "devices": ["my/dev/3-1"]}],
+        "subgroups": [
+            {"bad_group_name_key": "bk6-1", "devices": ["my/dev/3-1"]}
+        ],
     },
     # Invalid groups (bad values)
     "bv1_bad_device_names": {"group_name": "bv1", "devices": ["my\\dev-11"]},
-    "bv2_bad_device_names": {"group_name": "bv2", "devices": ["1", "2", "bad"]},
+    "bv2_bad_device_names": {
+        "group_name": "bv2",
+        "devices": ["1", "2", "bad"],
+    },
     "bv3_bad_device_names": {"group_name": "bv3", "devices": ["  "]},
     "bv4_bad_subgroups_value": {"group_name": "bv4", "subgroups": ["  "]},
     "bv5_bad_nested_device_names": {
@@ -93,7 +102,12 @@ VALID_GROUP_KEYS = [
         "basic_empty_subgroups",
         "dual_level",
     ),
-    ("basic_no_subgroups", "basic_empty_subgroups", "dual_level", "multi_level"),
+    (
+        "basic_no_subgroups",
+        "basic_empty_subgroups",
+        "dual_level",
+        "multi_level",
+    ),
 ]
 
 BAD_GROUP_KEYS = [
@@ -226,7 +240,8 @@ def test_get_tango_device_type_id():
         (
             False,
             pytest.warns(
-                UserWarning, match="foo should only be used for testing purposes"
+                UserWarning,
+                match="foo should only be used for testing purposes",
             ),
         ),
         (True, nullcontext()),
@@ -277,4 +292,6 @@ def test_for_testing_only_decorator():
 
     with pytest.warns(None) as warning_record:
         assert bah() == "bah"
-    assert len(warning_record) == 0  # no warning was raised because we are testing
+    assert (
+        len(warning_record) == 0
+    )  # no warning was raised because we are testing

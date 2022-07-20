@@ -1,3 +1,4 @@
+# pylint: skip-file  # TODO: Incrementally lint this repo
 """This module defines elements of the pytest test harness shared by all tests."""
 from __future__ import annotations
 
@@ -8,7 +9,11 @@ import time
 
 import pytest
 import tango
-from tango.test_context import DeviceTestContext, MultiDeviceTestContext, get_host_ip
+from tango.test_context import (
+    DeviceTestContext,
+    MultiDeviceTestContext,
+    get_host_ip,
+)
 
 from ska_tango_base.testing.mock import MockCallable, MockChangeEventCallback
 
@@ -28,9 +33,13 @@ def device_properties():
 @pytest.fixture()
 def tango_context(device_test_config):
     """Return a Tango test context object, in which the device under test is running."""
-    component_manager_patch = device_test_config.pop("component_manager_patch", None)
+    component_manager_patch = device_test_config.pop(
+        "component_manager_patch", None
+    )
     if component_manager_patch is not None:
-        device_test_config["device"].create_component_manager = component_manager_patch
+        device_test_config[
+            "device"
+        ].create_component_manager = component_manager_patch
 
     tango_context = DeviceTestContext(**device_test_config)
     tango_context.start()
@@ -155,7 +164,9 @@ def multi_device_tango_context(
     mocker.patch(
         "tango.DeviceProxy",
         wraps=lambda fqdn, *args, **kwargs: _DeviceProxy(
-            "tango://{0}:{1}/{2}#dbase=no".format(HOST, PORT, fqdn), *args, **kwargs
+            "tango://{0}:{1}/{2}#dbase=no".format(HOST, PORT, fqdn),
+            *args,
+            **kwargs,
         ),
     )
     with MultiDeviceTestContext(
@@ -165,7 +176,9 @@ def multi_device_tango_context(
 
 
 @pytest.fixture()
-def multi_tango_change_event_helper(multi_device_tango_context, change_event_callbacks):
+def multi_tango_change_event_helper(
+    multi_device_tango_context, change_event_callbacks
+):
     """
     Return a helper to simplify subscription to the multiple devices under test with a callback.
 
@@ -177,7 +190,9 @@ def multi_tango_change_event_helper(multi_device_tango_context, change_event_cal
 
     class _TangoChangeEventHelper:
         def subscribe(self, device_name, attribute_name):
-            device_under_test = multi_device_tango_context.get_device(device_name)
+            device_under_test = multi_device_tango_context.get_device(
+                device_name
+            )
             device_under_test.subscribe_event(
                 attribute_name,
                 tango.EventType.CHANGE_EVENT,

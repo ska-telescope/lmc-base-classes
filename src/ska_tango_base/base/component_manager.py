@@ -1,3 +1,4 @@
+# pylint: skip-file  # TODO: Incrementally lint this repo
 """
 This module provides an abstract component manager for SKA Tango base devices.
 
@@ -77,7 +78,10 @@ def check_communicating(func: Wrapped) -> Wrapped:
             not been established.
         :return: whatever the wrapped function returns
         """
-        if component_manager.communication_state != CommunicationStatus.ESTABLISHED:
+        if (
+            component_manager.communication_state
+            != CommunicationStatus.ESTABLISHED
+        ):
             raise ConnectionError(
                 f"Cannot execute '{type(component_manager).__name__}.{func.__name__}'. "
                 "Communication with component is not established."

@@ -1,4 +1,5 @@
-# -*- coding: utf-8 -*-
+# pylint: skip-file  # TODO: Incrementally lint this repo
+# # -*- coding: utf-8 -*-
 #
 # This file is part of the SKA Tango Base project
 #

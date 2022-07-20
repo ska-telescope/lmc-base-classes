@@ -1,3 +1,4 @@
+# pylint: skip-file  # TODO: Incrementally lint this repo
 #########################################################################################
 # -*- coding: utf-8 -*-
 #
@@ -12,28 +13,24 @@
 import json
 import logging
 import re
-import pytest
 import socket
 import time
 from unittest import mock
 
+import pytest
 import tango
 from tango import DevFailed, DevState
 
 import ska_tango_base.base.base_device
-
 from ska_tango_base import SKABaseDevice
 from ska_tango_base.base.base_device import (
-    _CommandTracker,
     _DEBUGGER_PORT,
-    _Log4TangoLoggingLevel,
     _PYTHON_TO_TANGO_LOGGING_LEVEL,
-    LoggingUtils,
     LoggingTargetError,
+    LoggingUtils,
     TangoLoggingServiceHandler,
-)
-from ska_tango_base.testing.reference import (
-    ReferenceBaseComponentManager,
+    _CommandTracker,
+    _Log4TangoLoggingLevel,
 )
 from ska_tango_base.commands import ResultCode
 from ska_tango_base.control_model import (
@@ -45,6 +42,7 @@ from ska_tango_base.control_model import (
     TestMode,
 )
 from ska_tango_base.executor import TaskStatus
+from ska_tango_base.testing.reference import ReferenceBaseComponentManager
 
 # PROTECTED REGION END #    //  SKABaseDevice.test_additional_imports
 # Device test case
@@ -76,10 +74,14 @@ class TestTangoLoggingServiceHandler:
         """Return a python logging level."""
         return request.param
 
-    def test_emit_message_at_correct_level(self, tls_handler, python_log_level):
+    def test_emit_message_at_correct_level(
+        self, tls_handler, python_log_level
+    ):
         """Test that emitted messages are logged at the right level."""
         # arrange
-        record = logging.LogRecord("test", python_log_level, "", 1, "message", (), None)
+        record = logging.LogRecord(
+            "test", python_log_level, "", 1, "message", (), None
+        )
         # act
         tls_handler.emit(record)
         # assert
@@ -109,7 +111,9 @@ class TestTangoLoggingServiceHandler:
     def test_emit_exception_error_handled(self, tls_handler):
         """Test exception handling when a record is emitted."""
         # arrange
-        record = logging.LogRecord("test", logging.INFO, "", 1, "message", (), None)
+        record = logging.LogRecord(
+            "test", logging.INFO, "", 1, "message", (), None
+        )
 
         def cause_exception(*args, **kwargs):
             raise RuntimeError("Testing")
@@ -123,9 +127,7 @@ class TestTangoLoggingServiceHandler:
 
     def test_repr_normal(self, tls_handler):
         """Test the string representation of a handler under normal conditions."""
-        expected = (
-            "<TangoLoggingServiceHandler unit/test/dev (Python NOTSET, Tango DEBUG)>"
-        )
+        expected = "<TangoLoggingServiceHandler unit/test/dev (Python NOTSET, Tango DEBUG)>"
         assert repr(tls_handler) == expected
 
     def test_repr_tango_logger_none(self, tls_handler):
@@ -291,7 +293,9 @@ class TestLoggingUtils:
         assert handler == mock_file_handler()
         handler.setFormatter.assert_called_once_with(mock_formatter)
 
-        handler = LoggingUtils.create_logging_handler("syslog::udp://somehost:1234")
+        handler = LoggingUtils.create_logging_handler(
+            "syslog::udp://somehost:1234"
+        )
         mock_syslog_handler.assert_called_once_with(
             address=("somehost", 1234),
             facility=mock_syslog_handler.LOG_SYSLOG,
@@ -301,7 +305,9 @@ class TestLoggingUtils:
         handler.setFormatter.assert_called_once_with(mock_formatter)
 
         mock_syslog_handler.reset_mock()
-        handler = LoggingUtils.create_logging_handler("syslog::file:///tmp/path")
+        handler = LoggingUtils.create_logging_handler(
+            "syslog::file:///tmp/path"
+        )
         mock_syslog_handler.assert_called_once_with(
             address="/tmp/path",
             facility=mock_syslog_handler.LOG_SYSLOG,
@@ -324,7 +330,9 @@ class TestLoggingUtils:
             LoggingUtils.create_logging_handler("invalid")
 
         with pytest.raises(LoggingTargetError):
-            LoggingUtils.create_logging_handler("tango::logger", tango_logger=None)
+            LoggingUtils.create_logging_handler(
+                "tango::logger", tango_logger=None
+            )
 
     def test_update_logging_handlers(self):
         """Test that logging handlers can be updated."""
@@ -345,7 +353,9 @@ class TestLoggingUtils:
             new_targets = ["console::cout"]
             LoggingUtils.update_logging_handlers(new_targets, logger)
             assert len(logger.handlers) == 1
-            mocked_creator.assert_called_once_with("console::cout", logger.tango_logger)
+            mocked_creator.assert_called_once_with(
+                "console::cout", logger.tango_logger
+            )
 
             # test same handler is retained for same request
             old_handler = logger.handlers[0]
@@ -518,7 +528,10 @@ class TestCommandTracker:
         assert command_tracker.command_exception is None
 
         callbacks["queue"].assert_called_once_with(
-            [(first_command_id, "first_command"), (second_command_id, "second_command")]
+            [
+                (first_command_id, "first_command"),
+                (second_command_id, "second_command"),
+            ]
         )
         callbacks["queue"].reset_mock()
         callbacks["status"].assert_not_called()
@@ -794,7 +807,9 @@ class TestSKABaseDevice(object):
         device_state_callback.assert_next_change_event(DevState.OFF)
 
         device_status_callback = tango_change_event_helper.subscribe("status")
-        device_status_callback.assert_next_change_event("The device is in OFF state.")
+        device_status_callback.assert_next_change_event(
+            "The device is in OFF state."
+        )
 
         command_progress_callback = tango_change_event_helper.subscribe(
             "longRunningCommandProgress"
@@ -813,20 +828,31 @@ class TestSKABaseDevice(object):
 
         [[result_code], [command_id]] = device_under_test.On()
         assert result_code == ResultCode.QUEUED
-        command_status_callback.assert_next_change_event((command_id, "QUEUED"))
-        command_status_callback.assert_next_change_event((command_id, "IN_PROGRESS"))
+        command_status_callback.assert_next_change_event(
+            (command_id, "QUEUED")
+        )
+        command_status_callback.assert_next_change_event(
+            (command_id, "IN_PROGRESS")
+        )
 
         command_progress_callback.assert_next_change_event((command_id, "33"))
         command_progress_callback.assert_next_change_event((command_id, "66"))
 
-        command_status_callback.assert_next_change_event((command_id, "COMPLETED"))
+        command_status_callback.assert_next_change_event(
+            (command_id, "COMPLETED")
+        )
 
         device_state_callback.assert_next_change_event(DevState.ON)
-        device_status_callback.assert_next_change_event("The device is in ON state.")
+        device_status_callback.assert_next_change_event(
+            "The device is in ON state."
+        )
         assert device_under_test.state() == DevState.ON
 
         command_result_callback.assert_next_change_event(
-            (command_id, json.dumps([int(ResultCode.OK), "On command completed OK"]))
+            (
+                command_id,
+                json.dumps([int(ResultCode.OK), "On command completed OK"]),
+            )
         )
 
         # Check what happens if we call On() when the device is already ON.
@@ -856,7 +882,9 @@ class TestSKABaseDevice(object):
         device_state_callback.assert_next_change_event(DevState.OFF)
 
         device_status_callback = tango_change_event_helper.subscribe("status")
-        device_status_callback.assert_next_change_event("The device is in OFF state.")
+        device_status_callback.assert_next_change_event(
+            "The device is in OFF state."
+        )
 
         command_progress_callback = tango_change_event_helper.subscribe(
             "longRunningCommandProgress"
@@ -876,13 +904,19 @@ class TestSKABaseDevice(object):
         [[result_code], [command_id]] = device_under_test.Standby()
         assert result_code == ResultCode.QUEUED
 
-        command_status_callback.assert_next_change_event((command_id, "QUEUED"))
-        command_status_callback.assert_next_change_event((command_id, "IN_PROGRESS"))
+        command_status_callback.assert_next_change_event(
+            (command_id, "QUEUED")
+        )
+        command_status_callback.assert_next_change_event(
+            (command_id, "IN_PROGRESS")
+        )
 
         command_progress_callback.assert_next_change_event((command_id, "33"))
         command_progress_callback.assert_next_change_event((command_id, "66"))
 
-        command_status_callback.assert_next_change_event((command_id, "COMPLETED"))
+        command_status_callback.assert_next_change_event(
+            (command_id, "COMPLETED")
+        )
 
         device_state_callback.assert_next_change_event(DevState.STANDBY)
         device_status_callback.assert_next_change_event(
@@ -893,10 +927,15 @@ class TestSKABaseDevice(object):
         command_result_callback.assert_next_change_event(
             (
                 command_id,
-                json.dumps([int(ResultCode.OK), "Standby command completed OK"]),
+                json.dumps(
+                    [int(ResultCode.OK), "Standby command completed OK"]
+                ),
             )
         )
-        assert device_under_test.CheckLongRunningCommandStatus(command_id) == 'COMPLETED'
+        assert (
+            device_under_test.CheckLongRunningCommandStatus(command_id)
+            == "COMPLETED"
+        )
 
         # Check what happens if we call Standby() when the device is already STANDBY.
         [[result_code], [message]] = device_under_test.Standby()
@@ -924,7 +963,9 @@ class TestSKABaseDevice(object):
         device_state_callback.assert_next_change_event(DevState.OFF)
 
         device_status_callback = tango_change_event_helper.subscribe("status")
-        device_status_callback.assert_next_change_event("The device is in OFF state.")
+        device_status_callback.assert_next_change_event(
+            "The device is in OFF state."
+        )
 
         command_progress_callback = tango_change_event_helper.subscribe(
             "longRunningCommandProgress"
@@ -965,7 +1006,9 @@ class TestSKABaseDevice(object):
             r"ska_tango_base, [0-9]+.[0-9]+.[0-9]+, "
             r"A set of generic base devices for SKA Telescope"
         )
-        assert (re.match(buildPattern, device_under_test.buildState)) is not None
+        assert (
+            re.match(buildPattern, device_under_test.buildState)
+        ) is not None
         # PROTECTED REGION END #    //  SKABaseDevice.test_buildState
 
     # PROTECTED REGION ID(SKABaseDevice.test_versionId_decorators) ENABLED START #
@@ -978,7 +1021,9 @@ class TestSKABaseDevice(object):
         """
         # PROTECTED REGION ID(SKABaseDevice.test_versionId) ENABLED START #
         versionIdPattern = re.compile(r"[0-9]+.[0-9]+.[0-9]+")
-        assert (re.match(versionIdPattern, device_under_test.versionId)) is not None
+        assert (
+            re.match(versionIdPattern, device_under_test.versionId)
+        ) is not None
         # PROTECTED REGION END #    //  SKABaseDevice.test_versionId
 
     # PROTECTED REGION ID(SKABaseDevice.test_loggingLevel_decorators) ENABLED START #
@@ -1109,7 +1154,9 @@ class TestSKABaseDevice(object):
         assert device_under_test.adminMode == AdminMode.OFFLINE
 
         state_callback.assert_next_change_event(DevState.DISABLE)
-        status_callback.assert_next_change_event("The device is in DISABLE state.")
+        status_callback.assert_next_change_event(
+            "The device is in DISABLE state."
+        )
         assert device_under_test.state() == DevState.DISABLE
 
         device_under_test.adminMode = AdminMode.MAINTENANCE
@@ -1117,7 +1164,9 @@ class TestSKABaseDevice(object):
         assert device_under_test.adminMode == AdminMode.MAINTENANCE
 
         state_callback.assert_next_change_event(DevState.UNKNOWN)
-        status_callback.assert_next_change_event("The device is in UNKNOWN state.")
+        status_callback.assert_next_change_event(
+            "The device is in UNKNOWN state."
+        )
 
         state_callback.assert_next_change_event(DevState.OFF)
         status_callback.assert_next_change_event("The device is in OFF state.")
@@ -1179,7 +1228,9 @@ class TestSKABaseDevice(object):
             with pytest.raises(ConnectionRefusedError):
                 s.connect(("localhost", _DEBUGGER_PORT))
 
-    def test_DebugDevice_starts_listening_on_default_port(self, device_under_test):
+    def test_DebugDevice_starts_listening_on_default_port(
+        self, device_under_test
+    ):
         """
         Test that enabling DebugDevice makes it listen on its default port.
 

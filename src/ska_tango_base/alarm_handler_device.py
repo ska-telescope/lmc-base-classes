@@ -1,3 +1,4 @@
+# pylint: skip-file  # TODO: Incrementally lint this repo
 # -*- coding: utf-8 -*-
 #
 # This file is part of the SKAAlarmHandler project
@@ -13,12 +14,10 @@ defined over multiple attribute values and quality factors, and are
 separate from the "built-in" Tango attribute alarms.
 """
 # PROTECTED REGION ID(SKAAlarmHandler.additionnal_import) ENABLED START #
-# Tango imports
 from tango import DebugIt
-from tango.server import run, attribute, command, device_property
+from tango.server import attribute, command, device_property, run
 
-# SKA specific imports
-from ska_tango_base import SKABaseDevice
+from ska_tango_base.base import SKABaseDevice
 from ska_tango_base.commands import FastCommand
 
 # PROTECTED REGION END #    //  SKAAlarmHandler.additionnal_import

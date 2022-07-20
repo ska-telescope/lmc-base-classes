@@ -62,7 +62,9 @@ class LongRunningDeviceInterface:
         """Only create the device proxy and subscribe when a command is invoked."""
         if not self._long_running_device_proxies:
             for device in self._tango_devices:
-                self._long_running_device_proxies.append(tango.DeviceProxy(device))
+                self._long_running_device_proxies.append(
+                    tango.DeviceProxy(device)
+                )
 
         if not self._result_subscriptions:
             for device_proxy in self._long_running_device_proxies:
@@ -95,7 +97,9 @@ class LongRunningDeviceInterface:
             - Clean up
         """
         if ev.err:
-            self._logger.error("Event system DevError(s) occured: %s", str(ev.errors))
+            self._logger.error(
+                "Event system DevError(s) occured: %s", str(ev.errors)
+            )
             return
 
         if ev.attr_value and ev.attr_value.name == "longrunningcommandresult":
@@ -169,7 +173,9 @@ class LongRunningDeviceInterface:
         self._stored_callbacks[unique_id] = on_completion_callback
         self._stored_commands[unique_id] = []
         for device_proxy in self._long_running_device_proxies:
-            _, command_id = device_proxy.command_inout(command_name, command_arg)
+            _, command_id = device_proxy.command_inout(
+                command_name, command_arg
+            )
             self._stored_commands[unique_id].append(
                 StoredCommand(
                     command_name,

@@ -1,9 +1,10 @@
+# pylint: skip-file  # TODO: Incrementally lint this repo
 """This module contains the tests for the ``op_state_model`` module."""
 import pytest
 
 from ska_tango_base.base.op_state_model import _OpStateMachine
 
-from .conftest import load_state_machine_spec, TransitionsStateMachineTester
+from .conftest import TransitionsStateMachineTester, load_state_machine_spec
 
 
 @pytest.mark.state_machine_tester(load_state_machine_spec("op_state_machine"))

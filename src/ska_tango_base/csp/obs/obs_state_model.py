@@ -1,3 +1,4 @@
+# pylint: skip-file  # TODO: Incrementally lint this repo
 """
 This module specifies CSP SubElement Observing state machine.
 
@@ -312,7 +313,9 @@ class CspSubElementObsStateModel(ObsStateModel):
             causes a change to device obs_state
         :type callback: callable
         """
-        super().__init__(_CspSubElementObsStateMachine, logger, callback=callback)
+        super().__init__(
+            _CspSubElementObsStateMachine, logger, callback=callback
+        )
 
     _obs_state_mapping = {
         "IDLE": ObsState.IDLE,

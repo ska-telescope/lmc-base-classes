@@ -1,12 +1,17 @@
+# pylint: skip-file  # TODO: Incrementally lint this repo
 """This module contains the tests for the ``subarray_state_model`` module."""
 import pytest
 
-from ska_tango_base.subarray.subarray_obs_state_model import _SubarrayObsStateMachine
+from ska_tango_base.subarray.subarray_obs_state_model import (
+    _SubarrayObsStateMachine,
+)
 
-from .conftest import load_state_machine_spec, TransitionsStateMachineTester
+from .conftest import TransitionsStateMachineTester, load_state_machine_spec
 
 
-@pytest.mark.state_machine_tester(load_state_machine_spec("subarray_state_machine"))
+@pytest.mark.state_machine_tester(
+    load_state_machine_spec("subarray_state_machine")
+)
 class TestSubarrayObsStateMachine(TransitionsStateMachineTester):
     """This class contains the test for the SubarrayObsStateModel class."""
 

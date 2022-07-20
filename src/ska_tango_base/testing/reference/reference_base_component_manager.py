@@ -1,3 +1,4 @@
+# pylint: skip-file  # TODO: Incrementally lint this repo
 """
 This module provided reference implementations of a BaseComponentManager.
 
@@ -11,10 +12,9 @@ from ska_tango_base.base import (
     TaskExecutorComponentManager,
     check_communicating,
 )
-from ska_tango_base.executor import TaskStatus
-
 from ska_tango_base.commands import ResultCode
 from ska_tango_base.control_model import CommunicationStatus, PowerState
+from ska_tango_base.executor import TaskStatus
 
 
 class FakeBaseComponent:
@@ -318,7 +318,9 @@ class ReferenceBaseComponentManager(TaskExecutorComponentManager):
         if self.communication_state == CommunicationStatus.ESTABLISHED:
             return
         if self.communication_state == CommunicationStatus.DISABLED:
-            self._update_communication_state(CommunicationStatus.NOT_ESTABLISHED)
+            self._update_communication_state(
+                CommunicationStatus.NOT_ESTABLISHED
+            )
 
         # The component would normally be an element of the system under control. In
         # order to establish communication with it, we might need, for example, to
@@ -356,13 +358,17 @@ class ReferenceBaseComponentManager(TaskExecutorComponentManager):
             and self.communication_state == CommunicationStatus.ESTABLISHED
         ):
             self._component.set_state_change_callback(None)
-            self._update_communication_state(CommunicationStatus.NOT_ESTABLISHED)
+            self._update_communication_state(
+                CommunicationStatus.NOT_ESTABLISHED
+            )
         elif (
             not fail_communicate
             and self.communication_state == CommunicationStatus.NOT_ESTABLISHED
         ):
             self._update_communication_state(CommunicationStatus.ESTABLISHED)
-            self._component.set_state_change_callback(self._update_component_state)
+            self._component.set_state_change_callback(
+                self._update_component_state
+            )
 
     @property
     def power_state(self):
@@ -388,19 +394,27 @@ class ReferenceBaseComponentManager(TaskExecutorComponentManager):
     @check_communicating
     def off(self, task_callback=None):
         """Turn the component off."""
-        return self.submit_task(self._component.off, task_callback=task_callback)
+        return self.submit_task(
+            self._component.off, task_callback=task_callback
+        )
 
     @check_communicating
     def standby(self, task_callback=None):
         """Put the component into low-power standby mode."""
-        return self.submit_task(self._component.standby, task_callback=task_callback)
+        return self.submit_task(
+            self._component.standby, task_callback=task_callback
+        )
 
     @check_communicating
     def on(self, task_callback=None):
         """Turn the component on."""
-        return self.submit_task(self._component.on, task_callback=task_callback)
+        return self.submit_task(
+            self._component.on, task_callback=task_callback
+        )
 
     @check_communicating
     def reset(self, task_callback=None):
         """Reset the component (from fault state)."""
-        return self.submit_task(self._component.reset, task_callback=task_callback)
+        return self.submit_task(
+            self._component.reset, task_callback=task_callback
+        )

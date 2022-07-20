@@ -51,7 +51,7 @@ python-post-test: ## test ska_tango_base Python code
 	scripts/validate-metadata.sh
 	 
 python-pre-test:
-	if [ "$$(ls -A ./dist/)" ]; then python3 -m pip install --extra-index-url https://artefact.skao.int/repository/pypi-all/simple -U $$(ls -d ./dist/*.whl); fi
+	python3 -m pip install --extra-index-url https://artefact.skao.int/repository/pypi-all/simple debugpy ska-ser-logging
 
 test-in-docker: build ## Build the docker image and run tests inside it.
 	@docker run --rm $(IMAGE):$(VERSION) make test

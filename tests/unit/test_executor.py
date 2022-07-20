@@ -7,9 +7,9 @@
 """Tests of the ska_tango_base.executor module."""
 from __future__ import annotations
 
-from threading import Lock
+from threading import Event, Lock
 from time import sleep
-from typing import Callable
+from typing import Callable, Hashable, Optional, cast
 
 import pytest
 from ska_tango_testing.mock import MockCallableGroup
@@ -56,7 +56,7 @@ class TestTaskExecutor:
         self: TestTaskExecutor,
         executor: TaskExecutor,
         max_workers: int,
-        callbacks: dict[Hashable, Callable],
+        callbacks: list[Callable],
     ) -> None:
         """
         Test that we can execute tasks.
@@ -68,11 +68,15 @@ class TestTaskExecutor:
             the command tracker under test
         """
 
-        def _claim_lock(lock, task_callback, task_abort_event):
+        def _claim_lock(
+            lock: Lock,
+            task_callback: Optional[Callable],
+            task_abort_event: Event,
+        ) -> None:
             if task_callback is not None:
                 task_callback(status=TaskStatus.IN_PROGRESS)
             with lock:
-                if task_abort_event.is_set():
+                if task_abort_event.is_set() and task_callback:
                     task_callback(status=TaskStatus.ABORTED)
                     return
             if task_callback is not None:
@@ -138,7 +142,11 @@ class TestTaskExecutor:
             the command tracker under test
         """
 
-        def _claim_lock(lock, task_callback, task_abort_event):
+        def _claim_lock(
+            lock: Lock,
+            task_callback: Optional[Callable],
+            task_abort_event: Event,
+        ) -> None:
             if task_callback is not None:
                 task_callback(status=TaskStatus.IN_PROGRESS)
             with lock:
@@ -207,7 +215,9 @@ class TestTaskExecutor:
         )
 
     def test_exception(
-        self: TestTaskExecutor, executor: TaskExecutor, callbacks: dict[Callable]
+        self: TestTaskExecutor,
+        executor: TaskExecutor,
+        callbacks: dict[Hashable, Callable],
     ) -> None:
         """
         Test that the executor handles an uncaught exception correctly.
@@ -218,7 +228,10 @@ class TestTaskExecutor:
         """
         exception_to_raise = ValueError("Exception under test")
 
-        def _raise_exception(task_callback, task_abort_event):
+        def _raise_exception(
+            task_callback: Optional[Callable],
+            task_abort_event: Event,
+        ) -> None:
             if task_callback is not None:
                 task_callback(status=TaskStatus.IN_PROGRESS)
             raise exception_to_raise

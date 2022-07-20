@@ -36,7 +36,7 @@ import ska_ser_logging  # type: ignore[import]
 
 # Tango imports
 import tango
-from tango import DebugIt, DevState
+from tango import DebugIt, DevState, is_omni_thread
 from tango.server import Device, attribute, command, device_property
 
 from ska_tango_base import release
@@ -146,9 +146,7 @@ class TangoLoggingServiceHandler(logging.Handler):
     def __repr__(self: TangoLoggingServiceHandler) -> str:
         python_level = logging.getLevelName(self.level)
         if self.tango_logger:
-            tango_level = _Log4TangoLoggingLevel(
-                self.tango_logger.get_level()
-            ).name
+            tango_level = _Log4TangoLoggingLevel(self.tango_logger.get_level()).name
             name = self.tango_logger.get_name()
         else:
             tango_level = "UNKNOWN"
@@ -271,7 +269,7 @@ class LoggingUtils:
             if not address:
                 raise LoggingTargetError(
                     f"Invalid syslog URL - empty file path from '{url}'"
-               )
+                )
             if parsed.scheme == "":
                 warnings.warn(
                     "Specifying syslog URL without protocol is deprecated, "
@@ -295,9 +293,7 @@ class LoggingUtils:
                 )
             address = (parsed.hostname, port)
             socktype = (
-                socket.SOCK_DGRAM
-                if parsed.scheme == "udp"
-                else socket.SOCK_STREAM
+                socket.SOCK_DGRAM if parsed.scheme == "udp" else socket.SOCK_STREAM
             )
         else:
             raise LoggingTargetError(
@@ -790,12 +786,8 @@ class SKABaseDevice(Device):
         else:
             self._command_ids_in_queue = []
             self._commands_in_queue = []
-        self.push_change_event(
-            "longRunningCommandsInQueue", self._commands_in_queue
-        )
-        self.push_archive_event(
-            "longRunningCommandsInQueue", self._commands_in_queue
-        )
+        self.push_change_event("longRunningCommandsInQueue", self._commands_in_queue)
+        self.push_archive_event("longRunningCommandsInQueue", self._commands_in_queue)
         self.push_change_event(
             "longRunningCommandIDsInQueue", self._command_ids_in_queue
         )
@@ -810,37 +802,24 @@ class SKABaseDevice(Device):
         self._command_statuses = [
             str(item) for item in itertools.chain.from_iterable(statuses)
         ][: (MAX_REPORTED_CONCURRENT_COMMANDS * 2)]
-        self.push_change_event(
-            "longRunningCommandStatus", self._command_statuses
-        )
-        self.push_archive_event(
-            "longRunningCommandStatus", self._command_statuses
-        )
+        self.push_change_event("longRunningCommandStatus", self._command_statuses)
+        self.push_archive_event("longRunningCommandStatus", self._command_statuses)
 
     def _update_command_progresses(
         self: SKABaseDevice, command_progresses: list
     ) -> None:
         self._command_progresses = [
-            str(item)
-            for item in itertools.chain.from_iterable(command_progresses)
+            str(item) for item in itertools.chain.from_iterable(command_progresses)
         ][: (MAX_REPORTED_CONCURRENT_COMMANDS * 2)]
-        self.push_change_event(
-            "longRunningCommandProgress", self._command_progresses
-        )
-        self.push_archive_event(
-            "longRunningCommandProgress", self._command_progresses
-        )
+        self.push_change_event("longRunningCommandProgress", self._command_progresses)
+        self.push_archive_event("longRunningCommandProgress", self._command_progresses)
 
     def _update_command_result(
         self: SKABaseDevice, command_id: str, command_result: tuple[ResultCode, str]
     ) -> None:
         self._command_result = (command_id, json.dumps(command_result))
-        self.push_change_event(
-            "longRunningCommandResult", self._command_result
-        )
-        self.push_archive_event(
-            "longRunningCommandResult", self._command_result
-        )
+        self.push_change_event("longRunningCommandResult", self._command_result)
+        self.push_archive_event("longRunningCommandResult", self._command_result)
 
     def _update_command_exception(
         self: SKABaseDevice, command_id: str, command_exception: Exception
@@ -849,12 +828,8 @@ class SKABaseDevice(Device):
             f"Command '{command_id}' raised exception {command_exception}"
         )
         self._command_result = (command_id, str(command_exception))
-        self.push_change_event(
-            "longRunningCommandResult", self._command_result
-        )
-        self.push_archive_event(
-            "longRunningCommandResult", self._command_result
-        )
+        self.push_change_event("longRunningCommandResult", self._command_result)
+        self.push_archive_event("longRunningCommandResult", self._command_result)
 
     def _communication_state_changed(
         self: SKABaseDevice, communication_state: CommunicationStatus
@@ -1624,7 +1599,7 @@ class SKABaseDevice(Device):
 
         def do(  # type: ignore[override]
             self: SKABaseDevice.CheckLongRunningCommandStatusCommand, argin: str
-        ) -> TaskStatus:
+        ) -> str:
             """
             Determine the status of the command ID passed in, if any.
 
@@ -1684,9 +1659,7 @@ class SKABaseDevice(Device):
             :return: The TCP port the debugger is listening on.
             """
             if not SKABaseDevice._global_debugger_listening:
-                allocated_port = self.start_debugger_and_get_port(
-                    _DEBUGGER_PORT
-                )
+                allocated_port = self.start_debugger_and_get_port(_DEBUGGER_PORT)
                 SKABaseDevice._global_debugger_listening = True
                 SKABaseDevice._global_debugger_allocated_port = allocated_port
             if not self._device._methods_patched_for_debugger:
@@ -1726,9 +1699,7 @@ class SKABaseDevice(Device):
                     patched.append(
                         f"{owner} {method.__func__.__qualname__} in {method.__func__.__module__}"
                     )
-            self.logger.info(
-                "Patched %s of %s methods", len(patched), len(all_methods)
-            )
+            self.logger.info("Patched %s of %s methods", len(patched), len(all_methods))
             self.logger.debug("Patched methods: %s", sorted(patched))
 
         def get_all_methods(
@@ -1740,9 +1711,7 @@ class SKABaseDevice(Device):
             :return: list of device methods
             """
             methods = []
-            for name, method in inspect.getmembers(
-                self._device, inspect.ismethod
-            ):
+            for name, method in inspect.getmembers(self._device, inspect.ismethod):
                 methods.append((self._device, name, method))
             for command_object in self._device._command_objects.values():
                 for name, method in inspect.getmembers(
@@ -1826,19 +1795,46 @@ class SKABaseDevice(Device):
         command = self.get_command_object("DebugDevice")
         return command()
 
-    def set_state(self, state):
+    def set_state(self: SKABaseDevice, state: DevState) -> None:
+        """
+        Set the device server state.
+
+        This is dependent on whether the set state call has been
+        actioned from a native python thread or a tango omni thread
+
+        :param state: the new device state
+        """
         if is_omni_thread() and self._omni_queue.empty():
             super().set_state(state)
         else:
             self._omni_queue.put(("set", "state", state))
 
-    def set_status(self, status):
+    def set_status(self: SKABaseDevice, status: str) -> None:
+        """
+        Set the device server status string.
+
+        This is dependent on whether the set status call has been
+        actioned from a native python thread or a tango omni thread
+
+        :param status: the new device status
+        """
         if is_omni_thread() and self._omni_queue.empty():
             super().set_status(status)
         else:
             self._omni_queue.put(("set", "status", status))
 
-    def push_change_event(self, name, value=None):
+    def push_change_event(
+        self: SKABaseDevice, name: str, value: Optional[Any] = None
+    ) -> None:
+        """
+        Push a device server change event.
+
+        This is dependent on whether the push_change_event call has been
+        actioned from a native python thread or a tango omni thread
+
+        :param name: the event name
+        :param value: the event value
+        """
         if is_omni_thread() and self._omni_queue.empty():
             if name.lower() in ["state", "status"]:
                 super().push_change_event(name)
@@ -1847,7 +1843,18 @@ class SKABaseDevice(Device):
         else:
             self._omni_queue.put(("change", name, value))
 
-    def push_archive_event(self, name, value=None):
+    def push_archive_event(
+        self: SKABaseDevice, name: str, value: Optional[Any] = None
+    ) -> None:
+        """
+        Push a device server archive event.
+
+        This is dependent on whether the push_archive_event call has been
+        actioned from a native python thread or a tango omni thread
+
+        :param name: the event name
+        :param value: the event value
+        """
         if is_omni_thread() and self._omni_queue.empty():
             if name.lower() in ["state", "status"]:
                 super().push_archive_event(name)
@@ -1857,7 +1864,14 @@ class SKABaseDevice(Device):
             self._omni_queue.put(("archive", name, value))
 
     @command(polling_period=5)
-    def PushChanges(self):
+    def PushChanges(self: SKABaseDevice) -> None:
+        """
+        Push changes from state change & events that haved been pushed on the queue.
+
+        The poll time is initially 5ms, to circumvent the problem of
+        device initialisation, but is reset to 100ms after the first
+        pass.
+        """
         # this can be removed when cppTango issue #935 is implemented
         if self._init_active:
             self._init_active = False

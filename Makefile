@@ -27,6 +27,7 @@ PYTHON_LINT_TARGET = src/ska_tango_base/base \
     src/ska_tango_base/testing/reference/reference_subarray_component_manager.py \
     tests/unit/test_base_device.py \
     tests/unit/test_base_component_manager.py \
+    tests/unit/test_executor.py \
     tests/unit/test_obs_device.py \
     tests/unit/test_subarray_device.py \
     tests/unit/test_subarray_component_manager.py

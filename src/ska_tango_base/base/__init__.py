@@ -17,14 +17,15 @@ __all__ = (
     "check_on",
 )
 
+# Note: order of imports is important - start with lowest in the hierarchy
 from .admin_mode_model import AdminModeModel
-from .base_device import SKABaseDevice
+from .op_state_model import OpStateModel
+
 from .component_manager import (
     BaseComponentManager,
     TaskExecutorComponentManager,
     check_communicating,
     check_on,
 )
-
 from .base_device import SKABaseDevice
 from .base_device import CommandTracker

@@ -101,9 +101,6 @@ class _AdminModeMachine(Machine):
         """
         if self._callback is not None:
             self._callback(self.state)
-            print(
-                f"AdminStateMachine._state_changed sets {self.state} #################"
-            )
 
 
 class AdminModeModel:
@@ -177,9 +174,7 @@ class AdminModeModel:
         self._admin_mode = AdminMode.OFFLINE
         self._callback = callback
 
-        self._admin_mode_machine = _AdminModeMachine(
-            callback=self._admin_mode_changed
-        )
+        self._admin_mode_machine = _AdminModeMachine(callback=self._admin_mode_changed)
 
     @property
     def admin_mode(self: AdminModeModel) -> AdminMode:

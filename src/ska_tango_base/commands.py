@@ -379,9 +379,7 @@ class SubmittedSlowCommand(SlowCommand):
         method = getattr(self._component_manager, self._method_name)
         result = method(
             *args,
-            functools.partial(
-                self._command_tracker.update_command_info, command_id
-            ),
+            functools.partial(self._command_tracker.update_command_info, command_id),
             **kwargs,
         )
         status, message = result

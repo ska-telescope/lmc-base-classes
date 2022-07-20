@@ -1,4 +1,5 @@
 <<<<<<< HEAD
+<<<<<<< HEAD
 # pylint: skip-file  # TODO: Incrementally lint this repo
 """This module models component management for SKA subarray devices."""
 from typing import List
@@ -7,6 +8,8 @@ from ska_tango_base.base import check_communicating, check_on
 from ska_tango_base.commands import ResultCode
 from ska_tango_base.control_model import PowerState
 =======
+=======
+>>>>>>> 87bdc1b (MCCS-934 type hints)
 # -*- coding: utf-8 -*-
 #
 # This file is part of the SKA Low MCCS project
@@ -25,7 +28,6 @@ from ska_tango_base.base import check_communicating, check_on
 from ska_tango_base.commands import ResultCode
 from ska_tango_base.control_model import CommunicationStatus, PowerState
 from ska_tango_base.executor import TaskStatus
->>>>>>> 50f357b (MCCS-934 type hints, static type checking & standard templates)
 from ska_tango_base.faults import CapabilityValidationError
 from ska_tango_base.subarray import SubarrayComponentManager
 from ska_tango_base.testing.reference import (
@@ -216,13 +218,7 @@ class FakeSubarrayComponent(FakeBaseComponent):
 
         if invalid_capabilities:
             raise CapabilityValidationError(
-<<<<<<< HEAD
-                "Invalid capability types requested {}".format(
-                    invalid_capabilities
-                )
-=======
                 f"Invalid capability types requested {invalid_capabilities}"
->>>>>>> 50f357b (MCCS-934 type hints, static type checking & standard templates)
             )
 
     @check_on
@@ -347,9 +343,7 @@ class FakeSubarrayComponent(FakeBaseComponent):
 
             # Perform the configuration.
             for capability_type, capability_instances in configuration.items():
-                self._configured_capabilities[
-                    capability_type
-                ] += capability_instances
+                self._configured_capabilities[capability_type] += capability_instances
 
             result = (ResultCode.OK, "Configure completed OK")
 
@@ -465,9 +459,7 @@ class FakeSubarrayComponent(FakeBaseComponent):
         :param task_abort_event: a threading.Event that can be checked
             for whether this task has been aborted.
         """
-        self._configured_capabilities = {
-            k: 0 for k in self._configured_capabilities
-        }
+        self._configured_capabilities = {k: 0 for k in self._configured_capabilities}
         result = (ResultCode.OK, "Obs reset completed OK")
         self._simulate_task_execution(
             task_callback,
@@ -492,9 +484,7 @@ class FakeSubarrayComponent(FakeBaseComponent):
         :param task_abort_event: a threading.Event that can be checked
             for whether this task has been aborted.
         """
-        self._configured_capabilities = {
-            k: 0 for k in self._configured_capabilities
-        }
+        self._configured_capabilities = {k: 0 for k in self._configured_capabilities}
         self._resource_pool.release_all()
         result = (ResultCode.OK, "Restart completed OK")
         self._simulate_task_execution(
@@ -669,13 +659,6 @@ class ReferenceSubarrayComponentManager(
         )
 
     @check_communicating
-<<<<<<< HEAD
-    def end_scan(self, task_callback=None):
-        """End scanning."""
-        return self.submit_task(
-            self._component.end_scan, task_callback=task_callback
-        )
-=======
     def end_scan(
         self: ReferenceSubarrayComponentManager,
         task_callback: Optional[Callable[[], None]] = None,
@@ -689,7 +672,6 @@ class ReferenceSubarrayComponentManager(
         :return: task status and message
         """
         return self.submit_task(self._component.end_scan, task_callback=task_callback)
->>>>>>> 50f357b (MCCS-934 type hints, static type checking & standard templates)
 
     @check_communicating
     def abort(
@@ -704,17 +686,9 @@ class ReferenceSubarrayComponentManager(
 
         :return: task status and message
         """
-        print("£££££££££££££££££££££££££££££££££", self.abort_tasks)
         return self.abort_tasks()
 
     @check_communicating
-<<<<<<< HEAD
-    def obsreset(self, task_callback=None):
-        """Deconfigure the component but do not release resources."""
-        return self.submit_task(
-            self._component.obsreset, task_callback=task_callback
-        )
-=======
     def obsreset(
         self: ReferenceSubarrayComponentManager,
         task_callback: Optional[Callable[[], None]] = None,
@@ -728,7 +702,6 @@ class ReferenceSubarrayComponentManager(
         :return: task status and message
         """
         return self.submit_task(self._component.obsreset, task_callback=task_callback)
->>>>>>> 50f357b (MCCS-934 type hints, static type checking & standard templates)
 
     @check_communicating
     def restart(
@@ -746,9 +719,7 @@ class ReferenceSubarrayComponentManager(
 
         :return: task status and message
         """
-        return self.submit_task(
-            self._component.restart, task_callback=task_callback
-        )
+        return self.submit_task(self._component.restart, task_callback=task_callback)
 
     @property  # type: ignore[misc]
     @check_communicating

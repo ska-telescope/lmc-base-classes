@@ -96,9 +96,7 @@ class TestTangoLoggingServiceHandler:
         :param python_log_level: logging level
         """
         # arrange
-        record = logging.LogRecord(
-            "test", python_log_level, "", 1, "message", (), None
-        )
+        record = logging.LogRecord("test", python_log_level, "", 1, "message", (), None)
         # act
         tls_handler.emit(record)
         # assert
@@ -141,9 +139,7 @@ class TestTangoLoggingServiceHandler:
         :param tls_handler: tango logging service
         """
         # arrange
-        record = logging.LogRecord(
-            "test", logging.INFO, "", 1, "message", (), None
-        )
+        record = logging.LogRecord("test", logging.INFO, "", 1, "message", (), None)
 
         def cause_exception(*args: Any, **kwargs: Any) -> None:
             raise RuntimeError("Testing")
@@ -405,9 +401,7 @@ class TestLoggingUtils:
         assert handler == mock_file_handler()
         handler.setFormatter.assert_called_once_with(mock_formatter)
 
-        handler = LoggingUtils.create_logging_handler(
-            "syslog::udp://somehost:1234"
-        )
+        handler = LoggingUtils.create_logging_handler("syslog::udp://somehost:1234")
         mock_syslog_handler.assert_called_once_with(
             address=("somehost", 1234),
             facility=mock_syslog_handler.LOG_SYSLOG,
@@ -417,9 +411,7 @@ class TestLoggingUtils:
         handler.setFormatter.assert_called_once_with(mock_formatter)
 
         mock_syslog_handler.reset_mock()
-        handler = LoggingUtils.create_logging_handler(
-            "syslog::file:///tmp/path"
-        )
+        handler = LoggingUtils.create_logging_handler("syslog::file:///tmp/path")
         mock_syslog_handler.assert_called_once_with(
             address="/tmp/path",
             facility=mock_syslog_handler.LOG_SYSLOG,
@@ -442,9 +434,7 @@ class TestLoggingUtils:
             LoggingUtils.create_logging_handler("invalid")
 
         with pytest.raises(LoggingTargetError):
-            LoggingUtils.create_logging_handler(
-                "tango::logger", tango_logger=None
-            )
+            LoggingUtils.create_logging_handler("tango::logger", tango_logger=None)
 
     def test_update_logging_handlers(self: TestLoggingUtils) -> None:
         """Test that logging handlers can be updated."""
@@ -1185,8 +1175,7 @@ class TestSKABaseDevice(object):
         )
 
         assert (
-            device_under_test.CheckLongRunningCommandStatus(command_id)
-            == "COMPLETED"
+            device_under_test.CheckLongRunningCommandStatus(command_id) == "COMPLETED"
         )
 
         # Check what happens if we call Standby() when the device is already STANDBY.

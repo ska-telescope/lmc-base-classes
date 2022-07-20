@@ -100,17 +100,13 @@ class MockCallable:
         self._queue.put(called_mock)
         return self._return_value
 
-    def _fetch_call(
-        self: MockCallable, timeout: float
-    ) -> Optional[unittest.mock.Mock]:
+    def _fetch_call(self: MockCallable, timeout: float) -> Optional[unittest.mock.Mock]:
         try:
             return self._queue.get(timeout=timeout)
         except queue.Empty:
             return None
 
-    def assert_not_called(
-        self: MockCallable, timeout: Optional[float] = None
-    ) -> None:
+    def assert_not_called(self: MockCallable, timeout: Optional[float] = None) -> None:
         """
         Assert that the callback still has not been called after the timeout period.
 
@@ -129,9 +125,7 @@ class MockCallable:
             return
         called_mock.assert_not_called()  # we know this will fail and raise an exception
 
-    def assert_next_call(
-        self: MockCallable, *args: Any, **kwargs: Any
-    ) -> None:
+    def assert_next_call(self: MockCallable, *args: Any, **kwargs: Any) -> None:
         """
         Assert the arguments of the next call to this mock callback.
 
@@ -176,9 +170,7 @@ class MockCallable:
         assert called_mock is not None, "Callback has not been called."
         return called_mock.call_args
 
-    def assert_last_call(
-        self: MockCallable, *args: Any, **kwargs: Any
-    ) -> None:
+    def assert_last_call(self: MockCallable, *args: Any, **kwargs: Any) -> None:
         """
         Assert the arguments of the last call to this mock callback.
 
@@ -267,10 +259,7 @@ class MockChangeEventCallback(MockCallable):
 
             attribute_data = event.attr_value
 
-            if (
-                self._filter_for_change
-                and attribute_data.value == self._previous_value
-            ):
+            if self._filter_for_change and attribute_data.value == self._previous_value:
                 continue
 
             self._previous_value = attribute_data.value
@@ -293,9 +282,7 @@ class MockChangeEventCallback(MockCallable):
         :return: an (args, kwargs) tuple
         """
         call_data = self._fetch_change_event(self._called_timeout)
-        assert (
-            call_data is not None
-        ), "Change event callback has not been called"
+        assert call_data is not None, "Change event callback has not been called"
         (call_name, call_value, _) = call_data
         assert (
             call_name.lower() == self._event_name
@@ -320,9 +307,7 @@ class MockChangeEventCallback(MockCallable):
         :raises AssertionError: if the callback has not been called.
         """
         call_data = self._fetch_change_event(self._called_timeout)
-        assert (
-            call_data is not None
-        ), "Change event callback has not been called"
+        assert call_data is not None, "Change event callback has not been called"
         (call_name, call_value, call_quality) = call_data
         assert (
             call_name.lower() == self._event_name

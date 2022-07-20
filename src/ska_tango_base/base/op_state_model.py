@@ -377,7 +377,6 @@ class _OpStateMachine(Machine):
         """
         if self._callback is not None:
             self._callback(self.state)
-            print(f"opstatemachine._state_changed sets {self.state} ############")
 
 
 class OpStateModel:
@@ -452,9 +451,7 @@ class OpStateModel:
         self._op_state = None
         self._callback = callback
 
-        self._op_state_machine = _OpStateMachine(
-            callback=self._op_state_changed
-        )
+        self._op_state_machine = _OpStateMachine(callback=self._op_state_changed)
 
     @property
     def op_state(self: OpStateModel) -> DevState:
@@ -516,9 +513,7 @@ class OpStateModel:
 
         :return: whether the action is allowed in the current state
         """
-        if action in self._op_state_machine.get_triggers(
-            self._op_state_machine.state
-        ):
+        if action in self._op_state_machine.get_triggers(self._op_state_machine.state):
             return True
 
         if raise_if_disallowed:

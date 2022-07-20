@@ -238,9 +238,7 @@ class TestSKASubarray:
             "longRunningCommandResult",
             (
                 assign_command_id,
-                json.dumps(
-                    [int(ResultCode.OK), "Resource assignment completed OK"]
-                ),
+                json.dumps([int(ResultCode.OK), "Resource assignment completed OK"]),
             ),
         )
         change_event_callbacks.assert_change_event(
@@ -256,9 +254,7 @@ class TestSKASubarray:
         [
             [result_code],
             [release_command_id],
-        ] = device_under_test.ReleaseResources(
-            json.dumps(resources_to_release)
-        )
+        ] = device_under_test.ReleaseResources(json.dumps(resources_to_release))
         assert result_code == ResultCode.QUEUED
 
         change_event_callbacks.assert_change_event(
@@ -296,9 +292,7 @@ class TestSKASubarray:
             "longRunningCommandResult",
             (
                 release_command_id,
-                json.dumps(
-                    [int(ResultCode.OK), "Resource release completed OK"]
-                ),
+                json.dumps([int(ResultCode.OK), "Resource release completed OK"]),
             ),
         )
         change_event_callbacks.assert_change_event(
@@ -763,9 +757,7 @@ class TestSKASubarray:
             "longRunningCommandResult",
             (
                 assign_command_id,
-                json.dumps(
-                    [int(ResultCode.OK), "Resource assignment completed OK"]
-                ),
+                json.dumps([int(ResultCode.OK), "Resource assignment completed OK"]),
             ),
         )
         change_event_callbacks.assert_change_event(
@@ -894,9 +886,7 @@ class TestSKASubarray:
             "longRunningCommandResult",
             (
                 scan_command_id,
-                json.dumps(
-                    [int(ResultCode.OK), "Scan commencement completed OK"]
-                ),
+                json.dumps([int(ResultCode.OK), "Scan commencement completed OK"]),
             ),
         )
         change_event_callbacks.assert_change_event(
@@ -1099,9 +1089,7 @@ class TestSKASubarray:
             "longRunningCommandResult",
             (
                 assign_command_id,
-                json.dumps(
-                    [int(ResultCode.OK), "Resource assignment completed OK"]
-                ),
+                json.dumps([int(ResultCode.OK), "Resource assignment completed OK"]),
             ),
         )
         change_event_callbacks.assert_change_event(

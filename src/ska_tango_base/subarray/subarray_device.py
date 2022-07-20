@@ -99,9 +99,7 @@ class SKASubarray(SKAObsDevice):
             )
             print("Abort do **************************", self._component_manager.abort)
             status, _ = self._component_manager.abort(
-                functools.partial(
-                    self._command_tracker.update_command_info, command_id
-                )
+                functools.partial(self._command_tracker.update_command_info, command_id)
             )
             assert status == TaskStatus.IN_PROGRESS
             print("Abort do **************************")

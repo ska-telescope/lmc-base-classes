@@ -1,6 +1,3 @@
-<<<<<<< HEAD
-# pylint: skip-file  # TODO: Incrementally lint this repo
-=======
 # -*- coding: utf-8 -*-
 #
 # This file is part of the SKA Low MCCS project
@@ -8,7 +5,6 @@
 #
 # Distributed under the terms of the BSD 3-clause new license.
 # See LICENSE for more info.
->>>>>>> 50f357b (MCCS-934 type hints, static type checking & standard templates)
 """
 This module provided reference implementations of a BaseComponentManager.
 
@@ -22,14 +18,7 @@ import threading
 from time import sleep
 from typing import Any, Callable, Optional, Tuple
 
-<<<<<<< HEAD
-from ska_tango_base.base import (
-    TaskExecutorComponentManager,
-    check_communicating,
-)
-=======
 from ska_tango_base.base import TaskExecutorComponentManager, check_communicating
->>>>>>> 50f357b (MCCS-934 type hints, static type checking & standard templates)
 from ska_tango_base.commands import ResultCode
 from ska_tango_base.control_model import CommunicationStatus, PowerState
 from ska_tango_base.executor import TaskStatus
@@ -377,9 +366,7 @@ class ReferenceBaseComponentManager(TaskExecutorComponentManager):
         if self.communication_state == CommunicationStatus.ESTABLISHED:
             return
         if self.communication_state == CommunicationStatus.DISABLED:
-            self._update_communication_state(
-                CommunicationStatus.NOT_ESTABLISHED
-            )
+            self._update_communication_state(CommunicationStatus.NOT_ESTABLISHED)
 
         # The component would normally be an element of the system under control. In
         # order to establish communication with it, we might need, for example, to
@@ -419,17 +406,13 @@ class ReferenceBaseComponentManager(TaskExecutorComponentManager):
             and self.communication_state == CommunicationStatus.ESTABLISHED
         ):
             self._component.set_state_change_callback(None)
-            self._update_communication_state(
-                CommunicationStatus.NOT_ESTABLISHED
-            )
+            self._update_communication_state(CommunicationStatus.NOT_ESTABLISHED)
         elif (
             not fail_communicate
             and self.communication_state == CommunicationStatus.NOT_ESTABLISHED
         ):
             self._update_communication_state(CommunicationStatus.ESTABLISHED)
-            self._component.set_state_change_callback(
-                self._update_component_state
-            )
+            self._component.set_state_change_callback(self._update_component_state)
 
     @property
     def power_state(self: ReferenceBaseComponentManager) -> PowerState:
@@ -453,34 +436,6 @@ class ReferenceBaseComponentManager(TaskExecutorComponentManager):
         return self._component_state["fault"]
 
     @check_communicating
-<<<<<<< HEAD
-    def off(self, task_callback=None):
-        """Turn the component off."""
-        return self.submit_task(
-            self._component.off, task_callback=task_callback
-        )
-
-    @check_communicating
-    def standby(self, task_callback=None):
-        """Put the component into low-power standby mode."""
-        return self.submit_task(
-            self._component.standby, task_callback=task_callback
-        )
-
-    @check_communicating
-    def on(self, task_callback=None):
-        """Turn the component on."""
-        return self.submit_task(
-            self._component.on, task_callback=task_callback
-        )
-
-    @check_communicating
-    def reset(self, task_callback=None):
-        """Reset the component (from fault state)."""
-        return self.submit_task(
-            self._component.reset, task_callback=task_callback
-        )
-=======
     def off(
         self: ReferenceBaseComponentManager,
         task_callback: Optional[Callable[[], None]] = None,
@@ -539,4 +494,3 @@ class ReferenceBaseComponentManager(TaskExecutorComponentManager):
         :return: TaskStatus and message
         """
         return self.submit_task(self._component.reset, task_callback=task_callback)
->>>>>>> 50f357b (MCCS-934 type hints, static type checking & standard templates)

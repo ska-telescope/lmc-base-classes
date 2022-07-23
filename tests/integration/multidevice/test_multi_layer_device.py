@@ -128,13 +128,13 @@ def test_multi_layer(
 
     top_device.CallChildren(2)
 
-    low_result = change_event_callbacks["low_result"].assert_against_call()
+    low_result = change_event_callbacks.assert_against_call("low_result")
     command_id, message = low_result["attribute_value"]
     assert command_id.endswith("CallChildren")
     assert message == '"Finished leaf node"'
 
     # Wait for mid level device to finish
-    mid_result = change_event_callbacks["mid_result"].assert_against_call()
+    mid_result = change_event_callbacks.assert_against_call("mid_result")
     command_id, message = mid_result["attribute_value"]
     assert command_id.endswith("CallChildren")
     assert (
@@ -143,7 +143,7 @@ def test_multi_layer(
     )
 
     # Wait for top level device to finish
-    top_result = change_event_callbacks["top_result"].assert_against_call()
+    top_result = change_event_callbacks.assert_against_call("top_result")
     command_id, message = top_result["attribute_value"]
     assert command_id.endswith("CallChildren")
     assert (

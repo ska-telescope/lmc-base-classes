@@ -803,44 +803,28 @@ class TestSKABaseDevice(object):
         """
         assert device_under_test.state() == DevState.OFF
 
-        device_under_test.subscribe_event(
+        for attribute in [
             "state",
-            tango.EventType.CHANGE_EVENT,
-            change_event_callbacks["state"],
-        )
-        change_event_callbacks["state"].assert_change_event(DevState.OFF)
-
-        device_under_test.subscribe_event(
             "status",
-            tango.EventType.CHANGE_EVENT,
-            change_event_callbacks["status"],
-        )
+            "longRunningCommandProgress",
+            "longRunningCommandStatus",
+            "longRunningCommandResult",
+        ]:
+            device_under_test.subscribe_event(
+                attribute,
+                tango.EventType.CHANGE_EVENT,
+                change_event_callbacks[attribute],
+            )
+
+        change_event_callbacks["state"].assert_change_event(DevState.OFF)
         change_event_callbacks["status"].assert_change_event(
             "The device is in OFF state."
-        )
-
-        device_under_test.subscribe_event(
-            "longRunningCommandProgress",
-            tango.EventType.CHANGE_EVENT,
-            change_event_callbacks["longRunningCommandProgress"],
         )
         change_event_callbacks[
             "longRunningCommandProgress"
         ].assert_change_event(None)
-
-        device_under_test.subscribe_event(
-            "longRunningCommandStatus",
-            tango.EventType.CHANGE_EVENT,
-            change_event_callbacks["longRunningCommandStatus"],
-        )
         change_event_callbacks["longRunningCommandStatus"].assert_change_event(
             None
-        )
-
-        device_under_test.subscribe_event(
-            "longRunningCommandResult",
-            tango.EventType.CHANGE_EVENT,
-            change_event_callbacks["longRunningCommandResult"],
         )
         change_event_callbacks["longRunningCommandResult"].assert_change_event(
             ("", "")
@@ -848,34 +832,36 @@ class TestSKABaseDevice(object):
 
         [[result_code], [command_id]] = device_under_test.On()
         assert result_code == ResultCode.QUEUED
-        change_event_callbacks["longRunningCommandStatus"].assert_change_event(
-            (command_id, "QUEUED")
+        change_event_callbacks.assert_change_event(
+            "longRunningCommandStatus", (command_id, "QUEUED")
         )
-        change_event_callbacks["longRunningCommandStatus"].assert_change_event(
-            (command_id, "IN_PROGRESS")
+        change_event_callbacks.assert_change_event(
+            "longRunningCommandStatus", (command_id, "IN_PROGRESS")
         )
-        change_event_callbacks[
-            "longRunningCommandProgress"
-        ].assert_change_event((command_id, "33"))
-        change_event_callbacks[
-            "longRunningCommandProgress"
-        ].assert_change_event((command_id, "66"))
-        change_event_callbacks["longRunningCommandStatus"].assert_change_event(
-            (command_id, "COMPLETED")
+        change_event_callbacks.assert_change_event(
+            "longRunningCommandProgress", (command_id, "33")
+        )
+        change_event_callbacks.assert_change_event(
+            "longRunningCommandProgress", (command_id, "66")
         )
 
-        change_event_callbacks["state"].assert_change_event(DevState.ON)
-        change_event_callbacks["status"].assert_change_event(
-            "The device is in ON state."
+        change_event_callbacks.assert_change_event("state", DevState.ON)
+        change_event_callbacks.assert_change_event(
+            "status", "The device is in ON state."
         )
 
         assert device_under_test.state() == DevState.ON
 
-        change_event_callbacks["longRunningCommandResult"].assert_change_event(
+        change_event_callbacks.assert_change_event(
+            "longRunningCommandResult",
             (
                 command_id,
                 json.dumps([int(ResultCode.OK), "On command completed OK"]),
-            )
+            ),
+        )
+
+        change_event_callbacks.assert_change_event(
+            "longRunningCommandStatus", (command_id, "COMPLETED")
         )
 
         # Check what happens if we call On() when the device is already ON.
@@ -883,13 +869,7 @@ class TestSKABaseDevice(object):
         assert result_code == ResultCode.REJECTED
         assert message == "Device is already in ON state."
 
-        change_event_callbacks["longRunningCommandStatus"].assert_not_called()
-        change_event_callbacks[
-            "longRunningCommandProgress"
-        ].assert_not_called()
-        change_event_callbacks["longRunningCommandResult"].assert_not_called()
-        change_event_callbacks["state"].assert_not_called()
-        change_event_callbacks["status"].assert_not_called()
+        change_event_callbacks.assert_not_called()
 
     def test_Standby(self, device_under_test, change_event_callbacks):
         """
@@ -901,44 +881,28 @@ class TestSKABaseDevice(object):
         """
         assert device_under_test.state() == DevState.OFF
 
-        device_under_test.subscribe_event(
+        for attribute in [
             "state",
-            tango.EventType.CHANGE_EVENT,
-            change_event_callbacks["state"],
-        )
-        change_event_callbacks["state"].assert_change_event(DevState.OFF)
-
-        device_under_test.subscribe_event(
             "status",
-            tango.EventType.CHANGE_EVENT,
-            change_event_callbacks["status"],
-        )
+            "longRunningCommandProgress",
+            "longRunningCommandStatus",
+            "longRunningCommandResult",
+        ]:
+            device_under_test.subscribe_event(
+                attribute,
+                tango.EventType.CHANGE_EVENT,
+                change_event_callbacks[attribute],
+            )
+
+        change_event_callbacks["state"].assert_change_event(DevState.OFF)
         change_event_callbacks["status"].assert_change_event(
             "The device is in OFF state."
-        )
-
-        device_under_test.subscribe_event(
-            "longRunningCommandProgress",
-            tango.EventType.CHANGE_EVENT,
-            change_event_callbacks["longRunningCommandProgress"],
         )
         change_event_callbacks[
             "longRunningCommandProgress"
         ].assert_change_event(None)
-
-        device_under_test.subscribe_event(
-            "longRunningCommandStatus",
-            tango.EventType.CHANGE_EVENT,
-            change_event_callbacks["longRunningCommandStatus"],
-        )
         change_event_callbacks["longRunningCommandStatus"].assert_change_event(
             None
-        )
-
-        device_under_test.subscribe_event(
-            "longRunningCommandResult",
-            tango.EventType.CHANGE_EVENT,
-            change_event_callbacks["longRunningCommandResult"],
         )
         change_event_callbacks["longRunningCommandResult"].assert_change_event(
             ("", "")
@@ -947,39 +911,37 @@ class TestSKABaseDevice(object):
         [[result_code], [command_id]] = device_under_test.Standby()
         assert result_code == ResultCode.QUEUED
 
-        change_event_callbacks["longRunningCommandStatus"].assert_change_event(
-            (command_id, "QUEUED")
+        change_event_callbacks.assert_change_event(
+            "longRunningCommandStatus", (command_id, "QUEUED")
         )
-        change_event_callbacks["longRunningCommandStatus"].assert_change_event(
-            (command_id, "IN_PROGRESS")
+        change_event_callbacks.assert_change_event(
+            "longRunningCommandStatus", (command_id, "IN_PROGRESS")
         )
-
-        change_event_callbacks[
-            "longRunningCommandProgress"
-        ].assert_change_event((command_id, "33"))
-        change_event_callbacks[
-            "longRunningCommandProgress"
-        ].assert_change_event((command_id, "66"))
-
-        change_event_callbacks["longRunningCommandStatus"].assert_change_event(
-            (command_id, "COMPLETED")
+        change_event_callbacks.assert_change_event(
+            "longRunningCommandProgress", (command_id, "33")
+        )
+        change_event_callbacks.assert_change_event(
+            "longRunningCommandProgress", (command_id, "66")
         )
 
-        change_event_callbacks["state"].assert_change_event(DevState.STANDBY)
-
-        change_event_callbacks["status"].assert_change_event(
-            "The device is in STANDBY state."
+        change_event_callbacks.assert_change_event("state", DevState.STANDBY)
+        change_event_callbacks.assert_change_event(
+            "status", "The device is in STANDBY state."
         )
 
         assert device_under_test.state() == DevState.STANDBY
 
-        change_event_callbacks["longRunningCommandResult"].assert_change_event(
+        change_event_callbacks.assert_change_event(
+            "longRunningCommandResult",
             (
                 command_id,
                 json.dumps(
                     [int(ResultCode.OK), "Standby command completed OK"]
                 ),
-            )
+            ),
+        )
+        change_event_callbacks.assert_change_event(
+            "longRunningCommandStatus", (command_id, "COMPLETED")
         )
 
         assert (
@@ -992,13 +954,7 @@ class TestSKABaseDevice(object):
         assert result_code == ResultCode.REJECTED
         assert message == "Device is already in STANDBY state."
 
-        change_event_callbacks["longRunningCommandStatus"].assert_not_called()
-        change_event_callbacks[
-            "longRunningCommandProgress"
-        ].assert_not_called()
-        change_event_callbacks["longRunningCommandResult"].assert_not_called()
-        change_event_callbacks["state"].assert_not_called()
-        change_event_callbacks["status"].assert_not_called()
+        change_event_callbacks.assert_not_called()
 
     def test_Off(self, device_under_test, change_event_callbacks):
         """
@@ -1010,44 +966,28 @@ class TestSKABaseDevice(object):
         """
         assert device_under_test.state() == DevState.OFF
 
-        device_under_test.subscribe_event(
+        for attribute in [
             "state",
-            tango.EventType.CHANGE_EVENT,
-            change_event_callbacks["state"],
-        )
-        change_event_callbacks["state"].assert_change_event(DevState.OFF)
-
-        device_under_test.subscribe_event(
             "status",
-            tango.EventType.CHANGE_EVENT,
-            change_event_callbacks["status"],
-        )
+            "longRunningCommandProgress",
+            "longRunningCommandStatus",
+            "longRunningCommandResult",
+        ]:
+            device_under_test.subscribe_event(
+                attribute,
+                tango.EventType.CHANGE_EVENT,
+                change_event_callbacks[attribute],
+            )
+
+        change_event_callbacks["state"].assert_change_event(DevState.OFF)
         change_event_callbacks["status"].assert_change_event(
             "The device is in OFF state."
-        )
-
-        device_under_test.subscribe_event(
-            "longRunningCommandProgress",
-            tango.EventType.CHANGE_EVENT,
-            change_event_callbacks["longRunningCommandProgress"],
         )
         change_event_callbacks[
             "longRunningCommandProgress"
         ].assert_change_event(None)
-
-        device_under_test.subscribe_event(
-            "longRunningCommandStatus",
-            tango.EventType.CHANGE_EVENT,
-            change_event_callbacks["longRunningCommandStatus"],
-        )
         change_event_callbacks["longRunningCommandStatus"].assert_change_event(
             None
-        )
-
-        device_under_test.subscribe_event(
-            "longRunningCommandResult",
-            tango.EventType.CHANGE_EVENT,
-            change_event_callbacks["longRunningCommandResult"],
         )
         change_event_callbacks["longRunningCommandResult"].assert_change_event(
             ("", "")
@@ -1058,13 +998,7 @@ class TestSKABaseDevice(object):
         assert result_code == ResultCode.REJECTED
         assert message == "Device is already in OFF state."
 
-        change_event_callbacks["longRunningCommandStatus"].assert_not_called()
-        change_event_callbacks[
-            "longRunningCommandProgress"
-        ].assert_not_called()
-        change_event_callbacks["longRunningCommandResult"].assert_not_called()
-        change_event_callbacks["state"].assert_not_called()
-        change_event_callbacks["status"].assert_not_called()
+        change_event_callbacks.assert_not_called()
 
     # PROTECTED REGION ID(SKABaseDevice.test_buildState_decorators) ENABLED START #
     # PROTECTED REGION END #    //  SKABaseDevice.test_buildState_decorators
@@ -1177,21 +1111,12 @@ class TestSKABaseDevice(object):
         # PROTECTED REGION ID(SKABaseDevice.test_adminMode) ENABLED START #
         assert device_under_test.state() == DevState.OFF
 
-        device_under_test.subscribe_event(
-            "state",
-            tango.EventType.CHANGE_EVENT,
-            change_event_callbacks["state"],
-        )
-        device_under_test.subscribe_event(
-            "status",
-            tango.EventType.CHANGE_EVENT,
-            change_event_callbacks["status"],
-        )
-        device_under_test.subscribe_event(
-            "adminMode",
-            tango.EventType.CHANGE_EVENT,
-            change_event_callbacks["adminMode"],
-        )
+        for attribute in ["state", "status", "adminMode"]:
+            device_under_test.subscribe_event(
+                attribute,
+                tango.EventType.CHANGE_EVENT,
+                change_event_callbacks[attribute],
+            )
 
         change_event_callbacks["state"].assert_change_event(DevState.OFF)
         change_event_callbacks["status"].assert_change_event(
@@ -1206,42 +1131,41 @@ class TestSKABaseDevice(object):
 
         device_under_test.adminMode = AdminMode.OFFLINE
 
-        change_event_callbacks["adminMode"].assert_change_event(
-            AdminMode.OFFLINE
+        change_event_callbacks.assert_change_event(
+            "adminMode", AdminMode.OFFLINE
         )
         assert device_under_test.adminMode == AdminMode.OFFLINE
 
-        change_event_callbacks["state"].assert_change_event(DevState.DISABLE)
-        change_event_callbacks["status"].assert_change_event(
-            "The device is in DISABLE state."
+        change_event_callbacks.assert_change_event("state", DevState.DISABLE)
+        change_event_callbacks.assert_change_event(
+            "status", "The device is in DISABLE state."
         )
         assert device_under_test.state() == DevState.DISABLE
 
         device_under_test.adminMode = AdminMode.MAINTENANCE
-        change_event_callbacks["adminMode"].assert_change_event(
-            AdminMode.MAINTENANCE
+        change_event_callbacks.assert_change_event(
+            "adminMode", AdminMode.MAINTENANCE
         )
         assert device_under_test.adminMode == AdminMode.MAINTENANCE
 
-        change_event_callbacks["state"].assert_change_event(DevState.UNKNOWN)
-        change_event_callbacks["status"].assert_change_event(
-            "The device is in UNKNOWN state."
+        change_event_callbacks.assert_change_event("state", DevState.UNKNOWN)
+        change_event_callbacks.assert_change_event(
+            "status", "The device is in UNKNOWN state."
         )
 
-        change_event_callbacks["state"].assert_change_event(DevState.OFF)
-        change_event_callbacks["status"].assert_change_event(
-            "The device is in OFF state."
+        change_event_callbacks.assert_change_event("state", DevState.OFF)
+        change_event_callbacks.assert_change_event(
+            "status", "The device is in OFF state."
         )
         assert device_under_test.state() == DevState.OFF
 
         device_under_test.adminMode = AdminMode.ONLINE
-        change_event_callbacks["adminMode"].assert_change_event(
-            AdminMode.ONLINE
+        change_event_callbacks.assert_change_event(
+            "adminMode", AdminMode.ONLINE
         )
         assert device_under_test.adminMode == AdminMode.ONLINE
 
-        change_event_callbacks["state"].assert_not_called()
-        change_event_callbacks["status"].assert_not_called()
+        change_event_callbacks.assert_not_called()
 
         assert device_under_test.state() == DevState.OFF
         # PROTECTED REGION END #    //  SKABaseDevice.test_adminMode
@@ -1336,11 +1260,11 @@ class TestSKABaseDevice(object):
             tango.EventType.CHANGE_EVENT,
             change_event_callbacks["state"],
         )
-        change_event_callbacks["state"].assert_change_event(DevState.OFF)
+        change_event_callbacks.assert_change_event("state", DevState.OFF)
 
         device_under_test.On()
 
-        change_event_callbacks["state"].assert_change_event(DevState.ON)
+        change_event_callbacks.assert_change_event("state", DevState.ON)
 
         assert device_under_test.state() == DevState.ON
 

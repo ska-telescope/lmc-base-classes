@@ -453,12 +453,12 @@ class TestCspSubElementController(object):
             tango.EventType.CHANGE_EVENT,
             change_event_callbacks["state"],
         )
-        change_event_callbacks["state"].assert_change_event(tango.DevState.OFF)
+        change_event_callbacks.assert_change_event("state", tango.DevState.OFF)
 
         [[result_code], [_]] = device_under_test.On()
         assert result_code == ResultCode.QUEUED
 
-        change_event_callbacks["state"].assert_change_event(tango.DevState.ON)
+        change_event_callbacks.assert_change_event("state", tango.DevState.ON)
         assert device_under_test.state() == tango.DevState.ON
 
         # Test power on devices
@@ -525,12 +525,12 @@ class TestCspSubElementController(object):
             tango.EventType.CHANGE_EVENT,
             change_event_callbacks["state"],
         )
-        change_event_callbacks["state"].assert_change_event(tango.DevState.OFF)
+        change_event_callbacks.assert_change_event("state", tango.DevState.OFF)
 
         [[result_code], [_]] = device_under_test.On()
         assert result_code == ResultCode.QUEUED
 
-        change_event_callbacks["state"].assert_change_event(tango.DevState.ON)
+        change_event_callbacks.assert_change_event("state", tango.DevState.ON)
         assert device_under_test.state() == tango.DevState.ON
 
         # Test power on devices

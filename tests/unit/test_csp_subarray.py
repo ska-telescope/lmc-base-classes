@@ -238,11 +238,11 @@ class TestCspSubElementSubarray(object):
             tango.EventType.CHANGE_EVENT,
             change_event_callbacks["state"],
         )
-        change_event_callbacks["state"].assert_change_event(tango.DevState.OFF)
+        change_event_callbacks.assert_change_event("state", tango.DevState.OFF)
 
         device_under_test.On()
 
-        change_event_callbacks["state"].assert_change_event(tango.DevState.ON)
+        change_event_callbacks.assert_change_event("state", tango.DevState.ON)
         assert device_under_test.state() == tango.DevState.ON
 
         assert device_under_test.scanID == 0
@@ -459,44 +459,28 @@ class TestCspSubElementSubarray(object):
         # PROTECTED REGION ID(CspSubelementSubarray.test_ConfigureScan) ENABLED START #
         assert device_under_test.state() == tango.DevState.OFF
 
-        device_under_test.subscribe_event(
+        for attribute in [
             "state",
-            tango.EventType.CHANGE_EVENT,
-            change_event_callbacks["state"],
-        )
-        change_event_callbacks["state"].assert_change_event(tango.DevState.OFF)
-
-        device_under_test.subscribe_event(
             "status",
-            tango.EventType.CHANGE_EVENT,
-            change_event_callbacks["status"],
-        )
+            "longRunningCommandProgress",
+            "longRunningCommandStatus",
+            "longRunningCommandResult",
+        ]:
+            device_under_test.subscribe_event(
+                attribute,
+                tango.EventType.CHANGE_EVENT,
+                change_event_callbacks[attribute],
+            )
+
+        change_event_callbacks["state"].assert_change_event(tango.DevState.OFF)
         change_event_callbacks["status"].assert_change_event(
             "The device is in OFF state."
-        )
-
-        device_under_test.subscribe_event(
-            "longRunningCommandProgress",
-            tango.EventType.CHANGE_EVENT,
-            change_event_callbacks["longRunningCommandProgress"],
         )
         change_event_callbacks[
             "longRunningCommandProgress"
         ].assert_change_event(None)
-
-        device_under_test.subscribe_event(
-            "longRunningCommandStatus",
-            tango.EventType.CHANGE_EVENT,
-            change_event_callbacks["longRunningCommandStatus"],
-        )
         change_event_callbacks["longRunningCommandStatus"].assert_change_event(
             None
-        )
-
-        device_under_test.subscribe_event(
-            "longRunningCommandResult",
-            tango.EventType.CHANGE_EVENT,
-            change_event_callbacks["longRunningCommandResult"],
         )
         change_event_callbacks["longRunningCommandResult"].assert_change_event(
             ("", "")
@@ -505,34 +489,36 @@ class TestCspSubElementSubarray(object):
         [[result_code], [on_command_id]] = device_under_test.On()
         assert result_code == ResultCode.QUEUED
 
-        change_event_callbacks["longRunningCommandStatus"].assert_change_event(
-            (on_command_id, "QUEUED")
+        change_event_callbacks.assert_change_event(
+            "longRunningCommandStatus", (on_command_id, "QUEUED")
         )
-        change_event_callbacks["longRunningCommandStatus"].assert_change_event(
-            (on_command_id, "IN_PROGRESS")
+        change_event_callbacks.assert_change_event(
+            "longRunningCommandStatus", (on_command_id, "IN_PROGRESS")
         )
-        change_event_callbacks[
-            "longRunningCommandProgress"
-        ].assert_change_event((on_command_id, "33"))
-        change_event_callbacks[
-            "longRunningCommandProgress"
-        ].assert_change_event((on_command_id, "66"))
-        change_event_callbacks["longRunningCommandStatus"].assert_change_event(
-            (on_command_id, "COMPLETED")
+        change_event_callbacks.assert_change_event(
+            "longRunningCommandProgress", (on_command_id, "33")
+        )
+        change_event_callbacks.assert_change_event(
+            "longRunningCommandProgress", (on_command_id, "66")
         )
 
-        change_event_callbacks["state"].assert_change_event(tango.DevState.ON)
-        change_event_callbacks["status"].assert_change_event(
-            "The device is in ON state."
+        change_event_callbacks.assert_change_event("state", tango.DevState.ON)
+        change_event_callbacks.assert_change_event(
+            "status", "The device is in ON state."
         )
 
         assert device_under_test.state() == tango.DevState.ON
 
-        change_event_callbacks["longRunningCommandResult"].assert_change_event(
+        change_event_callbacks.assert_change_event(
+            "longRunningCommandResult",
             (
                 on_command_id,
                 json.dumps([int(ResultCode.OK), "On command completed OK"]),
             ),
+        )
+
+        change_event_callbacks.assert_change_event(
+            "longRunningCommandStatus", (on_command_id, "COMPLETED")
         )
 
         device_under_test.subscribe_event(
@@ -540,7 +526,7 @@ class TestCspSubElementSubarray(object):
             tango.EventType.CHANGE_EVENT,
             change_event_callbacks["obsState"],
         )
-        change_event_callbacks["obsState"].assert_change_event(ObsState.EMPTY)
+        change_event_callbacks.assert_change_event("obsState", ObsState.EMPTY)
 
         [
             [result_code],
@@ -549,31 +535,25 @@ class TestCspSubElementSubarray(object):
 
         assert result_code == ResultCode.QUEUED
 
-        change_event_callbacks["longRunningCommandStatus"].assert_change_event(
+        change_event_callbacks.assert_change_event(
+            "obsState", ObsState.RESOURCING
+        )
+        change_event_callbacks.assert_change_event(
+            "longRunningCommandStatus",
             (on_command_id, "COMPLETED", assign_command_id, "QUEUED"),
         )
-        change_event_callbacks["longRunningCommandStatus"].assert_change_event(
+        change_event_callbacks.assert_change_event(
+            "longRunningCommandStatus",
             (on_command_id, "COMPLETED", assign_command_id, "IN_PROGRESS"),
         )
-
-        change_event_callbacks["obsState"].assert_change_event(
-            ObsState.RESOURCING
+        change_event_callbacks.assert_change_event(
+            "longRunningCommandProgress", (assign_command_id, "33")
         )
-
-        change_event_callbacks[
-            "longRunningCommandProgress"
-        ].assert_change_event((assign_command_id, "33"))
-        change_event_callbacks[
-            "longRunningCommandProgress"
-        ].assert_change_event((assign_command_id, "66"))
-
-        change_event_callbacks["obsState"].assert_change_event(ObsState.IDLE)
-
-        change_event_callbacks["longRunningCommandStatus"].assert_change_event(
-            (on_command_id, "COMPLETED", assign_command_id, "COMPLETED"),
+        change_event_callbacks.assert_change_event(
+            "longRunningCommandProgress", (assign_command_id, "66")
         )
-
-        change_event_callbacks["longRunningCommandResult"].assert_change_event(
+        change_event_callbacks.assert_change_event(
+            "longRunningCommandResult",
             (
                 assign_command_id,
                 json.dumps(
@@ -581,6 +561,11 @@ class TestCspSubElementSubarray(object):
                 ),
             ),
         )
+        change_event_callbacks.assert_change_event(
+            "longRunningCommandStatus",
+            (on_command_id, "COMPLETED", assign_command_id, "COMPLETED"),
+        )
+        change_event_callbacks.assert_change_event("obsState", ObsState.IDLE)
 
         # TODO: Everything above here is just to turn on the device, assign it some
         # resources, and clear the queue attributes. We need a better way to handle
@@ -593,7 +578,11 @@ class TestCspSubElementSubarray(object):
         )
         assert result_code == ResultCode.QUEUED
 
-        change_event_callbacks["longRunningCommandStatus"].assert_change_event(
+        change_event_callbacks.assert_change_event(
+            "obsState", ObsState.CONFIGURING
+        )
+        change_event_callbacks.assert_change_event(
+            "longRunningCommandStatus",
             (
                 on_command_id,
                 "COMPLETED",
@@ -603,7 +592,8 @@ class TestCspSubElementSubarray(object):
                 "QUEUED",
             ),
         )
-        change_event_callbacks["longRunningCommandStatus"].assert_change_event(
+        change_event_callbacks.assert_change_event(
+            "longRunningCommandStatus",
             (
                 on_command_id,
                 "COMPLETED",
@@ -613,21 +603,21 @@ class TestCspSubElementSubarray(object):
                 "IN_PROGRESS",
             ),
         )
-
-        change_event_callbacks["obsState"].assert_change_event(
-            ObsState.CONFIGURING
+        change_event_callbacks.assert_change_event(
+            "longRunningCommandProgress", (config_command_id, "33")
         )
-
-        change_event_callbacks[
-            "longRunningCommandProgress"
-        ].assert_change_event((config_command_id, "33"))
-        change_event_callbacks[
-            "longRunningCommandProgress"
-        ].assert_change_event((config_command_id, "66"))
-
-        change_event_callbacks["obsState"].assert_change_event(ObsState.READY)
-
-        change_event_callbacks["longRunningCommandStatus"].assert_change_event(
+        change_event_callbacks.assert_change_event(
+            "longRunningCommandProgress", (config_command_id, "66")
+        )
+        change_event_callbacks.assert_change_event(
+            "longRunningCommandResult",
+            (
+                config_command_id,
+                json.dumps([int(ResultCode.OK), "Configure completed OK"]),
+            ),
+        )
+        change_event_callbacks.assert_change_event(
+            "longRunningCommandStatus",
             (
                 on_command_id,
                 "COMPLETED",
@@ -637,13 +627,7 @@ class TestCspSubElementSubarray(object):
                 "COMPLETED",
             ),
         )
-
-        change_event_callbacks["longRunningCommandResult"].assert_change_event(
-            (
-                config_command_id,
-                json.dumps([int(ResultCode.OK), "Configure completed OK"]),
-            ),
-        )
+        change_event_callbacks.assert_change_event("obsState", ObsState.READY)
 
         assert device_under_test.configurationId == configuration_id
         assert device_under_test.lastScanConfiguration == json.dumps(
@@ -654,7 +638,8 @@ class TestCspSubElementSubarray(object):
         [[result_code], [gotoidle_command_id]] = device_under_test.GoToIdle()
         assert result_code == ResultCode.QUEUED
 
-        change_event_callbacks["longRunningCommandStatus"].assert_change_event(
+        change_event_callbacks.assert_change_event(
+            "longRunningCommandStatus",
             (
                 on_command_id,
                 "COMPLETED",
@@ -666,7 +651,8 @@ class TestCspSubElementSubarray(object):
                 "QUEUED",
             ),
         )
-        change_event_callbacks["longRunningCommandStatus"].assert_change_event(
+        change_event_callbacks.assert_change_event(
+            "longRunningCommandStatus",
             (
                 on_command_id,
                 "COMPLETED",
@@ -678,17 +664,22 @@ class TestCspSubElementSubarray(object):
                 "IN_PROGRESS",
             ),
         )
-
-        change_event_callbacks[
-            "longRunningCommandProgress"
-        ].assert_change_event((gotoidle_command_id, "33"))
-        change_event_callbacks[
-            "longRunningCommandProgress"
-        ].assert_change_event((gotoidle_command_id, "66"))
-
-        change_event_callbacks["obsState"].assert_change_event(ObsState.IDLE)
-
-        change_event_callbacks["longRunningCommandStatus"].assert_change_event(
+        change_event_callbacks.assert_change_event(
+            "longRunningCommandProgress", (gotoidle_command_id, "33")
+        )
+        change_event_callbacks.assert_change_event(
+            "longRunningCommandProgress", (gotoidle_command_id, "66")
+        )
+        change_event_callbacks.assert_change_event("obsState", ObsState.IDLE)
+        change_event_callbacks.assert_change_event(
+            "longRunningCommandResult",
+            (
+                gotoidle_command_id,
+                json.dumps([int(ResultCode.OK), "Deconfigure completed OK"]),
+            ),
+        )
+        change_event_callbacks.assert_change_event(
+            "longRunningCommandStatus",
             (
                 on_command_id,
                 "COMPLETED",
@@ -698,13 +689,6 @@ class TestCspSubElementSubarray(object):
                 "COMPLETED",
                 gotoidle_command_id,
                 "COMPLETED",
-            ),
-        )
-
-        change_event_callbacks["longRunningCommandResult"].assert_change_event(
-            (
-                gotoidle_command_id,
-                json.dumps([int(ResultCode.OK), "Deconfigure completed OK"]),
             ),
         )
 
@@ -747,44 +731,28 @@ class TestCspSubElementSubarray(object):
 
         assert device_under_test.state() == tango.DevState.OFF
 
-        device_under_test.subscribe_event(
+        for attribute in [
             "state",
-            tango.EventType.CHANGE_EVENT,
-            change_event_callbacks["state"],
-        )
-        change_event_callbacks["state"].assert_change_event(tango.DevState.OFF)
-
-        device_under_test.subscribe_event(
             "status",
-            tango.EventType.CHANGE_EVENT,
-            change_event_callbacks["status"],
-        )
+            "longRunningCommandProgress",
+            "longRunningCommandStatus",
+            "longRunningCommandResult",
+        ]:
+            device_under_test.subscribe_event(
+                attribute,
+                tango.EventType.CHANGE_EVENT,
+                change_event_callbacks[attribute],
+            )
+
+        change_event_callbacks["state"].assert_change_event(tango.DevState.OFF)
         change_event_callbacks["status"].assert_change_event(
             "The device is in OFF state."
-        )
-
-        device_under_test.subscribe_event(
-            "longRunningCommandProgress",
-            tango.EventType.CHANGE_EVENT,
-            change_event_callbacks["longRunningCommandProgress"],
         )
         change_event_callbacks[
             "longRunningCommandProgress"
         ].assert_change_event(None)
-
-        device_under_test.subscribe_event(
-            "longRunningCommandStatus",
-            tango.EventType.CHANGE_EVENT,
-            change_event_callbacks["longRunningCommandStatus"],
-        )
         change_event_callbacks["longRunningCommandStatus"].assert_change_event(
             None
-        )
-
-        device_under_test.subscribe_event(
-            "longRunningCommandResult",
-            tango.EventType.CHANGE_EVENT,
-            change_event_callbacks["longRunningCommandResult"],
         )
         change_event_callbacks["longRunningCommandResult"].assert_change_event(
             ("", "")
@@ -793,44 +761,44 @@ class TestCspSubElementSubarray(object):
         [[result_code], [on_command_id]] = device_under_test.On()
         assert result_code == ResultCode.QUEUED
 
-        change_event_callbacks["longRunningCommandStatus"].assert_change_event(
-            (on_command_id, "QUEUED")
+        change_event_callbacks.assert_change_event(
+            "longRunningCommandStatus", (on_command_id, "QUEUED")
         )
-        change_event_callbacks["longRunningCommandStatus"].assert_change_event(
-            (on_command_id, "IN_PROGRESS")
+        change_event_callbacks.assert_change_event(
+            "longRunningCommandStatus", (on_command_id, "IN_PROGRESS")
         )
-
-        change_event_callbacks[
-            "longRunningCommandProgress"
-        ].assert_change_event((on_command_id, "33"))
-        change_event_callbacks[
-            "longRunningCommandProgress"
-        ].assert_change_event((on_command_id, "66"))
-
-        change_event_callbacks["longRunningCommandStatus"].assert_change_event(
-            (on_command_id, "COMPLETED")
+        change_event_callbacks.assert_change_event(
+            "longRunningCommandProgress", (on_command_id, "33")
+        )
+        change_event_callbacks.assert_change_event(
+            "longRunningCommandProgress", (on_command_id, "66")
         )
 
-        change_event_callbacks["state"].assert_change_event(tango.DevState.ON)
-        change_event_callbacks["status"].assert_change_event(
-            "The device is in ON state."
+        change_event_callbacks.assert_change_event("state", tango.DevState.ON)
+        change_event_callbacks.assert_change_event(
+            "status", "The device is in ON state."
         )
+
         assert device_under_test.state() == tango.DevState.ON
 
-        change_event_callbacks["longRunningCommandResult"].assert_change_event(
+        change_event_callbacks.assert_change_event(
+            "longRunningCommandResult",
             (
                 on_command_id,
                 json.dumps([int(ResultCode.OK), "On command completed OK"]),
             ),
         )
 
-        # assignment of resources
+        change_event_callbacks.assert_change_event(
+            "longRunningCommandStatus", (on_command_id, "COMPLETED")
+        )
+
         device_under_test.subscribe_event(
             "obsState",
             tango.EventType.CHANGE_EVENT,
             change_event_callbacks["obsState"],
         )
-        change_event_callbacks["obsState"].assert_change_event(ObsState.EMPTY)
+        change_event_callbacks.assert_change_event("obsState", ObsState.EMPTY)
 
         [
             [result_code],
@@ -839,31 +807,25 @@ class TestCspSubElementSubarray(object):
 
         assert result_code == ResultCode.QUEUED
 
-        change_event_callbacks["longRunningCommandStatus"].assert_change_event(
+        change_event_callbacks.assert_change_event(
+            "obsState", ObsState.RESOURCING
+        )
+        change_event_callbacks.assert_change_event(
+            "longRunningCommandStatus",
             (on_command_id, "COMPLETED", assign_command_id, "QUEUED"),
         )
-        change_event_callbacks["longRunningCommandStatus"].assert_change_event(
+        change_event_callbacks.assert_change_event(
+            "longRunningCommandStatus",
             (on_command_id, "COMPLETED", assign_command_id, "IN_PROGRESS"),
         )
-
-        change_event_callbacks["obsState"].assert_change_event(
-            ObsState.RESOURCING
+        change_event_callbacks.assert_change_event(
+            "longRunningCommandProgress", (assign_command_id, "33")
         )
-
-        change_event_callbacks[
-            "longRunningCommandProgress"
-        ].assert_change_event((assign_command_id, "33"))
-        change_event_callbacks[
-            "longRunningCommandProgress"
-        ].assert_change_event((assign_command_id, "66"))
-
-        change_event_callbacks["obsState"].assert_change_event(ObsState.IDLE)
-
-        change_event_callbacks["longRunningCommandStatus"].assert_change_event(
-            (on_command_id, "COMPLETED", assign_command_id, "COMPLETED"),
+        change_event_callbacks.assert_change_event(
+            "longRunningCommandProgress", (assign_command_id, "66")
         )
-
-        change_event_callbacks["longRunningCommandResult"].assert_change_event(
+        change_event_callbacks.assert_change_event(
+            "longRunningCommandResult",
             (
                 assign_command_id,
                 json.dumps(
@@ -871,6 +833,11 @@ class TestCspSubElementSubarray(object):
                 ),
             ),
         )
+        change_event_callbacks.assert_change_event(
+            "longRunningCommandStatus",
+            (on_command_id, "COMPLETED", assign_command_id, "COMPLETED"),
+        )
+        change_event_callbacks.assert_change_event("obsState", ObsState.IDLE)
 
         wrong_configuration = '{"subid":"sbi-mvp01-20200325-00002"}'
         result_code, _ = device_under_test.ConfigureScan(wrong_configuration)
@@ -893,44 +860,28 @@ class TestCspSubElementSubarray(object):
         # PROTECTED REGION ID(CspSubelementSubarray.test_ConfigureScan_with_json_syntax_error) ENABLED START #
         assert device_under_test.state() == tango.DevState.OFF
 
-        device_under_test.subscribe_event(
+        for attribute in [
             "state",
-            tango.EventType.CHANGE_EVENT,
-            change_event_callbacks["state"],
-        )
-        change_event_callbacks["state"].assert_change_event(tango.DevState.OFF)
-
-        device_under_test.subscribe_event(
             "status",
-            tango.EventType.CHANGE_EVENT,
-            change_event_callbacks["status"],
-        )
+            "longRunningCommandProgress",
+            "longRunningCommandStatus",
+            "longRunningCommandResult",
+        ]:
+            device_under_test.subscribe_event(
+                attribute,
+                tango.EventType.CHANGE_EVENT,
+                change_event_callbacks[attribute],
+            )
+
+        change_event_callbacks["state"].assert_change_event(tango.DevState.OFF)
         change_event_callbacks["status"].assert_change_event(
             "The device is in OFF state."
-        )
-
-        device_under_test.subscribe_event(
-            "longRunningCommandProgress",
-            tango.EventType.CHANGE_EVENT,
-            change_event_callbacks["longRunningCommandProgress"],
         )
         change_event_callbacks[
             "longRunningCommandProgress"
         ].assert_change_event(None)
-
-        device_under_test.subscribe_event(
-            "longRunningCommandStatus",
-            tango.EventType.CHANGE_EVENT,
-            change_event_callbacks["longRunningCommandStatus"],
-        )
         change_event_callbacks["longRunningCommandStatus"].assert_change_event(
             None
-        )
-
-        device_under_test.subscribe_event(
-            "longRunningCommandResult",
-            tango.EventType.CHANGE_EVENT,
-            change_event_callbacks["longRunningCommandResult"],
         )
         change_event_callbacks["longRunningCommandResult"].assert_change_event(
             ("", "")
@@ -939,44 +890,44 @@ class TestCspSubElementSubarray(object):
         [[result_code], [on_command_id]] = device_under_test.On()
         assert result_code == ResultCode.QUEUED
 
-        change_event_callbacks["longRunningCommandStatus"].assert_change_event(
-            (on_command_id, "QUEUED")
+        change_event_callbacks.assert_change_event(
+            "longRunningCommandStatus", (on_command_id, "QUEUED")
         )
-        change_event_callbacks["longRunningCommandStatus"].assert_change_event(
-            (on_command_id, "IN_PROGRESS")
+        change_event_callbacks.assert_change_event(
+            "longRunningCommandStatus", (on_command_id, "IN_PROGRESS")
         )
-
-        change_event_callbacks[
-            "longRunningCommandProgress"
-        ].assert_change_event((on_command_id, "33"))
-        change_event_callbacks[
-            "longRunningCommandProgress"
-        ].assert_change_event((on_command_id, "66"))
-
-        change_event_callbacks["longRunningCommandStatus"].assert_change_event(
-            (on_command_id, "COMPLETED")
+        change_event_callbacks.assert_change_event(
+            "longRunningCommandProgress", (on_command_id, "33")
+        )
+        change_event_callbacks.assert_change_event(
+            "longRunningCommandProgress", (on_command_id, "66")
         )
 
-        change_event_callbacks["state"].assert_change_event(tango.DevState.ON)
-        change_event_callbacks["status"].assert_change_event(
-            "The device is in ON state."
+        change_event_callbacks.assert_change_event("state", tango.DevState.ON)
+        change_event_callbacks.assert_change_event(
+            "status", "The device is in ON state."
         )
+
         assert device_under_test.state() == tango.DevState.ON
 
-        change_event_callbacks["longRunningCommandResult"].assert_change_event(
+        change_event_callbacks.assert_change_event(
+            "longRunningCommandResult",
             (
                 on_command_id,
                 json.dumps([int(ResultCode.OK), "On command completed OK"]),
             ),
         )
 
-        # assignment of resources
+        change_event_callbacks.assert_change_event(
+            "longRunningCommandStatus", (on_command_id, "COMPLETED")
+        )
+
         device_under_test.subscribe_event(
             "obsState",
             tango.EventType.CHANGE_EVENT,
             change_event_callbacks["obsState"],
         )
-        change_event_callbacks["obsState"].assert_change_event(ObsState.EMPTY)
+        change_event_callbacks.assert_change_event("obsState", ObsState.EMPTY)
 
         [
             [result_code],
@@ -985,31 +936,25 @@ class TestCspSubElementSubarray(object):
 
         assert result_code == ResultCode.QUEUED
 
-        change_event_callbacks["longRunningCommandStatus"].assert_change_event(
+        change_event_callbacks.assert_change_event(
+            "obsState", ObsState.RESOURCING
+        )
+        change_event_callbacks.assert_change_event(
+            "longRunningCommandStatus",
             (on_command_id, "COMPLETED", assign_command_id, "QUEUED"),
         )
-        change_event_callbacks["longRunningCommandStatus"].assert_change_event(
+        change_event_callbacks.assert_change_event(
+            "longRunningCommandStatus",
             (on_command_id, "COMPLETED", assign_command_id, "IN_PROGRESS"),
         )
-
-        change_event_callbacks["obsState"].assert_change_event(
-            ObsState.RESOURCING
+        change_event_callbacks.assert_change_event(
+            "longRunningCommandProgress", (assign_command_id, "33")
         )
-
-        change_event_callbacks[
-            "longRunningCommandProgress"
-        ].assert_change_event((assign_command_id, "33"))
-        change_event_callbacks[
-            "longRunningCommandProgress"
-        ].assert_change_event((assign_command_id, "66"))
-
-        change_event_callbacks["obsState"].assert_change_event(ObsState.IDLE)
-
-        change_event_callbacks["longRunningCommandStatus"].assert_change_event(
-            (on_command_id, "COMPLETED", assign_command_id, "COMPLETED"),
+        change_event_callbacks.assert_change_event(
+            "longRunningCommandProgress", (assign_command_id, "66")
         )
-
-        change_event_callbacks["longRunningCommandResult"].assert_change_event(
+        change_event_callbacks.assert_change_event(
+            "longRunningCommandResult",
             (
                 assign_command_id,
                 json.dumps(
@@ -1017,6 +962,11 @@ class TestCspSubElementSubarray(object):
                 ),
             ),
         )
+        change_event_callbacks.assert_change_event(
+            "longRunningCommandStatus",
+            (on_command_id, "COMPLETED", assign_command_id, "COMPLETED"),
+        )
+        change_event_callbacks.assert_change_event("obsState", ObsState.IDLE)
 
         result_code, _ = device_under_test.ConfigureScan('{"foo": 1,}')
         assert result_code == ResultCode.FAILED

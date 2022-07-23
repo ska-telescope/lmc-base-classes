@@ -136,7 +136,7 @@ class TestSKAObsDevice(object):
             tango.EventType.CHANGE_EVENT,
             change_event_callbacks["obsState"],
         )
-        change_event_callbacks["obsState"].assert_change_event(ObsState.EMPTY)
+        change_event_callbacks.assert_change_event("obsState", ObsState.EMPTY)
         # PROTECTED REGION END #    //  SKAObsDevice.test_obsState
 
     # PROTECTED REGION ID(SKAObsDevice.test_obsMode_decorators) ENABLED START #

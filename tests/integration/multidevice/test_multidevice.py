@@ -60,8 +60,8 @@ def test_device(device_under_test, change_event_callbacks):
         tango.EventType.CHANGE_EVENT,
         change_event_callbacks["longRunningCommandResult"],
     )
-    change_event_callbacks["longRunningCommandResult"].assert_change_event(
-        ("", "")
+    change_event_callbacks.assert_change_event(
+        "longRunningCommandResult", ("", "")
     )
 
     # Short
@@ -87,9 +87,9 @@ def test_non_abort(device_under_test, change_event_callbacks):
     assert ResultCode(int(result_code)) == ResultCode.QUEUED
     assert command_id.endswith("NonAbortingLongRunning")
 
-    next_result = change_event_callbacks[
+    next_result = change_event_callbacks.assert_against_call(
         "longRunningCommandResult"
-    ].assert_against_call()
+    )
     command_id, message = next_result["attribute_value"]
     assert command_id.endswith("NonAbortingLongRunning")
     assert message == '"non_aborting_lrc OK"'
@@ -114,9 +114,9 @@ def test_abort(device_under_test, change_event_callbacks):
 
     device_under_test.AbortCommands()
 
-    next_result = change_event_callbacks[
+    next_result = change_event_callbacks.assert_against_call(
         "longRunningCommandResult"
-    ].assert_against_call()
+    )
     command_id, message = next_result["attribute_value"]
     assert command_id.endswith("AbortingLongRunning")
     assert message == '"AbortingTask Aborted 0.1"'
@@ -139,9 +139,9 @@ def test_exception(device_under_test, change_event_callbacks):
     assert ResultCode(int(result_code)) == ResultCode.QUEUED
     assert command_id.endswith("LongRunningException")
 
-    next_result = change_event_callbacks[
+    next_result = change_event_callbacks.assert_against_call(
         "longRunningCommandResult"
-    ].assert_against_call()
+    )
     command_id, message = next_result["attribute_value"]
     assert command_id.endswith("LongRunningException")
     assert message == "Something went wrong"
@@ -165,9 +165,9 @@ def test_progress(device_under_test, change_event_callbacks):
     assert command_id.endswith("TestProgress")
 
     for i in [1, 25, 50, 74, 100]:
-        next_event = change_event_callbacks[
+        next_event = change_event_callbacks.assert_against_call(
             "longRunningCommandProgress"
-        ].assert_against_call()
+        )
         progresses = list(next_event["attribute_value"])
         assert command_id in progresses
         assert progresses[progresses.index(command_id) + 1] == f"{i}"

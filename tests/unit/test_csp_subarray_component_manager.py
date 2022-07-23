@@ -76,26 +76,26 @@ class TestCspSubelementSubarrayComponentManager:
             component_manager.communication_state
             == CommunicationStatus.DISABLED
         )
-        callbacks["communication_state"].assert_not_called()
-        callbacks["component_state"].assert_not_called()
+        callbacks.assert_not_called()
 
         component_manager.start_communicating()
-        callbacks["communication_state"].assert_call(
-            CommunicationStatus.NOT_ESTABLISHED
+        callbacks.assert_call(
+            "communication_state", CommunicationStatus.NOT_ESTABLISHED
         )
-        callbacks["communication_state"].assert_call(
-            CommunicationStatus.ESTABLISHED
+        callbacks.assert_call(
+            "communication_state", CommunicationStatus.ESTABLISHED
         )
         assert (
             component_manager.communication_state
             == CommunicationStatus.ESTABLISHED
         )
 
-        callbacks["component_state"].assert_call(power=PowerState.OFF)
+        callbacks.assert_call("component_state", power=PowerState.OFF)
 
         component_manager.stop_communicating()
-        callbacks["communication_state"].assert_call(
-            CommunicationStatus.DISABLED
+        callbacks.assert_call("component_state", power=PowerState.UNKNOWN)
+        callbacks.assert_call(
+            "communication_state", CommunicationStatus.DISABLED
         )
         assert (
             component_manager.communication_state
@@ -114,47 +114,45 @@ class TestCspSubelementSubarrayComponentManager:
             component_manager.communication_state
             == CommunicationStatus.DISABLED
         )
-        callbacks["communication_state"].assert_not_called()
-        callbacks["component_state"].assert_not_called()
+        callbacks.assert_not_called()
 
         component_manager.simulate_communication_failure(True)
 
         component_manager.start_communicating()
-        callbacks["communication_state"].assert_call(
-            CommunicationStatus.NOT_ESTABLISHED
+        callbacks.assert_call(
+            "communication_state", CommunicationStatus.NOT_ESTABLISHED
         )
         assert (
             component_manager.communication_state
             == CommunicationStatus.NOT_ESTABLISHED
         )
-        callbacks["communication_state"].assert_not_called()
-
-        callbacks["component_state"].assert_not_called()
+        callbacks.assert_not_called()
 
         component_manager.simulate_communication_failure(False)
-        callbacks["communication_state"].assert_call(
-            CommunicationStatus.ESTABLISHED
+        callbacks.assert_call(
+            "communication_state", CommunicationStatus.ESTABLISHED
         )
         assert (
             component_manager.communication_state
             == CommunicationStatus.ESTABLISHED
         )
 
-        callbacks["component_state"].assert_call(power=PowerState.OFF)
+        callbacks.assert_call("component_state", power=PowerState.OFF)
 
         component_manager.simulate_communication_failure(True)
-        callbacks["communication_state"].assert_call(
-            CommunicationStatus.NOT_ESTABLISHED
+        callbacks.assert_call(
+            "communication_state", CommunicationStatus.NOT_ESTABLISHED
         )
         assert (
             component_manager.communication_state
             == CommunicationStatus.NOT_ESTABLISHED
         )
-        callbacks["component_state"].assert_not_called()
+        callbacks.assert_not_called()
 
         component_manager.stop_communicating()
-        callbacks["communication_state"].assert_call(
-            CommunicationStatus.DISABLED
+        callbacks.assert_call("component_state", power=PowerState.UNKNOWN)
+        callbacks.assert_call(
+            "communication_state", CommunicationStatus.DISABLED
         )
         assert (
             component_manager.communication_state
@@ -175,8 +173,7 @@ class TestCspSubelementSubarrayComponentManager:
             component_manager.communication_state
             == CommunicationStatus.DISABLED
         )
-        callbacks["communication_state"].assert_not_called()
-        callbacks["component_state"].assert_not_called()
+        callbacks.assert_not_called()
 
         with pytest.raises(
             ConnectionError,
@@ -186,15 +183,14 @@ class TestCspSubelementSubarrayComponentManager:
 
         component_manager.simulate_communication_failure(True)
         component_manager.start_communicating()
-        callbacks["communication_state"].assert_call(
-            CommunicationStatus.NOT_ESTABLISHED
+        callbacks.assert_call(
+            "communication_state", CommunicationStatus.NOT_ESTABLISHED
         )
         assert (
             component_manager.communication_state
             == CommunicationStatus.NOT_ESTABLISHED
         )
-        callbacks["communication_state"].assert_not_called()
-        callbacks["component_state"].assert_not_called()
+        callbacks.assert_not_called()
 
         with pytest.raises(
             ConnectionError,
@@ -203,24 +199,24 @@ class TestCspSubelementSubarrayComponentManager:
             getattr(component_manager, command)()
 
         component_manager.simulate_communication_failure(False)
-        callbacks["communication_state"].assert_call(
-            CommunicationStatus.ESTABLISHED
+        callbacks.assert_call(
+            "communication_state", CommunicationStatus.ESTABLISHED
         )
         assert (
             component_manager.communication_state
             == CommunicationStatus.ESTABLISHED
         )
-        callbacks["component_state"].assert_call(power=PowerState.OFF)
+        callbacks.assert_call("component_state", power=PowerState.OFF)
 
         component_manager.simulate_communication_failure(True)
-        callbacks["communication_state"].assert_call(
-            CommunicationStatus.NOT_ESTABLISHED
+        callbacks.assert_call(
+            "communication_state", CommunicationStatus.NOT_ESTABLISHED
         )
         assert (
             component_manager.communication_state
             == CommunicationStatus.NOT_ESTABLISHED
         )
-        callbacks["component_state"].assert_not_called()
+        callbacks.assert_not_called()
 
         with pytest.raises(
             ConnectionError,
@@ -229,8 +225,9 @@ class TestCspSubelementSubarrayComponentManager:
             getattr(component_manager, command)()
 
         component_manager.stop_communicating()
-        callbacks["communication_state"].assert_call(
-            CommunicationStatus.DISABLED
+        callbacks.assert_call("component_state", power=PowerState.UNKNOWN)
+        callbacks.assert_call(
+            "communication_state", CommunicationStatus.DISABLED
         )
         assert (
             component_manager.communication_state
@@ -259,50 +256,50 @@ class TestCspSubelementSubarrayComponentManager:
             component_manager.communication_state
             == CommunicationStatus.DISABLED
         )
-        callbacks["communication_state"].assert_not_called()
-        callbacks["component_state"].assert_not_called()
+        callbacks.assert_not_called()
 
         component_manager.start_communicating()
-        callbacks["communication_state"].assert_call(
-            CommunicationStatus.NOT_ESTABLISHED
+        callbacks.assert_call(
+            "communication_state", CommunicationStatus.NOT_ESTABLISHED
         )
-        callbacks["communication_state"].assert_call(
-            CommunicationStatus.ESTABLISHED
+        callbacks.assert_call(
+            "communication_state", CommunicationStatus.ESTABLISHED
         )
         assert (
             component_manager.communication_state
             == CommunicationStatus.ESTABLISHED
         )
-        callbacks["component_state"].assert_call(power=PowerState.OFF)
+        callbacks.assert_call("component_state", power=PowerState.OFF)
 
         component_manager.standby(callbacks["standby_task"])
-        callbacks["standby_task"].assert_call(status=TaskStatus.QUEUED)
-        callbacks["standby_task"].assert_call(status=TaskStatus.IN_PROGRESS)
-        callbacks["standby_task"].assert_call(progress=33)
-        callbacks["standby_task"].assert_call(progress=66)
-        callbacks["standby_task"].assert_call(
+        callbacks.assert_call("standby_task", status=TaskStatus.QUEUED)
+        callbacks.assert_call("standby_task", status=TaskStatus.IN_PROGRESS)
+        callbacks.assert_call("standby_task", progress=33)
+        callbacks.assert_call("standby_task", progress=66)
+        callbacks.assert_call("component_state", power=PowerState.STANDBY)
+        callbacks.assert_call(
+            "standby_task",
             status=TaskStatus.COMPLETED,
             result=(ResultCode.OK, "Standby command completed OK"),
         )
-        callbacks["component_state"].assert_call(power=PowerState.STANDBY)
 
-        callbacks["standby_task"].assert_not_called()
-        callbacks["component_state"].assert_not_called()
+        callbacks.assert_not_called()
 
         # Let's use our test of on() to test the case of not providing a task callback.
         component_manager.on()
-        callbacks["component_state"].assert_call(power=PowerState.ON)
+        callbacks.assert_call("component_state", power=PowerState.ON)
 
         component_manager.off(callbacks["off_task"])
-        callbacks["off_task"].assert_call(status=TaskStatus.QUEUED)
-        callbacks["off_task"].assert_call(status=TaskStatus.IN_PROGRESS)
-        callbacks["off_task"].assert_call(progress=33)
-        callbacks["off_task"].assert_call(progress=66)
-        callbacks["off_task"].assert_call(
+        callbacks.assert_call("off_task", status=TaskStatus.QUEUED)
+        callbacks.assert_call("off_task", status=TaskStatus.IN_PROGRESS)
+        callbacks.assert_call("off_task", progress=33)
+        callbacks.assert_call("off_task", progress=66)
+        callbacks.assert_call("component_state", power=PowerState.OFF)
+        callbacks.assert_call(
+            "off_task",
             status=TaskStatus.COMPLETED,
             result=(ResultCode.OK, "Off command completed OK"),
         )
-        callbacks["component_state"].assert_call(power=PowerState.OFF)
 
     @pytest.mark.parametrize(
         "power_state", [PowerState.OFF, PowerState.STANDBY, PowerState.ON]
@@ -324,19 +321,19 @@ class TestCspSubelementSubarrayComponentManager:
         :param component_manager: the component manager under test
         """
         component_manager.start_communicating()
-        callbacks["communication_state"].assert_call(
-            CommunicationStatus.NOT_ESTABLISHED
+        callbacks.assert_call(
+            "communication_state", CommunicationStatus.NOT_ESTABLISHED
         )
-        callbacks["communication_state"].assert_call(
-            CommunicationStatus.ESTABLISHED
+        callbacks.assert_call(
+            "communication_state", CommunicationStatus.ESTABLISHED
         )
-        callbacks["component_state"].assert_call(power=PowerState.OFF)
+        callbacks.assert_call("component_state", power=PowerState.OFF)
 
         component.simulate_power_state(power_state)
         if power_state == PowerState.OFF:
-            callbacks["component_state"].assert_not_called()
+            callbacks.assert_not_called()
         else:
-            callbacks["component_state"].assert_call(power=power_state)
+            callbacks.assert_call("component_state", power=power_state)
 
     def test_simulate_fault(
         self,
@@ -354,19 +351,19 @@ class TestCspSubelementSubarrayComponentManager:
         :param component_manager: the component manager under test
         """
         component_manager.start_communicating()
-        callbacks["communication_state"].assert_call(
-            CommunicationStatus.NOT_ESTABLISHED
+        callbacks.assert_call(
+            "communication_state", CommunicationStatus.NOT_ESTABLISHED
         )
-        callbacks["communication_state"].assert_call(
-            CommunicationStatus.ESTABLISHED
+        callbacks.assert_call(
+            "communication_state", CommunicationStatus.ESTABLISHED
         )
-        callbacks["component_state"].assert_call(power=PowerState.OFF)
+        callbacks.assert_call("component_state", power=PowerState.OFF)
 
         component.simulate_fault(True)
-        callbacks["component_state"].assert_call(fault=True)
+        callbacks.assert_call("component_state", fault=True)
 
         component.simulate_fault(False)
-        callbacks["component_state"].assert_call(fault=False)
+        callbacks.assert_call("component_state", fault=False)
 
     def test_reset_from_fault(
         self,
@@ -376,200 +373,187 @@ class TestCspSubelementSubarrayComponentManager:
     ):
         """Test that the component manager can reset a faulty component."""
         component_manager.start_communicating()
-        callbacks["communication_state"].assert_call(
-            CommunicationStatus.NOT_ESTABLISHED
+        callbacks.assert_call(
+            "communication_state", CommunicationStatus.NOT_ESTABLISHED
         )
-        callbacks["communication_state"].assert_call(
-            CommunicationStatus.ESTABLISHED
+        callbacks.assert_call(
+            "communication_state", CommunicationStatus.ESTABLISHED
         )
-        callbacks["component_state"].assert_call(power=PowerState.OFF)
+        callbacks.assert_call("component_state", power=PowerState.OFF)
 
         component.simulate_fault(True)
-        callbacks["component_state"].assert_call(fault=True)
+        callbacks.assert_call("component_state", fault=True)
 
         component_manager.reset()
-        callbacks["component_state"].assert_call(fault=False)
+        callbacks.assert_call("component_state", fault=False)
 
     def test_assign_release(
         self,
         component_manager,
         callbacks,
-        # initial_power_mode,
-        # initial_fault,
-        # mock_obs_state_model,
         mock_resource_factory,
     ):
         """Test management of a component during assignment of resources."""
         component_manager.start_communicating()
-        callbacks["communication_state"].assert_call(
-            CommunicationStatus.NOT_ESTABLISHED
+        callbacks.assert_call(
+            "communication_state", CommunicationStatus.NOT_ESTABLISHED
         )
-        callbacks["communication_state"].assert_call(
-            CommunicationStatus.ESTABLISHED
+        callbacks.assert_call(
+            "communication_state", CommunicationStatus.ESTABLISHED
         )
-        callbacks["component_state"].assert_call(power=PowerState.OFF)
+        callbacks.assert_call("component_state", power=PowerState.OFF)
 
         component_manager.on()
-        callbacks["component_state"].assert_call(power=PowerState.ON)
+        callbacks.assert_call("component_state", power=PowerState.ON)
 
         mock_resource_1 = mock_resource_factory()
         mock_resource_2 = mock_resource_factory()
 
         component_manager.assign([mock_resource_1])
-        callbacks["component_state"].assert_call(resourced=True)
+        callbacks.assert_call("component_state", resourced=True)
 
         component_manager.assign([mock_resource_2])
-        callbacks["component_state"].assert_not_called()
+        callbacks.assert_not_called()
 
         component_manager.release([mock_resource_1])
-        callbacks["component_state"].assert_not_called()
+        callbacks.assert_not_called()
 
         component_manager.release_all()
-        callbacks["component_state"].assert_call(resourced=False)
+        callbacks.assert_call("component_state", resourced=False)
 
     def test_configure(
         self,
         component_manager,
         callbacks,
-        # initial_power_mode,
-        # initial_fault,
-        # mock_obs_state_model,
         mock_resource_factory,
         mock_config_factory,
     ):
         """Test management of a component through configuration."""
         component_manager.start_communicating()
-        callbacks["communication_state"].assert_call(
-            CommunicationStatus.NOT_ESTABLISHED
+        callbacks.assert_call(
+            "communication_state", CommunicationStatus.NOT_ESTABLISHED
         )
-        callbacks["communication_state"].assert_call(
-            CommunicationStatus.ESTABLISHED
+        callbacks.assert_call(
+            "communication_state", CommunicationStatus.ESTABLISHED
         )
-        callbacks["component_state"].assert_call(power=PowerState.OFF)
+        callbacks.assert_call("component_state", power=PowerState.OFF)
 
         component_manager.on()
-        callbacks["component_state"].assert_call(power=PowerState.ON)
+        callbacks.assert_call("component_state", power=PowerState.ON)
 
         mock_resource = mock_resource_factory()
         component_manager.assign([mock_resource])
-        callbacks["component_state"].assert_call(resourced=True)
+        callbacks.assert_call("component_state", resourced=True)
 
         mock_configuration_1 = mock_config_factory()
         mock_configuration_2 = mock_config_factory()
 
         component_manager.configure(mock_configuration_1)
-        callbacks["component_state"].assert_call(configured=True)
+        callbacks.assert_call("component_state", configured=True)
 
         component_manager.configure(mock_configuration_2)
-        callbacks["component_state"].assert_not_called()
+        callbacks.assert_not_called()
 
         component_manager.deconfigure()
-        callbacks["component_state"].assert_call(configured=False)
+        callbacks.assert_call("component_state", configured=False)
 
     def test_scan(
         self,
         component_manager,
         component,
         callbacks,
-        # component,
-        # initial_power_mode,
-        # initial_fault,
-        # mock_obs_state_model,
         mock_resource_factory,
         mock_config_factory,
         mock_scan_args,
     ):
         """Test management of a scanning component."""
         component_manager.start_communicating()
-        callbacks["communication_state"].assert_call(
-            CommunicationStatus.NOT_ESTABLISHED
+        callbacks.assert_call(
+            "communication_state", CommunicationStatus.NOT_ESTABLISHED
         )
-        callbacks["communication_state"].assert_call(
-            CommunicationStatus.ESTABLISHED
+        callbacks.assert_call(
+            "communication_state", CommunicationStatus.ESTABLISHED
         )
-        callbacks["component_state"].assert_call(power=PowerState.OFF)
+        callbacks.assert_call("component_state", power=PowerState.OFF)
 
         component_manager.on()
-        callbacks["component_state"].assert_call(power=PowerState.ON)
+        callbacks.assert_call("component_state", power=PowerState.ON)
 
         mock_resource = mock_resource_factory()
         component_manager.assign([mock_resource])
-        callbacks["component_state"].assert_call(resourced=True)
+        callbacks.assert_call("component_state", resourced=True)
 
         mock_configuration = mock_config_factory()
 
         component_manager.configure(mock_configuration)
-        callbacks["component_state"].assert_call(configured=True)
+        callbacks.assert_call("component_state", configured=True)
 
         component_manager.scan(mock_scan_args)
-        callbacks["component_state"].assert_call(scanning=True)
+        callbacks.assert_call("component_state", scanning=True)
 
         component_manager.end_scan()
-        callbacks["component_state"].assert_call(scanning=False)
+        callbacks.assert_call("component_state", scanning=False)
 
         component_manager.scan(mock_scan_args)
-        callbacks["component_state"].assert_call(scanning=True)
+        callbacks.assert_call("component_state", scanning=True)
 
         component.simulate_scan_stopped()
-        callbacks["component_state"].assert_call(scanning=False)
+        callbacks.assert_call("component_state", scanning=False)
 
         component_manager.deconfigure()
-        callbacks["component_state"].assert_call(configured=False)
+        callbacks.assert_call("component_state", configured=False)
 
     def test_obsfault_reset(
         self,
         component_manager,
         component,
         callbacks,
-        # initial_power_mode,
-        # initial_fault,
-        # mock_obs_state_model,
         mock_resource_factory,
         mock_config_factory,
         mock_scan_args,
     ):
         """Test management of a faulting component."""
         component_manager.start_communicating()
-        callbacks["communication_state"].assert_call(
-            CommunicationStatus.NOT_ESTABLISHED
+        callbacks.assert_call(
+            "communication_state", CommunicationStatus.NOT_ESTABLISHED
         )
-        callbacks["communication_state"].assert_call(
-            CommunicationStatus.ESTABLISHED
+        callbacks.assert_call(
+            "communication_state", CommunicationStatus.ESTABLISHED
         )
-        callbacks["component_state"].assert_call(power=PowerState.OFF)
+        callbacks.assert_call("component_state", power=PowerState.OFF)
 
         component_manager.on()
-        callbacks["component_state"].assert_call(power=PowerState.ON)
+        callbacks.assert_call("component_state", power=PowerState.ON)
 
         mock_resource = mock_resource_factory()
         component_manager.assign([mock_resource])
-        callbacks["component_state"].assert_call(resourced=True)
+        callbacks.assert_call("component_state", resourced=True)
 
         mock_configuration = mock_config_factory()
 
         component_manager.configure(mock_configuration)
-        callbacks["component_state"].assert_call(configured=True)
+        callbacks.assert_call("component_state", configured=True)
 
         component.simulate_obsfault(True)
-        callbacks["component_state"].assert_call(obsfault=True)
+        callbacks.assert_call("component_state", obsfault=True)
 
         component_manager.obsreset()
-        callbacks["component_state"].assert_call(
-            obsfault=False, configured=False
+        callbacks.assert_call(
+            "component_state", obsfault=False, configured=False
         )
 
         component_manager.configure(mock_configuration)
-        callbacks["component_state"].assert_call(configured=True)
+        callbacks.assert_call("component_state", configured=True)
 
         component_manager.scan(mock_scan_args)
-        callbacks["component_state"].assert_call(scanning=True)
+        callbacks.assert_call("component_state", scanning=True)
 
         component.simulate_obsfault(True)
-        callbacks["component_state"].assert_call(obsfault=True)
+        callbacks.assert_call("component_state", obsfault=True)
 
         component_manager.obsreset()
-        callbacks["component_state"].assert_call(
-            obsfault=False, scanning=False, configured=False
+        callbacks.assert_call(
+            "component_state", obsfault=False, scanning=False, configured=False
         )
 
     def test_obsfault_restart(
@@ -577,56 +561,60 @@ class TestCspSubelementSubarrayComponentManager:
         component_manager,
         component,
         callbacks,
-        # initial_power_mode,
-        # initial_fault,
-        # mock_obs_state_model,
         mock_resource_factory,
         mock_config_factory,
         mock_scan_args,
     ):
         """Test management of a faulting component."""
         component_manager.start_communicating()
-        callbacks["communication_state"].assert_call(
-            CommunicationStatus.NOT_ESTABLISHED
+        callbacks.assert_call(
+            "communication_state", CommunicationStatus.NOT_ESTABLISHED
         )
-        callbacks["communication_state"].assert_call(
-            CommunicationStatus.ESTABLISHED
+        callbacks.assert_call(
+            "communication_state", CommunicationStatus.ESTABLISHED
         )
-        callbacks["component_state"].assert_call(power=PowerState.OFF)
+        callbacks.assert_call("component_state", power=PowerState.OFF)
 
         component_manager.on()
-        callbacks["component_state"].assert_call(power=PowerState.ON)
+        callbacks.assert_call("component_state", power=PowerState.ON)
 
         mock_resource = mock_resource_factory()
         component_manager.assign([mock_resource])
-        callbacks["component_state"].assert_call(resourced=True)
+        callbacks.assert_call("component_state", resourced=True)
 
         mock_configuration = mock_config_factory()
 
         component_manager.configure(mock_configuration)
-        callbacks["component_state"].assert_call(configured=True)
+        callbacks.assert_call("component_state", configured=True)
 
         component.simulate_obsfault(True)
-        callbacks["component_state"].assert_call(obsfault=True)
+        callbacks.assert_call("component_state", obsfault=True)
 
         component_manager.restart()
-        callbacks["component_state"].assert_call(
-            obsfault=False, configured=False, resourced=False
+        callbacks.assert_call(
+            "component_state",
+            obsfault=False,
+            configured=False,
+            resourced=False,
         )
 
         component_manager.assign([mock_resource])
-        callbacks["component_state"].assert_call(resourced=True)
+        callbacks.assert_call("component_state", resourced=True)
 
         component_manager.configure(mock_configuration)
-        callbacks["component_state"].assert_call(configured=True)
+        callbacks.assert_call("component_state", configured=True)
 
         component_manager.scan(mock_scan_args)
-        callbacks["component_state"].assert_call(scanning=True)
+        callbacks.assert_call("component_state", scanning=True)
 
         component.simulate_obsfault(True)
-        callbacks["component_state"].assert_call(obsfault=True)
+        callbacks.assert_call("component_state", obsfault=True)
 
         component_manager.restart()
-        callbacks["component_state"].assert_call(
-            obsfault=False, scanning=False, configured=False, resourced=False
+        callbacks.assert_call(
+            "component_state",
+            obsfault=False,
+            scanning=False,
+            configured=False,
+            resourced=False,
         )

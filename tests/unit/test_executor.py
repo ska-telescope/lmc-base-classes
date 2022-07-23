@@ -203,8 +203,8 @@ class TestTaskExecutor:
 
         executor.submit(_raise_exception, task_callback=callbacks["job_0"])
 
-        callbacks["job_0"].assert_call(status=TaskStatus.QUEUED)
-        callbacks["job_0"].assert_call(status=TaskStatus.IN_PROGRESS)
-        callbacks["job_0"].assert_call(
-            status=TaskStatus.FAILED, exception=exception_to_raise
+        callbacks.assert_call("job_0", status=TaskStatus.QUEUED)
+        callbacks.assert_call("job_0", status=TaskStatus.IN_PROGRESS)
+        callbacks.assert_call(
+            "job_0", status=TaskStatus.FAILED, exception=exception_to_raise
         )

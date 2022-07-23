@@ -60,10 +60,10 @@ class TestReferenceBaseComponentManager:
         callbacks["component_state"].assert_not_called()
 
         component_manager.start_communicating()
-        callbacks["communication_state"].assert_next_call(
+        callbacks["communication_state"].assert_call(
             CommunicationStatus.NOT_ESTABLISHED
         )
-        callbacks["communication_state"].assert_next_call(
+        callbacks["communication_state"].assert_call(
             CommunicationStatus.ESTABLISHED
         )
         assert (
@@ -71,10 +71,10 @@ class TestReferenceBaseComponentManager:
             == CommunicationStatus.ESTABLISHED
         )
 
-        callbacks["component_state"].assert_next_call(power=PowerState.OFF)
+        callbacks["component_state"].assert_call(power=PowerState.OFF)
 
         component_manager.stop_communicating()
-        callbacks["communication_state"].assert_next_call(
+        callbacks["communication_state"].assert_call(
             CommunicationStatus.DISABLED
         )
         assert (
@@ -100,7 +100,7 @@ class TestReferenceBaseComponentManager:
         component_manager.simulate_communication_failure(True)
 
         component_manager.start_communicating()
-        callbacks["communication_state"].assert_next_call(
+        callbacks["communication_state"].assert_call(
             CommunicationStatus.NOT_ESTABLISHED
         )
         assert (
@@ -112,7 +112,7 @@ class TestReferenceBaseComponentManager:
         callbacks["component_state"].assert_not_called()
 
         component_manager.simulate_communication_failure(False)
-        callbacks["communication_state"].assert_next_call(
+        callbacks["communication_state"].assert_call(
             CommunicationStatus.ESTABLISHED
         )
         assert (
@@ -120,10 +120,10 @@ class TestReferenceBaseComponentManager:
             == CommunicationStatus.ESTABLISHED
         )
 
-        callbacks["component_state"].assert_next_call(power=PowerState.OFF)
+        callbacks["component_state"].assert_call(power=PowerState.OFF)
 
         component_manager.simulate_communication_failure(True)
-        callbacks["communication_state"].assert_next_call(
+        callbacks["communication_state"].assert_call(
             CommunicationStatus.NOT_ESTABLISHED
         )
         assert (
@@ -133,7 +133,7 @@ class TestReferenceBaseComponentManager:
         callbacks["component_state"].assert_not_called()
 
         component_manager.stop_communicating()
-        callbacks["communication_state"].assert_next_call(
+        callbacks["communication_state"].assert_call(
             CommunicationStatus.DISABLED
         )
         assert (
@@ -166,7 +166,7 @@ class TestReferenceBaseComponentManager:
 
         component_manager.simulate_communication_failure(True)
         component_manager.start_communicating()
-        callbacks["communication_state"].assert_next_call(
+        callbacks["communication_state"].assert_call(
             CommunicationStatus.NOT_ESTABLISHED
         )
         assert (
@@ -183,17 +183,17 @@ class TestReferenceBaseComponentManager:
             getattr(component_manager, command)()
 
         component_manager.simulate_communication_failure(False)
-        callbacks["communication_state"].assert_next_call(
+        callbacks["communication_state"].assert_call(
             CommunicationStatus.ESTABLISHED
         )
         assert (
             component_manager.communication_state
             == CommunicationStatus.ESTABLISHED
         )
-        callbacks["component_state"].assert_next_call(power=PowerState.OFF)
+        callbacks["component_state"].assert_call(power=PowerState.OFF)
 
         component_manager.simulate_communication_failure(True)
-        callbacks["communication_state"].assert_next_call(
+        callbacks["communication_state"].assert_call(
             CommunicationStatus.NOT_ESTABLISHED
         )
         assert (
@@ -209,7 +209,7 @@ class TestReferenceBaseComponentManager:
             getattr(component_manager, command)()
 
         component_manager.stop_communicating()
-        callbacks["communication_state"].assert_next_call(
+        callbacks["communication_state"].assert_call(
             CommunicationStatus.DISABLED
         )
         assert (
@@ -243,48 +243,46 @@ class TestReferenceBaseComponentManager:
         callbacks["component_state"].assert_not_called()
 
         component_manager.start_communicating()
-        callbacks["communication_state"].assert_next_call(
+        callbacks["communication_state"].assert_call(
             CommunicationStatus.NOT_ESTABLISHED
         )
-        callbacks["communication_state"].assert_next_call(
+        callbacks["communication_state"].assert_call(
             CommunicationStatus.ESTABLISHED
         )
         assert (
             component_manager.communication_state
             == CommunicationStatus.ESTABLISHED
         )
-        callbacks["component_state"].assert_next_call(power=PowerState.OFF)
+        callbacks["component_state"].assert_call(power=PowerState.OFF)
 
         component_manager.standby(callbacks["standby_task"])
-        callbacks["standby_task"].assert_next_call(status=TaskStatus.QUEUED)
-        callbacks["standby_task"].assert_next_call(
-            status=TaskStatus.IN_PROGRESS
-        )
-        callbacks["standby_task"].assert_next_call(progress=33)
-        callbacks["standby_task"].assert_next_call(progress=66)
-        callbacks["standby_task"].assert_next_call(
+        callbacks["standby_task"].assert_call(status=TaskStatus.QUEUED)
+        callbacks["standby_task"].assert_call(status=TaskStatus.IN_PROGRESS)
+        callbacks["standby_task"].assert_call(progress=33)
+        callbacks["standby_task"].assert_call(progress=66)
+        callbacks["standby_task"].assert_call(
             status=TaskStatus.COMPLETED,
             result=(ResultCode.OK, "Standby command completed OK"),
         )
-        callbacks["component_state"].assert_next_call(power=PowerState.STANDBY)
+        callbacks["component_state"].assert_call(power=PowerState.STANDBY)
 
         callbacks["standby_task"].assert_not_called()
         callbacks["component_state"].assert_not_called()
 
         # Let's use our test of on() to test the case of not providing a task callback.
         component_manager.on()
-        callbacks["component_state"].assert_next_call(power=PowerState.ON)
+        callbacks["component_state"].assert_call(power=PowerState.ON)
 
         component_manager.off(callbacks["off_task"])
-        callbacks["off_task"].assert_next_call(status=TaskStatus.QUEUED)
-        callbacks["off_task"].assert_next_call(status=TaskStatus.IN_PROGRESS)
-        callbacks["off_task"].assert_next_call(progress=33)
-        callbacks["off_task"].assert_next_call(progress=66)
-        callbacks["off_task"].assert_next_call(
+        callbacks["off_task"].assert_call(status=TaskStatus.QUEUED)
+        callbacks["off_task"].assert_call(status=TaskStatus.IN_PROGRESS)
+        callbacks["off_task"].assert_call(progress=33)
+        callbacks["off_task"].assert_call(progress=66)
+        callbacks["off_task"].assert_call(
             status=TaskStatus.COMPLETED,
             result=(ResultCode.OK, "Off command completed OK"),
         )
-        callbacks["component_state"].assert_next_call(power=PowerState.OFF)
+        callbacks["component_state"].assert_call(power=PowerState.OFF)
 
     @pytest.mark.parametrize(
         "power_state", [PowerState.OFF, PowerState.STANDBY, PowerState.ON]
@@ -306,19 +304,19 @@ class TestReferenceBaseComponentManager:
         :param component_manager: the component manager under test
         """
         component_manager.start_communicating()
-        callbacks["communication_state"].assert_next_call(
+        callbacks["communication_state"].assert_call(
             CommunicationStatus.NOT_ESTABLISHED
         )
-        callbacks["communication_state"].assert_next_call(
+        callbacks["communication_state"].assert_call(
             CommunicationStatus.ESTABLISHED
         )
-        callbacks["component_state"].assert_next_call(power=PowerState.OFF)
+        callbacks["component_state"].assert_call(power=PowerState.OFF)
 
         component.simulate_power_state(power_state)
         if power_state == PowerState.OFF:
             callbacks["component_state"].assert_not_called()
         else:
-            callbacks["component_state"].assert_next_call(power=power_state)
+            callbacks["component_state"].assert_call(power=power_state)
 
     def test_simulate_fault(
         self,
@@ -336,19 +334,19 @@ class TestReferenceBaseComponentManager:
         :param component_manager: the component manager under test
         """
         component_manager.start_communicating()
-        callbacks["communication_state"].assert_next_call(
+        callbacks["communication_state"].assert_call(
             CommunicationStatus.NOT_ESTABLISHED
         )
-        callbacks["communication_state"].assert_next_call(
+        callbacks["communication_state"].assert_call(
             CommunicationStatus.ESTABLISHED
         )
-        callbacks["component_state"].assert_next_call(power=PowerState.OFF)
+        callbacks["component_state"].assert_call(power=PowerState.OFF)
 
         component.simulate_fault(True)
-        callbacks["component_state"].assert_next_call(fault=True)
+        callbacks["component_state"].assert_call(fault=True)
 
         component.simulate_fault(False)
-        callbacks["component_state"].assert_next_call(fault=False)
+        callbacks["component_state"].assert_call(fault=False)
 
     def test_reset_from_fault(
         self,
@@ -358,16 +356,16 @@ class TestReferenceBaseComponentManager:
     ):
         """Test that the component manager can reset a faulty component."""
         component_manager.start_communicating()
-        callbacks["communication_state"].assert_next_call(
+        callbacks["communication_state"].assert_call(
             CommunicationStatus.NOT_ESTABLISHED
         )
-        callbacks["communication_state"].assert_next_call(
+        callbacks["communication_state"].assert_call(
             CommunicationStatus.ESTABLISHED
         )
-        callbacks["component_state"].assert_next_call(power=PowerState.OFF)
+        callbacks["component_state"].assert_call(power=PowerState.OFF)
 
         component.simulate_fault(True)
-        callbacks["component_state"].assert_next_call(fault=True)
+        callbacks["component_state"].assert_call(fault=True)
 
         component_manager.reset()
-        callbacks["component_state"].assert_next_call(fault=False)
+        callbacks["component_state"].assert_call(fault=False)

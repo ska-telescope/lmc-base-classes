@@ -1,5 +1,7 @@
 """Test various Tango devices with long running commmands working together."""
 import pytest
+import tango
+from ska_tango_testing.mock.tango import MockTangoEventCallbackGroup
 
 from .multidevice import ExampleMultiDevice
 
@@ -23,7 +25,7 @@ from .multidevice import ExampleMultiDevice
 
 
 @pytest.fixture(scope="module")
-def devices_to_test(request):
+def devices_to_test():
     """Fixture for devices to test."""
     return [
         {
@@ -77,35 +79,63 @@ def devices_to_test(request):
     ]
 
 
+@pytest.fixture()
+def change_event_callbacks() -> MockTangoEventCallbackGroup:
+    """
+    Return a dictionary of Tango device change event callbacks with asynchrony support.
+
+    :return: a collections.defaultdict that returns change event
+        callbacks by name.
+    """
+    return MockTangoEventCallbackGroup(
+        "top_result",
+        "mid_result",
+        "low_result",
+        timeout=5.0,
+    )
+
+
 @pytest.mark.forked
 def test_multi_layer(
-    multi_device_tango_context, multi_tango_change_event_helper
-):
+    multi_device_tango_context, change_event_callbacks
+) -> None:
     """Test the long running commands between devices."""
     top_device = multi_device_tango_context.get_device("test/toplevel/1")
+    mid_device = multi_device_tango_context.get_device("test/midlevel/3")
+    low_device = multi_device_tango_context.get_device("test/lowlevel/6")
 
-    top_device_lrc_result_cb = multi_tango_change_event_helper.subscribe(
-        "test/toplevel/1", "longRunningCommandResult"
-    )
-    mid_device_lrc_result_cb = multi_tango_change_event_helper.subscribe(
-        "test/midlevel/3", "longRunningCommandResult"
-    )
-    low_device_lrc_result_cb = multi_tango_change_event_helper.subscribe(
-        "test/lowlevel/6", "longRunningCommandResult"
+    top_device.subscribe_event(
+        "longRunningCommandResult",
+        tango.EventType.CHANGE_EVENT,
+        change_event_callbacks["top_result"],
     )
 
-    top_device_lrc_result_cb.get_next_change_event()
-    mid_device_lrc_result_cb.get_next_change_event()
-    low_device_lrc_result_cb.get_next_change_event()
+    mid_device.subscribe_event(
+        "longRunningCommandResult",
+        tango.EventType.CHANGE_EVENT,
+        change_event_callbacks["mid_result"],
+    )
+
+    low_device.subscribe_event(
+        "longRunningCommandResult",
+        tango.EventType.CHANGE_EVENT,
+        change_event_callbacks["low_result"],
+    )
+
+    change_event_callbacks["top_result"].assert_change_event(("", ""))
+    change_event_callbacks["mid_result"].assert_change_event(("", ""))
+    change_event_callbacks["low_result"].assert_change_event(("", ""))
 
     top_device.CallChildren(2)
 
-    command_id, message = low_device_lrc_result_cb.get_next_change_event()
+    low_result = change_event_callbacks["low_result"].assert_against_call()
+    command_id, message = low_result["attribute_value"]
     assert command_id.endswith("CallChildren")
     assert message == '"Finished leaf node"'
 
     # Wait for mid level device to finish
-    command_id, message = mid_device_lrc_result_cb.get_next_change_event()
+    mid_result = change_event_callbacks["mid_result"].assert_against_call()
+    command_id, message = mid_result["attribute_value"]
     assert command_id.endswith("CallChildren")
     assert (
         message
@@ -113,7 +143,8 @@ def test_multi_layer(
     )
 
     # Wait for top level device to finish
-    command_id, message = top_device_lrc_result_cb.get_next_change_event()
+    top_result = change_event_callbacks["top_result"].assert_against_call()
+    command_id, message = top_result["attribute_value"]
     assert command_id.endswith("CallChildren")
     assert (
         message

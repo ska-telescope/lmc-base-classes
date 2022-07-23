@@ -10,10 +10,9 @@
 """Contain the tests for the SKAObsDevice."""
 
 import re
-import time
 
 import pytest
-from tango import DevState
+import tango
 from tango.test_context import MultiDeviceTestContext
 
 # PROTECTED REGION ID(SKAObsDevice.test_additional_imports) ENABLED START #
@@ -84,7 +83,7 @@ class TestSKAObsDevice(object):
         :param device_under_test: a proxy to the device under test
         """
         # PROTECTED REGION ID(SKAObsDevice.test_State) ENABLED START #
-        assert device_under_test.state() == DevState.OFF
+        assert device_under_test.state() == tango.DevState.OFF
         # PROTECTED REGION END #    //  SKAObsDevice.test_State
 
     # PROTECTED REGION ID(SKAObsDevice.test_Status_decorators) ENABLED START #
@@ -119,21 +118,25 @@ class TestSKAObsDevice(object):
 
     # PROTECTED REGION ID(SKAObsDevice.test_obsState_decorators) ENABLED START #
     # PROTECTED REGION END #    //  SKAObsDevice.test_obsState_decorators
-    def test_obsState(self, device_under_test, tango_change_event_helper):
+    def test_obsState(self, device_under_test, change_event_callbacks):
         """
         Test for obsState.
 
         :param device_under_test: a proxy to the device under test
-        :param tango_change_event_helper: helper fixture that simplifies
-            subscription to the device under test with a callback.
+        :param change_event_callbacks: dictionary of mock change event
+            callbacks with asynchrony support
         """
         # PROTECTED REGION ID(SKAObsDevice.test_obsState) ENABLED START #
         assert device_under_test.obsState == ObsState.EMPTY
 
         # Check that events are working by subscribing and checking for that
         # initial event
-        obs_state_callback = tango_change_event_helper.subscribe("obsState")
-        obs_state_callback.assert_next_change_event(ObsState.EMPTY)
+        device_under_test.subscribe_event(
+            "obsState",
+            tango.EventType.CHANGE_EVENT,
+            change_event_callbacks["obsState"],
+        )
+        change_event_callbacks["obsState"].assert_change_event(ObsState.EMPTY)
         # PROTECTED REGION END #    //  SKAObsDevice.test_obsState
 
     # PROTECTED REGION ID(SKAObsDevice.test_obsMode_decorators) ENABLED START #
@@ -282,8 +285,7 @@ def test_multiple_devices_in_same_process(mocker):
     )
 
     with MultiDeviceTestContext(devices_info, process=False) as context:
-        time.sleep(0.15)  # TODO: Allow time for PushChanges to run once
         proxy1 = context.get_device("test/obs/1")
         proxy2 = context.get_device("test/base/1")
-        assert proxy1.state() == DevState.DISABLE
-        assert proxy2.state() == DevState.DISABLE
+        assert proxy1.state() == tango.DevState.DISABLE
+        assert proxy2.state() == tango.DevState.DISABLE

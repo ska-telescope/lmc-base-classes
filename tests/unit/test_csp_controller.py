@@ -10,10 +10,9 @@
 """Contain the tests for the CspSubelementController."""
 
 import re
-import time
 
 import pytest
-from tango import DevFailed, DevState
+import tango
 from tango.test_context import MultiDeviceTestContext
 
 # PROTECTED REGION ID(CspSubelementController.test_additional_imports) ENABLED START #
@@ -92,7 +91,7 @@ class TestCspSubElementController(object):
         :param device_under_test: a proxy to the device under test
         """
         # PROTECTED REGION ID(CspSubelementController.test_State) ENABLED START #
-        assert device_under_test.state() == DevState.OFF
+        assert device_under_test.state() == tango.DevState.OFF
         # PROTECTED REGION END #    //  CspSubelementController.test_State
 
     # PROTECTED REGION ID(CspSubelementController.test_Status_decorators) ENABLED START #
@@ -426,7 +425,7 @@ class TestCspSubElementController(object):
         # Set the device in ON/ONLINE state
         device_under_test.On()
         with pytest.raises(
-            DevFailed,
+            tango.DevFailed,
             match="LoadFirmware not allowed when the device is in OFF state",
         ):
             device_under_test.LoadFirmware(
@@ -437,26 +436,30 @@ class TestCspSubElementController(object):
     # PROTECTED REGION ID(CspSubelementController.test_PowerOnDevices_decorators) ENABLED START #
     # PROTECTED REGION END #    //  CspSubelementController.test_PowerOnDevices_decorators
     def test_power_on_and_off_devices(
-        self, device_under_test, tango_change_event_helper
+        self, device_under_test, change_event_callbacks
     ):
         """
         Test for PowerOnDevices.
 
         :param device_under_test: a proxy to the device under test
-        :param tango_change_event_helper: helper fixture that simplifies
-            subscription to the device under test with a callback.
+        :param change_event_callbacks: dictionary of mock change event
+            callbacks with asynchrony support
         """
         # PROTECTED REGION ID(CspSubelementController.test_PowerOnDevices) ENABLED START #
-        assert device_under_test.state() == DevState.OFF
+        assert device_under_test.state() == tango.DevState.OFF
 
-        device_state_callback = tango_change_event_helper.subscribe("state")
-        device_state_callback.assert_next_change_event(DevState.OFF)
+        device_under_test.subscribe_event(
+            "state",
+            tango.EventType.CHANGE_EVENT,
+            change_event_callbacks["state"],
+        )
+        change_event_callbacks["state"].assert_change_event(tango.DevState.OFF)
 
         [[result_code], [_]] = device_under_test.On()
         assert result_code == ResultCode.QUEUED
 
-        device_state_callback.assert_next_change_event(DevState.ON)
-        assert device_under_test.state() == DevState.ON
+        change_event_callbacks["state"].assert_change_event(tango.DevState.ON)
+        assert device_under_test.state() == tango.DevState.ON
 
         # Test power on devices
         [[result_code], [_]] = device_under_test.PowerOnDevices(
@@ -482,7 +485,7 @@ class TestCspSubElementController(object):
         """
         # PROTECTED REGION ID(CspSubelementController.test_PowerOnDevices_when_in_wrong_state) ENABLED START #
         with pytest.raises(
-            DevFailed,
+            tango.DevFailed,
             match="Command PowerOnDevices not allowed when the device is in OFF state",
         ):
             device_under_test.PowerOnDevices(["test/dev/1", "test/dev/2"])
@@ -498,7 +501,7 @@ class TestCspSubElementController(object):
         """
         # PROTECTED REGION ID(CspSubelementController.test_PowerOffDevices_when_in_wrong_state) ENABLED START #
         with pytest.raises(
-            DevFailed,
+            tango.DevFailed,
             match="Command PowerOffDevices not allowed when the device is in OFF state",
         ):
             device_under_test.PowerOffDevices(["test/dev/1", "test/dev/2"])
@@ -506,25 +509,29 @@ class TestCspSubElementController(object):
 
     # PROTECTED REGION ID(CspSubelementController.test_ReInitDevices_decorators) ENABLED START #
     # PROTECTED REGION END #    //  CspSubelementController.test_ReInitDevices_decorators
-    def test_ReInitDevices(self, device_under_test, tango_change_event_helper):
+    def test_ReInitDevices(self, device_under_test, change_event_callbacks):
         """
         Test for ReInitDevices.
 
         :param device_under_test: a proxy to the device under test
-        :param tango_change_event_helper: helper fixture that simplifies
-            subscription to the device under test with a callback.
+        :param change_event_callbacks: dictionary of mock change event
+            callbacks with asynchrony support
         """
         # PROTECTED REGION ID(CspSubelementController.test_ReInitDevices) ENABLED START #
-        assert device_under_test.state() == DevState.OFF
+        assert device_under_test.state() == tango.DevState.OFF
 
-        device_state_callback = tango_change_event_helper.subscribe("state")
-        device_state_callback.assert_next_change_event(DevState.OFF)
+        device_under_test.subscribe_event(
+            "state",
+            tango.EventType.CHANGE_EVENT,
+            change_event_callbacks["state"],
+        )
+        change_event_callbacks["state"].assert_change_event(tango.DevState.OFF)
 
         [[result_code], [_]] = device_under_test.On()
         assert result_code == ResultCode.QUEUED
 
-        device_state_callback.assert_next_change_event(DevState.ON)
-        assert device_under_test.state() == DevState.ON
+        change_event_callbacks["state"].assert_change_event(tango.DevState.ON)
+        assert device_under_test.state() == tango.DevState.ON
 
         # Test power on devices
         [[result_code], [_]] = device_under_test.PowerOnDevices(
@@ -549,7 +556,7 @@ class TestCspSubElementController(object):
         # PROTECTED REGION ID(CspSubelementController.test_ReInitDevices_when_in_wrong_state) ENABLED START #
         # put it in ON state
         with pytest.raises(
-            DevFailed,
+            tango.DevFailed,
             match="ReInitDevices not allowed when the device is in OFF state",
         ):
             device_under_test.ReInitDevices(["test/dev/1", "test/dev/2"])
@@ -572,8 +579,7 @@ def test_multiple_devices_in_same_process(mocker):
     )
 
     with MultiDeviceTestContext(devices_info, process=False) as context:
-        time.sleep(0.15)  # TODO: Allow time for PushChanges to run once
         proxy1 = context.get_device("test/se/1")
         proxy2 = context.get_device("test/control/1")
-        assert proxy1.state() == DevState.DISABLE
-        assert proxy2.state() == DevState.DISABLE
+        assert proxy1.state() == tango.DevState.DISABLE
+        assert proxy2.state() == tango.DevState.DISABLE

@@ -15,6 +15,7 @@ Controller device for SKA CSP Subelement.
 """
 # PROTECTED REGION ID(CspSubElementController.additionnal_import) ENABLED START #
 from collections import defaultdict
+from typing import List
 
 import tango
 from tango import AttrWriteType, DebugIt
@@ -500,7 +501,7 @@ class CspSubElementController(SKAController):
         Check if the LoadFirmware command is allowed in the current state.
 
         :return: ``True`` if command is allowed
-        :rtype: boolean
+        :rtype: bool
         """
         return (
             self.get_state() == tango.DevState.OFF
@@ -515,7 +516,7 @@ class CspSubElementController(SKAController):
         dtype_out="DevVarLongStringArray",
     )
     @DebugIt()
-    def LoadFirmware(self, argin):
+    def LoadFirmware(self, argin: List[str]):
         # PROTECTED REGION ID(CspSubElementController.LoadFirmware) ENABLED START #
         """
         Deploy new versions of software and firmware.
@@ -529,7 +530,6 @@ class CspSubElementController(SKAController):
             - checksum or signing
             Ex: ['file://firmware.txt','test/dev/1, test/dev/2, test/dev/3',
             '918698a7fea3fa9da5996db001d33628']
-        :type argin: 'DevVarStringArray'
         :return: A tuple containing a return code and a string
             message indicating status. The message is for
             information purpose only.
@@ -545,7 +545,7 @@ class CspSubElementController(SKAController):
         Check if the PowerOnDevice command is allowed in the current state.
 
         :return: ``True`` if command is allowed
-        :rtype: boolean
+        :rtype: bool
         """
         return self.get_state() == tango.DevState.ON
 
@@ -556,13 +556,12 @@ class CspSubElementController(SKAController):
         doc_out="ReturnType, `informational message`",
     )
     @DebugIt()
-    def PowerOnDevices(self, argin):
+    def PowerOnDevices(self, argin: List[str]):
         # PROTECTED REGION ID(CspSubElementController.PowerOnDevices) ENABLED START #
         """
         Power-on a selected list of devices.
 
         :param argin: List of devices (FQDNs) to power-on.
-        :type argin: 'DevVarStringArray'
 
         :return: A tuple containing a return code and a string
             message indicating status. The message is for
@@ -579,7 +578,7 @@ class CspSubElementController(SKAController):
         Check if the PowerOffDevices command is allowed in the current state.
 
         :return: ``True`` if command is allowed
-        :rtype: boolean
+        :rtype: bool
         """
         return self.get_state() == tango.DevState.ON
 
@@ -590,13 +589,12 @@ class CspSubElementController(SKAController):
         doc_out="ReturnType, `informational message`",
     )
     @DebugIt()
-    def PowerOffDevices(self, argin):
+    def PowerOffDevices(self, argin: List[str]):
         # PROTECTED REGION ID(CspSubElementController.PowerOffDevices) ENABLED START #
         """
         Power-off a selected list of devices.
 
         :param argin: List of devices (FQDNs) to power-off.
-        :type argin: 'DevVarStringArray'
 
         :return: A tuple containing a return code and a string
             message indicating status. The message is for
@@ -614,7 +612,7 @@ class CspSubElementController(SKAController):
         Check if the ReInitDevices command is allowed in the current state.
 
         :return: ``True`` if command is allowed
-        :rtype: boolean
+        :rtype: bool
         """
         return self.get_state() == tango.DevState.ON
 
@@ -625,7 +623,7 @@ class CspSubElementController(SKAController):
         doc_out="ReturnType, `informational message`",
     )
     @DebugIt()
-    def ReInitDevices(self, argin):
+    def ReInitDevices(self, argin: List[str]):
         # PROTECTED REGION ID(CspSubElementController.ReInitDevices) ENABLED START #
         """
         Reinitialize the devices passed in the input argument.
@@ -639,7 +637,6 @@ class CspSubElementController(SKAController):
         ReInitDevices Leaf PC -> reboot
 
         :param argin: List of devices (FQDNs) to re-initialize.
-        :type argin: 'DevVarStringArray'
 
         :return: A tuple containing a return code and a string
             message indicating status. The message is for

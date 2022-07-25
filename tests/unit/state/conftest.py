@@ -1,4 +1,3 @@
-# pylint: skip-file  # TODO: Incrementally lint this repo
 """This module defines the test harness for all ska_tango_base tests."""
 import itertools
 import json
@@ -94,16 +93,16 @@ class StateMachineTester:
         :type machine_under_test: state machine object instance
         :param state_under_test: the state from which the
             `action_under_test` is being tested
-        :type state_under_test: string
+        :type state_under_test: str
         :param action_under_test: the action being tested from the
             `state_under_test`
-        :type action_under_test: string
+        :type action_under_test: str
         :param expected_state: the state to which the machine is
             expected to transition, as a result of performing the
             `action_under_test` in the `state_under_test`. If None, then
             the action should be disallowed and result in no change of
             state.
-        :type expected_state: string
+        :type expected_state: str
         """
         # Put the device into the state under test
         self.to_state(machine_under_test, state_under_test)
@@ -135,7 +134,7 @@ class StateMachineTester:
         :type machine_under_test: state machine object instance
         :param state: the state that we are asserting to be the current
             state of the state machine under test
-        :type state: string
+        :type state: str
 
         :raises NotImplementedError: if now overriden by a concrete
             subclass
@@ -347,6 +346,7 @@ class StateModelTester(StateMachineTester):
             want to get the state machine under test into
         :type target_state: keyword dictionary
         """
+        # pylint: disable-next=protected-access
         machine_under_test._straight_to_state(**target_state)
 
 
@@ -360,11 +360,13 @@ def load_data(name):
     :param name: name of the dataset to be loaded; this implementation
         uses the name to find a JSON file containing the data to be
         loaded.
-    :type name: string
+    :type name: str
 
     :return: content of the named dataset
     """
-    with open(f"tests/unit/state/data/{name}.json", "r") as json_file:
+    with open(
+        f"tests/unit/state/data/{name}.json", "r", encoding="utf-8"
+    ) as json_file:
         return json.load(json_file)
 
 
@@ -375,7 +377,7 @@ def load_state_machine_spec(name):
     :param name: name of the dataset to be loaded; this implementation
         uses the name to find a JSON file containing the data to be
         loaded.
-    :type name: string
+    :type name: str
 
     :return: a state machine specification
     """

@@ -332,7 +332,7 @@ class CspSubElementObsDevice(SKAObsDevice):
             Validate the configuration parameters against allowed values, as needed.
 
             :param argin: The JSON formatted string with configuration for the device.
-            :type argin: 'DevString'
+            :type argin: str
             :return: A tuple containing a return code and a string message.
             :rtype: (ResultCode, str)
             """
@@ -377,7 +377,7 @@ class CspSubElementObsDevice(SKAObsDevice):
             Validate the command input argument.
 
             :param argin: the scan id
-            :type argin: string
+            :type argin: str
             :return: A tuple containing a return code and a string
                 message indicating status. The message is for
                 information purpose only.
@@ -461,7 +461,7 @@ class CspSubElementObsDevice(SKAObsDevice):
         Configure the observing device parameters for the current scan.
 
         :param argin: JSON formatted string with the scan configuration.
-        :type argin: 'DevString'
+        :type argin: str
 
         :return: A tuple containing a return code and a string message indicating status.
             The message is for information purpose only.
@@ -510,7 +510,7 @@ class CspSubElementObsDevice(SKAObsDevice):
         Start an observing scan.
 
         :param argin: A string with the scan ID
-        :type argin: 'DevString'
+        :type argin: str
 
         :return: A tuple containing a return code and a string message indicating status.
             The message is for information purpose only.

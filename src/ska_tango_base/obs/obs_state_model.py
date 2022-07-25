@@ -108,12 +108,11 @@ class ObsStateModel:
             )
         return False
 
-    def perform_action(self, action):
+    def perform_action(self, action: str):
         """
         Perform an action on the state model.
 
         :param action: an action, as given in the transitions table
-        :type action: ANY
         """
         _ = self.is_action_allowed(action, raise_if_disallowed=True)
         self._obs_state_machine.trigger(action)

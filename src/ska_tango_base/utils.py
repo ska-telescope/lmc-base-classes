@@ -13,6 +13,7 @@ import warnings
 from builtins import str
 from contextlib import contextmanager
 from datetime import datetime
+from typing import List, Tuple
 
 import tango
 from tango import (
@@ -312,7 +313,7 @@ def get_tango_device_type_id(tango_address):
     return tango_address.split("/")[1:3]
 
 
-def get_groups_from_json(json_definitions):
+def get_groups_from_json(json_definitions: List[str]):
     """
     Return a dict of tango.Group objects matching the JSON definitions.
 
@@ -393,7 +394,6 @@ def get_groups_from_json(json_definitions):
     :param json_definitions: Sequence of strings, each one a JSON dict
         with keys "group_name", and one or both of:  "devices" and
         "subgroups", recursively defining the hierarchy.
-    :type json_definitions: sequence of str
 
     :return: A dictionary, the keys of which are the names of the
         groups, in the following form: {"<group name 1>": <tango.Group>,
@@ -511,14 +511,13 @@ def validate_capability_types(
         )
 
 
-def validate_input_sizes(command_name, argin):
+def validate_input_sizes(command_name, argin: Tuple[List[int], List[str]]):
     """
     Check the validity of the input parameters passed to the specified command.
 
     :param command_name: The name of the command which is to be executed.
     :type command_name: str
     :param argin: A tuple of two lists
-    :type argin: tango.DevVarLongStringArray
     """
     capabilities_instances, capability_types = argin
     if len(capabilities_instances) != len(capability_types):

@@ -98,6 +98,7 @@ needs_sphinx = '3.5'
 extensions = [
     'sphinx.ext.autodoc',
     'sphinx.ext.doctest',
+    'sphinx.ext.intersphinx',
     'sphinx.ext.todo',
     'sphinx.ext.coverage',
     "sphinx.ext.inheritance_diagram",
@@ -354,3 +355,18 @@ texinfo_documents = [
 
 # If true, do not generate a @detailmenu in the "Top" node's menu.
 #texinfo_no_detailmenu = False
+
+intersphinx_mapping = {
+    "https://docs.python.org/3.7/": None,
+    "tango": ("https://pytango.readthedocs.io/en/v9.3.3/", None),
+}
+
+nitpick_ignore = [
+    # TODO: These first three are private methods that we don't document,
+    # so we shouldn't be referencing them either.
+    ("py:class", "_CspSubElementObsStateMachine"), 
+    ("py:class", "_SubarrayObsStateMachine"),
+    ("py:class", "_OpStateMachine"),
+    # TODO: Can't figure this last one out
+    ("py:class", "ska_tango_base.base.component_manager.Wrapped"),
+]

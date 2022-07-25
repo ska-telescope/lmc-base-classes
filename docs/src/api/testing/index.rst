@@ -9,5 +9,4 @@ Testing subpackage
   :caption: Subpackages
   :maxdepth: 2
 
-  Mock<mock/index>
   Reference<reference/index>

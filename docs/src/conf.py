@@ -358,7 +358,7 @@ texinfo_documents = [
 
 intersphinx_mapping = {
     "https://docs.python.org/3.7/": None,
-    "tango": ("https://pytango.readthedocs.io/en/v9.3.3/", None),
+    "tango": ("https://pytango.readthedocs.io/en/v9.3.4/", None),
 }
 
 nitpick_ignore = [

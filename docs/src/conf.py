@@ -59,6 +59,7 @@ autodoc_mock_imports = [
     'debugpy',
     'numpy',
     'ska_ser_logging',
+    'ska_tango_testing',
     'tango',
     'transitions',
 ]

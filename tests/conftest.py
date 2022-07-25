@@ -2,20 +2,18 @@
 """This module defines elements of the pytest test harness shared by all tests."""
 from __future__ import annotations
 
-import collections
 import logging
 import socket
-import time
 
 import pytest
 import tango
+from ska_tango_testing.mock import MockCallableGroup
+from ska_tango_testing.mock.tango import MockTangoEventCallbackGroup
 from tango.test_context import (
     DeviceTestContext,
     MultiDeviceTestContext,
     get_host_ip,
 )
-
-from ska_tango_base.testing.mock import MockCallable, MockChangeEventCallback
 
 
 @pytest.fixture(scope="class")
@@ -41,7 +39,7 @@ def tango_context(device_test_config):
             "device"
         ].create_component_manager = component_manager_patch
 
-    tango_context = DeviceTestContext(**device_test_config)
+    tango_context = DeviceTestContext(**device_test_config, process=True)
     tango_context.start()
     yield tango_context
     tango_context.stop()
@@ -59,10 +57,6 @@ def device_under_test(tango_context):
     :return: a proxy to the device under test
     :rtype: :py:class:`tango.DeviceProxy`
     """
-    # Give the PushChanges polled command time to run once.
-    time.sleep(0.15)
-    # TODO: This would be better handled by waiting for the state to be OFF.
-
     return tango_context.device
 
 
@@ -79,51 +73,31 @@ def callbacks():
 
     :return: a collections.defaultdict that returns callbacks by name.
     """
-    return collections.defaultdict(MockCallable)
+    return MockCallableGroup(
+        "communication_state",
+        "component_state",
+        "off_task",
+        "standby_task",
+    )
 
 
 @pytest.fixture()
-def change_event_callbacks():
+def change_event_callbacks() -> MockTangoEventCallbackGroup:
     """
     Return a dictionary of Tango device change event callbacks with asynchrony support.
 
     :return: a collections.defaultdict that returns change event
         callbacks by name.
     """
-
-    class _ChangeEventDict:
-        def __init__(self):
-            self._dict = {}
-
-        def __getitem__(self, key):
-            if key not in self._dict:
-                self._dict[key] = MockChangeEventCallback(key)
-            return self._dict[key]
-
-    return _ChangeEventDict()
-
-
-@pytest.fixture()
-def tango_change_event_helper(device_under_test, change_event_callbacks):
-    """
-    Return a helper to simplify subscription to the device under test with a callback.
-
-    :param device_under_test: a proxy to the device under test
-    :param change_event_callbacks: dictionary of callbacks with
-        asynchrony support, specifically for receiving Tango device
-        change events.
-    """
-
-    class _TangoChangeEventHelper:
-        def subscribe(self, attribute_name):
-            device_under_test.subscribe_event(
-                attribute_name,
-                tango.EventType.CHANGE_EVENT,
-                change_event_callbacks[attribute_name],
-            )
-            return change_event_callbacks[attribute_name]
-
-    return _TangoChangeEventHelper()
+    return MockTangoEventCallbackGroup(
+        "adminMode",
+        "obsState",
+        "state",
+        "status",
+        "longRunningCommandProgress",
+        "longRunningCommandResult",
+        "longRunningCommandStatus",
+    )
 
 
 @pytest.fixture()
@@ -173,31 +147,3 @@ def multi_device_tango_context(
         devices_to_test, host=HOST, port=PORT, process=True
     ) as context:
         yield context
-
-
-@pytest.fixture()
-def multi_tango_change_event_helper(
-    multi_device_tango_context, change_event_callbacks
-):
-    """
-    Return a helper to simplify subscription to the multiple devices under test with a callback.
-
-    :param multi_device_tango_context: A MultiDeviceTestContext where several devices are defined
-    :param change_event_callbacks: dictionary of callbacks with
-        asynchrony support, specifically for receiving Tango device
-        change events.
-    """
-
-    class _TangoChangeEventHelper:
-        def subscribe(self, device_name, attribute_name):
-            device_under_test = multi_device_tango_context.get_device(
-                device_name
-            )
-            device_under_test.subscribe_event(
-                attribute_name,
-                tango.EventType.CHANGE_EVENT,
-                change_event_callbacks[attribute_name],
-            )
-            return change_event_callbacks[attribute_name]
-
-    return _TangoChangeEventHelper()

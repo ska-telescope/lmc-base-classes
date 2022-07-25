@@ -40,6 +40,7 @@ setuptools.setup(
         "numpy",
         "pytango",
         "ska_ser_logging",
+        "ska_tango_testing",
         "transitions",
     ],
     tests_require=["pytest", "coverage", "pytest-json-report", "pytest-forked", "pytest-timeout"],

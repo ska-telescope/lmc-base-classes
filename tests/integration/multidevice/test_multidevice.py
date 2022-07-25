@@ -1,6 +1,7 @@
 """Test various Tango devices with long running commmands working together."""
 import pytest
 import tango
+from ska_tango_testing.mock.tango import MockTangoEventCallbackGroup
 
 from ska_tango_base.commands import ResultCode
 
@@ -29,6 +30,21 @@ def device_test_config(device_properties):
     }
 
 
+@pytest.fixture()
+def change_event_callbacks() -> MockTangoEventCallbackGroup:
+    """
+    Return a dictionary of Tango device change event callbacks with asynchrony support.
+
+    :return: a collections.defaultdict that returns change event
+        callbacks by name.
+    """
+    return MockTangoEventCallbackGroup(
+        "longRunningCommandProgress",
+        "longRunningCommandResult",
+        timeout=5.0,
+    )
+
+
 @pytest.mark.forked
 def test_device_init(device_under_test):
     """Test device initialisation."""
@@ -37,12 +53,16 @@ def test_device_init(device_under_test):
 
 
 @pytest.mark.forked
-def test_device(device_under_test, tango_change_event_helper):
+def test_device(device_under_test, change_event_callbacks):
     """Test our Multidevice."""
-    lrc_result_cb = tango_change_event_helper.subscribe(
-        "longRunningCommandResult"
+    device_under_test.subscribe_event(
+        "longRunningCommandResult",
+        tango.EventType.CHANGE_EVENT,
+        change_event_callbacks["longRunningCommandResult"],
     )
-    lrc_result_cb.get_next_change_event()
+    change_event_callbacks.assert_change_event(
+        "longRunningCommandResult", ("", "")
+    )
 
     # Short
     result_code, result = device_under_test.Short(5)
@@ -51,30 +71,41 @@ def test_device(device_under_test, tango_change_event_helper):
 
 
 @pytest.mark.forked
-def test_non_abort(device_under_test, tango_change_event_helper):
+def test_non_abort(device_under_test, change_event_callbacks):
     """Test non abort."""
-    lrc_result_cb = tango_change_event_helper.subscribe(
-        "longRunningCommandResult"
+    device_under_test.subscribe_event(
+        "longRunningCommandResult",
+        tango.EventType.CHANGE_EVENT,
+        change_event_callbacks["longRunningCommandResult"],
     )
-    lrc_result_cb.get_next_change_event()
+    change_event_callbacks.assert_change_event(
+        "longRunningCommandResult", ("", "")
+    )
 
     # NonAbortingLongRunning
     result_code, command_id = device_under_test.NonAbortingLongRunning(0.1)
     assert ResultCode(int(result_code)) == ResultCode.QUEUED
     assert command_id.endswith("NonAbortingLongRunning")
 
-    next_result = lrc_result_cb.get_next_change_event()
-    assert next_result[0].endswith("NonAbortingLongRunning")
-    assert next_result[1] == '"non_aborting_lrc OK"'
+    next_result = change_event_callbacks.assert_against_call(
+        "longRunningCommandResult"
+    )
+    command_id, message = next_result["attribute_value"]
+    assert command_id.endswith("NonAbortingLongRunning")
+    assert message == '"non_aborting_lrc OK"'
 
 
 @pytest.mark.forked
-def test_abort(device_under_test, tango_change_event_helper):
+def test_abort(device_under_test, change_event_callbacks):
     """Test abort."""
-    lrc_result_cb = tango_change_event_helper.subscribe(
-        "longRunningCommandResult"
+    device_under_test.subscribe_event(
+        "longRunningCommandResult",
+        tango.EventType.CHANGE_EVENT,
+        change_event_callbacks["longRunningCommandResult"],
     )
-    lrc_result_cb.get_next_change_event()
+    change_event_callbacks.assert_change_event(
+        "longRunningCommandResult", ("", "")
+    )
 
     # AbortingLongRunning
     result_code, command_id = device_under_test.AbortingLongRunning(0.1)
@@ -83,36 +114,50 @@ def test_abort(device_under_test, tango_change_event_helper):
 
     device_under_test.AbortCommands()
 
-    next_result = lrc_result_cb.get_next_change_event()
-    assert next_result[0].endswith("AbortingLongRunning")
-    assert next_result[1] == '"AbortingTask Aborted 0.1"'
+    next_result = change_event_callbacks.assert_against_call(
+        "longRunningCommandResult"
+    )
+    command_id, message = next_result["attribute_value"]
+    assert command_id.endswith("AbortingLongRunning")
+    assert message == '"AbortingTask Aborted 0.1"'
 
 
 @pytest.mark.forked
-def test_exception(device_under_test, tango_change_event_helper):
+def test_exception(device_under_test, change_event_callbacks):
     """Test exception."""
-    lrc_result_cb = tango_change_event_helper.subscribe(
-        "longRunningCommandResult"
+    device_under_test.subscribe_event(
+        "longRunningCommandResult",
+        tango.EventType.CHANGE_EVENT,
+        change_event_callbacks["longRunningCommandResult"],
     )
-    lrc_result_cb.get_next_change_event()
+    change_event_callbacks.assert_change_event(
+        "longRunningCommandResult", ("", "")
+    )
 
     # LongRunningException
     result_code, command_id = device_under_test.LongRunningException()
     assert ResultCode(int(result_code)) == ResultCode.QUEUED
     assert command_id.endswith("LongRunningException")
 
-    next_result = lrc_result_cb.get_next_change_event()
-    assert next_result[0].endswith("LongRunningException")
-    assert next_result[1] == "Something went wrong"
+    next_result = change_event_callbacks.assert_against_call(
+        "longRunningCommandResult"
+    )
+    command_id, message = next_result["attribute_value"]
+    assert command_id.endswith("LongRunningException")
+    assert message == "Something went wrong"
 
 
 @pytest.mark.forked
-def test_progress(device_under_test, tango_change_event_helper):
+def test_progress(device_under_test, change_event_callbacks):
     """Test progress."""
-    lrc_progress_cb = tango_change_event_helper.subscribe(
-        "longRunningCommandProgress"
+    device_under_test.subscribe_event(
+        "longRunningCommandProgress",
+        tango.EventType.CHANGE_EVENT,
+        change_event_callbacks["longRunningCommandProgress"],
     )
-    lrc_progress_cb.get_next_change_event()
+    change_event_callbacks.assert_change_event(
+        "longRunningCommandProgress", None
+    )
 
     # Progress
     result_code, command_id = device_under_test.TestProgress(0.3)
@@ -120,6 +165,9 @@ def test_progress(device_under_test, tango_change_event_helper):
     assert command_id.endswith("TestProgress")
 
     for i in [1, 25, 50, 74, 100]:
-        next_result = list(lrc_progress_cb.get_next_change_event())
-        assert command_id in next_result
-        assert next_result[next_result.index(command_id) + 1] == f"{i}"
+        next_event = change_event_callbacks.assert_against_call(
+            "longRunningCommandProgress"
+        )
+        progresses = list(next_event["attribute_value"])
+        assert command_id in progresses
+        assert progresses[progresses.index(command_id) + 1] == f"{i}"

@@ -686,7 +686,7 @@ class ReferenceSubarrayComponentManager(
 
         :return: task status and message
         """
-        return self.abort_tasks()
+        return self.abort_tasks(task_callback=task_callback)
 
     @check_communicating
     def obsreset(

@@ -56,7 +56,7 @@ class TestTaskExecutor:
         self: TestTaskExecutor,
         executor: TaskExecutor,
         max_workers: int,
-        callbacks: ldict[Hashable, Callable],
+        callbacks: dict[Hashable, Callable],
     ) -> None:
         """
         Test that we can execute tasks.

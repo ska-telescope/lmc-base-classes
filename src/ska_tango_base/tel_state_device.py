@@ -1,30 +1,25 @@
-# pylint: skip-file  # TODO: Incrementally lint this repo
 # -*- coding: utf-8 -*-
 #
-# This file is part of the SKATelState project
+# This file is part of the SKA Tango Base project
 #
-#
-#
+# Distributed under the terms of the BSD 3-clause new license.
+# See LICENSE.txt for more info.
 """
 SKATelState.
 
 A generic base device for Telescope State for SKA.
 """
-# PROTECTED REGION ID(SKATelState.additionnal_import) ENABLED START #
-from tango.server import device_property, run
+from __future__ import annotations
+
+from tango.server import device_property
 
 from ska_tango_base import SKABaseDevice
-
-# PROTECTED REGION END #    //  SKATelState.additionnal_imports
 
 __all__ = ["SKATelState", "main"]
 
 
 class SKATelState(SKABaseDevice):
     """A generic base device for Telescope State for SKA."""
-
-    # PROTECTED REGION ID(SKATelState.class_variable) ENABLED START #
-    # PROTECTED REGION END #    //  SKATelState.class_variable
 
     # -----------------
     # Device Properties
@@ -34,25 +29,18 @@ class SKATelState(SKABaseDevice):
         dtype="str",
     )
 
-    # ----------
-    # Attributes
-    # ----------
-
     # ---------------
     # General methods
     # ---------------
-    def always_executed_hook(self):
-        # PROTECTED REGION ID(SKATelState.always_executed_hook) ENABLED START #
+    def always_executed_hook(self: SKATelState) -> None:
         """
         Perform actions that are executed before every device command.
 
         This is a Tango hook.
         """
         pass
-        # PROTECTED REGION END #    //  SKATelState.always_executed_hook
 
-    def delete_device(self):
-        # PROTECTED REGION ID(SKATelState.delete_device) ENABLED START #
+    def delete_device(self: SKATelState) -> None:
         """
         Clean up any resources prior to device deletion.
 
@@ -62,11 +50,10 @@ class SKATelState(SKABaseDevice):
         be released prior to device deletion.
         """
         pass
-        # PROTECTED REGION END #    //  SKATelState.delete_device
 
-    # ------------------
-    # Attributes methods
-    # ------------------
+    # ----------
+    # Attributes
+    # ----------
 
     # --------
     # Commands
@@ -78,11 +65,16 @@ class SKATelState(SKABaseDevice):
 # ----------
 
 
-def main(args=None, **kwargs):
-    # PROTECTED REGION ID(SKATelState.main) ENABLED START #
-    """Launch an SKATelState device."""
-    return run((SKATelState,), args=args, **kwargs)
-    # PROTECTED REGION END #    //  SKATelState.main
+def main(*args: str, **kwargs: str) -> int:
+    """
+    Entry point for module.
+
+    :param args: positional arguments
+    :param kwargs: named arguments
+
+    :return: exit code
+    """
+    return SKATelState.run_server(args=args or None, **kwargs)
 
 
 if __name__ == "__main__":

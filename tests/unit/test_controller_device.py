@@ -1,20 +1,19 @@
-# pylint: skip-file  # TODO: Incrementally lint this repo
-#########################################################################################
 # -*- coding: utf-8 -*-
 #
-# This file is part of the SKAController project
+# This file is part of the SKA Tango Base project
 #
-#
-#
-#########################################################################################
+# Distributed under the terms of the BSD 3-clause new license.
+# See LICENSE.txt for more info.
 """Contain the tests for the SKAController."""
+from __future__ import annotations
 
 import re
+from typing import Any
 
 import pytest
+import tango
 from tango import DevState
 
-# PROTECTED REGION ID(SKAController.test_additional_imports) ENABLED START #
 from ska_tango_base import SKAController
 from ska_tango_base.control_model import (
     AdminMode,
@@ -25,18 +24,14 @@ from ska_tango_base.control_model import (
 )
 from ska_tango_base.testing.reference import ReferenceBaseComponentManager
 
-# PROTECTED REGION END #    //  SKAController.test_additional_imports
 
-
-# PROTECTED REGION ID(SKAController.test_SKAController_decorators) ENABLED START #
-# PROTECTED REGION END #    //  SKAController.test_SKAController_decorators
 class TestSKAController(object):
     """Test class for tests of the SKAController device class."""
 
     # capabilities = ['BAND1:1', 'BAND2:1', 'BAND3:0', 'BAND4:0', 'BAND5:0']
 
     @pytest.fixture(scope="class")
-    def device_properties(self):
+    def device_properties(self: TestSKAController) -> dict[str, Any]:
         """
         Fixture that returns properties of the device under test.
 
@@ -52,7 +47,9 @@ class TestSKAController(object):
         }
 
     @pytest.fixture(scope="class")
-    def device_test_config(self, device_properties):
+    def device_test_config(
+        self: TestSKAController, device_properties: dict[str, Any]
+    ) -> dict[str, Any]:
         """
         Specification of the device under test.
 
@@ -81,49 +78,44 @@ class TestSKAController(object):
         }
 
     @pytest.mark.skip("Not implemented")
-    def test_properties(self, device_under_test):
+    def test_properties(
+        self: TestSKAController, device_under_test: tango.DeviceProxy
+    ) -> None:
         """
         Test device properties.
 
         :param device_under_test: a proxy to the device under test
         """
-        # PROTECTED REGION ID(SKAController.test_properties) ENABLED START #
-        # PROTECTED REGION END #    //  SKAController.test_properties
         pass
 
-    # PROTECTED REGION ID(SKAController.test_State_decorators) ENABLED START #
-    # PROTECTED REGION END #    //  SKAController.test_State_decorators
-    def test_State(self, device_under_test):
+    def test_State(
+        self: TestSKAController, device_under_test: tango.DeviceProxy
+    ) -> None:
         """
         Test for State.
 
         :param device_under_test: a proxy to the device under test
         """
-        # PROTECTED REGION ID(SKAController.test_State) ENABLED START #
         assert device_under_test.state() == DevState.OFF
-        # PROTECTED REGION END #    //  SKAController.test_State
 
-    # PROTECTED REGION ID(SKAController.test_Status_decorators) ENABLED START #
-    # PROTECTED REGION END #    //  SKAController.test_Status_decorators
-    def test_Status(self, device_under_test):
+    def test_Status(
+        self: TestSKAController, device_under_test: tango.DeviceProxy
+    ) -> None:
         """
         Test for Status.
 
         :param device_under_test: a proxy to the device under test
         """
-        # PROTECTED REGION ID(SKAController.test_Status) ENABLED START #
         assert device_under_test.Status() == "The device is in OFF state."
-        # PROTECTED REGION END #    //  SKAController.test_Status
 
-    # PROTECTED REGION ID(SKAController.test_GetVersionInfo_decorators) ENABLED START #
-    # PROTECTED REGION END #    //  SKAController.test_GetVersionInfo_decorators
-    def test_GetVersionInfo(self, device_under_test):
+    def test_GetVersionInfo(
+        self: TestSKAController, device_under_test: tango.DeviceProxy
+    ) -> None:
         """
         Test for GetVersionInfo.
 
         :param device_under_test: a proxy to the device under test
         """
-        # PROTECTED REGION ID(SKAController.test_GetVersionInfo) ENABLED START #
         version_pattern = (
             f"{device_under_test.info().dev_class}, ska_tango_base, "
             "[0-9]+.[0-9]+.[0-9]+, A set of generic base devices for SKA Telescope."
@@ -131,190 +123,160 @@ class TestSKAController(object):
         version_info = device_under_test.GetVersionInfo()
         assert len(version_info) == 1
         assert re.match(version_pattern, version_info[0])
-        # PROTECTED REGION END #    //  SKAController.test_GetVersionInfo
 
-    # PROTECTED REGION ID(SKAController.test_isCapabilityAchievable_failure_decorators) ENABLED START #
-    # PROTECTED REGION END #    //  SKAController.test_isCapabilityAchievable_failure_decorators
     @pytest.mark.parametrize(
         ("capability", "success"),
         [([[2], ["BAND1"]], False), ([[1], ["BAND1"]], True)],
     )
     def test_isCapabilityAchievable(
-        self, device_under_test, capability, success
-    ):
+        self,
+        device_under_test: tango.DeviceProxy,
+        capability: tuple[list[int], list[str]],
+        success: bool,
+    ) -> None:
         """
         Test for isCapabilityAchievable to test failure condition.
 
         :param device_under_test: a proxy to the device under test
+        :param capability: the capability
+        :param success: True for test success else False
         """
-        # PROTECTED REGION ID(SKAController.test_isCapabilityAchievable) ENABLED START #
         assert success == device_under_test.isCapabilityAchievable(capability)
-        # PROTECTED REGION END #    //  SKAController.test_isCapabilityAchievable
 
-    # PROTECTED REGION ID(SKAController.test_elementLoggerAddress_decorators) ENABLED START #
-    # PROTECTED REGION END #    //  SKAController.test_elementLoggerAddress_decorators
-    def test_elementLoggerAddress(self, device_under_test):
+    def test_elementLoggerAddress(
+        self: TestSKAController, device_under_test: tango.DeviceProxy
+    ) -> None:
         """
         Test for elementLoggerAddress.
 
         :param device_under_test: a proxy to the device under test
         """
-        # PROTECTED REGION ID(SKAController.test_elementLoggerAddress) ENABLED START #
         assert device_under_test.elementLoggerAddress == ""
-        # PROTECTED REGION END #    //  SKAController.test_elementLoggerAddress
 
-    # PROTECTED REGION ID(SKAController.test_elementAlarmAddress_decorators) ENABLED START #
-    # PROTECTED REGION END #    //  SKAController.test_elementAlarmAddress_decorators
-    def test_elementAlarmAddress(self, device_under_test):
+    def test_elementAlarmAddress(
+        self: TestSKAController, device_under_test: tango.DeviceProxy
+    ) -> None:
         """
         Test for elementAlarmAddress.
 
         :param device_under_test: a proxy to the device under test
         """
-        # PROTECTED REGION ID(SKAController.test_elementAlarmAddress) ENABLED START #
         assert device_under_test.elementAlarmAddress == ""
-        # PROTECTED REGION END #    //  SKAController.test_elementAlarmAddress
 
-    # PROTECTED REGION ID(SKAController.test_elementTelStateAddress_decorators) ENABLED START #
-    # PROTECTED REGION END #    //  SKAController.test_elementTelStateAddress_decorators
-    def test_elementTelStateAddress(self, device_under_test):
+    def test_elementTelStateAddress(
+        self: TestSKAController, device_under_test: tango.DeviceProxy
+    ) -> None:
         """
         Test for elementTelStateAddress.
 
         :param device_under_test: a proxy to the device under test
         """
-        # PROTECTED REGION ID(SKAController.test_elementTelStateAddress) ENABLED START #
         assert device_under_test.elementTelStateAddress == ""
-        # PROTECTED REGION END #    //  SKAController.test_elementTelStateAddress
 
-    # PROTECTED REGION ID(SKAController.test_elementDatabaseAddress_decorators) ENABLED START #
-    # PROTECTED REGION END #    //  SKAController.test_elementDatabaseAddress_decorators
-    def test_elementDatabaseAddress(self, device_under_test):
+    def test_elementDatabaseAddress(
+        self: TestSKAController, device_under_test: tango.DeviceProxy
+    ) -> None:
         """
         Test for elementDatabaseAddress.
 
         :param device_under_test: a proxy to the device under test
         """
-        # PROTECTED REGION ID(SKAController.test_elementDatabaseAddress) ENABLED START #
         assert device_under_test.elementDatabaseAddress == ""
-        # PROTECTED REGION END #    //  SKAController.test_elementDatabaseAddress
 
-    # PROTECTED REGION ID(SKAController.test_buildState_decorators) ENABLED START #
-    # PROTECTED REGION END #    //  SKAController.test_buildState_decorators
-    def test_buildState(self, device_under_test):
+    def test_buildState(
+        self: TestSKAController, device_under_test: tango.DeviceProxy
+    ) -> None:
         """
         Test for buildState.
 
         :param device_under_test: a proxy to the device under test
         """
-        # PROTECTED REGION ID(SKAController.test_buildState) ENABLED START #
-        buildPattern = re.compile(
+        build_pattern = re.compile(
             r"ska_tango_base, [0-9]+.[0-9]+.[0-9]+, "
             r"A set of generic base devices for SKA Telescope"
         )
-        assert (
-            re.match(buildPattern, device_under_test.buildState)
-        ) is not None
-        # PROTECTED REGION END #    //  SKAController.test_buildState
+        assert (re.match(build_pattern, device_under_test.buildState)) is not None
 
-    # PROTECTED REGION ID(SKAController.test_versionId_decorators) ENABLED START #
-    # PROTECTED REGION END #    //  SKAController.test_versionId_decorators
-    def test_versionId(self, device_under_test):
+    def test_versionId(
+        self: TestSKAController, device_under_test: tango.DeviceProxy
+    ) -> None:
         """
         Test for versionId.
 
         :param device_under_test: a proxy to the device under test
         """
-        # PROTECTED REGION ID(SKAController.test_versionId) ENABLED START #
-        versionIdPattern = re.compile(r"[0-9]+.[0-9]+.[0-9]+")
-        assert (
-            re.match(versionIdPattern, device_under_test.versionId)
-        ) is not None
-        # PROTECTED REGION END #    //  SKAController.test_versionId
+        version_id_pattern = re.compile(r"[0-9]+.[0-9]+.[0-9]+")
+        assert (re.match(version_id_pattern, device_under_test.versionId)) is not None
 
-    # PROTECTED REGION ID(SKAController.test_healthState_decorators) ENABLED START #
-    # PROTECTED REGION END #    //  SKAController.test_healthState_decorators
-    def test_healthState(self, device_under_test):
+    def test_healthState(
+        self: TestSKAController, device_under_test: tango.DeviceProxy
+    ) -> None:
         """
         Test for healthState.
 
         :param device_under_test: a proxy to the device under test
         """
-        # PROTECTED REGION ID(SKAController.test_healthState) ENABLED START #
         assert device_under_test.healthState == HealthState.UNKNOWN
-        # PROTECTED REGION END #    //  SKAController.test_healthState
 
-    # PROTECTED REGION ID(SKAController.test_adminMode_decorators) ENABLED START #
-    # PROTECTED REGION END #    //  SKAController.test_adminMode_decorators
-    def test_adminMode(self, device_under_test):
+    def test_adminMode(
+        self: TestSKAController, device_under_test: tango.DeviceProxy
+    ) -> None:
         """
         Test for adminMode.
 
         :param device_under_test: a proxy to the device under test
         """
-        # PROTECTED REGION ID(SKAController.test_adminMode) ENABLED START #
         assert device_under_test.adminMode == AdminMode.ONLINE
-        # PROTECTED REGION END #    //  SKAController.test_adminMode
 
-    # PROTECTED REGION ID(SKAController.test_controlMode_decorators) ENABLED START #
-    # PROTECTED REGION END #    //  SKAController.test_controlMode_decorators
-    def test_controlMode(self, device_under_test):
+    def test_controlMode(
+        self: TestSKAController, device_under_test: tango.DeviceProxy
+    ) -> None:
         """
         Test for controlMode.
 
         :param device_under_test: a proxy to the device under test
         """
-        # PROTECTED REGION ID(SKAController.test_controlMode) ENABLED START #
         assert device_under_test.controlMode == ControlMode.REMOTE
-        # PROTECTED REGION END #    //  SKAController.test_controlMode
 
-    # PROTECTED REGION ID(SKAController.test_simulationMode_decorators) ENABLED START #
-    # PROTECTED REGION END #    //  SKAController.test_simulationMode_decorators
-    def test_simulationMode(self, device_under_test):
+    def test_simulationMode(
+        self: TestSKAController, device_under_test: tango.DeviceProxy
+    ) -> None:
         """
         Test for simulationMode.
 
         :param device_under_test: a proxy to the device under test
         """
-        # PROTECTED REGION ID(SKAController.test_simulationMode) ENABLED START #
         assert device_under_test.simulationMode == SimulationMode.FALSE
-        # PROTECTED REGION END #    //  SKAController.test_simulationMode
 
-    # PROTECTED REGION ID(SKAController.test_testMode_decorators) ENABLED START #
-    # PROTECTED REGION END #    //  SKAController.test_testMode_decorators
-    def test_testMode(self, device_under_test):
+    def test_testMode(
+        self: TestSKAController, device_under_test: tango.DeviceProxy
+    ) -> None:
         """
         Test for testMode.
 
         :param device_under_test: a proxy to the device under test
         """
-        # PROTECTED REGION ID(SKAController.test_testMode) ENABLED START #
         assert device_under_test.testMode == TestMode.NONE
-        # PROTECTED REGION END #    //  SKAController.test_testMode
 
-    # PROTECTED REGION ID(SKAController.test_maxCapabilities_decorators) ENABLED START #
-    # PROTECTED REGION END #    //  SKAController.test_maxCapabilities_decorators
-    def test_maxCapabilities(self, device_under_test):
+    def test_maxCapabilities(
+        self: TestSKAController, device_under_test: tango.DeviceProxy
+    ) -> None:
         """
         Test for maxCapabilities.
 
         :param device_under_test: a proxy to the device under test
         """
-        # PROTECTED REGION ID(SKAController.test_maxCapabilities) ENABLED START #
         assert device_under_test.maxCapabilities == ("BAND1:1", "BAND2:1")
-        # PROTECTED REGION END #    //  SKAController.test_maxCapabilities
 
-    # PROTECTED REGION ID(SKAController.test_availableCapabilities_decorators) ENABLED START #
-    # PROTECTED REGION END #    //  SKAController.test_availableCapabilities_decorators
-    def test_availableCapabilities(self, device_under_test):
+    def test_availableCapabilities(
+        self: TestSKAController, device_under_test: tango.DeviceProxy
+    ) -> None:
         """
         Test for availableCapabilities.
 
         :param device_under_test: a proxy to the device under test
         """
-        # PROTECTED REGION ID(SKAController.test_availableCapabilities) ENABLED START #
         assert device_under_test.availableCapabilities == (
             "BAND1:1",
             "BAND2:1",
         )
-        # PROTECTED REGION END #    //  SKAController.test_availableCapabilities

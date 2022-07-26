@@ -248,8 +248,6 @@ class AdminModeModel:
         not intended that this method would be called outside of test
         setups. A warning will be raised if it is.
 
-        :param admin_mode: the target admin mode
-        :type admin_mode:
-            :py:class:`~ska_tango_base.control_model.AdminMode`
+        :param admin_mode: the target
         """
         getattr(self._admin_mode_machine, f"to_{admin_mode.name}")()

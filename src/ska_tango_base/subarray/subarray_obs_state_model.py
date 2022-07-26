@@ -447,7 +447,7 @@ class SubarrayObsStateModel(ObsStateModel):
         :param machine_state: the new state of the observation state
             machine
         """
-        self._obs_state: dict[str, ObsState]
+        self._obs_state: ObsState
         obs_state = self._obs_state_mapping[machine_state]
         if self._obs_state != obs_state:
             self._obs_state = obs_state

@@ -9,12 +9,13 @@ from __future__ import annotations
 
 from threading import Event, Lock
 from time import sleep
-from typing import Callable, Hashable, Optional, cast
+from typing import Callable, Hashable, Optional
 
 import pytest
 from ska_tango_testing.mock import MockCallableGroup
 
 from ska_tango_base.executor import TaskExecutor, TaskStatus
+from ska_tango_base.testing.mock.mock_callable import MockCallable
 
 
 class TestTaskExecutor:
@@ -56,7 +57,7 @@ class TestTaskExecutor:
         self: TestTaskExecutor,
         executor: TaskExecutor,
         max_workers: int,
-        callbacks: dict[Hashable, Callable],
+        callbacks: dict[Hashable, MockCallable],
     ) -> None:
         """
         Test that we can execute tasks.
@@ -118,7 +119,7 @@ class TestTaskExecutor:
         self: TestTaskExecutor,
         executor: TaskExecutor,
         max_workers: int,
-        callbacks: dict[Hashable, Callable],
+        callbacks: dict[Hashable, MockCallable],
     ) -> None:
         """
         Test that we can abort execution.
@@ -150,7 +151,7 @@ class TestTaskExecutor:
             if task_callback is not None:
                 task_callback(status=TaskStatus.IN_PROGRESS)
             with lock:
-                if task_abort_event.is_set():
+                if task_abort_event.is_set() and task_callback:
                     task_callback(status=TaskStatus.ABORTED)
                     return
             if task_callback is not None:
@@ -217,7 +218,7 @@ class TestTaskExecutor:
     def test_exception(
         self: TestTaskExecutor,
         executor: TaskExecutor,
-        callbacks: dict[Hashable, Callable],
+        callbacks: dict[Hashable, MockCallable],
     ) -> None:
         """
         Test that the executor handles an uncaught exception correctly.

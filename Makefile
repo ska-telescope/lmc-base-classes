@@ -20,17 +20,30 @@ PYTHON_VARS_AFTER_PYTEST = --forked
 PYTHON_LINT_TARGET = src/ska_tango_base/base \
     src/ska_tango_base/obs \
     src/ska_tango_base/subarray \
+    src/ska_tango_base/capability_device.py \
     src/ska_tango_base/commands.py \
+    src/ska_tango_base/control_model.py \
+    src/ska_tango_base/controller_device.py \
     src/ska_tango_base/executor.py \
+    src/ska_tango_base/faults.py \
+    src/ska_tango_base/logger_device.py \
+    src/ska_tango_base/release.py \
+    src/ska_tango_base/tel_state_device.py \
     src/ska_tango_base/testing/mock/mock_callable.py \
     src/ska_tango_base/testing/reference/reference_base_component_manager.py \
     src/ska_tango_base/testing/reference/reference_subarray_component_manager.py \
+    tests/unit/test_alarm_handler_device.py \
     tests/unit/test_base_device.py \
     tests/unit/test_base_component_manager.py \
+    tests/unit/test_capability_device.py \
+    tests/unit/test_controller_device.py \
     tests/unit/test_executor.py \
+    tests/unit/test_logger_device.py \
     tests/unit/test_obs_device.py \
     tests/unit/test_subarray_device.py \
-    tests/unit/test_subarray_component_manager.py
+    tests/unit/test_subarray_component_manager.py \
+    tests/unit/test_tel_state_device.py \
+    tests/unit/test_utils.py
 
 DOCS_SPHINXOPTS=-n -W --keep-going
 

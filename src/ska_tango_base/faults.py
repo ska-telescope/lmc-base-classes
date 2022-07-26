@@ -37,5 +37,6 @@ class ComponentError(Exception):
     """Component cannot perform as requested."""
 
 
-class ComponentFault(ComponentError):
+# This should really be named 'ComponentFaultError'
+class ComponentFault(ComponentError):  # noqa: N818
     """Component is in FAULT state and cannot perform as requested."""

@@ -1,10 +1,9 @@
-# pylint: skip-file  # TODO: Incrementally lint this repo
 # -*- coding: utf-8 -*-
 #
-# This file is part of the SKALogger project
+# This file is part of the SKA Tango Base project
 #
-#
-#
+# Distributed under the terms of the BSD 3-clause new license.
+# See LICENSE.txt for more info.
 """
 This module implements SKALogger device, a generic base device for logging for SKA.
 
@@ -12,17 +11,20 @@ It enables to view on-line logs through the Tango Logging Services and
 to store logs using Python logging. It configures the log levels of
 remote logging for selected devices.
 """
-# PROTECTED REGION ID(SKALogger.additionnal_import) ENABLED START #
-from typing import List, Tuple
+from __future__ import annotations
+
+from typing import Any, List, Optional, Tuple, cast
 
 from tango import DebugIt, DevFailed, DeviceProxy
-from tango.server import command, run
+from tango.server import command
 
 from ska_tango_base import SKABaseDevice
+
+# from ska_tango_base.base import BaseComponentManager
 from ska_tango_base.commands import FastCommand, ResultCode
 from ska_tango_base.control_model import LoggingLevel
 
-# PROTECTED REGION END #    //  SKALogger.additionnal_import
+DevVarLongStringArrayType = Tuple[List[ResultCode], List[Optional[str]]]
 
 __all__ = ["SKALogger", "main"]
 
@@ -30,21 +32,14 @@ __all__ = ["SKALogger", "main"]
 class SKALogger(SKABaseDevice):
     """A generic base device for Logging for SKA."""
 
-    # PROTECTED REGION ID(SKALogger.class_variable) ENABLED START #
-    # PROTECTED REGION END #    //  SKALogger.class_variable
-
     # -----------------
     # Device Properties
     # -----------------
 
-    # ----------
-    # Attributes
-    # ----------
-
     # ---------------
     # General methods
     # ---------------
-    def init_command_objects(self):
+    def init_command_objects(self: SKALogger) -> None:
         """Set up the command objects."""
         super().init_command_objects()
         self.register_command_object(
@@ -52,22 +47,23 @@ class SKALogger(SKABaseDevice):
             self.SetLoggingLevelCommand(self.logger),
         )
 
-    def create_component_manager(self):
-        """Create and return the component manager for this device."""
+    def create_component_manager(self: SKALogger) -> None:
+        """
+        Create and return the component manager for this device.
+
+        :return: None, this device doesn't have a component manager
+        """
         return None  # This device doesn't have a component manager yet
 
-    def always_executed_hook(self):
-        # PROTECTED REGION ID(SKALogger.always_executed_hook) ENABLED START #
+    def always_executed_hook(self: SKALogger) -> None:
         """
         Perform actions that are executed before every device command.
 
         This is a Tango hook.
         """
         pass
-        # PROTECTED REGION END #    //  SKALogger.always_executed_hook
 
-    def delete_device(self):
-        # PROTECTED REGION ID(SKALogger.delete_device) ENABLED START #
+    def delete_device(self: SKALogger) -> None:
         """
         Clean up any resources prior to device deletion.
 
@@ -77,11 +73,10 @@ class SKALogger(SKABaseDevice):
         be released prior to device deletion.
         """
         pass
-        # PROTECTED REGION END #    //  SKALogger.delete_device
 
-    # ------------------
-    # Attributes methods
-    # ------------------
+    # ----------
+    # Attributes
+    # ----------
 
     # --------
     # Commands
@@ -89,20 +84,24 @@ class SKALogger(SKABaseDevice):
     class SetLoggingLevelCommand(FastCommand):
         """A class for the SKALoggerDevice's SetLoggingLevel() command."""
 
-        def do(self, argin):
+        def do(  # type: ignore[override]
+            self: SKALogger.SetLoggingLevelCommand, argin: Tuple[List[str], List[Any]]
+        ) -> tuple[ResultCode, str]:
             """
             Stateless hook for SetLoggingLevel() command functionality.
+
+            :param argin: tuple consisting of list of logging levels
+                and list of tango devices
 
             :return: A tuple containing a return code and a string
                 message indicating status. The message is for
                 information purpose only.
-            :rtype: (ResultCode, str)
             """
             logging_levels = argin[0][:]
             logging_devices = argin[1][:]
             for level, device in zip(logging_levels, logging_devices):
                 try:
-                    new_level = LoggingLevel(level)
+                    new_level = LoggingLevel(cast(int, level))
                     self.logger.info(
                         "Setting logging level %s for %s", new_level, device
                     )
@@ -123,11 +122,12 @@ class SKALogger(SKABaseDevice):
         "(0=OFF, 1=FATAL, 2=ERROR, 3=WARNING, 4=INFO, 5=DEBUG)."
         "Example: [[4, 5], ['my/dev/1', 'my/dev/2']].",
         dtype_out="DevVarLongStringArray",
-        doc_out="(ReturnType, 'informational message')",
+        doc_out="(ResultCode, 'informational message')",
     )
     @DebugIt()
-    def SetLoggingLevel(self, argin: Tuple[List[int], List[str]]):
-        # PROTECTED REGION ID(SKALogger.SetLoggingLevel) ENABLED START #
+    def SetLoggingLevel(
+        self: SKALogger, argin: DevVarLongStringArrayType
+    ) -> DevVarLongStringArrayType:
         """
         Set the logging level of the specified devices.
 
@@ -139,13 +139,11 @@ class SKALogger(SKABaseDevice):
             * argin[0]: list of DevLong. Desired logging level.
             * argin[1]: list of DevString. Desired tango device.
 
-        :returns: None.
+        :returns: ResultCode & message.
         """
         handler = self.get_command_object("SetLoggingLevel")
         (result_code, message) = handler(argin)
-        return [[result_code], [message]]
-
-        # PROTECTED REGION END #    //  SKALogger.SetLoggingLevel
+        return ([result_code], [message])
 
 
 # ----------
@@ -153,11 +151,16 @@ class SKALogger(SKABaseDevice):
 # ----------
 
 
-def main(args=None, **kwargs):
-    # PROTECTED REGION ID(SKALogger.main) ENABLED START #
-    """Launch an SKALogger device."""
-    return run((SKALogger,), args=args, **kwargs)
-    # PROTECTED REGION END #    //  SKALogger.main
+def main(*args: str, **kwargs: str) -> int:
+    """
+    Entry point for module.
+
+    :param args: positional arguments
+    :param kwargs: named arguments
+
+    :return: exit code
+    """
+    return SKALogger.run_server(args=args or None, **kwargs)
 
 
 if __name__ == "__main__":

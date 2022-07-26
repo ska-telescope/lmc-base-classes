@@ -223,60 +223,56 @@ class SKAAlarmHandler(SKABaseDevice):
     class GetAlarmRuleCommand(FastCommand):
         """A class for the SKAAlarmHandler's GetAlarmRule() command."""
 
-        def do(self, argin):
+        def do(self, argin) -> str:
             """
             Stateless hook for SKAAlarmHandler GetAlarmRule() command.
 
-            :return: Alarm configuration info: rule, actions, etc.
-            :rtype: JSON string
+            :return: JSON string containing alarm configuration info:
+                rule, actions, etc.
             """
             return ""
 
     class GetAlarmDataCommand(FastCommand):
         """A class for the SKAAlarmHandler's GetAlarmData() command."""
 
-        def do(self, argin):
+        def do(self, argin) -> str:
             """
             Stateless hook for SKAAlarmHandler GetAlarmData() command.
 
-            :return: Alarm data
-            :rtype: JSON string
+            :return: JSON string specifying alarm data
             """
             return ""
 
     class GetAlarmAdditionalInfoCommand(FastCommand):
         """A class for the SKAAlarmHandler's GetAlarmAdditionalInfo() command."""
 
-        def do(self, argin):
+        def do(self, argin) -> str:
             """
             Stateless hook for SKAAlarmHandler GetAlarmAdditionalInfo() command.
 
-            :return: Alarm additional info
-            :rtype: JSON string
+            :return: JSON string specifying alarm additional info
             """
             return ""
 
     class GetAlarmStatsCommand(FastCommand):
         """A class for the SKAAlarmHandler's GetAlarmStats() command."""
 
-        def do(self):
+        def do(self) -> str:
             """
             Stateless hook for SKAAlarmHandler GetAlarmStats() command.
 
-            :return: Alarm stats
-            :rtype: JSON string
+            :return: JSON string specifying alarm stats
             """
             return ""
 
     class GetAlertStatsCommand(FastCommand):
         """A class for the SKAAlarmHandler's GetAlertStats() command."""
 
-        def do(self):
+        def do(self) -> str:
             """
             Stateless hook for SKAAlarmHandler GetAlertStats() command.
 
-            :return: Alert stats
-            :rtype: JSON string
+            :return: JSON string specifying alert stats
             """
             return ""
 

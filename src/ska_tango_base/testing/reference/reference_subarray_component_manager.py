@@ -1,5 +1,7 @@
 # pylint: skip-file  # TODO: Incrementally lint this repo
 """This module models component management for SKA subarray devices."""
+from typing import List
+
 from ska_tango_base.base import check_communicating, check_on
 from ska_tango_base.commands import ResultCode
 from ska_tango_base.control_model import PowerState
@@ -145,13 +147,12 @@ class FakeSubarrayComponent(FakeBaseComponent):
 
     @property
     @check_on
-    def configured_capabilities(self):
+    def configured_capabilities(self) -> List[str]:
         """
         Return the configured capabilities of this component.
 
         :return: list of strings indicating number of configured
             instances of each capability type
-        :rtype: list of str
         """
         configured_capabilities = []
         for capability_type, capability_instances in list(
@@ -561,23 +562,21 @@ class ReferenceSubarrayComponentManager(
 
     @property
     @check_communicating
-    def assigned_resources(self):
+    def assigned_resources(self) -> List[str]:
         """
         Return the resources assigned to the component.
 
         :return: the resources assigned to the component
-        :rtype: list of str
         """
         return sorted(self._component._resource_pool.get())
 
     @property
     @check_communicating
-    def configured_capabilities(self):
+    def configured_capabilities(self) -> List[str]:
         """
         Return the configured capabilities of the component.
 
         :return: list of strings indicating number of configured
             instances of each capability type
-        :rtype: list of str
         """
         return self._component.configured_capabilities

@@ -22,6 +22,8 @@ IMAGE_FOR_DIAGRAMS = artefact.skao.int/ska-tango-images-pytango-builder:9.3.28
 # TODO: use black, isort and pylint and then remove these
 PYTHON_LINT_TARGET = src tests 
 
+DOCS_SPHINXOPTS=-n -W --keep-going
+
 #
 # include makefile to pick up the standard Make targets, e.g., 'make build'
 # build, 'make push' docker push procedure, etc. The other Make targets
@@ -36,6 +38,8 @@ include .make/python.mk
 
 # include core make support
 include .make/base.mk
+
+include .make/docs.mk
 
 # include your own private variables for custom deployment configuration
 -include PrivateRules.mak
@@ -52,6 +56,9 @@ python-post-test: ## test ska_tango_base Python code
 	 
 python-pre-test:
 	python3 -m pip install --extra-index-url https://artefact.skao.int/repository/pypi-all/simple debugpy ska-ser-logging ska-tango-testing
+
+docs-pre-build:
+	python3 -m pip install -r docs/requirements.txt
 
 test-in-docker: build ## Build the docker image and run tests inside it.
 	@docker run --rm $(IMAGE):$(VERSION) make test

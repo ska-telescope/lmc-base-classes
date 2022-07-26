@@ -13,6 +13,8 @@ to store logs using Python logging. It configures the log levels of
 remote logging for selected devices.
 """
 # PROTECTED REGION ID(SKALogger.additionnal_import) ENABLED START #
+from typing import List, Tuple
+
 from tango import DebugIt, DevFailed, DeviceProxy
 from tango.server import command, run
 
@@ -124,7 +126,7 @@ class SKALogger(SKABaseDevice):
         doc_out="(ReturnType, 'informational message')",
     )
     @DebugIt()
-    def SetLoggingLevel(self, argin):
+    def SetLoggingLevel(self, argin: Tuple[List[int], List[str]]):
         # PROTECTED REGION ID(SKALogger.SetLoggingLevel) ENABLED START #
         """
         Set the logging level of the specified devices.
@@ -136,8 +138,6 @@ class SKALogger(SKABaseDevice):
 
             * argin[0]: list of DevLong. Desired logging level.
             * argin[1]: list of DevString. Desired tango device.
-
-        :type argin: :py:class:`tango.DevVarLongStringArray`
 
         :returns: None.
         """

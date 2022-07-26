@@ -12,6 +12,8 @@ SKAController.
 Controller device
 """
 # PROTECTED REGION ID(SKAController.additionnal_import) ENABLED START #
+from typing import Tuple
+
 from tango import DebugIt
 from tango.server import attribute, command, device_property, run
 
@@ -280,7 +282,7 @@ class SKAController(SKABaseDevice):
         doc_out="(ResultCode, 'Command unique ID')",
     )
     @DebugIt()
-    def IsCapabilityAchievable(self, argin):
+    def IsCapabilityAchievable(self, argin) -> Tuple[ResultCode, str]:
         # PROTECTED REGION ID(SKAController.IsCapabilityAchievable) ENABLED START #
         """
         Check if provided capabilities can be achieved by the resource(s).
@@ -293,10 +295,8 @@ class SKAController(SKABaseDevice):
             * [nrInstances]: DevLong. Number of instances of the capability.
             * [Capability types]: DevString. Type of capability.
 
-        :type argin: :py:class:`tango.DevVarLongStringArray`.
-
         :return: result_code, unique_id
-        :rtype: DevVarLongStringArray
+        :rtype: (ResultCode, str)
         """
         handler = self.get_command_object("IsCapabilityAchievable")
         return handler(argin)

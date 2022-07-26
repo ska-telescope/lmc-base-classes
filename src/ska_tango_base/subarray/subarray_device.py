@@ -16,6 +16,7 @@ etc.
 # PROTECTED REGION ID(SKASubarray.additionnal_import) ENABLED START #
 import functools
 import json
+from typing import List
 
 from tango import DebugIt
 from tango.server import attribute, command, device_property, run
@@ -308,7 +309,7 @@ class SKASubarray(SKAObsDevice):
         dtype_out="DevVarLongStringArray",
     )
     @DebugIt()
-    def AssignResources(self, argin):
+    def AssignResources(self, argin: List[str]):
         """
         Assign resources to this subarray.
 
@@ -316,7 +317,6 @@ class SKASubarray(SKAObsDevice):
         the command class.
 
         :param argin: the resources to be assigned
-        :type argin: list of str
 
         :return: A tuple containing a result code and a string message. If the result
             code indicates that the command was accepted, the message is the unique ID
@@ -352,7 +352,7 @@ class SKASubarray(SKAObsDevice):
         dtype_out="DevVarLongStringArray",
     )
     @DebugIt()
-    def ReleaseResources(self, argin):
+    def ReleaseResources(self, argin: List[str]):
         """
         Delta removal of assigned resources.
 
@@ -360,7 +360,6 @@ class SKASubarray(SKAObsDevice):
         the command class.
 
         :param argin: the resources to be released
-        :type argin: list of str
 
         :return: A tuple containing a result code and the unique ID of the command
         :rtype: ([ResultCode], [str])
@@ -440,7 +439,7 @@ class SKASubarray(SKAObsDevice):
         the command class.
 
         :param argin: configuration specification
-        :type argin: string
+        :type argin: str
 
         :return: A tuple containing a result code and the unique ID of the command
         :rtype: ([ResultCode], [str])
@@ -475,7 +474,7 @@ class SKASubarray(SKAObsDevice):
         doc_out="([Command ResultCode], [Unique ID of the command])",
     )
     @DebugIt()
-    def Scan(self, argin):
+    def Scan(self, argin: List[str]):
         """
         Start scanning.
 
@@ -483,7 +482,6 @@ class SKASubarray(SKAObsDevice):
         the command class.
 
         :param argin: Information about the scan
-        :type argin: Array of str
 
         :return: A tuple containing a result code and the unique ID of the command
         :rtype: ([ResultCode], [str])

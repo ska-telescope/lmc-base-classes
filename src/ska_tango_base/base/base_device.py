@@ -29,6 +29,7 @@ import traceback
 import typing
 import warnings
 from functools import partial
+from typing import Callable
 from urllib.parse import urlparse
 from urllib.request import url2pathname
 
@@ -1085,7 +1086,7 @@ class SKABaseDevice(Device):
             "a subclass."
         )
 
-    def register_command_object(self, command_name, command_object):
+    def register_command_object(self, command_name, command_object: Callable):
         """
         Register an object as a handler for a command.
 
@@ -1094,11 +1095,10 @@ class SKABaseDevice(Device):
         :type command_name: str
         :param command_object: the object that will handle invocations
             of the given command
-        :type command_object: Command instance
         """
         self._command_objects[command_name] = command_object
 
-    def get_command_object(self, command_name):
+    def get_command_object(self, command_name) -> Callable:
         """
         Return the command object (handler) for a given command.
 
@@ -1107,7 +1107,6 @@ class SKABaseDevice(Device):
         :type command_name: str
 
         :return: the registered command object (handler) for the command
-        :rtype: Command instance
         """
         return self._command_objects[command_name]
 
@@ -1650,7 +1649,7 @@ class SKABaseDevice(Device):
             :param argin: The command ID
             :type argin: str
             :return: The string of the TaskStatus
-            :rtype: string
+            :rtype: str
             """
             command_id = argin
             enum_status = self._command_tracker.get_command_status(command_id)
@@ -1691,7 +1690,7 @@ class SKABaseDevice(Device):
             command will trigger a breakpoint.
 
             :return: The TCP port the debugger is listening on.
-            :rtype: DevUShort
+            :rtype: int
             """
             if not SKABaseDevice._global_debugger_listening:
                 allocated_port = self.start_debugger_and_get_port(

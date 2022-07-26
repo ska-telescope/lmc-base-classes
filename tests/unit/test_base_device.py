@@ -19,6 +19,7 @@ from unittest import mock
 import pytest
 import tango
 from _pytest.fixtures import SubRequest
+from ska_tango_testing.mock.tango import MockTangoEventCallbackGroup
 from tango import DevFailed, DevState
 
 import ska_tango_base.base.base_device
@@ -43,8 +44,6 @@ from ska_tango_base.control_model import (
 )
 from ska_tango_base.executor import TaskStatus
 from ska_tango_base.testing.reference import ReferenceBaseComponentManager
-
-from ..conftest import Subscribable
 
 
 class TestTangoLoggingServiceHandler:
@@ -1015,7 +1014,7 @@ class TestSKABaseDevice(object):
     def test_On(
         self: TestSKABaseDevice,
         device_under_test: tango.DeviceProxy,
-        tango_change_event_helper: Subscribable,
+        change_event_callbacks: MockTangoEventCallbackGroup,
     ) -> None:
         """
         Test for On command.
@@ -1043,15 +1042,9 @@ class TestSKABaseDevice(object):
         change_event_callbacks["status"].assert_change_event(
             "The device is in OFF state."
         )
-        change_event_callbacks[
-            "longRunningCommandProgress"
-        ].assert_change_event(None)
-        change_event_callbacks["longRunningCommandStatus"].assert_change_event(
-            None
-        )
-        change_event_callbacks["longRunningCommandResult"].assert_change_event(
-            ("", "")
-        )
+        change_event_callbacks["longRunningCommandProgress"].assert_change_event(None)
+        change_event_callbacks["longRunningCommandStatus"].assert_change_event(None)
+        change_event_callbacks["longRunningCommandResult"].assert_change_event(("", ""))
 
         [[result_code], [command_id]] = device_under_test.On()
         assert result_code == ResultCode.QUEUED
@@ -1094,13 +1087,10 @@ class TestSKABaseDevice(object):
 
         change_event_callbacks.assert_not_called()
 
-        device_state_callback.assert_not_called()
-        device_status_callback.assert_not_called()
-
     def test_Standby(
         self: TestSKABaseDevice,
         device_under_test: tango.DeviceProxy,
-        tango_change_event_helper: Subscribable,
+        change_event_callbacks: MockTangoEventCallbackGroup,
     ) -> None:
         """
         Test for Standby command.
@@ -1128,15 +1118,9 @@ class TestSKABaseDevice(object):
         change_event_callbacks["status"].assert_change_event(
             "The device is in OFF state."
         )
-        change_event_callbacks[
-            "longRunningCommandProgress"
-        ].assert_change_event(None)
-        change_event_callbacks["longRunningCommandStatus"].assert_change_event(
-            None
-        )
-        change_event_callbacks["longRunningCommandResult"].assert_change_event(
-            ("", "")
-        )
+        change_event_callbacks["longRunningCommandProgress"].assert_change_event(None)
+        change_event_callbacks["longRunningCommandStatus"].assert_change_event(None)
+        change_event_callbacks["longRunningCommandResult"].assert_change_event(("", ""))
 
         [[result_code], [command_id]] = device_under_test.Standby()
         assert result_code == ResultCode.QUEUED
@@ -1165,9 +1149,7 @@ class TestSKABaseDevice(object):
             "longRunningCommandResult",
             (
                 command_id,
-                json.dumps(
-                    [int(ResultCode.OK), "Standby command completed OK"]
-                ),
+                json.dumps([int(ResultCode.OK), "Standby command completed OK"]),
             ),
         )
         change_event_callbacks.assert_change_event(
@@ -1185,13 +1167,10 @@ class TestSKABaseDevice(object):
 
         change_event_callbacks.assert_not_called()
 
-        device_state_callback.assert_not_called()
-        device_status_callback.assert_not_called()
-
     def test_Off(
         self: TestSKABaseDevice,
         device_under_test: tango.DeviceProxy,
-        tango_change_event_helper: Subscribable,
+        change_event_callbacks: MockTangoEventCallbackGroup,
     ) -> None:
         """
         Test for Off command.
@@ -1219,15 +1198,9 @@ class TestSKABaseDevice(object):
         change_event_callbacks["status"].assert_change_event(
             "The device is in OFF state."
         )
-        change_event_callbacks[
-            "longRunningCommandProgress"
-        ].assert_change_event(None)
-        change_event_callbacks["longRunningCommandStatus"].assert_change_event(
-            None
-        )
-        change_event_callbacks["longRunningCommandResult"].assert_change_event(
-            ("", "")
-        )
+        change_event_callbacks["longRunningCommandProgress"].assert_change_event(None)
+        change_event_callbacks["longRunningCommandStatus"].assert_change_event(None)
+        change_event_callbacks["longRunningCommandResult"].assert_change_event(("", ""))
 
         # Check what happens if we call Off() when the device is already OFF.
         [[result_code], [message]] = device_under_test.Off()
@@ -1310,7 +1283,6 @@ class TestSKABaseDevice(object):
         with pytest.raises(DevFailed):
             device_under_test.loggingTargets = ["invalid::type"]
 
-
     def test_healthState(
         self: TestSKABaseDevice, device_under_test: tango.DeviceProxy
     ) -> None:
@@ -1324,7 +1296,7 @@ class TestSKABaseDevice(object):
     def test_adminMode(
         self: TestSKABaseDevice,
         device_under_test: tango.DeviceProxy,
-        tango_change_event_helper: Subscribable,
+        change_event_callbacks: MockTangoEventCallbackGroup,
     ) -> None:
         """
         Test for adminMode.
@@ -1346,18 +1318,14 @@ class TestSKABaseDevice(object):
         change_event_callbacks["status"].assert_change_event(
             "The device is in OFF state."
         )
-        change_event_callbacks["adminMode"].assert_change_event(
-            AdminMode.ONLINE
-        )
+        change_event_callbacks["adminMode"].assert_change_event(AdminMode.ONLINE)
 
         assert device_under_test.adminMode == AdminMode.ONLINE
         assert device_under_test.state() == DevState.OFF
 
         device_under_test.adminMode = AdminMode.OFFLINE
 
-        change_event_callbacks.assert_change_event(
-            "adminMode", AdminMode.OFFLINE
-        )
+        change_event_callbacks.assert_change_event("adminMode", AdminMode.OFFLINE)
         assert device_under_test.adminMode == AdminMode.OFFLINE
 
         change_event_callbacks.assert_change_event("state", DevState.DISABLE)
@@ -1367,9 +1335,7 @@ class TestSKABaseDevice(object):
         assert device_under_test.state() == DevState.DISABLE
 
         device_under_test.adminMode = AdminMode.MAINTENANCE
-        change_event_callbacks.assert_change_event(
-            "adminMode", AdminMode.MAINTENANCE
-        )
+        change_event_callbacks.assert_change_event("adminMode", AdminMode.MAINTENANCE)
         assert device_under_test.adminMode == AdminMode.MAINTENANCE
 
         change_event_callbacks.assert_change_event("state", DevState.UNKNOWN)
@@ -1384,9 +1350,7 @@ class TestSKABaseDevice(object):
         assert device_under_test.state() == DevState.OFF
 
         device_under_test.adminMode = AdminMode.ONLINE
-        change_event_callbacks.assert_change_event(
-            "adminMode", AdminMode.ONLINE
-        )
+        change_event_callbacks.assert_change_event("adminMode", AdminMode.ONLINE)
         assert device_under_test.adminMode == AdminMode.ONLINE
 
         change_event_callbacks.assert_not_called()
@@ -1468,13 +1432,14 @@ class TestSKABaseDevice(object):
     def test_DebugDevice_does_not_break_a_command(
         self,
         device_under_test: tango.DeviceProxy,
-        tango_change_event_helper: Subscribable,
+        change_event_callbacks: MockTangoEventCallbackGroup,
     ) -> None:
         """
         Test that enabling the DebugDevice feature does not break device commands.
 
         :param device_under_test: a proxy to the device under test
-        :param tango_change_event_helper: helper
+        :param change_event_callbacks: dictionary of mock change event
+            callbacks with asynchrony support
         """
         device_under_test.DebugDevice()
         assert device_under_test.state() == DevState.OFF

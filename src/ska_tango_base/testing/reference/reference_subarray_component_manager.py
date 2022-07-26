@@ -1,15 +1,3 @@
-<<<<<<< HEAD
-<<<<<<< HEAD
-# pylint: skip-file  # TODO: Incrementally lint this repo
-"""This module models component management for SKA subarray devices."""
-from typing import List
-
-from ska_tango_base.base import check_communicating, check_on
-from ska_tango_base.commands import ResultCode
-from ska_tango_base.control_model import PowerState
-=======
-=======
->>>>>>> 87bdc1b (MCCS-934 type hints)
 # -*- coding: utf-8 -*-
 #
 # This file is part of the SKA Low MCCS project
@@ -22,9 +10,13 @@ from __future__ import annotations
 
 import logging
 import threading
-from typing import Any, Callable, Optional
+from typing import Any, Callable, Optional, cast
 
-from ska_tango_base.base import check_communicating, check_on
+from ska_tango_base.base import (
+    TaskExecutorComponentManager,
+    check_communicating,
+    check_on,
+)
 from ska_tango_base.commands import ResultCode
 from ska_tango_base.control_model import CommunicationStatus, PowerState
 from ska_tango_base.executor import TaskStatus
@@ -182,11 +174,7 @@ class FakeSubarrayComponent(FakeBaseComponent):
 
     @property  # type: ignore[misc]
     @check_on
-<<<<<<< HEAD
-    def configured_capabilities(self) -> List[str]:
-=======
     def configured_capabilities(self: FakeSubarrayComponent) -> list[str]:
->>>>>>> 7ddac93 (MCCS-934 type hints, static type checking & standard templates)
         """
         Return the configured capabilities of this component.
 
@@ -686,7 +674,9 @@ class ReferenceSubarrayComponentManager(
 
         :return: task status and message
         """
-        return self.abort_tasks(task_callback=task_callback)
+        return cast(TaskExecutorComponentManager, self).abort_tasks(
+            task_callback=task_callback
+        )
 
     @check_communicating
     def obsreset(
@@ -723,11 +713,7 @@ class ReferenceSubarrayComponentManager(
 
     @property  # type: ignore[misc]
     @check_communicating
-<<<<<<< HEAD
-    def assigned_resources(self) -> List[str]:
-=======
     def assigned_resources(self: ReferenceSubarrayComponentManager) -> list[str]:
->>>>>>> 7ddac93 (MCCS-934 type hints, static type checking & standard templates)
         """
         Return the resources assigned to the component.
 
@@ -737,11 +723,7 @@ class ReferenceSubarrayComponentManager(
 
     @property  # type: ignore[misc]
     @check_communicating
-<<<<<<< HEAD
-    def configured_capabilities(self) -> List[str]:
-=======
     def configured_capabilities(self: ReferenceSubarrayComponentManager) -> list[str]:
->>>>>>> 7ddac93 (MCCS-934 type hints, static type checking & standard templates)
         """
         Return the configured capabilities of the component.
 

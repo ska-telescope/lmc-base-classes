@@ -9,13 +9,12 @@ from __future__ import annotations
 
 from threading import Event, Lock
 from time import sleep
-from typing import Callable, Hashable, Optional
+from typing import Callable, Optional
 
 import pytest
 from ska_tango_testing.mock import MockCallableGroup
 
 from ska_tango_base.executor import TaskExecutor, TaskStatus
-from ska_tango_base.testing.mock.mock_callable import MockCallable
 
 
 class TestTaskExecutor:
@@ -42,7 +41,7 @@ class TestTaskExecutor:
         return TaskExecutor(max_workers)
 
     @pytest.fixture()
-    def callbacks(self, max_workers):
+    def callbacks(self: TestTaskExecutor, max_workers: int) -> MockCallableGroup:
         """
         Return a dictionary of callbacks with asynchrony support.
 
@@ -57,7 +56,7 @@ class TestTaskExecutor:
         self: TestTaskExecutor,
         executor: TaskExecutor,
         max_workers: int,
-        callbacks: dict[Hashable, MockCallable],
+        callbacks: MockCallableGroup,
     ) -> None:
         """
         Test that we can execute tasks.
@@ -105,9 +104,7 @@ class TestTaskExecutor:
         locks[0].release()
 
         callbacks["job_0"].assert_call(status=TaskStatus.COMPLETED)
-        callbacks[f"job_{max_workers}"].assert_call(
-            status=TaskStatus.IN_PROGRESS
-        )
+        callbacks[f"job_{max_workers}"].assert_call(status=TaskStatus.IN_PROGRESS)
 
         for i in range(1, max_workers + 1):
             locks[i].release()
@@ -119,7 +116,7 @@ class TestTaskExecutor:
         self: TestTaskExecutor,
         executor: TaskExecutor,
         max_workers: int,
-        callbacks: dict[Hashable, MockCallable],
+        callbacks: MockCallableGroup,
     ) -> None:
         """
         Test that we can abort execution.
@@ -202,23 +199,17 @@ class TestTaskExecutor:
             args=[locks[max_workers + 1]],
             task_callback=callbacks[f"job_{max_workers + 1}"],
         )
-        callbacks[f"job_{max_workers + 1}"].assert_call(
-            status=TaskStatus.QUEUED
-        )
-        callbacks[f"job_{max_workers + 1}"].assert_call(
-            status=TaskStatus.IN_PROGRESS
-        )
+        callbacks[f"job_{max_workers + 1}"].assert_call(status=TaskStatus.QUEUED)
+        callbacks[f"job_{max_workers + 1}"].assert_call(status=TaskStatus.IN_PROGRESS)
 
         locks[max_workers + 1].release()
 
-        callbacks[f"job_{max_workers + 1}"].assert_call(
-            status=TaskStatus.COMPLETED
-        )
+        callbacks[f"job_{max_workers + 1}"].assert_call(status=TaskStatus.COMPLETED)
 
     def test_exception(
         self: TestTaskExecutor,
         executor: TaskExecutor,
-        callbacks: dict[Hashable, MockCallable],
+        callbacks: MockCallableGroup,
     ) -> None:
         """
         Test that the executor handles an uncaught exception correctly.

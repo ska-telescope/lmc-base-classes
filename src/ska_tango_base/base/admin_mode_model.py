@@ -174,7 +174,10 @@ class AdminModeModel:
         self._admin_mode = AdminMode.OFFLINE
         self._callback = callback
 
-        self._admin_mode_machine = _AdminModeMachine(callback=self._admin_mode_changed)
+        # This type-hint needs investigation !!!
+        self._admin_mode_machine = _AdminModeMachine(
+            callback=self._admin_mode_changed  # type: ignore[arg-type]
+        )
 
     @property
     def admin_mode(self: AdminModeModel) -> AdminMode:

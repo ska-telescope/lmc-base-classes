@@ -8,12 +8,12 @@
 from __future__ import annotations
 
 import re
-import time
 from typing import Any
 
 import pytest
 import tango
 from pytest_mock import MockFixture
+from ska_tango_testing.mock.tango import MockTangoEventCallbackGroup
 from tango import DevState
 from tango.test_context import MultiDeviceTestContext
 
@@ -28,8 +28,6 @@ from ska_tango_base.control_model import (
     TestMode,
 )
 from ska_tango_base.testing.reference import ReferenceBaseComponentManager
-
-from ..conftest import Subscribable
 
 
 class TestSKAObsDevice(object):
@@ -113,7 +111,7 @@ class TestSKAObsDevice(object):
     def test_obsState(
         self: TestSKAObsDevice,
         device_under_test: tango.DeviceProxy,
-        tango_change_event_helper: Subscribable,
+        change_event_callbacks: MockTangoEventCallbackGroup,
     ) -> None:
         """
         Test for obsState.

@@ -119,21 +119,16 @@ class FakeBaseComponent:
         # on, then we'll see the component come on. Finally, the asynchronous processing
         # will report the task as COMPLETE, and publish a result.
         def simulate_async_task_execution() -> None:
-            print(
-                "simulating tasks durrr.............................................."
-            )
             if task_callback is not None:
                 task_callback(status=TaskStatus.IN_PROGRESS)
 
             if task_abort_event is not None and task_abort_event.is_set():
-                print("Aborted 1 ====================================================")
                 task_callback(status=TaskStatus.ABORTED)
                 return
 
             sleep(self._time_to_complete / 3)
 
             if task_abort_event is not None and task_abort_event.is_set():
-                print("Aborted 2 ====================================================")
                 task_callback(status=TaskStatus.ABORTED)
                 return
 
@@ -143,7 +138,6 @@ class FakeBaseComponent:
             sleep(self._time_to_complete / 3)
 
             if task_abort_event is not None and task_abort_event.is_set():
-                print("Aborted 3 ====================================================")
                 task_callback(status=TaskStatus.ABORTED)
                 return
 
@@ -155,7 +149,6 @@ class FakeBaseComponent:
             sleep(self._time_to_complete / 3)
 
             if task_abort_event is not None and task_abort_event.is_set():
-                print("Aborted 4 ====================================================")
                 task_callback(status=TaskStatus.ABORTED)
                 return
 

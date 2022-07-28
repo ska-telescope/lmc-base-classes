@@ -109,7 +109,7 @@ class TaskExecutor:
                     func,
                     args,
                     kwargs,
-                    task_callback,
+                    task_callback,  # type: ignore[arg-type]
                     self._abort_event,
                 )
             except RuntimeError:
@@ -150,15 +150,12 @@ class TaskExecutor:
             self._executor = concurrent.futures.ThreadPoolExecutor(
                 max_workers=max_workers
             )
-            print("task is completed ++++++++++++++++++++++++++++++++++++++")
             if task_callback is not None:
                 task_callback(status=TaskStatus.COMPLETED)
 
-        print("before killing thread ++++++++++++++++++++++++++++++++")
         threading.Thread(
             target=_shutdown_and_relaunch, args=(self._max_workers,)
         ).start()
-        print("returning in progress ++++++++++++++++++++++++++++++++")
         return TaskStatus.IN_PROGRESS, "Aborting tasks"
 
     def _run(

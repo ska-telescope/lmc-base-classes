@@ -491,7 +491,6 @@ class OpStateModel:
             machine
         """
         op_state = self._op_state_mapping[machine_state]
-        print(f"op_state {op_state} with machine state {machine_state}")
         if self._op_state != op_state:
             self._op_state = op_state
             if self._callback is not None:

@@ -4,6 +4,7 @@
 PROJECT = ska-tango-base
 IMAGE_FOR_DIAGRAMS = artefact.skao.int/ska-tango-images-pytango-builder:9.3.28
 
+PYTHON_RUNNER = poetry run
 # E203 and W503 conflict with black, line line set to 110 for long intersphinx doc strings
 # A003 shadowing python builtin
 PYTHON_SWITCHES_FOR_FLAKE8 = --extend-ignore=BLK,T --enable=DAR104 --ignore=A003,E203,FS003,W503,N802 --max-complexity=11 \

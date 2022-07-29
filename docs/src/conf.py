@@ -369,4 +369,5 @@ nitpick_ignore = [
     ("py:class", "_OpStateMachine"),
     # TODO: Can't figure this last one out
     ("py:class", "ska_tango_base.base.component_manager.Wrapped"),
+    ("py:class", "typing.types.MethodType"),
 ]

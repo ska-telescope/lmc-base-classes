@@ -30,7 +30,6 @@ PYTHON_LINT_TARGET = src/ska_tango_base/base \
     src/ska_tango_base/logger_device.py \
     src/ska_tango_base/release.py \
     src/ska_tango_base/tel_state_device.py \
-    src/ska_tango_base/testing/mock/mock_callable.py \
     src/ska_tango_base/testing/reference/reference_base_component_manager.py \
     src/ska_tango_base/testing/reference/reference_subarray_component_manager.py \
     tests/unit/test_alarm_handler_device.py \

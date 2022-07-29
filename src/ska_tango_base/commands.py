@@ -61,6 +61,8 @@ module_logger = logging.getLogger(__name__)
 
 
 class CommandTrackerProtocol(Protocol):
+    """All things to do with commands."""
+
     def new_command(
         self: CommandTrackerProtocol,
         command_name: str,

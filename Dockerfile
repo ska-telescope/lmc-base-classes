@@ -4,15 +4,18 @@ FROM artefact.skao.int/ska-tango-images-pytango-runtime:9.3.16 AS runtime
 
 # Install Poetry
 USER root 
-RUN curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/get-poetry.py | POETRY_HOME=/opt/poetry python -
-RUN chmod a+x /opt/poetry/bin/poetry
-RUN /opt/poetry/bin/poetry config virtualenvs.create false
+RUN python3 -m pip install poetry
+RUN poetry config virtualenvs.create false
+#RUN curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/get-poetry.py | POETRY_HOME=/opt/poetry python -
+#RUN chmod a+x /opt/poetry/bin/poetry
+#RUN /opt/poetry/bin/poetry config virtualenvs.create false
 
 # Copy poetry.lock* in case it doesn't exist in the repo
 COPY pyproject.toml poetry.lock* ./
 
 # Install runtime dependencies and the app
-RUN /opt/poetry/bin/poetry install --no-dev
+RUN poetry install --no-dev -vvv
+#RUN /opt/poetry/bin/poetry install --no-dev
 
 USER tango
 

@@ -46,6 +46,10 @@ PYTHON_LINT_TARGET = src/ska_tango_base/base \
     tests/unit/test_tel_state_device.py \
     tests/unit/test_utils.py
 
+# pylint reports E1101 (no-member) for socket.SocketKind
+PYTHON_SWITCHES_FOR_PYLINT = --disable=W,C,R --ignored-classes=socket
+
+DOCS_SOURCEDIR=./docs/src
 DOCS_SPHINXOPTS=-n -W --keep-going
 
 #
@@ -79,26 +83,11 @@ python-pre-test:
 docs-pre-build:
 	python3 -m pip install -r docs/requirements.txt
 
-.PHONY: python-post-format python-post-lint
+python-do-build:
+	poetry build
 
+#python-do-publish:
+#	poetry config repositories.skao $(PYTHON_PUBLISH_URL)
+#	poetry publish --repository skao --username $(PYTHON_PUBLISH_USERNAME) --password $(PYTHON_PUBLISH_PASSWORD)
 
-generate-diagrams-in-docker: ## Generate state machine diagrams using a container.
-	@docker run --rm -v $(PWD):/project $(IMAGE_FOR_DIAGRAMS) bash -c "cd /project && make generate-diagrams-in-docker-internals"
-
-generate-diagrams-in-docker-internals:  ## Generate state machine diagrams (within a container!)
-	test -f /.dockerenv  # ensure running in docker container
-	apt-get update
-	apt-get install --yes graphviz graphviz-dev gsfonts pkg-config
-	python3 -m pip install pygraphviz
-	cd /project && python3 -m pip install .
-	cd /project/docs/src && python3 scripts/draw_state_machines.py
-	ls -lo /project/docs/src/api/*/*.png
-
-docs-in-docker: ## Generate docs inside a container
-	@docker build -t ska_tango_base_docs_builder  . -f docs/Dockerfile
-	@docker run --rm -v $(PWD):/project --user $(id -u):$(id -g) ska_tango_base_docs_builder
-
-help:  ## show this help.
-	@grep -hE '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'
-
-.PHONY: test test-in-docker lint-in-docker help
+.PHONY: python-post-format python-post-lint poetry-do-build #poetry-do-publish

@@ -1,6 +1,6 @@
 # Use SKA python image as base image
 FROM artefact.skao.int/ska-tango-images-pytango-builder:9.3.28 AS buildenv
-FROM artefact.skao.int/ska-tango-images-pytango-runtime:9.3.16 AS runtime
+FROM artefact.skao.int/ska-tango-images-pytango-runtime:9.3.14 AS runtime
 
 # Install Poetry
 USER root 

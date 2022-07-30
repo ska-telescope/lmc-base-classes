@@ -49,7 +49,7 @@ PYTHON_LINT_TARGET = src/ska_tango_base/base \
 PYTHON_SWITCHES_FOR_PYLINT = --disable=W,C,R --ignored-classes=socket
 
 DOCS_SOURCEDIR=./docs/src
-DOCS_SPHINXOPTS=-n -W --keep-going
+DOCS_SPHINXOPTS=-W --keep-going  # -n remove temporarily
 
 #
 # include makefile to pick up the standard Make targets, e.g., 'make build'

@@ -16,7 +16,11 @@ pytest_runner = ["pytest-runner"] if needs_pytest else []
 setuptools.setup(
     name=name,
     description=description,
+<<<<<<< HEAD
     version='0.13.3',
+=======
+    version='0.13.2',
+>>>>>>> 479610e (MCCS-934 restore setup.py)
     author=author,
     author_email=author_email,
     license=license,

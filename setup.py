@@ -16,7 +16,7 @@ pytest_runner = ["pytest-runner"] if needs_pytest else []
 setuptools.setup(
     name=name,
     description=description,
-    version='0.13.2',
+    version='0.13.3',
     author=author,
     author_email=author_email,
     license=license,

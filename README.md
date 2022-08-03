@@ -250,9 +250,11 @@ Tango devices can be launched with a `-v` parameter to set the logging level. Fo
 #### Unreleased
 
 #### 0.13.3
+- KAR-403 Fixed exceptions in LRCs not updating  longRunningCommandResult accordingly
+- LOW-299 Fixed docs build in the CI pipeline
+- LOW-278 Now using ska-tango-testing
 - SAH-1156 Enable assigned_resources property inside SubarrayComponentManager.
 
-#### 0.13.1
 #### 0.13.2
 - CT-738 fix check long running status
 - AT3-140 fix base TANGO xmi files

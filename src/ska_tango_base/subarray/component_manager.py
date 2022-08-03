@@ -69,23 +69,21 @@ class SubarrayComponentManager(BaseComponentManager):
         """Deconfigure and release all resources."""
         raise NotImplementedError("SubarrayComponentManager is abstract.")
 
-    # @property
-    # def assigned_resources(self):
-    #     """
-    #     Return the resources assigned to the component.
+    @property
+    def assigned_resources(self):
+        """
+        Return the resources assigned to the component.
 
-    #     :return: the resources assigned to the component
-    #     :rtype: list of str
-    #     """
-    #     raise NotImplementedError("SubarrayComponentManager is abstract.")
+        :return: list of strings indicating the resources assigned to the component
+        """
+        raise NotImplementedError("SubarrayComponentManager is abstract.")
 
-    # @property
-    # def configured_capabilities(self):
-    #     """
-    #     Return the configured capabilities of the component.
+    @property
+    def configured_capabilities(self):
+        """
+        Return the configured capabilities of the component.
 
-    #     :return: list of strings indicating number of configured
-    #         instances of each capability type
-    #     :rtype: list of str
-    #     """
-    #     raise NotImplementedError("SubarrayComponentManager is abstract.")
+        :return: list of strings indicating number of configured
+            instances of each capability type
+        """
+        raise NotImplementedError("SubarrayComponentManager is abstract.")

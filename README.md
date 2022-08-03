@@ -249,6 +249,10 @@ Tango devices can be launched with a `-v` parameter to set the logging level. Fo
 
 #### Unreleased
 
+#### 0.13.3
+- SAH-1156 Enable assigned_resources property inside SubarrayComponentManager.
+
+#### 0.13.1
 #### 0.13.2
 - CT-738 fix check long running status
 - AT3-140 fix base TANGO xmi files

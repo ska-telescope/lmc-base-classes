@@ -74,8 +74,7 @@ class SubarrayComponentManager(BaseComponentManager):
         """
         Return the resources assigned to the component.
 
-        :return: the resources assigned to the component
-        :rtype: list of str
+        :return: list of strings indicating the resources assigned to the component
         """
         raise NotImplementedError("SubarrayComponentManager is abstract.")
 
@@ -86,6 +85,5 @@ class SubarrayComponentManager(BaseComponentManager):
 
         :return: list of strings indicating number of configured
             instances of each capability type
-        :rtype: list of str
         """
         raise NotImplementedError("SubarrayComponentManager is abstract.")

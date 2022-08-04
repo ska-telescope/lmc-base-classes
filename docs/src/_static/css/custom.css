@@ -1,78 +1,341 @@
 /*
 Following SKA brand guidelines colors are defined as
 
-SKA Sky Blue:    rgb(0, 174, 239)
-SKA Ocean Blue:  rgb(0, 84, 164)
-SKA Teal Blue:   rgb(0, 104, 138)
-SKA Burnt Sun:   rgb(236, 134, 35)
-SKA Earth Green: rgb(166, 206, 57)
+SKA Primary Blueshift Navy:    rgb(7, 0, 104)
+SKA Primary Redshift Magenta:    rgb(228, 7, 105)
+SKA Primary Redshift Magenta Variant (Passes contrast check on Navy background): #F81B7F
+SKA Science 2 Color Accent 1: rgb(13, 29, 44)
+SKA Science 2 Color Accent 2: rgb(14, 37, 56)
+SKA Science 2 Color Accent 3: rgb(23, 36, 61)
+SKA Tech 1 Color Accent 4: rgb(247, 190, 0)
+SKA Tech 2 Color Accent 1: rgb(50, 62, 72)
+SKA Tech 2 Color Accent 2: rgb(92, 103, 113)
+SKA Tech 2 Color Accent 3: rgb(125, 134, 140)
+SKA Tech 2 Color Accent 4: rgb(161, 168, 172)
+SKA Tech 2 Color Accent 5: rgb(194, 199, 202)
+
+
 */
 
-.wy-nav-side{
-        background-color: rgb(0, 84, 164);
-        color: white;
+@font-face {
+  font-family: "Noto Sans";
+  src: url("https://fonts.googleapis.com/css2?family=Noto+Sans:ital,wght@0,400;0,700;1,400;1,700&display=swap");
 }
 
-.wy-side-nav-search{
-        padding-top: 0px;
-        /*background-color: rgb(0, 174, 239);*/
-        background-color: rgb(0, 84, 164);
-        text-align: center;
+* {
+  font-family: "Noto Sans", verdana;
 }
 
-.wy-menu-vertical p.caption{
-        color: rgb(236, 134, 35);
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+legend,
+.rst-content .toc-backref,
+.rst-content .topic-title,
+.rst-content dl dt,
+.rst-content th>p,
+strong {
+  color: rgb(7, 0, 104);
 }
 
-.wy-menu {
-        color: white;
+.wy-breadcrumbs {
+  color: rgb(228, 7, 105);
 }
 
-.wy-menu-vertical a{
+a:link {
+  color: rgb(228, 7, 105);
+}
+
+a:visited {
+  color: rgb(7, 0, 104);
+}
+
+.wy-nav-side {
+  /* background-color: rgb(228, 7, 105); */
+  background-color: rgb(7, 0, 104);
   color: white;
 }
 
+.wy-side-nav-search {
+  padding-top: 0px;
+  background-color: rgb(7, 0, 104);
+  /* background-color: rgb(228, 7, 105); */
+  text-align: center;
+}
+
+.wy-menu-vertical p.caption {
+  /* color: rgb(228, 7, 105); */
+  color: #F81B7F;
+}
+
+.wy-menu {
+  color: white;
+}
+
+.wy-menu-vertical a {
+  color: white;
+}
+
+.wy-menu-vertical a:hover,
+.wy-menu-vertical li.current a:hover,
+.wy-menu-vertical li.toctree-l2.current > a:hover,
+.wy-menu-vertical li.toctree-l2.current li.toctree-l3 > a:hover {
+  color: white;
+  background-color: rgb(228, 7, 105);
+}
+
+.wy-menu-vertical li.current > a,
+.wy-menu-vertical li.on a {
+  color: rgb(7, 0, 104);
+}
+
+.wy-menu-vertical li.toctree-l2 a,
+.wy-menu-vertical li.toctree-l3 a,
+.wy-menu-vertical li.toctree-l4 a,
+.wy-menu-vertical li.toctree-l5 a,
+.wy-menu-vertical li.toctree-l6 a,
+.wy-menu-vertical li.toctree-l7 a,
+.wy-menu-vertical li.toctree-l8 a,
+.wy-menu-vertical li.toctree-l9 a,
+.wy-menu-vertical li.toctree-l10 a {
+  color: rgb(7, 0, 104);
+  background-color: rgb(194, 199, 202);
+}
+
+.wy-menu-vertical li.toctree-l2.current > a,
+.wy-menu-vertical li.toctree-l2.current li.toctree-l3 > a {
+  color: rgb(7, 0, 104);
+  background-color: rgb(161, 168, 172);
+}
+
+.wy-menu-vertical li.toctree-l3.current > a,
+.wy-menu-vertical li.toctree-l3.current li.toctree-l4 > a {
+  color: rgb(7, 0, 104);
+  background-color: rgb(125, 134, 140);
+}
+
+.rst-content .note .admonition-title,
+.rst-content .note .wy-alert-title,
+.rst-content .seealso .admonition-title,
+.rst-content .seealso .wy-alert-title,
+.rst-content .wy-alert-info.admonition-todo .admonition-title,
+.rst-content .wy-alert-info.admonition-todo .wy-alert-title,
+.rst-content .wy-alert-info.admonition .admonition-title,
+.rst-content .wy-alert-info.admonition .wy-alert-title,
+.rst-content .wy-alert-info.attention .admonition-title,
+.rst-content .wy-alert-info.attention .wy-alert-title,
+.rst-content .wy-alert-info.caution .admonition-title,
+.rst-content .wy-alert-info.caution .wy-alert-title,
+.rst-content .wy-alert-info.danger .admonition-title,
+.rst-content .wy-alert-info.danger .wy-alert-title,
+.rst-content .wy-alert-info.error .admonition-title,
+.rst-content .wy-alert-info.error .wy-alert-title,
+.rst-content .wy-alert-info.hint .admonition-title,
+.rst-content .wy-alert-info.hint .wy-alert-title,
+.rst-content .wy-alert-info.important .admonition-title,
+.rst-content .wy-alert-info.important .wy-alert-title,
+.rst-content .wy-alert-info.tip .admonition-title,
+.rst-content .wy-alert-info.tip .wy-alert-title,
+.rst-content .wy-alert-info.warning .admonition-title,
+.rst-content .wy-alert-info.warning .wy-alert-title,
+.rst-content .wy-alert.wy-alert-info .admonition-title,
+.wy-alert.wy-alert-info .rst-content .admonition-title,
+.wy-alert.wy-alert-info .wy-alert-titlee {
+  color: white;
+  background-color: rgb(228, 7, 105);
+}
+
+.rst-content .note,
+.rst-content .seealso,
+.rst-content .wy-alert-info.admonition,
+.rst-content .wy-alert-info.admonition-todo,
+.rst-content .wy-alert-info.attention,
+.rst-content .wy-alert-info.caution,
+.rst-content .wy-alert-info.danger,
+.rst-content .wy-alert-info.error,
+.rst-content .wy-alert-info.hint,
+.rst-content .wy-alert-info.important,
+.rst-content .wy-alert-info.tip,
+.rst-content .wy-alert-info.warning,
+.wy-alert.wy-alert-info {
+  background-color: rgb(194, 199, 202);
+}
+
+code.literal {
+    color: #rgb(228, 7, 105) ;
+    /* background-color: #fbfbfb; */
+}
+
 .local-toc ul li a:hover {
-        background-color: rgb(0, 174, 239);
+  background-color: rgb(7, 0, 104);
 }
 
-.wy-side-nav-search a{
-    padding-top: 0px;
+.wy-side-nav-search a {
+  padding-top: 0px;
 }
 
-.wy-side-nav-search a img.logo{
-	background-color: rgb(255, 255, 255);
-	border-bottom-left-radius: 6px;
-	border-bottom-right-radius: 6px;
-      padding-top: 40px;
+.wy-side-nav-search a img.logo {
+  background-color: white;
+  border-bottom-left-radius: 6px;
+  border-bottom-right-radius: 6px;
+  padding-top: 40px;
 }
 
-.ska-logo, ska-logo:hover{
-	background-attachment: scroll;
-	background-clip: border-box;
-	background-color: rgb(255, 255, 255);
-	background-image: url("https://www.skatelescope.org/wp-content/themes/skatelescope.org-theme/img/img-logo3.png");
-	background-origin: padding-box;
-	background-position: 22px 35px;
-	background-position-x: 22px;
-	background-position-y: 35px;
-	background-repeat: no-repeat;
-	background-size: 153px 98px;
-	border-bottom-left-radius: 6px;
-	border-bottom-right-radius: 6px;
-	/*color: rgb(0, 86, 120);
-	float: left;
-	font-family: "Eurostile LT W01 Demi", sans-serif;
-	font-size: 44.8px;
-	font-weight: 400;
-	line-height: 60px;
-	list-style-image: none;
-	list-style-position: outside;
-	list-style-type: none;*/
-	margin-bottom: 0px;
-	margin-left: 0px;
-	margin-right: 0px;
-	margin-top: 0px;
-	width: 186px;
-	height: 135px;
+.wy-table-responsive table td {
+  white-space: normal;
+}
+
+.ska-logo,
+ska-logo:hover {
+  background-attachment: scroll;
+  background-clip: border-box;
+  background-color: white;
+  background-image: url("https://www.skatelescope.org/wp-content/themes/skatelescope.org-theme/img/img-logo3.png");
+  background-origin: padding-box;
+  background-position: 22px 35px;
+  background-position-x: 22px;
+  background-position-y: 35px;
+  background-repeat: no-repeat;
+  background-size: 153px 98px;
+  border-bottom-left-radius: 6px;
+  border-bottom-right-radius: 6px;
+  margin-bottom: 0px;
+  margin-left: 0px;
+  margin-right: 0px;
+  margin-top: 0px;
+  width: 186px;
+  height: 135px;
+}
+
+.section .container {
+  margin-block-end: 1em;
+}
+
+.toggle .header:after {
+  content: "+";
+  padding-right: 5px;
+  font-weight: bold;
+  font-size: 18px;
+  color: white;
+  float: right;
+  display: inline-block;
+}
+
+.toggle .header.open:after {
+  content: "-";
+  padding-right: 5px;
+  font-weight: bold;
+  font-size: 18px;
+  color: white;
+  height: 1em;
+  float: right;
+  display: inline-block;
+}
+
+.toggle .header {
+  display: block;
+  clear: both;
+  color: white;
+  /* padding: 0 5px; */
+  overflow: hidden;
+  background-color: rgb(228, 7, 105);
+}
+
+.toggle .header p {
+  margin-block-end: 0em;
+}
+
+p.feedback-response {
+  display: none;
+}
+
+#local-table-of-contents {
+  padding-bottom: 20px;
+  display: none;
+}
+
+#local-table-of-contents #local-table-of-contents-title {
+  margin-bottom: 10px;
+}
+
+#local-table-of-contents a[href="#"] {
+  display: none;
+}
+
+#local-table-of-contents > ul > li {
+  list-style: none;
+  margin-top: 0;
+}
+
+#local-table-of-contents li {
+  list-style: square;
+  margin-bottom: 5px;
+  margin-top: 5px;
+}
+
+#local-table-of-contents ul ul {
+  padding-left: 0;
+  margin-left: 20px;
+  padding-right: 0;
+}
+
+@media screen and (min-width: 1280px) {
+  #local-table-of-contents {
+    display: block;
+    position: fixed;
+    margin-left: 0;
+    overflow-y: auto;
+    height: 95%;
+    top: 45px;
+    left: 1100px;
+    width: 325px;
+    overflow: hidden;
+    height: auto;
+    width: auto;
+  }
+
+  #local-table-of-contents #local-table-of-contents-title {
+    display: block;
+    font-size: 16px;
+    width: 100%;
+    padding-left: 10px;
+    padding-top: 10px;
+    padding-bottom: 5px;
+    margin-bottom: -5px;
+    border-left: 7px solid #efefef;
+  }
+
+  #local-table-of-contents ul {
+    list-style: none;
+  }
+
+  #local-table-of-contents > ul {
+    border-left: 7px solid #efefef;
+    padding-bottom: 10px;
+  }
+
+  #local-table-of-contents ul:first-of-type {
+    padding-left: 0;
+    margin-left: 0;
+  }
+
+  #local-table-of-contents li {
+    margin-top: 5px;
+    margin-bottom: 5px;
+    margin-left: 20px;
+  }
+
+  #local-table-of-contents > ul > li {
+    margin-left: 10px;
+  }
+
+  #local-table-of-contents ul ul {
+    padding-left: 0;
+    margin-left: 10px;
+    padding-right: 0;
+    margin-right: 10px;
+  }
 }

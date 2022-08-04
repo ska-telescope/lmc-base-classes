@@ -214,12 +214,12 @@ html_theme = "sphinx_rtd_theme"
 html_context = {
     "display_gitlab": True,  # Integrate GitHub
     "favicon": "img/favicon.ico",
-    "logo": "img/logo.jpg",
+    "logo": "img/logo.png",
     "theme_logo_only": True,
     "gitlab_user": "ska-telescope",  # Username
     "gitlab_repo": "ska-tango-base",  # Repo name
     "gitlab_version": "main",  # Version
-    "conf_py_path": "/docs/source/",  # Path in the checkout to the docs root
+    "conf_py_path": "/docs/src/",  # Path in the checkout to the docs root
 }
 
 

@@ -75,8 +75,8 @@ generate-diagrams-in-docker-internals:  ## Generate state machine diagrams (with
 	apt-get install --yes graphviz graphviz-dev gsfonts pkg-config
 	python3 -m pip install pygraphviz
 	cd /project && python3 -m pip install .
-	cd /project/docs/source && python3 scripts/draw_state_machines.py
-	ls -lo /project/docs/source/api/*/*.png
+	cd /project/docs/src && python3 scripts/draw_state_machines.py
+	ls -lo /project/docs/src/api/*/*.png
 
 docs-in-docker: ## Generate docs inside a container
 	@docker build -t ska_tango_base_docs_builder  . -f docs/Dockerfile

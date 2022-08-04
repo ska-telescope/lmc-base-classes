@@ -8,7 +8,7 @@ Usage:
     $ conda install --yes pygraphviz
     $ pip install transitions
     $ apt-get update && apt-get install gsfonts
-    $ cd /app/docs/source
+    $ cd /app/docs/src
     $ python draw_state_machines.py
 
 (Or see the top level Makefile)

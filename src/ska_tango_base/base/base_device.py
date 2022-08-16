@@ -1457,7 +1457,7 @@ class SKABaseDevice(Device):
     @DebugIt()
     def Reset(self):
         """
-        Reset the device to a known state.
+        Reset the device.
 
         To modify behaviour for this command, modify the do() method of
         the command class.
@@ -1471,6 +1471,18 @@ class SKABaseDevice(Device):
         Logical devices should generally implement this command to
         perform a sensible reset of that logical device. For example,
         aborting any current activities and clearing internal state.
+
+        `Reset` generally should not change the power state of the
+        device or its hardware:
+
+        * If invoking `Reset()` from `STANDBY` state, the device would
+          usually be expected to remain in `STANDBY`.
+        * If invoking `Reset()` from `ON` state, the device would
+          usually be expected to remain in `ON`.
+        * If invoking `Reset()` from `FAULT` state, the device would
+          usually be expected to transition to `ON` or remain in
+          `FAULT`, depending on whether the reset was successful in
+          clearing then fault.
 
         `Reset` generally should *not* propagate to subservient devices.
         For example, a subsystem controller device should implement

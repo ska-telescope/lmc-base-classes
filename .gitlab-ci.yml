@@ -62,7 +62,7 @@ include:
   - project: 'ska-telescope/templates-repository'
     file: 'gitlab-ci/includes/python.gitlab-ci.yml'
 
-# Docs pages
+  # Docs build
   - project: 'ska-telescope/templates-repository'
     file: 'gitlab-ci/includes/docs.gitlab-ci.yml'
 
@@ -75,4 +75,7 @@ include:
     file: 'gitlab-ci/includes/release.gitlab-ci.yml'
 
 docs-build:
+  image: readthedocs/build:latest
+
+docs-pages:
   image: readthedocs/build:latest

@@ -775,9 +775,12 @@ class TestSKABaseDevice(object):
 
         # PROTECTED REGION END #    //  SKABaseDevice.test_GetVersionInfo
 
-    def test_Reset(self, device_under_test):
+    def test_Reset(self, device_under_test, change_event_callbacks):
         """
         Test for Reset.
+
+        :param change_event_callbacks: dictionary of mock change event
+            callbacks with asynchrony support
 
         :param device_under_test: a proxy to the device under test
         """
@@ -791,6 +794,105 @@ class TestSKABaseDevice(object):
             match="Command Reset not allowed when the device is in OFF state",
         ):
             _ = device_under_test.Reset()
+
+        for attribute in [
+            "state",
+            "status",
+            "longRunningCommandProgress",
+            "longRunningCommandStatus",
+            "longRunningCommandResult",
+        ]:
+            device_under_test.subscribe_event(
+                attribute,
+                tango.EventType.CHANGE_EVENT,
+                change_event_callbacks[attribute],
+            )
+
+        change_event_callbacks["state"].assert_change_event(DevState.OFF)
+        change_event_callbacks["status"].assert_change_event(
+            "The device is in OFF state."
+        )
+        change_event_callbacks[
+            "longRunningCommandProgress"
+        ].assert_change_event(None)
+        change_event_callbacks["longRunningCommandStatus"].assert_change_event(
+            None
+        )
+        change_event_callbacks["longRunningCommandResult"].assert_change_event(
+            ("", "")
+        )
+
+        [[result_code], [on_command_id]] = device_under_test.On()
+        assert result_code == ResultCode.QUEUED
+        change_event_callbacks.assert_change_event(
+            "longRunningCommandStatus", (on_command_id, "QUEUED")
+        )
+        change_event_callbacks.assert_change_event(
+            "longRunningCommandStatus", (on_command_id, "IN_PROGRESS")
+        )
+        change_event_callbacks.assert_change_event(
+            "longRunningCommandProgress", (on_command_id, "33")
+        )
+        change_event_callbacks.assert_change_event(
+            "longRunningCommandProgress", (on_command_id, "66")
+        )
+
+        change_event_callbacks.assert_change_event("state", DevState.ON)
+        change_event_callbacks.assert_change_event(
+            "status", "The device is in ON state."
+        )
+
+        assert device_under_test.state() == DevState.ON
+
+        change_event_callbacks.assert_change_event(
+            "longRunningCommandResult",
+            (
+                on_command_id,
+                json.dumps([int(ResultCode.OK), "On command completed OK"]),
+            ),
+        )
+
+        change_event_callbacks.assert_change_event(
+            "longRunningCommandStatus", (on_command_id, "COMPLETED")
+        )
+
+        [[result_code], [reset_command_id]] = device_under_test.Reset()
+        assert result_code == ResultCode.QUEUED
+
+        # stuff = change_event_callbacks["longRunningCommandStatus"].assert_against_call()
+        # print(stuff)
+        change_event_callbacks.assert_change_event(
+            "longRunningCommandStatus",
+            (on_command_id, "COMPLETED", reset_command_id, "QUEUED"),
+        )
+        change_event_callbacks.assert_change_event(
+            "longRunningCommandStatus",
+            (on_command_id, "COMPLETED", reset_command_id, "IN_PROGRESS"),
+        )
+        change_event_callbacks.assert_change_event(
+            "longRunningCommandProgress", (reset_command_id, "33")
+        )
+        change_event_callbacks.assert_change_event(
+            "longRunningCommandProgress", (reset_command_id, "66")
+        )
+
+        change_event_callbacks.assert_change_event(
+            "longRunningCommandResult",
+            (
+                reset_command_id,
+                json.dumps([int(ResultCode.OK), "Reset command completed OK"]),
+            ),
+        )
+
+        change_event_callbacks.assert_change_event(
+            "longRunningCommandStatus",
+            (on_command_id, "COMPLETED", reset_command_id, "COMPLETED"),
+        )
+
+        # no events for state or status, no change of state
+        change_event_callbacks.assert_not_called()
+        assert device_under_test.state() == DevState.ON
+
         # PROTECTED REGION END #    //  SKABaseDevice.test_Reset
 
     def test_On(self, device_under_test, change_event_callbacks):

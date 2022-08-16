@@ -1444,7 +1444,11 @@ class SKABaseDevice(Device):
             state
         :rtype: bool
         """
-        return self.get_state() == DevState.FAULT
+        return self.get_state() in [
+            DevState.STANDBY,
+            DevState.ON,
+            DevState.FAULT,
+        ]
 
     @command(
         dtype_out="DevVarLongStringArray",
@@ -1453,10 +1457,38 @@ class SKABaseDevice(Device):
     @DebugIt()
     def Reset(self):
         """
-        Reset the device from the FAULT state.
+        Reset the device.
 
         To modify behaviour for this command, modify the do() method of
         the command class.
+
+        For a device that directly monitors and controls hardware, this
+        command should put that hardware into a known state, for example
+        by clearing buffers and loading default values into registers,
+        or if necessary even by power-cycling and re-initialising the
+        hardware.
+
+        Logical devices should generally implement this command to
+        perform a sensible reset of that logical device. For example,
+        aborting any current activities and clearing internal state.
+
+        `Reset` generally should not change the power state of the
+        device or its hardware:
+
+        * If invoking `Reset()` from `STANDBY` state, the device would
+          usually be expected to remain in `STANDBY`.
+        * If invoking `Reset()` from `ON` state, the device would
+          usually be expected to remain in `ON`.
+        * If invoking `Reset()` from `FAULT` state, the device would
+          usually be expected to transition to `ON` or remain in
+          `FAULT`, depending on whether the reset was successful in
+          clearing then fault.
+
+        `Reset` generally should *not* propagate to subservient devices.
+        For example, a subsystem controller device should implement
+        `Reset` to reset the subsystem as a whole, but that probably
+        should not result in all of the subsystem's hardware being
+        power-cycled.
 
         :return: A tuple containing a return code and a string
             message indicating status. The message is for

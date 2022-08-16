@@ -243,7 +243,7 @@ class BaseComponentManager:
         **kwargs,
     ) -> None:
         """
-        Handle a change in communication status.
+        Handle a change in component state.
 
         This is a helper method for use by subclasses.
         """

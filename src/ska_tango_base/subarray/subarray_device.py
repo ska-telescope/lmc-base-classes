@@ -17,7 +17,7 @@ from __future__ import annotations
 import functools
 import json
 import logging
-from typing import Callable, List, Optional, Tuple
+from typing import Callable, List, Optional, Tuple, cast
 
 from tango import DebugIt
 from tango.server import attribute, command, device_property
@@ -26,7 +26,7 @@ from tango.server import attribute, command, device_property
 from ska_tango_base import SKAObsDevice
 from ska_tango_base.base.base_device import CommandTracker
 from ska_tango_base.commands import ResultCode, SlowCommand, SubmittedSlowCommand
-from ska_tango_base.control_model import ObsState
+from ska_tango_base.control_model import ObsState, PowerState
 from ska_tango_base.executor import TaskStatus
 from ska_tango_base.faults import StateModelError
 from ska_tango_base.subarray import SubarrayComponentManager, SubarrayObsStateModel
@@ -42,7 +42,7 @@ class SKASubarray(SKAObsDevice):
     class InitCommand(SKAObsDevice.InitCommand):
         """A class for the SKASubarray's init_device() "command"."""
 
-        def do(self: SKASubarray.InitCommand) -> tuple[ResultCode, str]:
+        def do(self: SKASubarray.InitCommand) -> tuple[ResultCode, str]:  # type: ignore[override]
             """
             Stateless hook for device initialisation.
 
@@ -149,16 +149,16 @@ class SKASubarray(SKAObsDevice):
             "Abort",
             self.AbortCommand(
                 self._command_tracker,
-                self.component_manager,
+                cast(SubarrayComponentManager, self.component_manager),
                 callback=functools.partial(_callback, "abort"),
                 logger=self.logger,
             ),
         )
 
-    def _component_state_changed(
+    def _component_state_changed(  # type: ignore[override]
         self: SKASubarray,
         fault: Optional[bool] = None,
-        power: Optional[bool] = None,
+        power: Optional[PowerState] = None,
         resourced: Optional[bool] = None,
         configured: Optional[bool] = None,
         scanning: Optional[bool] = None,
@@ -243,7 +243,7 @@ class SKASubarray(SKAObsDevice):
 
         :return: Resources assigned to the device.
         """
-        return self.component_manager.assigned_resources
+        return cast(SubarrayComponentManager, self.component_manager).assigned_resources
 
     @attribute(
         dtype=("str",),
@@ -259,7 +259,9 @@ class SKASubarray(SKAObsDevice):
         :return: A list of capability types with no. of instances used
             in the Subarray
         """
-        return self.component_manager.configured_capabilities
+        return cast(
+            SubarrayComponentManager, self.component_manager
+        ).configured_capabilities
 
     # --------
     # Commands

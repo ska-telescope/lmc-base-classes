@@ -210,7 +210,7 @@ class FastCommand(_BaseCommand):
         :param args: positional args to the component manager method
         :param kwargs: keyword args to the component manager method
 
-        :raises Exception: method does not exist
+        :raises Exception: any exception that is raised during the execution of the self.do method.
 
         :return: result of command
         """

@@ -13,7 +13,6 @@ from typing import Any
 
 import pytest
 import tango
-from ska_tango_testing.mock import MockCallableGroup
 from ska_tango_testing.mock.tango import MockTangoEventCallbackGroup
 from tango import DevState
 
@@ -126,7 +125,7 @@ class TestSKASubarray:
     def test_assign_and_release_resources(
         self: TestSKASubarray,
         device_under_test: tango.DeviceProxy,
-        change_event_callbacks: MockCallableGroup,
+        change_event_callbacks: MockTangoEventCallbackGroup,
     ) -> None:
         """
         Test for AssignResources.
@@ -368,7 +367,7 @@ class TestSKASubarray:
     def test_configure_and_end(
         self: TestSKASubarray,
         device_under_test: tango.DeviceProxy,
-        change_event_callbacks: MockCallableGroup,
+        change_event_callbacks: MockTangoEventCallbackGroup,
     ) -> None:
         """
         Test for Configure.
@@ -615,7 +614,7 @@ class TestSKASubarray:
     def test_scan_and_end_scan(
         self: TestSKASubarray,
         device_under_test: tango.DeviceProxy,
-        change_event_callbacks: MockCallableGroup,
+        change_event_callbacks: MockTangoEventCallbackGroup,
     ) -> None:
         """
         Test for Scan.
@@ -926,7 +925,7 @@ class TestSKASubarray:
     def test_abort_and_obsreset(
         self: TestSKASubarray,
         device_under_test: tango.DeviceProxy,
-        change_event_callbacks: MockCallableGroup,
+        change_event_callbacks: MockTangoEventCallbackGroup,
     ) -> None:
         """
         Test for Reset.

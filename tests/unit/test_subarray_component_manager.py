@@ -52,27 +52,27 @@ class TestResourcePool:
         assert not len(resource_pool)
         assert resource_pool.get() == set()
 
-        resource_pool.assign(["A"])
+        resource_pool.assign(set(["A"]))
         assert len(resource_pool) == 1
         assert resource_pool.get() == set(["A"])
 
-        resource_pool.assign(["A"])
+        resource_pool.assign(set(["A"]))
         assert len(resource_pool) == 1
         assert resource_pool.get() == set(["A"])
 
-        resource_pool.assign(["A", "B"])
+        resource_pool.assign(set(["A", "B"]))
         assert len(resource_pool) == 2
         assert resource_pool.get() == set(["A", "B"])
 
-        resource_pool.assign(["A"])
+        resource_pool.assign(set(["A"]))
         assert len(resource_pool) == 2
         assert resource_pool.get() == set(["A", "B"])
 
-        resource_pool.assign(["A", "C"])
+        resource_pool.assign(set(["A", "C"]))
         assert len(resource_pool) == 3
         assert resource_pool.get() == set(["A", "B", "C"])
 
-        resource_pool.assign(["D"])
+        resource_pool.assign(set(["D"]))
         assert len(resource_pool) == 4
         assert resource_pool.get() == set(["A", "B", "C", "D"])
 
@@ -84,20 +84,20 @@ class TestResourcePool:
 
         :param resource_pool: a resource pool
         """
-        resource_pool.assign(["A", "B", "C", "D"])
+        resource_pool.assign(set(["A", "B", "C", "D"]))
 
         # okay to release resources not assigned; does nothing
-        resource_pool.release(["E"])
+        resource_pool.release(set(["E"]))
         assert len(resource_pool) == 4
         assert resource_pool.get() == set(["A", "B", "C", "D"])
 
         # check release does what it should
-        resource_pool.release(["D"])
+        resource_pool.release(set(["D"]))
         assert len(resource_pool) == 3
         assert resource_pool.get() == set(["A", "B", "C"])
 
         # okay to release resources both assigned and not assigned
-        resource_pool.release(["C", "D"])
+        resource_pool.release(set(["C", "D"]))
         assert len(resource_pool) == 2
         assert resource_pool.get() == set(["A", "B"])
 
@@ -524,19 +524,19 @@ class TestSubarrayComponentManager:
         mock_resource_1 = mock_resource_factory()
         mock_resource_2 = mock_resource_factory()
 
-        component_manager.assign([mock_resource_1])
+        component_manager.assign(set([mock_resource_1]))
         callbacks.assert_call("component_state", resourced=True)
 
-        component_manager.assign([mock_resource_2])
+        component_manager.assign(set([mock_resource_2]))
         callbacks.assert_not_called()
 
-        component_manager.release([mock_resource_1])
+        component_manager.release(set([mock_resource_1]))
         callbacks.assert_not_called()
 
-        component_manager.release([mock_resource_2])
+        component_manager.release(set([mock_resource_2]))
         callbacks.assert_call("component_state", resourced=False)
 
-        component_manager.assign([mock_resource_1, mock_resource_2])
+        component_manager.assign(set([mock_resource_1, mock_resource_2]))
         callbacks.assert_call("component_state", resourced=True)
 
         component_manager.release_all()
@@ -572,7 +572,7 @@ class TestSubarrayComponentManager:
         callbacks.assert_call("component_state", power=PowerState.ON)
 
         mock_resource = mock_resource_factory()
-        component_manager.assign([mock_resource])
+        component_manager.assign(set([mock_resource]))
         callbacks.assert_call("component_state", resourced=True)
 
         mock_configuration_1 = mock_config_factory()
@@ -622,7 +622,7 @@ class TestSubarrayComponentManager:
         callbacks.assert_call("component_state", power=PowerState.ON)
 
         mock_resource = mock_resource_factory()
-        component_manager.assign([mock_resource])
+        component_manager.assign(set([mock_resource]))
         callbacks.assert_call("component_state", resourced=True)
 
         mock_configuration = mock_config_factory()
@@ -679,7 +679,7 @@ class TestSubarrayComponentManager:
         callbacks.assert_call("component_state", power=PowerState.ON)
 
         mock_resource = mock_resource_factory()
-        component_manager.assign([mock_resource])
+        component_manager.assign(set([mock_resource]))
         callbacks.assert_call("component_state", resourced=True)
 
         mock_configuration = mock_config_factory()
@@ -738,7 +738,7 @@ class TestSubarrayComponentManager:
         callbacks.assert_call("component_state", power=PowerState.ON)
 
         mock_resource = mock_resource_factory()
-        component_manager.assign([mock_resource])
+        component_manager.assign(set([mock_resource]))
         callbacks.assert_call("component_state", resourced=True)
 
         mock_configuration = mock_config_factory()
@@ -757,7 +757,7 @@ class TestSubarrayComponentManager:
             resourced=False,
         )
 
-        component_manager.assign([mock_resource])
+        component_manager.assign(set([mock_resource]))
         callbacks.assert_call("component_state", resourced=True)
 
         component_manager.configure(mock_configuration)

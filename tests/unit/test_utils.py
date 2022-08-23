@@ -330,6 +330,6 @@ def test_for_testing_only_decorator() -> None:
         """
         return "bah"
 
-    with pytest.warns(None) as warning_record:
+    with pytest.warns(None) as warning_record:  # type: ignore[call-overload]
         assert bah() == "bah"
     assert len(warning_record) == 0  # no warning was raised because we are testing

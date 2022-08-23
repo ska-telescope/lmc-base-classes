@@ -334,9 +334,14 @@ class BaseComponentManager:
         raise NotImplementedError("BaseComponentManager is abstract.")
 
     @check_communicating
-    def abort_tasks(self: BaseComponentManager) -> tuple[TaskStatus, str]:
+    def abort_tasks(
+        self: BaseComponentManager, task_callback: Optional[Callable] = None
+    ) -> tuple[TaskStatus, str]:
         """
         Abort all tasks queued & running.
+
+        :param task_callback: callback to be called whenever the status
+            of the task changes.
 
         :raises NotImplementedError: Not implemented it's an abstract class
         """

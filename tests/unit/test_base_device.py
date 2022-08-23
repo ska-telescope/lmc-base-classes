@@ -381,13 +381,12 @@ class TestLoggingUtils:
         # Use some mocks to check this.
         mock_formatter = mock.MagicMock()
 
-        # TODO check this change
         def get_formatter_if_tags_enabled(
             *args: Any, **kwargs: Any
-        ) -> mock.MagicMock | bool:
+        ) -> mock.MagicMock | None:
             if kwargs.get("tags", False):
                 return mock_formatter
-            return False
+            return None
 
         mock_get_formatter.side_effect = get_formatter_if_tags_enabled
         mock_tango_logger = mock.MagicMock(spec=tango.Logger)

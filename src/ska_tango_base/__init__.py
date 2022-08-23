@@ -41,6 +41,4 @@ from .capability_device import SKACapability
 from .subarray import SKASubarray
 
 # CspSubElement classes
-from .csp import CspSubElementController
-from .csp import CspSubElementSubarray
-from .csp import CspSubElementObsDevice
+from .csp import CspSubElementController, CspSubElementSubarray, CspSubElementObsDevice

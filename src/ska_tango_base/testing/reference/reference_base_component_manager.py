@@ -318,7 +318,7 @@ class ReferenceBaseComponentManager(TaskExecutorComponentManager):
     def __init__(
         self: ReferenceBaseComponentManager,
         logger: logging.Logger,
-        communication_state_callback: Callable[[], None],
+        communication_state_callback: Callable[[CommunicationStatus], None],
         component_state_callback: Callable[[], None],
         *args: Any,
         _component: Optional[FakeBaseComponent] = None,

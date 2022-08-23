@@ -76,7 +76,7 @@ class TestTaskExecutor:
             if task_callback is not None:
                 task_callback(status=TaskStatus.IN_PROGRESS)
             with lock:
-                if task_abort_event.is_set() and task_callback:
+                if task_abort_event.is_set() and task_callback is not None:
                     task_callback(status=TaskStatus.ABORTED)
                     return
             if task_callback is not None:
@@ -142,13 +142,13 @@ class TestTaskExecutor:
 
         def _claim_lock(
             lock: Lock,
-            task_callback: Optional[Callable],
+            task_callback: Callable,
             task_abort_event: Event,
         ) -> None:
             if task_callback is not None:
                 task_callback(status=TaskStatus.IN_PROGRESS)
             with lock:
-                if task_abort_event.is_set() and task_callback:
+                if task_abort_event.is_set() and task_callback is not None:
                     task_callback(status=TaskStatus.ABORTED)
                     return
             if task_callback is not None:
@@ -221,11 +221,10 @@ class TestTaskExecutor:
         exception_to_raise = ValueError("Exception under test")
 
         def _raise_exception(
-            task_callback: Optional[Callable],
+            task_callback: Callable,
             task_abort_event: Event,
         ) -> None:
-            if task_callback is not None:
-                task_callback(status=TaskStatus.IN_PROGRESS)
+            task_callback(status=TaskStatus.IN_PROGRESS)
             raise exception_to_raise
 
         executor.submit(_raise_exception, task_callback=callbacks["job_0"])

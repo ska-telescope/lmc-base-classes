@@ -23,9 +23,9 @@ import socket
 import sys
 import threading
 import traceback
-import typing
 import warnings
 from functools import partial
+from types import FunctionType, MethodType
 from typing import Any, Callable, List, Optional, Tuple, Union, cast
 from urllib.parse import urlparse
 from urllib.request import url2pathname
@@ -845,7 +845,7 @@ class SKABaseDevice(Device):
 
     def _component_state_changed(
         self: SKABaseDevice,
-        fault: Optional[HealthState] = None,
+        fault: Optional[bool] = None,
         power: Optional[PowerState] = None,
     ) -> None:
         if power is not None:
@@ -880,7 +880,7 @@ class SKABaseDevice(Device):
         try:
             super().init_device()
 
-            self._omni_queue: queue.Queue = queue.Queue()
+            self._omni_queue: queue.SimpleQueue = queue.SimpleQueue()
 
             # this can be removed when cppTango issue #935 is implemented
             self._init_active = True
@@ -1181,7 +1181,6 @@ class SKABaseDevice(Device):
         return self._health_state
 
     @attribute(dtype=AdminMode, memorized=True, hw_memorized=True)
-    #    @attribute(dtype=AdminMode)
     def adminMode(self: SKABaseDevice) -> AdminMode:
         """
         Read the Admin Mode of the device.
@@ -1720,10 +1719,9 @@ class SKABaseDevice(Device):
                     methods.append((command_object, name, method))
             return methods
 
-        # TODO: types and MethodType do not have __annotations__. Revisit with python 3.10
         @staticmethod
         def method_must_be_patched_for_debugger(
-            owner: object, method: typing.types.MethodType  # type: ignore[name-defined]
+            owner: object, method: MethodType
         ) -> bool:
             """
             Determine if methods are worth debugging.
@@ -1736,7 +1734,7 @@ class SKABaseDevice(Device):
             :param owner: owner
             :param method: the name
 
-            :return: worth debugging is True
+            :return: True if the method contains more than the skipped modules.
             """
             skip_module_names = [
                 "tango.device_server",
@@ -1745,7 +1743,7 @@ class SKABaseDevice(Device):
             ]
             skip_owner_types = [SKABaseDevice.DebugDeviceCommand]
             return (
-                isinstance(method.__func__, typing.types.FunctionType)  # type: ignore[attr-defined]
+                isinstance(method.__func__, FunctionType)
                 and method.__func__.__module__ not in skip_module_names
                 and type(owner) not in skip_owner_types
             )

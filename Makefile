@@ -1,15 +1,13 @@
 #
 # Project makefile for a SKA Tango Base project. 
+#
+# Distributed under the terms of the BSD 3-clause new license.
+# See LICENSE.txt for more info.
 
 PROJECT = ska-tango-base
 IMAGE_FOR_DIAGRAMS = artefact.skao.int/ska-tango-images-pytango-builder:9.3.28
 
-PYTHON_RUNNER = poetry run
-# E203 and W503 conflict with black, line line set to 110 for long intersphinx doc strings
-# A003 shadowing python builtin
-PYTHON_SWITCHES_FOR_FLAKE8 = --extend-ignore=BLK,T --enable=DAR104 --ignore=A003,E203,FS003,W503,N802 --max-complexity=11 \
-    --docstring-style=SPHINX  --max-line-length=110 --rst-roles=py:attr,py:class,py:const,py:exc,py:func,py:meth,py:mod \
-    --rst-directives=uml
+#PYTHON_RUNNER = poetry run
 
 PYTHON_SWITCHES_FOR_ISORT = --skip-glob=*/__init__.py
 PYTHON_SWITCHES_FOR_BLACK = --line-length 88
@@ -45,9 +43,6 @@ PYTHON_LINT_TARGET = src/ska_tango_base/base \
     tests/unit/test_tel_state_device.py \
     tests/unit/test_utils.py
 
-# pylint reports E1101 (no-member) for socket.SocketKind
-PYTHON_SWITCHES_FOR_PYLINT = --disable=W,C,R --ignored-classes=socket
-
 DOCS_SOURCEDIR=./docs/src
 DOCS_SPHINXOPTS=-W --keep-going  # -n remove temporarily
 
@@ -73,20 +68,13 @@ python-post-format:
 python-post-lint:
 	$(PYTHON_RUNNER) mypy --config-file mypy.ini --exclude src/ska_tango_base/csp/ $(PYTHON_LINT_TARGET)
 
-python-post-test: ## test ska_tango_base Python code
-	scripts/validate-metadata.sh
+#python-post-test: ## test ska_tango_base Python code
+#	scripts/validate-metadata.sh
 
 python-pre-test:
 	python3 -m pip install --extra-index-url https://artefact.skao.int/repository/pypi-all/simple debugpy ska-ser-logging ska-tango-testing
 
 docs-pre-build:
 	python3 -m pip install -r docs/requirements.txt
-
-python-do-build:
-	poetry build
-
-python-do-publish:
-	poetry config repositories.skao $(PYTHON_PUBLISH_URL)
-	poetry publish --repository skao --username $(PYTHON_PUBLISH_USERNAME) --password $(PYTHON_PUBLISH_PASSWORD)
 
 .PHONY: python-post-format python-post-lint poetry-do-build poetry-do-publish

@@ -170,20 +170,20 @@ class SubarrayComponentManager(BaseComponentManager):
         raise NotImplementedError("SubarrayComponentManager is abstract.")
 
     @property
-    def assigned_resources(self):
+    def assigned_resources(self: SubarrayComponentManager) -> list[str]:
         """
         Return the resources assigned to the component.
 
-        :return: list of strings indicating the resources assigned to the component
+        :raises NotImplementedError: the resources assigned to the component
         """
         raise NotImplementedError("SubarrayComponentManager is abstract.")
 
     @property
-    def configured_capabilities(self):
+    def configured_capabilities(self: SubarrayComponentManager) -> list[str]:
         """
         Return the configured capabilities of the component.
 
-        :return: list of strings indicating number of configured
+        :raises NotImplementedError: list of strings indicating number of configured
             instances of each capability type
         """
         raise NotImplementedError("SubarrayComponentManager is abstract.")

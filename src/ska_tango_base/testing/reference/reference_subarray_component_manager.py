@@ -10,13 +10,9 @@ from __future__ import annotations
 
 import logging
 import threading
-from typing import Any, Callable, Optional, cast
+from typing import Any, Callable, Optional
 
-from ska_tango_base.base import (
-    TaskExecutorComponentManager,
-    check_communicating,
-    check_on,
-)
+from ska_tango_base.base import check_communicating, check_on
 from ska_tango_base.commands import ResultCode
 from ska_tango_base.control_model import CommunicationStatus, PowerState
 from ska_tango_base.executor import TaskStatus
@@ -213,7 +209,7 @@ class FakeSubarrayComponent(FakeBaseComponent):
     def assign(
         self: FakeSubarrayComponent,
         resources: set[str],
-        task_callback: Optional[Callable[[], None]],
+        task_callback: Callable,
         task_abort_event: threading.Event,
     ) -> None:
         """
@@ -245,7 +241,7 @@ class FakeSubarrayComponent(FakeBaseComponent):
     def release(
         self: FakeSubarrayComponent,
         resources: set[str],
-        task_callback: Optional[Callable[[], None]],
+        task_callback: Callable,
         task_abort_event: threading.Event,
     ) -> None:
         """
@@ -276,7 +272,7 @@ class FakeSubarrayComponent(FakeBaseComponent):
     @check_on
     def release_all(
         self: FakeSubarrayComponent,
-        task_callback: Optional[Callable[[], None]],
+        task_callback: Callable,
         task_abort_event: threading.Event,
     ) -> None:
         """
@@ -304,7 +300,7 @@ class FakeSubarrayComponent(FakeBaseComponent):
     def configure(
         self: FakeSubarrayComponent,
         configuration: dict,
-        task_callback: Optional[Callable[[], None]],
+        task_callback: Callable,
         task_abort_event: threading.Event,
     ) -> None:
         """
@@ -342,7 +338,7 @@ class FakeSubarrayComponent(FakeBaseComponent):
     @check_on
     def deconfigure(
         self: FakeSubarrayComponent,
-        task_callback: Optional[Callable[[], None]],
+        task_callback: Callable,
         task_abort_event: threading.Event,
     ) -> None:
         """
@@ -371,7 +367,7 @@ class FakeSubarrayComponent(FakeBaseComponent):
     def scan(
         self: FakeSubarrayComponent,
         args: Any,
-        task_callback: Optional[Callable[[], None]],
+        task_callback: Callable,
         task_abort_event: threading.Event,
     ) -> None:
         """
@@ -397,7 +393,7 @@ class FakeSubarrayComponent(FakeBaseComponent):
     @check_on
     def end_scan(
         self: FakeSubarrayComponent,
-        task_callback: Optional[Callable[[], None]],
+        task_callback: Callable,
         task_abort_event: threading.Event,
     ) -> None:
         """
@@ -436,7 +432,7 @@ class FakeSubarrayComponent(FakeBaseComponent):
     @check_on
     def obsreset(
         self: FakeSubarrayComponent,
-        task_callback: Optional[Callable[[], None]],
+        task_callback: Callable,
         task_abort_event: threading.Event,
     ) -> None:
         """
@@ -461,7 +457,7 @@ class FakeSubarrayComponent(FakeBaseComponent):
     @check_on
     def restart(
         self: FakeSubarrayComponent,
-        task_callback: Optional[Callable[[], None]],
+        task_callback: Callable,
         task_abort_event: threading.Event,
     ) -> None:
         """
@@ -504,11 +500,9 @@ class ReferenceSubarrayComponentManager(
         self: ReferenceSubarrayComponentManager,
         capability_types: list[str],
         logger: logging.Logger,
-        communication_state_callback: Optional[
-            Callable[[CommunicationStatus], None]
-        ] = None,
-        component_state_callback: Optional[Callable[[], None]] = None,
-        _component: Optional[object] = None,
+        communication_state_callback: Callable[[CommunicationStatus], None],
+        component_state_callback: Callable[[], None],
+        _component: Optional[FakeBaseComponent] = None,
     ):
         """
         Initialise a new ReferenceSubarrayComponentManager instance.
@@ -533,6 +527,7 @@ class ReferenceSubarrayComponentManager(
             scanning=False,
             obsfault=False,
         )
+        self._component: FakeSubarrayComponent  # for the type checker
 
     @check_communicating
     def assign(
@@ -674,9 +669,7 @@ class ReferenceSubarrayComponentManager(
 
         :return: task status and message
         """
-        return cast(TaskExecutorComponentManager, self).abort_tasks(
-            task_callback=task_callback
-        )
+        return self.abort_tasks(task_callback=task_callback)
 
     @check_communicating
     def obsreset(

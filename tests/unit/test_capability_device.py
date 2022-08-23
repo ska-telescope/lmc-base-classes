@@ -69,16 +69,6 @@ class TestSKACapability(object):
         device_under_test.ConfigureInstances(1)
         assert device_under_test.configuredInstances == 1
 
-    # def test_Reset(self: TestSKACapability,
-    #     device_under_test: tango.DeviceProxy
-    # ) -> None:
-    #     """
-    #     Test for Reset
-
-    #     :param device_under_test: a proxy to the device under test
-    #     """
-    #     assert device_under_test.Reset() == None
-
     def test_activationTime(
         self: TestSKACapability, device_under_test: tango.DeviceProxy
     ) -> None:
@@ -88,26 +78,6 @@ class TestSKACapability(object):
         :param device_under_test: a proxy to the device under test
         """
         assert device_under_test.activationTime == 0.0
-
-    # def test_configurationProgress(self: TestSKACapability,
-    #     device_under_test: tango.DeviceProxy
-    # ) -> None:
-    #     """
-    #     Test for configurationProgress
-    #
-    #     :param device_under_test: a proxy to the device under test
-    #     """
-    #     assert device_under_test.configurationProgress == 0
-
-    # def test_configurationDelayExpected(self: TestSKACapability,
-    #     device_under_test: tango.DeviceProxy
-    # ) -> None:
-    #     """
-    #     Test for configurationDelayExpected
-
-    #     :param device_under_test: a proxy to the device under test
-    #     """
-    #     assert device_under_test.configurationDelayExpected == 0
 
     def test_buildState(
         self: TestSKACapability, device_under_test: tango.DeviceProxy

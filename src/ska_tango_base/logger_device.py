@@ -13,7 +13,7 @@ remote logging for selected devices.
 """
 from __future__ import annotations
 
-from typing import Any, List, Optional, Tuple, cast
+from typing import Any, List, Optional, Tuple
 
 from tango import DebugIt, DevFailed, DeviceProxy
 from tango.server import command
@@ -47,7 +47,7 @@ class SKALogger(SKABaseDevice):
             self.SetLoggingLevelCommand(self.logger),
         )
 
-    def create_component_manager(self: SKALogger) -> None:
+    def create_component_manager(self: SKALogger) -> None:  # type: ignore[override]
         """
         Create and return the component manager for this device.
 
@@ -101,7 +101,7 @@ class SKALogger(SKABaseDevice):
             logging_devices = argin[1][:]
             for level, device in zip(logging_levels, logging_devices):
                 try:
-                    new_level = LoggingLevel(cast(int, level))
+                    new_level = LoggingLevel(int(level))
                     self.logger.info(
                         "Setting logging level %s for %s", new_level, device
                     )

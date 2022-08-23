@@ -27,5 +27,4 @@ from .component_manager import (
     check_communicating,
     check_on,
 )
-from .base_device import SKABaseDevice
-from .base_device import CommandTracker
+from .base_device import SKABaseDevice, CommandTracker

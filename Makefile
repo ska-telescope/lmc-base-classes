@@ -66,7 +66,7 @@ python-post-format:
 	$(PYTHON_RUNNER) docformatter -r -i --wrap-summaries 88 --wrap-descriptions 72 --pre-summary-newline $(PYTHON_LINT_TARGET)
 
 python-post-lint:
-	$(PYTHON_RUNNER) mypy --config-file mypy.ini --exclude src/ska_tango_base/csp/ $(PYTHON_LINT_TARGET)
+	$(PYTHON_RUNNER) mypy --config-file mypy.ini $(PYTHON_LINT_TARGET)
 
 #python-post-test: ## test ska_tango_base Python code
 #	scripts/validate-metadata.sh

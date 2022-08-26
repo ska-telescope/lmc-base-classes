@@ -51,11 +51,10 @@ DOCS_SPHINXOPTS=-W --keep-going  # -n remove temporarily
 
 include .make/oci.mk
 include .make/k8s.mk
-include .make/helm.mk
 include .make/python.mk
 include .make/raw.mk
 include .make/base.mk
-#include .make/docs.mk
+include .make/docs.mk
 
 # include your own private variables for custom deployment configuration
 -include PrivateRules.mak
@@ -77,4 +76,4 @@ python-pre-test:
 docs-pre-build:
 	python3 -m pip install -r docs/requirements.txt
 
-.PHONY: python-post-format python-post-lint poetry-do-build poetry-do-publish
+.PHONY: python-post-format python-post-lint python-pre-test docs-pre-build

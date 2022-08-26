@@ -16,7 +16,6 @@ debugpy = "^1.6.2"
 numpy = "1.21.0"
 pytango = "9.3.3"
 ska-ser-logging = "^0.4.1"
-ska_tango_testing = "0.2.0"
 transitions = "^0.8.11"
 
 [tool.poetry.dev-dependencies]
@@ -38,8 +37,9 @@ pytest-bdd = "^6.0.1"
 pytest-cov = "^3.0.0"
 pytest-json-report = "^1.5.0"
 pytest-mock = "^3.8.2"
-toml = "^0.10.2"
 pytest-forked = "^1.4.0"
+ska_tango_testing = "0.2.0"
+toml = "^0.10.2"
 
 [tool.poetry.scripts]
 SKAAlarmHandler = "ska_tango_base.alarm_handler_device:main"

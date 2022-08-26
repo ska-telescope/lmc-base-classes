@@ -1,4 +1,9 @@
-# pylint: skip-file  # TODO: Incrementally lint this repo
+# -*- coding: utf-8 -*-
+#
+# This file is part of the SKA Tango Base project
+#
+# Distributed under the terms of the BSD 3-clause new license.
+# See LICENSE.txt for more info.
 """
 This module specifies the operational state ("opState") model for SKA LMC Tango devices.
 
@@ -10,6 +15,11 @@ It consists of:
   :py:class:`tango.DevState` enum value, and reported using the tango
   device's special ``state()`` method.
 """
+from __future__ import annotations
+
+import logging
+from typing import Callable, Optional
+
 from tango import DevState
 from transitions.extensions import LockedMachine as Machine
 
@@ -94,13 +104,14 @@ class _OpStateMachine(Machine):
       :alt: Diagram of the op state machine, as implemented
     """
 
-    def __init__(self, callback=None, **extra_kwargs):
+    def __init__(
+        self: _OpStateMachine, callback: Optional[Callable] = None, **extra_kwargs: dict
+    ) -> None:
         """
         Initialise the state model.
 
         :param callback: A callback to be called when a transition
             implies a change to op state
-        :type callback: callable
         :param extra_kwargs: Additional keywords arguments to pass to
             superclass initialiser (useful for graphing)
         """
@@ -358,7 +369,7 @@ class _OpStateMachine(Machine):
         )
         self._state_changed()
 
-    def _state_changed(self):
+    def _state_changed(self: _OpStateMachine) -> None:
         """
         State machine callback that is called every time the op_state changes.
 
@@ -425,33 +436,29 @@ class OpStateModel:
        :caption: Diagram of the operational state model
     """
 
-    def __init__(self, logger, callback=None):
+    def __init__(
+        self: OpStateModel, logger: logging.Logger, callback: Optional[Callable] = None
+    ) -> None:
         """
         Initialise the operational state model.
 
         :param logger: the logger to be used by this state model.
-        :type logger: a logger that implements the standard library
-            logger interface
         :param callback: A callback to be called when the state machine
             for op_state reports a change of state
-        :type callback: callable
         """
         self.logger = logger
 
         self._op_state = None
         self._callback = callback
 
-        self._op_state_machine = _OpStateMachine(
-            callback=self._op_state_changed
-        )
+        self._op_state_machine = _OpStateMachine(callback=self._op_state_changed)
 
     @property
-    def op_state(self):
+    def op_state(self: OpStateModel) -> DevState:
         """
         Return the op state.
 
         :returns: the op state of this state model
-        :rtype: :py:class:`tango.DevState`
         """
         return self._op_state
 
@@ -473,7 +480,7 @@ class OpStateModel:
         "FAULT_ON": DevState.FAULT,
     }
 
-    def _op_state_changed(self, machine_state):
+    def _op_state_changed(self: OpStateModel, machine_state: str) -> None:
         """
         Handle notification that the operational state machine has changed state.
 
@@ -482,7 +489,6 @@ class OpStateModel:
 
         :param machine_state: the new state of the operation state
             machine
-        :type machine_state: str
         """
         op_state = self._op_state_mapping[machine_state]
         if self._op_state != op_state:
@@ -490,26 +496,23 @@ class OpStateModel:
             if self._callback is not None:
                 self._callback(op_state)
 
-    def is_action_allowed(self, action, raise_if_disallowed=False):
+    def is_action_allowed(
+        self: OpStateModel, action: str, raise_if_disallowed: bool = False
+    ) -> bool:
         """
         Return whether a given action is allowed in the current state.
 
         :param action: an action, as given in the transitions table
-        :type action: str
         :param raise_if_disallowed: whether to raise an exception if the
             action is disallowed, or merely return False (optional,
             defaults to False)
-        :type raise_if_disallowed: bool
 
         :raises StateModelError: if the action is unknown to the state
             machine
 
         :return: whether the action is allowed in the current state
-        :rtype: bool
         """
-        if action in self._op_state_machine.get_triggers(
-            self._op_state_machine.state
-        ):
+        if action in self._op_state_machine.get_triggers(self._op_state_machine.state):
             return True
 
         if raise_if_disallowed:
@@ -518,18 +521,17 @@ class OpStateModel:
             )
         return False
 
-    def perform_action(self, action):
+    def perform_action(self: OpStateModel, action: str) -> None:
         """
         Perform an action on the state model.
 
         :param action: an action, as given in the transitions table
-        :type action: str
         """
         _ = self.is_action_allowed(action, raise_if_disallowed=True)
         self._op_state_machine.trigger(action)
 
     @for_testing_only
-    def _straight_to_state(self, op_state_name):
+    def _straight_to_state(self: OpStateModel, op_state_name: str) -> None:
         """
         Take this op state model straight to the specified underlying op state.
 
@@ -564,6 +566,5 @@ class OpStateModel:
 
         :param op_state_name: the name of a target op state, as used by
             the underlying :py:class:`._OpStateMachine`.
-        :type op_state_name: str
         """
         getattr(self._op_state_machine, f"to_{op_state_name}")()

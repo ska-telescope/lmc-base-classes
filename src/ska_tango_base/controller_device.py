@@ -1,21 +1,21 @@
-# pylint: skip-file  # TODO: Incrementally lint this repo
 # -*- coding: utf-8 -*-
 #
-# This file is part of the SKAController project
+# This file is part of the SKA Tango Base project
 #
-#
-#
-
+# Distributed under the terms of the BSD 3-clause new license.
+# See LICENSE.txt for more info.
 """
 SKAController.
 
 Controller device
 """
-# PROTECTED REGION ID(SKAController.additionnal_import) ENABLED START #
-from typing import Tuple
+from __future__ import annotations
+
+import logging
+from typing import Optional
 
 from tango import DebugIt
-from tango.server import attribute, command, device_property, run
+from tango.server import attribute, command, device_property
 
 from ska_tango_base import SKABaseDevice
 from ska_tango_base.commands import DeviceInitCommand, FastCommand, ResultCode
@@ -25,15 +25,24 @@ from ska_tango_base.utils import (
     validate_input_sizes,
 )
 
-# PROTECTED REGION END #    //  SKAController.additionnal_imports
-
 __all__ = ["SKAController", "main"]
 
 
 class SKAController(SKABaseDevice):
     """Controller device."""
 
-    def init_command_objects(self):
+    # -----------------
+    # Device Properties
+    # -----------------
+
+    # List of maximum number of instances per capability type provided by this Element;
+    # CORRELATOR=512, PSS-BEAMS=4, PST-BEAMS=6, VLBI-BEAMS=4  or for DSH it can be:
+    # BAND-1=1, BAND-2=1, BAND3=0, BAND-4=0, BAND-5=0 (if only bands 1&amp;2 is installed)
+    MaxCapabilities = device_property(
+        dtype=("str",),
+    )
+
+    def init_command_objects(self: SKAController) -> None:
         """Set up the command objects."""
         super().init_command_objects()
         self.register_command_object(
@@ -44,7 +53,9 @@ class SKAController(SKABaseDevice):
     class InitCommand(DeviceInitCommand):
         """A class for the SKAController's init_device() "command"."""
 
-        def do(self):
+        def do(  # type: ignore[override]
+            self: SKAController.InitCommand,
+        ) -> tuple[ResultCode, str]:
             """
             Stateless hook for device initialisation.
 
@@ -70,91 +81,26 @@ class SKAController(SKABaseDevice):
                     self._device._max_capabilities[capability_type] = int(
                         max_capability_instances
                     )
-            self._device._available_capabilities = (
-                self._device._max_capabilities.copy()
-            )
+            self._device._available_capabilities = self._device._max_capabilities.copy()
 
             message = "SKAController Init command completed OK"
             self.logger.info(message)
             self._completed()
             return (ResultCode.OK, message)
 
-    # PROTECTED REGION ID(SKAController.class_variable) ENABLED START #
-    # PROTECTED REGION END #    //  SKAController.class_variable
-
-    # -----------------
-    # Device Properties
-    # -----------------
-
-    # List of maximum number of instances per capability type provided by this Element;
-    # CORRELATOR=512, PSS-BEAMS=4, PST-BEAMS=6, VLBI-BEAMS=4  or for DSH it can be:
-    # BAND-1=1, BAND-2=1, BAND3=0, BAND-4=0, BAND-5=0 (if only bands 1&amp;2 is installed)
-    MaxCapabilities = device_property(
-        dtype=("str",),
-    )
-
-    # ----------
-    # Attributes
-    # ----------
-
-    elementLoggerAddress = attribute(
-        dtype="str",
-        doc="FQDN of Element Logger",
-    )
-    """Device attribute."""
-
-    elementAlarmAddress = attribute(
-        dtype="str",
-        doc="FQDN of Element Alarm Handlers",
-    )
-    """Device attribute."""
-
-    elementTelStateAddress = attribute(
-        dtype="str",
-        doc="FQDN of Element TelState device",
-    )
-    """Device attribute."""
-
-    elementDatabaseAddress = attribute(
-        dtype="str",
-        doc="FQDN of Element Database device",
-    )
-    """Device attribute."""
-
-    maxCapabilities = attribute(
-        dtype=("str",),
-        max_dim_x=20,
-        doc=(
-            "Maximum number of instances of each capability type,"
-            " e.g. 'CORRELATOR:512', 'PSS-BEAMS:4'."
-        ),
-    )
-    """Device attribute."""
-
-    availableCapabilities = attribute(
-        dtype=("str",),
-        max_dim_x=20,
-        doc="A list of available number of instances of each capability type, "
-        "e.g. 'CORRELATOR:512', 'PSS-BEAMS:4'.",
-    )
-    """Device attribute."""
-
     # ---------------
     # General methods
     # ---------------
 
-    def always_executed_hook(self):
-        # PROTECTED REGION ID(SKAController.always_executed_hook) ENABLED START #
+    def always_executed_hook(self: SKAController) -> None:
         """
         Perform actions that are executed before every device command.
 
         This is a Tango hook.
         """
         pass
-        # PROTECTED REGION END #    //  SKAController.always_executed_hook
 
-    def delete_device(self):
-        # PROTECTED REGION ID(SKAController.delete_device) ENABLED START #
+    def delete_device(self: SKAController) -> None:
         """
         Clean up any resources prior to device deletion.
 
@@ -164,54 +110,68 @@ class SKAController(SKABaseDevice):
         be released prior to device deletion.
         """
         pass
-        # PROTECTED REGION END #    //  SKAController.delete_device
 
-    # ------------------
-    # Attributes methods
-    # ------------------
+    # ----------
+    # Attributes
+    # ----------
 
-    def read_elementLoggerAddress(self):
-        # PROTECTED REGION ID(SKAController.elementLoggerAddress_read) ENABLED START #
+    @attribute(
+        dtype="str",
+        doc="FQDN of Element Logger",
+    )
+    def elementLoggerAddress(self: SKAController) -> str:
         """
         Read FQDN of Element Logger device.
 
-        :return FQDN of Element Logger device
+        :return: FQDN of Element Logger device
         """
         return self._element_logger_address
-        # PROTECTED REGION END #    //  SKAController.elementLoggerAddress_read
 
-    def read_elementAlarmAddress(self):
-        # PROTECTED REGION ID(SKAController.elementAlarmAddress_read) ENABLED START #
+    @attribute(
+        dtype="str",
+        doc="FQDN of Element Alarm Handlers",
+    )
+    def elementAlarmAddress(self: SKAController) -> str:
         """
         Read FQDN of Element Alarm device.
 
         :return: FQDN of Element Alarm device
         """
         return self._element_alarm_address
-        # PROTECTED REGION END #    //  SKAController.elementAlarmAddress_read
 
-    def read_elementTelStateAddress(self):
-        # PROTECTED REGION ID(SKAController.elementTelStateAddress_read) ENABLED START #
+    @attribute(
+        dtype="str",
+        doc="FQDN of Element TelState device",
+    )
+    def elementTelStateAddress(self: SKAController) -> str:
         """
         Read FQDN of Element TelState device.
 
         :return: FQDN of Element TelState device
         """
         return self._element_tel_state_address
-        # PROTECTED REGION END #    //  SKAController.elementTelStateAddress_read
 
-    def read_elementDatabaseAddress(self):
-        # PROTECTED REGION ID(SKAController.elementDatabaseAddress_read) ENABLED START #
+    @attribute(
+        dtype="str",
+        doc="FQDN of Element Database device",
+    )
+    def elementDatabaseAddress(self: SKAController) -> str:
         """
         Read FQDN of Element Database device.
 
         :return: FQDN of Element Database device
         """
         return self._element_database_address
-        # PROTECTED REGION END #    //  SKAController.elementDatabaseAddress_read
 
-    def read_maxCapabilities(self):
-        # PROTECTED REGION ID(SKAController.maxCapabilities_read) ENABLED START #
+    @attribute(
+        dtype=("str",),
+        max_dim_x=20,
+        doc=(
+            "Maximum number of instances of each capability type,"
+            " e.g. 'CORRELATOR:512', 'PSS-BEAMS:4'."
+        ),
+    )
+    def maxCapabilities(self: SKAController) -> list[str]:
         """
         Read maximum number of instances of each capability type.
 
@@ -219,10 +179,14 @@ class SKAController(SKABaseDevice):
             type
         """
         return convert_dict_to_list(self._max_capabilities)
-        # PROTECTED REGION END #    //  SKAController.maxCapabilities_read
 
-    def read_availableCapabilities(self):
-        # PROTECTED REGION ID(SKAController.availableCapabilities_read) ENABLED START #
+    @attribute(
+        dtype=("str",),
+        max_dim_x=20,
+        doc="A list of available number of instances of each capability type, "
+        "e.g. 'CORRELATOR:512', 'PSS-BEAMS:4'.",
+    )
+    def availableCapabilities(self: SKAController) -> list[str]:
         """
         Read list of available number of instances of each capability type.
 
@@ -230,7 +194,6 @@ class SKAController(SKABaseDevice):
             capability type
         """
         return convert_dict_to_list(self._available_capabilities)
-        # PROTECTED REGION END #    //  SKAController.availableCapabilities_read
 
     # --------
     # Commands
@@ -239,7 +202,11 @@ class SKAController(SKABaseDevice):
     class IsCapabilityAchievableCommand(FastCommand):
         """A class for the SKAController's IsCapabilityAchievable() command."""
 
-        def __init__(self, device, logger=None):
+        def __init__(
+            self: SKAController.IsCapabilityAchievableCommand,
+            device: SKAController,
+            logger: Optional[logging.Logger] = None,
+        ):
             """
             Initialise a new instance.
 
@@ -249,12 +216,18 @@ class SKAController(SKABaseDevice):
             self._device = device
             super().__init__(logger=logger)
 
-        def do(self, argin):
+        def do(  # type: ignore[override]
+            self: SKAController.IsCapabilityAchievableCommand,
+            argin: tuple[list[int], list[str]],
+        ) -> bool:
             """
             Stateless hook for device IsCapabilityAchievable() command.
 
+            :param argin: An array consisting pair of
+                * [nrInstances]: DevLong. Number of instances of the capability.
+                * [Capability types]: DevString. Type of capability.
+
             :return: Whether the capability is achievable
-            :rtype: bool
             """
             command_name = "IsCapabilityAchievable"
             capabilities_instances, capability_types = argin
@@ -282,8 +255,9 @@ class SKAController(SKABaseDevice):
         doc_out="(ResultCode, 'Command unique ID')",
     )
     @DebugIt()
-    def IsCapabilityAchievable(self, argin) -> Tuple[ResultCode, str]:
-        # PROTECTED REGION ID(SKAController.IsCapabilityAchievable) ENABLED START #
+    def IsCapabilityAchievable(
+        self: SKAController, argin: tuple[list[int], list[str]]
+    ) -> bool:
         """
         Check if provided capabilities can be achieved by the resource(s).
 
@@ -295,22 +269,25 @@ class SKAController(SKABaseDevice):
             * [nrInstances]: DevLong. Number of instances of the capability.
             * [Capability types]: DevString. Type of capability.
 
-        :return: result_code, unique_id
-        :rtype: (ResultCode, str)
+        :return: True or False
         """
         handler = self.get_command_object("IsCapabilityAchievable")
         return handler(argin)
-        # PROTECTED REGION END #    //  SKAController.IsCapabilityAchievable
 
 
 # ----------
 # Run server
 # ----------
-def main(args=None, **kwargs):
-    """Launch an SKAController Tango device."""
-    # PROTECTED REGION ID(SKAController.main) ENABLED START #
-    return run((SKAController,), args=args, **kwargs)
-    # PROTECTED REGION END #    //  SKAController.main
+def main(*args: str, **kwargs: str) -> int:
+    """
+    Entry point for module.
+
+    :param args: positional arguments
+    :param kwargs: named arguments
+
+    :return: exit code
+    """
+    return SKAController.run_server(args=args or None, **kwargs)
 
 
 if __name__ == "__main__":

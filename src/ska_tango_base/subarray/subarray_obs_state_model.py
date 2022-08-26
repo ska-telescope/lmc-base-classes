@@ -1,3 +1,9 @@
+# -*- coding: utf-8 -*-
+#
+# This file is part of the SKA Tango Base project
+#
+# Distributed under the terms of the BSD 3-clause new license.
+# See LICENSE.txt for more info.
 """
 This module specifies the observation state model for SKA subarray Tango devices.
 
@@ -9,6 +15,11 @@ It consists of:
   machine state to a value of the
   :py:class:`ska_tango_base.control_model.ObsState` enum.
 """
+from __future__ import annotations
+
+import logging
+from typing import Any, Callable, Optional
+
 from transitions.extensions import LockedMachine as Machine
 
 from ska_tango_base.control_model import ObsState
@@ -124,7 +135,11 @@ class _SubarrayObsStateMachine(Machine):
       :alt: Diagram of the subarray obs state machine, as implemented
     """
 
-    def __init__(self, callback=None, **extra_kwargs):
+    def __init__(
+        self: _SubarrayObsStateMachine,
+        callback: Optional[Callable] = None,
+        **extra_kwargs: Any,
+    ) -> None:
         """
         Initialise the model.
 
@@ -347,7 +362,7 @@ class _SubarrayObsStateMachine(Machine):
         )
         self._state_changed()
 
-    def _state_changed(self):
+    def _state_changed(self: _SubarrayObsStateMachine) -> None:
         """
         State machine callback that is called every time the obs_state changes.
 
@@ -389,7 +404,11 @@ class SubarrayObsStateModel(ObsStateModel):
        :caption: Diagram of the subarray observation state model
     """
 
-    def __init__(self, logger, callback=None):
+    def __init__(
+        self: SubarrayObsStateModel,
+        logger: logging.Logger,
+        callback: Optional[Callable] = None,
+    ) -> None:
         """
         Initialise the model.
 
@@ -418,7 +437,7 @@ class SubarrayObsStateModel(ObsStateModel):
         "FAULT": ObsState.FAULT,
     }
 
-    def _obs_state_changed(self, machine_state):
+    def _obs_state_changed(self: SubarrayObsStateModel, machine_state: str) -> None:
         """
         Handle notification that the observation state machine has changed state.
 
@@ -427,8 +446,8 @@ class SubarrayObsStateModel(ObsStateModel):
 
         :param machine_state: the new state of the observation state
             machine
-        :type machine_state: str
         """
+        self._obs_state: ObsState
         obs_state = self._obs_state_mapping[machine_state]
         if self._obs_state != obs_state:
             self._obs_state = obs_state

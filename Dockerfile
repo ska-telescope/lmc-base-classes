@@ -1,24 +1,23 @@
 # Use SKA python image as base image
 FROM artefact.skao.int/ska-tango-images-pytango-builder:9.3.28 AS buildenv
-FROM artefact.skao.int/ska-tango-images-pytango-runtime:9.3.16 AS runtime
+FROM artefact.skao.int/ska-tango-images-pytango-runtime:9.3.14 AS runtime
 
-ARG IMAGE_VERSION=0.0.1
+# Install Poetry
+USER root 
+RUN python3 -m pip install poetry
+RUN poetry config virtualenvs.create false
 
-LABEL \
-      author="SKA India and SARAO and CSIRO and INAF" \
-      description="A set of generic base devices for SKA Telescope" \
-      license="BSD-3-Clause" \
-      registry="artefact.skao.int/ska-tango-base" \
-      vendor="SKA Telescope" \
-      org.skatelescope.team="NCRA, Karoo, MCCS, CREAM" \
-      org.skatelescope.version="${IMAGE_VERSION}" \
-      org.skatelescope.website="https://gitlab.com/ska-telescope/ska-tango-base/"
+# Copy poetry.lock* in case it doesn't exist in the repo
+COPY pyproject.toml poetry.lock* ./
 
-# create ipython profile to so that itango doesn't fail if ipython hasn't run yet
-RUN ipython profile create
+# Install runtime dependencies and the app
+RUN poetry install --no-dev -vvv
 
-# Note: working dir is `/app` which will have a copy of our repo
-# The pip install will be a "user installation" so update path to access console scripts
-ENV PATH=/home/tango/.local/bin:$PATH
-RUN python3 -m pip install -e . --user
-CMD ["SKABaseDevice"]
+USER tango
+
+# create ipython profile too so that itango doesn't fail if ipython hasn't run yet
+#RUN ipython profile create
+
+# Cannot use pip install -e with poetry
+#RUN python3 -m pip install -e . --user
+#CMD ["SKABaseDevice"]

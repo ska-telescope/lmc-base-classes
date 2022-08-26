@@ -1,4 +1,9 @@
-# pylint: skip-file  # TODO: Incrementally lint this repo
+# -*- coding: utf-8 -*-
+#
+# This file is part of the SKA Tango Base project
+#
+# Distributed under the terms of the BSD 3-clause new license.
+# See LICENSE.txt for more info.
 """
 This module specifies the admin mode model for SKA LMC Tango devices.
 
@@ -7,6 +12,11 @@ uses a state machine to device device adminMode, represented as a
 :py:class:`ska_tango_base.control_model.AdminMode` enum value, and
 reported by Tango devices through the ``AdminMode`` attribute.
 """
+from __future__ import annotations
+
+import logging
+from typing import Callable, Optional
+
 from transitions.extensions import LockedMachine as Machine
 
 from ska_tango_base.control_model import AdminMode
@@ -24,13 +34,16 @@ class _AdminModeMachine(Machine):
     of the public :py:class:`.AdminModeModel` class.
     """
 
-    def __init__(self, callback=None, **extra_kwargs):
+    def __init__(
+        self: _AdminModeMachine,
+        callback: Optional[Callable[[AdminMode], None]] = None,
+        **extra_kwargs: dict,
+    ) -> None:
         """
         Initialise the admin mode state machine model.
 
         :param callback: A callback to be called whenever there is a
             transition to a new admin mode value
-        :type callback: callable
         :param extra_kwargs: Additional keywords arguments to pass to
             super class initialiser (useful for graphing)
         """
@@ -80,7 +93,7 @@ class _AdminModeMachine(Machine):
         )
         self._state_changed()
 
-    def _state_changed(self):
+    def _state_changed(self: _AdminModeMachine) -> None:
         """
         State machine callback that is called every time the admin mode changes.
 
@@ -144,37 +157,38 @@ class AdminModeModel:
       :alt: Diagram of the admin mode state machine, as implemented
     """
 
-    def __init__(self, logger, callback=None):
+    def __init__(
+        self: AdminModeModel,
+        logger: logging.Logger,
+        callback: Optional[Callable[[AdminMode], None]] = None,
+    ) -> None:
         """
         Initialise the state model.
 
         :param logger: the logger to be used by this state model.
-        :type logger: a logger that implements the standard library
-            logger interface
         :param callback: A callback to be called when the state machine
             for admin_mode reports a change of state
-        :type callback: callable
         """
         self.logger = logger
 
-        self._admin_mode = None
+        self._admin_mode = AdminMode.OFFLINE
         self._callback = callback
 
+        # This type-hint needs investigation !!!
         self._admin_mode_machine = _AdminModeMachine(
-            callback=self._admin_mode_changed
+            callback=self._admin_mode_changed  # type: ignore[arg-type]
         )
 
     @property
-    def admin_mode(self):
+    def admin_mode(self: AdminModeModel) -> AdminMode:
         """
         Return the admin_mode.
 
         :returns: admin_mode of this state model
-        :rtype: AdminMode
         """
         return self._admin_mode
 
-    def _admin_mode_changed(self, machine_state):
+    def _admin_mode_changed(self: AdminModeModel, machine_state: str) -> None:
         """
         Handle notification that the admin mode state machine has changed state.
 
@@ -182,7 +196,6 @@ class AdminModeModel:
         the callback is called if one exists.
 
         :param machine_state: the new state of the admin mode machine
-        :type machine_state: str
         """
         admin_mode = AdminMode[machine_state]
         if self._admin_mode != admin_mode:
@@ -190,22 +203,21 @@ class AdminModeModel:
             if self._callback is not None:
                 self._callback(admin_mode)
 
-    def is_action_allowed(self, action, raise_if_disallowed=False):
+    def is_action_allowed(
+        self: AdminModeModel, action: str, raise_if_disallowed: bool = False
+    ) -> bool:
         """
         Return whether a given action is allowed in the current state.
 
         :param action: an action, as given in the transitions table
-        :type action: str
         :param raise_if_disallowed: whether to raise an exception if the
             action is disallowed, or merely return False (optional,
             defaults to False)
-        :type raise_if_disallowed: bool
 
         :raises StateModelError: if the action is unknown to the state
             machine
 
         :return: whether the action is allowed in the current state
-        :rtype: bool
         """
         if action in self._admin_mode_machine.get_triggers(
             self._admin_mode_machine.state
@@ -218,18 +230,17 @@ class AdminModeModel:
             )
         return False
 
-    def perform_action(self, action):
+    def perform_action(self: AdminModeModel, action: str) -> None:
         """
         Perform an action on the state model.
 
         :param action: an action, as given in the transitions table
-        :type action: str
         """
         _ = self.is_action_allowed(action, raise_if_disallowed=True)
         self._admin_mode_machine.trigger(action)
 
     @for_testing_only
-    def _straight_to_state(self, *, admin_mode):
+    def _straight_to_state(self: AdminModeModel, *, admin_mode: AdminMode) -> None:
         """
         Take this AdminMode state model straight to the specified AdminMode.
 
@@ -240,8 +251,6 @@ class AdminModeModel:
         not intended that this method would be called outside of test
         setups. A warning will be raised if it is.
 
-        :param admin_mode: the target admin mode
-        :type admin_mode:
-            :py:class:`~ska_tango_base.control_model.AdminMode`
+        :param admin_mode: the target
         """
         getattr(self._admin_mode_machine, f"to_{admin_mode.name}")()

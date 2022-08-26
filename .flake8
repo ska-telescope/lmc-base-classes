@@ -1,0 +1,13 @@
+[flake8]
+# Black will still wrap at 88.
+max-line-length = 110
+
+extend-ignore = BLK,T
+enable = DAR104
+# E203 and W503 conflict with black, line line set to 110 for long intersphinx doc strings
+# A003 shadowing python builtin
+ignore = A003,E203,FS003,W503,N802
+max-complexity = 11
+docstring-style = SPHINX
+rst-roles=py:attr,py:class,py:const,py:exc,py:func,py:meth,py:mod
+rst-directives = uml

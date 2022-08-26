@@ -21,39 +21,39 @@ import sys
 # attribute and device_property so that they at least
 # appear in the docs, even if there is not other useful info.
 # see https://github.com/sphinx-doc/sphinx/issues/6709
-from sphinx.ext.autodoc.mock import _MockObject
-
-
-def get_kwarg_comma_separated_values(kwargs):
-    pairs = (f"{key}={value}" for key, value in kwargs.items())
-    return ", ".join(pairs)
-
-
-class TangoKwargMethodMock:
-    def __init__(self, name, **kwargs):
-        self.name = name
-        self.kwargs = kwargs
-
-    def __repr__(self):
-        return f"{self.name}({get_kwarg_comma_separated_values(self.kwargs)})"
-
-
-def call_mock(self, *args, **kw):
-    from types import FunctionType, MethodType
-
-    if args and type(args[0]) in [type, FunctionType, MethodType]:
-        # Appears to be a decorator, pass through unchanged
-        args[0].write = lambda x: x
-        return args[0]
-
-    if repr(self) in ['tango.server.attribute', 'tango.server.device_property']:
-        return TangoKwargMethodMock(repr(self), **kw)
-
-    return self
-
-
-_MockObject.__call__ = call_mock
-# hack end
+# from sphinx.ext.autodoc.mock import _MockObject
+# 
+# 
+# def get_kwarg_comma_separated_values(kwargs):
+#     pairs = (f"{key}={value}" for key, value in kwargs.items())
+#     return ", ".join(pairs)
+# 
+# 
+# class TangoKwargMethodMock:
+#     def __init__(self, name, **kwargs):
+#         self.name = name
+#         self.kwargs = kwargs
+# 
+#     def __repr__(self):
+#         return f"{self.name}({get_kwarg_comma_separated_values(self.kwargs)})"
+# 
+# 
+# def call_mock(self, *args, **kw):
+#     from types import FunctionType, MethodType
+# 
+#     if args and type(args[0]) in [type, FunctionType, MethodType]:
+#         # Appears to be a decorator, pass through unchanged
+#         args[0].write = lambda x: x
+#         return args[0]
+# 
+#     if repr(self) in ['tango.server.attribute', 'tango.server.device_property']:
+#         return TangoKwargMethodMock(repr(self), **kw)
+# 
+#     return self
+# 
+# 
+# _MockObject.__call__ = call_mock
+# # hack end
 
 autodoc_mock_imports = [
     'debugpy',

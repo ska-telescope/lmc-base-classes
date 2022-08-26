@@ -1,35 +1,36 @@
-# pylint: skip-file  # TODO: Incrementally lint this repo
-#########################################################################################
 # -*- coding: utf-8 -*-
 #
-# This file is part of the SKABaseDevice project
+# This file is part of the SKA Tango Base project
 #
-#
-#
-#########################################################################################
+# Distributed under the terms of the BSD 3-clause new license.
+# See LICENSE.txt for more info.
 """This module contains the tests for the SKABaseDevice."""
+from __future__ import annotations
 
-# PROTECTED REGION ID(SKABaseDevice.test_additional_imports) ENABLED START #
 import json
 import logging
 import re
 import socket
 import time
+import unittest
+from typing import Any
 from unittest import mock
 
 import pytest
 import tango
+from _pytest.fixtures import SubRequest
+from ska_tango_testing.mock.tango import MockTangoEventCallbackGroup
 from tango import DevFailed, DevState
 
 import ska_tango_base.base.base_device
 from ska_tango_base import SKABaseDevice
-from ska_tango_base.base.base_device import (
+from ska_tango_base.base import CommandTracker
+from ska_tango_base.base.base_device import (  # CommandTracker,
     _DEBUGGER_PORT,
     _PYTHON_TO_TANGO_LOGGING_LEVEL,
     LoggingTargetError,
     LoggingUtils,
     TangoLoggingServiceHandler,
-    _CommandTracker,
     _Log4TangoLoggingLevel,
 )
 from ska_tango_base.commands import ResultCode
@@ -44,17 +45,17 @@ from ska_tango_base.control_model import (
 from ska_tango_base.executor import TaskStatus
 from ska_tango_base.testing.reference import ReferenceBaseComponentManager
 
-# PROTECTED REGION END #    //  SKABaseDevice.test_additional_imports
-# Device test case
-# PROTECTED REGION ID(SKABaseDevice.test_SKABaseDevice_decorators) ENABLED START #
-
 
 class TestTangoLoggingServiceHandler:
     """This class contains tests of the TangoLoggingServiceHandler class."""
 
     @pytest.fixture()
-    def tls_handler(self):
-        """Return a logging service handler."""
+    def tls_handler(self: TestTangoLoggingServiceHandler) -> TangoLoggingServiceHandler:
+        """
+        Return a logging service handler.
+
+        :return: the tango logging handler
+        """
         self.tango_logger = mock.MagicMock(spec=tango.Logger)
         # setup methods used for handler __repr__
         self.tango_logger.get_name.return_value = "unit/test/dev"
@@ -70,18 +71,31 @@ class TestTangoLoggingServiceHandler:
             logging.CRITICAL,
         ]
     )
-    def python_log_level(self, request):
-        """Return a python logging level."""
+    def python_log_level(
+        self: TestTangoLoggingServiceHandler, request: SubRequest
+    ) -> LoggingLevel:
+        """
+        Return a python logging level.
+
+        :param request: pytest request
+
+        :return: the requested logging level
+        """
         return request.param
 
     def test_emit_message_at_correct_level(
-        self, tls_handler, python_log_level
-    ):
-        """Test that emitted messages are logged at the right level."""
+        self: TestTangoLoggingServiceHandler,
+        tls_handler: TangoLoggingServiceHandler,
+        python_log_level: LoggingLevel,
+    ) -> None:
+        """
+        Test that emitted messages are logged at the right level.
+
+        :param tls_handler: tango logging service
+        :param python_log_level: logging level
+        """
         # arrange
-        record = logging.LogRecord(
-            "test", python_log_level, "", 1, "message", (), None
-        )
+        record = logging.LogRecord("test", python_log_level, "", 1, "message", (), None)
         # act
         tls_handler.emit(record)
         # assert
@@ -89,17 +103,24 @@ class TestTangoLoggingServiceHandler:
         expected_calls = [mock.call(expected_tango_level, mock.ANY)]
         assert self.tango_logger.log.call_args_list == expected_calls
 
-    def test_emit_message_is_formatted(self, tls_handler):
-        """Test that emitted messages are formatted as specified."""
+    def test_emit_message_is_formatted(
+        self: TestTangoLoggingServiceHandler, tls_handler: TangoLoggingServiceHandler
+    ) -> None:
+        """
+        Test that emitted messages are formatted as specified.
+
+        :param tls_handler: tango logging service
+        """
         # arrange
         record = logging.LogRecord(
             "test", logging.INFO, "", 1, "message %s", ("param",), None
         )
 
-        def format_stub(log_record):
+        def format_stub(log_record: logging.LogRecord) -> str:
             return "LOG: " + log_record.getMessage()
 
-        tls_handler.format = format_stub
+        # monkey patch
+        tls_handler.format = format_stub  # type: ignore[assignment]
         # act
         tls_handler.emit(record)
         # assert
@@ -108,30 +129,49 @@ class TestTangoLoggingServiceHandler:
         expected_calls = [mock.call(expected_tango_level, expected_message)]
         assert self.tango_logger.log.call_args_list == expected_calls
 
-    def test_emit_exception_error_handled(self, tls_handler):
-        """Test exception handling when a record is emitted."""
-        # arrange
-        record = logging.LogRecord(
-            "test", logging.INFO, "", 1, "message", (), None
-        )
+    def test_emit_exception_error_handled(
+        self: TestTangoLoggingServiceHandler, tls_handler: TangoLoggingServiceHandler
+    ) -> None:
+        """
+        Test exception handling when a record is emitted.
 
-        def cause_exception(*args, **kwargs):
+        :param tls_handler: tango logging service
+        """
+        # arrange
+        record = logging.LogRecord("test", logging.INFO, "", 1, "message", (), None)
+
+        def cause_exception(*args: Any, **kwargs: Any) -> None:
             raise RuntimeError("Testing")
 
         self.tango_logger.log.side_effect = cause_exception
-        tls_handler.handleError = mock.MagicMock()
+        # monkey patch
+        tls_handler.handleError = mock.MagicMock()  # type: ignore[assignment]
         # act
         tls_handler.emit(record)
         # assert
         assert tls_handler.handleError.call_args_list == [mock.call(record)]
 
-    def test_repr_normal(self, tls_handler):
-        """Test the string representation of a handler under normal conditions."""
-        expected = "<TangoLoggingServiceHandler unit/test/dev (Python NOTSET, Tango DEBUG)>"
+    def test_repr_normal(
+        self: TestTangoLoggingServiceHandler, tls_handler: TangoLoggingServiceHandler
+    ) -> None:
+        """
+        Test the string representation of a handler under normal conditions.
+
+        :param tls_handler: tango logging service
+        """
+        expected = (
+            "<TangoLoggingServiceHandler unit/test/dev (Python NOTSET, Tango DEBUG)>"
+        )
         assert repr(tls_handler) == expected
 
-    def test_repr_tango_logger_none(self, tls_handler):
-        """Test the string representation of a handler with no logger."""
+    def test_repr_tango_logger_none(
+        self: TestTangoLoggingServiceHandler, tls_handler: TangoLoggingServiceHandler
+    ) -> None:
+        """
+        Test the string representation of a handler with no logger.
+
+        :param tls_handler: tango logging service
+        """
         tls_handler.tango_logger = None
         expected = (
             "<TangoLoggingServiceHandler !No Tango logger! (Python NOTSET, Tango "
@@ -168,8 +208,16 @@ class TestLoggingUtils:
             (["console", "file"], ["console::cout", "file::my_dev_name.log"]),
         ]
     )
-    def good_logging_targets(self, request):
-        """Return some good logging targets for use in testing."""
+    def good_logging_targets(
+        self: TestLoggingUtils, request: SubRequest
+    ) -> tuple[str, str, str]:
+        """
+        Return some good logging targets for use in testing.
+
+        :param request: request
+
+        :return: the target, device name and expected target
+        """
         targets_in, expected = request.param
         dev_name = "my/dev/name"
         return targets_in, dev_name, expected
@@ -182,20 +230,40 @@ class TestLoggingUtils:
             ["syslog"],
         ]
     )
-    def bad_logging_targets(self, request):
-        """Return some bad logging targets for use in testing."""
+    def bad_logging_targets(
+        self: TestLoggingUtils, request: SubRequest
+    ) -> tuple[str, str]:
+        """
+        Return some bad logging targets for use in testing.
+
+        :param request: request
+
+        :return: the target and device name
+        """
         targets_in = request.param
         dev_name = "my/dev/name"
         return targets_in, dev_name
 
-    def test_sanitise_logging_targets_success(self, good_logging_targets):
-        """Test that good logging targets can be sanitised."""
+    def test_sanitise_logging_targets_success(
+        self: TestLoggingUtils, good_logging_targets: tuple[list[str], str, str]
+    ) -> None:
+        """
+        Test that good logging targets can be sanitised.
+
+        :param good_logging_targets: OK logging destination
+        """
         targets_in, dev_name, expected = good_logging_targets
         actual = LoggingUtils.sanitise_logging_targets(targets_in, dev_name)
         assert actual == expected
 
-    def test_sanitise_logging_targets_fail(self, bad_logging_targets):
-        """Test that bad logging targets cannot be sanitised."""
+    def test_sanitise_logging_targets_fail(
+        self: TestLoggingUtils, bad_logging_targets: tuple[list[str], str]
+    ) -> None:
+        """
+        Test that bad logging targets cannot be sanitised.
+
+        :param bad_logging_targets: bad logging destination
+        """
         targets_in, dev_name = bad_logging_targets
         with pytest.raises(LoggingTargetError):
             LoggingUtils.sanitise_logging_targets(targets_in, dev_name)
@@ -218,8 +286,16 @@ class TestLoggingUtils:
             ),
         ]
     )
-    def good_syslog_url(self, request):
-        """Return a good logging target URL."""
+    def good_syslog_url(
+        self: TestLoggingUtils, request: SubRequest
+    ) -> tuple[str, tuple[str, socket.SocketKind]]:
+        """
+        Return a good logging target URL.
+
+        :param request: request
+
+        :return: the URL and a tuple with address & socket  type
+        """
         url, (expected_address, expected_socktype) = request.param
         return url, (expected_address, expected_socktype)
 
@@ -241,12 +317,25 @@ class TestLoggingUtils:
             "invalid://somehost:1234",
         ]
     )
-    def bad_syslog_url(self, request):
-        """Return a bad logging target URL."""
+    def bad_syslog_url(self: TestLoggingUtils, request: SubRequest) -> str:
+        """
+        Return a bad logging target URL.
+
+        :param request: request??
+
+        :return: any return code
+        """
         return request.param
 
-    def test_get_syslog_address_and_socktype_success(self, good_syslog_url):
-        """Test that logging successfully accepts a good target."""
+    def test_get_syslog_address_and_socktype_success(
+        self: TestLoggingUtils,
+        good_syslog_url: tuple[str, tuple[str, socket.SocketKind]],
+    ) -> None:
+        """
+        Test that logging successfully accepts a good target.
+
+        :param good_syslog_url: good url
+        """
         url, (expected_address, expected_socktype) = good_syslog_url
         (
             actual_address,
@@ -255,8 +344,14 @@ class TestLoggingUtils:
         assert actual_address == expected_address
         assert actual_socktype == expected_socktype
 
-    def test_get_syslog_address_and_socktype_fail(self, bad_syslog_url):
-        """Test that logging raises an error when given a bad target."""
+    def test_get_syslog_address_and_socktype_fail(
+        self: TestLoggingUtils, bad_syslog_url: str
+    ) -> None:
+        """
+        Test that logging raises an error when given a bad target.
+
+        :param bad_syslog_url: bad url
+        """
         with pytest.raises(LoggingTargetError):
             LoggingUtils.get_syslog_address_and_socktype(bad_syslog_url)
 
@@ -266,21 +361,32 @@ class TestLoggingUtils:
     @mock.patch("logging.StreamHandler")
     @mock.patch("ska_ser_logging.get_default_formatter")
     def test_create_logging_handler(
-        self,
-        mock_get_formatter,
-        mock_stream_handler,
-        mock_file_handler,
-        mock_syslog_handler,
-        mock_tango_handler,
-    ):
-        """Test that logging handlers can be created."""
+        self: TestLoggingUtils,
+        mock_get_formatter: mock.MagicMock,
+        mock_stream_handler: mock.MagicMock,
+        mock_file_handler: mock.MagicMock,
+        mock_syslog_handler: mock.MagicMock,
+        mock_tango_handler: mock.MagicMock,
+    ) -> None:
+        """
+        Test that logging handlers can be created.
+
+        :param mock_get_formatter: mock
+        :param mock_stream_handler: mock
+        :param mock_file_handler: mock
+        :param mock_syslog_handler: mock
+        :param mock_tango_handler: mock
+        """
         # Expect formatter be created using `get_default_formatter(tags=True)`
         # Use some mocks to check this.
         mock_formatter = mock.MagicMock()
 
-        def get_formatter_if_tags_enabled(*args, **kwargs):
+        def get_formatter_if_tags_enabled(
+            *args: Any, **kwargs: Any
+        ) -> mock.MagicMock | None:
             if kwargs.get("tags", False):
                 return mock_formatter
+            return None
 
         mock_get_formatter.side_effect = get_formatter_if_tags_enabled
         mock_tango_logger = mock.MagicMock(spec=tango.Logger)
@@ -293,9 +399,7 @@ class TestLoggingUtils:
         assert handler == mock_file_handler()
         handler.setFormatter.assert_called_once_with(mock_formatter)
 
-        handler = LoggingUtils.create_logging_handler(
-            "syslog::udp://somehost:1234"
-        )
+        handler = LoggingUtils.create_logging_handler("syslog::udp://somehost:1234")
         mock_syslog_handler.assert_called_once_with(
             address=("somehost", 1234),
             facility=mock_syslog_handler.LOG_SYSLOG,
@@ -305,9 +409,7 @@ class TestLoggingUtils:
         handler.setFormatter.assert_called_once_with(mock_formatter)
 
         mock_syslog_handler.reset_mock()
-        handler = LoggingUtils.create_logging_handler(
-            "syslog::file:///tmp/path"
-        )
+        handler = LoggingUtils.create_logging_handler("syslog::file:///tmp/path")
         mock_syslog_handler.assert_called_once_with(
             address="/tmp/path",
             facility=mock_syslog_handler.LOG_SYSLOG,
@@ -330,16 +432,17 @@ class TestLoggingUtils:
             LoggingUtils.create_logging_handler("invalid")
 
         with pytest.raises(LoggingTargetError):
-            LoggingUtils.create_logging_handler(
-                "tango::logger", tango_logger=None
-            )
+            LoggingUtils.create_logging_handler("tango::logger", tango_logger=None)
 
-    def test_update_logging_handlers(self):
+    def test_update_logging_handlers(self: TestLoggingUtils) -> None:
         """Test that logging handlers can be updated."""
         logger = logging.getLogger("testing")
-        logger.tango_logger = mock.MagicMock(spec=tango.Logger)
+        logger.tango_logger = mock.MagicMock(spec=tango.Logger)  # type: ignore[attr-defined]
 
-        def null_creator(target, tango_logger):
+        # TODO Why do we need the tango_logger argument?
+        def null_creator(
+            target: str, tango_logger: tango.Logger
+        ) -> logging.NullHandler:
             handler = logging.NullHandler()
             handler.name = target
             return handler
@@ -347,16 +450,15 @@ class TestLoggingUtils:
         orig_create_logging_handler = LoggingUtils.create_logging_handler
         try:
             mocked_creator = mock.MagicMock(side_effect=null_creator)
-            LoggingUtils.create_logging_handler = mocked_creator
+            LoggingUtils.create_logging_handler = mocked_creator  # type: ignore[assignment]
 
             # test adding first handler
             new_targets = ["console::cout"]
             LoggingUtils.update_logging_handlers(new_targets, logger)
             assert len(logger.handlers) == 1
             mocked_creator.assert_called_once_with(
-                "console::cout", logger.tango_logger
+                "console::cout", logger.tango_logger  # type: ignore[attr-defined]
             )
-
             # test same handler is retained for same request
             old_handler = logger.handlers[0]
             new_targets = ["console::cout"]
@@ -379,9 +481,9 @@ class TestLoggingUtils:
             assert mocked_creator.call_count == 3
             mocked_creator.assert_has_calls(
                 [
-                    mock.call("file::/tmp/dummy", logger.tango_logger),
-                    mock.call("syslog::some/address", logger.tango_logger),
-                    mock.call("tango::logger", logger.tango_logger),
+                    mock.call("file::/tmp/dummy", logger.tango_logger),  # type: ignore[attr-defined]
+                    mock.call("syslog::some/address", logger.tango_logger),  # type: ignore[attr-defined]
+                    mock.call("tango::logger", logger.tango_logger),  # type: ignore[attr-defined]
                 ],
                 any_order=True,
             )
@@ -401,15 +503,17 @@ class TestLoggingUtils:
             mocked_creator.assert_not_called()
 
         finally:
-            LoggingUtils.create_logging_handler = orig_create_logging_handler
+            # monkey patch
+            LoggingUtils.create_logging_handler = orig_create_logging_handler  # type: ignore[assignment]
 
 
-# PROTECTED REGION END #    //  SKABaseDevice.test_SKABaseDevice_decorators
 class TestCommandTracker:
-    """Tests of the _CommandTracker class."""
+    """Tests of the CommandTracker class."""
 
     @pytest.fixture
-    def callbacks(self, mocker):
+    def callbacks(
+        self: TestCommandTracker, mocker: unittest.mock.Mock
+    ) -> dict[str, unittest.mock.Mock]:
         """
         Return a dictionary of mocks for use as callbacks.
 
@@ -419,6 +523,8 @@ class TestCommandTracker:
 
         :param mocker: pytest fixture that wraps
             :py:mod:`unittest.mock`.
+
+        :return: a dictionary of mocks for use as callbacks
         """
         return {
             "queue": mocker.Mock(),
@@ -429,7 +535,7 @@ class TestCommandTracker:
         }
 
     @pytest.fixture
-    def removal_time(self) -> float:
+    def removal_time(self: TestCommandTracker) -> float:
         """
         Return how long the command tracker should retain memory of a completed command.
 
@@ -438,14 +544,21 @@ class TestCommandTracker:
         return 0.1
 
     @pytest.fixture
-    def command_tracker(self, callbacks, removal_time):
+    def command_tracker(
+        self: TestCommandTracker,
+        callbacks: dict[str, unittest.mock.Mock],
+        removal_time: float,
+    ) -> CommandTracker:
         """
         Return the command tracker under test.
 
         :param callbacks: a dictionary of mocks, passed as callbacks to
             the command tracker under test
+        :param removal_time: how long completed command is retained
+
+        :return: the command tracker under test
         """
-        return _CommandTracker(
+        return CommandTracker(
             queue_changed_callback=callbacks["queue"],
             status_changed_callback=callbacks["status"],
             progress_changed_callback=callbacks["progress"],
@@ -454,11 +567,17 @@ class TestCommandTracker:
             removal_time=removal_time,
         )
 
-    def test_command_tracker(self, command_tracker, removal_time, callbacks):
+    def test_command_tracker(
+        self: TestCommandTracker,
+        command_tracker: CommandTracker,
+        removal_time: float,
+        callbacks: dict[str, unittest.mock.Mock],
+    ) -> None:
         """
         Test that the command tracker correctly tracks commands.
 
         :param command_tracker: the command tracker under test
+        :param removal_time: how long completed command is retained
         :param callbacks: a dictionary of mocks, passed as callbacks to
             the command tracker under test
         """
@@ -687,7 +806,9 @@ class TestSKABaseDevice(object):
     """Test cases for SKABaseDevice."""
 
     @pytest.fixture(scope="class")
-    def device_test_config(self, device_properties):
+    def device_test_config(
+        self: TestSKABaseDevice, device_properties: dict[str, str]
+    ) -> dict[str, Any]:
         """
         Specify device configuration, including properties and memorized attributes.
 
@@ -712,59 +833,45 @@ class TestSKABaseDevice(object):
         }
 
     @pytest.mark.skip("Not implemented")
-    def test_properties(self, device_under_test):
-        """
-        Test device properties.
-
-        :param device_under_test: a proxy to the device under test
-        """
-        # PROTECTED REGION ID(SKABaseDevice.test_properties) ENABLED START #
+    def test_properties(
+        self: TestSKABaseDevice, device_under_test: tango.DeviceProxy
+    ) -> None:
         """
         Test device properties.
 
         :param device_under_test: a DeviceProxy to the device under
             test, running in a tango.DeviceTestContext
-        :type device_under_test: :py:class:`tango.DeviceProxy`
-
-        :return: None
         """
-        # PROTECTED REGION END #    //  SKABaseDevice.test_properties
-        # pass
+        pass
 
-    # PROTECTED REGION ID(SKABaseDevice.test_State_decorators) ENABLED START #
-    # PROTECTED REGION END #    //  SKABaseDevice.test_State_decorators
-    def test_State(self, device_under_test):
+    def test_State(
+        self: TestSKABaseDevice, device_under_test: tango.DeviceProxy
+    ) -> None:
         """
         Test for State.
 
         :param device_under_test: a proxy to the device under test
         """
-        # PROTECTED REGION ID(SKABaseDevice.test_State) ENABLED START #
         assert device_under_test.state() == DevState.OFF
 
-        # PROTECTED REGION END #    //  SKABaseDevice.test_State
-
-    # PROTECTED REGION ID(SKABaseDevice.test_Status_decorators) ENABLED START #
-    # PROTECTED REGION END #    //  SKABaseDevice.test_Status_decorators
-    def test_Status(self, device_under_test):
+    def test_Status(
+        self: TestSKABaseDevice, device_under_test: tango.DeviceProxy
+    ) -> None:
         """
         Test for Status.
 
         :param device_under_test: a proxy to the device under test
         """
-        # PROTECTED REGION ID(SKABaseDevice.test_Status) ENABLED START #
         assert device_under_test.Status() == "The device is in OFF state."
-        # PROTECTED REGION END #    //  SKABaseDevice.test_Status
 
-    # PROTECTED REGION ID(SKABaseDevice.test_GetVersionInfo_decorators) ENABLED START #
-    # PROTECTED REGION END #    //  SKABaseDevice.test_GetVersionInfo_decorators
-    def test_GetVersionInfo(self, device_under_test):
+    def test_GetVersionInfo(
+        self: TestSKABaseDevice, device_under_test: tango.DeviceProxy
+    ) -> None:
         """
         Test for GetVersionInfo.
 
         :param device_under_test: a proxy to the device under test
         """
-        # PROTECTED REGION ID(SKABaseDevice.test_GetVersionInfo) ENABLED START #
         version_pattern = (
             f"{device_under_test.info().dev_class}, ska_tango_base, "
             "[0-9]+.[0-9]+.[0-9]+, A set of generic base devices for SKA Telescope."
@@ -773,18 +880,14 @@ class TestSKABaseDevice(object):
         assert len(version_info) == 1
         assert re.match(version_pattern, version_info[0])
 
-        # PROTECTED REGION END #    //  SKABaseDevice.test_GetVersionInfo
-
-    def test_Reset(self, device_under_test, change_event_callbacks):
+    def test_Reset(
+        self: TestSKABaseDevice, device_under_test: tango.DeviceProxy
+    ) -> None:
         """
         Test for Reset.
 
-        :param change_event_callbacks: dictionary of mock change event
-            callbacks with asynchrony support
-
         :param device_under_test: a proxy to the device under test
         """
-        # PROTECTED REGION ID(SKABaseDevice.test_Reset) ENABLED START #
         # The main test of this command is
         # TestSKABaseDevice_commands::test_ResetCommand
         assert device_under_test.state() == DevState.OFF
@@ -795,107 +898,11 @@ class TestSKABaseDevice(object):
         ):
             _ = device_under_test.Reset()
 
-        for attribute in [
-            "state",
-            "status",
-            "longRunningCommandProgress",
-            "longRunningCommandStatus",
-            "longRunningCommandResult",
-        ]:
-            device_under_test.subscribe_event(
-                attribute,
-                tango.EventType.CHANGE_EVENT,
-                change_event_callbacks[attribute],
-            )
-
-        change_event_callbacks["state"].assert_change_event(DevState.OFF)
-        change_event_callbacks["status"].assert_change_event(
-            "The device is in OFF state."
-        )
-        change_event_callbacks[
-            "longRunningCommandProgress"
-        ].assert_change_event(None)
-        change_event_callbacks["longRunningCommandStatus"].assert_change_event(
-            None
-        )
-        change_event_callbacks["longRunningCommandResult"].assert_change_event(
-            ("", "")
-        )
-
-        [[result_code], [on_command_id]] = device_under_test.On()
-        assert result_code == ResultCode.QUEUED
-        change_event_callbacks.assert_change_event(
-            "longRunningCommandStatus", (on_command_id, "QUEUED")
-        )
-        change_event_callbacks.assert_change_event(
-            "longRunningCommandStatus", (on_command_id, "IN_PROGRESS")
-        )
-        change_event_callbacks.assert_change_event(
-            "longRunningCommandProgress", (on_command_id, "33")
-        )
-        change_event_callbacks.assert_change_event(
-            "longRunningCommandProgress", (on_command_id, "66")
-        )
-
-        change_event_callbacks.assert_change_event("state", DevState.ON)
-        change_event_callbacks.assert_change_event(
-            "status", "The device is in ON state."
-        )
-
-        assert device_under_test.state() == DevState.ON
-
-        change_event_callbacks.assert_change_event(
-            "longRunningCommandResult",
-            (
-                on_command_id,
-                json.dumps([int(ResultCode.OK), "On command completed OK"]),
-            ),
-        )
-
-        change_event_callbacks.assert_change_event(
-            "longRunningCommandStatus", (on_command_id, "COMPLETED")
-        )
-
-        [[result_code], [reset_command_id]] = device_under_test.Reset()
-        assert result_code == ResultCode.QUEUED
-
-        # stuff = change_event_callbacks["longRunningCommandStatus"].assert_against_call()
-        # print(stuff)
-        change_event_callbacks.assert_change_event(
-            "longRunningCommandStatus",
-            (on_command_id, "COMPLETED", reset_command_id, "QUEUED"),
-        )
-        change_event_callbacks.assert_change_event(
-            "longRunningCommandStatus",
-            (on_command_id, "COMPLETED", reset_command_id, "IN_PROGRESS"),
-        )
-        change_event_callbacks.assert_change_event(
-            "longRunningCommandProgress", (reset_command_id, "33")
-        )
-        change_event_callbacks.assert_change_event(
-            "longRunningCommandProgress", (reset_command_id, "66")
-        )
-
-        change_event_callbacks.assert_change_event(
-            "longRunningCommandResult",
-            (
-                reset_command_id,
-                json.dumps([int(ResultCode.OK), "Reset command completed OK"]),
-            ),
-        )
-
-        change_event_callbacks.assert_change_event(
-            "longRunningCommandStatus",
-            (on_command_id, "COMPLETED", reset_command_id, "COMPLETED"),
-        )
-
-        # no events for state or status, no change of state
-        change_event_callbacks.assert_not_called()
-        assert device_under_test.state() == DevState.ON
-
-        # PROTECTED REGION END #    //  SKABaseDevice.test_Reset
-
-    def test_On(self, device_under_test, change_event_callbacks):
+    def test_On(
+        self: TestSKABaseDevice,
+        device_under_test: tango.DeviceProxy,
+        change_event_callbacks: MockTangoEventCallbackGroup,
+    ) -> None:
         """
         Test for On command.
 
@@ -922,15 +929,9 @@ class TestSKABaseDevice(object):
         change_event_callbacks["status"].assert_change_event(
             "The device is in OFF state."
         )
-        change_event_callbacks[
-            "longRunningCommandProgress"
-        ].assert_change_event(None)
-        change_event_callbacks["longRunningCommandStatus"].assert_change_event(
-            None
-        )
-        change_event_callbacks["longRunningCommandResult"].assert_change_event(
-            ("", "")
-        )
+        change_event_callbacks["longRunningCommandProgress"].assert_change_event(None)
+        change_event_callbacks["longRunningCommandStatus"].assert_change_event(None)
+        change_event_callbacks["longRunningCommandResult"].assert_change_event(("", ""))
 
         [[result_code], [command_id]] = device_under_test.On()
         assert result_code == ResultCode.QUEUED
@@ -973,7 +974,11 @@ class TestSKABaseDevice(object):
 
         change_event_callbacks.assert_not_called()
 
-    def test_Standby(self, device_under_test, change_event_callbacks):
+    def test_Standby(
+        self: TestSKABaseDevice,
+        device_under_test: tango.DeviceProxy,
+        change_event_callbacks: MockTangoEventCallbackGroup,
+    ) -> None:
         """
         Test for Standby command.
 
@@ -1000,15 +1005,9 @@ class TestSKABaseDevice(object):
         change_event_callbacks["status"].assert_change_event(
             "The device is in OFF state."
         )
-        change_event_callbacks[
-            "longRunningCommandProgress"
-        ].assert_change_event(None)
-        change_event_callbacks["longRunningCommandStatus"].assert_change_event(
-            None
-        )
-        change_event_callbacks["longRunningCommandResult"].assert_change_event(
-            ("", "")
-        )
+        change_event_callbacks["longRunningCommandProgress"].assert_change_event(None)
+        change_event_callbacks["longRunningCommandStatus"].assert_change_event(None)
+        change_event_callbacks["longRunningCommandResult"].assert_change_event(("", ""))
 
         [[result_code], [command_id]] = device_under_test.Standby()
         assert result_code == ResultCode.QUEUED
@@ -1037,9 +1036,7 @@ class TestSKABaseDevice(object):
             "longRunningCommandResult",
             (
                 command_id,
-                json.dumps(
-                    [int(ResultCode.OK), "Standby command completed OK"]
-                ),
+                json.dumps([int(ResultCode.OK), "Standby command completed OK"]),
             ),
         )
         change_event_callbacks.assert_change_event(
@@ -1047,8 +1044,7 @@ class TestSKABaseDevice(object):
         )
 
         assert (
-            device_under_test.CheckLongRunningCommandStatus(command_id)
-            == "COMPLETED"
+            device_under_test.CheckLongRunningCommandStatus(command_id) == "COMPLETED"
         )
 
         # Check what happens if we call Standby() when the device is already STANDBY.
@@ -1058,7 +1054,11 @@ class TestSKABaseDevice(object):
 
         change_event_callbacks.assert_not_called()
 
-    def test_Off(self, device_under_test, change_event_callbacks):
+    def test_Off(
+        self: TestSKABaseDevice,
+        device_under_test: tango.DeviceProxy,
+        change_event_callbacks: MockTangoEventCallbackGroup,
+    ) -> None:
         """
         Test for Off command.
 
@@ -1085,15 +1085,9 @@ class TestSKABaseDevice(object):
         change_event_callbacks["status"].assert_change_event(
             "The device is in OFF state."
         )
-        change_event_callbacks[
-            "longRunningCommandProgress"
-        ].assert_change_event(None)
-        change_event_callbacks["longRunningCommandStatus"].assert_change_event(
-            None
-        )
-        change_event_callbacks["longRunningCommandResult"].assert_change_event(
-            ("", "")
-        )
+        change_event_callbacks["longRunningCommandProgress"].assert_change_event(None)
+        change_event_callbacks["longRunningCommandStatus"].assert_change_event(None)
+        change_event_callbacks["longRunningCommandResult"].assert_change_event(("", ""))
 
         # Check what happens if we call Off() when the device is already OFF.
         [[result_code], [message]] = device_under_test.Off()
@@ -1102,48 +1096,39 @@ class TestSKABaseDevice(object):
 
         change_event_callbacks.assert_not_called()
 
-    # PROTECTED REGION ID(SKABaseDevice.test_buildState_decorators) ENABLED START #
-    # PROTECTED REGION END #    //  SKABaseDevice.test_buildState_decorators
-    def test_buildState(self, device_under_test):
+    def test_buildState(
+        self: TestSKABaseDevice, device_under_test: tango.DeviceProxy
+    ) -> None:
         """
         Test for buildState.
 
         :param device_under_test: a proxy to the device under test
         """
-        # PROTECTED REGION ID(SKABaseDevice.test_buildState) ENABLED START #
-        buildPattern = re.compile(
+        build_pattern = re.compile(
             r"ska_tango_base, [0-9]+.[0-9]+.[0-9]+, "
             r"A set of generic base devices for SKA Telescope"
         )
-        assert (
-            re.match(buildPattern, device_under_test.buildState)
-        ) is not None
-        # PROTECTED REGION END #    //  SKABaseDevice.test_buildState
+        assert (re.match(build_pattern, device_under_test.buildState)) is not None
 
-    # PROTECTED REGION ID(SKABaseDevice.test_versionId_decorators) ENABLED START #
-    # PROTECTED REGION END #    //  SKABaseDevice.test_versionId_decorators
-    def test_versionId(self, device_under_test):
+    def test_versionId(
+        self: TestSKABaseDevice, device_under_test: tango.DeviceProxy
+    ) -> None:
         """
         Test for versionId.
 
         :param device_under_test: a proxy to the device under test
         """
-        # PROTECTED REGION ID(SKABaseDevice.test_versionId) ENABLED START #
-        versionIdPattern = re.compile(r"[0-9]+.[0-9]+.[0-9]+")
-        assert (
-            re.match(versionIdPattern, device_under_test.versionId)
-        ) is not None
-        # PROTECTED REGION END #    //  SKABaseDevice.test_versionId
+        version_id_pattern = re.compile(r"[0-9]+.[0-9]+.[0-9]+")
+        assert (re.match(version_id_pattern, device_under_test.versionId)) is not None
 
-    # PROTECTED REGION ID(SKABaseDevice.test_loggingLevel_decorators) ENABLED START #
-    # PROTECTED REGION END #    //  SKABaseDevice.test_loggingLevel_decorators
-    def test_loggingLevel(self, device_under_test):
+    def test_loggingLevel(
+        self: TestSKABaseDevice, device_under_test: tango.DeviceProxy
+    ) -> None:
         """
         Test for loggingLevel.
 
         :param device_under_test: a proxy to the device under test
         """
-        # PROTECTED REGION ID(SKABaseDevice.test_loggingLevel) ENABLED START #
         assert device_under_test.loggingLevel == LoggingLevel.INFO
 
         for level in LoggingLevel:
@@ -1153,17 +1138,15 @@ class TestSKABaseDevice(object):
 
         with pytest.raises(DevFailed):
             device_under_test.loggingLevel = LoggingLevel.FATAL + 100
-        # PROTECTED REGION END #    //  SKABaseDevice.test_loggingLevel
 
-    # PROTECTED REGION ID(SKABaseDevice.test_loggingTargets_decorators) ENABLED START #
-    # PROTECTED REGION END #    //  SKABaseDevice.test_loggingTargets_decorators
-    def test_loggingTargets(self, device_under_test):
+    def test_loggingTargets(
+        self: TestSKABaseDevice, device_under_test: tango.DeviceProxy
+    ) -> None:
         """
         Test for loggingTargets.
 
         :param device_under_test: a proxy to the device under test
         """
-        # PROTECTED REGION ID(SKABaseDevice.test_loggingTargets) ENABLED START #
         # tango logging target must be enabled by default
         assert device_under_test.loggingTargets == ("tango::logger",)
 
@@ -1186,23 +1169,22 @@ class TestSKABaseDevice(object):
         assert device_under_test.loggingTargets is None
         with pytest.raises(DevFailed):
             device_under_test.loggingTargets = ["invalid::type"]
-        # PROTECTED REGION END #    //  SKABaseDevice.test_loggingTargets
 
-    # PROTECTED REGION ID(SKABaseDevice.test_healthState_decorators) ENABLED START #
-    # PROTECTED REGION END #    //  SKABaseDevice.test_healthState_decorators
-    def test_healthState(self, device_under_test):
+    def test_healthState(
+        self: TestSKABaseDevice, device_under_test: tango.DeviceProxy
+    ) -> None:
         """
         Test for healthState.
 
         :param device_under_test: a proxy to the device under test
         """
-        # PROTECTED REGION ID(SKABaseDevice.test_healthState) ENABLED START #
         assert device_under_test.healthState == HealthState.UNKNOWN
-        # PROTECTED REGION END #    //  SKABaseDevice.test_healthState
 
-    # PROTECTED REGION ID(SKABaseDevice.test_adminMode_decorators) ENABLED START #
-    # PROTECTED REGION END #    //  SKABaseDevice.test_adminMode_decorators
-    def test_adminMode(self, device_under_test, change_event_callbacks):
+    def test_adminMode(
+        self: TestSKABaseDevice,
+        device_under_test: tango.DeviceProxy,
+        change_event_callbacks: MockTangoEventCallbackGroup,
+    ) -> None:
         """
         Test for adminMode.
 
@@ -1210,7 +1192,6 @@ class TestSKABaseDevice(object):
         :param change_event_callbacks: dictionary of mock change event
             callbacks with asynchrony support
         """
-        # PROTECTED REGION ID(SKABaseDevice.test_adminMode) ENABLED START #
         assert device_under_test.state() == DevState.OFF
 
         for attribute in ["state", "status", "adminMode"]:
@@ -1224,18 +1205,14 @@ class TestSKABaseDevice(object):
         change_event_callbacks["status"].assert_change_event(
             "The device is in OFF state."
         )
-        change_event_callbacks["adminMode"].assert_change_event(
-            AdminMode.ONLINE
-        )
+        change_event_callbacks["adminMode"].assert_change_event(AdminMode.ONLINE)
 
         assert device_under_test.adminMode == AdminMode.ONLINE
         assert device_under_test.state() == DevState.OFF
 
         device_under_test.adminMode = AdminMode.OFFLINE
 
-        change_event_callbacks.assert_change_event(
-            "adminMode", AdminMode.OFFLINE
-        )
+        change_event_callbacks.assert_change_event("adminMode", AdminMode.OFFLINE)
         assert device_under_test.adminMode == AdminMode.OFFLINE
 
         change_event_callbacks.assert_change_event("state", DevState.DISABLE)
@@ -1245,9 +1222,7 @@ class TestSKABaseDevice(object):
         assert device_under_test.state() == DevState.DISABLE
 
         device_under_test.adminMode = AdminMode.MAINTENANCE
-        change_event_callbacks.assert_change_event(
-            "adminMode", AdminMode.MAINTENANCE
-        )
+        change_event_callbacks.assert_change_event("adminMode", AdminMode.MAINTENANCE)
         assert device_under_test.adminMode == AdminMode.MAINTENANCE
 
         change_event_callbacks.assert_change_event("state", DevState.UNKNOWN)
@@ -1262,53 +1237,46 @@ class TestSKABaseDevice(object):
         assert device_under_test.state() == DevState.OFF
 
         device_under_test.adminMode = AdminMode.ONLINE
-        change_event_callbacks.assert_change_event(
-            "adminMode", AdminMode.ONLINE
-        )
+        change_event_callbacks.assert_change_event("adminMode", AdminMode.ONLINE)
         assert device_under_test.adminMode == AdminMode.ONLINE
 
         change_event_callbacks.assert_not_called()
 
         assert device_under_test.state() == DevState.OFF
-        # PROTECTED REGION END #    //  SKABaseDevice.test_adminMode
 
-    # PROTECTED REGION ID(SKABaseDevice.test_controlMode_decorators) ENABLED START #
-    # PROTECTED REGION END #    //  SKABaseDevice.test_controlMode_decorators
-    def test_controlMode(self, device_under_test):
+    def test_controlMode(
+        self: TestSKABaseDevice, device_under_test: tango.DeviceProxy
+    ) -> None:
         """
         Test for controlMode.
 
         :param device_under_test: a proxy to the device under test
         """
-        # PROTECTED REGION ID(SKABaseDevice.test_controlMode) ENABLED START #
         assert device_under_test.controlMode == ControlMode.REMOTE
-        # PROTECTED REGION END #    //  SKABaseDevice.test_controlMode
 
-    # PROTECTED REGION ID(SKABaseDevice.test_simulationMode_decorators) ENABLED START #
-    # PROTECTED REGION END #    //  SKABaseDevice.test_simulationMode_decorators
-    def test_simulationMode(self, device_under_test):
+    def test_simulationMode(
+        self: TestSKABaseDevice, device_under_test: tango.DeviceProxy
+    ) -> None:
         """
         Test for simulationMode.
 
         :param device_under_test: a proxy to the device under test
         """
-        # PROTECTED REGION ID(SKABaseDevice.test_simulationMode) ENABLED START #
         assert device_under_test.simulationMode == SimulationMode.FALSE
-        # PROTECTED REGION END #    //  SKABaseDevice.test_simulationMode
 
-    # PROTECTED REGION ID(SKABaseDevice.test_testMode_decorators) ENABLED START #
-    # PROTECTED REGION END #    //  SKABaseDevice.test_testMode_decorators
-    def test_testMode(self, device_under_test):
+    def test_testMode(
+        self: TestSKABaseDevice, device_under_test: tango.DeviceProxy
+    ) -> None:
         """
         Test for testMode.
 
         :param device_under_test: a proxy to the device under test
         """
-        # PROTECTED REGION ID(SKABaseDevice.test_testMode) ENABLED START #
         assert device_under_test.testMode == TestMode.NONE
-        # PROTECTED REGION END #    //  SKABaseDevice.test_testMode
 
-    def test_debugger_not_listening_by_default(self, device_under_test):
+    def test_debugger_not_listening_by_default(
+        self: TestSKABaseDevice, device_under_test: tango.DeviceProxy
+    ) -> None:
         """
         Test that DebugDevice is not active until enabled.
 
@@ -1320,8 +1288,8 @@ class TestSKABaseDevice(object):
                 s.connect(("localhost", _DEBUGGER_PORT))
 
     def test_DebugDevice_starts_listening_on_default_port(
-        self, device_under_test
-    ):
+        self: TestSKABaseDevice, device_under_test: tango.DeviceProxy
+    ) -> None:
         """
         Test that enabling DebugDevice makes it listen on its default port.
 
@@ -1334,7 +1302,9 @@ class TestSKABaseDevice(object):
         assert device_under_test.state
 
     @pytest.mark.usefixtures("patch_debugger_to_start_on_ephemeral_port")
-    def test_DebugDevice_twice_does_not_raise(self, device_under_test):
+    def test_DebugDevice_twice_does_not_raise(
+        self: TestSKABaseDevice, device_under_test: tango.DeviceProxy
+    ) -> None:
         """
         Test that it is safe to enable the DebugDevice when it is already enabled.
 
@@ -1347,12 +1317,16 @@ class TestSKABaseDevice(object):
 
     @pytest.mark.usefixtures("patch_debugger_to_start_on_ephemeral_port")
     def test_DebugDevice_does_not_break_a_command(
-        self, device_under_test, change_event_callbacks
-    ):
+        self,
+        device_under_test: tango.DeviceProxy,
+        change_event_callbacks: MockTangoEventCallbackGroup,
+    ) -> None:
         """
         Test that enabling the DebugDevice feature does not break device commands.
 
         :param device_under_test: a proxy to the device under test
+        :param change_event_callbacks: dictionary of mock change event
+            callbacks with asynchrony support
         """
         device_under_test.DebugDevice()
         assert device_under_test.state() == DevState.OFF
@@ -1372,7 +1346,7 @@ class TestSKABaseDevice(object):
 
 
 @pytest.fixture()
-def patch_debugger_to_start_on_ephemeral_port():
+def patch_debugger_to_start_on_ephemeral_port() -> None:
     """
     Patch the debugger so that it starts on an ephemeral port.
 

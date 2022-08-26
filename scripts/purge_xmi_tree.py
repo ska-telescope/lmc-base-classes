@@ -84,7 +84,7 @@ def prune_xmi_tree(xmi_tree, qualities):
         for xmi_element in xmi_elements:
             if xmi_element.attrib['name'] in qualities[quality_type]:
                 if args.verbose:
-                    print "            Deleting xmi_elements", xmi_element.attrib['name']
+                    print("            Deleting xmi_elements", xmi_element.attrib['name'])
                 cls.remove(xmi_element)
 
 
@@ -117,12 +117,12 @@ if __name__ == '__main__':
         for filename in fnmatch.filter(filenames, "*.xmi"):
             # Append for processing if it matches the files pattern
             if fnmatch.filter([filename], args.files):
-                print "Found", os.path.join(root, filename)
+                print("Found", os.path.join(root, filename))
                 filepaths.append(os.path.join(root, filename))
 
     for filepath in sorted(filepaths):
         # Create a parser instance for the XMI file to be pruned.
-        print "File to prune: ", filepath
+        print("File to prune: ", filepath)
         psr = sim_xmi_parser.XmiParser()
         psr.parse(filepath)
 
@@ -158,7 +158,7 @@ if __name__ == '__main__':
         # Make use of the recursive function.
         # Create lists of features that need to be removed.
         # Gather items to delete in the attributes.
-        print "    Gathering items to be removed from file..."
+        print("    Gathering items to be removed from file...")
         qualities = {}
         qualities['attributes'] = (
             gather_items_to_delete(attr_qualities, 'device_attr',
@@ -179,11 +179,11 @@ if __name__ == '__main__':
                                    property_type='classProperties',
                                    purge_all=args.purge_all))
 
-        print "    Qualities to delete in the XMI tree..."
-        print "        Class Properties: ", qualities['classProperties']
-        print "        Attributes: ", qualities['attributes']
-        print "        Commands: ", qualities['commands']
-        print "        Device Properties: ", qualities['deviceProperties']
+        print("    Qualities to delete in the XMI tree...")
+        print("        Class Properties: ", qualities['classProperties'])
+        print("        Attributes: ", qualities['attributes'])
+        print("        Commands: ", qualities['commands'])
+        print("        Device Properties: ", qualities['deviceProperties'])
 
         # Rather use lxml etree to write out the XMI files to preserve
         # the xmi_element order. The XMI file becomes somewhat difficult to read
@@ -194,7 +194,7 @@ if __name__ == '__main__':
                         'commands', 'deviceProperties']:
             need_to_write += len(qualities[quality])
         if not need_to_write:
-            print "    No changes to file ", filepath
+            print("    No changes to file ", filepath)
         else:
             tree = etree.parse(filepath)
             prune_xmi_tree(tree, qualities)
@@ -205,5 +205,5 @@ if __name__ == '__main__':
             etree.register_namespace('pogoDsl', "http://www.esrf.fr/tango/pogo/PogoDsl")
             etree.register_namespace('xmi', "http://www.omg.org/XMI")
             # To write a file with the xml declaration at the top.
-            print "    Overwriting file ", filepath
+            print("    Overwriting file ", filepath)
             tree.write(filepath, xml_declaration=True, encoding='ASCII', method='xml')

@@ -1,0 +1,60 @@
+[tool.poetry]
+name = "ska-tango-base"
+version = "0.13.2"
+description = "SKA Tango base classes"
+authors = ["SKA India and SARAO and CSIRO and INAF and STFC"]
+license = "BSD 3-Clause"
+documentation = "https://developer.skatelescope.org/projects/ska-tango-base"
+
+[[tool.poetry.source]]
+name = 'ska-nexus'
+url = 'https://artefact.skao.int/repository/pypi-internal/simple'
+
+[tool.poetry.dependencies]
+python = "^3.7"
+debugpy = "^1.6.2"
+numpy = "1.21.0"
+pytango = "9.3.3"
+ska-ser-logging = "^0.4.1"
+transitions = "^0.8.11"
+
+[tool.poetry.dev-dependencies]
+black = "^22.6.0"
+docformatter = "^1.4"
+darglint = "^1.8.1"
+flake8 = "^4.0.1"
+flake8-formatter-junit-xml = "^0.0.6"
+flake8-builtins = "^1.5.3"
+flake8-docstrings = "^1.6.0"
+flake8-use-fstring = "^1.3"
+flake8-rst-docstrings = "^0.2.7"
+mypy = "^0.971"
+pep8-naming = "^0.13.1"
+pylint = "2.13.9"
+pylint-junit = "^0.3.2"
+pytest = "^7.1.2"
+pytest-bdd = "^6.0.1"
+pytest-cov = "^3.0.0"
+pytest-json-report = "^1.5.0"
+pytest-mock = "^3.8.2"
+pytest-forked = "^1.4.0"
+ska_tango_testing = "0.2.0"
+toml = "^0.10.2"
+
+[tool.poetry.scripts]
+SKAAlarmHandler = "ska_tango_base.alarm_handler_device:main"
+SKABaseDevice = "ska_tango_base.base.base_device:main"
+SKACapability = "ska_tango_base.capability_device:main"
+SKAExampleDevice = "ska_tango_base.example_device:main"
+SKALogger = "ska_tango_base.logger_device:main"
+SKAController = "ska_tango_base.controller_device:main"
+SKAObsDevice = "ska_tango_base.obs.obs_device:main"
+SKASubarray = "ska_tango_base.subarray.subarray_device:main"
+SKATelState = "ska_tango_base.tel_state_device:main"
+CspSubelementController = "ska_tango_base.csp_subelement_controller:main"
+CspSubelementObsDevice = "ska_tango_base.csp_subelement_obsdevice:main"
+CspSubelementSubarray = "ska_tango_base.csp_subelement_subarray:main"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"

@@ -1,4 +1,9 @@
 # -*- coding: utf-8 -*-
+#
+# This file is part of the SKA Tango Base project
+#
+# Distributed under the terms of the BSD 3-clause new license.
+# See LICENSE.txt for more info.
 """
 Module for SKA Control Model (SCM) related code.
 
@@ -11,6 +16,7 @@ https://confluence.skatelescope.org/pages/viewpage.action?pageId=105416556
 The enumerated types mapping to the states and modes are included here, as well as
 other useful enumerations.
 """
+from __future__ import annotations
 
 import enum
 

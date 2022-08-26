@@ -1,22 +1,20 @@
-# pylint: skip-file  # TODO: Incrementally lint this repo
-#########################################################################################
 # -*- coding: utf-8 -*-
 #
-# This file is part of the SKALogger project
+# This file is part of the SKA Tango Base project
 #
-#
-#
-#########################################################################################
+# Distributed under the terms of the BSD 3-clause new license.
+# See LICENSE.txt for more info.
 """Contain the tests for the SKALogger."""
+from __future__ import annotations
 
 import re
+from typing import Any
 
 import pytest
 import tango
 from tango import DevState
 from tango.test_context import MultiDeviceTestContext
 
-# PROTECTED REGION ID(SKALogger.test_additional_imports) ENABLED START #
 from ska_tango_base.control_model import (
     AdminMode,
     ControlMode,
@@ -29,16 +27,14 @@ from ska_tango_base.logger_device import SKALogger
 from ska_tango_base.subarray import SKASubarray
 from ska_tango_base.testing.reference import ReferenceBaseComponentManager
 
-# PROTECTED REGION END #    //  SKALogger.test_additional_imports
 
-
-# PROTECTED REGION ID(SKALogger.test_SKALogger_decorators) ENABLED START #
-# PROTECTED REGION END #    //  SKALogger.test_SKALogger_decorators
 class TestSKALogger(object):
     """Test class for tests of the SKALogger device class."""
 
     @pytest.fixture(scope="class")
-    def device_test_config(self, device_properties):
+    def device_test_config(
+        self: TestSKALogger, device_properties: dict[str, Any]
+    ) -> dict[str, Any]:
         """
         Specification of the device under test.
 
@@ -63,49 +59,40 @@ class TestSKALogger(object):
         }
 
     @pytest.mark.skip("Not implemented")
-    def test_properties(self, device_under_test):
+    def test_properties(
+        self: TestSKALogger, device_under_test: tango.DeviceProxy
+    ) -> None:
         """
         Test device properties.
 
         :param device_under_test: a proxy to the device under test
         """
-        # PROTECTED REGION ID(SKALogger.test_properties) ENABLED START #
-        # PROTECTED REGION END #    //  SKALogger.test_properties
         pass
 
-    # PROTECTED REGION ID(SKALogger.test_State_decorators) ENABLED START #
-    # PROTECTED REGION END #    //  SKALogger.test_State_decorators
-    def test_State(self, device_under_test):
+    def test_State(self: TestSKALogger, device_under_test: tango.DeviceProxy) -> None:
         """
         Test for State.
 
         :param device_under_test: a proxy to the device under test
         """
-        # PROTECTED REGION ID(SKALogger.test_State) ENABLED START #
         assert device_under_test.state() == DevState.OFF
-        # PROTECTED REGION END #    //  SKALogger.test_State
 
-    # PROTECTED REGION ID(SKALogger.test_Status_decorators) ENABLED START #
-    # PROTECTED REGION END #    //  SKALogger.test_Status_decorators
-    def test_Status(self, device_under_test):
+    def test_Status(self: TestSKALogger, device_under_test: tango.DeviceProxy) -> None:
         """
         Test for Status.
 
         :param device_under_test: a proxy to the device under test
         """
-        # PROTECTED REGION ID(SKALogger.test_Status) ENABLED START #
         assert device_under_test.Status() == "The device is in OFF state."
-        # PROTECTED REGION END #    //  SKALogger.test_Status
 
-    # PROTECTED REGION ID(SKALogger.test_GetVersionInfo_decorators) ENABLED START #
-    # PROTECTED REGION END #    //  SKALogger.test_GetVersionInfo_decorators
-    def test_GetVersionInfo(self, device_under_test):
+    def test_GetVersionInfo(
+        self: TestSKALogger, device_under_test: tango.DeviceProxy
+    ) -> None:
         """
         Test for GetVersionInfo.
 
         :param device_under_test: a proxy to the device under test
         """
-        # PROTECTED REGION ID(SKALogger.test_GetVersionInfo) ENABLED START #
         version_pattern = (
             f"{device_under_test.info().dev_class}, ska_tango_base, "
             "[0-9]+.[0-9]+.[0-9]+, A set of generic base devices for SKA Telescope."
@@ -113,116 +100,95 @@ class TestSKALogger(object):
         version_info = device_under_test.GetVersionInfo()
         assert len(version_info) == 1
         assert re.match(version_pattern, version_info[0])
-        # PROTECTED REGION END #    //  SKALogger.test_GetVersionInfo
 
-    # PROTECTED REGION ID(SKALogger.test_buildState_decorators) ENABLED START #
-    # PROTECTED REGION END #    //  SKALogger.test_buildState_decorators
-    def test_buildState(self, device_under_test):
+    def test_buildState(
+        self: TestSKALogger, device_under_test: tango.DeviceProxy
+    ) -> None:
         """
         Test for buildState.
 
         :param device_under_test: a proxy to the device under test
         """
-        # PROTECTED REGION ID(SKALogger.test_buildState) ENABLED START #
-        buildPattern = re.compile(
+        build_pattern = re.compile(
             r"ska_tango_base, [0-9]+.[0-9]+.[0-9]+, "
             r"A set of generic base devices for SKA Telescope"
         )
-        assert (
-            re.match(buildPattern, device_under_test.buildState)
-        ) is not None
-        # PROTECTED REGION END #    //  SKALogger.test_buildState
+        assert (re.match(build_pattern, device_under_test.buildState)) is not None
 
-    # PROTECTED REGION ID(SKALogger.test_versionId_decorators) ENABLED START #
-    # PROTECTED REGION END #    //  SKALogger.test_versionId_decorators
-    def test_versionId(self, device_under_test):
+    def test_versionId(
+        self: TestSKALogger, device_under_test: tango.DeviceProxy
+    ) -> None:
         """
         Test for versionId.
 
         :param device_under_test: a proxy to the device under test
         """
-        # PROTECTED REGION ID(SKALogger.test_versionId) ENABLED START #
-        versionIdPattern = re.compile(r"[0-9]+.[0-9]+.[0-9]+")
-        assert (
-            re.match(versionIdPattern, device_under_test.versionId)
-        ) is not None
-        # PROTECTED REGION END #    //  SKALogger.test_versionId
+        version_id_pattern = re.compile(r"[0-9]+.[0-9]+.[0-9]+")
+        assert (re.match(version_id_pattern, device_under_test.versionId)) is not None
 
-    # PROTECTED REGION ID(SKALogger.test_loggingLevel_decorators) ENABLED START #
-    # PROTECTED REGION END #    //  SKALogger.test_loggingLevel_decorators
-    def test_loggingLevel(self, device_under_test):
+    def test_loggingLevel(
+        self: TestSKALogger, device_under_test: tango.DeviceProxy
+    ) -> None:
         """
         Test for loggingLevel.
 
         :param device_under_test: a proxy to the device under test
         """
-        # PROTECTED REGION ID(SKALogger.test_loggingLevel) ENABLED START #
         assert device_under_test.loggingLevel == LoggingLevel.INFO
-        # PROTECTED REGION END #    //  SKALogger.test_loggingLevel
 
-    # PROTECTED REGION ID(SKALogger.test_healthState_decorators) ENABLED START #
-    # PROTECTED REGION END #    //  SKALogger.test_healthState_decorators
-    def test_healthState(self, device_under_test):
+    def test_healthState(
+        self: TestSKALogger, device_under_test: tango.DeviceProxy
+    ) -> None:
         """
         Test for healthState.
 
         :param device_under_test: a proxy to the device under test
         """
-        # PROTECTED REGION ID(SKALogger.test_healthState) ENABLED START #
         assert device_under_test.healthState == HealthState.UNKNOWN
-        # PROTECTED REGION END #    //  SKALogger.test_healthState
 
-    # PROTECTED REGION ID(SKALogger.test_adminMode_decorators) ENABLED START #
-    # PROTECTED REGION END #    //  SKALogger.test_adminMode_decorators
-    def test_adminMode(self, device_under_test):
+    def test_adminMode(
+        self: TestSKALogger, device_under_test: tango.DeviceProxy
+    ) -> None:
         """
         Test for adminMode.
 
         :param device_under_test: a proxy to the device under test
         """
-        # PROTECTED REGION ID(SKALogger.test_adminMode) ENABLED START #
         assert device_under_test.adminMode == AdminMode.ONLINE
-        # PROTECTED REGION END #    //  SKALogger.test_adminMode
 
-    # PROTECTED REGION ID(SKALogger.test_controlMode_decorators) ENABLED START #
-    # PROTECTED REGION END #    //  SKALogger.test_controlMode_decorators
-    def test_controlMode(self, device_under_test):
+    def test_controlMode(
+        self: TestSKALogger, device_under_test: tango.DeviceProxy
+    ) -> None:
         """
         Test for controlMode.
 
         :param device_under_test: a proxy to the device under test
         """
-        # PROTECTED REGION ID(SKALogger.test_controlMode) ENABLED START #
         assert device_under_test.controlMode == ControlMode.REMOTE
-        # PROTECTED REGION END #    //  SKALogger.test_controlMode
 
-    # PROTECTED REGION ID(SKALogger.test_simulationMode_decorators) ENABLED START #
-    # PROTECTED REGION END #    //  SKALogger.test_simulationMode_decorators
-    def test_simulationMode(self, device_under_test):
+    def test_simulationMode(
+        self: TestSKALogger, device_under_test: tango.DeviceProxy
+    ) -> None:
         """
         Test for simulationMode.
 
         :param device_under_test: a proxy to the device under test
         """
-        # PROTECTED REGION ID(SKALogger.test_simulationMode) ENABLED START #
         assert device_under_test.simulationMode == SimulationMode.FALSE
-        # PROTECTED REGION END #    //  SKALogger.test_simulationMode
 
-    # PROTECTED REGION ID(SKALogger.test_testMode_decorators) ENABLED START #
-    # PROTECTED REGION END #    //  SKALogger.test_testMode_decorators
-    def test_testMode(self, device_under_test):
+    def test_testMode(
+        self: TestSKALogger, device_under_test: tango.DeviceProxy
+    ) -> None:
         """
         Test for testMode.
 
         :param device_under_test: a proxy to the device under test
         """
-        # PROTECTED REGION ID(SKALogger.test_testMode) ENABLED START #
         assert device_under_test.testMode == TestMode.NONE
-        # PROTECTED REGION END #    //  SKALogger.test_testMode
 
 
 @pytest.mark.forked
-def test_SetLoggingLevel():
+def test_SetLoggingLevel() -> None:
     """Test for SetLoggingLevel."""
     logging_level = int(tango.LogLevel.LOG_ERROR)
     logging_target = "logger/target/1"

@@ -4,8 +4,11 @@ from __future__ import annotations
 
 import logging
 import socket
-
+import time
+from typing import Any, Callable, Hashable
+from typing_extensions import Protocol
 import pytest
+
 import tango
 from ska_tango_testing.mock import MockCallableGroup
 from ska_tango_testing.mock.tango import MockTangoEventCallbackGroup
@@ -17,7 +20,7 @@ from tango.test_context import (
 
 
 @pytest.fixture(scope="class")
-def device_properties():
+def device_properties() -> dict[str, Any]:
     """
     Fixture that returns device_properties to be provided to the device under test.
 
@@ -46,7 +49,7 @@ def tango_context(device_test_config):
 
 
 @pytest.fixture()
-def device_under_test(tango_context):
+def device_under_test(tango_context) -> tango.DeviceProxy:
     """
     Return a device proxy to the device under test.
 
@@ -67,7 +70,7 @@ def pytest_itemcollected(item):
 
 
 @pytest.fixture()
-def callbacks():
+def callbacks() -> MockCallableGroup:
     """
     Return a dictionary of callbacks with asynchrony support.
 

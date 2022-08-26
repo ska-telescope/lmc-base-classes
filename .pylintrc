@@ -1,0 +1,5 @@
+[pylint]
+
+# pylint reports E1101 (no-member) for socket.SocketKind
+disable = W,C,R
+ignored-classes = socket

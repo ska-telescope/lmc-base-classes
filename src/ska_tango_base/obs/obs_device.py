@@ -1,10 +1,9 @@
-# pylint: skip-file  # TODO: Incrementally lint this repo
 # -*- coding: utf-8 -*-
 #
-# This file is part of the SKAObsDevice project
+# This file is part of the SKA Tango Base project
 #
-#
-#
+# Distributed under the terms of the BSD 3-clause new license.
+# See LICENSE.txt for more info.
 """
 SKAObsDevice.
 
@@ -12,16 +11,13 @@ A generic base device for Observations for SKA. It inherits
 SKABaseDevice class. Any device implementing an obsMode will inherit
 from SKAObsDevice instead of just SKABaseDevice.
 """
+from __future__ import annotations
 
-# Additional import
-# PROTECTED REGION ID(SKAObsDevice.additionnal_import) ENABLED START #
-from tango.server import attribute, run
+from tango.server import attribute
 
-from ska_tango_base import SKABaseDevice
+from ska_tango_base.base import SKABaseDevice
 from ska_tango_base.commands import DeviceInitCommand, ResultCode
 from ska_tango_base.control_model import ObsMode, ObsState
-
-# PROTECTED REGION END #    //  SKAObsDevice.additionnal_imports
 
 __all__ = ["SKAObsDevice", "main"]
 
@@ -32,14 +28,13 @@ class SKAObsDevice(SKABaseDevice):
     class InitCommand(DeviceInitCommand):
         """A class for the SKAObsDevice's init_device() "command"."""
 
-        def do(self):
+        def do(self: SKAObsDevice.InitCommand) -> tuple[ResultCode, str]:  # type: ignore[override]
             """
             Stateless hook for device initialisation.
 
             :return: A tuple containing a return code and a string
                 message indicating status. The message is for
                 information purpose only.
-            :rtype: (ResultCode, str)
             """
             for attribute_name in [
                 "obsState",
@@ -60,50 +55,14 @@ class SKAObsDevice(SKABaseDevice):
             self._completed()
             return (ResultCode.OK, message)
 
-    # PROTECTED REGION ID(SKAObsDevice.class_variable) ENABLED START #
-
-    # PROTECTED REGION END #    //  SKAObsDevice.class_variable
-
     # -----------------
     # Device Properties
     # -----------------
 
-    # ----------
-    # Attributes
-    # ----------
-
-    obsState = attribute(
-        dtype=ObsState,
-        doc="Observing State",
-    )
-    """Device attribute."""
-
-    obsMode = attribute(
-        dtype=ObsMode,
-        doc="Observing Mode",
-    )
-    """Device attribute."""
-
-    configurationProgress = attribute(
-        dtype="uint16",
-        unit="%",
-        max_value=100,
-        min_value=0,
-        doc="Percentage configuration progress",
-    )
-    """Device attribute."""
-
-    configurationDelayExpected = attribute(
-        dtype="uint16",
-        unit="seconds",
-        doc="Configuration delay expected in seconds",
-    )
-    """Device attribute."""
-
     # ---------------
     # General methods
     # ---------------
-    def _update_obs_state(self, obs_state):
+    def _update_obs_state(self: SKAObsDevice, obs_state: ObsState) -> None:
         """
         Perform Tango operations in response to a change in obsState.
 
@@ -112,24 +71,20 @@ class SKAObsDevice(SKABaseDevice):
         device.
 
         :param obs_state: the new obs_state value
-        :type obs_state: :py:class:`~ska_tango_base.control_model.ObsState`
         """
         self._obs_state = obs_state
         self.push_change_event("obsState", obs_state)
         self.push_archive_event("obsState", obs_state)
 
-    def always_executed_hook(self):
-        # PROTECTED REGION ID(SKAObsDevice.always_executed_hook) ENABLED START #
+    def always_executed_hook(self: SKAObsDevice) -> None:
         """
         Perform actions that are executed before every device command.
 
         This is a Tango hook.
         """
         pass
-        # PROTECTED REGION END #    //  SKAObsDevice.always_executed_hook
 
-    def delete_device(self):
-        # PROTECTED REGION ID(SKAObsDevice.delete_device) ENABLED START #
+    def delete_device(self: SKAObsDevice) -> None:
         """
         Clean up any resources prior to device deletion.
 
@@ -139,35 +94,51 @@ class SKAObsDevice(SKABaseDevice):
         be released prior to device deletion.
         """
         pass
-        # PROTECTED REGION END #    //  SKAObsDevice.delete_device
 
-    # ------------------
-    # Attributes methods
-    # ------------------
+    # ----------
+    # Attributes
+    # ----------
 
-    def read_obsState(self):
-        # PROTECTED REGION ID(SKAObsDevice.obsState_read) ENABLED START #
-        """Read the Observation State of the device."""
+    @attribute(dtype=ObsState)
+    def obsState(self: SKAObsDevice) -> ObsState:
+        """
+        Read the Observation State of the device.
+
+        :return: the current obs_state value
+        """
         return self._obs_state
-        # PROTECTED REGION END #    //  SKAObsDevice.obsState_read
 
-    def read_obsMode(self):
-        # PROTECTED REGION ID(SKAObsDevice.obsMode_read) ENABLED START #
-        """Read the Observation Mode of the device."""
+    @attribute(dtype=ObsMode)
+    def obsMode(self: SKAObsDevice) -> ObsMode:
+        """
+        Read the Observation Mode of the device.
+
+        :return: the current obs_mode value
+        """
         return self._obs_mode
-        # PROTECTED REGION END #    //  SKAObsDevice.obsMode_read
 
-    def read_configurationProgress(self):
-        # PROTECTED REGION ID(SKAObsDevice.configurationProgress_read) ENABLED START #
-        """Read the percentage configuration progress of the device."""
+    @attribute(
+        dtype="uint16",
+        unit="%",
+        max_value=100,
+        min_value=0,
+    )
+    def configurationProgress(self: SKAObsDevice) -> int:
+        """
+        Read the percentage configuration progress of the device.
+
+        :return: the percentage configuration progress
+        """
         return self._config_progress
-        # PROTECTED REGION END #    //  SKAObsDevice.configurationProgress_read
 
-    def read_configurationDelayExpected(self):
-        # PROTECTED REGION ID(SKAObsDevice.configurationDelayExpected_read) ENABLED START #
-        """Read the expected Configuration Delay in seconds."""
+    @attribute(dtype="uint16", unit="seconds")
+    def configurationDelayExpected(self: SKAObsDevice) -> int:
+        """
+        Read the expected Configuration Delay in seconds.
+
+        :return: the expected configuration delay
+        """
         return self._config_delay_expected
-        # PROTECTED REGION END #    //  SKAObsDevice.configurationDelayExpected_read
 
     # --------
     # Commands
@@ -179,16 +150,16 @@ class SKAObsDevice(SKABaseDevice):
 # ----------
 
 
-def main(args=None, **kwargs):
-    # PROTECTED REGION ID(SKAObsDevice.main) ENABLED START #
+def main(*args: str, **kwargs: str) -> int:
     """
-    Launch an SKAObsDevice.
+    Entry point for module.
 
     :param args: positional arguments
-    :param kwargs: keyword arguments
+    :param kwargs: named arguments
+
+    :return: exit code
     """
-    return run((SKAObsDevice,), args=args, **kwargs)
-    # PROTECTED REGION END #    //  SKAObsDevice.main
+    return SKAObsDevice.run_server(args=args or None, **kwargs)
 
 
 if __name__ == "__main__":

@@ -1,7 +1,15 @@
-# pylint: skip-file  # TODO: Incrementally lint this repo
+# -*- coding: utf-8 -*-
+#
+# This file is part of the SKA Tango Base project
+#
+# Distributed under the terms of the BSD 3-clause new license.
+# See LICENSE.txt for more info.
 """Tests of the ska_tango_base.executor module."""
-from threading import Lock
+from __future__ import annotations
+
+from threading import Event, Lock
 from time import sleep
+from typing import Callable, Optional
 
 import pytest
 from ska_tango_testing.mock import MockCallableGroup
@@ -13,7 +21,7 @@ class TestTaskExecutor:
     """Tests of the TaskExecutor class."""
 
     @pytest.fixture()
-    def max_workers(self):
+    def max_workers(self: TestTaskExecutor) -> int:
         """
         Return the maximum number of worker threads.
 
@@ -22,16 +30,18 @@ class TestTaskExecutor:
         return 3
 
     @pytest.fixture()
-    def executor(self, max_workers):
+    def executor(self: TestTaskExecutor, max_workers: int) -> TaskExecutor:
         """
         Return the TaskExecutor under test.
 
         :param max_workers: maximum number of worker threads.
+
+        :return: a TaskExecutor
         """
         return TaskExecutor(max_workers)
 
     @pytest.fixture()
-    def callbacks(self, max_workers):
+    def callbacks(self: TestTaskExecutor, max_workers: int) -> MockCallableGroup:
         """
         Return a dictionary of callbacks with asynchrony support.
 
@@ -42,7 +52,12 @@ class TestTaskExecutor:
         job_callbacks = [f"job_{i}" for i in range(max_workers + 2)]
         return MockCallableGroup(*job_callbacks, "abort")
 
-    def test_task_execution(self, executor, max_workers, callbacks):
+    def test_task_execution(
+        self: TestTaskExecutor,
+        executor: TaskExecutor,
+        max_workers: int,
+        callbacks: MockCallableGroup,
+    ) -> None:
         """
         Test that we can execute tasks.
 
@@ -53,11 +68,15 @@ class TestTaskExecutor:
             the command tracker under test
         """
 
-        def _claim_lock(lock, task_callback, task_abort_event):
+        def _claim_lock(
+            lock: Lock,
+            task_callback: Optional[Callable],
+            task_abort_event: Event,
+        ) -> None:
             if task_callback is not None:
                 task_callback(status=TaskStatus.IN_PROGRESS)
             with lock:
-                if task_abort_event.is_set():
+                if task_abort_event.is_set() and task_callback is not None:
                     task_callback(status=TaskStatus.ABORTED)
                     return
             if task_callback is not None:
@@ -85,9 +104,7 @@ class TestTaskExecutor:
         locks[0].release()
 
         callbacks["job_0"].assert_call(status=TaskStatus.COMPLETED)
-        callbacks[f"job_{max_workers}"].assert_call(
-            status=TaskStatus.IN_PROGRESS
-        )
+        callbacks[f"job_{max_workers}"].assert_call(status=TaskStatus.IN_PROGRESS)
 
         for i in range(1, max_workers + 1):
             locks[i].release()
@@ -95,7 +112,12 @@ class TestTaskExecutor:
         for i in range(1, max_workers + 1):
             callbacks[f"job_{i}"].assert_call(status=TaskStatus.COMPLETED)
 
-    def test_abort(self, executor, max_workers, callbacks):
+    def test_abort(
+        self: TestTaskExecutor,
+        executor: TaskExecutor,
+        max_workers: int,
+        callbacks: MockCallableGroup,
+    ) -> None:
         """
         Test that we can abort execution.
 
@@ -118,11 +140,15 @@ class TestTaskExecutor:
             the command tracker under test
         """
 
-        def _claim_lock(lock, task_callback, task_abort_event):
+        def _claim_lock(
+            lock: Lock,
+            task_callback: Callable,
+            task_abort_event: Event,
+        ) -> None:
             if task_callback is not None:
                 task_callback(status=TaskStatus.IN_PROGRESS)
             with lock:
-                if task_abort_event.is_set():
+                if task_abort_event.is_set() and task_callback is not None:
                     task_callback(status=TaskStatus.ABORTED)
                     return
             if task_callback is not None:
@@ -173,20 +199,18 @@ class TestTaskExecutor:
             args=[locks[max_workers + 1]],
             task_callback=callbacks[f"job_{max_workers + 1}"],
         )
-        callbacks[f"job_{max_workers + 1}"].assert_call(
-            status=TaskStatus.QUEUED
-        )
-        callbacks[f"job_{max_workers + 1}"].assert_call(
-            status=TaskStatus.IN_PROGRESS
-        )
+        callbacks[f"job_{max_workers + 1}"].assert_call(status=TaskStatus.QUEUED)
+        callbacks[f"job_{max_workers + 1}"].assert_call(status=TaskStatus.IN_PROGRESS)
 
         locks[max_workers + 1].release()
 
-        callbacks[f"job_{max_workers + 1}"].assert_call(
-            status=TaskStatus.COMPLETED
-        )
+        callbacks[f"job_{max_workers + 1}"].assert_call(status=TaskStatus.COMPLETED)
 
-    def test_exception(self, executor, callbacks):
+    def test_exception(
+        self: TestTaskExecutor,
+        executor: TaskExecutor,
+        callbacks: MockCallableGroup,
+    ) -> None:
         """
         Test that the executor handles an uncaught exception correctly.
 
@@ -196,9 +220,11 @@ class TestTaskExecutor:
         """
         exception_to_raise = ValueError("Exception under test")
 
-        def _raise_exception(task_callback, task_abort_event):
-            if task_callback is not None:
-                task_callback(status=TaskStatus.IN_PROGRESS)
+        def _raise_exception(
+            task_callback: Callable,
+            task_abort_event: Event,
+        ) -> None:
+            task_callback(status=TaskStatus.IN_PROGRESS)
             raise exception_to_raise
 
         executor.submit(_raise_exception, task_callback=callbacks["job_0"])

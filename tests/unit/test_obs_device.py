@@ -1,21 +1,22 @@
-# pylint: skip-file  # TODO: Incrementally lint this repo
-#########################################################################################
 # -*- coding: utf-8 -*-
 #
-# This file is part of the SKAObsDevice project
+# This file is part of the SKA Tango Base project
 #
-#
-#
-#########################################################################################
+# Distributed under the terms of the BSD 3-clause new license.
+# See LICENSE.txt for more info.
 """Contain the tests for the SKAObsDevice."""
+from __future__ import annotations
 
 import re
+from typing import Any
 
 import pytest
 import tango
+from pytest_mock import MockFixture
+from ska_tango_testing.mock.tango import MockTangoEventCallbackGroup
+from tango import DevState
 from tango.test_context import MultiDeviceTestContext
 
-# PROTECTED REGION ID(SKAObsDevice.test_additional_imports) ENABLED START #
 from ska_tango_base import SKABaseDevice, SKAObsDevice
 from ska_tango_base.control_model import (
     AdminMode,
@@ -28,17 +29,14 @@ from ska_tango_base.control_model import (
 )
 from ska_tango_base.testing.reference import ReferenceBaseComponentManager
 
-# PROTECTED REGION END #    //  SKAObsDevice.test_additional_imports
 
-
-# Device test case
-# PROTECTED REGION ID(SKAObsDevice.test_SKAObsDevice_decorators) ENABLED START #
-# PROTECTED REGION END #    //  SKAObsDevice.test_SKAObsDevice_decorators
 class TestSKAObsDevice(object):
     """Test class for tests of the SKAObsDevice device class."""
 
     @pytest.fixture(scope="class")
-    def device_test_config(self, device_properties):
+    def device_test_config(
+        self: TestSKAObsDevice, device_properties: dict[str, Any]
+    ) -> dict[str, Any]:
         """
         Specify device configuration, including properties and memorized attributes.
 
@@ -64,49 +62,44 @@ class TestSKAObsDevice(object):
         }
 
     @pytest.mark.skip("Not implemented")
-    def test_properties(self, device_under_test):
+    def test_properties(
+        self: TestSKAObsDevice, device_under_test: tango.DeviceProxy
+    ) -> None:
         """
         Test device properties.
 
         :param device_under_test: a proxy to the device under test
         """
-        # PROTECTED REGION ID(SKAObsDevice.test_properties) ENABLED START #
-        # PROTECTED REGION END #    //  SKAObsDevice.test_properties
         pass
 
-    # PROTECTED REGION ID(SKAObsDevice.test_State_decorators) ENABLED START #
-    # PROTECTED REGION END #    //  SKAObsDevice.test_State_decorators
-    def test_State(self, device_under_test):
+    def test_State(
+        self: TestSKAObsDevice, device_under_test: tango.DeviceProxy
+    ) -> None:
         """
         Test for State.
 
         :param device_under_test: a proxy to the device under test
         """
-        # PROTECTED REGION ID(SKAObsDevice.test_State) ENABLED START #
-        assert device_under_test.state() == tango.DevState.OFF
-        # PROTECTED REGION END #    //  SKAObsDevice.test_State
+        assert device_under_test.state() == DevState.OFF
 
-    # PROTECTED REGION ID(SKAObsDevice.test_Status_decorators) ENABLED START #
-    # PROTECTED REGION END #    //  SKAObsDevice.test_Status_decorators
-    def test_Status(self, device_under_test):
+    def test_Status(
+        self: TestSKAObsDevice, device_under_test: tango.DeviceProxy
+    ) -> None:
         """
         Test for Status.
 
         :param device_under_test: a proxy to the device under test
         """
-        # PROTECTED REGION ID(SKAObsDevice.test_Status) ENABLED START #
         assert device_under_test.Status() == "The device is in OFF state."
-        # PROTECTED REGION END #    //  SKAObsDevice.test_Status
 
-    # PROTECTED REGION ID(SKAObsDevice.test_GetVersionInfo_decorators) ENABLED START #
-    # PROTECTED REGION END #    //  SKAObsDevice.test_GetVersionInfo_decorators
-    def test_GetVersionInfo(self, device_under_test):
+    def test_GetVersionInfo(
+        self: TestSKAObsDevice, device_under_test: tango.DeviceProxy
+    ) -> None:
         """
         Test for GetVersionInfo.
 
         :param device_under_test: a proxy to the device under test
         """
-        # PROTECTED REGION ID(SKAObsDevice.test_GetVersionInfo) ENABLED START #
         version_pattern = (
             f"{device_under_test.info().dev_class}, ska_tango_base, "
             "[0-9]+.[0-9]+.[0-9]+, A set of generic base devices for SKA Telescope."
@@ -114,11 +107,12 @@ class TestSKAObsDevice(object):
         version_info = device_under_test.GetVersionInfo()
         assert len(version_info) == 1
         assert re.match(version_pattern, version_info[0])
-        # PROTECTED REGION END #    //  SKAObsDevice.test_GetVersionInfo
 
-    # PROTECTED REGION ID(SKAObsDevice.test_obsState_decorators) ENABLED START #
-    # PROTECTED REGION END #    //  SKAObsDevice.test_obsState_decorators
-    def test_obsState(self, device_under_test, change_event_callbacks):
+    def test_obsState(
+        self: TestSKAObsDevice,
+        device_under_test: tango.DeviceProxy,
+        change_event_callbacks: MockTangoEventCallbackGroup,
+    ) -> None:
         """
         Test for obsState.
 
@@ -126,7 +120,6 @@ class TestSKAObsDevice(object):
         :param change_event_callbacks: dictionary of mock change event
             callbacks with asynchrony support
         """
-        # PROTECTED REGION ID(SKAObsDevice.test_obsState) ENABLED START #
         assert device_under_test.obsState == ObsState.EMPTY
 
         # Check that events are working by subscribing and checking for that
@@ -137,141 +130,120 @@ class TestSKAObsDevice(object):
             change_event_callbacks["obsState"],
         )
         change_event_callbacks.assert_change_event("obsState", ObsState.EMPTY)
-        # PROTECTED REGION END #    //  SKAObsDevice.test_obsState
 
-    # PROTECTED REGION ID(SKAObsDevice.test_obsMode_decorators) ENABLED START #
-    # PROTECTED REGION END #    //  SKAObsDevice.test_obsMode_decorators
-    def test_obsMode(self, device_under_test):
+    def test_obsMode(
+        self: TestSKAObsDevice, device_under_test: tango.DeviceProxy
+    ) -> None:
         """
         Test for obsMode.
 
         :param device_under_test: a proxy to the device under test
         """
-        # PROTECTED REGION ID(SKAObsDevice.test_obsMode) ENABLED START #
         assert device_under_test.obsMode == ObsMode.IDLE
-        # PROTECTED REGION END #    //  SKAObsDevice.test_obsMode
 
-    # PROTECTED REGION ID(SKAObsDevice.test_configurationProgress_decorators) ENABLED START #
-    # PROTECTED REGION END #    //  SKAObsDevice.test_configurationProgress_decorators
-    def test_configurationProgress(self, device_under_test):
+    def test_configurationProgress(
+        self: TestSKAObsDevice, device_under_test: tango.DeviceProxy
+    ) -> None:
         """
         Test for configurationProgress.
 
         :param device_under_test: a proxy to the device under test
         """
-        # PROTECTED REGION ID(SKAObsDevice.test_configurationProgress) ENABLED START #
         assert device_under_test.configurationProgress == 0
-        # PROTECTED REGION END #    //  SKAObsDevice.test_configurationProgress
 
-    # PROTECTED REGION ID(SKAObsDevice.test_configurationDelayExpected_decorators) ENABLED START #
-    # PROTECTED REGION END #    //  SKAObsDevice.test_configurationDelayExpected_decorators
-    def test_configurationDelayExpected(self, device_under_test):
+    def test_configurationDelayExpected(
+        self: TestSKAObsDevice, device_under_test: tango.DeviceProxy
+    ) -> None:
         """
         Test for configurationDelayExpected.
 
         :param device_under_test: a proxy to the device under test
         """
-        # PROTECTED REGION ID(SKAObsDevice.test_configurationDelayExpected) ENABLED START #
         assert device_under_test.configurationDelayExpected == 0
-        # PROTECTED REGION END #    //  SKAObsDevice.test_configurationDelayExpected
 
-    # PROTECTED REGION ID(SKAObsDevice.test_buildState_decorators) ENABLED START #
-    # PROTECTED REGION END #    //  SKAObsDevice.test_buildState_decorators
-    def test_buildState(self, device_under_test):
+    def test_buildState(
+        self: TestSKAObsDevice, device_under_test: tango.DeviceProxy
+    ) -> None:
         """
         Test for buildState.
 
         :param device_under_test: a proxy to the device under test
         """
-        # PROTECTED REGION ID(SKAObsDevice.test_buildState) ENABLED START #
-        buildPattern = re.compile(
+        build_pattern = re.compile(
             r"ska_tango_base, [0-9]+.[0-9]+.[0-9]+, "
             r"A set of generic base devices for SKA Telescope"
         )
-        assert (
-            re.match(buildPattern, device_under_test.buildState)
-        ) is not None
-        # PROTECTED REGION END #    //  SKAObsDevice.test_buildState
+        assert (re.match(build_pattern, device_under_test.buildState)) is not None
 
-    # PROTECTED REGION ID(SKAObsDevice.test_versionId_decorators) ENABLED START #
-    # PROTECTED REGION END #    //  SKAObsDevice.test_versionId_decorators
-    def test_versionId(self, device_under_test):
+    def test_versionId(
+        self: TestSKAObsDevice, device_under_test: tango.DeviceProxy
+    ) -> None:
         """
         Test for versionId.
 
         :param device_under_test: a proxy to the device under test
         """
-        # PROTECTED REGION ID(SKAObsDevice.test_versionId) ENABLED START #
-        versionIdPattern = re.compile(r"[0-9]+.[0-9]+.[0-9]+")
-        assert (
-            re.match(versionIdPattern, device_under_test.versionId)
-        ) is not None
-        # PROTECTED REGION END #    //  SKAObsDevice.test_versionId
+        version_id_pattern = re.compile(r"[0-9]+.[0-9]+.[0-9]+")
+        assert (re.match(version_id_pattern, device_under_test.versionId)) is not None
 
-    # PROTECTED REGION ID(SKAObsDevice.test_healthState_decorators) ENABLED START #
-    # PROTECTED REGION END #    //  SKAObsDevice.test_healthState_decorators
-    def test_healthState(self, device_under_test):
+    def test_healthState(
+        self: TestSKAObsDevice, device_under_test: tango.DeviceProxy
+    ) -> None:
         """
         Test for healthState.
 
         :param device_under_test: a proxy to the device under test
         """
-        # PROTECTED REGION ID(SKAObsDevice.test_healthState) ENABLED START #
         assert device_under_test.healthState == HealthState.UNKNOWN
-        # PROTECTED REGION END #    //  SKAObsDevice.test_healthState
 
-    # PROTECTED REGION ID(SKAObsDevice.test_adminMode_decorators) ENABLED START #
-    # PROTECTED REGION END #    //  SKAObsDevice.test_adminMode_decorators
-    def test_adminMode(self, device_under_test):
+    def test_adminMode(
+        self: TestSKAObsDevice, device_under_test: tango.DeviceProxy
+    ) -> None:
         """
         Test for adminMode.
 
         :param device_under_test: a proxy to the device under test
         """
-        # PROTECTED REGION ID(SKAObsDevice.test_adminMode) ENABLED START #
         assert device_under_test.adminMode == AdminMode.ONLINE
-        # PROTECTED REGION END #    //  SKAObsDevice.test_adminMode
 
-    # PROTECTED REGION ID(SKAObsDevice.test_controlMode_decorators) ENABLED START #
-    # PROTECTED REGION END #    //  SKAObsDevice.test_controlMode_decorators
-    def test_controlMode(self, device_under_test):
+    def test_controlMode(
+        self: TestSKAObsDevice, device_under_test: tango.DeviceProxy
+    ) -> None:
         """
         Test for controlMode.
 
         :param device_under_test: a proxy to the device under test
         """
-        # PROTECTED REGION ID(SKAObsDevice.test_controlMode) ENABLED START #
         assert device_under_test.controlMode == ControlMode.REMOTE
-        # PROTECTED REGION END #    //  SKAObsDevice.test_controlMode
 
-    # PROTECTED REGION ID(SKAObsDevice.test_simulationMode_decorators) ENABLED START #
-    # PROTECTED REGION END #    //  SKAObsDevice.test_simulationMode_decorators
-    def test_simulationMode(self, device_under_test):
+    def test_simulationMode(
+        self: TestSKAObsDevice, device_under_test: tango.DeviceProxy
+    ) -> None:
         """
         Test for simulationMode.
 
         :param device_under_test: a proxy to the device under test
         """
-        # PROTECTED REGION ID(SKAObsDevice.test_simulationMode) ENABLED START #
         assert device_under_test.simulationMode == SimulationMode.FALSE
-        # PROTECTED REGION END #    //  SKAObsDevice.test_simulationMode
 
-    # PROTECTED REGION ID(SKAObsDevice.test_testMode_decorators) ENABLED START #
-    # PROTECTED REGION END #    //  SKAObsDevice.test_testMode_decorators
-    def test_testMode(self, device_under_test):
+    def test_testMode(
+        self: TestSKAObsDevice, device_under_test: tango.DeviceProxy
+    ) -> None:
         """
         Test for testMode.
 
         :param device_under_test: a proxy to the device under test
         """
-        # PROTECTED REGION ID(SKAObsDevice.test_testMode) ENABLED START #
         assert device_under_test.testMode == TestMode.NONE
-        # PROTECTED REGION END #    //  SKAObsDevice.test_testMode
 
 
 @pytest.mark.forked
-def test_multiple_devices_in_same_process(mocker):
-    """Test that we can run this device with other devices in a single process."""
+def test_multiple_devices_in_same_process(mocker: MockFixture) -> None:
+    """
+    Test that we can run this device with other devices in a single process.
+
+    :param mocker: patch with the mock
+    """
     # Patch abstract method/s; it doesn't matter what we patch them with, so long as
     # they don't raise NotImplementedError.
     mocker.patch.object(SKAObsDevice, "create_component_manager")

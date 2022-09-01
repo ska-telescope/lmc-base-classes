@@ -19,7 +19,7 @@ from tango.server import attribute, command, device_property
 
 from ska_tango_base import SKABaseDevice
 from ska_tango_base.commands import DeviceInitCommand, FastCommand, ResultCode
-from ska_tango_base.utils import (
+from ska_tango_base.utils import (  # type: ignore[attr-defined]
     convert_dict_to_list,
     validate_capability_types,
     validate_input_sizes,

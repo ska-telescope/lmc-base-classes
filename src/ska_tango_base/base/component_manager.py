@@ -36,7 +36,8 @@ import logging
 import threading
 from typing import Any, Callable, Optional, TypeVar, cast
 
-from ska_tango_base.control_model import CommunicationStatus, PowerState
+from ska_control_model import CommunicationStatus, PowerState
+
 from ska_tango_base.executor import TaskExecutor, TaskStatus
 from ska_tango_base.faults import ComponentError
 

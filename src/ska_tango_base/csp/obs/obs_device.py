@@ -1,3 +1,5 @@
+# flake8: noqa
+# type: ignore
 # pylint: skip-file  # TODO: Incrementally lint this repo
 # -*- coding: utf-8 -*-
 #
@@ -15,15 +17,11 @@ import functools
 import json
 from json.decoder import JSONDecodeError
 
+from ska_control_model import ObsState
 from tango import DebugIt
 from tango.server import attribute, command, device_property, run
 
-from ska_tango_base.commands import (
-    ResultCode,
-    SlowCommand,
-    SubmittedSlowCommand,
-)
-from ska_tango_base.control_model import ObsState
+from ska_tango_base.commands import ResultCode, SlowCommand, SubmittedSlowCommand
 from ska_tango_base.csp.obs.obs_state_model import CspSubElementObsStateModel
 from ska_tango_base.executor import TaskStatus
 from ska_tango_base.faults import StateModelError
@@ -306,9 +304,7 @@ class CspSubElementObsDevice(SKAObsDevice):
     class ConfigureScanCommand(SubmittedSlowCommand):
         """A class for the CspSubElementObsDevices's ConfigureScan command."""
 
-        def __init__(
-            self, command_tracker, component_manager, callback, logger=None
-        ):
+        def __init__(self, command_tracker, component_manager, callback, logger=None):
             """
             Initialise a new ConfigureScanCommand instance.
 
@@ -392,9 +388,7 @@ class CspSubElementObsDevice(SKAObsDevice):
     class AbortCommand(SlowCommand):
         """A class for the CspSubElementObsDevices's Abort command."""
 
-        def __init__(
-            self, command_tracker, component_manager, callback, logger=None
-        ):
+        def __init__(self, command_tracker, component_manager, callback, logger=None):
             """
             Initialise a new AbortCommand instance.
 
@@ -421,9 +415,7 @@ class CspSubElementObsDevice(SKAObsDevice):
                 "Abort", completed_callback=self._completed
             )
             status, _ = self._component_manager.abort(
-                functools.partial(
-                    self._command_tracker.update_command_info, command_id
-                )
+                functools.partial(self._command_tracker.update_command_info, command_id)
             )
 
             assert status == TaskStatus.IN_PROGRESS

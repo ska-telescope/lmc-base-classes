@@ -18,9 +18,10 @@ import threading
 from time import sleep
 from typing import Any, Callable, Optional, Tuple
 
+from ska_control_model import CommunicationStatus, PowerState
+
 from ska_tango_base.base import TaskExecutorComponentManager, check_communicating
 from ska_tango_base.commands import ResultCode
-from ska_tango_base.control_model import CommunicationStatus, PowerState
 from ska_tango_base.executor import TaskStatus
 
 

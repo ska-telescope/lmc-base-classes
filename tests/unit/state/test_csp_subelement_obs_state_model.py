@@ -1,10 +1,9 @@
+# type: ignore
 # pylint: skip-file  # TODO: Incrementally lint this repo
 """This module tests the ``csp_subelement_obs_state_model`` module."""
 import pytest
 
-from ska_tango_base.csp.obs.obs_state_model import (
-    _CspSubElementObsStateMachine,
-)
+from ska_tango_base.csp.obs.obs_state_model import CspSubElementObsStateMachine
 
 from .conftest import TransitionsStateMachineTester, load_state_machine_spec
 
@@ -22,4 +21,4 @@ class TestCspSubElementObsStateMachine(TransitionsStateMachineTester):
 
         :yield: the state machine under test
         """
-        yield _CspSubElementObsStateMachine()
+        yield CspSubElementObsStateMachine()

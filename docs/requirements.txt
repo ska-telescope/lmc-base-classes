@@ -4,3 +4,4 @@ sphinx-autodoc-typehints
 sphinx-rtd-theme
 sphinxcontrib-plantuml
 typing_extensions
+git+https://gitlab.com/ska-telescope/ska-control-model.git@48aed6df02c4996b410de7d6914b3b95593fb023

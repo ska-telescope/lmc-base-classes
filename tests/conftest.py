@@ -1,3 +1,5 @@
+# type: ignore
+# flake8: noqa
 # pylint: skip-file  # TODO: Incrementally lint this repo
 """This module defines elements of the pytest test harness shared by all tests."""
 from __future__ import annotations
@@ -6,17 +8,13 @@ import logging
 import socket
 import time
 from typing import Any, Callable, Hashable
-from typing_extensions import Protocol
-import pytest
 
+import pytest
 import tango
 from ska_tango_testing.mock import MockCallableGroup
 from ska_tango_testing.mock.tango import MockTangoEventCallbackGroup
-from tango.test_context import (
-    DeviceTestContext,
-    MultiDeviceTestContext,
-    get_host_ip,
-)
+from tango.test_context import DeviceTestContext, MultiDeviceTestContext, get_host_ip
+from typing_extensions import Protocol
 
 
 @pytest.fixture(scope="class")
@@ -34,13 +32,9 @@ def device_properties() -> dict[str, Any]:
 @pytest.fixture()
 def tango_context(device_test_config):
     """Return a Tango test context object, in which the device under test is running."""
-    component_manager_patch = device_test_config.pop(
-        "component_manager_patch", None
-    )
+    component_manager_patch = device_test_config.pop("component_manager_patch", None)
     if component_manager_patch is not None:
-        device_test_config[
-            "device"
-        ].create_component_manager = component_manager_patch
+        device_test_config["device"].create_component_manager = component_manager_patch
 
     tango_context = DeviceTestContext(**device_test_config, process=True)
     tango_context.start()

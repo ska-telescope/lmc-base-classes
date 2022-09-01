@@ -1,3 +1,5 @@
+# type: ignore
+# flake8: noqa
 """Component Manager for Multi Device."""
 import logging
 import time
@@ -22,7 +24,8 @@ class MultiDeviceComponentManager(TaskExecutorComponentManager):
         logger: logging.Logger = None,
         **kwargs,
     ):
-        """Init MultiDeviceComponentManager.
+        """
+        Init MultiDeviceComponentManager.
 
         :param client_devices: The list of client devices.
         :type client_devices: List
@@ -36,9 +39,7 @@ class MultiDeviceComponentManager(TaskExecutorComponentManager):
                 self.client_devices, self.logger
             )
 
-        super().__init__(
-            *args, max_workers=max_workers, logger=logger, **kwargs
-        )
+        super().__init__(*args, max_workers=max_workers, logger=logger, **kwargs)
 
     def _non_aborting_lrc(
         self,
@@ -46,7 +47,8 @@ class MultiDeviceComponentManager(TaskExecutorComponentManager):
         task_callback: Callable = None,
         task_abort_event: Event = None,
     ):
-        """Take a long time to run.
+        """
+        Take a long time to run.
 
         :param sleep_time: Time to sleep between iterations
         :type sleep_time: float
@@ -61,14 +63,11 @@ class MultiDeviceComponentManager(TaskExecutorComponentManager):
             retries -= 1
             time.sleep(sleep_time)  # This command takes long
         self.logger.info("NonAbortingTask finished")
-        task_callback(
-            status=TaskStatus.COMPLETED, result="non_aborting_lrc OK"
-        )
+        task_callback(status=TaskStatus.COMPLETED, result="non_aborting_lrc OK")
 
-    def non_aborting_lrc(
-        self, sleep_time: float, task_callback: Callable = None
-    ):
-        """Take a long time to complete.
+    def non_aborting_lrc(self, sleep_time: float, task_callback: Callable = None):
+        """
+        Take a long time to complete.
 
         :param sleep_time: How long to sleep per iteration
         :type sleep_time: float
@@ -88,7 +87,8 @@ class MultiDeviceComponentManager(TaskExecutorComponentManager):
         task_callback: Callable = None,
         task_abort_event: Event = None,
     ):
-        """Abort the task.
+        """
+        Abort the task.
 
         :param sleep_time: Time to sleep between iterations
         :type sleep_time: float
@@ -117,7 +117,8 @@ class MultiDeviceComponentManager(TaskExecutorComponentManager):
             )
 
     def aborting_lrc(self, sleep_time: float, task_callback: Callable = None):
-        """Abort a task in progress.
+        """
+        Abort a task in progress.
 
         :param sleep_time: How long to sleep per iteration
         :type sleep_time: int
@@ -135,7 +136,8 @@ class MultiDeviceComponentManager(TaskExecutorComponentManager):
         task_callback: Callable = None,
         task_abort_event: Event = None,
     ):
-        """Throw an exception.
+        """
+        Throw an exception.
 
         :param logger: logger
         :type logger: logging.Logger
@@ -149,7 +151,8 @@ class MultiDeviceComponentManager(TaskExecutorComponentManager):
         raise RuntimeError("Something went wrong")
 
     def throw_exc(self, task_callback: Callable = None):
-        """Illustrate exceptions.
+        """
+        Illustrate exceptions.
 
         :param task_callback: Update task status
         :type task_callback: Callable
@@ -166,7 +169,8 @@ class MultiDeviceComponentManager(TaskExecutorComponentManager):
         task_callback: Callable = None,
         task_abort_event: Event = None,
     ):
-        """Illustrate progress.
+        """
+        Illustrate progress.
 
         :param logger: logger
         :type logger: logging.Logger
@@ -185,7 +189,8 @@ class MultiDeviceComponentManager(TaskExecutorComponentManager):
         task_callback(status=TaskStatus.COMPLETED, result="Progress completed")
 
     def show_progress(self, sleep_time, task_callback=None):
-        """Illustrate progress.
+        """
+        Illustrate progress.
 
         :param sleep_time: Time to sleep between each progress update
         :type sleep_time: float
@@ -206,7 +211,8 @@ class MultiDeviceComponentManager(TaskExecutorComponentManager):
         task_callback: Callable = None,
         task_abort_event: Event = None,
     ):
-        """Simulate some work for the leaf devices.
+        """
+        Simulate some work for the leaf devices.
 
         :param logger: logger
         :type logger: logging.Logger
@@ -222,9 +228,7 @@ class MultiDeviceComponentManager(TaskExecutorComponentManager):
         logger.info("Finished in leaf device %s", sleep_time)
         task_callback(status=TaskStatus.COMPLETED, result="Finished leaf node")
 
-    def _all_children_completed_cb(
-        self, task_callback, command_name, command_ids
-    ):
+    def _all_children_completed_cb(self, task_callback, command_name, command_ids):
         self.logger.info("All children %s completed", self.client_devices)
         task_callback(
             status=TaskStatus.COMPLETED,
@@ -238,7 +242,8 @@ class MultiDeviceComponentManager(TaskExecutorComponentManager):
         task_callback: Callable = None,
         task_abort_event: Event = None,
     ):
-        """Call child devices.
+        """
+        Call child devices.
 
         :param logger: logger
         :type logger: logging.Logger
@@ -258,7 +263,8 @@ class MultiDeviceComponentManager(TaskExecutorComponentManager):
         )
 
     def call_children(self, sleep_time: float, task_callback: Callable = None):
-        """Call child devices or sleep.
+        """
+        Call child devices or sleep.
 
         If there are child devices, call them.
         If no children, sleep a bit to simulate some work.

@@ -1,3 +1,5 @@
+# flake8: noqa
+# type: ignore
 # pylint: skip-file  # TODO: Incrementally lint this repo
 """This module models component management for CSP subarrays."""
 from ska_tango_base.subarray import SubarrayComponentManager

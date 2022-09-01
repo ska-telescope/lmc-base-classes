@@ -362,11 +362,21 @@ intersphinx_mapping = {
 }
 
 nitpick_ignore = [
-    # TODO: These first three are private methods that we don't document,
-    # so we shouldn't be referencing them either.
-    ("py:class", "_CspSubElementObsStateMachine"), 
-    ("py:class", "_SubarrayObsStateMachine"),
-    ("py:class", "_OpStateMachine"),
-    # TODO: Can't figure this last one out
+    # TODO: Can't figure this one out
     ("py:class", "ska_tango_base.base.component_manager.Wrapped"),
+    # TODO: Temporary until docs exist
+    ("py:mod", "ska_control_model"),
+    ("py:class", "ska_control_model.logging_level.LoggingLevel"),
+    ("py:class", "ska_control_model.health_state.HealthState"),
+    ("py:class", "ska_control_model.admin_mode.AdminMode"),
+    ("py:class", "ska_control_model.simulation_mode.SimulationMode"),
+    ("py:class", "ska_control_model.test_mode.TestMode"),
+    ("py:class", "ska_control_model.control_mode.ControlMode"),
+    ("py:class", "ska_control_model.obs_mode.ObsMode"),
+    ("py:class", "ska_control_model.obs_state.ObsState"),
+    ("py:class", "ska_control_model.power_state.PowerState"),
+    ("py:class", "ska_control_model.communication_status.CommunicationStatus"),
+    ("py:class", "PowerState"),
+    ("py:class", "CommunicationStatus"),
+    ("py:class", "method"),  # sphinx bug?
 ]

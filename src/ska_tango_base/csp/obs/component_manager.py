@@ -1,3 +1,5 @@
+# flake8: noqa
+# type: ignore
 """This module models component management for CSP subelement observation devices."""
 from ska_tango_base.base import BaseComponentManager
 

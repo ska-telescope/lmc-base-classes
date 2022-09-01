@@ -1,13 +1,11 @@
+# type: ignore
+# flake8: noqa
 """Device to test multi layered commands."""
 from tango import DebugIt
 from tango.server import command, device_property
 
 from ska_tango_base.base.base_device import SKABaseDevice
-from ska_tango_base.commands import (
-    FastCommand,
-    ResultCode,
-    SubmittedSlowCommand,
-)
+from ska_tango_base.commands import FastCommand, ResultCode, SubmittedSlowCommand
 
 from .multidevice_component_manager import MultiDeviceComponentManager
 

@@ -1043,6 +1043,8 @@ six = [
 ska-ser-logging = [
     {file = "ska_ser_logging-0.4.1+0a677a67-py3-none-any.whl", hash = "md5:6dba01d139ccca7224914a95bbf7d05a"},
     {file = "ska_ser_logging-0.4.1+0a677a67.tar.gz", hash = "md5:510d2e4106fa53e7af1ecb25aca1306e"},
+    {file = "ska_ser_logging-0.4.1+0a677a67-py3-none-any.whl", hash = "sha256:8b2bf14e9981966c22503b6b6477b6386dec1def1f71295579f0686d55b83841"},
+    {file = "ska_ser_logging-0.4.1+0a677a67.tar.gz", hash = "sha256:558622000db39668d3a35b6986af9d70dac36635826636ef2c07f816a149a06d"},
 ]
 ska-tango-testing = [
     {file = "ska-tango-testing-0.2.0.tar.gz", hash = "md5:23b412c84ffd1535543e22ccde6c2211"},

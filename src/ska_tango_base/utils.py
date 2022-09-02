@@ -465,8 +465,8 @@ def get_groups_from_json(json_definitions: List[str]) -> dict:
         "<group name 2>": <tango.Group>, ...}. Will be an empty dict if
         no groups were specified.
 
-    :raises with_traceback:
-        arising from GroupDefinitionsError:
+    :raises GroupDefinitionsError:  # noqa DAR401,DAR402
+        arising from GroupDefinitionsError
         - If error parsing JSON string.
         - If missing keys in the JSON definition.
         - If invalid device name.

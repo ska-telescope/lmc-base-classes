@@ -248,6 +248,7 @@ Tango devices can be launched with a `-v` parameter to set the logging level. Fo
 ## Version History
 
 #### Unreleased
+- LOW-330 Import control model definitions from ska-control-model
 - LOW-317 Allow Reset() from STANDBY and ON states, not just FAULT
 
 #### 0.13.3

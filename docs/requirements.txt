@@ -1,7 +1,8 @@
+--extra-index-url https://artefact.skao.int/repository/pypi-all/simple
 docutils<0.17
+ska-control-model
 sphinx
 sphinx-autodoc-typehints
 sphinx-rtd-theme
 sphinxcontrib-plantuml
 typing_extensions
-git+https://gitlab.com/ska-telescope/ska-control-model.git@48aed6df02c4996b410de7d6914b3b95593fb023

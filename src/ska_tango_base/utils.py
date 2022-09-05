@@ -465,6 +465,7 @@ def get_groups_from_json(json_definitions: List[str]) -> dict:
         "<group name 2>": <tango.Group>, ...}. Will be an empty dict if
         no groups were specified.
 
+    #TODO added noqa due to darglint issue #181
     :raises GroupDefinitionsError:  # noqa DAR401,DAR402
         arising from GroupDefinitionsError
         - If error parsing JSON string.

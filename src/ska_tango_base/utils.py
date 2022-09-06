@@ -465,7 +465,6 @@ def get_groups_from_json(json_definitions: List[str]) -> dict:
         "<group name 2>": <tango.Group>, ...}. Will be an empty dict if
         no groups were specified.
 
-    #TODO added noqa due to darglint issue #181
     :raises GroupDefinitionsError:  # noqa DAR401,DAR402
         arising from GroupDefinitionsError
         - If error parsing JSON string.
@@ -491,6 +490,7 @@ def get_groups_from_json(json_definitions: List[str]) -> dict:
     except Exception as exc:
         # the exc_info is included for detailed traceback
         ska_error = SKABaseError(exc)
+        # TODO added noqa in docstring due to darglint issue #181
         raise GroupDefinitionsError(ska_error).with_traceback(sys.exc_info()[2])
 
 

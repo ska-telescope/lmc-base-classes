@@ -12,10 +12,7 @@ from typing import Any
 
 import pytest
 import tango
-from tango import DevState
-from tango.test_context import MultiDeviceTestContext
-
-from ska_tango_base.control_model import (
+from ska_control_model import (
     AdminMode,
     ControlMode,
     HealthState,
@@ -23,6 +20,9 @@ from ska_tango_base.control_model import (
     SimulationMode,
     TestMode,
 )
+from tango import DevState
+from tango.test_context import MultiDeviceTestContext
+
 from ska_tango_base.logger_device import SKALogger
 from ska_tango_base.subarray import SKASubarray
 from ska_tango_base.testing.reference import ReferenceBaseComponentManager

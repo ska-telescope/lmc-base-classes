@@ -13,11 +13,11 @@ from SKAObsDevice instead of just SKABaseDevice.
 """
 from __future__ import annotations
 
+from ska_control_model import ObsMode, ObsState
 from tango.server import attribute
 
 from ska_tango_base.base import SKABaseDevice
 from ska_tango_base.commands import DeviceInitCommand, ResultCode
-from ska_tango_base.control_model import ObsMode, ObsState
 
 __all__ = ["SKAObsDevice", "main"]
 

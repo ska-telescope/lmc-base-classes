@@ -30,7 +30,7 @@ __all__ = (
 
 # SKABaseDevice, and then classes that inherit from it
 from .base import SKABaseDevice
-from .alarm_handler_device import SKAAlarmHandler
+from .alarm_handler_device import SKAAlarmHandler  # type: ignore[attr-defined]
 from .logger_device import SKALogger
 from .controller_device import SKAController
 from .tel_state_device import SKATelState

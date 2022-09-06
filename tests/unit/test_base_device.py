@@ -19,6 +19,14 @@ from unittest import mock
 import pytest
 import tango
 from _pytest.fixtures import SubRequest
+from ska_control_model import (
+    AdminMode,
+    ControlMode,
+    HealthState,
+    LoggingLevel,
+    SimulationMode,
+    TestMode,
+)
 from ska_tango_testing.mock.tango import MockTangoEventCallbackGroup
 from tango import DevFailed, DevState
 
@@ -34,14 +42,6 @@ from ska_tango_base.base.base_device import (  # CommandTracker,
     _Log4TangoLoggingLevel,
 )
 from ska_tango_base.commands import ResultCode
-from ska_tango_base.control_model import (
-    AdminMode,
-    ControlMode,
-    HealthState,
-    LoggingLevel,
-    SimulationMode,
-    TestMode,
-)
 from ska_tango_base.executor import TaskStatus
 from ska_tango_base.testing.reference import ReferenceBaseComponentManager
 

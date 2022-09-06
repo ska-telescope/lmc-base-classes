@@ -13,12 +13,7 @@ from typing import Any
 
 import pytest
 import tango
-from ska_tango_testing.mock.tango import MockTangoEventCallbackGroup
-from tango import DevState
-
-from ska_tango_base import SKASubarray
-from ska_tango_base.commands import ResultCode
-from ska_tango_base.control_model import (
+from ska_control_model import (
     AdminMode,
     ControlMode,
     HealthState,
@@ -27,6 +22,11 @@ from ska_tango_base.control_model import (
     SimulationMode,
     TestMode,
 )
+from ska_tango_testing.mock.tango import MockTangoEventCallbackGroup
+from tango import DevState
+
+from ska_tango_base import SKASubarray
+from ska_tango_base.commands import ResultCode
 from ska_tango_base.testing.reference import ReferenceSubarrayComponentManager
 
 

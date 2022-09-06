@@ -13,12 +13,7 @@ from typing import Any
 import pytest
 import tango
 from pytest_mock import MockFixture
-from ska_tango_testing.mock.tango import MockTangoEventCallbackGroup
-from tango import DevState
-from tango.test_context import MultiDeviceTestContext
-
-from ska_tango_base import SKABaseDevice, SKAObsDevice
-from ska_tango_base.control_model import (
+from ska_control_model import (
     AdminMode,
     ControlMode,
     HealthState,
@@ -27,6 +22,11 @@ from ska_tango_base.control_model import (
     SimulationMode,
     TestMode,
 )
+from ska_tango_testing.mock.tango import MockTangoEventCallbackGroup
+from tango import DevState
+from tango.test_context import MultiDeviceTestContext
+
+from ska_tango_base import SKABaseDevice, SKAObsDevice
 from ska_tango_base.testing.reference import ReferenceBaseComponentManager
 
 

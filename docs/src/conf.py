@@ -358,15 +358,24 @@ texinfo_documents = [
 
 intersphinx_mapping = {
     "https://docs.python.org/3.7/": None,
+    "ska-control-model": (
+        "https://developer.skao.int/projects/ska-control-model/en/latest/",
+        None,
+    ),
     "tango": ("https://pytango.readthedocs.io/en/v9.3.4/", None),
 }
 
 nitpick_ignore = [
-    # TODO: These first three are private methods that we don't document,
-    # so we shouldn't be referencing them either.
-    ("py:class", "_CspSubElementObsStateMachine"), 
-    ("py:class", "_SubarrayObsStateMachine"),
-    ("py:class", "_OpStateMachine"),
-    # TODO: Can't figure this last one out
+    # ska-control-model docs don't actually publish the docstring for
+    # the package itself.
+    ("py:mod", "ska_control_model"),  
+    # These next two are documented in ska-control-model. Need to figure
+    # out why intersphinx can't find them.
+    ("py:class", "PowerState"),
+    ("py:class", "CommunicationStatus"),
+    # TODO: Can't figure this one out
     ("py:class", "ska_tango_base.base.component_manager.Wrapped"),
+    # These ones look like sphinx bugs
+    ("py:class", "method"),
+    ("py:class", "tango.server.command"),
 ]

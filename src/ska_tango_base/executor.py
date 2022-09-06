@@ -9,61 +9,11 @@ from __future__ import annotations
 
 import concurrent.futures
 import threading
-from enum import IntEnum
 from typing import Any, Callable, Optional
 
+from ska_control_model import TaskStatus
 
-class TaskStatus(IntEnum):
-    """The status of the QueueTask in the QueueManager."""
-
-    STAGING = 0
-    """
-    The request to execute the task has been received but not yet acted
-    upon.
-    """
-
-    QUEUED = 1
-    """
-    The task has been accepted and will be executed at a future time
-    """
-
-    IN_PROGRESS = 2
-    """
-    The task in progress
-    """
-
-    ABORTED = 3
-    """
-    The task in progress has been aborted
-    """
-
-    NOT_FOUND = 4
-    """
-    The task is not found
-    """
-
-    COMPLETED = 5
-    """
-    The task was completed.
-    """
-
-    REJECTED = 6
-    """
-    The task was rejected.
-    """
-
-    FAILED = 7
-    """
-    The task failed to complete.
-
-    Note that this should not be used for a task that executes to
-    completion, but does not achieve its goal. This kind of
-    domain-specific notion of "succeeded" versus "failed" should be
-    passed as a task result. Here, FAILED means that the task executor
-    has detected a failure of the task to run to completion. For
-    example, execution of the task might have resulted in the raising of
-    an uncaught exception.
-    """
+__all__ = ["TaskExecutor", "TaskStatus"]
 
 
 class TaskExecutor:

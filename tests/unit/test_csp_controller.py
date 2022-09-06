@@ -1,3 +1,5 @@
+# type: ignore
+# flake8: noqa
 # pylint: skip-file  # TODO: Incrementally lint this repo
 #########################################################################################
 # -*- coding: utf-8 -*-
@@ -13,18 +15,18 @@ import re
 
 import pytest
 import tango
-from tango.test_context import MultiDeviceTestContext
-
-# PROTECTED REGION ID(CspSubelementController.test_additional_imports) ENABLED START #
-from ska_tango_base import CspSubElementController, SKAController
-from ska_tango_base.commands import ResultCode
-from ska_tango_base.control_model import (
+from ska_control_model import (
     AdminMode,
     ControlMode,
     HealthState,
     SimulationMode,
     TestMode,
 )
+from tango.test_context import MultiDeviceTestContext
+
+# PROTECTED REGION ID(CspSubelementController.test_additional_imports) ENABLED START #
+from ska_tango_base import CspSubElementController, SKAController
+from ska_tango_base.commands import ResultCode
 from ska_tango_base.testing.reference import ReferenceBaseComponentManager
 
 # PROTECTED REGION END #    //  CspSubElementController.test_additional_imports
@@ -136,9 +138,7 @@ class TestCspSubElementController(object):
             r"ska_tango_base, [0-9]+.[0-9]+.[0-9]+, "
             r"A set of generic base devices for SKA Telescope"
         )
-        assert (
-            re.match(buildPattern, device_under_test.buildState)
-        ) is not None
+        assert (re.match(buildPattern, device_under_test.buildState)) is not None
         # PROTECTED REGION END #    //  CspSubelementController.test_buildState
 
     # PROTECTED REGION ID(CspSubelementController.test_versionId_decorators) ENABLED START #
@@ -151,9 +151,7 @@ class TestCspSubElementController(object):
         """
         # PROTECTED REGION ID(CspSubelementController.test_versionId) ENABLED START #
         versionIdPattern = re.compile(r"[0-9]+.[0-9]+.[0-9]+")
-        assert (
-            re.match(versionIdPattern, device_under_test.versionId)
-        ) is not None
+        assert (re.match(versionIdPattern, device_under_test.versionId)) is not None
         # PROTECTED REGION END #    //  CspSubelementController.test_versionId
 
     # PROTECTED REGION ID(CspSubelementController.test_healthState_decorators) ENABLED START #
@@ -428,16 +426,12 @@ class TestCspSubElementController(object):
             tango.DevFailed,
             match="LoadFirmware not allowed when the device is in OFF state",
         ):
-            device_under_test.LoadFirmware(
-                ["file", "test/dev/b", "918698a7fea3"]
-            )
+            device_under_test.LoadFirmware(["file", "test/dev/b", "918698a7fea3"])
         # PROTECTED REGION END #    //  CspSubelementController.test_LoadFirmware_when_in_wrong_state
 
     # PROTECTED REGION ID(CspSubelementController.test_PowerOnDevices_decorators) ENABLED START #
     # PROTECTED REGION END #    //  CspSubelementController.test_PowerOnDevices_decorators
-    def test_power_on_and_off_devices(
-        self, device_under_test, change_event_callbacks
-    ):
+    def test_power_on_and_off_devices(self, device_under_test, change_event_callbacks):
         """
         Test for PowerOnDevices.
 
@@ -537,9 +531,7 @@ class TestCspSubElementController(object):
         [[result_code], [_]] = device_under_test.PowerOnDevices(
             ["test/dev/1", "test/dev/2"]
         )
-        assert device_under_test.ReInitDevices(
-            ["test/dev/1", "test/dev/2"]
-        ) == [
+        assert device_under_test.ReInitDevices(["test/dev/1", "test/dev/2"]) == [
             [ResultCode.OK],
             ["ReInitDevices command completed OK"],
         ]

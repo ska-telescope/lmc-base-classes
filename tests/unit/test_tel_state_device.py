@@ -12,16 +12,16 @@ from typing import Any
 
 import pytest
 import tango
-from tango import DevState
-
-from ska_tango_base import SKATelState
-from ska_tango_base.control_model import (
+from ska_control_model import (
     AdminMode,
     ControlMode,
     HealthState,
     SimulationMode,
     TestMode,
 )
+from tango import DevState
+
+from ska_tango_base import SKATelState
 from ska_tango_base.testing.reference import ReferenceBaseComponentManager
 
 

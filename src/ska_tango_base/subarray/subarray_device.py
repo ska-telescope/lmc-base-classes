@@ -19,17 +19,17 @@ import json
 import logging
 from typing import Callable, List, Optional, Tuple, cast
 
+# SKA specific imports
+from ska_control_model import ObsState, ObsStateModel, PowerState
 from tango import DebugIt
 from tango.server import attribute, command, device_property
 
-# SKA specific imports
 from ska_tango_base import SKAObsDevice
 from ska_tango_base.base.base_device import CommandTracker
 from ska_tango_base.commands import ResultCode, SlowCommand, SubmittedSlowCommand
-from ska_tango_base.control_model import ObsState, PowerState
 from ska_tango_base.executor import TaskStatus
 from ska_tango_base.faults import StateModelError
-from ska_tango_base.subarray import SubarrayComponentManager, SubarrayObsStateModel
+from ska_tango_base.subarray import SubarrayComponentManager
 
 DevVarLongStringArrayType = Tuple[List[ResultCode], List[Optional[str]]]
 
@@ -105,7 +105,7 @@ class SKASubarray(SKAObsDevice):
     def _init_state_model(self: SKASubarray) -> None:
         """Set up the state model for the device."""
         super()._init_state_model()
-        self.obs_state_model = SubarrayObsStateModel(
+        self.obs_state_model = ObsStateModel(
             logger=self.logger, callback=self._update_obs_state
         )
 

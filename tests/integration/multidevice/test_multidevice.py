@@ -1,3 +1,5 @@
+# type: ignore
+# flake8: noqa
 """Test various Tango devices with long running commmands working together."""
 import pytest
 import tango
@@ -60,9 +62,7 @@ def test_device(device_under_test, change_event_callbacks):
         tango.EventType.CHANGE_EVENT,
         change_event_callbacks["longRunningCommandResult"],
     )
-    change_event_callbacks.assert_change_event(
-        "longRunningCommandResult", ("", "")
-    )
+    change_event_callbacks.assert_change_event("longRunningCommandResult", ("", ""))
 
     # Short
     result_code, result = device_under_test.Short(5)
@@ -78,18 +78,14 @@ def test_non_abort(device_under_test, change_event_callbacks):
         tango.EventType.CHANGE_EVENT,
         change_event_callbacks["longRunningCommandResult"],
     )
-    change_event_callbacks.assert_change_event(
-        "longRunningCommandResult", ("", "")
-    )
+    change_event_callbacks.assert_change_event("longRunningCommandResult", ("", ""))
 
     # NonAbortingLongRunning
     result_code, command_id = device_under_test.NonAbortingLongRunning(0.1)
     assert ResultCode(int(result_code)) == ResultCode.QUEUED
     assert command_id.endswith("NonAbortingLongRunning")
 
-    next_result = change_event_callbacks.assert_against_call(
-        "longRunningCommandResult"
-    )
+    next_result = change_event_callbacks.assert_against_call("longRunningCommandResult")
     command_id, message = next_result["attribute_value"]
     assert command_id.endswith("NonAbortingLongRunning")
     assert message == '"non_aborting_lrc OK"'
@@ -103,9 +99,7 @@ def test_abort(device_under_test, change_event_callbacks):
         tango.EventType.CHANGE_EVENT,
         change_event_callbacks["longRunningCommandResult"],
     )
-    change_event_callbacks.assert_change_event(
-        "longRunningCommandResult", ("", "")
-    )
+    change_event_callbacks.assert_change_event("longRunningCommandResult", ("", ""))
 
     # AbortingLongRunning
     result_code, command_id = device_under_test.AbortingLongRunning(0.1)
@@ -114,9 +108,7 @@ def test_abort(device_under_test, change_event_callbacks):
 
     device_under_test.AbortCommands()
 
-    next_result = change_event_callbacks.assert_against_call(
-        "longRunningCommandResult"
-    )
+    next_result = change_event_callbacks.assert_against_call("longRunningCommandResult")
     command_id, message = next_result["attribute_value"]
     assert command_id.endswith("AbortingLongRunning")
     assert message == '"AbortingTask Aborted 0.1"'
@@ -130,18 +122,14 @@ def test_exception(device_under_test, change_event_callbacks):
         tango.EventType.CHANGE_EVENT,
         change_event_callbacks["longRunningCommandResult"],
     )
-    change_event_callbacks.assert_change_event(
-        "longRunningCommandResult", ("", "")
-    )
+    change_event_callbacks.assert_change_event("longRunningCommandResult", ("", ""))
 
     # LongRunningException
     result_code, command_id = device_under_test.LongRunningException()
     assert ResultCode(int(result_code)) == ResultCode.QUEUED
     assert command_id.endswith("LongRunningException")
 
-    next_result = change_event_callbacks.assert_against_call(
-        "longRunningCommandResult"
-    )
+    next_result = change_event_callbacks.assert_against_call("longRunningCommandResult")
     command_id, message = next_result["attribute_value"]
     assert command_id.endswith("LongRunningException")
     assert message == "Something went wrong"
@@ -155,9 +143,7 @@ def test_progress(device_under_test, change_event_callbacks):
         tango.EventType.CHANGE_EVENT,
         change_event_callbacks["longRunningCommandProgress"],
     )
-    change_event_callbacks.assert_change_event(
-        "longRunningCommandProgress", None
-    )
+    change_event_callbacks.assert_change_event("longRunningCommandProgress", None)
 
     # Progress
     result_code, command_id = device_under_test.TestProgress(0.3)

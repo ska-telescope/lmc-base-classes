@@ -1,3 +1,5 @@
+# type: ignore
+# flake8: noqa
 # pylint: skip-file  # TODO: Incrementally lint this repo
 #########################################################################################
 # -*- coding: utf-8 -*-
@@ -13,12 +15,7 @@ import re
 
 import pytest
 import tango
-from tango.test_context import MultiDeviceTestContext
-
-# PROTECTED REGION ID(CspSubelementObsDevice.test_additional_imports) ENABLED START #
-from ska_tango_base import CspSubElementObsDevice, SKAObsDevice
-from ska_tango_base.commands import ResultCode
-from ska_tango_base.control_model import (
+from ska_control_model import (
     AdminMode,
     ControlMode,
     HealthState,
@@ -26,6 +23,11 @@ from ska_tango_base.control_model import (
     SimulationMode,
     TestMode,
 )
+from tango.test_context import MultiDeviceTestContext
+
+# PROTECTED REGION ID(CspSubelementObsDevice.test_additional_imports) ENABLED START #
+from ska_tango_base import CspSubElementObsDevice, SKAObsDevice
+from ska_tango_base.commands import ResultCode
 from ska_tango_base.csp import CspSubElementObsStateModel
 from ska_tango_base.testing.reference import ReferenceCspObsComponentManager
 
@@ -140,9 +142,7 @@ class TestCspSubElementObsDevice(object):
             r"ska_tango_base, [0-9]+.[0-9]+.[0-9]+, "
             r"A set of generic base devices for SKA Telescope"
         )
-        assert (
-            re.match(buildPattern, device_under_test.buildState)
-        ) is not None
+        assert (re.match(buildPattern, device_under_test.buildState)) is not None
         # PROTECTED REGION END #    //  CspSubelementObsDevice.test_buildState
 
     # PROTECTED REGION ID(CspSubelementObsDevice.test_versionId_decorators) ENABLED START #
@@ -155,9 +155,7 @@ class TestCspSubElementObsDevice(object):
         """
         # PROTECTED REGION ID(CspSubelementObsDevice.test_versionId) ENABLED START #
         versionIdPattern = re.compile(r"[0-9]+.[0-9]+.[0-9]+")
-        assert (
-            re.match(versionIdPattern, device_under_test.versionId)
-        ) is not None
+        assert (re.match(versionIdPattern, device_under_test.versionId)) is not None
         # PROTECTED REGION END #    //  CspSubelementObsDevice.test_versionId
 
     # PROTECTED REGION ID(CspSubelementObsDevice.test_healthState_decorators) ENABLED START #
@@ -270,9 +268,7 @@ class TestCspSubElementObsDevice(object):
         """
         # PROTECTED REGION ID(CspSubelementObsDevice.test_sdpDestinationAddresses) ENABLED START #
         addresses_dict = {"outputHost": [], "outputMac": [], "outputPort": []}
-        assert device_under_test.sdpDestinationAddresses == json.dumps(
-            addresses_dict
-        )
+        assert device_under_test.sdpDestinationAddresses == json.dumps(addresses_dict)
         # PROTECTED REGION END #    //  CspSubelementObsDevice.test_sdpDestinationAddresses
 
     # PROTECTED REGION ID(CspSubelementObsDevice.test_sdpLinkActive_decorators) ENABLED START #
@@ -346,15 +342,9 @@ class TestCspSubElementObsDevice(object):
         change_event_callbacks["status"].assert_change_event(
             "The device is in OFF state."
         )
-        change_event_callbacks[
-            "longRunningCommandProgress"
-        ].assert_change_event(None)
-        change_event_callbacks["longRunningCommandStatus"].assert_change_event(
-            None
-        )
-        change_event_callbacks["longRunningCommandResult"].assert_change_event(
-            ("", "")
-        )
+        change_event_callbacks["longRunningCommandProgress"].assert_change_event(None)
+        change_event_callbacks["longRunningCommandStatus"].assert_change_event(None)
+        change_event_callbacks["longRunningCommandResult"].assert_change_event(("", ""))
 
         [[result_code], [on_command_id]] = device_under_test.On()
         assert result_code == ResultCode.QUEUED
@@ -410,9 +400,7 @@ class TestCspSubElementObsDevice(object):
         )
         assert result_code == ResultCode.QUEUED
 
-        change_event_callbacks.assert_change_event(
-            "obsState", ObsState.CONFIGURING
-        )
+        change_event_callbacks.assert_change_event("obsState", ObsState.CONFIGURING)
         change_event_callbacks.assert_change_event(
             "longRunningCommandStatus",
             (on_command_id, "COMPLETED", config_command_id, "QUEUED"),
@@ -511,12 +499,8 @@ class TestCspSubElementObsDevice(object):
         # PROTECTED REGION ID(CspSubelementObsDevice.test_ConfigureScan_when_in_wrong_state) ENABLED START #
         # The device in in OFF/IDLE state, not valid to invoke ConfigureScan.
 
-        with pytest.raises(
-            tango.DevFailed, match="Component is not powered ON"
-        ):
-            device_under_test.ConfigureScan(
-                '{"id":"sbi-mvp01-20200325-00002"}'
-            )
+        with pytest.raises(tango.DevFailed, match="Component is not powered ON"):
+            device_under_test.ConfigureScan('{"id":"sbi-mvp01-20200325-00002"}')
         # PROTECTED REGION END #    //  CspSubelementObsDevice.test_ConfigureScan_when_in_wrong_state
 
     # PROTECTED REGION ID(CspSubelementObsDevice.test_ConfigureScan_with_wrong_input_args_decorators) ENABLED START #
@@ -607,15 +591,9 @@ class TestCspSubElementObsDevice(object):
         change_event_callbacks["status"].assert_change_event(
             "The device is in OFF state."
         )
-        change_event_callbacks[
-            "longRunningCommandProgress"
-        ].assert_change_event(None)
-        change_event_callbacks["longRunningCommandStatus"].assert_change_event(
-            None
-        )
-        change_event_callbacks["longRunningCommandResult"].assert_change_event(
-            ("", "")
-        )
+        change_event_callbacks["longRunningCommandProgress"].assert_change_event(None)
+        change_event_callbacks["longRunningCommandStatus"].assert_change_event(None)
+        change_event_callbacks["longRunningCommandResult"].assert_change_event(("", ""))
 
         [[result_code], [on_command_id]] = device_under_test.On()
         assert result_code == ResultCode.QUEUED
@@ -668,9 +646,7 @@ class TestCspSubElementObsDevice(object):
         )
         assert result_code == ResultCode.QUEUED
 
-        change_event_callbacks.assert_change_event(
-            "obsState", ObsState.CONFIGURING
-        )
+        change_event_callbacks.assert_change_event("obsState", ObsState.CONFIGURING)
 
         change_event_callbacks.assert_change_event(
             "longRunningCommandStatus",
@@ -705,9 +681,7 @@ class TestCspSubElementObsDevice(object):
         # clear the queue attributes. We need a better way to handle this.
 
         scan_id = 1
-        [[result_code], [scan_command_id]] = device_under_test.Scan(
-            str(scan_id)
-        )
+        [[result_code], [scan_command_id]] = device_under_test.Scan(str(scan_id))
         assert result_code == ResultCode.QUEUED
 
         change_event_callbacks.assert_change_event(
@@ -739,16 +713,12 @@ class TestCspSubElementObsDevice(object):
         change_event_callbacks.assert_change_event(
             "longRunningCommandProgress", (scan_command_id, "66")
         )
-        change_event_callbacks.assert_change_event(
-            "obsState", ObsState.SCANNING
-        )
+        change_event_callbacks.assert_change_event("obsState", ObsState.SCANNING)
         change_event_callbacks.assert_change_event(
             "longRunningCommandResult",
             (
                 scan_command_id,
-                json.dumps(
-                    [int(ResultCode.OK), "Scan commencement completed OK"]
-                ),
+                json.dumps([int(ResultCode.OK), "Scan commencement completed OK"]),
             ),
         )
         change_event_callbacks.assert_change_event(
@@ -828,9 +798,7 @@ class TestCspSubElementObsDevice(object):
 
     # PROTECTED REGION ID(CspSubelementObsDevice.test_Scan_when_in_wrong_state_decorators) ENABLED START #
     # PROTECTED REGION END #    //  CspSubelementObsDevice.test_Scan_when_in_wrong_state_decorators
-    def test_Scan_when_in_wrong_state(
-        self, device_under_test, change_event_callbacks
-    ):
+    def test_Scan_when_in_wrong_state(self, device_under_test, change_event_callbacks):
         """
         Test for Scan when the device is in wrong state.
 
@@ -863,9 +831,7 @@ class TestCspSubElementObsDevice(object):
 
     # PROTECTED REGION ID(CspSubelementObsDevice.test_Scan_with_wrong_argument_decorators) ENABLED START #
     # PROTECTED REGION END #    //  CspSubelementObsDevice.test_Scan_with_wrong_argument_decorators
-    def test_Scan_with_wrong_argument(
-        self, device_under_test, change_event_callbacks
-    ):
+    def test_Scan_with_wrong_argument(self, device_under_test, change_event_callbacks):
         """
         Test for Scan when a wrong input argument is passed.
 
@@ -903,9 +869,7 @@ class TestCspSubElementObsDevice(object):
         )
         assert result_code == ResultCode.QUEUED
 
-        change_event_callbacks.assert_change_event(
-            "obsState", ObsState.CONFIGURING
-        )
+        change_event_callbacks.assert_change_event("obsState", ObsState.CONFIGURING)
         change_event_callbacks.assert_change_event("obsState", ObsState.READY)
 
         assert device_under_test.configurationId == config_id
@@ -959,9 +923,7 @@ class TestCspSubElementObsDevice(object):
         )
         assert result_code == ResultCode.QUEUED
 
-        change_event_callbacks.assert_change_event(
-            "obsState", ObsState.CONFIGURING
-        )
+        change_event_callbacks.assert_change_event("obsState", ObsState.CONFIGURING)
         change_event_callbacks.assert_change_event("obsState", ObsState.READY)
 
         assert device_under_test.configurationId == config_id
@@ -976,9 +938,7 @@ class TestCspSubElementObsDevice(object):
 
     # PROTECTED REGION ID(CspSubelementObsDevice.test_Abort_decorators) ENABLED START #
     # PROTECTED REGION END #    //  CspSubelementObsDevice.test_Abort_decorators
-    def test_abort_and_obsreset(
-        self, device_under_test, change_event_callbacks
-    ):
+    def test_abort_and_obsreset(self, device_under_test, change_event_callbacks):
         """
         Test for Abort.
 
@@ -1006,15 +966,9 @@ class TestCspSubElementObsDevice(object):
         change_event_callbacks["status"].assert_change_event(
             "The device is in OFF state."
         )
-        change_event_callbacks[
-            "longRunningCommandProgress"
-        ].assert_change_event(None)
-        change_event_callbacks["longRunningCommandStatus"].assert_change_event(
-            None
-        )
-        change_event_callbacks["longRunningCommandResult"].assert_change_event(
-            ("", "")
-        )
+        change_event_callbacks["longRunningCommandProgress"].assert_change_event(None)
+        change_event_callbacks["longRunningCommandStatus"].assert_change_event(None)
+        change_event_callbacks["longRunningCommandResult"].assert_change_event(("", ""))
 
         [[result_code], [on_command_id]] = device_under_test.On()
         assert result_code == ResultCode.QUEUED
@@ -1060,17 +1014,12 @@ class TestCspSubElementObsDevice(object):
         # attributes. We need a better way to handle this.
 
         # Start configuring but then abort
-        [
-            [result_code],
-            [configure_command_id],
-        ] = device_under_test.ConfigureScan(
+        [[result_code], [configure_command_id],] = device_under_test.ConfigureScan(
             json.dumps({"id": "sbi-mvp01-20200325-00002"})
         )
         assert result_code == ResultCode.QUEUED
 
-        change_event_callbacks.assert_change_event(
-            "obsState", ObsState.CONFIGURING
-        )
+        change_event_callbacks.assert_change_event("obsState", ObsState.CONFIGURING)
         change_event_callbacks.assert_change_event(
             "longRunningCommandStatus",
             (on_command_id, "COMPLETED", configure_command_id, "QUEUED"),
@@ -1083,9 +1032,7 @@ class TestCspSubElementObsDevice(object):
         [[result_code], [abort_command_id]] = device_under_test.Abort()
         assert result_code == ResultCode.STARTED
 
-        change_event_callbacks.assert_change_event(
-            "obsState", ObsState.ABORTING
-        )
+        change_event_callbacks.assert_change_event("obsState", ObsState.ABORTING)
         change_event_callbacks.assert_change_event(
             "longRunningCommandStatus",
             (
@@ -1108,9 +1055,7 @@ class TestCspSubElementObsDevice(object):
                 "COMPLETED",
             ),
         )
-        change_event_callbacks.assert_change_event(
-            "obsState", ObsState.ABORTED
-        )
+        change_event_callbacks.assert_change_event("obsState", ObsState.ABORTED)
         change_event_callbacks.assert_change_event(
             "longRunningCommandStatus",
             (
@@ -1128,9 +1073,7 @@ class TestCspSubElementObsDevice(object):
         [[result_code], [reset_command_id]] = device_under_test.ObsReset()
         assert result_code == ResultCode.QUEUED
 
-        change_event_callbacks.assert_change_event(
-            "obsState", ObsState.RESETTING
-        )
+        change_event_callbacks.assert_change_event("obsState", ObsState.RESETTING)
 
         change_event_callbacks.assert_change_event(
             "longRunningCommandStatus",

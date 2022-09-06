@@ -16,7 +16,7 @@ import pytest
 import tango
 from _pytest.fixtures import SubRequest
 
-from ska_tango_base.utils import (
+from ska_tango_base.utils import (  # type: ignore[attr-defined]
     GroupDefinitionsError,
     for_testing_only,
     get_groups_from_json,

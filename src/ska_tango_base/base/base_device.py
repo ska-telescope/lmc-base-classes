@@ -36,6 +36,16 @@ import ska_ser_logging  # type: ignore[import]
 
 # Tango imports
 import tango
+from ska_control_model import (
+    AdminMode,
+    CommunicationStatus,
+    ControlMode,
+    HealthState,
+    LoggingLevel,
+    PowerState,
+    SimulationMode,
+    TestMode,
+)
 from tango import DebugIt, DevState, is_omni_thread
 from tango.server import Device, attribute, command, device_property
 
@@ -48,23 +58,16 @@ from ska_tango_base.commands import (
     SlowCommand,
     SubmittedSlowCommand,
 )
-from ska_tango_base.control_model import (
-    AdminMode,
-    CommunicationStatus,
-    ControlMode,
-    HealthState,
-    LoggingLevel,
-    PowerState,
-    SimulationMode,
-    TestMode,
-)
 from ska_tango_base.executor import TaskStatus
 from ska_tango_base.faults import (
     GroupDefinitionsError,
     LoggingLevelError,
     LoggingTargetError,
 )
-from ska_tango_base.utils import generate_command_id, get_groups_from_json
+from ska_tango_base.utils import (  # type: ignore[attr-defined]
+    generate_command_id,
+    get_groups_from_json,
+)
 
 DevVarLongStringArrayType = Tuple[List[ResultCode], List[Optional[str]]]
 
@@ -728,7 +731,7 @@ class SKABaseDevice(Device):
     Device property.
 
     Default logging level at device startup.
-    See :py:class:`~ska_tango_base.control_model.LoggingLevel`
+    See :py:class:`~ska_control_model.logging_level.LoggingLevel`
     """
 
     LoggingTargetsDefault = device_property(
@@ -1127,7 +1130,7 @@ class SKABaseDevice(Device):
         Read the logging level of the device.
 
         Initialises to LoggingLevelDefault on startup.
-        See :py:class:`~ska_tango_base.control_model.LoggingLevel`
+        See :py:class:`~ska_control_model.logging_level.LoggingLevel`
 
         :return:  Logging level of the device.
         """
@@ -1728,13 +1731,13 @@ class SKABaseDevice(Device):
 
             The goal is to find all the user's Python methods, but not
             the lower level PyTango device and Boost extension methods.
-            The `typing.types.FunctionType` check excludes the Boost
-            methods.
+            The `types.FunctionType` check excludes the Boost methods.
 
             :param owner: owner
             :param method: the name
 
-            :return: True if the method contains more than the skipped modules.
+            :return: True if the method contains more than the skipped
+                modules.
             """
             skip_module_names = [
                 "tango.device_server",

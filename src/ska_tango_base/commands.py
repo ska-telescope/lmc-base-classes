@@ -37,11 +37,11 @@ The following command classes are provided:
 """
 from __future__ import annotations
 
-import enum
 import functools
 import logging
 from typing import Any, Callable, Optional
 
+from ska_control_model import ResultCode
 from tango.server import Device
 from typing_extensions import Protocol
 
@@ -94,50 +94,6 @@ class CommandTrackerProtocol(Protocol):
         :param exception: any exception caught in the running task
         """
         ...
-
-
-class ResultCode(enum.IntEnum):
-    """Python enumerated type for command return codes."""
-
-    OK = 0
-    """
-    The command was executed successfully.
-    """
-
-    STARTED = 1
-    """
-    The command has been accepted and will start immediately.
-    """
-
-    QUEUED = 2
-    """
-    The command has been accepted and will be executed at a future time
-    """
-
-    FAILED = 3
-    """
-    The command could not be executed.
-    """
-
-    UNKNOWN = 4
-    """
-    The status of the command is not known.
-    """
-
-    REJECTED = 5
-    """
-    The command execution has been rejected.
-    """
-
-    NOT_ALLOWED = 6
-    """
-    The command is not allowed to be executed
-    """
-
-    ABORTED = 7
-    """
-    The command in progress has been aborted
-    """
 
 
 class _BaseCommand:

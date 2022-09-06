@@ -1,12 +1,15 @@
+# flake8: noqa
+# type: ignore
 # pylint: skip-file  # TODO: Incrementally lint this repo
 """This module models component management for CSP subelement observation devices."""
+from ska_control_model import CommunicationStatus, PowerState
+
 from ska_tango_base.base import (
     TaskExecutorComponentManager,
     check_communicating,
     check_on,
 )
 from ska_tango_base.commands import ResultCode
-from ska_tango_base.control_model import CommunicationStatus, PowerState
 from ska_tango_base.csp.subarray import CspSubarrayComponentManager
 from ska_tango_base.testing.reference import FakeBaseComponent
 
@@ -361,9 +364,7 @@ class ReferenceCspSubarrayComponentManager(
         if self.communication_state == CommunicationStatus.ESTABLISHED:
             return
         if self.communication_state == CommunicationStatus.DISABLED:
-            self._update_communication_state(
-                CommunicationStatus.NOT_ESTABLISHED
-            )
+            self._update_communication_state(CommunicationStatus.NOT_ESTABLISHED)
 
         # The component would normally be an element of the system under control. In
         # order to establish communication with it, we might need, for example, to
@@ -401,17 +402,13 @@ class ReferenceCspSubarrayComponentManager(
             and self.communication_state == CommunicationStatus.ESTABLISHED
         ):
             self._component.set_state_change_callback(None)
-            self._update_communication_state(
-                CommunicationStatus.NOT_ESTABLISHED
-            )
+            self._update_communication_state(CommunicationStatus.NOT_ESTABLISHED)
         elif (
             not fail_communicate
             and self.communication_state == CommunicationStatus.NOT_ESTABLISHED
         ):
             self._update_communication_state(CommunicationStatus.ESTABLISHED)
-            self._component.set_state_change_callback(
-                self._update_component_state
-            )
+            self._component.set_state_change_callback(self._update_component_state)
 
     @property
     def power_state(self):
@@ -437,30 +434,22 @@ class ReferenceCspSubarrayComponentManager(
     @check_communicating
     def off(self, task_callback=None):
         """Turn the component off."""
-        return self.submit_task(
-            self._component.off, task_callback=task_callback
-        )
+        return self.submit_task(self._component.off, task_callback=task_callback)
 
     @check_communicating
     def standby(self, task_callback=None):
         """Put the component into low-power standby mode."""
-        return self.submit_task(
-            self._component.standby, task_callback=task_callback
-        )
+        return self.submit_task(self._component.standby, task_callback=task_callback)
 
     @check_communicating
     def on(self, task_callback=None):
         """Turn the component on."""
-        return self.submit_task(
-            self._component.on, task_callback=task_callback
-        )
+        return self.submit_task(self._component.on, task_callback=task_callback)
 
     @check_communicating
     def reset(self, task_callback=None):
         """Reset the component (from fault state)."""
-        return self.submit_task(
-            self._component.reset, task_callback=task_callback
-        )
+        return self.submit_task(self._component.reset, task_callback=task_callback)
 
     @check_communicating
     def assign(self, resources, task_callback=None):
@@ -524,16 +513,12 @@ class ReferenceCspSubarrayComponentManager(
     @check_communicating
     def end_scan(self, task_callback=None):
         """End scanning."""
-        return self.submit_task(
-            self._component.end_scan, task_callback=task_callback
-        )
+        return self.submit_task(self._component.end_scan, task_callback=task_callback)
 
     @check_communicating
     def obsreset(self, task_callback=None):
         """Deconfigure the component but do not release resources."""
-        return self.submit_task(
-            self._component.obsreset, task_callback=task_callback
-        )
+        return self.submit_task(self._component.obsreset, task_callback=task_callback)
 
     @check_communicating
     def restart(self, task_callback=None):
@@ -543,9 +528,7 @@ class ReferenceCspSubarrayComponentManager(
         It will return to a state in which it is unconfigured and empty
         of assigned resources.
         """
-        return self.submit_task(
-            self._component.restart, task_callback=task_callback
-        )
+        return self.submit_task(self._component.restart, task_callback=task_callback)
 
     @property
     @check_communicating

@@ -12,9 +12,10 @@ import logging
 import threading
 from typing import Any, Callable, Optional
 
+from ska_control_model import CommunicationStatus, PowerState
+
 from ska_tango_base.base import check_communicating, check_on
 from ska_tango_base.commands import ResultCode
-from ska_tango_base.control_model import CommunicationStatus, PowerState
 from ska_tango_base.executor import TaskStatus
 from ska_tango_base.faults import CapabilityValidationError
 from ska_tango_base.subarray import SubarrayComponentManager

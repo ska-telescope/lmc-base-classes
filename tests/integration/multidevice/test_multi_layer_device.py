@@ -1,3 +1,5 @@
+# type: ignore
+# flake8: noqa
 """Test various Tango devices with long running commmands working together."""
 import pytest
 import tango
@@ -96,9 +98,7 @@ def change_event_callbacks() -> MockTangoEventCallbackGroup:
 
 
 @pytest.mark.forked
-def test_multi_layer(
-    multi_device_tango_context, change_event_callbacks
-) -> None:
+def test_multi_layer(multi_device_tango_context, change_event_callbacks) -> None:
     """Test the long running commands between devices."""
     top_device = multi_device_tango_context.get_device("test/toplevel/1")
     mid_device = multi_device_tango_context.get_device("test/midlevel/3")
@@ -138,8 +138,7 @@ def test_multi_layer(
     command_id, message = mid_result["attribute_value"]
     assert command_id.endswith("CallChildren")
     assert (
-        message
-        == "\"All children completed ['test/lowlevel/5', 'test/lowlevel/6']\""
+        message == "\"All children completed ['test/lowlevel/5', 'test/lowlevel/6']\""
     )
 
     # Wait for top level device to finish

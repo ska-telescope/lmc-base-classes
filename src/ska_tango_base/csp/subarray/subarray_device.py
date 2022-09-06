@@ -1,4 +1,6 @@
+# flake8: noqa
 # pylint: skip-file  # TODO: Incrementally lint this repo
+# type: ignore
 # -*- coding: utf-8 -*-
 #
 # This file is part of the CspSubElementSubarray project
@@ -18,11 +20,11 @@ import json
 from collections import defaultdict
 from json.decoder import JSONDecodeError
 
+from ska_control_model import ObsState
 from tango import AttrWriteType, DebugIt
 from tango.server import attribute, command, run
 
 from ska_tango_base.commands import ResultCode, SubmittedSlowCommand
-from ska_tango_base.control_model import ObsState
 from ska_tango_base.faults import StateModelError
 from ska_tango_base.subarray import SKASubarray
 
@@ -275,9 +277,7 @@ class CspSubElementSubarray(SKASubarray):
             # values: True/False
             self._device._timeout_expired = defaultdict(bool)
             # configure the flags to push event from the device server
-            self._device.set_change_event(
-                "configureScanTimeoutExpiredFlag", True, True
-            )
+            self._device.set_change_event("configureScanTimeoutExpiredFlag", True, True)
             self._device.set_archive_event(
                 "configureScanTimeoutExpiredFlag", True, True
             )
@@ -452,9 +452,7 @@ class CspSubElementSubarray(SKASubarray):
     class ConfigureScanCommand(SubmittedSlowCommand):
         """A class for the CspSubElementObsDevices's ConfigureScan command."""
 
-        def __init__(
-            self, command_tracker, component_manager, callback, logger=None
-        ):
+        def __init__(self, command_tracker, component_manager, callback, logger=None):
             """
             Initialise a new ConfigureScanCommand instance.
 

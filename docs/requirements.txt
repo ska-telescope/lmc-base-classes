@@ -1,4 +1,6 @@
+--extra-index-url https://artefact.skao.int/repository/pypi-all/simple
 docutils<0.17
+ska-control-model
 sphinx
 sphinx-autodoc-typehints
 sphinx-rtd-theme

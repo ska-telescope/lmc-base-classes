@@ -39,7 +39,7 @@ setuptools.setup(
         "debugpy",
         "numpy",
         "pytango",
-        "ska_ser_logging",
+        "ska_ser_logging@git+https://gitlab.com/ska-telescope/ska-ser-logging.git@0.4.1",
         "transitions",
     ],
     tests_require=["pytest", "coverage", "pytest-json-report", "pytest-forked", "pytest-timeout"],

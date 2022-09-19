@@ -1,6 +1,6 @@
 # SKA Tango Base Classes and Utilities
 
-[![Documentation Status](https://readthedocs.org/projects/ska-tango-base/badge/?version=latest)](https://developerskatelescopeorg.readthedocs.io/projects/ska-tango-base/en/latest/?badge=latest)
+[![Documentation Status](https://readthedocs.org/projects/ska-telescope-ska-tango-base/badge/?version=latest)](https://developer.skao.int/projects/ska-tango-base/en/latest/?badge=latest)
 
 ## About
 

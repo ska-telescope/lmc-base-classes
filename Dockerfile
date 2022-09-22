@@ -4,7 +4,7 @@ FROM artefact.skao.int/ska-tango-images-pytango-runtime:9.3.14 AS runtime
 
 # Install Poetry
 USER root 
-RUN python3 -m pip install poetry
+RUN python3 -m pip install poetry==1.1.13
 RUN poetry config virtualenvs.create false
 
 # Copy poetry.lock* in case it doesn't exist in the repo

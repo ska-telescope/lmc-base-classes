@@ -300,7 +300,7 @@ python-versions = ">=3.6"
 
 [[package]]
 name = "mako"
-version = "1.2.2"
+version = "1.2.3"
 description = "A super-fast templating language that borrows the best ideas from the existing templating languages."
 category = "dev"
 optional = false
@@ -644,7 +644,7 @@ pytest = ">=3.0.0,<8.0.0"
 
 [[package]]
 name = "pytest-mock"
-version = "3.8.2"
+version = "3.9.0"
 description = "Thin-wrapper around the mock package for easier use with pytest"
 category = "dev"
 optional = false

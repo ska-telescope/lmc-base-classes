@@ -12,11 +12,10 @@ import logging
 import threading
 from typing import Any, Callable, Optional
 
-from ska_control_model import CommunicationStatus, PowerState
+from ska_control_model import CommunicationStatus, PowerState, TaskStatus
 
 from ska_tango_base.base import check_communicating, check_on
 from ska_tango_base.commands import ResultCode
-from ska_tango_base.executor import TaskStatus
 from ska_tango_base.faults import CapabilityValidationError
 from ska_tango_base.subarray import SubarrayComponentManager
 from ska_tango_base.testing.reference import (
@@ -670,7 +669,7 @@ class ReferenceSubarrayComponentManager(
 
         :return: task status and message
         """
-        return self.abort_tasks(task_callback=task_callback)
+        return self.abort_commands(task_callback=task_callback)
 
     @check_communicating
     def obsreset(

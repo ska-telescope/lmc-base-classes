@@ -7,8 +7,9 @@ from functools import partial
 from threading import Event
 from typing import Callable, List, Optional
 
-from ska_tango_base.base.component_manager import TaskExecutorComponentManager
-from ska_tango_base.executor import TaskStatus
+from ska_control_model import TaskStatus
+
+from ska_tango_base.executor import TaskExecutorComponentManager
 
 from .utils import LongRunningDeviceInterface
 

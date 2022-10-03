@@ -12,7 +12,6 @@ __all__ = (
     "CommandTracker",
     "OpStateModel",
     "SKABaseDevice",
-    "TaskExecutorComponentManager",
     "check_communicating",
     "check_on",
 )
@@ -23,7 +22,6 @@ from .op_state_model import OpStateModel
 
 from .component_manager import (
     BaseComponentManager,
-    TaskExecutorComponentManager,
     check_communicating,
     check_on,
 )

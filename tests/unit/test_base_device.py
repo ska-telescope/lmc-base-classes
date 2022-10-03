@@ -25,6 +25,7 @@ from ska_control_model import (
     HealthState,
     LoggingLevel,
     SimulationMode,
+    TaskStatus,
     TestMode,
 )
 from ska_tango_testing.mock.tango import MockTangoEventCallbackGroup
@@ -42,7 +43,6 @@ from ska_tango_base.base.base_device import (  # CommandTracker,
     _Log4TangoLoggingLevel,
 )
 from ska_tango_base.commands import ResultCode
-from ska_tango_base.executor import TaskStatus
 from ska_tango_base.testing.reference import ReferenceBaseComponentManager
 
 

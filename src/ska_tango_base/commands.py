@@ -41,12 +41,11 @@ import functools
 import logging
 from typing import Any, Callable, Optional
 
-from ska_control_model import ResultCode
+from ska_control_model import ResultCode, TaskStatus
 from tango.server import Device
 from typing_extensions import Protocol
 
 from ska_tango_base.base.component_manager import BaseComponentManager
-from ska_tango_base.executor import TaskStatus
 
 __all__ = [
     "ResultCode",

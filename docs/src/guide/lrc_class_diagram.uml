@@ -35,7 +35,7 @@ note right: Uses `ThreadPoolExecutor` for task execution
 class TaskExecutorComponentManager {
 + ...
 + submit_task()
-+ abort_tasks()
++ abort_commands()
 - _task_executor
 + ...()
 }

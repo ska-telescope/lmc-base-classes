@@ -247,9 +247,18 @@ Tango devices can be launched with a `-v` parameter to set the logging level. Fo
 
 ## Version History
 
-#### Unreleased
-- LOW-330 Import control model definitions from ska-control-model
-- LOW-317 Allow Reset() from STANDBY and ON states, not just FAULT
+### 0.13.6
+- Updated numpy version
+
+### 0.13.5
+- Merge branch 'rel-275-v0-13-5' into 'main'
+- [REL-275] Prepare to release 0.13.5
+- [REL-275] Fix pipeline
+
+#### 0.13.4
+- KAR-466 - Repository maintenance
+- MCCS-1072 - Type hint & static type check base class alarm_handler_device & utils
+- MCCS-934 - Type hint & Static type check base classes
 
 #### 0.13.3
 - KAR-403 Fixed exceptions in LRCs not updating  longRunningCommandResult accordingly

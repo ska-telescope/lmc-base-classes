@@ -1,10 +1,9 @@
 # Use SKA python image as base image
-FROM artefact.skao.int/ska-tango-images-pytango-builder:9.3.28 AS buildenv
-FROM artefact.skao.int/ska-tango-images-pytango-runtime:9.3.14 AS runtime
+FROM artefact.skao.int/ska-tango-images-pytango-builder:9.3.32 AS buildenv
+FROM artefact.skao.int/ska-tango-images-pytango-runtime:9.3.19 AS runtime
 
 # Install Poetry
 USER root 
-RUN python3 -m pip install poetry==1.1.13
 RUN poetry config virtualenvs.create false
 
 # Copy poetry.lock* in case it doesn't exist in the repo

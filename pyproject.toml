@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "ska-tango-base"
-version = "0.13.5"
+version = "0.13.6"
 description = "SKA Tango base classes"
 authors = ["SKA India and SARAO and CSIRO and INAF and STFC"]
 license = "BSD 3-Clause"
@@ -13,11 +13,14 @@ url = 'https://artefact.skao.int/repository/pypi-internal/simple'
 [tool.poetry.dependencies]
 python = "^3.7"
 debugpy = "^1.6.2"
-numpy = "1.21.0"
 pytango = "9.3.3"
 ska-ser-logging = "^0.4.1"
 transitions = "^0.8.11"
 ska-control-model = "0.1.1"
+numpy = [
+    {version = "1.21.1", python = ">=3.7,<3.10"},
+    {version = "1.23.0", python = "3.10"}
+]
 
 [tool.poetry.dev-dependencies]
 black = "^22.6.0"

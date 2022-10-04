@@ -259,6 +259,8 @@ Tango devices can be launched with a `-v` parameter to set the logging level. Fo
 - KAR-466 - Repository maintenance
 - MCCS-1072 - Type hint & static type check base class alarm_handler_device & utils
 - MCCS-934 - Type hint & Static type check base classes
+- LOW-330 Import control model definitions from ska-control-model
+- LOW-317 Allow Reset() from STANDBY and ON states, not just FAULT
 
 #### 0.13.3
 - KAR-403 Fixed exceptions in LRCs not updating  longRunningCommandResult accordingly

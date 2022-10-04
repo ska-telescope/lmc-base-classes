@@ -887,7 +887,7 @@ class SKABaseDevice(Device):
 
             # this can be removed when cppTango issue #935 is implemented
             self._init_active = True
-            self.poll_command("PushChanges", 5)
+            self.poll_command("ExecutePendingOperations", 5)
 
             self._init_logging()
 
@@ -1805,7 +1805,7 @@ class SKABaseDevice(Device):
 
         :param state: the new device state
         """
-        self._execute_or_submit("set_state", state)
+        self._submit_tango_operation("set_state", state)
 
     def set_status(self: SKABaseDevice, status: str) -> None:
         """
@@ -1816,7 +1816,7 @@ class SKABaseDevice(Device):
 
         :param status: the new device status
         """
-        self._execute_or_submit("set_status", status)
+        self._submit_tango_operation("set_status", status)
 
     def push_change_event(
         self: SKABaseDevice, name: str, value: Optional[Any] = None
@@ -1831,9 +1831,9 @@ class SKABaseDevice(Device):
         :param value: the event value
         """
         if name.lower() in ["state", "status"]:
-            self._execute_or_submit("push_change_event", name)
+            self._submit_tango_operation("push_change_event", name)
         else:
-            self._execute_or_submit("push_change_event", name, value)
+            self._submit_tango_operation("push_change_event", name, value)
 
     def push_archive_event(
         self: SKABaseDevice, name: str, value: Optional[Any] = None
@@ -1848,9 +1848,9 @@ class SKABaseDevice(Device):
         :param value: the event value
         """
         if name.lower() in ["state", "status"]:
-            self._execute_or_submit("push_archive_event", name)
+            self._submit_tango_operation("push_archive_event", name)
         else:
-            self._execute_or_submit("push_archive_event", name, value)
+            self._submit_tango_operation("push_archive_event", name, value)
 
     def add_attribute(self: SKABaseDevice, *args: Any, **kwargs: Any) -> None:
         """
@@ -1862,7 +1862,7 @@ class SKABaseDevice(Device):
         :param args: positional args
         :param kwargs: keyword args
         """
-        self._execute_or_submit("add_attribute", *args, *kwargs)
+        self._submit_tango_operation("add_attribute", *args, *kwargs)
 
     def set_change_event(
         self: SKABaseDevice, name: str, implemented: bool, detect: bool = True
@@ -1878,18 +1878,20 @@ class SKABaseDevice(Device):
         :param detect: whether the Tango layer should verify the change
             event property
         """
-        self._execute_or_submit("set_change_event", name, implemented, detect)
+        self._submit_tango_operation("set_change_event", name, implemented, detect)
 
-    def _execute_or_submit(self, command_name: str, *args: Any, **kwargs: Any) -> None:
+    def _submit_tango_operation(
+        self, command_name: str, *args: Any, **kwargs: Any
+    ) -> None:
         if is_omni_thread() and self._omni_queue.empty():
             getattr(super(), command_name)(*args, **kwargs)
         else:
             self._omni_queue.put((command_name, args, kwargs))
 
     @command(polling_period=5)
-    def PushChanges(self: SKABaseDevice) -> None:
+    def ExecutePendingOperations(self: SKABaseDevice) -> None:
         """
-        Push changes from state change & events that haved been pushed on the queue.
+        Execute any Tango operations that have been pushed on the queue.
 
         The poll time is initially 5ms, to circumvent the problem of
         device initialisation, but is reset to 100ms after the first
@@ -1898,7 +1900,7 @@ class SKABaseDevice(Device):
         # this can be removed when cppTango issue #935 is implemented
         if self._init_active:
             self._init_active = False
-            self.poll_command("PushChanges", 100)
+            self.poll_command("ExecutePendingOperations", 100)
         while not self._omni_queue.empty():
             (command_name, args, kwargs) = self._omni_queue.get_nowait()
             getattr(super(), command_name)(*args, **kwargs)

@@ -247,6 +247,9 @@ Tango devices can be launched with a `-v` parameter to set the logging level. Fo
 
 ## Version History
 
+### unreleased
+- [LOW-346] Poller
+
 ### 0.13.6
 - Updated numpy version
 

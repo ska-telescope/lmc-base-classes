@@ -5,10 +5,9 @@
 import itertools
 
 import pytest
-from ska_control_model import CommunicationStatus, PowerState
+from ska_control_model import CommunicationStatus, PowerState, TaskStatus
 
 from ska_tango_base.commands import ResultCode
-from ska_tango_base.executor import TaskStatus
 from ska_tango_base.testing.reference import (
     FakeCspSubarrayComponent,
     ReferenceCspSubarrayComponentManager,

@@ -36,9 +36,8 @@ import logging
 import threading
 from typing import Any, Callable, Optional, TypeVar, cast
 
-from ska_control_model import CommunicationStatus, PowerState
+from ska_control_model import CommunicationStatus, PowerState, TaskStatus
 
-from ska_tango_base.executor import TaskExecutor, TaskStatus
 from ska_tango_base.faults import ComponentError
 
 Wrapped = TypeVar("Wrapped", bound=Callable[..., Any])
@@ -335,7 +334,7 @@ class BaseComponentManager:
         raise NotImplementedError("BaseComponentManager is abstract.")
 
     @check_communicating
-    def abort_tasks(
+    def abort_commands(
         self: BaseComponentManager, task_callback: Optional[Callable] = None
     ) -> tuple[TaskStatus, str]:
         """
@@ -347,60 +346,3 @@ class BaseComponentManager:
         :raises NotImplementedError: Not implemented it's an abstract class
         """
         raise NotImplementedError("BaseComponentManager is abstract.")
-
-
-class TaskExecutorComponentManager(BaseComponentManager):
-    """A component manager with support for asynchronous tasking."""
-
-    def __init__(
-        self: TaskExecutorComponentManager,
-        *args: Any,
-        max_workers: Optional[int] = None,
-        **kwargs: Any,
-    ) -> None:
-        """
-        Initialise a new ComponentManager instance.
-
-        :param args: additional positional arguments
-        :param max_workers: option maximum number of workers in the pool
-        :param kwargs: additional keyword arguments
-        """
-        self._task_executor = TaskExecutor(max_workers)
-        super().__init__(*args, **kwargs)
-
-    def submit_task(
-        self: TaskExecutorComponentManager,
-        func: Callable,
-        args: Optional[Any] = None,
-        kwargs: Optional[Any] = None,
-        task_callback: Optional[Callable] = None,
-    ) -> tuple[TaskStatus, str]:
-        """
-        Submit a task to the task executor.
-
-        :param func: function/bound method to be run
-        :param args: positional arguments to the function
-        :param kwargs: keyword arguments to the function
-        :param task_callback: callback to be called whenever the status
-            of the task changes.
-
-        :return: tuple of taskstatus & message
-        """
-        return self._task_executor.submit(
-            func, args, kwargs, task_callback=task_callback
-        )
-
-    def abort_tasks(
-        self: TaskExecutorComponentManager, task_callback: Optional[Callable] = None
-    ) -> tuple[TaskStatus, str]:
-        """
-        Tell the task executor to abort all tasks.
-
-        :param task_callback: callback to be called whenever the status
-            of this abort task changes.
-
-        :return: tuple of taskstatus & message
-        """
-        if task_callback:
-            task_callback(status=TaskStatus.IN_PROGRESS)
-        return self._task_executor.abort(task_callback)

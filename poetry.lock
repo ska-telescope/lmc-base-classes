@@ -1,16 +1,27 @@
 [[package]]
 name = "astroid"
-version = "2.11.7"
+version = "2.12.10"
 description = "An abstract syntax tree for Python with inference support."
 category = "dev"
 optional = false
-python-versions = ">=3.6.2"
+python-versions = ">=3.7.2"
 
 [package.dependencies]
 lazy-object-proxy = ">=1.4.0"
 typed-ast = {version = ">=1.4.0,<2.0", markers = "implementation_name == \"cpython\" and python_version < \"3.8\""}
 typing-extensions = {version = ">=3.10", markers = "python_version < \"3.10\""}
-wrapt = ">=1.11,<2"
+wrapt = [
+    {version = ">=1.11,<2", markers = "python_version < \"3.11\""},
+    {version = ">=1.14,<2", markers = "python_version >= \"3.11\""},
+]
+
+[[package]]
+name = "atomicwrites"
+version = "1.4.1"
+description = "Atomic file writes."
+category = "dev"
+optional = false
+python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*"
 
 [[package]]
 name = "attrs"
@@ -506,24 +517,26 @@ plugins = ["importlib-metadata"]
 
 [[package]]
 name = "pylint"
-version = "2.13.9"
+version = "2.15.3"
 description = "python code static checker"
 category = "dev"
 optional = false
-python-versions = ">=3.6.2"
+python-versions = ">=3.7.2"
 
 [package.dependencies]
-astroid = ">=2.11.5,<=2.12.0-dev0"
-colorama = {version = "*", markers = "sys_platform == \"win32\""}
+astroid = ">=2.12.10,<=2.14.0-dev0"
+colorama = {version = ">=0.4.5", markers = "sys_platform == \"win32\""}
 dill = ">=0.2"
 isort = ">=4.2.5,<6"
 mccabe = ">=0.6,<0.8"
 platformdirs = ">=2.2.0"
 tomli = {version = ">=1.1.0", markers = "python_version < \"3.11\""}
+tomlkit = ">=0.10.1"
 typing-extensions = {version = ">=3.10.0", markers = "python_version < \"3.10\""}
 
 [package.extras]
-testutil = ["gitpython (>3)"]
+spelling = ["pyenchant (>=3.2,<4.0)"]
+testutils = ["gitpython (>3)"]
 
 [[package]]
 name = "pylint-junit"
@@ -562,13 +575,14 @@ six = ">=1.10"
 
 [[package]]
 name = "pytest"
-version = "7.1.3"
+version = "6.2.5"
 description = "pytest: simple powerful testing with Python"
 category = "dev"
 optional = false
-python-versions = ">=3.7"
+python-versions = ">=3.6"
 
 [package.dependencies]
+atomicwrites = {version = ">=1.0", markers = "sys_platform == \"win32\""}
 attrs = ">=19.2.0"
 colorama = {version = "*", markers = "sys_platform == \"win32\""}
 importlib-metadata = {version = ">=0.12", markers = "python_version < \"3.8\""}
@@ -576,10 +590,10 @@ iniconfig = "*"
 packaging = "*"
 pluggy = ">=0.12,<2.0"
 py = ">=1.8.2"
-tomli = ">=1.0.0"
+toml = "*"
 
 [package.extras]
-testing = ["argcomplete", "hypothesis (>=3.56)", "mock", "nose", "pygments (>=2.7.2)", "requests", "xmlschema"]
+testing = ["argcomplete", "hypothesis (>=3.56)", "mock", "nose", "requests", "xmlschema"]
 
 [[package]]
 name = "pytest-bdd"
@@ -665,6 +679,36 @@ pytest = ">=5.0"
 dev = ["pre-commit", "tox", "pytest-asyncio"]
 
 [[package]]
+name = "pytest-pycodestyle"
+version = "2.2.1"
+description = "pytest plugin to run pycodestyle"
+category = "dev"
+optional = false
+python-versions = "~=3.6"
+
+[package.dependencies]
+pycodestyle = "*"
+pytest = ">=5.4"
+
+[package.extras]
+tests = ["pytest-isort"]
+
+[[package]]
+name = "pytest-pydocstyle"
+version = "2.2.1"
+description = "pytest plugin to run pydocstyle"
+category = "dev"
+optional = false
+python-versions = "~=3.6"
+
+[package.dependencies]
+pydocstyle = "*"
+pytest = ">=5.4"
+
+[package.extras]
+tests = ["pytest-pycodestyle (>=2.1,<3.0)", "pytest-isort"]
+
+[[package]]
 name = "restructuredtext-lint"
 version = "1.4.0"
 description = "reStructuredText linter"
@@ -685,14 +729,15 @@ python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*"
 
 [[package]]
 name = "ska-control-model"
-version = "0.1.1"
+version = "0.1.2"
 description = "The SKA control model"
 category = "main"
 optional = false
-python-versions = ">=3.7,<4.0"
+python-versions = ">=3.7.2,<4.0.0"
 
 [package.dependencies]
-transitions = ">=0.8.11,<0.9.0"
+transitions = ">=0.9.0,<0.10.0"
+typing-extensions = ">=4.3.0,<5.0.0"
 
 [package.source]
 type = "legacy"
@@ -756,8 +801,16 @@ optional = false
 python-versions = ">=3.7"
 
 [[package]]
+name = "tomlkit"
+version = "0.11.5"
+description = "Style preserving TOML library"
+category = "dev"
+optional = false
+python-versions = ">=3.6,<4.0"
+
+[[package]]
 name = "transitions"
-version = "0.8.11"
+version = "0.9.0"
 description = "A lightweight, object-oriented Python state machine implementation with many extensions."
 category = "main"
 optional = false
@@ -767,8 +820,8 @@ python-versions = "*"
 six = "*"
 
 [package.extras]
-diagrams = ["pygraphviz"]
 test = ["pytest"]
+diagrams = ["pygraphviz"]
 
 [[package]]
 name = "typed-ast"
@@ -782,7 +835,7 @@ python-versions = ">=3.6"
 name = "typing-extensions"
 version = "4.3.0"
 description = "Backported and Experimental Type Hints for Python 3.7+"
-category = "dev"
+category = "main"
 optional = false
 python-versions = ">=3.7"
 
@@ -816,11 +869,12 @@ testing = ["pytest (>=6)", "pytest-checkdocs (>=2.4)", "pytest-flake8", "pytest-
 
 [metadata]
 lock-version = "1.1"
-python-versions = "^3.7"
-content-hash = "3be030aeecd134b3cbacebcebfa53a564139cb3629e2a02577eadf44784a592b"
+python-versions = "^3.7.2"
+content-hash = "fcee71f5f3accda480b69b9b27846f3e454adae203d8830a3c5f4d462325617d"
 
 [metadata.files]
 astroid = []
+atomicwrites = []
 attrs = []
 black = []
 click = []
@@ -874,11 +928,13 @@ pytest-forked = []
 pytest-json-report = []
 pytest-metadata = []
 pytest-mock = []
+pytest-pycodestyle = []
+pytest-pydocstyle = []
 restructuredtext-lint = []
 six = []
 ska-control-model = [
-    {file = "ska-control-model-0.1.1.tar.gz", hash = "sha256:29d970f59ddaef95ffb4b5212183e97aab57f280dc5df11bb9e0a198e4e146e2"},
-    {file = "ska_control_model-0.1.1-py3-none-any.whl", hash = "sha256:ab1327b7cbbc82da6f4b3c61735dd63e409a0cff995f063446287bf266d01562"},
+    {file = "ska-control-model-0.1.2.tar.gz", hash = "sha256:8ae0e399189b99c64b4555bb91702ead2c373659dbebf37f451eb968a4d56dae"},
+    {file = "ska_control_model-0.1.2-py3-none-any.whl", hash = "sha256:aa5d57e579109d3e22487d73a3ee6059c0306e4daa960d3636c43027b376b1dd"},
 ]
 ska-ser-logging = [
     {file = "ska_ser_logging-0.4.1+0a677a67-py3-none-any.whl", hash = "sha256:8b2bf14e9981966c22503b6b6477b6386dec1def1f71295579f0686d55b83841"},
@@ -891,6 +947,7 @@ ska-tango-testing = [
 snowballstemmer = []
 toml = []
 tomli = []
+tomlkit = []
 transitions = []
 typed-ast = []
 typing-extensions = []

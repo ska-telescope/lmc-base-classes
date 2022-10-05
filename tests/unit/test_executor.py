@@ -12,9 +12,10 @@ from time import sleep
 from typing import Callable, Optional
 
 import pytest
+from ska_control_model import TaskStatus
 from ska_tango_testing.mock import MockCallableGroup
 
-from ska_tango_base.executor import TaskExecutor, TaskStatus
+from ska_tango_base.executor import TaskExecutor
 
 
 class TestTaskExecutor:

@@ -18,11 +18,11 @@ import threading
 from time import sleep
 from typing import Any, Callable, Optional, Tuple
 
-from ska_control_model import CommunicationStatus, PowerState
+from ska_control_model import CommunicationStatus, PowerState, TaskStatus
 
-from ska_tango_base.base import TaskExecutorComponentManager, check_communicating
+from ska_tango_base.base import check_communicating
 from ska_tango_base.commands import ResultCode
-from ska_tango_base.executor import TaskStatus
+from ska_tango_base.executor import TaskExecutorComponentManager
 
 
 class FakeBaseComponent:

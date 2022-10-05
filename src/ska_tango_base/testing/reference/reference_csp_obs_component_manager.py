@@ -2,12 +2,11 @@
 # pylint: skip-file  # TODO: Incrementally lint this repo
 # type: ignore
 """This module models component management for CSP subelement observation devices."""
-from ska_control_model import PowerState
+from ska_control_model import PowerState, TaskStatus
 
 from ska_tango_base.base import check_communicating, check_on
 from ska_tango_base.commands import ResultCode
 from ska_tango_base.csp.obs import CspObsComponentManager
-from ska_tango_base.executor import TaskStatus
 from ska_tango_base.testing.reference import (
     FakeBaseComponent,
     ReferenceBaseComponentManager,
@@ -286,7 +285,7 @@ class ReferenceCspObsComponentManager(
     def abort(self, task_callback=None):
         """Tell the component to stop scanning."""
         self.logger.info("Aborting tasks")
-        return self.abort_tasks(task_callback=task_callback)
+        return self.abort_commands(task_callback=task_callback)
 
     @check_communicating
     def obsreset(self, task_callback=None):

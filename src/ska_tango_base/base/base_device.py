@@ -44,6 +44,7 @@ from ska_control_model import (
     LoggingLevel,
     PowerState,
     SimulationMode,
+    TaskStatus,
     TestMode,
 )
 from tango import DebugIt, DevState, is_omni_thread
@@ -58,7 +59,6 @@ from ska_tango_base.commands import (
     SlowCommand,
     SubmittedSlowCommand,
 )
-from ska_tango_base.executor import TaskStatus
 from ska_tango_base.faults import (
     GroupDefinitionsError,
     LoggingLevelError,
@@ -887,7 +887,7 @@ class SKABaseDevice(Device):
 
             # this can be removed when cppTango issue #935 is implemented
             self._init_active = True
-            self.poll_command("PushChanges", 5)
+            self.poll_command("ExecutePendingOperations", 5)
 
             self._init_logging()
 
@@ -1564,7 +1564,7 @@ class SKABaseDevice(Device):
                 message indicating status. The message is for
                 information purpose only.
             """
-            self._component_manager.abort_tasks()
+            self._component_manager.abort_commands()
             return (ResultCode.STARTED, "Aborting commands")
 
     @command(dtype_out="DevVarLongStringArray")
@@ -1805,10 +1805,7 @@ class SKABaseDevice(Device):
 
         :param state: the new device state
         """
-        if is_omni_thread() and self._omni_queue.empty():
-            super().set_state(state)
-        else:
-            self._omni_queue.put(("set", "state", state))
+        self._submit_tango_operation("set_state", state)
 
     def set_status(self: SKABaseDevice, status: str) -> None:
         """
@@ -1819,10 +1816,7 @@ class SKABaseDevice(Device):
 
         :param status: the new device status
         """
-        if is_omni_thread() and self._omni_queue.empty():
-            super().set_status(status)
-        else:
-            self._omni_queue.put(("set", "status", status))
+        self._submit_tango_operation("set_status", status)
 
     def push_change_event(
         self: SKABaseDevice, name: str, value: Optional[Any] = None
@@ -1836,13 +1830,10 @@ class SKABaseDevice(Device):
         :param name: the event name
         :param value: the event value
         """
-        if is_omni_thread() and self._omni_queue.empty():
-            if name.lower() in ["state", "status"]:
-                super().push_change_event(name)
-            else:
-                super().push_change_event(name, value)
+        if name.lower() in ["state", "status"]:
+            self._submit_tango_operation("push_change_event", name)
         else:
-            self._omni_queue.put(("change", name, value))
+            self._submit_tango_operation("push_change_event", name, value)
 
     def push_archive_event(
         self: SKABaseDevice, name: str, value: Optional[Any] = None
@@ -1850,24 +1841,57 @@ class SKABaseDevice(Device):
         """
         Push a device server archive event.
 
-        This is dependent on whether the push_archive_event call has been
-        actioned from a native python thread or a tango omni thread
+        This is dependent on whether the push_archive_event call has
+        been actioned from a native python thread or a tango omnithread.
 
         :param name: the event name
         :param value: the event value
         """
-        if is_omni_thread() and self._omni_queue.empty():
-            if name.lower() in ["state", "status"]:
-                super().push_archive_event(name)
-            else:
-                super().push_archive_event(name, value)
+        if name.lower() in ["state", "status"]:
+            self._submit_tango_operation("push_archive_event", name)
         else:
-            self._omni_queue.put(("archive", name, value))
+            self._submit_tango_operation("push_archive_event", name, value)
+
+    def add_attribute(self: SKABaseDevice, *args: Any, **kwargs: Any) -> None:
+        """
+        Add a device attribute.
+
+        This is dependent on whether the push_archive_event call has been
+        actioned from a native python thread or a tango omni thread
+
+        :param args: positional args
+        :param kwargs: keyword args
+        """
+        self._submit_tango_operation("add_attribute", *args, *kwargs)
+
+    def set_change_event(
+        self: SKABaseDevice, name: str, implemented: bool, detect: bool = True
+    ) -> None:
+        """
+        Set an attribute's change event.
+
+        This is dependent on whether the push_archive_event call has been
+        actioned from a native python thread or a tango omni thread
+
+        :param name: name of the attribute
+        :param implemented: whether the device pushes change events
+        :param detect: whether the Tango layer should verify the change
+            event property
+        """
+        self._submit_tango_operation("set_change_event", name, implemented, detect)
+
+    def _submit_tango_operation(
+        self, command_name: str, *args: Any, **kwargs: Any
+    ) -> None:
+        if is_omni_thread() and self._omni_queue.empty():
+            getattr(super(), command_name)(*args, **kwargs)
+        else:
+            self._omni_queue.put((command_name, args, kwargs))
 
     @command(polling_period=5)
-    def PushChanges(self: SKABaseDevice) -> None:
+    def ExecutePendingOperations(self: SKABaseDevice) -> None:
         """
-        Push changes from state change & events that haved been pushed on the queue.
+        Execute any Tango operations that have been pushed on the queue.
 
         The poll time is initially 5ms, to circumvent the problem of
         device initialisation, but is reset to 100ms after the first
@@ -1876,26 +1900,10 @@ class SKABaseDevice(Device):
         # this can be removed when cppTango issue #935 is implemented
         if self._init_active:
             self._init_active = False
-            self.poll_command("PushChanges", 100)
+            self.poll_command("ExecutePendingOperations", 100)
         while not self._omni_queue.empty():
-            (event_type, name, value) = self._omni_queue.get_nowait()
-            if event_type == "set":
-                if name == "state":
-                    super().set_state(value)
-                elif name == "status":
-                    super().set_status(value)
-                else:
-                    assert False
-            elif event_type == "change":
-                if name.lower() in ["state", "status"]:
-                    super().push_change_event(name)
-                else:
-                    super().push_change_event(name, value)
-            elif event_type == "archive":
-                if name.lower() in ["state", "status"]:
-                    super().push_archive_event(name)
-                else:
-                    super().push_archive_event(name, value)
+            (command_name, args, kwargs) = self._omni_queue.get_nowait()
+            getattr(super(), command_name)(*args, **kwargs)
 
 
 # ----------

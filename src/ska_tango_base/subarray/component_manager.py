@@ -9,8 +9,9 @@ from __future__ import annotations
 
 from typing import Any, Callable, Optional
 
+from ska_control_model import TaskStatus
+
 from ska_tango_base.base import BaseComponentManager
-from ska_tango_base.executor import TaskStatus
 
 
 class SubarrayComponentManager(BaseComponentManager):

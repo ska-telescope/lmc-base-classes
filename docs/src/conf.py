@@ -378,4 +378,7 @@ nitpick_ignore = [
     # These ones look like sphinx bugs
     ("py:class", "method"),
     ("py:class", "tango.server.command"),
+    # Version of sphinx in use here doesn't support type variables
+    ("py:class", "ska_tango_base.poller.poller.PollRequestT"),
+    ("py:class", "ska_tango_base.poller.poller.PollResponseT"),
 ]

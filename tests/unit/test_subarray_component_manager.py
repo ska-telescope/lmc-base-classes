@@ -14,11 +14,10 @@ from typing import Callable
 
 import pytest
 import pytest_mock
-from ska_control_model import CommunicationStatus, PowerState
+from ska_control_model import CommunicationStatus, PowerState, TaskStatus
 from ska_tango_testing.mock import MockCallableGroup
 
 from ska_tango_base.commands import ResultCode
-from ska_tango_base.executor import TaskStatus
 from ska_tango_base.testing.reference import (
     FakeSubarrayComponent,
     ReferenceSubarrayComponentManager,

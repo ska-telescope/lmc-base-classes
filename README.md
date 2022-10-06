@@ -250,7 +250,8 @@ Tango devices can be launched with a `-v` parameter to set the logging level. Fo
 ### unreleased
 
 ### 0.14.0
-- [LOW-346] Poller
+- [LOW-346] Provide polling mechanism as alternive concurrency mechanism
+  to task executor
 
 ### 0.13.6
 - Updated numpy version

@@ -248,6 +248,8 @@ Tango devices can be launched with a `-v` parameter to set the logging level. Fo
 ## Version History
 
 ### unreleased
+
+### 0.14.0
 - [LOW-346] Poller
 
 ### 0.13.6

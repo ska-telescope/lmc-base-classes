@@ -13,7 +13,7 @@ from .multidevice import ExampleMultiDevice
 @pytest.fixture(scope="function")
 def device_test_config(device_properties):
     """
-    Specification of the device under test.
+    Return a specification of the device under test.
 
     The specification includes the device's properties and memorized
     attributes.

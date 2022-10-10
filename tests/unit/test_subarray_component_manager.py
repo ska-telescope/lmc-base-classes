@@ -1,3 +1,4 @@
+# pylint: skip-file  # TODO: Incrementally lint this repo
 # -*- coding: utf-8 -*-
 #
 # This file is part of the SKA Tango Base project
@@ -170,7 +171,8 @@ class TestSubarrayComponentManager:
         """
         Return a factory that provides mock resources.
 
-        :param mocker: the mocker
+        :param mocker: pytest fixture that wraps
+            :py:mod:`unittest.mock`.
 
         :return: a factory that provides mock resources
         """
@@ -193,7 +195,8 @@ class TestSubarrayComponentManager:
         """
         Return mock arguments to the scan() method.
 
-        :param mocker: the mocker
+        :param mocker: pytest fixture that wraps
+            :py:mod:`unittest.mock`.
 
         :return: mock scan arguments
         """

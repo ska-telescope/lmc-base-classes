@@ -30,7 +30,7 @@ from ska_tango_base import SKABaseDevice, SKAObsDevice
 from ska_tango_base.testing.reference import ReferenceBaseComponentManager
 
 
-class TestSKAObsDevice(object):
+class TestSKAObsDevice:
     """Test class for tests of the SKAObsDevice device class."""
 
     @pytest.fixture(scope="class")
@@ -70,7 +70,6 @@ class TestSKAObsDevice(object):
 
         :param device_under_test: a proxy to the device under test
         """
-        pass
 
     def test_State(
         self: TestSKAObsDevice, device_under_test: tango.DeviceProxy
@@ -242,7 +241,7 @@ def test_multiple_devices_in_same_process(mocker: MockFixture) -> None:
     """
     Test that we can run this device with other devices in a single process.
 
-    :param mocker: patch with the mock
+    :param mocker: pytest fixture that wraps :py:mod:`unittest.mock`.
     """
     # Patch abstract method/s; it doesn't matter what we patch them with, so long as
     # they don't raise NotImplementedError.

@@ -25,7 +25,7 @@ from ska_tango_base import SKATelState
 from ska_tango_base.testing.reference import ReferenceBaseComponentManager
 
 
-class TestSKATelState(object):
+class TestSKATelState:
     """Test class for tests of the SKATelState device class."""
 
     @pytest.fixture(scope="class")
@@ -64,7 +64,6 @@ class TestSKATelState(object):
 
         :param device_under_test: a proxy to the device under test
         """
-        pass
 
     def test_State(self: TestSKATelState, device_under_test: tango.DeviceProxy) -> None:
         """

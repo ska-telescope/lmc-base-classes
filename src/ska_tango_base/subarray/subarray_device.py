@@ -1,3 +1,4 @@
+# pylint: skip-file  # TODO: Incrementally lint this repo
 # -*- coding: utf-8 -*-
 #
 # This file is part of the SKA Tango Base project
@@ -41,7 +42,9 @@ class SKASubarray(SKAObsDevice):
     class InitCommand(SKAObsDevice.InitCommand):
         """A class for the SKASubarray's init_device() "command"."""
 
-        def do(self: SKASubarray.InitCommand) -> tuple[ResultCode, str]:  # type: ignore[override]
+        def do(  # type: ignore[override]
+            self: SKASubarray.InitCommand,
+        ) -> tuple[ResultCode, str]:
             """
             Stateless hook for device initialisation.
 
@@ -191,28 +194,6 @@ class SKASubarray(SKAObsDevice):
         dtype="str",
     )
 
-    # ---------------
-    # General methods
-    # ---------------
-    def always_executed_hook(self: SKASubarray) -> None:
-        """
-        Perform actions that are executed before every device command.
-
-        This is a Tango hook.
-        """
-        pass
-
-    def delete_device(self: SKASubarray) -> None:
-        """
-        Clean up any resources prior to device deletion.
-
-        This method is a Tango hook that is called by the device
-        destructor and by the device Init command. It allows for any
-        memory or other resources allocated in the init_device method to
-        be released prior to device deletion.
-        """
-        pass
-
     # ----------
     # Attributes
     # ----------
@@ -280,7 +261,8 @@ class SKASubarray(SKAObsDevice):
         # So let's raise an exception ourselves.
         if self._obs_state not in [ObsState.EMPTY, ObsState.IDLE]:
             raise StateModelError(
-                f"AssignResources command not permitted in observation state {self._obs_state.name}"
+                "AssignResources command not permitted in observation state "
+                f"{self._obs_state.name}"
             )
         return True
 
@@ -323,7 +305,8 @@ class SKASubarray(SKAObsDevice):
         # So let's raise an exception ourselves.
         if self._obs_state not in [ObsState.EMPTY, ObsState.IDLE]:
             raise StateModelError(
-                f"ReleaseResources command not permitted in observation state {self._obs_state.name}"
+                "ReleaseResources command not permitted in observation state "
+                f"{self._obs_state.name}"
             )
         return True
 
@@ -363,7 +346,8 @@ class SKASubarray(SKAObsDevice):
         # So let's raise an exception ourselves.
         if self._obs_state not in [ObsState.EMPTY, ObsState.IDLE]:
             raise StateModelError(
-                f"ReleaseAllResources command not permitted in observation state {self._obs_state.name}"
+                "ReleaseAllResources command not permitted in observation state "
+                f"{self._obs_state.name}"
             )
         return True
 
@@ -400,7 +384,8 @@ class SKASubarray(SKAObsDevice):
         # So let's raise an exception ourselves.
         if self._obs_state not in [ObsState.IDLE, ObsState.READY]:
             raise StateModelError(
-                f"Configure command not permitted in observation state {self._obs_state.name}"
+                "Configure command not permitted in observation state "
+                f"{self._obs_state.name}"
             )
         return True
 
@@ -441,7 +426,8 @@ class SKASubarray(SKAObsDevice):
         # So let's raise an exception ourselves.
         if self._obs_state != ObsState.READY:
             raise StateModelError(
-                f"Scan command not permitted in observation state {self._obs_state.name}"
+                "Scan command not permitted in observation state "
+                f"{self._obs_state.name}"
             )
         return True
 
@@ -481,7 +467,8 @@ class SKASubarray(SKAObsDevice):
         # So let's raise an exception ourselves.
         if self._obs_state != ObsState.SCANNING:
             raise StateModelError(
-                f"EndScan command not permitted in observation state {self._obs_state.name}"
+                "EndScan command not permitted in observation state "
+                f"{self._obs_state.name}"
             )
         return True
 
@@ -557,7 +544,8 @@ class SKASubarray(SKAObsDevice):
             ObsState.RESETTING,
         ]:
             raise StateModelError(
-                f"Abort command not permitted in observation state {self._obs_state.name}"
+                "Abort command not permitted in observation state "
+                f"{self._obs_state.name}"
             )
         return True
 
@@ -591,7 +579,8 @@ class SKASubarray(SKAObsDevice):
         # So let's raise an exception ourselves.
         if self._obs_state not in [ObsState.FAULT, ObsState.ABORTED]:
             raise StateModelError(
-                f"ObsReset command not permitted in observation state {self._obs_state.name}"
+                "ObsReset command not permitted in observation state "
+                f"{self._obs_state.name}"
             )
         return True
 
@@ -627,7 +616,8 @@ class SKASubarray(SKAObsDevice):
         # So let's raise an exception ourselves.
         if self._obs_state not in [ObsState.FAULT, ObsState.ABORTED]:
             raise StateModelError(
-                f"Restart command not permitted in observation state {self._obs_state.name}"
+                "Restart command not permitted in observation state "
+                f"{self._obs_state.name}"
             )
         return True
 

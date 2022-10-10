@@ -15,6 +15,7 @@ from ska_tango_base.base.base_device import BaseComponentManager
 from ska_tango_base.executor.executor import TaskExecutor
 
 
+# pylint: disable-next=abstract-method  # Yes this is an abstract class.
 class TaskExecutorComponentManager(BaseComponentManager):
     """A component manager with support for asynchronous tasking."""
 

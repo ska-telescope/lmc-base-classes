@@ -1,6 +1,3 @@
-# flake8: noqa
-# type: ignore
-# pylint: skip-file  # TODO: Incrementally lint this repo
 """This module models component management for CSP subarrays."""
 from ska_tango_base.subarray import SubarrayComponentManager
 
@@ -18,11 +15,23 @@ class CspSubarrayComponentManager(SubarrayComponentManager):
     """
 
     @property
-    def config_id(self):
-        """Return the configuration id."""
-        return NotImplementedError("CspSubarrayComponentManager is abstract.")
+    def config_id(self) -> str:
+        """
+        Return the configuration id.
+
+        :return: the configuration id.
+
+        :raises NotImplementedError: because this class is abstract
+        """  # noqa DAR202
+        raise NotImplementedError("CspSubarrayComponentManager is abstract.")
 
     @property
-    def scan_id(self):
-        """Return the scan id."""
-        return NotImplementedError("CspSubarrayComponentManager is abstract.")
+    def scan_id(self) -> str:
+        """
+        Return the scan id.
+
+        :return: the scan id.
+
+        :raises NotImplementedError: because this class is abstract
+        """  # noqa DAR202
+        raise NotImplementedError("CspSubarrayComponentManager is abstract.")

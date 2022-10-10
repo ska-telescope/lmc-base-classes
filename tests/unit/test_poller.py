@@ -19,8 +19,8 @@ from ska_tango_testing.mock import MockCallableGroup
 from ska_tango_base.poller import Poller, PollModel
 
 
-@pytest.fixture()
-def config() -> Dict[str, int]:
+@pytest.fixture(name="config")
+def fixture_config() -> Dict[str, int]:
     """
     Return a dictionary of config information.
 
@@ -42,8 +42,8 @@ def config() -> Dict[str, int]:
     }
 
 
-@pytest.fixture()
-def callbacks() -> MockCallableGroup:
+@pytest.fixture(name="callbacks")
+def fixture_callbacks() -> MockCallableGroup:
     """
     Return a group of callbacks with asynchrony support.
 
@@ -54,8 +54,8 @@ def callbacks() -> MockCallableGroup:
     )
 
 
-@pytest.fixture()
-def barrier() -> Barrier:
+@pytest.fixture(name="barrier")
+def fixture_barrier() -> Barrier:
     """
     Return the barrier that coordinates timings between polling and test thread.
 
@@ -65,8 +65,8 @@ def barrier() -> Barrier:
     return Barrier(2)
 
 
-@pytest.fixture()
-def poll_model(
+@pytest.fixture(name="poll_model")
+def fixture_poll_model(
     callbacks: MockCallableGroup,
     barrier: Barrier,
     config: Dict[str, int],
@@ -127,8 +127,8 @@ def poll_model(
     return _FakePollModel(callbacks, barrier, config)
 
 
-@pytest.fixture()
-def poller(poll_model: PollModel) -> Poller:
+@pytest.fixture(name="poller")
+def fixture_poller(poll_model: PollModel) -> Poller:
     """
     Return the poller under test.
 

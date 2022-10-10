@@ -1,4 +1,3 @@
-# pylint: skip-file  # TODO: Incrementally lint this repo
 # -*- coding: utf-8 -*-
 #
 # This file is part of the SKA Tango Base project
@@ -179,8 +178,13 @@ def _group_id_name(keys: list[str]) -> str:
     return ",".join(keys)
 
 
-@pytest.fixture(scope="module", params=VALID_GROUP_KEYS, ids=_group_id_name)
-def valid_group_configs(request: SubRequest) -> list[Dict[str, Any]]:
+@pytest.fixture(
+    name="valid_group_configs",
+    scope="module",
+    params=VALID_GROUP_KEYS,
+    ids=_group_id_name,
+)
+def fixture_valid_group_configs(request: SubRequest) -> list[Dict[str, Any]]:
     """
     Provide valid lists of groups configs, one at a time.
 
@@ -191,8 +195,10 @@ def valid_group_configs(request: SubRequest) -> list[Dict[str, Any]]:
     return _get_group_configs_from_keys(request.param)
 
 
-@pytest.fixture(scope="module", params=BAD_GROUP_KEYS, ids=_group_id_name)
-def bad_group_configs(request: SubRequest) -> list[Dict[str, Any]]:
+@pytest.fixture(
+    name="bad_group_configs", scope="module", params=BAD_GROUP_KEYS, ids=_group_id_name
+)
+def fixture_bad_group_configs(request: SubRequest) -> list[Dict[str, Any]]:
     """
     Provide bad lists of groups configs, one at a time.
 
@@ -205,13 +211,9 @@ def bad_group_configs(request: SubRequest) -> list[Dict[str, Any]]:
 
 def test_get_groups_from_json_empty_list() -> None:
     """Test the ``get_groups_from_json`` helper functions handling of empty input."""
-    groups = get_groups_from_json([])
-    assert groups == {}
-    # empty or whitespace strings should also be ignored
-    groups = get_groups_from_json([""])
-    assert groups == {}
-    groups = get_groups_from_json(["  ", "", " "])
-    assert groups == {}
+    assert not get_groups_from_json([])
+    assert not get_groups_from_json([""])
+    assert not get_groups_from_json(["  ", "", " "])
 
 
 def _validate_group(definition: Dict[str, Any], group: tango.Group) -> None:
@@ -281,7 +283,7 @@ def test_get_tango_device_type_id() -> None:
             False,
             pytest.warns(
                 UserWarning,
-                match="foo should only be used for testing purposes",
+                match="dummy should only be used for testing purposes",
             ),
         ),
         (True, nullcontext()),
@@ -300,7 +302,7 @@ def test_for_testing_only(in_test: bool, context: ContextManager) -> None:
         null_context
     """
 
-    def foo() -> str:
+    def dummy() -> str:
         """
         Return a known value.
 
@@ -310,17 +312,17 @@ def test_for_testing_only(in_test: bool, context: ContextManager) -> None:
         """
         return "foo"
 
-    foo = for_testing_only(foo, _testing_check=lambda: in_test)
+    dummy = for_testing_only(dummy, _testing_check=lambda: in_test)
 
     with context:
-        assert foo() == "foo"
+        assert dummy() == "foo"
 
 
 def test_for_testing_only_decorator() -> None:
     """Test the for_testing_only decorator using the usual @decorator syntax."""
 
     @for_testing_only
-    def bah() -> str:
+    def dummy() -> str:
         """
         Return a known value.
 
@@ -331,5 +333,5 @@ def test_for_testing_only_decorator() -> None:
         return "bah"
 
     with pytest.warns(None) as warning_record:  # type: ignore[call-overload]
-        assert bah() == "bah"
+        assert dummy() == "bah"
     assert len(warning_record) == 0  # no warning was raised because we are testing

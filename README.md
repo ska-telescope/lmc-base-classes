@@ -9,6 +9,7 @@ A shared repository for the Local Monitoring and Control (LMC) Tango Base Classe
 Early work in this repo was done as part of the LMC Base Classes Evolutionary Prototype (LEvPro) project, under the INDO-SA collaboration program.
 
 The ska-tango-base repository includes a set of eight classes as mentioned in SKA Control systems guidelines. Following is the list of base classes
+
 - SKABaseDevice: This is generic class that includes common attributes, commands and properties that are required for any SKA tango device.
 - SKACapability: This is generic base class for any element to provide common functionality of a capability of an SKA device.
 - SKAAlarmHandler: This is the generic class meant to handle the alarms and alerts.
@@ -18,20 +19,25 @@ The ska-tango-base repository includes a set of eight classes as mentioned in SK
 - SKASubarray: This is the generic base class which provides common functionality required in a subarray device.
 - SKATelState: This is the generic base class to provide common functionality of a TelState device of any SKA Element.
 
-
 ## Instructions
+
 For detailed instructions on installation and usage, see the [Developers Guide](https://developer.skao.int/projects/ska-tango-base/en/latest/guide/index.html).
 
 ### Installation
+
 #### Requirements
+
 The basic requirements are:
+
 - Python 3.5
 - Pip
 
 The requirements for installation of the lmc base classes are:
+
 - argparse
 
 The requirements for testing are:
+
 - coverage
 - pytest
 - pytest-cov
@@ -39,16 +45,20 @@ The requirements for testing are:
 - mock
 
 #### Installation steps
+
 1. Clone the repository on local machine.
 2. Navigate to the root directory of the repository from terminal
-3. Run 'python3 -m pip install . --extra-index-url https://artefact.skao.int/repository/pypi-internal/simple'
+3. Run ``python3 -m pip install . --extra-index-url https://artefact.skao.int/repository/pypi-internal/simple``
 
 ### Testing
-The project can be tested locally my invoking *make CI_JOB_ID=some_id test* command. This invokes a chain of commands from the makefile which builds the project's python package, creates a docker image with the project, instantiates separate container for each of the base class and runs unit test cases of each class. Additionally, code analysis is also done and code coverage report is prepared. After testing is done, the containers are taken down.
+
+The project can be tested locally by invoking ``make CI_JOB_ID=some_id test`` command. This invokes a chain of commands from the makefile which builds the project's python package, creates a docker image with the project, instantiates separate container for each of the base class and runs unit test cases of each class. Additionally, code analysis is also done and code coverage report is prepared. After testing is done, the containers are taken down.
 
 ### Usage
+
 The base classes are installed as a Python package in the system. The intended usage of the base classes is to inherit the class according to the requirement. The class needs to be imported in the module. e.g.
-```
+
+```python
 from ska.base import SKABaseDevice
 
 class DishLeafNode(SKABaseDevice):
@@ -66,9 +76,11 @@ The Docker integration is recommended.  For development, use the `artefact.skao.
 As this project uses a `src` [folder structure](https://blog.ionelmc.ro/2014/05/25/python-packaging/#the-structure), so under _Preferences > Project Structure_, the `src` folder needs to be marked as "Sources".  That will allow the interpreter to be aware of the package from folders like `tests` that are outside of `src`. When adding Run/Debug configurations, make sure "Add content roots to PYTHONPATH" and "Add source roots to PYTHONPATH" are checked.
 
 ### Docs
+
 - Online:  [Read The Docs](https://developer.skao.int/projects/ska-tango-base/en/latest/)
 
 ### Contribute
+
 Contributions are always welcome! Please refer to the [SKA telescope developer portal](https://developer.skao.int/).
 
 ## Logging explained
@@ -113,16 +125,12 @@ class SKABaseDevice(Device):
     loggingLevel = attribute(
         dtype=LoggingLevel,
         access=AttrWriteType.READ_WRITE,
-        doc="Current logging level for this device - "
-            "initialises to LoggingLevelDefault on startup",
     )
 
     loggingTargets = attribute(
         dtype=('str',),
         access=AttrWriteType.READ_WRITE,
         max_dim_x=4,
-        doc="Logging targets for this device, excluding ska_logging defaults"
-            " - initialises to LoggingTargetsDefault on startup",
     )
 
    ...
@@ -134,6 +142,7 @@ class SKABaseDevice(Device):
 The `loggingLevel` attribute allows us to adjust the severity of logs being emitted. This attribute is an enumerated type.  The default is currently INFO level, but it can be overridden by setting the `LoggingLevelDefault` property in the Tango database.
 
 Example:
+
 ```python
 proxy = tango.DeviceProxy('my/test/device')
 
@@ -169,34 +178,41 @@ proxy.loggingTargets = []
 ```
 
 Currently there are four types of targets implemented:
+
 - `console`
 - `file`
 - `syslog`
 - `tango`
 
 #### console target
+
 If you were to set the `proxy.loggingTargets = ["console::cout"]` you would get all the logs to stdout duplicated.  Once for ska_logging root logger, and once for the additional console logger you just added.  For the "console" option it doesn't matter what text comes after the `::` - we always use stdout.  While it may not seem useful now, the option is kept in case the ska_logging default configuration changes, and no longer outputs to stdout.
 
 #### file target
+
 For file output, provide the path after the `::`.  If the path is omitted, then a file is created in the device server's current directory, with a name based on the the Tango name.  E.g., "my/test/device" would get the file "my_test_device.log". Currently, we using a `logging.handlers.RotatingFileHandler` with a 1 MB limit and just 2 backups.  This could be modified in future.
 
 #### syslog target
+
 For syslog, the syslog target address details must be provided after the `::` as a URL. The following types are supported:
+
 - File, `file://<path>`
   - E.g., for `/dev/log` use `file:///dev/log`.
   - If the protocol is omitted, it is assumed to be `file://`.  Note: this is deprecated.
     Support will be removed in v0.6.0.
 - Remote UDP server, `udp://<hostname>:<port>`
-  -  E.g., for `server.domain` on UDP port 514 use `udp://server.domain:514`.
+  - E.g., for `server.domain` on UDP port 514 use `udp://server.domain:514`.
 - Remote TCP server, `tcp://<hostname>:<port>`
-  -  E.g., for `server.domain` on TCP port 601 use `tcp://server.domain:601`.
+  - E.g., for `server.domain` on TCP port 601 use `tcp://server.domain:601`.
 
 Example of usage:  `proxy.loggingTargets = ["syslog::udp://server.domain:514"]`.
 
 #### tango target
+
 All Python logs can be forwarded to the Tango Logging Service by adding the `"tango::logger"` target.  This will use the device's log4tango logger object to emit logs into TLS.  The TLS targets still need to be added in the usual way.  Typically, using the `add_logging_target` method from an instance of a `tango.DeviceProxy` object.
 
 #### multiple targets
+
 If you want file and syslog targets, you could do something like: `proxy.loggingTargets = ["file::/tmp/my.log", "syslog::udp://server.domain:514"]`.
 
 **Note:**  There is a limit of 4 additional handlers.  That is the maximum length of the spectrum attribute. We could change this if there is a reasonable use case for it.
@@ -206,6 +222,7 @@ If you want file and syslog targets, you could do something like: `proxy.logging
 Yes.  In `SKABaseDevice._init_logging` we monkey patch the log4tango logger methods `debug_stream`, `error_stream`, etc. to point the Python logger methods like `logger.debug`, `logger.error`, etc.  This means that logs are no longer forwarded to the Tango Logging Service automatically.  However, by including a `"tango::logger"` item in the `loggingTarget` attribute, the Python logs are sent to TLS.
 
 The `tango.DeviceProxy` also has some built in logging control methods that only apply to the Tango Logging Service:
+
 - `DeviceProxy.add_logging_target`
   - Can be used to add a log consumer device.
   - Can be used to log to file (in the TLS format).
@@ -240,7 +257,6 @@ class MyDevice(SKABaseDevice):
 
 Yes, you could use f-strings. `f"I have a message for {someone}"`.  The only benefit of the `%s` type formatting is that the full string does not need to be created unless the log message will be emitted.  This could provide a small performance gain, depending on what is being logged, and how often.
 
-
 ### When I set the logging level via command line it doesn't work
 
 Tango devices can be launched with a `-v` parameter to set the logging level. For example, 'MyDeviceServer instance -v5' for debug level.  Currently, the `SKABaseDevice` does not consider this command line option, so it will just use the Tango device property instead. In future, it would be useful to override the property with the command line option.
@@ -250,18 +266,22 @@ Tango devices can be launched with a `-v` parameter to set the logging level. Fo
 ### unreleased
 
 ### 0.14.0
+
 - [LOW-346] Provide polling mechanism as alternive concurrency mechanism
   to task executor
 
 ### 0.13.6
+
 - Updated numpy version
 
 ### 0.13.5
+
 - Merge branch 'rel-275-v0-13-5' into 'main'
 - [REL-275] Prepare to release 0.13.5
 - [REL-275] Fix pipeline
 
 #### 0.13.4
+
 - KAR-466 - Repository maintenance
 - MCCS-1072 - Type hint & static type check base class alarm_handler_device & utils
 - MCCS-934 - Type hint & Static type check base classes
@@ -269,26 +289,31 @@ Tango devices can be launched with a `-v` parameter to set the logging level. Fo
 - LOW-317 Allow Reset() from STANDBY and ON states, not just FAULT
 
 #### 0.13.3
+
 - KAR-403 Fixed exceptions in LRCs not updating  longRunningCommandResult accordingly
 - LOW-299 Fixed docs build in the CI pipeline
 - LOW-278 Now using ska-tango-testing
 - SAH-1156 Enable assigned_resources property inside SubarrayComponentManager.
 
 #### 0.13.2
+
 - CT-738 fix check long running status
 - AT3-140 fix base TANGO xmi files
 - MCCS-1053 Fix the problem of device in UNKNOWN state upon test startup
 - PERENTIE-1350 Remove misleading `CspSubarrayComponentManager.__init__` function
 
 #### 0.13.1
+
 - KAR-399 Renamed SKAController command isCapabilityAchievable to IsCapabilityAchievable.
 
 #### 0.13.0
+
 - MCCS-876 Updated implementation of long running commands
   - SAR-341 Updated docs
   - SAR-351 Updated tests
 
 #### 0.12.1
+
 - SAR-303
   - Fixed PYPI URL
   - Moved command response message to component manager
@@ -296,20 +321,25 @@ Tango devices can be launched with a `-v` parameter to set the logging level. Fo
   - `NO_SUPPLY` added to `PowerMode` enum
 
 #### 0.12.0
+
 - Implemented ST-946 (automation templates)
 - Included Long running commands implementation
   - SAR-277, SAR-287, SAR-286, SAR-276, SAR-275, SAR-273
 
 #### 0.11.3
-- No change, moving artefacts to a new repository https://artefact.skao.int/.
+
+- No change, moving artefacts to a new [Central Aftefact Repository](https://artefact.skao.int/).
 
 #### 0.11.2
+
 - Update docstrings for 100% coverage and PEP257 compliance
 
 #### 0.11.1
+
 - Minor breaking change: rename of "Master" devices to "Controller"
 
 #### 0.11.0
+
 - Breaking change: state models and component managers
   - Re-implementation of operational state model to better model
     hardware and support device decoupling.
@@ -319,11 +349,13 @@ Tango devices can be launched with a `-v` parameter to set the logging level. Fo
 - Add developer guide to documentation
 
 #### 0.10.1
+
 - Make dependency on `pytango` and `numpy` python packages explicit.
 - Add optional "key" parameter to `SKASubarrayResourceManager` to filter JSON for
   assign & release methods.
 
 #### 0.10.0
+
 - Add `DebugDevice` command to `SKABaseDevice`.  This allows remote debugging to be
   enabled on all devices.  It cannot be disabled without restarting the process.
   If there are multiple devices in a device server, debugging is only enabled for
@@ -333,27 +365,34 @@ Tango devices can be launched with a `-v` parameter to set the logging level. Fo
   There is only one debugger instance shared by the whole process.
   
 #### 0.9.1
+
 - Changed dependency from `ska_logging` to `ska_ser_logging`.
 
 #### 0.9.0
+
 - Breaking change: Package rename
   - Installable package name changed from `lmcbaseclasses` to `ska_tango_base`.
   - Package import `ska.base` has been changed to `ska_tango_base`.  For example, instead of
     `from ska.base import SKABaseDevice` use `from ska_tango_base import SKABaseDevice`.
 
 #### 0.8.1
+
 - Fix broken docs
 
 #### 0.8.0
+
 - Add base classes for CSP SubElements
 
 #### 0.7.2
+
 - Switch to threadsafe state machine
 
 #### 0.7.1
+
 - Bugfix for Reset() command
 
 #### 0.7.0
+
 - Separate adminMode state machine from opState state machine
 - Add support for STANDBY opState
 - Add Standby() and Disable() commands to SKABaseDevice
@@ -361,13 +400,16 @@ Tango devices can be launched with a `-v` parameter to set the logging level. Fo
 - Breaking change to `_straight_to_state` method signature
 
 #### 0.6.6
+
 - Documentation bugfix
 
 #### 0.6.5
+
 - Fix to observation state machine: allow Abort() from RESETTING observation
   state
 
 #### 0.6.4
+
 - Refactor state machine to use pytransitions library.
 - Minor behavioural change: Off() command is accepted in every obsState, rather
 than only EMPTY obsState.
@@ -375,14 +417,17 @@ than only EMPTY obsState.
 - Refactor of state machine testing to make it more portable
 
 #### 0.6.3
+
 - Fix omission of fatal_error transition from base device state machine.
 
 #### 0.6.2
+
 - Fix issue with incorrect updates to transitions dict from inherited devices.
   Only noticeable if running multiple devices of different types in the same
   process.
 
 #### 0.6.1
+
 - Add ON state to SKABaseDeviceStateModel.
 - Move On() and Off() commands to SKABaseDevice.
 - Add event pushing for device state, device status, admin mode and obs state
@@ -390,6 +435,7 @@ than only EMPTY obsState.
 - Disable all attribute polling.
 
 #### 0.6.0
+
 - Breaking change: State management
   - SKABaseDevice implements a simple state machine with states
     `DISABLED`, `OFF`, `ON`, `INIT` and `FAULT`, along with transitions
@@ -420,6 +466,7 @@ than only EMPTY obsState.
       override methods like `write_adminMode()`.
 
 #### 0.5.4
+
 - Remove `ObsState` command from SKACapability, SKAObsDevice and SKASubarray Pogo XMI files.  It should not
   have been included - the `obsState` attribute provides this information. The command was not in the Python
   files, so no change to usage.  It only affects future Pogo code generation.
@@ -428,19 +475,23 @@ than only EMPTY obsState.
 - Maximum number of logging targets increased from 3 to 4.
 
 #### 0.5.3
+
 - Setting `loggingTargets` attribute to empty list no longer raises exception.
 - Change syslog targets in `loggingTargets` attribute to a full URL so that remote syslog servers can be specified.
   For example, `"syslog::udp://server.domain:514"`, would send logs to `server.domain` via UDP port 514.
   Specifying a path without a protocol, like `"syslog::/var/log"`, is deprecated.
 
 #### 0.5.2
+
 - Change ska_logger dependency to use ska-namespaced package (v0.3.0).  No change to usage.
 
 #### 0.5.1
+
 - Make 'ska' a [native namespace package](https://packaging.python.org/guides/packaging-namespace-packages/#native-namespace-packages).
   No change to usage.
 
 #### 0.5.0
+
 - Breaking change:  Major restructuring of the package to simplify imports and reduce confusion.
   - The single word `skabase` module has now changed to two words: `ska.base`.
   - Instead of `from skabase.SKABaseDevice.SKABaseDevice import SKABaseDevice` to import the
@@ -453,12 +504,14 @@ than only EMPTY obsState.
   instead.
 
 #### 0.4.1
+
 - Fix lost properties when re-initialising test device (remove `get_name` mock).
 - Fix Sphinx doc building.
 - Move `ObsDevice` variable initialisation from `__init__` to `init_device`.
 - Run scripts with `python3` instead of `python` and update pip usage.
 
 #### 0.4.0
+
 - Changed all `DevEnum` attributes to use Python `enum.IntEnum` classes.  These can be imported from the
   new `control_model` namespace, e.g., `skabase.control_model import AdminMode`.
 - The names of some of the enumeration labels were changed to better match the Control Systems Guidelines.
@@ -472,6 +525,7 @@ than only EMPTY obsState.
 - Remove unnecessary usage of `DeviceMeta` class.
 
 #### 0.3.1
+
 - Used `ska_logging` library instead of defining logging format and handlers locally.
 - `LoggingTargetDefault` property is now empty instead of `"console::cout"`, since the
   the `ska_logging` library will automatically output to stdout.
@@ -479,9 +533,11 @@ than only EMPTY obsState.
 - Removed a number of unused files in the `ansible` and `refelt` folders.
 
 #### 0.3.0
+
 - Not released
 
 #### 0.2.0
+
 - Changed logging to use SKA format
 - Simplified element, storage and central logging to just a single target.  Default writes to stdout.
   This is in line with the move to Elastic for all logs instead of using the Tango Logging Service
@@ -489,6 +545,7 @@ than only EMPTY obsState.
 - Deprecated `dev_logging` method.  Will be removed in 0.3.0.  Use direct calls the `self.logger` instead.
 
 #### 0.1.3
+
 - Storage logs are written to a file if Syslog service is not available.
 - Added exception handling
 - Improved code coverage
@@ -497,9 +554,11 @@ than only EMPTY obsState.
 - Other minor improvements
 
 #### 0.1.2
- - Internal release
+
+- Internal release
 
 #### 0.1.1
+
 - Logging functionality
 - Python3 migration
 - Repackaging of all the classes into a single Python package

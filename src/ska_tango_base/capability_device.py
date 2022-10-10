@@ -12,7 +12,7 @@ Capability handling device
 from __future__ import annotations
 
 import logging
-from typing import List, Optional, Tuple
+from typing import Any, List, Optional, Tuple
 
 from tango import DebugIt
 from tango.server import attribute, command, device_property
@@ -25,7 +25,10 @@ DevVarLongStringArrayType = Tuple[List[ResultCode], List[Optional[str]]]
 __all__ = ["SKACapability", "main"]
 
 
-class SKACapability(SKAObsDevice):
+# TODO: This under-developed device class does not yet have a component
+# manager, so its `create_component_manager` method is still the abstract
+# method inherited from the base device.
+class SKACapability(SKAObsDevice):  # pylint: disable=abstract-method
     """
     A Subarray handling device.
 
@@ -40,22 +43,35 @@ class SKACapability(SKAObsDevice):
             self.ConfigureInstancesCommand(self, self.logger),
         )
 
+    # pylint: disable-next=too-few-public-methods
     class InitCommand(DeviceInitCommand):
         """A class for the CapabilityDevice's init_device() "command"."""
 
         def do(  # type: ignore[override]
             self: SKACapability.InitCommand,
+            *args: Any,
+            **kwargs: Any,
         ) -> tuple[ResultCode, str]:
             """
             Stateless hook for device initialisation.
+
+            :param args: positional arguments to the command. This command does
+                not take any, so this should be empty.
+            :param kwargs: keyword arguments to the command. This command does
+                not take any, so this should be empty.
 
             :return: A tuple containing a return code and a string
                 message indicating status. The message is for
                 information purpose only.
             :rtype: (ResultCode, str)
             """
+            # pylint: disable-next=protected-access
             self._device._activation_time = 0.0
+
+            # pylint: disable-next=protected-access
             self._device._configured_instances = 0
+
+            # pylint: disable-next=protected-access
             self._device._used_components = [""]
 
             message = "SKACapability Init command completed OK"
@@ -79,29 +95,6 @@ class SKACapability(SKAObsDevice):
         dtype="str",
     )
 
-    # ---------------
-    # General methods
-    # ---------------
-
-    def always_executed_hook(self: SKACapability) -> None:
-        """
-        Perform actions that are executed before every device command.
-
-        This is a Tango hook.
-        """
-        pass
-
-    def delete_device(self: SKACapability) -> None:
-        """
-        Clean up any resources prior to device deletion.
-
-        This method is a Tango hook that is called by the device
-        destructor and by the device Init command. It allows for any
-        memory or other resources allocated in the init_device method to
-        be released prior to device deletion.
-        """
-        pass
-
     # ----------
     # Attributes
     # ----------
@@ -110,7 +103,6 @@ class SKACapability(SKAObsDevice):
         unit="s",
         standard_unit="s",
         display_unit="s",
-        doc="Time of activation in seconds since Unix epoch.",
     )
     def activationTime(self: SKACapability) -> float:
         """
@@ -120,10 +112,7 @@ class SKACapability(SKAObsDevice):
         """
         return self._activation_time
 
-    @attribute(
-        dtype="uint16",
-        doc="Number of instances of this Capability Type currently in use on this subarray.",
-    )
+    @attribute(dtype="uint16")
     def configuredInstances(self: SKACapability) -> int:
         """
         Read the number of instances of a capability in the subarray.
@@ -132,11 +121,7 @@ class SKACapability(SKAObsDevice):
         """
         return self._configured_instances
 
-    @attribute(
-        dtype=("str",),
-        max_dim_x=100,
-        doc="A list of components with no. of instances in use on this Capability.",
-    )
+    @attribute(dtype=("str",), max_dim_x=100)
     def usedComponents(self: SKACapability) -> list[str]:
         """
         Read the list of components with no.
@@ -151,6 +136,7 @@ class SKACapability(SKAObsDevice):
     # Commands
     # --------
 
+    # pylint: disable-next=too-few-public-methods
     class ConfigureInstancesCommand(FastCommand):
         """A class for the SKALoggerDevice's SetLoggingLevel() command."""
 
@@ -169,18 +155,24 @@ class SKACapability(SKAObsDevice):
             super().__init__(logger=logger)
 
         def do(  # type: ignore[override]
-            self: SKACapability.ConfigureInstancesCommand, argin: int
+            self: SKACapability.ConfigureInstancesCommand,
+            *args: Any,
+            **kwargs: Any,
         ) -> tuple[ResultCode, str]:
             """
             Stateless hook for ConfigureInstances()) command functionality.
 
-            :param argin: nos. of instances
+            :param args: positional arguments to the command. This command takes
+                a single integer number of instances.
+            :param kwargs: keyword arguments to the command. This command does
+                not take any, so this should be empty.
 
             :return: A tuple containing a return code and a string
                 message indicating status. The message is for
                 information purpose only.
             """
-            self._device._configured_instances = argin
+            # pylint: disable-next=protected-access
+            self._device._configured_instances = int(args[0])
 
             message = "ConfigureInstances command completed OK"
             self.logger.info(message)

@@ -25,7 +25,7 @@ from ska_tango_base import SKAController
 from ska_tango_base.testing.reference import ReferenceBaseComponentManager
 
 
-class TestSKAController(object):
+class TestSKAController:
     """Test class for tests of the SKAController device class."""
 
     # capabilities = ['BAND1:1', 'BAND2:1', 'BAND3:0', 'BAND4:0', 'BAND5:0']
@@ -86,7 +86,6 @@ class TestSKAController(object):
 
         :param device_under_test: a proxy to the device under test
         """
-        pass
 
     def test_State(
         self: TestSKAController, device_under_test: tango.DeviceProxy

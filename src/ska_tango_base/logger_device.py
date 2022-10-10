@@ -13,15 +13,13 @@ remote logging for selected devices.
 """
 from __future__ import annotations
 
-from typing import Any, List, Optional, Tuple
+from typing import Any, List, Optional, Tuple, cast
 
 from ska_control_model import LoggingLevel
 from tango import DebugIt, DevFailed, DeviceProxy
 from tango.server import command
 
-from ska_tango_base import SKABaseDevice
-
-# from ska_tango_base.base import BaseComponentManager
+from ska_tango_base.base import SKABaseDevice
 from ska_tango_base.commands import FastCommand, ResultCode
 
 DevVarLongStringArrayType = Tuple[List[ResultCode], List[Optional[str]]]
@@ -55,25 +53,6 @@ class SKALogger(SKABaseDevice):
         """
         return None  # This device doesn't have a component manager yet
 
-    def always_executed_hook(self: SKALogger) -> None:
-        """
-        Perform actions that are executed before every device command.
-
-        This is a Tango hook.
-        """
-        pass
-
-    def delete_device(self: SKALogger) -> None:
-        """
-        Clean up any resources prior to device deletion.
-
-        This method is a Tango hook that is called by the device
-        destructor and by the device Init command. It allows for any
-        memory or other resources allocated in the init_device method to
-        be released prior to device deletion.
-        """
-        pass
-
     # ----------
     # Attributes
     # ----------
@@ -81,22 +60,30 @@ class SKALogger(SKABaseDevice):
     # --------
     # Commands
     # --------
+    # pylint: disable-next=too-few-public-methods
     class SetLoggingLevelCommand(FastCommand):
         """A class for the SKALoggerDevice's SetLoggingLevel() command."""
 
         def do(  # type: ignore[override]
-            self: SKALogger.SetLoggingLevelCommand, argin: Tuple[List[str], List[Any]]
-        ) -> tuple[ResultCode, str]:
+            self: SKALogger.SetLoggingLevelCommand,
+            *args: Any,
+            **kwargs: Any,
+        ) -> Tuple[ResultCode, str]:
             """
             Stateless hook for SetLoggingLevel() command functionality.
 
-            :param argin: tuple consisting of list of logging levels
-                and list of tango devices
+            :param args: positional arguments to the command. This
+                command takes a single positional argument, which is a
+                tuple consisting of list of logging levels and list of
+                tango devices.
+            :param kwargs: keyword arguments to the command. This command does
+                not take any, so this should be empty.
 
             :return: A tuple containing a return code and a string
                 message indicating status. The message is for
                 information purpose only.
             """
+            argin = cast(Tuple[List[str], List[Any]], args[0])
             logging_levels = argin[0][:]
             logging_devices = argin[1][:]
             for level, device in zip(logging_levels, logging_devices):

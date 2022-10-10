@@ -1,3 +1,7 @@
+# pylint: disable=too-many-lines
+# TODO: Split logging service out from base_device module, then split these
+# tests the same way.
+
 # -*- coding: utf-8 -*-
 #
 # This file is part of the SKA Tango Base project
@@ -49,18 +53,32 @@ from ska_tango_base.testing.reference import ReferenceBaseComponentManager
 class TestTangoLoggingServiceHandler:
     """This class contains tests of the TangoLoggingServiceHandler class."""
 
+    @pytest.fixture(name="tango_logger")
+    def fixture_tango_logger(self) -> mock.MagicMock:
+        """
+        Return a mock logger for a Tango device.
+
+        :return: a mock logger for a Tango device.
+        """
+        tango_logger = mock.MagicMock(spec=tango.Logger)
+        # setup methods used for handler __repr__
+        tango_logger.get_name.return_value = "unit/test/dev"
+        tango_logger.get_level.return_value = _Log4TangoLoggingLevel.DEBUG
+        return tango_logger
+
     @pytest.fixture()
-    def tls_handler(self: TestTangoLoggingServiceHandler) -> TangoLoggingServiceHandler:
+    def tls_handler(
+        self: TestTangoLoggingServiceHandler,
+        tango_logger: mock.MagicMock,
+    ) -> TangoLoggingServiceHandler:
         """
         Return a logging service handler.
 
+        :param tango_logger: a mock logger for a Tango device
+
         :return: the tango logging handler
         """
-        self.tango_logger = mock.MagicMock(spec=tango.Logger)
-        # setup methods used for handler __repr__
-        self.tango_logger.get_name.return_value = "unit/test/dev"
-        self.tango_logger.get_level.return_value = _Log4TangoLoggingLevel.DEBUG
-        return TangoLoggingServiceHandler(self.tango_logger)
+        return TangoLoggingServiceHandler(tango_logger)
 
     @pytest.fixture(
         params=[
@@ -85,12 +103,14 @@ class TestTangoLoggingServiceHandler:
 
     def test_emit_message_at_correct_level(
         self: TestTangoLoggingServiceHandler,
+        tango_logger: mock.MagicMock,
         tls_handler: TangoLoggingServiceHandler,
         python_log_level: LoggingLevel,
     ) -> None:
         """
         Test that emitted messages are logged at the right level.
 
+        :param tango_logger: a mock logger for a Tango device
         :param tls_handler: tango logging service
         :param python_log_level: logging level
         """
@@ -101,14 +121,17 @@ class TestTangoLoggingServiceHandler:
         # assert
         expected_tango_level = _PYTHON_TO_TANGO_LOGGING_LEVEL[python_log_level]
         expected_calls = [mock.call(expected_tango_level, mock.ANY)]
-        assert self.tango_logger.log.call_args_list == expected_calls
+        assert tango_logger.log.call_args_list == expected_calls
 
     def test_emit_message_is_formatted(
-        self: TestTangoLoggingServiceHandler, tls_handler: TangoLoggingServiceHandler
+        self: TestTangoLoggingServiceHandler,
+        tango_logger: mock.MagicMock,
+        tls_handler: TangoLoggingServiceHandler,
     ) -> None:
         """
         Test that emitted messages are formatted as specified.
 
+        :param tango_logger: a mock logger for a Tango device
         :param tls_handler: tango logging service
         """
         # arrange
@@ -127,14 +150,17 @@ class TestTangoLoggingServiceHandler:
         expected_tango_level = _PYTHON_TO_TANGO_LOGGING_LEVEL[logging.INFO]
         expected_message = "LOG: message param"
         expected_calls = [mock.call(expected_tango_level, expected_message)]
-        assert self.tango_logger.log.call_args_list == expected_calls
+        assert tango_logger.log.call_args_list == expected_calls
 
     def test_emit_exception_error_handled(
-        self: TestTangoLoggingServiceHandler, tls_handler: TangoLoggingServiceHandler
+        self: TestTangoLoggingServiceHandler,
+        tango_logger: mock.MagicMock,
+        tls_handler: TangoLoggingServiceHandler,
     ) -> None:
         """
         Test exception handling when a record is emitted.
 
+        :param tango_logger: a mock logger for a Tango device
         :param tls_handler: tango logging service
         """
         # arrange
@@ -143,7 +169,7 @@ class TestTangoLoggingServiceHandler:
         def cause_exception(*args: Any, **kwargs: Any) -> None:
             raise RuntimeError("Testing")
 
-        self.tango_logger.log.side_effect = cause_exception
+        tango_logger.log.side_effect = cause_exception
         # monkey patch
         tls_handler.handleError = mock.MagicMock()  # type: ignore[assignment]
         # act
@@ -360,7 +386,7 @@ class TestLoggingUtils:
     @mock.patch("logging.handlers.RotatingFileHandler")
     @mock.patch("logging.StreamHandler")
     @mock.patch("ska_ser_logging.get_default_formatter")
-    def test_create_logging_handler(
+    def test_create_logging_handler(  # pylint: disable=too-many-arguments
         self: TestLoggingUtils,
         mock_get_formatter: mock.MagicMock,
         mock_stream_handler: mock.MagicMock,
@@ -382,7 +408,7 @@ class TestLoggingUtils:
         mock_formatter = mock.MagicMock()
 
         def get_formatter_if_tags_enabled(
-            *args: Any, **kwargs: Any
+            *args: Any, **kwargs: Any  # pylint: disable=unused-argument
         ) -> mock.MagicMock | None:
             if kwargs.get("tags", False):
                 return mock_formatter
@@ -437,11 +463,13 @@ class TestLoggingUtils:
     def test_update_logging_handlers(self: TestLoggingUtils) -> None:
         """Test that logging handlers can be updated."""
         logger = logging.getLogger("testing")
-        logger.tango_logger = mock.MagicMock(spec=tango.Logger)  # type: ignore[attr-defined]
+        logger.tango_logger = mock.MagicMock(  # type: ignore[attr-defined]
+            spec=tango.Logger
+        )
 
         # TODO Why do we need the tango_logger argument?
         def null_creator(
-            target: str, tango_logger: tango.Logger
+            target: str, tango_logger: tango.Logger  # pylint: disable=unused-argument
         ) -> logging.NullHandler:
             handler = logging.NullHandler()
             handler.name = target
@@ -450,7 +478,9 @@ class TestLoggingUtils:
         orig_create_logging_handler = LoggingUtils.create_logging_handler
         try:
             mocked_creator = mock.MagicMock(side_effect=null_creator)
-            LoggingUtils.create_logging_handler = mocked_creator  # type: ignore[assignment]
+            LoggingUtils.create_logging_handler = (  # type: ignore[assignment]
+                mocked_creator
+            )
 
             # test adding first handler
             new_targets = ["console::cout"]
@@ -481,9 +511,18 @@ class TestLoggingUtils:
             assert mocked_creator.call_count == 3
             mocked_creator.assert_has_calls(
                 [
-                    mock.call("file::/tmp/dummy", logger.tango_logger),  # type: ignore[attr-defined]
-                    mock.call("syslog::some/address", logger.tango_logger),  # type: ignore[attr-defined]
-                    mock.call("tango::logger", logger.tango_logger),  # type: ignore[attr-defined]
+                    mock.call(
+                        "file::/tmp/dummy",
+                        logger.tango_logger,  # type: ignore[attr-defined]
+                    ),
+                    mock.call(
+                        "syslog::some/address",
+                        logger.tango_logger,  # type: ignore[attr-defined]
+                    ),
+                    mock.call(
+                        "tango::logger",
+                        logger.tango_logger,  # type: ignore[attr-defined]
+                    ),
                 ],
                 any_order=True,
             )
@@ -504,7 +543,9 @@ class TestLoggingUtils:
 
         finally:
             # monkey patch
-            LoggingUtils.create_logging_handler = orig_create_logging_handler  # type: ignore[assignment]
+            LoggingUtils.create_logging_handler = (  # type: ignore[assignment]
+                orig_create_logging_handler
+            )
 
 
 class TestCommandTracker:
@@ -567,7 +608,8 @@ class TestCommandTracker:
             removal_time=removal_time,
         )
 
-    def test_command_tracker(
+    # TODO: pylint is right that this test is way too long.
+    def test_command_tracker(  # pylint: disable=too-many-statements
         self: TestCommandTracker,
         command_tracker: CommandTracker,
         removal_time: float,
@@ -802,7 +844,7 @@ class TestCommandTracker:
         )
 
 
-class TestSKABaseDevice(object):
+class TestSKABaseDevice:  # pylint: disable=too-many-public-methods
     """Test cases for SKABaseDevice."""
 
     @pytest.fixture(scope="class")
@@ -842,7 +884,6 @@ class TestSKABaseDevice(object):
         :param device_under_test: a DeviceProxy to the device under
             test, running in a tango.DeviceTestContext
         """
-        pass
 
     def test_State(
         self: TestSKABaseDevice, device_under_test: tango.DeviceProxy
@@ -1275,13 +1316,18 @@ class TestSKABaseDevice(object):
         assert device_under_test.testMode == TestMode.NONE
 
     def test_debugger_not_listening_by_default(
-        self: TestSKABaseDevice, device_under_test: tango.DeviceProxy
+        self: TestSKABaseDevice,
+        device_under_test: tango.DeviceProxy,  # pylint: disable=unused-argument
     ) -> None:
         """
         Test that DebugDevice is not active until enabled.
 
-        :param device_under_test: a proxy to the device under test
+        :param device_under_test: a proxy to the device under test. This
+            is not actually used, but the inclusion of the fixture
+            ensures the device is running, which is a pre-condition of
+            the test.
         """
+        # pylint: disable-next=protected-access
         assert not SKABaseDevice._global_debugger_listening
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
             with pytest.raises(ConnectionRefusedError):
@@ -1355,4 +1401,5 @@ def patch_debugger_to_start_on_ephemeral_port() -> None:
     tries to bind to that port, it may find that the OS has not made it
     available for use yet.
     """
+    # pylint: disable-next=protected-access
     ska_tango_base.base.base_device._DEBUGGER_PORT = 0

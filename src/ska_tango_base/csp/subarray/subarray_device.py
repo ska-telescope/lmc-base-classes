@@ -15,7 +15,6 @@ CspSubElementSubarray.
 Subarray device for SKA CSP SubElement
 """
 
-# PROTECTED REGION ID(CspSubElementSubarray.additionnal_import) ENABLED START #
 import json
 from collections import defaultdict
 from json.decoder import JSONDecodeError
@@ -28,17 +27,11 @@ from ska_tango_base.commands import ResultCode, SubmittedSlowCommand
 from ska_tango_base.faults import StateModelError
 from ska_tango_base.subarray import SKASubarray
 
-# Additional import
-# PROTECTED REGION END #    //  CspSubElementSubarray.additionnal_import
-
 __all__ = ["CspSubElementSubarray", "main"]
 
 
 class CspSubElementSubarray(SKASubarray):
     """Subarray device for SKA CSP SubElement."""
-
-    # PROTECTED REGION ID(CspSubElementSubarray.class_variable) ENABLED START #
-    # PROTECTED REGION END #    //  CspSubElementSubarray.class_variable
 
     # -----------------
     # Device Properties
@@ -48,27 +41,16 @@ class CspSubElementSubarray(SKASubarray):
     # Attributes
     # ----------
 
-    scanID = attribute(
-        dtype="DevULong64",
-        label="scanID",
-        doc="The scan identification number to be inserted in the output products.",
-    )
+    scanID = attribute(dtype="DevULong64", label="scanID")
     """Device attribute."""
 
-    configurationID = attribute(
-        dtype="DevString",
-        label="configurationID",
-        doc="The configuration ID specified into the JSON configuration.",
-    )
+    configurationID = attribute(dtype="DevString", label="configurationID")
     """Device attribute."""
 
     sdpDestinationAddresses = attribute(
         dtype="DevString",
         access=AttrWriteType.READ_WRITE,
         label="sdpDestinationAddresses",
-        doc="JSON formatted string.\nReport the list of all the SDP addresses provided "
-        "by SDP to receive the output products.\nSpecifies the Mac, IP, Port for each "
-        "resource:CBF visibility channels, Pss pipelines, PSTBeam",
     )
     """Device attribute."""
 
@@ -76,31 +58,22 @@ class CspSubElementSubarray(SKASubarray):
         dtype="DevFloat",
         label="outputDataRateToSdp",
         unit="GB/s",
-        doc="The output data rate (GB/s) on the link for each scan.",
     )
     """Device attribute."""
 
-    lastScanConfiguration = attribute(
-        dtype="DevString",
-        label="lastScanConfiguration",
-        doc="The last valid scan configuration.",
-    )
+    lastScanConfiguration = attribute(dtype="DevString", label="lastScanConfiguration")
     """Device attribute."""
 
     sdpLinkActive = attribute(
         dtype=("DevBoolean",),
         max_dim_x=100,
         label="sdpLinkActive",
-        doc="Flag reporting if the SDP links are active.",
     )
     """Device attribute."""
 
     listOfDevicesCompletedTasks = attribute(
         dtype="DevString",
         label="listOfDevicesCompletedTasks",
-        doc="JSON formatted string reporting for each task/command the list of devices"
-        "\nthat completed successfully the task.\nEx.\n{``cmd1``: [``device1``, "
-        "``device2``], ``cmd2``: [``device2``, ``device3``]}",
     )
     """Device attribute."""
 
@@ -108,14 +81,12 @@ class CspSubElementSubarray(SKASubarray):
         dtype="DevFloat",
         label="configureScanMeasuredDuration",
         unit="sec",
-        doc="The measured time (sec) taken to execute the command",
     )
     """Device attribute."""
 
     configureScanTimeoutExpiredFlag = attribute(
         dtype="DevBoolean",
         label="configureScanTimeoutExpiredFlag",
-        doc="Flag reporting  ConfigureScan command timeout expiration.",
     )
     """Device attribute."""
 
@@ -124,7 +95,6 @@ class CspSubElementSubarray(SKASubarray):
         access=AttrWriteType.READ_WRITE,
         label="assignResourcesMaximumDuration",
         unit="sec",
-        doc="The maximum expected command duration.",
     )
     """Device attribute."""
 
@@ -132,7 +102,6 @@ class CspSubElementSubarray(SKASubarray):
         dtype="DevFloat",
         label="assignResourcesMeasuredDuration",
         unit="sec",
-        doc="The measured command execution duration.",
     )
     """Device attribute."""
 
@@ -141,14 +110,12 @@ class CspSubElementSubarray(SKASubarray):
         label="assignResourcesProgress",
         max_value=100,
         min_value=0,
-        doc="The percentage progress of the command in the [0,100].",
     )
     """Device attribute."""
 
     assignResourcesTimeoutExpiredFlag = attribute(
         dtype="DevBoolean",
         label="assignResourcesTimeoutExpiredFlag",
-        doc="Flag reporting  AssignResources command timeout expiration.",
     )
     """Device attribute."""
 
@@ -157,7 +124,6 @@ class CspSubElementSubarray(SKASubarray):
         access=AttrWriteType.READ_WRITE,
         label="releaseResourcesMaximumDuration",
         unit="sec",
-        doc="The maximum expected command duration.",
     )
     """Device attribute."""
 
@@ -165,7 +131,6 @@ class CspSubElementSubarray(SKASubarray):
         dtype="DevFloat",
         label="releaseResourcesMeasuredDuration",
         unit="sec",
-        doc="The measured command execution duration.",
     )
     """Device attribute."""
 
@@ -174,14 +139,12 @@ class CspSubElementSubarray(SKASubarray):
         label="releaseResourcesProgress",
         max_value=100,
         min_value=0,
-        doc="The percentage progress of the command in the [0,100].",
     )
     """Device attribute."""
 
     releaseResourcesTimeoutExpiredFlag = attribute(
         dtype="DevBoolean",
         label="timeoutExpiredFlag",
-        doc="Flag reporting  command timeout expiration.",
     )
     """Device attribute."""
 
@@ -299,151 +262,90 @@ class CspSubElementSubarray(SKASubarray):
             self._completed()
             return (ResultCode.OK, message)
 
-    def always_executed_hook(self):
-        """
-        Perform actions that are executed before every device command.
-
-        This is a Tango hook.
-        """
-        # PROTECTED REGION ID(CspSubElementSubarray.always_executed_hook) ENABLED START #
-        # PROTECTED REGION END #    //  CspSubElementSubarray.always_executed_hook
-
-    def delete_device(self):
-        """
-        Clean up any resources prior to device deletion.
-
-        This method is a Tango hook that is called by the device
-        destructor and by the device Init command. It allows for any
-        memory or other resources allocated in the init_device method to
-        be released prior to device deletion.
-        """
-        # PROTECTED REGION ID(CspSubElementSubarray.delete_device) ENABLED START #
-        # PROTECTED REGION END #    //  CspSubElementSubarray.delete_device
-
     # ------------------
     # Attributes methods
     # ------------------
 
     def read_scanID(self):
-        # PROTECTED REGION ID(CspSubElementSubarray.scanID_read) ENABLED START #
         """Return the scanID attribute."""
         return self.component_manager.scan_id
-        # PROTECTED REGION END #    //  CspSubElementSubarray.scanID_read
 
     def read_configurationID(self):
-        # PROTECTED REGION ID(CspSubElementSubarray.configurationID_read) ENABLED START #
         """Return the configurationID attribute."""
         return self.component_manager.config_id
-        # PROTECTED REGION END #    //  CspSubElementSubarray.configurationID_read
 
     def read_sdpDestinationAddresses(self):
-        # PROTECTED REGION ID(CspSubElementSubarray.sdpDestinationAddresses_read) ENABLED START #
         """Return the sdpDestinationAddresses attribute."""
         return self._sdp_addresses
-        # PROTECTED REGION END #    //  CspSubElementSubarray.sdpDestinationAddresses_read
 
     def write_sdpDestinationAddresses(self, value):
-        # PROTECTED REGION ID(CspSubElementSubarray.sdpDestinationAddresses_write) ENABLED START #
         """Set the sdpDestinationAddresses attribute."""
         self._sdp_addresses = value
-        # PROTECTED REGION END #    //  CspSubElementSubarray.sdpDestinationAddresses_write
 
     def read_outputDataRateToSdp(self):
-        # PROTECTED REGION ID(CspSubElementSubarray.outputDataRateToSdp_read) ENABLED START #
         """Return the outputDataRateToSdp attribute."""
         return self._sdp_output_data_rate
-        # PROTECTED REGION END #    //  CspSubElementSubarray.outputDataRateToSdp_read
 
     def read_lastScanConfiguration(self):
-        # PROTECTED REGION ID(CspSubElementSubarray.lastScanConfiguration_read) ENABLED START #
         """Return the lastScanConfiguration attribute."""
         return self._last_scan_configuration
-        # PROTECTED REGION END #    //  CspSubElementSubarray.lastScanConfiguration_read
 
     def read_configureScanMeasuredDuration(self):
-        # PROTECTED REGION ID(CspSubElementSubarray.configureScanMeasuredDuration_read) ENABLED START #
         """Return the configureScanMeasuredDuration attribute."""
         return self._cmd_measured_duration["configurescan"]
-        # PROTECTED REGION END #    //  CspSubElementSubarray.configureScanMeasuredDuration_read
 
     def read_configureScanTimeoutExpiredFlag(self):
-        # PROTECTED REGION ID(CspSubElementSubarray.configureScanTimeoutExpiredFlag_read) ENABLED START #
         """Return the configureScanTimeoutExpiredFlag attribute."""
         return self._timeout_expired["configurescan"]
-        # PROTECTED REGION END #    //  CspSubElementSubarray.configureScanTimeoutExpiredFlag_read
 
     def read_listOfDevicesCompletedTasks(self):
-        # PROTECTED REGION ID(CspSubElementSubarray.listOfDevicesCompletedTasks_read) ENABLED START #
         """Return the listOfDevicesCompletedTasks attribute."""
         dict_to_string = json.dumps(self._list_of_devices_completed_task)
         return dict_to_string
-        # PROTECTED REGION END #    //  CspSubElementSubarray.listOfDevicesCompletedTasks_read
 
     def read_assignResourcesMaximumDuration(self):
-        # PROTECTED REGION ID(CspSubElementSubarray.assignResourcesMaximumDuration_read) ENABLED START #
         """Return the assignResourcesMaximumDuration attribute."""
         return self._cmd_maximum_duration["assignresources"]
-        # PROTECTED REGION END #    //  CspSubElementSubarray.assignResourcesMaximumDuration_read
 
     def write_assignResourcesMaximumDuration(self, value):
-        # PROTECTED REGION ID(CspSubElementSubarray.assignResourcesMaximumDuration_write) ENABLED START #
         """Set the assignResourcesMaximumDuration attribute."""
         self._cmd_maximum_duration["assignresources"] = value
-        # PROTECTED REGION END #    //  CspSubElementSubarray.assignResourcesMaximumDuration_write
 
     def read_assignResourcesMeasuredDuration(self):
-        # PROTECTED REGION ID(CspSubElementSubarray.assignResourcesMeasuredDuration_read) ENABLED START #
         """Return the assignResourcesMeasuredDuration attribute."""
         return self._cmd_measured_duration["assignresources"]
-        # PROTECTED REGION END #    //  CspSubElementSubarray.assignResourcesMeasuredDuration_read
 
     def read_assignResourcesProgress(self):
-        # PROTECTED REGION ID(CspSubElementSubarray.assignResourcesProgress_read) ENABLED START #
         """Return the assignResourcesProgress attribute."""
         return self._cmd_progress["assignresources"]
-        # PROTECTED REGION END #    //  CspSubElementSubarray.assignResourcesProgress_read
 
     def read_assignResourcesTimeoutExpiredFlag(self):
-        # PROTECTED REGION ID(CspSubElementSubarray.assignResourcesTimeoutExpiredFlag_read) ENABLED START #
         """Return the assignResourcesTimeoutExpiredFlag attribute."""
         return self._timeout_expired["assignresources"]
-        # PROTECTED REGION END #    //  CspSubElementSubarray.assignResourcesTimeoutExpiredFlag_read
 
     def read_releaseResourcesMaximumDuration(self):
-        # PROTECTED REGION ID(CspSubElementSubarray.releaseResourcesMaximumDuration_read) ENABLED START #
         """Return the releaseResourcesMaximumDuration attribute."""
         return self._cmd_maximum_duration["releaseresources"]
-        # PROTECTED REGION END #    //  CspSubElementSubarray.releaseResourcesMaximumDuration_read
 
     def write_releaseResourcesMaximumDuration(self, value):
-        # PROTECTED REGION ID(CspSubElementSubarray.releaseResourcesMaximumDuration_write) ENABLED START #
         """Set the releaseResourcesMaximumDuration attribute."""
         self._cmd_maximum_duration["releaseresources"] = value
-        # PROTECTED REGION END #    //  CspSubElementSubarray.releaseResourcesMaximumDuration_write
 
     def read_releaseResourcesMeasuredDuration(self):
-        # PROTECTED REGION ID(CspSubElementSubarray.releaseResourcesMeasuredDuration_read) ENABLED START #
         """Return the releaseResourcesMeasuredDuration attribute."""
         return self._cmd_measured_duration["releaseresources"]
-        # PROTECTED REGION END #    //  CspSubElementSubarray.releaseResourcesMeasuredDuration_read
 
     def read_releaseResourcesProgress(self):
-        # PROTECTED REGION ID(CspSubElementSubarray.releaseResourcesProgress_read) ENABLED START #
         """Return the releaseResourcesProgress attribute."""
         return self._cmd_progress["releaseresources"]
-        # PROTECTED REGION END #    //  CspSubElementSubarray.releaseResourcesProgress_read
 
     def read_releaseResourcesTimeoutExpiredFlag(self):
-        # PROTECTED REGION ID(CspSubElementSubarray.releaseResourcesTimeoutExpiredFlag_read) ENABLED START #
         """Return the releaseResourcesTimeoutExpiredFlag attribute."""
         return self._timeout_expired["releaseresources"]
-        # PROTECTED REGION END #    //  CspSubElementSubarray.releaseResourcesTimeoutExpiredFlag_read
 
     def read_sdpLinkActive(self):
-        # PROTECTED REGION ID(CspSubElementSubarray.sdpLinkActive_read) ENABLED START #
         """Return the sdpLinkActive attribute."""
         return (False,)
-        # PROTECTED REGION END #    //  CspSubElementSubarray.sdpLinkActive_read
 
     # --------
     # Commands
@@ -525,7 +427,6 @@ class CspSubElementSubarray(SKASubarray):
     )
     @DebugIt()
     def ConfigureScan(self, argin):
-        # PROTECTED REGION ID(CspSubElementSubarray.ConfigureScan) ENABLED START #
         """
         Configure a complete scan for the subarray.
 
@@ -546,7 +447,6 @@ class CspSubElementSubarray(SKASubarray):
             (result_code, message) = handler(configuration)
 
         return [[result_code], [message]]
-        # PROTECTED REGION END #    //  CspSubElementSubarray.Configure
 
     def is_Configure_allowed(self):
         """
@@ -567,7 +467,6 @@ class CspSubElementSubarray(SKASubarray):
     )
     @DebugIt()
     def Configure(self, argin):
-        # PROTECTED REGION ID(CspSubElementSubarray.Configure) ENABLED START #
         """
         Redirect to ConfigureScan method. Configure a complete scan for the subarray.
 
@@ -578,7 +477,6 @@ class CspSubElementSubarray(SKASubarray):
             The message is for information purpose only.
         """
         return self.ConfigureScan(argin)
-        # PROTECTED REGION END #    //  CspSubElementSubarray.Configure
 
     def is_GoToIdle_allowed(self):
         """
@@ -605,7 +503,6 @@ class CspSubElementSubarray(SKASubarray):
     )
     @DebugIt()
     def GoToIdle(self):
-        # PROTECTED REGION ID(CspSubElementSubarray.GoToIdle) ENABLED START #
         """
         Transit the subarray from READY to IDLE obsState.
 
@@ -626,7 +523,6 @@ class CspSubElementSubarray(SKASubarray):
     )
     @DebugIt()
     def End(self):
-        # PROTECTED REGION ID(CspSubElementSubarray.End) ENABLED START #
         """
         Transit the subarray from READY to IDLE obsState. Redirect to GoToIdle command.
 
@@ -635,7 +531,6 @@ class CspSubElementSubarray(SKASubarray):
             The message is for information purpose only.
         """
         return self.GoToIdle()
-        # PROTECTED REGION END #    //  CspSubElementSubarray.End
 
 
 # ----------
@@ -645,9 +540,7 @@ class CspSubElementSubarray(SKASubarray):
 
 def main(args=None, **kwargs):
     """Run the CspSubElementSubarray module."""
-    # PROTECTED REGION ID(CspSubElementSubarray.main) ENABLED START #
     return run((CspSubElementSubarray,), args=args, **kwargs)
-    # PROTECTED REGION END #    //  CspSubElementSubarray.main
 
 
 if __name__ == "__main__":

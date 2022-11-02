@@ -103,6 +103,7 @@ class SKACapability(SKAObsDevice):  # pylint: disable=abstract-method
         unit="s",
         standard_unit="s",
         display_unit="s",
+        doc="Time of activation in seconds since Unix epoch.",
     )
     def activationTime(self: SKACapability) -> float:
         """
@@ -112,7 +113,13 @@ class SKACapability(SKAObsDevice):  # pylint: disable=abstract-method
         """
         return self._activation_time
 
-    @attribute(dtype="uint16")
+    @attribute(
+        dtype="uint16",
+        doc=(
+            "Number of instances of this Capability Type currently in use on this "
+            "subarray."
+        ),
+    )
     def configuredInstances(self: SKACapability) -> int:
         """
         Read the number of instances of a capability in the subarray.
@@ -121,7 +128,11 @@ class SKACapability(SKAObsDevice):  # pylint: disable=abstract-method
         """
         return self._configured_instances
 
-    @attribute(dtype=("str",), max_dim_x=100)
+    @attribute(
+        dtype=("str",),
+        max_dim_x=100,
+        doc="A list of components with no. of instances in use on this Capability.",
+    )
     def usedComponents(self: SKACapability) -> list[str]:
         """
         Read the list of components with no.

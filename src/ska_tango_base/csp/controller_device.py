@@ -62,6 +62,7 @@ class CspSubElementController(SKAController):
         access=AttrWriteType.READ_WRITE,
         label="powerDelayStandbyOn",
         unit="sec.",
+        doc="Delay in sec between the power-up stages in Standby<->On transitions.",
     )
     """Device attribute."""
 
@@ -70,6 +71,7 @@ class CspSubElementController(SKAController):
         access=AttrWriteType.READ_WRITE,
         label="powerDelayStandbyOff",
         unit="sec",
+        doc="Delay in sec between the power-up stages in Standby->Off transitions.",
     )
     """Device attribute."""
 
@@ -78,6 +80,7 @@ class CspSubElementController(SKAController):
         label="onProgress",
         max_value=100,
         min_value=0,
+        doc="Progress percentage of the command execution.",
     )
     """Device attribute."""
 
@@ -86,6 +89,7 @@ class CspSubElementController(SKAController):
         access=AttrWriteType.READ_WRITE,
         label="onMaximumDuration",
         unit="sec.",
+        doc="The expected maximum duration (sec.) to execute the On command.",
     )
     """Device attribute."""
 
@@ -93,6 +97,7 @@ class CspSubElementController(SKAController):
         dtype="DevFloat",
         label="onMeasuredDuration",
         unit="sec",
+        doc="The measured time (sec) taken to execute the command.",
     )
     """Device attribute."""
 
@@ -101,6 +106,7 @@ class CspSubElementController(SKAController):
         label="standbyProgress",
         max_value=100,
         min_value=0,
+        doc="Progress percentage of the command execution.",
     )
     """Device attribute."""
 
@@ -109,6 +115,7 @@ class CspSubElementController(SKAController):
         access=AttrWriteType.READ_WRITE,
         label="standbyMaximumDuration",
         unit="sec.",
+        doc="The expected maximum duration (sec.) to execute the Standby command.",
     )
     """Device attribute."""
 
@@ -116,6 +123,7 @@ class CspSubElementController(SKAController):
         dtype="DevFloat",
         label="standbyMeasuredDuration",
         unit="sec",
+        doc="The measured time (sec) taken to execute the Standby command.",
     )
     """Device attribute."""
 
@@ -124,6 +132,7 @@ class CspSubElementController(SKAController):
         label="offProgress",
         max_value=100,
         min_value=0,
+        doc="Progress percentage of the command execution.",
     )
     """Device attribute."""
 
@@ -132,6 +141,7 @@ class CspSubElementController(SKAController):
         access=AttrWriteType.READ_WRITE,
         label="offMaximumDuration",
         unit="sec.",
+        doc="The expected maximum duration (sec.) to execute the Off command.",
     )
     """Device attribute."""
 
@@ -139,6 +149,7 @@ class CspSubElementController(SKAController):
         dtype="DevFloat",
         label="offMeasuredDuration",
         unit="sec",
+        doc="The measured time (sec) taken to execute the Off command.",
     )
     """Device attribute."""
 
@@ -146,6 +157,7 @@ class CspSubElementController(SKAController):
         dtype="DevFloat",
         label="totalOutputDataRateToSdp",
         unit="GB/s",
+        doc="Report the total link expected  output data rate.",
     )
     """Device attribute."""
 
@@ -154,6 +166,7 @@ class CspSubElementController(SKAController):
         label="loadFirmwareProgress",
         max_value=100,
         min_value=0,
+        doc="The command progress percentage.",
     )
     """Device attribute."""
 
@@ -162,6 +175,7 @@ class CspSubElementController(SKAController):
         access=AttrWriteType.READ_WRITE,
         label="loadFirmwareMaximumDuration",
         unit="sec",
+        doc="The expected maximum duration (in sec) for command execution.",
     )
     """Device attribute."""
 
@@ -169,6 +183,7 @@ class CspSubElementController(SKAController):
         dtype="DevFloat",
         label="loadFirmwareMeasuredDuration",
         unit="sec",
+        doc="The command execution measured duration (in sec).",
     )
     """Device attribute."""
 

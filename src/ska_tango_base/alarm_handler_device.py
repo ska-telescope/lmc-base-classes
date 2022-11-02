@@ -75,7 +75,7 @@ class SKAAlarmHandler(SKABaseDevice):  # pylint: disable=abstract-method
     # Attributes
     # ----------
 
-    @attribute(dtype="int")
+    @attribute(dtype="int", doc="Number of active Alerts")
     def statsNrAlerts(self: SKAAlarmHandler) -> int:
         """
         Read number of active alerts.
@@ -84,7 +84,7 @@ class SKAAlarmHandler(SKABaseDevice):  # pylint: disable=abstract-method
         """
         return 0
 
-    @attribute(dtype="int")
+    @attribute(dtype="int", doc="Number of active Alarms")
     def statsNrAlarms(self: SKAAlarmHandler) -> int:
         """
         Read number of active alarms.
@@ -93,7 +93,7 @@ class SKAAlarmHandler(SKABaseDevice):  # pylint: disable=abstract-method
         """
         return 0
 
-    @attribute(dtype="int")
+    @attribute(dtype="int", doc="Number of New active alarms")
     def statsNrNewAlarms(self: SKAAlarmHandler) -> int:
         """
         Read number of new active alarms.
@@ -102,7 +102,7 @@ class SKAAlarmHandler(SKABaseDevice):  # pylint: disable=abstract-method
         """
         return 0
 
-    @attribute(dtype="double")
+    @attribute(dtype="double", doc="Number of unacknowledged alarms")
     def statsNrUnackAlarms(self: SKAAlarmHandler) -> float:
         """
         Read number of unacknowledged alarms.
@@ -111,7 +111,7 @@ class SKAAlarmHandler(SKABaseDevice):  # pylint: disable=abstract-method
         """
         return 0.0
 
-    @attribute(dtype="double")
+    @attribute(dtype="double", doc="Number of returned alarms")
     def statsNrRtnAlarms(self: SKAAlarmHandler) -> float:
         """
         Read number of returned alarms.
@@ -120,7 +120,7 @@ class SKAAlarmHandler(SKABaseDevice):  # pylint: disable=abstract-method
         """
         return 0.0
 
-    @attribute(dtype=("str",), max_dim_x=10000)
+    @attribute(dtype=("str",), max_dim_x=10000, doc="List of active alerts")
     def activeAlerts(self: SKAAlarmHandler) -> list[str]:
         """
         Read list of active alerts.
@@ -129,7 +129,7 @@ class SKAAlarmHandler(SKABaseDevice):  # pylint: disable=abstract-method
         """
         return [""]
 
-    @attribute(dtype=("str",), max_dim_x=10000)
+    @attribute(dtype=("str",), max_dim_x=10000, doc="List of active alarms")
     def activeAlarms(self: SKAAlarmHandler) -> list[str]:
         """
         Read list of active alarms.

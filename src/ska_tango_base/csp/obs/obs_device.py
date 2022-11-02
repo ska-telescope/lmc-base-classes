@@ -50,35 +50,70 @@ class CspSubElementObsDevice(SKAObsDevice):
     # Attributes
     # ----------
 
-    scanID = attribute(dtype="DevULong64", label="scanID")
+    scanID = attribute(
+        dtype="DevULong64",
+        label="scanID",
+        doc="The scan identification number to be inserted in the output products.",
+    )
     """Device attribute."""
 
-    configurationID = attribute(dtype="DevString", label="configurationID")
+    configurationID = attribute(
+        dtype="DevString",
+        label="configurationID",
+        doc="The configuration ID specified into the JSON configuration.",
+    )
     """Device attribute."""
 
-    deviceID = attribute(dtype="DevUShort", label="deviceID")
+    deviceID = attribute(
+        dtype="DevUShort",
+        label="deviceID",
+        doc="The observing device ID.",
+    )
     """Device attribute."""
 
-    lastScanConfiguration = attribute(dtype="DevString", label="lastScanConfiguration")
+    lastScanConfiguration = attribute(
+        dtype="DevString",
+        label="lastScanConfiguration",
+        doc="The last valid scan configuration.",
+    )
     """Device attribute."""
 
     sdpDestinationAddresses = attribute(
         dtype="DevString",
         label="sdpDestinationAddresses",
+        doc=(
+            "JSON formatted string\n"
+            "Report the list of all the SDP addresses provided by SDP to receive the "
+            "output products.\n"
+            "Specifies the Mac, IP, Port for each resource:\n"
+            "CBF: visibility channels\n"
+            "PSS ? Pss pipelines\n"
+            "PST ? PSTBeam\n"
+            "Not used by al CSP Sub-element observing device (for ex. Mid CBF VCCs)"
+        ),
     )
     """Device attribute."""
 
-    sdpLinkCapacity = attribute(dtype="DevFloat", label="sdpLinkCapacity")
+    sdpLinkCapacity = attribute(
+        dtype="DevFloat",
+        label="sdpLinkCapacity",
+        doc="The SDP link capavity in GB/s.",
+    )
     """Device attribute."""
 
     sdpLinkActive = attribute(
         dtype=("DevBoolean",),
         max_dim_x=100,
         label="sdpLinkActive",
+        doc="Flag reporting if the SDP link is active.\nTrue: active\nFalse:down",
     )
     """Device attribute."""
 
-    healthFailureMessage = attribute(dtype="DevString", label="healthFailureMessage")
+    healthFailureMessage = attribute(
+        dtype="DevString",
+        label="healthFailureMessage",
+        doc="Message providing info about device health failure.",
+    )
     """Device attribute."""
 
     # ---------------

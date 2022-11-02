@@ -122,7 +122,7 @@ class SKAController(SKABaseDevice):  # pylint: disable=abstract-method
     # Attributes
     # ----------
 
-    @attribute(dtype="str")
+    @attribute(dtype="str", doc="FQDN of Element Logger")
     def elementLoggerAddress(self: SKAController) -> str:
         """
         Read FQDN of Element Logger device.
@@ -131,7 +131,7 @@ class SKAController(SKABaseDevice):  # pylint: disable=abstract-method
         """
         return self._element_logger_address
 
-    @attribute(dtype="str")
+    @attribute(dtype="str", doc="FQDN of Element Alarm Handlers")
     def elementAlarmAddress(self: SKAController) -> str:
         """
         Read FQDN of Element Alarm device.
@@ -140,7 +140,7 @@ class SKAController(SKABaseDevice):  # pylint: disable=abstract-method
         """
         return self._element_alarm_address
 
-    @attribute(dtype="str")
+    @attribute(dtype="str", doc="FQDN of Element TelState device")
     def elementTelStateAddress(self: SKAController) -> str:
         """
         Read FQDN of Element TelState device.
@@ -149,7 +149,7 @@ class SKAController(SKABaseDevice):  # pylint: disable=abstract-method
         """
         return self._element_tel_state_address
 
-    @attribute(dtype="str")
+    @attribute(dtype="str", doc="FQDN of Element Database device")
     def elementDatabaseAddress(self: SKAController) -> str:
         """
         Read FQDN of Element Database device.
@@ -158,7 +158,14 @@ class SKAController(SKABaseDevice):  # pylint: disable=abstract-method
         """
         return self._element_database_address
 
-    @attribute(dtype=("str",), max_dim_x=20)
+    @attribute(
+        dtype=("str",),
+        max_dim_x=20,
+        doc=(
+            "Maximum number of instances of each capability type,"
+            " e.g. 'CORRELATOR:512', 'PSS-BEAMS:4'."
+        ),
+    )
     def maxCapabilities(self: SKAController) -> list[str]:
         """
         Read maximum number of instances of each capability type.
@@ -168,7 +175,14 @@ class SKAController(SKABaseDevice):  # pylint: disable=abstract-method
         """
         return convert_dict_to_list(self._max_capabilities)
 
-    @attribute(dtype=("str",), max_dim_x=20)
+    @attribute(
+        dtype=("str",),
+        max_dim_x=20,
+        doc=(
+            "A list of available number of instances of each capability type, "
+            "e.g. 'CORRELATOR:512', 'PSS-BEAMS:4'."
+        ),
+    )
     def availableCapabilities(self: SKAController) -> list[str]:
         """
         Read list of available number of instances of each capability type.

@@ -1,20 +1,17 @@
 # type: ignore
-# flake8: noqa
-# pylint: skip-file  # TODO: Incrementally lint this repo
 """This module defines elements of the pytest test harness shared by all tests."""
 from __future__ import annotations
 
 import logging
 import socket
-import time
-from typing import Any, Callable, Hashable
+from typing import Any, Dict, Generator, List
 
 import pytest
+import pytest_mock
 import tango
 from ska_tango_testing.mock import MockCallableGroup
 from ska_tango_testing.mock.tango import MockTangoEventCallbackGroup
 from tango.test_context import DeviceTestContext, MultiDeviceTestContext, get_host_ip
-from typing_extensions import Protocol
 
 
 @pytest.fixture(scope="class")
@@ -29,9 +26,18 @@ def device_properties() -> dict[str, Any]:
     return {}
 
 
-@pytest.fixture()
-def tango_context(device_test_config):
-    """Return a Tango test context object, in which the device under test is running."""
+@pytest.fixture(name="tango_context")
+def fixture_tango_context(
+    device_test_config,
+) -> Generator[DeviceTestContext, None, None]:
+    """
+    Return a Tango test context in which the device under test is running.
+
+    :param device_test_config: specification of the device under test,
+        including its properties and memorized attributes.
+
+    :yields: a Tango test context in which the device under test is running.
+    """
     component_manager_patch = device_test_config.pop("component_manager_patch", None)
     if component_manager_patch is not None:
         device_test_config["device"].create_component_manager = component_manager_patch
@@ -43,22 +49,28 @@ def tango_context(device_test_config):
 
 
 @pytest.fixture()
-def device_under_test(tango_context) -> tango.DeviceProxy:
+def device_under_test(tango_context: DeviceTestContext) -> tango.DeviceProxy:
     """
     Return a device proxy to the device under test.
 
     :param tango_context: a Tango test context with the specified device
         running
-    :type tango_context: :py:class:`tango.DeviceTestContext`
 
     :return: a proxy to the device under test
-    :rtype: :py:class:`tango.DeviceProxy`
     """
     return tango_context.device
 
 
-def pytest_itemcollected(item):
-    """Make Tango-related tests run in forked mode."""
+def pytest_itemcollected(item: pytest.Item) -> None:
+    """
+    Modify a test after it has been collected by pytest.
+
+    This hook implementation adds the "forked" custom mark to all tests
+    that use the `device_under_test` fixture, causing them to be
+    sandboxed in their own process.
+
+    :param item: the collected test for which this hook is called
+    """
     if "device_under_test" in item.fixturenames:
         item.add_marker("forked")
 
@@ -98,27 +110,30 @@ def change_event_callbacks() -> MockTangoEventCallbackGroup:
 
 
 @pytest.fixture()
-def logger():
-    """Fixture that returns a default logger for tests."""
+def logger() -> logging.Logger:
+    """
+    Return a default logger for tests.
+
+    :return: a default logger for tests.
+    """
     return logging.Logger("Test logger")
 
 
-@pytest.fixture(scope="module")
-def devices_to_test(request):
-    """Fixture for devices to test."""
-    raise NotImplementedError(
-        "You have to specify the devices to test by overriding the 'devices_to_test' fixture."
-    )
-
-
-@pytest.fixture(scope="function")
-def multi_device_tango_context(
-    mocker, devices_to_test  # pylint: disable=redefined-outer-name
-):
+@pytest.fixture(name="multi_device_tango_context", scope="function")
+def fixture_multi_device_tango_context(
+    mocker: pytest_mock.MockerFixture,
+    devices_to_test: List[Dict],
+) -> Generator[MultiDeviceTestContext, None, None]:
     """
     Create and return a TANGO MultiDeviceTestContext object.
 
     tango.DeviceProxy patched to work around a name-resolving issue.
+
+    :param mocker: pytest fixture that wraps :py:mod:`unittest.mock`.
+    :param devices_to_test: list of specifications of devices to include
+        in the tango context.
+
+    :yields: a tango context
     """
 
     def _get_open_port():
@@ -129,18 +144,18 @@ def multi_device_tango_context(
         s.close()
         return port
 
-    HOST = get_host_ip()
-    PORT = _get_open_port()
-    _DeviceProxy = tango.DeviceProxy
+    host = get_host_ip()
+    port = _get_open_port()
+    device_proxy_type = tango.DeviceProxy
     mocker.patch(
         "tango.DeviceProxy",
-        wraps=lambda fqdn, *args, **kwargs: _DeviceProxy(
-            "tango://{0}:{1}/{2}#dbase=no".format(HOST, PORT, fqdn),
+        wraps=lambda fqdn, *args, **kwargs: device_proxy_type(
+            f"tango://{host}:{port}/{fqdn}#dbase=no",
             *args,
             **kwargs,
         ),
     )
     with MultiDeviceTestContext(
-        devices_to_test, host=HOST, port=PORT, process=True
+        devices_to_test, host=host, port=port, process=True
     ) as context:
         yield context

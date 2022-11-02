@@ -13,11 +13,16 @@ from __future__ import annotations
 
 from tango.server import device_property
 
-from ska_tango_base import SKABaseDevice
+from ska_tango_base.base import SKABaseDevice
 
 __all__ = ["SKATelState", "main"]
 
 
+# TODO: This rather pointless class has no commands or attributes, so we
+# haven't provided it with a component manager either; hence its
+# `create_component_manager` is still the abstract one inherited from the base
+# device.
+# pylint: disable-next=abstract-method
 class SKATelState(SKABaseDevice):
     """A generic base device for Telescope State for SKA."""
 
@@ -28,28 +33,6 @@ class SKATelState(SKABaseDevice):
     TelStateConfigFile = device_property(
         dtype="str",
     )
-
-    # ---------------
-    # General methods
-    # ---------------
-    def always_executed_hook(self: SKATelState) -> None:
-        """
-        Perform actions that are executed before every device command.
-
-        This is a Tango hook.
-        """
-        pass
-
-    def delete_device(self: SKATelState) -> None:
-        """
-        Clean up any resources prior to device deletion.
-
-        This method is a Tango hook that is called by the device
-        destructor and by the device Init command. It allows for any
-        memory or other resources allocated in the init_device method to
-        be released prior to device deletion.
-        """
-        pass
 
     # ----------
     # Attributes

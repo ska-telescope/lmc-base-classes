@@ -1,5 +1,3 @@
-# type: ignore
-# pylint: skip-file  # TODO: Incrementally lint this repo
 """
 This module specifies CSP SubElement Observing state machine.
 
@@ -12,6 +10,9 @@ It comprises:
   state machine state to a value of the
   :py:class:`ska_control_model.obs_state.ObsState` enum.
 """
+import logging
+from typing import Any, Callable, Optional
+
 from transitions.extensions import LockedMachine as Machine
 
 from ska_tango_base.obs import ObsStateModel
@@ -90,12 +91,13 @@ class CspSubElementObsStateMachine(Machine):
        :caption: Diagram of the CSP subelement obs state machine
     """
 
-    def __init__(self, callback=None, **extra_kwargs):
+    def __init__(
+        self, callback: Optional[Callable] = None, **extra_kwargs: Any
+    ) -> None:
         """
         Initialise the model.
 
         :param callback: A callback to be called when the state changes
-        :type callback: callable
         :param extra_kwargs: Additional keywords arguments to pass to super class
             initialiser (useful for graphing)
         """
@@ -238,7 +240,7 @@ class CspSubElementObsStateMachine(Machine):
         )
         self._state_changed()
 
-    def _state_changed(self):
+    def _state_changed(self) -> None:
         """
         State machine callback that is called every time the obs_state changes.
 
@@ -286,7 +288,9 @@ class CspSubElementObsStateModel(ObsStateModel):
       reset command that force the device to the base state (IDLE).
     """
 
-    def __init__(self, logger, callback=None):
+    def __init__(
+        self, logger: logging.Logger, callback: Optional[Callable] = None
+    ) -> None:
         """
         Initialise the model.
 

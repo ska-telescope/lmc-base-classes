@@ -14,6 +14,8 @@ separate from the "built-in" Tango attribute alarms.
 """
 from __future__ import annotations
 
+from typing import Any
+
 from tango import DebugIt
 from tango.server import attribute, command, device_property
 
@@ -23,7 +25,10 @@ from ska_tango_base.commands import FastCommand
 __all__ = ["SKAAlarmHandler", "main"]
 
 
-class SKAAlarmHandler(SKABaseDevice):
+# TODO: This under-developed device class does not yet have a component
+# manager; hence it still inherits the abstract `create_component_manager`
+# method from the base device.
+class SKAAlarmHandler(SKABaseDevice):  # pylint: disable=abstract-method
     """A generic base device for Alarms for SKA."""
 
     # -----------------
@@ -66,33 +71,11 @@ class SKAAlarmHandler(SKABaseDevice):
             self.GetAlertStatsCommand(self.logger),
         )
 
-    def always_executed_hook(self: SKAAlarmHandler) -> None:
-        """
-        Perform actions that are executed before every device command.
-
-        This is a Tango hook.
-        """
-        pass
-
-    def delete_device(self: SKAAlarmHandler) -> None:
-        """
-        Clean up any resources prior to device deletion.
-
-        This method is a Tango hook that is called by the device
-        destructor and by the device Init command. It allows for any
-        memory or other resources allocated in the init_device method to
-        be released prior to device deletion.
-        """
-        pass
-
     # ----------
     # Attributes
     # ----------
 
-    @attribute(
-        dtype="int",
-        doc="Number of active Alerts",
-    )
+    @attribute(dtype="int", doc="Number of active Alerts")
     def statsNrAlerts(self: SKAAlarmHandler) -> int:
         """
         Read number of active alerts.
@@ -101,10 +84,7 @@ class SKAAlarmHandler(SKABaseDevice):
         """
         return 0
 
-    @attribute(
-        dtype="int",
-        doc="Number of active Alarms",
-    )
+    @attribute(dtype="int", doc="Number of active Alarms")
     def statsNrAlarms(self: SKAAlarmHandler) -> int:
         """
         Read number of active alarms.
@@ -113,10 +93,7 @@ class SKAAlarmHandler(SKABaseDevice):
         """
         return 0
 
-    @attribute(
-        dtype="int",
-        doc="Number of New active alarms",
-    )
+    @attribute(dtype="int", doc="Number of New active alarms")
     def statsNrNewAlarms(self: SKAAlarmHandler) -> int:
         """
         Read number of new active alarms.
@@ -125,10 +102,7 @@ class SKAAlarmHandler(SKABaseDevice):
         """
         return 0
 
-    @attribute(
-        dtype="double",
-        doc="Number of unacknowledged alarms",
-    )
+    @attribute(dtype="double", doc="Number of unacknowledged alarms")
     def statsNrUnackAlarms(self: SKAAlarmHandler) -> float:
         """
         Read number of unacknowledged alarms.
@@ -137,10 +111,7 @@ class SKAAlarmHandler(SKABaseDevice):
         """
         return 0.0
 
-    @attribute(
-        dtype="double",
-        doc="Number of returned alarms",
-    )
+    @attribute(dtype="double", doc="Number of returned alarms")
     def statsNrRtnAlarms(self: SKAAlarmHandler) -> float:
         """
         Read number of returned alarms.
@@ -149,11 +120,7 @@ class SKAAlarmHandler(SKABaseDevice):
         """
         return 0.0
 
-    @attribute(
-        dtype=("str",),
-        max_dim_x=10000,
-        doc="List of active alerts",
-    )
+    @attribute(dtype=("str",), max_dim_x=10000, doc="List of active alerts")
     def activeAlerts(self: SKAAlarmHandler) -> list[str]:
         """
         Read list of active alerts.
@@ -162,11 +129,7 @@ class SKAAlarmHandler(SKABaseDevice):
         """
         return [""]
 
-    @attribute(
-        dtype=("str",),
-        max_dim_x=10000,
-        doc="List of active alarms",
-    )
+    @attribute(dtype=("str",), max_dim_x=10000, doc="List of active alarms")
     def activeAlarms(self: SKAAlarmHandler) -> list[str]:
         """
         Read list of active alarms.
@@ -179,73 +142,110 @@ class SKAAlarmHandler(SKABaseDevice):
     # Commands
     # --------
 
+    # pylint: disable-next=too-few-public-methods
     class GetAlarmRuleCommand(FastCommand):
         """A class for the SKAAlarmHandler's GetAlarmRule() command."""
 
         def do(  # type: ignore[override]
-            self: SKAAlarmHandler.GetAlarmRuleCommand, argin: str
+            self: SKAAlarmHandler.GetAlarmRuleCommand,
+            *args: Any,
+            **kwargs: Any,
         ) -> str:
             """
             Stateless hook for SKAAlarmHandler GetAlarmRule() command.
 
-            :param argin: Name of the alarm
+            :param args: positional arguments to the command. This
+                command takes a single positional argument, which is the
+                name of the alarm.
+            :param kwargs: keyword arguments to the command. This command does
+                not take any, so this should be empty.
 
             :return: JSON string containing alarm configuration info:
                 rule, actions, etc.
             """
             return ""
 
+    # pylint: disable-next=too-few-public-methods
     class GetAlarmDataCommand(FastCommand):
         """A class for the SKAAlarmHandler's GetAlarmData() command."""
 
         def do(  # type: ignore[override]
-            self: SKAAlarmHandler.GetAlarmDataCommand, argin: str
+            self: SKAAlarmHandler.GetAlarmDataCommand,
+            *args: Any,
+            **kwargs: Any,
         ) -> str:
             """
             Stateless hook for SKAAlarmHandler GetAlarmData() command.
 
-            :param argin: Name of the alarm
+            :param args: positional arguments to the command. This
+                command takes a single positional argument, which is the
+                name of the alarm.
+            :param kwargs: keyword arguments to the command. This command does
+                not take any, so this should be empty.
 
             :return: JSON string specifying alarm data
             """
             return ""
 
+    # pylint: disable-next=too-few-public-methods
     class GetAlarmAdditionalInfoCommand(FastCommand):
         """A class for the SKAAlarmHandler's GetAlarmAdditionalInfo() command."""
 
         def do(  # type: ignore[override]
-            self: SKAAlarmHandler.GetAlarmAdditionalInfoCommand, argin: str
+            self: SKAAlarmHandler.GetAlarmAdditionalInfoCommand,
+            *args: Any,
+            **kwargs: Any,
         ) -> str:
             """
             Stateless hook for SKAAlarmHandler GetAlarmAdditionalInfo() command.
 
-            :param argin: Name of the alarm
+            :param args: positional arguments to the command. This
+                command takes a single positional argument, which is the
+                name of the alarm.
+            :param kwargs: keyword arguments to the command. This command does
+                not take any, so this should be empty.
 
             :return: JSON string specifying alarm additional info
             """
             return ""
 
+    # pylint: disable-next=too-few-public-methods
     class GetAlarmStatsCommand(FastCommand):
         """A class for the SKAAlarmHandler's GetAlarmStats() command."""
 
         def do(  # type: ignore[override]
             self: SKAAlarmHandler.GetAlarmStatsCommand,
+            *args: Any,
+            **kwargs: Any,
         ) -> str:
             """
             Stateless hook for SKAAlarmHandler GetAlarmStats() command.
+
+            :param args: positional arguments to the command. This command does
+                not take any, so this should be empty.
+            :param kwargs: keyword arguments to the command. This command does
+                not take any, so this should be empty.
 
             :return: JSON string specifying alarm stats
             """
             return ""
 
+    # pylint: disable-next=too-few-public-methods
     class GetAlertStatsCommand(FastCommand):
         """A class for the SKAAlarmHandler's GetAlertStats() command."""
 
         def do(  # type: ignore[override]
             self: SKAAlarmHandler.GetAlertStatsCommand,
+            *args: Any,
+            **kwargs: Any,
         ) -> str:
             """
             Stateless hook for SKAAlarmHandler GetAlertStats() command.
+
+            :param args: positional arguments to the command. This command does
+                not take any, so this should be empty.
+            :param kwargs: keyword arguments to the command. This command does
+                not take any, so this should be empty.
 
             :return: JSON string specifying alert stats
             """
@@ -269,8 +269,8 @@ class SKAAlarmHandler(SKABaseDevice):
 
         :return: JSON string containing configuration information of the alarm
         """
-        command = self.get_command_object("GetAlarmRule")
-        return command(argin)
+        handler = self.get_command_object("GetAlarmRule")
+        return handler(argin)
 
     @command(
         dtype_in="str",
@@ -292,8 +292,8 @@ class SKAAlarmHandler(SKABaseDevice):
 
         :return: JSON string containing alarm data
         """
-        command = self.get_command_object("GetAlarmData")
-        return command(argin)
+        handler = self.get_command_object("GetAlarmData")
+        return handler(argin)
 
     @command(
         dtype_in="str",
@@ -313,8 +313,8 @@ class SKAAlarmHandler(SKABaseDevice):
 
         :return: JSON string containing additional alarm information
         """
-        command = self.get_command_object("GetAlarmAdditionalInfo")
-        return command(argin)
+        handler = self.get_command_object("GetAlarmAdditionalInfo")
+        return handler(argin)
 
     @command(
         dtype_out="str",
@@ -330,8 +330,8 @@ class SKAAlarmHandler(SKABaseDevice):
 
         :return: JSON string containing alarm statistics
         """
-        command = self.get_command_object("GetAlarmStats")
-        return command()
+        handler = self.get_command_object("GetAlarmStats")
+        return handler()
 
     @command(
         dtype_out="str",
@@ -347,8 +347,8 @@ class SKAAlarmHandler(SKABaseDevice):
 
         :return: JSON string containing alert statistics
         """
-        command = self.get_command_object("GetAlertStats")
-        return command()
+        handler = self.get_command_object("GetAlertStats")
+        return handler()
 
 
 # ----------

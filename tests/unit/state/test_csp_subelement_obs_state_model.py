@@ -1,5 +1,3 @@
-# type: ignore
-# pylint: skip-file  # TODO: Incrementally lint this repo
 """This module tests the ``csp_subelement_obs_state_model`` module."""
 import pytest
 
@@ -14,11 +12,11 @@ from .conftest import TransitionsStateMachineTester, load_state_machine_spec
 class TestCspSubElementObsStateMachine(TransitionsStateMachineTester):
     """This class contains the test for the CspSubElementObsStateMachine class."""
 
-    @pytest.fixture
-    def machine_under_test(self):
+    @pytest.fixture()
+    def machine_under_test(self) -> CspSubElementObsStateMachine:
         """
         Fixture that returns the state model under test in this class.
 
-        :yield: the state machine under test
+        :return: the state machine under test
         """
-        yield CspSubElementObsStateMachine()
+        return CspSubElementObsStateMachine()

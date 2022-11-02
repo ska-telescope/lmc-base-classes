@@ -18,7 +18,7 @@ from ska_tango_base.base import check_communicating, check_on
 from ska_tango_base.commands import ResultCode
 from ska_tango_base.faults import CapabilityValidationError
 from ska_tango_base.subarray import SubarrayComponentManager
-from ska_tango_base.testing.reference import (
+from ska_tango_base.testing.reference.reference_base_component_manager import (
     FakeBaseComponent,
     ReferenceBaseComponentManager,
 )
@@ -116,7 +116,7 @@ class FakeSubarrayComponent(FakeBaseComponent):
             """
             return resources in self._resources
 
-    def __init__(
+    def __init__(  # pylint: disable=too-many-arguments
         self: FakeSubarrayComponent,
         capability_types: list[str],
         time_to_return: float = 0.05,
@@ -366,14 +366,14 @@ class FakeSubarrayComponent(FakeBaseComponent):
     @check_on
     def scan(
         self: FakeSubarrayComponent,
-        args: Any,
+        args: Any,  # pylint: disable=unused-argument
         task_callback: Callable,
         task_abort_event: threading.Event,
     ) -> None:
         """
         Start scanning.
 
-        :param args: additional arguments
+        :param args: positional arguments
         :param task_callback: a callback to be called whenever the
             status of this task changes.
         :param task_abort_event: a threading.Event that can be checked
@@ -712,6 +712,7 @@ class ReferenceSubarrayComponentManager(
 
         :return: the resources assigned to the component
         """
+        # pylint: disable-next=protected-access
         return sorted(self._component._resource_pool.get())
 
     @property  # type: ignore[misc]

@@ -223,7 +223,7 @@ class TestTaskExecutor:
 
         def _raise_exception(
             task_callback: Callable,
-            task_abort_event: Event,
+            task_abort_event: Event,  # pylint: disable=unused-argument
         ) -> None:
             task_callback(status=TaskStatus.IN_PROGRESS)
             raise exception_to_raise

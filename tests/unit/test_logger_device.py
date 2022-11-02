@@ -28,7 +28,7 @@ from ska_tango_base.subarray import SKASubarray
 from ska_tango_base.testing.reference import ReferenceBaseComponentManager
 
 
-class TestSKALogger(object):
+class TestSKALogger:
     """Test class for tests of the SKALogger device class."""
 
     @pytest.fixture(scope="class")
@@ -67,7 +67,6 @@ class TestSKALogger(object):
 
         :param device_under_test: a proxy to the device under test
         """
-        pass
 
     def test_State(self: TestSKALogger, device_under_test: tango.DeviceProxy) -> None:
         """

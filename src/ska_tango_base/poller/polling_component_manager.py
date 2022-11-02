@@ -11,8 +11,9 @@ from __future__ import annotations
 from logging import Logger
 from typing import Any, Callable
 
+from ska_control_model import CommunicationStatus, PowerState
+
 from ska_tango_base.base import BaseComponentManager
-from ska_tango_base.control_model import CommunicationStatus, PowerState
 
 from .poller import Poller, PollModel, PollRequestT, PollResponseT
 

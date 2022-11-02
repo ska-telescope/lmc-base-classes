@@ -1,23 +1,25 @@
-# type: ignore
-"""This module defines the test harness for all ska_tango_base tests."""
+"""This module defines the test harness for state model tests."""
 import itertools
 import json
 from collections import defaultdict
+from typing import Any, DefaultDict, Dict, Optional, Tuple
 
 import pytest
 from ska_control_model import AdminMode, ObsState
+from ska_control_model.faults import StateModelError
 from tango import DevState
 from transitions import MachineError
+from transitions.extensions import LockedMachine as Machine
 
-from ska_tango_base.faults import StateModelError
 
-
-def pytest_configure(config):
+# TODO: https://github.com/pytest-dev/pytest-forked/issues/67
+# We're stuck on pytest 6.2 until this gets fixed, and this version of
+# pytest is not fully typehinted
+def pytest_configure(config) -> None:  # type: ignore[no-untyped-def]
     """
     Configure pytest to register custom "state_machine_tester" marks.
 
     :param config: the pytest config object
-    :type config: :py:class:`pytest.config.Config`
     """
     config.addinivalue_line(
         "markers",
@@ -27,7 +29,10 @@ def pytest_configure(config):
     )
 
 
-def pytest_generate_tests(metafunc):
+# TODO: https://github.com/pytest-dev/pytest-forked/issues/67
+# We're stuck on pytest 6.2 until this gets fixed, and this version of
+# pytest is not fully typehinted
+def pytest_generate_tests(metafunc) -> None:  # type: ignore[no-untyped-def]
     """
     Modify how pytest generates tests to support state machine testing.
 
@@ -46,7 +51,9 @@ def pytest_generate_tests(metafunc):
         states = {state: spec["states"][state] or state for state in spec["states"]}
 
         triggers = set()
-        expected = defaultdict(lambda: None)
+        expected: DefaultDict[Tuple[str, str], Optional[str]] = defaultdict(
+            lambda: None
+        )
         for transition in spec["transitions"]:
             triggers.add(transition["trigger"])
             expected[(transition["from"], transition["trigger"])] = states[
@@ -65,16 +72,22 @@ def pytest_generate_tests(metafunc):
         )
 
 
+# TODO: This whole state machine testing harness needs a re-think. In
+# order to type-hint it correctly, we need to make test classes inherit
+# from a generic base class. But then the tests don't run at all, and we
+# get warnings like "PytestCollectionWarning: cannot collect test class
+# 'TestOpStateMachine' because it has a __new__ constructor". So instead
+# we have to use pragmas to make mypy ignore bad type-hinting. Sad.
 class StateMachineTester:
     """Abstract base class for a class for testing state machines."""
 
     def test_state_machine(
         self,
-        machine_under_test,
-        state_under_test,
-        action_under_test,
-        expected_state,
-    ):
+        machine_under_test: Machine,
+        state_under_test: str,
+        action_under_test: str,
+        expected_state: str,
+    ) -> None:
         """
         Implements the unit test for a state machine.
 
@@ -89,19 +102,15 @@ class StateMachineTester:
           an error code) and remain in the current state?
 
         :param machine_under_test: the state machine under test
-        :type machine_under_test: state machine object instance
         :param state_under_test: the state from which the
             `action_under_test` is being tested
-        :type state_under_test: str
         :param action_under_test: the action being tested from the
             `state_under_test`
-        :type action_under_test: str
         :param expected_state: the state to which the machine is
             expected to transition, as a result of performing the
             `action_under_test` in the `state_under_test`. If None, then
             the action should be disallowed and result in no change of
             state.
-        :type expected_state: str
         """
         # Put the device into the state under test
         self.to_state(machine_under_test, state_under_test)
@@ -121,74 +130,72 @@ class StateMachineTester:
             self.perform_action(machine_under_test, action_under_test)
             self.assert_state(machine_under_test, expected_state)
 
-    def assert_state(self, machine_under_test, state):
+    def assert_state(
+        self,
+        machine_under_test: Machine,
+        state: str,
+    ) -> None:
         """
         Assert the current state of the state machine.
 
         :param machine_under_test: the state machine under test
-        :type machine_under_test: state machine object instance
         :param state: the state that we are asserting to be the current
             state of the state machine under test
-        :type state: str
 
-        :raises NotImplementedError: if now overriden by a concrete
+        :raises NotImplementedError: if not overriden by a concrete
             subclass
         """
         raise NotImplementedError()
 
-    def is_action_allowed(self, machine_under_test, action):
+    def is_action_allowed(self, machine_under_test: Machine, action: str) -> bool:
         """
-        Check whether an action on the state machine is allowed in the current state.
+        Check whether a given action is allowed in the current machine state.
 
         :param machine_under_test: the state machine under test
-        :type machine_under_test: state machine object instance
         :param action: action to be performed on the state machine
-        :type action: str
 
-        :raises NotImplementedError: if now overriden by a concrete
+        :raises NotImplementedError: if not overriden by a concrete
             subclass
         """
         raise NotImplementedError()
 
-    def perform_action(self, machine_under_test, action):
+    def perform_action(self, machine_under_test: Machine, action: str) -> None:
         """
         Perform an action on the state machine.
 
         :param machine_under_test: the state machine under test
-        :type machine_under_test: state machine object instance
         :param action: action to be performed on the state machine
-        :type action: str
 
-        :raises NotImplementedError: if now overriden by a concrete
+        :raises NotImplementedError: if not overriden by a concrete
             subclass
         """
         raise NotImplementedError()
 
-    def check_action_fails(self, machine_under_test, action):
+    def check_action_fails(
+        self,
+        machine_under_test: Machine,
+        action: str,
+    ) -> None:
         """
         Check that an action on the state machine fails in its current state.
 
         :param machine_under_test: the state machine under test
-        :type machine_under_test: state machine object instance
         :param action: action to be performed on the state machine
-        :type action: str
 
-        :raises NotImplementedError: if now overriden by a concrete
+        :raises NotImplementedError: if not overriden by a concrete
             subclass
         """
         raise NotImplementedError()
 
-    def to_state(self, machine_under_test, target_state):
+    def to_state(self, machine_under_test: Machine, target_state: Any) -> None:
         """
         Abstract method for getting the state machine into a target state.
 
         :param machine_under_test: the state machine under test
-        :type machine_under_test: state machine object instance
         :param target_state: specification of the target state
             of the machine under test
-        :type target_state: Any
 
-        :raises NotImplementedError: if now overriden by a concrete
+        :raises NotImplementedError: if not overriden by a concrete
             subclass
         """
         raise NotImplementedError()
@@ -203,56 +210,56 @@ class TransitionsStateMachineTester(StateMachineTester):
     correspond exactly with the machine's states and triggers.
     """
 
-    def assert_state(self, machine_under_test, state):
+    def assert_state(
+        self,
+        machine_under_test: Machine,
+        state: str,
+    ) -> None:
         """
         Assert the current state of the state machine under test.
 
         :param machine_under_test: the state machine under test
-        :type machine_under_test: state machine object instance
         :param state: the state that we are asserting to be the current
             state of the state machine under test
-        :type state: str
         """
         assert machine_under_test.state == state
 
-    def is_action_allowed(self, machine_under_test, action):
+    def is_action_allowed(self, machine_under_test: Machine, action: str) -> bool:
         """
         Check whether the action under test is allowed from the current state.
 
         :param machine_under_test: the state machine under test
-        :type machine_under_test: state machine object instance
         :param action: action to be performed on the state machine
-        :type action: str
 
         :return: whether the action is allowed
         :rtype: bool
         """
         return action in machine_under_test.get_triggers(machine_under_test.state)
 
-    def perform_action(self, machine_under_test, action):
+    def perform_action(self, machine_under_test: Machine, action: str) -> None:
         """
         Perform a given action on the state machine under test.
 
         :param machine_under_test: the state machine under test
-        :type machine_under_test: state machine object instance
         :param action: action to be performed on the state machine
-        :type action: str
         """
         machine_under_test.trigger(action)
 
-    def check_action_fails(self, machine_under_test, action):
+    def check_action_fails(
+        self,
+        machine_under_test: Machine,
+        action: str,
+    ) -> None:
         """
         Check that the action on the state machine fails in its current state.
 
         :param machine_under_test: the state machine under test
-        :type machine_under_test: state machine object instance
         :param action: action to be performed on the state machine
-        :type action: str
         """
         with pytest.raises(MachineError):
             self.perform_action(machine_under_test, action)
 
-    def to_state(self, machine_under_test, target_state):
+    def to_state(self, machine_under_test: Machine, target_state: str) -> None:
         """
         Transition the state machine to a target state.
 
@@ -262,10 +269,8 @@ class TransitionsStateMachineTester(StateMachineTester):
         putting the machine into the state under test.
 
         :param machine_under_test: the state machine under test
-        :type machine_under_test: state machine object instance
         :param target_state: the state that we want to get the state
             machine under test into
-        :type target_state: str
         """
         machine_under_test.trigger(f"to_{target_state}")
 
@@ -278,72 +283,70 @@ class StateModelTester(StateMachineTester):
     classes, and the `machine_under_test` fixture must also be provided.
     """
 
-    def assert_state(self, machine_under_test, state):
+    def assert_state(
+        self,
+        machine_under_test: Machine,
+        state: str,
+    ) -> None:
         """
         Assert the current state of the state model under test.
 
         :param machine_under_test: the state model under test
-        :type machine_under_test: object
         :param state: the state that we are asserting to be the current
             state of the state machine under test
-        :type state: dict
 
-        :raises NotImplementedError: if now overriden by a concrete
+        :raises NotImplementedError: if not overriden by a concrete
             subclass
         """
         raise NotImplementedError()
 
-    def is_action_allowed(self, machine_under_test, action):
+    def is_action_allowed(self, machine_under_test: Machine, action: str) -> bool:
         """
-        Return whether the state machine allows a given action in its current state.
+        Return whether a given action is allowed in the current machine state.
 
         :param machine_under_test: the state model under test
-        :type machine_under_test: object
         :param action: action to be performed on the state machine
-        :type action: str
 
         :return: whether the action is allowed
         """
         return machine_under_test.is_action_allowed(action)
 
-    def perform_action(self, machine_under_test, action):
+    def perform_action(self, machine_under_test: Machine, action: str) -> None:
         """
         Perform a given action on the state machine under test.
 
         :param machine_under_test: the state model under test
-        :type machine_under_test: object
         :param action: action to be performed on the state machine
-        :type action: str
         """
         machine_under_test.perform_action(action)
 
-    def check_action_fails(self, machine_under_test, action):
+    def check_action_fails(
+        self,
+        machine_under_test: Machine,
+        action: str,
+    ) -> None:
         """
-        Check that an action is not permitted in the current state machine state.
+        Check that an action fails in the current state machine state.
 
         :param machine_under_test: the state model under test
-        :type machine_under_test: object
         :param action: action to be performed on the state machine
-        :type action: str
         """
         with pytest.raises(StateModelError):
             self.perform_action(machine_under_test, action)
 
-    def to_state(self, machine_under_test, target_state):
+    def to_state(self, machine_under_test: Machine, target_state: str) -> None:
         """
         Transition the state machine to a target state.
 
         :param machine_under_test: the state model under test
-        :type machine_under_test: object
         :param target_state: specification of the target state that we
             want to get the state machine under test into
-        :type target_state: keyword dictionary
         """
         # pylint: disable-next=protected-access
-        machine_under_test._straight_to_state(**target_state)
+        machine_under_test._straight_to_state(target_state)
 
 
-def load_data(name):
+def load_data(name: str) -> Dict:
     """
     Load a dataset by name.
 
@@ -353,7 +356,6 @@ def load_data(name):
     :param name: name of the dataset to be loaded; this implementation
         uses the name to find a JSON file containing the data to be
         loaded.
-    :type name: str
 
     :return: content of the named dataset
     """
@@ -361,14 +363,13 @@ def load_data(name):
         return json.load(json_file)
 
 
-def load_state_machine_spec(name):
+def load_state_machine_spec(name: str) -> Dict:
     """
     Load a state machine specification by name.
 
     :param name: name of the dataset to be loaded; this implementation
         uses the name to find a JSON file containing the data to be
         loaded.
-    :type name: str
 
     :return: a state machine specification
     """

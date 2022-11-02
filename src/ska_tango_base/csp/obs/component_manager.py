@@ -1,61 +1,134 @@
-# flake8: noqa
-# type: ignore
 """This module models component management for CSP subelement observation devices."""
+from typing import Callable, Optional
+
 from ska_tango_base.base import BaseComponentManager
 
 
 class CspObsComponentManager(BaseComponentManager):
-    """
-    A component manager for SKA CSP subelement observation Tango devices.
+    """A component manager for SKA CSP subelement observation Tango devices."""
 
-    The current implementation is intended to
-    * illustrate the model
-    * enable testing of the base classes
-
-    It should not generally be used in concrete devices; instead, write
-    a subclass specific to the component managed by the device.
-    """
-
-    def configure_scan(self, configuration, task_callback):
+    def configure_scan(
+        self,
+        configuration: dict,
+        task_callback: Optional[Callable] = None,
+    ) -> None:
         """
         Configure the component.
 
         :param configuration: the configuration to be configured
-        :type configuration: dict
+        :param task_callback: callback to be called when the status of
+            the command changes
+
+        :raises NotImplementedError: because this method has not been
+            implemented
         """
         raise NotImplementedError("CspObsComponentManager is abstract.")
 
-    def deconfigure(self, task_callback):
-        """Deconfigure this component."""
+    def deconfigure(
+        self,
+        task_callback: Optional[Callable] = None,
+    ) -> None:
+        """
+        Deconfigure this component.
+
+        :param task_callback: callback to be called when the status of
+            the command changes
+
+        :raises NotImplementedError: because this method has not been
+            implemented
+        """
         raise NotImplementedError("CspObsComponentManager is abstract.")
 
-    def scan(self, args, task_callback):
-        """Start scanning."""
+    def scan(
+        self,
+        args: str,
+        task_callback: Optional[Callable] = None,
+    ) -> None:
+        """
+        Start scanning.
+
+        :param args: argument to the scan command
+        :param task_callback: callback to be called when the status of
+            the command changes
+
+        :raises NotImplementedError: because this method has not been
+            implemented
+        """
         raise NotImplementedError("CspObsComponentManager is abstract.")
 
-    def end_scan(self, task_callback):
-        """End scanning."""
+    def end_scan(
+        self,
+        task_callback: Optional[Callable] = None,
+    ) -> None:
+        """
+        End scanning.
+
+        :param task_callback: callback to be called when the status of
+            the command changes
+
+        :raises NotImplementedError: because this method has not been
+            implemented
+        """
         raise NotImplementedError("CspObsComponentManager is abstract.")
 
-    def abort(self, task_callback):
-        """Tell the component to abort whatever it was doing."""
+    def abort(
+        self,
+        task_callback: Optional[Callable] = None,
+    ) -> None:
+        """
+        Tell the component to abort whatever it was doing.
+
+        :param task_callback: callback to be called when the status of
+            the command changes
+
+        :raises NotImplementedError: because this method has not been
+            implemented
+        """
         raise NotImplementedError("CspObsComponentManager is abstract.")
 
-    def obsreset(self, task_callback):
-        """Reset the configuration but do not release resources."""
+    def obsreset(
+        self,
+        task_callback: Optional[Callable] = None,
+    ) -> None:
+        """
+        Reset the configuration but do not release resources.
+
+        :param task_callback: callback to be called when the status of
+            the command changes
+
+        :raises NotImplementedError: because this method has not been
+            implemented
+        """
         raise NotImplementedError("CspObsComponentManager is abstract.")
 
     @property
-    def config_id(self):
-        """Return the configuration id."""
-        raise NotImplementedError("CspObsComponentManager is abstract.")
+    def config_id(self) -> str:
+        """
+        Return the configuration id.
 
-    @property
-    def scan_id(self):
-        """Return the scan id."""
+        :raises NotImplementedError: because this method has not been
+            implemented
+        """
         raise NotImplementedError("CspObsComponentManager is abstract.")
 
     @config_id.setter
-    def config_id(self, config_id):
-        """Set the configuration id."""
+    def config_id(self, config_id: str) -> None:
+        """
+        Set the configuration id.
+
+        :param config_id: the new config id
+
+        :raises NotImplementedError: because this method has not been
+            implemented
+        """
+        raise NotImplementedError("CspObsComponentManager is abstract.")
+
+    @property
+    def scan_id(self) -> str:
+        """
+        Return the scan id.
+
+        :raises NotImplementedError: because this method has not been
+            implemented
+        """
         raise NotImplementedError("CspObsComponentManager is abstract.")

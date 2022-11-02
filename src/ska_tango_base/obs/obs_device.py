@@ -13,6 +13,8 @@ from SKAObsDevice instead of just SKABaseDevice.
 """
 from __future__ import annotations
 
+from typing import Any
+
 from ska_control_model import ObsMode, ObsState
 from tango.server import attribute
 
@@ -22,15 +24,46 @@ from ska_tango_base.commands import DeviceInitCommand, ResultCode
 __all__ = ["SKAObsDevice", "main"]
 
 
+# pylint: disable-next=abstract-method  # Yes, this is an abstract class.
 class SKAObsDevice(SKABaseDevice):
     """A generic base device for Observations for SKA."""
 
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
+        """
+        Initialise this device object.
+
+        :param args: positional args to the init
+        :param kwargs: keyword args to the init
+        """
+        # We aren't supposed to define initialisation methods for Tango
+        # devices; we are only supposed to define an `init_device` method. But
+        # we insist on doing so here, just so that we can define some
+        # attributes, thereby stopping the linters from complaining about
+        # "attribute-defined-outside-init" etc. We still need to make sure that
+        # `init_device` initialises any values defined in here.
+        super().__init__(*args, **kwargs)
+
+        self._obs_state: ObsState  # for the type checker
+        self._obs_mode: ObsMode  # for the type checker
+        self._config_progress: int  # for the type checker
+        self._config_delay_expected: int  # for the type checker
+
+    # pylint: disable-next=too-few-public-methods
     class InitCommand(DeviceInitCommand):
         """A class for the SKAObsDevice's init_device() "command"."""
 
-        def do(self: SKAObsDevice.InitCommand) -> tuple[ResultCode, str]:  # type: ignore[override]
+        def do(
+            self: SKAObsDevice.InitCommand,
+            *args: Any,
+            **kwargs: Any,
+        ) -> tuple[ResultCode, str]:  # type: ignore[override]
             """
             Stateless hook for device initialisation.
+
+            :param args: positional arguments to the command. This command does
+                not take any, so this should be empty.
+            :param kwargs: keyword arguments to the command. This command does
+                not take any, so this should be empty.
 
             :return: A tuple containing a return code and a string
                 message indicating status. The message is for
@@ -45,9 +78,16 @@ class SKAObsDevice(SKABaseDevice):
                 self._device.set_change_event(attribute_name, True)
                 self._device.set_archive_event(attribute_name, True)
 
+            # pylint: disable-next=protected-access
             self._device._obs_state = ObsState.EMPTY
+
+            # pylint: disable-next=protected-access
             self._device._obs_mode = ObsMode.IDLE
+
+            # pylint: disable-next=protected-access
             self._device._config_progress = 0
+
+            # pylint: disable-next=protected-access
             self._device._config_delay_expected = 0
 
             message = "SKAObsDevice Init command completed OK"
@@ -75,25 +115,6 @@ class SKAObsDevice(SKABaseDevice):
         self._obs_state = obs_state
         self.push_change_event("obsState", obs_state)
         self.push_archive_event("obsState", obs_state)
-
-    def always_executed_hook(self: SKAObsDevice) -> None:
-        """
-        Perform actions that are executed before every device command.
-
-        This is a Tango hook.
-        """
-        pass
-
-    def delete_device(self: SKAObsDevice) -> None:
-        """
-        Clean up any resources prior to device deletion.
-
-        This method is a Tango hook that is called by the device
-        destructor and by the device Init command. It allows for any
-        memory or other resources allocated in the init_device method to
-        be released prior to device deletion.
-        """
-        pass
 
     # ----------
     # Attributes

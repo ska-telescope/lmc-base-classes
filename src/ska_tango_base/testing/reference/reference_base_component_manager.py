@@ -109,7 +109,6 @@ class FakeBaseComponent:
         result: Any,
         **state_kwargs: Any,
     ) -> None:
-
         # Simulate the synchronous latency cost of communicating with this component.
         self._simulate_latency()
 

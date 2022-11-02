@@ -66,7 +66,7 @@ class TaskExecutor:
                 if task_callback is not None:
                     message = "Queue is aborting"
                     task_callback(status=TaskStatus.REJECTED, message=message)
-                    return TaskStatus.REJECTED, message
+                return TaskStatus.REJECTED, message
             else:
                 if task_callback is not None:
                     task_callback(status=TaskStatus.QUEUED)
@@ -108,7 +108,7 @@ class TaskExecutor:
         ).start()
         return TaskStatus.IN_PROGRESS, "Aborting tasks"
 
-    def _run(
+    def _run(  # pylint: disable=too-many-arguments
         self: TaskExecutor,
         func: Callable,
         args: Any,
@@ -138,6 +138,9 @@ class TaskExecutor:
                     task_abort_event=abort_event,
                     **kwargs,
                 )
-            except Exception as exc:
+            except Exception as exc:  # pylint: disable=broad-except
+                # Catching all exceptions because we're on a thread. Any
+                # uncaught exception will take down the thread without giving
+                # us any useful diagnostics.
                 if task_callback is not None:
                     task_callback(status=TaskStatus.FAILED, exception=exc)

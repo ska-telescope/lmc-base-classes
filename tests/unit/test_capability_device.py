@@ -18,7 +18,7 @@ from ska_tango_base import SKACapability
 from ska_tango_base.testing.reference import ReferenceBaseComponentManager
 
 
-class TestSKACapability(object):
+class TestSKACapability:
     """Test case for packet generation."""
 
     @pytest.fixture(scope="class")

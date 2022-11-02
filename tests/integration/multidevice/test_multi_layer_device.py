@@ -1,6 +1,8 @@
 # type: ignore
-# flake8: noqa
 """Test various Tango devices with long running commmands working together."""
+
+from typing import Dict, List
+
 import pytest
 import tango
 from ska_tango_testing.mock.tango import MockTangoEventCallbackGroup
@@ -27,8 +29,13 @@ from .multidevice import ExampleMultiDevice
 
 
 @pytest.fixture(scope="module")
-def devices_to_test():
-    """Fixture for devices to test."""
+def devices_to_test() -> List[Dict]:
+    """
+    Fixture for devices to test.
+
+    :return: a list of specifications of devices to be included in the
+        test context.
+    """
     return [
         {
             "class": ExampleMultiDevice,
@@ -99,7 +106,14 @@ def change_event_callbacks() -> MockTangoEventCallbackGroup:
 
 @pytest.mark.forked
 def test_multi_layer(multi_device_tango_context, change_event_callbacks) -> None:
-    """Test the long running commands between devices."""
+    """
+    Test the long running commands between devices.
+
+    :param multi_device_tango_context: a lightweight Tango test context
+        containing multiple devices
+    :param change_event_callbacks: a group of callbacks with asynchrony
+        support, for use in receiving Tango change events.
+    """
     top_device = multi_device_tango_context.get_device("test/toplevel/1")
     mid_device = multi_device_tango_context.get_device("test/midlevel/3")
     low_device = multi_device_tango_context.get_device("test/lowlevel/6")
@@ -145,7 +159,7 @@ def test_multi_layer(multi_device_tango_context, change_event_callbacks) -> None
     top_result = change_event_callbacks.assert_against_call("top_result")
     command_id, message = top_result["attribute_value"]
     assert command_id.endswith("CallChildren")
-    assert (
-        message
-        == "\"All children completed ['test/midlevel/1', 'test/midlevel/2', 'test/midlevel/3']\""
+    assert message == (
+        "\"All children completed ['test/midlevel/1', 'test/midlevel/2', "
+        "'test/midlevel/3']\""
     )

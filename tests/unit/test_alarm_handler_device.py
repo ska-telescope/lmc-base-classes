@@ -18,7 +18,7 @@ from ska_tango_base import SKAAlarmHandler
 from ska_tango_base.testing.reference import ReferenceBaseComponentManager
 
 
-class TestSKAAlarmHandler(object):
+class TestSKAAlarmHandler:
     """Test class for tests of the SKAAlarmHander device class."""
 
     @pytest.fixture(scope="class")

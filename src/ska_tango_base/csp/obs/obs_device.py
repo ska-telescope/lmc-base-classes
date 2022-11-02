@@ -12,7 +12,6 @@ CspSubElementObsDevice.
 General observing device for SKA CSP Subelement.
 """
 
-# PROTECTED REGION ID(CspSubElementObsDevice.additionnal_import) ENABLED START #
 import functools
 import json
 from json.decoder import JSONDecodeError
@@ -41,9 +40,6 @@ class CspSubElementObsDevice(SKAObsDevice):
             - Type:'DevUShort'
     """
 
-    # PROTECTED REGION ID(CspSubElementObsDevice.class_variable) ENABLED START #
-    # PROTECTED REGION END #    //  CspSubElementObsDevice.class_variable
-
     # -----------------
     # Device Properties
     # -----------------
@@ -57,7 +53,7 @@ class CspSubElementObsDevice(SKAObsDevice):
     scanID = attribute(
         dtype="DevULong64",
         label="scanID",
-        doc="The scan identification number to be inserted in the output\nproducts.",
+        doc="The scan identification number to be inserted in the output products.",
     )
     """Device attribute."""
 
@@ -85,10 +81,16 @@ class CspSubElementObsDevice(SKAObsDevice):
     sdpDestinationAddresses = attribute(
         dtype="DevString",
         label="sdpDestinationAddresses",
-        doc="JSON formatted string\nReport the list of all the SDP addresses provided by SDP"
-        " to receive the output products.\nSpecifies the Mac, IP, Port for each resource:\nCBF:"
-        " visibility channels\nPSS ? Pss pipelines\nPST ? PSTBeam\nNot used by al CSP Sub-element"
-        " observing device (for ex. Mid CBF VCCs)",
+        doc=(
+            "JSON formatted string\n"
+            "Report the list of all the SDP addresses provided by SDP to receive the "
+            "output products.\n"
+            "Specifies the Mac, IP, Port for each resource:\n"
+            "CBF: visibility channels\n"
+            "PSS ? Pss pipelines\n"
+            "PST ? PSTBeam\n"
+            "Not used by al CSP Sub-element observing device (for ex. Mid CBF VCCs)"
+        ),
     )
     """Device attribute."""
 
@@ -223,78 +225,41 @@ class CspSubElementObsDevice(SKAObsDevice):
             self._completed()
             return (ResultCode.OK, message)
 
-    def always_executed_hook(self):
-        """
-        Perform actions before any Tango command is executed.
-
-        This is a Tango hook.
-        """
-        # PROTECTED REGION ID(CspSubElementObsDevice.always_executed_hook) ENABLED START #
-        # PROTECTED REGION END #    //  CspSubElementObsDevice.always_executed_hook
-
-    def delete_device(self):
-        """
-        Clean up any resources prior to device deletion.
-
-        This method is a Tango hook that is called by the device
-        destructor and by the device Init command. It allows for any
-        memory or other resources allocated in the init_device method to
-        be released prior to device deletion.
-        """
-        # PROTECTED REGION ID(CspSubElementObsDevice.delete_device) ENABLED START #
-        # PROTECTED REGION END #    //  CspSubElementObsDevice.delete_device
-
     # ------------------
     # Attributes methods
     # ------------------
 
     def read_scanID(self):
-        # PROTECTED REGION ID(CspSubElementObsDevice.scanID_read) ENABLED START #
         """Return the scanID attribute."""
         return self.component_manager.scan_id
-        # PROTECTED REGION END #    //  CspSubElementObsDevice.scanID_read
 
     def read_configurationID(self):
-        # PROTECTED REGION ID(CspSubElementObsDevice.configurationID_read) ENABLED START #
         """Return the configurationID attribute."""
         return self.component_manager.config_id
-        # PROTECTED REGION END #    //  CspSubElementObsDevice.configurationID_read
 
     def read_deviceID(self):
-        # PROTECTED REGION ID(CspSubElementObsDevice.deviceID_read) ENABLED START #
         """Return the deviceID attribute."""
         return self.DeviceID
-        # PROTECTED REGION END #    //  CspSubElementObsDevice.deviceID_read
 
     def read_lastScanConfiguration(self):
-        # PROTECTED REGION ID(CspSubElementObsDevice.lastScanConfiguration_read) ENABLED START #
         """Return the lastScanConfiguration attribute."""
         return self._last_scan_configuration
-        # PROTECTED REGION END #    //  CspSubElementObsDevice.lastScanConfiguration_read
 
     def read_sdpDestinationAddresses(self):
-        # PROTECTED REGION ID(CspSubElementObsDevice.sdpDestinationAddresses_read) ENABLED START #
         """Return the sdpDestinationAddresses attribute."""
         return json.dumps(self._sdp_addresses)
-        # PROTECTED REGION END #    //  CspSubElementObsDevice.sdpDestinationAddresses_read
 
     def read_sdpLinkCapacity(self):
-        # PROTECTED REGION ID(CspSubElementObsDevice.sdpLinkCapacity_read) ENABLED START #
         """Return the sdpLinkCapacity attribute."""
         return self._sdp_links_capacity
-        # PROTECTED REGION END #    //  CspSubElementObsDevice.sdpLinkCapacity_read
 
     def read_sdpLinkActive(self):
-        # PROTECTED REGION ID(CspSubElementObsDevice.sdpLinkActive_read) ENABLED START #
         """Return the sdpLinkActive attribute."""
         return self._sdp_links_active
-        # PROTECTED REGION END #    //  CspSubElementObsDevice.sdpLinkActive_read
 
     def read_healthFailureMessage(self):
-        # PROTECTED REGION ID(CspSubElementObsDevice.healthFailureMessage_read) ENABLED START #
         """Return the healthFailureMessage attribute."""
         return self._health_failure_msg
-        # PROTECTED REGION END #    //  CspSubElementObsDevice.healthFailureMessage_read
 
     # --------
     # Commands
@@ -447,7 +412,6 @@ class CspSubElementObsDevice(SKAObsDevice):
     )
     @DebugIt()
     def ConfigureScan(self, argin):
-        # PROTECTED REGION ID(CspSubElementObsDevice.ConfigureScan) ENABLED START #
         """
         Configure the observing device parameters for the current scan.
 
@@ -467,7 +431,6 @@ class CspSubElementObsDevice(SKAObsDevice):
             (result_code, message) = handler(configuration)
 
         return [[result_code], [message]]
-        # PROTECTED REGION END #    //  CspSubElementObsDevice.ConfigureScan
 
     def is_Scan_allowed(self):
         """
@@ -496,7 +459,6 @@ class CspSubElementObsDevice(SKAObsDevice):
     )
     @DebugIt()
     def Scan(self, argin):
-        # PROTECTED REGION ID(CspSubElementObsDevice.Scan) ENABLED START #
         """
         Start an observing scan.
 
@@ -516,7 +478,6 @@ class CspSubElementObsDevice(SKAObsDevice):
 
         (result_code, message) = handler(scan_id)
         return [[result_code], [message]]
-        # PROTECTED REGION END #    //  CspSubElementObsDevice.Scan
 
     def is_EndScan_allowed(self):
         """
@@ -543,7 +504,6 @@ class CspSubElementObsDevice(SKAObsDevice):
     )
     @DebugIt()
     def EndScan(self):
-        # PROTECTED REGION ID(CspSubElementObsDevice.EndScan) ENABLED START #
         """
         End a running scan.
 
@@ -554,7 +514,6 @@ class CspSubElementObsDevice(SKAObsDevice):
         handler = self.get_command_object("EndScan")
         (result_code, message) = handler()
         return [[result_code], [message]]
-        # PROTECTED REGION END #    //  CspSubElementObsDevice.EndScan
 
     def is_GoToIdle_allowed(self):
         """
@@ -581,7 +540,6 @@ class CspSubElementObsDevice(SKAObsDevice):
     )
     @DebugIt()
     def GoToIdle(self):
-        # PROTECTED REGION ID(CspSubElementObsDevice.GoToIdle) ENABLED START #
         """
         Transit the device from READY to IDLE obsState.
 
@@ -594,7 +552,6 @@ class CspSubElementObsDevice(SKAObsDevice):
         handler = self.get_command_object("GoToIdle")
         (result_code, message) = handler()
         return [[result_code], [message]]
-        # PROTECTED REGION END #    //  CspSubElementObsDevice.GoToIdle
 
     def is_ObsReset_allowed(self):
         """
@@ -621,7 +578,6 @@ class CspSubElementObsDevice(SKAObsDevice):
     )
     @DebugIt()
     def ObsReset(self):
-        # PROTECTED REGION ID(CspSubElementObsDevice.ObsReset) ENABLED START #
         """
         Reset the observing device from a FAULT/ABORTED obsState to IDLE.
 
@@ -632,7 +588,6 @@ class CspSubElementObsDevice(SKAObsDevice):
         handler = self.get_command_object("ObsReset")
         (result_code, message) = handler()
         return [[result_code], [message]]
-        # PROTECTED REGION END #    //  CspSubElementObsDevice.ObsReset
 
     def is_Abort_allowed(self):
         """
@@ -665,7 +620,6 @@ class CspSubElementObsDevice(SKAObsDevice):
     )
     @DebugIt()
     def Abort(self):
-        # PROTECTED REGION ID(CspSubElementObsDevice.Abort) ENABLED START #
         """
         Abort the current observing process and move the device to ABORTED obsState.
 
@@ -676,7 +630,6 @@ class CspSubElementObsDevice(SKAObsDevice):
         handler = self.get_command_object("Abort")
         (result_code, message) = handler()
         return [[result_code], [message]]
-        # PROTECTED REGION END #    //  CspSubElementObsDevice.Abort
 
     # ----------
     # Callbacks
@@ -710,9 +663,7 @@ class CspSubElementObsDevice(SKAObsDevice):
 
 def main(args=None, **kwargs):
     """Run the CspSubElementObsDevice module."""
-    # PROTECTED REGION ID(CspSubElementObsDevice.main) ENABLED START #
     return run((CspSubElementObsDevice,), args=args, **kwargs)
-    # PROTECTED REGION END #    //  CspSubElementObsDevice.main
 
 
 if __name__ == "__main__":

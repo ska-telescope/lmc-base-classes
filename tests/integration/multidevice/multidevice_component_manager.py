@@ -1,11 +1,10 @@
 # type: ignore
-# flake8: noqa
 """Component Manager for Multi Device."""
 import logging
 import time
 from functools import partial
 from threading import Event
-from typing import Callable, List, Optional
+from typing import Callable, List, Optional, Tuple
 
 from ska_control_model import TaskStatus
 
@@ -22,14 +21,18 @@ class MultiDeviceComponentManager(TaskExecutorComponentManager):
         *args,
         client_devices: List,
         max_workers: Optional[int] = None,
-        logger: logging.Logger = None,
+        logger: Optional[logging.Logger] = None,
         **kwargs,
     ):
         """
         Init MultiDeviceComponentManager.
 
-        :param client_devices: The list of client devices.
-        :type client_devices: List
+        :param args: positional arguments to pass to the parent class.
+        :param client_devices: list of client devices.
+        :param max_workers: optional maximum number of workers in the
+            task executor
+        :param logger: a logger for this component manager to log with.
+        :param kwargs: keyword arguments to pass to the parent class.
         """
         self.client_devices = client_devices
         self.logger = logger
@@ -45,18 +48,15 @@ class MultiDeviceComponentManager(TaskExecutorComponentManager):
     def _non_aborting_lrc(
         self,
         sleep_time: float,
-        task_callback: Callable = None,
-        task_abort_event: Event = None,
+        task_callback: Optional[Callable] = None,
+        task_abort_event: Optional[Event] = None,
     ):
         """
         Take a long time to run.
 
         :param sleep_time: Time to sleep between iterations
-        :type sleep_time: float
         :param task_callback: Update state, defaults to None
-        :type task_callback: Callable, optional
         :param task_abort_event: Check for abort, defaults to None
-        :type task_abort_event: Event, optional
         """
         retries = 45
         self.logger.info("NonAbortingTask started")
@@ -66,14 +66,17 @@ class MultiDeviceComponentManager(TaskExecutorComponentManager):
         self.logger.info("NonAbortingTask finished")
         task_callback(status=TaskStatus.COMPLETED, result="non_aborting_lrc OK")
 
-    def non_aborting_lrc(self, sleep_time: float, task_callback: Callable = None):
+    def non_aborting_lrc(
+        self, sleep_time: float, task_callback: Optional[Callable] = None
+    ) -> Tuple[TaskStatus, str]:
         """
         Take a long time to complete.
 
         :param sleep_time: How long to sleep per iteration
-        :type sleep_time: float
         :param task_callback: Update task state, defaults to None
-        :type task_callback: Callable, optional
+
+        :return: a tuple consisting of a task status code and a
+            human-readable status message.
         """
         task_status, response = self.submit_task(
             self._non_aborting_lrc,
@@ -85,18 +88,15 @@ class MultiDeviceComponentManager(TaskExecutorComponentManager):
     def _aborting_lrc(
         self,
         sleep_time: float,
-        task_callback: Callable = None,
-        task_abort_event: Event = None,
-    ):
+        task_callback: Optional[Callable] = None,
+        task_abort_event: Optional[Event] = None,
+    ) -> None:
         """
         Abort the task.
 
         :param sleep_time: Time to sleep between iterations
-        :type sleep_time: float
         :param task_callback: Update task state, defaults to None
-        :type task_callback: Callable, optional
         :param task_abort_event: Check for abort, defaults to None
-        :type task_abort_event: Event, optional
         """
         retries = 45
         self.logger.info("AbortingTask started")
@@ -117,14 +117,17 @@ class MultiDeviceComponentManager(TaskExecutorComponentManager):
                 result=f"AbortingTask Aborted {sleep_time}",
             )
 
-    def aborting_lrc(self, sleep_time: float, task_callback: Callable = None):
+    def aborting_lrc(
+        self, sleep_time: float, task_callback: Optional[Callable] = None
+    ) -> Tuple[TaskStatus, str]:
         """
         Abort a task in progress.
 
         :param sleep_time: How long to sleep per iteration
-        :type sleep_time: int
         :param task_callback: Update task state, defaults to None
-        :type task_callback: Callable, optional
+
+        :return: a tuple consisting of a task status code and a
+            human-readable status message
         """
         task_status, response = self.submit_task(
             self._aborting_lrc, args=[sleep_time], task_callback=task_callback
@@ -134,29 +137,30 @@ class MultiDeviceComponentManager(TaskExecutorComponentManager):
     @staticmethod
     def _throw_exc(
         logger: logging.Logger,
-        task_callback: Callable = None,
-        task_abort_event: Event = None,
+        task_callback: Optional[Callable] = None,
+        task_abort_event: Optional[Event] = None,
     ):
         """
         Throw an exception.
 
         :param logger: logger
-        :type logger: logging.Logger
         :param task_callback: Update task state, defaults to None
-        :type task_callback: Callable, optional
         :param task_abort_event: Check for abort, defaults to None
-        :type task_abort_event: Event, optional
         :raises RuntimeError: Just to indicate an issue
         """
         logger.info("About to raise an error")
         raise RuntimeError("Something went wrong")
 
-    def throw_exc(self, task_callback: Callable = None):
+    def throw_exc(
+        self, task_callback: Optional[Callable] = None
+    ) -> Tuple[TaskStatus, str]:
         """
         Illustrate exceptions.
 
         :param task_callback: Update task status
-        :type task_callback: Callable
+
+        :return: a tuple consisting of a task status code and a
+            human-readable status message.
         """
         task_status, response = self.submit_task(
             self._throw_exc, args=[self.logger], task_callback=task_callback
@@ -167,20 +171,16 @@ class MultiDeviceComponentManager(TaskExecutorComponentManager):
     def _show_progress(
         logger: logging.Logger,
         sleep_time: float,
-        task_callback: Callable = None,
-        task_abort_event: Event = None,
+        task_callback: Optional[Callable] = None,
+        task_abort_event: Optional[Event] = None,
     ):
         """
         Illustrate progress.
 
         :param logger: logger
-        :type logger: logging.Logger
         :param sleep_time: Time to sleep between progress
-        :type sleep_time: float
         :param task_callback: Update task state, defaults to None
-        :type task_callback: Callable, optional
         :param task_abort_event: Check for abort, defaults to None
-        :type task_abort_event: Event, optional
         """
         task_callback(status=TaskStatus.IN_PROGRESS)
         for progress in [1, 25, 50, 74, 100]:
@@ -189,14 +189,17 @@ class MultiDeviceComponentManager(TaskExecutorComponentManager):
             time.sleep(sleep_time)
         task_callback(status=TaskStatus.COMPLETED, result="Progress completed")
 
-    def show_progress(self, sleep_time, task_callback=None):
+    def show_progress(
+        self, sleep_time: float, task_callback: Optional[Callable] = None
+    ) -> Tuple[TaskStatus, str]:
         """
         Illustrate progress.
 
         :param sleep_time: Time to sleep between each progress update
-        :type sleep_time: float
         :param task_callback: Update task status
-        :type task_callback: Callable
+
+        :return: a tuple consisting of the task status code and a
+            human-readable status message
         """
         task_status, response = self.submit_task(
             self._show_progress,
@@ -209,20 +212,16 @@ class MultiDeviceComponentManager(TaskExecutorComponentManager):
     def _simulate_work(
         logger: logging.Logger,
         sleep_time: float,
-        task_callback: Callable = None,
-        task_abort_event: Event = None,
-    ):
+        task_callback: Optional[Callable] = None,
+        task_abort_event: Optional[Event] = None,
+    ) -> None:
         """
         Simulate some work for the leaf devices.
 
         :param logger: logger
-        :type logger: logging.Logger
         :param sleep_time: Time to sleep between progress
-        :type sleep_time: float
         :param task_callback: Update task state, defaults to None
-        :type task_callback: Callable, optional
         :param task_abort_event: Check for abort, defaults to None
-        :type task_abort_event: Event, optional
         """
         task_callback(status=TaskStatus.IN_PROGRESS)
         time.sleep(sleep_time)
@@ -240,20 +239,16 @@ class MultiDeviceComponentManager(TaskExecutorComponentManager):
         self,
         logger: logging.Logger,
         sleep_time: float,
-        task_callback: Callable = None,
-        task_abort_event: Event = None,
-    ):
+        task_callback: Optional[Callable] = None,
+        task_abort_event: Optional[Event] = None,
+    ) -> None:
         """
         Call child devices.
 
         :param logger: logger
-        :type logger: logging.Logger
         :param sleep_time: How long children should sleep
-        :type sleep_time: float
         :param task_callback: Update task status
-        :type task_callback: Callable, optional
         :param task_abort_event: Check for abort, defaults to None
-        :type task_abort_event: Event, optional
         """
         self.clients_interface.execute_long_running_command(
             "CallChildren",
@@ -263,7 +258,9 @@ class MultiDeviceComponentManager(TaskExecutorComponentManager):
             ),
         )
 
-    def call_children(self, sleep_time: float, task_callback: Callable = None):
+    def call_children(
+        self, sleep_time: float, task_callback: Optional[Callable] = None
+    ) -> Tuple[TaskStatus, str]:
         """
         Call child devices or sleep.
 
@@ -271,9 +268,10 @@ class MultiDeviceComponentManager(TaskExecutorComponentManager):
         If no children, sleep a bit to simulate some work.
 
         :param sleep_time: Time to sleep if this device does not have children.
-        :type sleep_time: float
         :param task_callback: Update task status
-        :type task_callback: Callable
+
+        :return: a tuple consisting of the task status code and a
+            human-readable status message.
         """
         if self.client_devices:
             task_status, response = self.submit_task(

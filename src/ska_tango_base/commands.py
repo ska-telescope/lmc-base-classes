@@ -73,9 +73,8 @@ class CommandTrackerProtocol(Protocol):
         :param command_name: the command name
         :param completed_callback: an optional callback for command completion
         """
-        ...
 
-    def update_command_info(
+    def update_command_info(  # pylint: disable=too-many-arguments
         self: CommandTrackerProtocol,
         command_id: str,
         status: Optional[TaskStatus] = None,
@@ -92,7 +91,6 @@ class CommandTrackerProtocol(Protocol):
         :param result: the result of the completed asynchronous task
         :param exception: any exception caught in the running task
         """
-        ...
 
 
 class _BaseCommand:
@@ -147,6 +145,7 @@ class _BaseCommand:
         )
 
 
+# pylint: disable-next=abstract-method  # Yes, this is an abstract class.
 class FastCommand(_BaseCommand):
     """
     An abstract class for Tango device server commands that execute quickly.
@@ -165,7 +164,8 @@ class FastCommand(_BaseCommand):
         :param args: positional args to the component manager method
         :param kwargs: keyword args to the component manager method
 
-        :raises Exception: any exception that is raised during the execution of the self.do method.
+        :raises Exception: any exception that is raised during the
+            execution of the self.do method.
 
         :return: result of command
         """
@@ -173,11 +173,13 @@ class FastCommand(_BaseCommand):
             return self.do(*args, **kwargs)
         except Exception:
             self.logger.exception(
-                f"Error executing command {self._name} with args '{args}', kwargs '{kwargs}'."
+                f"Error executing command {self._name} with args '{args}', kwargs "
+                f"'{kwargs}'."
             )
             raise
 
 
+# pylint: disable-next=abstract-method  # Yes, this is an abstract class.
 class SlowCommand(_BaseCommand):
     """
     An abstract class for Tango device server commands that execute slowly.
@@ -222,7 +224,8 @@ class SlowCommand(_BaseCommand):
             return self.do(*args, **kwargs)
         except Exception:
             self.logger.exception(
-                f"Error executing command {self._name} with args '{args}', kwargs '{kwargs}'."
+                f"Error executing command {self._name} with args '{args}', kwargs "
+                f"'{kwargs}'."
             )
             self._completed()
             raise
@@ -236,6 +239,7 @@ class SlowCommand(_BaseCommand):
             self._callback(False)
 
 
+# pylint: disable-next=abstract-method, too-few-public-methods
 class DeviceInitCommand(SlowCommand):
     """
     A ``SlowCommand`` with a fixed initialisation interface.
@@ -266,6 +270,7 @@ class DeviceInitCommand(SlowCommand):
         super().__init__(callback=_callback, logger=logger)
 
 
+# pylint: disable-next=too-few-public-methods
 class SubmittedSlowCommand(SlowCommand):
     """
     A SlowCommand with lots of implementation-dependent boilerplate in it.
@@ -288,7 +293,7 @@ class SubmittedSlowCommand(SlowCommand):
     :param logger: a logger for this command to log with.
     """
 
-    def __init__(
+    def __init__(  # pylint: disable=too-many-arguments
         self: SubmittedSlowCommand,
         command_name: str,
         command_tracker: CommandTrackerProtocol,
@@ -343,8 +348,7 @@ class SubmittedSlowCommand(SlowCommand):
         status, message = result
         if status == TaskStatus.QUEUED:
             return ResultCode.QUEUED, command_id
-        elif status == TaskStatus.REJECTED:
+        if status == TaskStatus.REJECTED:
             return ResultCode.REJECTED, message
-        # TODO: Drew, can this else block happen or just remove the elif????
-        else:
-            return ResultCode.FAILED, "Command failed"
+        # TODO: Drew, can this happen or just remove the second if????
+        return ResultCode.FAILED, "Command failed"

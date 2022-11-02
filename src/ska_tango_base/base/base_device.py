@@ -1,3 +1,4 @@
+# pylint: skip-file  # TODO: Incrementally lint this repo
 # -*- coding: utf-8 -*-
 #
 # This file is part of the SKA Tango Base project
@@ -154,7 +155,10 @@ class TangoLoggingServiceHandler(logging.Handler):
         else:
             tango_level = "UNKNOWN"
             name = "!No Tango logger!"
-        return f"<{self.__class__.__name__} {name} (Python {python_level}, Tango {tango_level})>"
+        return (
+            f"<{self.__class__.__name__} {name} (Python {python_level}, Tango "
+            f"{tango_level})>"
+        )
 
 
 class LoggingUtils:
@@ -288,11 +292,13 @@ class LoggingUtils:
                 port = parsed.port
                 if not port:
                     raise LoggingTargetError(
-                        f"Invalid syslog URL - could not extract integer port number from '{url}'"
+                        f"Invalid syslog URL - could not extract integer port number "
+                        f"from '{url}'"
                     )
             except (TypeError, ValueError):
                 raise LoggingTargetError(
-                    f"Invalid syslog URL - could not extract integer port number from '{url}'"
+                    f"Invalid syslog URL - could not extract integer port number from "
+                    f"'{url}'"
                 )
             address = (parsed.hostname, port)
             socktype = (
@@ -300,7 +306,8 @@ class LoggingUtils:
             )
         else:
             raise LoggingTargetError(
-                f"Invalid syslog URL - expected file, udp or tcp protocol scheme in '{url}'"
+                f"Invalid syslog URL - expected file, udp or tcp protocol scheme in "
+                f"'{url}'"
             )
         return address, socktype
 
@@ -320,7 +327,8 @@ class LoggingUtils:
             Instance of tango.Logger, optional.  Only required if creating
             a target of type "tango".
 
-        :return: StreamHandler, RotatingFileHandler, SysLogHandler, or TangoLoggingServiceHandler
+        :return: StreamHandler, RotatingFileHandler, SysLogHandler, or
+            TangoLoggingServiceHandler
 
         :raises LoggingTargetError: for invalid target string
         """
@@ -593,7 +601,9 @@ class SKABaseDevice(Device):
     class InitCommand(DeviceInitCommand):
         """A class for the SKABaseDevice's init_device() "command"."""
 
-        def do(self: SKABaseDevice.InitCommand) -> tuple[ResultCode, str]:  # type: ignore[override]
+        def do(  # type: ignore[override]
+            self: SKABaseDevice.InitCommand,
+        ) -> tuple[ResultCode, str]:
             """
             Stateless hook for device initialisation.
 
@@ -614,9 +624,15 @@ class SKABaseDevice(Device):
         """Initialize the logging mechanism, using default properties."""
 
         class EnsureTagsFilter(logging.Filter):
-            """Ensure all records have a "tags" field - empty string, if not provided."""
+            """
+            Ensure all records have a "tags" field.
 
-            def filter(self: EnsureTagsFilter, record: logging.LogRecord) -> bool:
+            The tag will be the empty string if a tag is not provided.
+            """
+
+            def filter(  # noqa: A003
+                self: EnsureTagsFilter, record: logging.LogRecord
+            ) -> bool:
                 if not hasattr(record, "tags"):
                     record.tags = ""  # type: ignore[attr-defined]
                 return True
@@ -641,7 +657,9 @@ class SKABaseDevice(Device):
         device_name_tag = f"tango-device:{device_name}"
 
         class TangoDeviceTagsFilter(logging.Filter):
-            def filter(self: TangoDeviceTagsFilter, record: logging.LogRecord) -> bool:
+            def filter(  # noqa: A003
+                self: TangoDeviceTagsFilter, record: logging.LogRecord
+            ) -> bool:
                 record.tags = device_name_tag  # type: ignore[attr-defined]
                 return True
 
@@ -664,8 +682,6 @@ class SKABaseDevice(Device):
         self.warn_stream = self.logger.warning
         self.error_stream = self.logger.error
         self.fatal_stream = self.logger.critical
-
-    # PROTECTED REGION END #    //  SKABaseDevice.class_variable
 
     # -----------------
     # Device Properties
@@ -986,7 +1002,8 @@ class SKABaseDevice(Device):
             lmc_logging_level = LoggingLevel(value)
         except ValueError:
             raise LoggingLevelError(
-                f"Invalid level - {value} - must be one of {[v for v in LoggingLevel.__members__.values()]} "
+                f"Invalid level - {value} - must be one of "
+                f"{[v for v in LoggingLevel.__members__.values()]} "
             )
         self._logging_level = lmc_logging_level
         self.logger.setLevel(_LMC_TO_PYTHON_LOGGING_LEVEL[lmc_logging_level])
@@ -1084,23 +1101,6 @@ class SKABaseDevice(Device):
             "DebugDevice",
             self.DebugDeviceCommand(self, logger=self.logger),
         )
-
-    def always_executed_hook(self: SKABaseDevice) -> None:
-        """
-        Perform actions that are executed before every device command.
-
-        This is a Tango hook.
-        """
-
-    def delete_device(self: SKABaseDevice) -> None:
-        """
-        Clean up any resources prior to device deletion.
-
-        This method is a Tango hook that is called by the device
-        destructor and by the device Init command. It allows for any
-        memory or other resources allocated in the init_device method to
-        be released prior to device deletion.
-        """
 
     # ----------
     # Attributes
@@ -1685,7 +1685,8 @@ class SKABaseDevice(Device):
             self.logger.warning("Starting debugger...")
             interface, allocated_port = debugpy.listen(("0.0.0.0", port))
             self.logger.warning(
-                f"Debugger listening on {interface}:{allocated_port}. Performance may be degraded."
+                f"Debugger listening on {interface}:{allocated_port}. Performance may "
+                "be degraded."
             )
             return allocated_port
 
@@ -1699,7 +1700,8 @@ class SKABaseDevice(Device):
                 if self.method_must_be_patched_for_debugger(owner, method):
                     self.patch_method_for_debugger(owner, name, method)
                     patched.append(
-                        f"{owner} {method.__func__.__qualname__} in {method.__func__.__module__}"
+                        f"{owner} {method.__func__.__qualname__} in "
+                        f"{method.__func__.__module__}"
                     )
             self.logger.info("Patched %s of %s methods", len(patched), len(all_methods))
             self.logger.debug("Patched methods: %s", sorted(patched))

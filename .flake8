@@ -10,3 +10,11 @@ max-complexity = 11
 docstring-style = SPHINX
 rst-roles=py:attr,py:class,py:const,py:exc,py:func,py:meth,py:mod
 rst-directives = uml
+
+# TODO: Remove these N815 ignores once files have been updated from old-style
+#     attributeName = attribute(
+# format to new-style @attribute format.
+per-file-ignores =
+    src/ska_tango_base/csp/controller_device.py: N815
+    src/ska_tango_base/csp/obs/obs_device.py: N815
+    src/ska_tango_base/csp/subarray/subarray_device.py: N815

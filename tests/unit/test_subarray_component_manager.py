@@ -1,4 +1,3 @@
-# pylint: skip-file  # TODO: Incrementally lint this repo
 # -*- coding: utf-8 -*-
 #
 # This file is part of the SKA Tango Base project
@@ -38,6 +37,7 @@ class TestResourcePool:
         :return:
             :py:class:`SubarrayComponentManager._ResourcePool`
         """
+        # pylint: disable-next=protected-access
         return FakeSubarrayComponent._ResourcePool()
 
     def test_assign(
@@ -49,7 +49,7 @@ class TestResourcePool:
         :param resource_pool: resource pool for testing purposes
         """
         # create a resource manager and check that it is empty
-        assert not len(resource_pool)
+        assert not resource_pool
         assert resource_pool.get() == set()
 
         resource_pool.assign(set(["A"]))
@@ -589,7 +589,7 @@ class TestSubarrayComponentManager:
         component_manager.deconfigure()
         callbacks.assert_call("component_state", configured=False)
 
-    def test_scan(
+    def test_scan(  # pylint: disable=too-many-arguments
         self: TestSubarrayComponentManager,
         component_manager: ReferenceSubarrayComponentManager,
         component: FakeSubarrayComponent,
@@ -647,7 +647,7 @@ class TestSubarrayComponentManager:
         component_manager.deconfigure()
         callbacks.assert_call("component_state", configured=False)
 
-    def test_obsfault_reset(
+    def test_obsfault_reset(  # pylint: disable=too-many-arguments
         self: TestSubarrayComponentManager,
         component_manager: ReferenceSubarrayComponentManager,
         component: FakeSubarrayComponent,
@@ -709,7 +709,7 @@ class TestSubarrayComponentManager:
             "component_state", obsfault=False, scanning=False, configured=False
         )
 
-    def test_obsfault_restart(
+    def test_obsfault_restart(  # pylint: disable=too-many-arguments
         self: TestSubarrayComponentManager,
         component_manager: ReferenceSubarrayComponentManager,
         component: FakeSubarrayComponent,

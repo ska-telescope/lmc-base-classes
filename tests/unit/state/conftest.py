@@ -232,7 +232,6 @@ class TransitionsStateMachineTester(StateMachineTester):
         :param action: action to be performed on the state machine
 
         :return: whether the action is allowed
-        :rtype: bool
         """
         return action in machine_under_test.get_triggers(machine_under_test.state)
 

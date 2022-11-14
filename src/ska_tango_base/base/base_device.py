@@ -610,7 +610,6 @@ class SKABaseDevice(Device):
             :return: A tuple containing a return code and a string
                 message indicating status. The message is for
                 information purpose only.
-            :rtype: (ResultCode, str)
             """
             message = "SKABaseDevice Init command completed OK"
             self.logger.info(message)

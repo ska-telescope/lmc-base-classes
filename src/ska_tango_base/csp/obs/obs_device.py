@@ -14,6 +14,7 @@ General observing device for SKA CSP Subelement.
 import functools
 import json
 from json.decoder import JSONDecodeError
+from typing import Tuple
 
 from ska_control_model import ObsState, TaskStatus
 from tango import DebugIt
@@ -190,14 +191,13 @@ class CspSubElementObsDevice(SKAObsDevice):
     class InitCommand(SKAObsDevice.InitCommand):
         """A class for the CspSubElementObsDevice's init_device() "command"."""
 
-        def do(self):
+        def do(self) -> Tuple[ResultCode, str]:
             """
             Stateless hook for device initialisation.
 
             :return: A tuple containing a return code and a string
                 message indicating status. The message is for
                 information purpose only.
-            :rtype: (ResultCode, str)
             """
             super().do()
 
@@ -317,14 +317,13 @@ class CspSubElementObsDevice(SKAObsDevice):
                 logger=logger,
             )
 
-        def validate_input(self, argin):
+        def validate_input(self, argin: str) -> Tuple[dict, ResultCode, str]:
             """
             Validate the configuration parameters against allowed values, as needed.
 
             :param argin: The JSON formatted string with configuration for the device.
-            :type argin: str
+
             :return: A tuple containing a return code and a string message.
-            :rtype: (ResultCode, str)
             """
             try:
                 configuration_dict = json.loads(argin)
@@ -362,16 +361,14 @@ class CspSubElementObsDevice(SKAObsDevice):
                 logger=logger,
             )
 
-        def validate_input(self, argin):
+        def validate_input(self, argin: str) -> Tuple[ResultCode, str]:
             """
             Validate the command input argument.
 
             :param argin: the scan id
-            :type argin: str
             :return: A tuple containing a return code and a string
                 message indicating status. The message is for
                 information purpose only.
-            :rtype: (ResultCode, str)
             """
             if not argin.isdigit():
                 msg = f"Input argument '{argin}' is not an integer"
@@ -396,14 +393,13 @@ class CspSubElementObsDevice(SKAObsDevice):
             self._component_manager = component_manager
             super().__init__(callback=callback, logger=logger)
 
-        def do(self):
+        def do(self) -> Tuple[ResultCode, str]:
             """
             Stateless hook for Abort() command functionality.
 
             :return: A tuple containing a return code and a string
                 message indicating status. The message is for
                 information purpose only.
-            :rtype: (ResultCode, str)
             """
             command_id = self._command_tracker.new_command(
                 "Abort", completed_callback=self._completed
@@ -446,17 +442,15 @@ class CspSubElementObsDevice(SKAObsDevice):
         ),
     )
     @DebugIt()
-    def ConfigureScan(self, argin):
+    def ConfigureScan(self, argin: str) -> Tuple[ResultCode, str]:
         """
         Configure the observing device parameters for the current scan.
 
         :param argin: JSON formatted string with the scan configuration.
-        :type argin: str
 
         :return: A tuple containing a return code and a string message
             indicating status. The message is for information purpose
             only.
-        :rtype: (ResultCode, str)
         """
         handler = self.get_command_object("ConfigureScan")
 
@@ -499,17 +493,15 @@ class CspSubElementObsDevice(SKAObsDevice):
         ),
     )
     @DebugIt()
-    def Scan(self, argin):
+    def Scan(self, argin: str) -> Tuple[ResultCode, str]:
         """
         Start an observing scan.
 
         :param argin: A string with the scan ID
-        :type argin: str
 
         :return: A tuple containing a return code and a string message
             indicating status. The message is for information purpose
             only.
-        :rtype: (ResultCode, str)
         """
         handler = self.get_command_object("Scan")
 
@@ -550,14 +542,13 @@ class CspSubElementObsDevice(SKAObsDevice):
         ),
     )
     @DebugIt()
-    def EndScan(self):
+    def EndScan(self) -> Tuple[ResultCode, str]:
         """
         End a running scan.
 
         :return: A tuple containing a return code and a string message
             indicating status. The message is for information purpose
             only.
-        :rtype: (ResultCode, str)
         """
         handler = self.get_command_object("EndScan")
         (result_code, message) = handler()
@@ -592,14 +583,13 @@ class CspSubElementObsDevice(SKAObsDevice):
         ),
     )
     @DebugIt()
-    def GoToIdle(self):
+    def GoToIdle(self) -> Tuple[ResultCode, str]:
         """
         Transit the device from READY to IDLE obsState.
 
         :return: A tuple containing a return code and a string message
             indicating status. The message is for information purpose
             only.
-        :rtype: (ResultCode, str)
         """
         self._last_scan_configuration = ""
 
@@ -636,14 +626,13 @@ class CspSubElementObsDevice(SKAObsDevice):
         ),
     )
     @DebugIt()
-    def ObsReset(self):
+    def ObsReset(self) -> Tuple[ResultCode, str]:
         """
         Reset the observing device from a FAULT/ABORTED obsState to IDLE.
 
         :return: A tuple containing a return code and a string message
             indicating status. The message is for information purpose
             only.
-        :rtype: (ResultCode, str)
         """
         handler = self.get_command_object("ObsReset")
         (result_code, message) = handler()
@@ -684,14 +673,13 @@ class CspSubElementObsDevice(SKAObsDevice):
         ),
     )
     @DebugIt()
-    def Abort(self):
+    def Abort(self) -> Tuple[ResultCode, str]:
         """
         Abort the current observing process and move to ABORTED obsState.
 
         :return: A tuple containing a return code and a string message
             indicating status. The message is for information purpose
             only.
-        :rtype: (ResultCode, str)
         """
         handler = self.get_command_object("Abort")
         (result_code, message) = handler()

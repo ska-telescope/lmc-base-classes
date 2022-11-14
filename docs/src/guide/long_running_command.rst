@@ -132,17 +132,14 @@ Add a method that should be executed in a background thread
 
         def _a_very_slow_method(
             logger: logging.Logger,
-            task_callback: Callable = None,
-            task_abort_event: Event = None,
+            task_callback: Callable,
+            task_abort_event: Event,
         ):
             """This is a long running method
 
             :param logger: logger
-            :type logger: logging.Logger
             :param task_callback: Update task state, defaults to None
-            :type task_callback: Callable, optional
             :param task_abort_event: Check for abort, defaults to None
-            :type task_abort_event: Event, optional
             """
             # Indicate that the task has started
             task_callback(status=TaskStatus.IN_PROGRESS)
@@ -169,14 +166,13 @@ Add a method to submit the slow method
 
     # class SampleComponentManager
 
-        def submit_slow_method(self, task_callback: Callable = None):
+        def submit_slow_method(self, task_callback: Optional[Callable] = None):
             """Submit the slow task. 
 
             This method returns immediately after it submitted
             `self._a_very_slow_method` for execution.
 
             :param task_callback: Update task state, defaults to None
-            :type task_callback: Callable, optional
             """
             task_status, response = self.submit_task(
                 self._a_very_slow_method, args=[], task_callback=task_callback

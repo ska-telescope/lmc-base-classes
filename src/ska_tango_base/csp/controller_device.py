@@ -15,7 +15,7 @@ CspSubElementController.
 Controller device for SKA CSP Subelement.
 """
 from collections import defaultdict
-from typing import List
+from typing import List, Tuple
 
 import tango
 from ska_control_model import AdminMode
@@ -216,7 +216,6 @@ class CspSubElementController(SKAController):
             :return: A tuple containing a return code and a string
                 message indicating status. The message is for
                 information purpose only.
-            :rtype: (ResultCode, str)
             """
             super().do()
 
@@ -434,7 +433,7 @@ class CspSubElementController(SKAController):
             """
             super().__init__(logger=logger)
 
-        def do(self, argin):
+        def do(self, argin) -> Tuple[ResultCode, str]:
             """
             Stateless hook for device LoadFirmware() command.
 
@@ -443,7 +442,6 @@ class CspSubElementController(SKAController):
             :return: A tuple containing a return code and a string
                 message indicating status. The message is for
                 information purpose only.
-            :rtype: (ResultCode, str)
             """
             message = "LoadFirmware command completed OK"
             return (ResultCode.OK, message)
@@ -459,7 +457,7 @@ class CspSubElementController(SKAController):
             """
             super().__init__(logger=logger)
 
-        def do(self, argin):
+        def do(self, argin) -> Tuple[ResultCode, str]:
             """
             Stateless hook for device PowerOnDevices() command.
 
@@ -468,7 +466,6 @@ class CspSubElementController(SKAController):
             :return: A tuple containing a return code and a string
                 message indicating status. The message is for
                 information purpose only.
-            :rtype: (ResultCode, str)
             """
             message = "PowerOnDevices command completed OK"
             return (ResultCode.OK, message)
@@ -484,7 +481,7 @@ class CspSubElementController(SKAController):
             """
             super().__init__(logger=logger)
 
-        def do(self, argin):
+        def do(self, argin) -> Tuple[ResultCode, str]:
             """
             Stateless hook for device PowerOffDevices() command.
 
@@ -493,7 +490,6 @@ class CspSubElementController(SKAController):
             :return: A tuple containing a return code and a string
                 message indicating status. The message is for
                 information purpose only.
-            :rtype: (ResultCode, str)
             """
             message = "PowerOffDevices command completed OK"
             return (ResultCode.OK, message)
@@ -509,7 +505,7 @@ class CspSubElementController(SKAController):
             """
             super().__init__(logger=logger)
 
-        def do(self, argin):
+        def do(self, argin) -> Tuple[ResultCode, str]:
             """
             Stateless hook for device ReInitDevices() command.
 
@@ -518,17 +514,15 @@ class CspSubElementController(SKAController):
             :return: A tuple containing a return code and a string
                 message indicating status. The message is for
                 information purpose only.
-            :rtype: (ResultCode, str)
             """
             message = "ReInitDevices command completed OK"
             return (ResultCode.OK, message)
 
-    def is_LoadFirmware_allowed(self):
+    def is_LoadFirmware_allowed(self) -> bool:
         """
         Check if the LoadFirmware command is allowed in the current state.
 
         :return: ``True`` if command is allowed
-        :rtype: bool
         """
         return (
             self.get_state() == tango.DevState.OFF
@@ -543,7 +537,7 @@ class CspSubElementController(SKAController):
         dtype_out="DevVarLongStringArray",
     )
     @DebugIt()
-    def LoadFirmware(self, argin: List[str]):
+    def LoadFirmware(self, argin: List[str]) -> Tuple[ResultCode, str]:
         """
         Deploy new versions of software and firmware.
 
@@ -559,18 +553,16 @@ class CspSubElementController(SKAController):
         :return: A tuple containing a return code and a string
             message indicating status. The message is for
             information purpose only.
-        :rtype: (ResultCode, str)
         """
         handler = self.get_command_object("LoadFirmware")
         (result_code, message) = handler(argin)
         return [[result_code], [message]]
 
-    def is_PowerOnDevices_allowed(self):
+    def is_PowerOnDevices_allowed(self) -> bool:
         """
         Check if the PowerOnDevice command is allowed in the current state.
 
         :return: ``True`` if command is allowed
-        :rtype: bool
         """
         return self.get_state() == tango.DevState.ON
 
@@ -581,7 +573,7 @@ class CspSubElementController(SKAController):
         doc_out="ReturnType, `informational message`",
     )
     @DebugIt()
-    def PowerOnDevices(self, argin: List[str]):
+    def PowerOnDevices(self, argin: List[str]) -> Tuple[ResultCode, str]:
         """
         Power-on a selected list of devices.
 
@@ -590,18 +582,16 @@ class CspSubElementController(SKAController):
         :return: A tuple containing a return code and a string
             message indicating status. The message is for
             information purpose only.
-        :rtype: (ResultCode, str)
         """
         handler = self.get_command_object("PowerOnDevices")
         (result_code, message) = handler(argin)
         return [[result_code], [message]]
 
-    def is_PowerOffDevices_allowed(self):
+    def is_PowerOffDevices_allowed(self) -> bool:
         """
         Check if the PowerOffDevices command is allowed in the current state.
 
         :return: ``True`` if command is allowed
-        :rtype: bool
         """
         return self.get_state() == tango.DevState.ON
 
@@ -612,7 +602,7 @@ class CspSubElementController(SKAController):
         doc_out="ReturnType, `informational message`",
     )
     @DebugIt()
-    def PowerOffDevices(self, argin: List[str]):
+    def PowerOffDevices(self, argin: List[str]) -> Tuple[ResultCode, str]:
         """
         Power-off a selected list of devices.
 
@@ -621,18 +611,16 @@ class CspSubElementController(SKAController):
         :return: A tuple containing a return code and a string
             message indicating status. The message is for
             information purpose only.
-        :rtype: (ResultCode, str)
         """
         handler = self.get_command_object("PowerOffDevices")
         (result_code, message) = handler(argin)
         return [[result_code], [message]]
 
-    def is_ReInitDevices_allowed(self):
+    def is_ReInitDevices_allowed(self) -> bool:
         """
         Check if the ReInitDevices command is allowed in the current state.
 
         :return: ``True`` if command is allowed
-        :rtype: bool
         """
         return self.get_state() == tango.DevState.ON
 
@@ -643,7 +631,7 @@ class CspSubElementController(SKAController):
         doc_out="ReturnType, `informational message`",
     )
     @DebugIt()
-    def ReInitDevices(self, argin: List[str]):
+    def ReInitDevices(self, argin: List[str]) -> Tuple[ResultCode, str]:
         """
         Reinitialize the devices passed in the input argument.
 
@@ -660,7 +648,6 @@ class CspSubElementController(SKAController):
         :return: A tuple containing a return code and a string
             message indicating status. The message is for
             information purpose only.
-        :rtype: (ResultCode, str)
         """
         handler = self.get_command_object("ReInitDevices")
         (result_code, message) = handler(argin)

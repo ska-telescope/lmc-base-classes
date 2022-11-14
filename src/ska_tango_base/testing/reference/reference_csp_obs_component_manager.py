@@ -1,6 +1,7 @@
 # type: ignore
 """This module models component management for CSP subelement observation devices."""
-from typing import Tuple
+from threading import Event
+from typing import Callable, Optional, Tuple
 
 from ska_control_model import PowerState, TaskStatus
 
@@ -81,7 +82,7 @@ class FakeCspObsComponent(FakeBaseComponent):
 
     @property
     @check_on
-    def config_id(self):
+    def config_id(self) -> str:
         """
         Return the configuration ID.
 
@@ -91,7 +92,7 @@ class FakeCspObsComponent(FakeBaseComponent):
 
     @property
     @check_on
-    def scan_id(self):
+    def scan_id(self) -> str:
         """
         Return the scan ID.
 
@@ -99,12 +100,16 @@ class FakeCspObsComponent(FakeBaseComponent):
         """
         return self._scan_id
 
-    def configure_scan(self, configuration, task_callback, task_abort_event) -> None:
+    def configure_scan(
+        self,
+        configuration: dict,
+        task_callback: Optional[Callable],
+        task_abort_event: Event,
+    ) -> None:
         """
         Configure the component.
 
         :param configuration: the configuration to be configured
-        :type configuration: dict
         :param task_callback: a callback to be called whenever the
             status of this task changes.
         :param task_abort_event: a threading.Event that can be checked
@@ -126,7 +131,9 @@ class FakeCspObsComponent(FakeBaseComponent):
             task_callback, task_abort_event, result, configured=True
         )
 
-    def deconfigure(self, task_callback, task_abort_event):
+    def deconfigure(
+        self, task_callback: Optional[Callable], task_abort_event: Event
+    ) -> None:
         """
         Deconfigure this component.
 
@@ -151,7 +158,9 @@ class FakeCspObsComponent(FakeBaseComponent):
             task_callback, task_abort_event, result, configured=False
         )
 
-    def scan(self, scan_id, task_callback, task_abort_event):
+    def scan(
+        self, scan_id: str, task_callback: Optional[Callable], task_abort_event: Event
+    ) -> None:
         """
         Start scanning.
 
@@ -177,7 +186,11 @@ class FakeCspObsComponent(FakeBaseComponent):
             task_callback, task_abort_event, result, scanning=True
         )
 
-    def end_scan(self, task_callback, task_abort_event):
+    def end_scan(
+        self,
+        task_callback: Optional[Callable],
+        task_abort_event: Event,
+    ):
         """
         End scanning.
 
@@ -219,7 +232,11 @@ class FakeCspObsComponent(FakeBaseComponent):
         self._update_state(obsfault=obsfault)
 
     @check_on
-    def obsreset(self, task_callback, task_abort_event):
+    def obsreset(
+        self,
+        task_callback: Optional[Callable],
+        task_abort_event: Event,
+    ) -> None:
         """
         Reset the observation after it has faulted or been aborted.
 

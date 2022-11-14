@@ -35,7 +35,7 @@ DevVarLongStringArrayType = Tuple[List[ResultCode], List[Optional[str]]]
 __all__ = ["SKASubarray", "main"]
 
 
-# TODO: The is an abstract class because it does not define
+# TODO: This is an abstract class because it does not define
 # `create_component_manager` and therefore inherits the abstract method from the
 # base device. There's no point implementing `create_component_manager` because
 # the SubarrayComponentManager is itself abstract.

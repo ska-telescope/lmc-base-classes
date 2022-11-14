@@ -17,6 +17,7 @@ Subarray device for SKA CSP SubElement
 import json
 from collections import defaultdict
 from json.decoder import JSONDecodeError
+from typing import Tuple
 
 from ska_control_model import ObsState
 from tango import AttrWriteType, DebugIt
@@ -218,14 +219,13 @@ class CspSubElementSubarray(SKASubarray):
     class InitCommand(SKASubarray.InitCommand):
         """A class for the CspSubElementObsDevice's init_device() "command"."""
 
-        def do(self):
+        def do(self) -> Tuple[ResultCode, str]:
             """
             Stateless hook for device initialisation.
 
             :return: A tuple containing a return code and a string
                 message indicating status. The message is for
                 information purpose only.
-            :rtype: (ResultCode, str)
             """
             super().do()
 
@@ -493,14 +493,13 @@ class CspSubElementSubarray(SKASubarray):
                 logger=logger,
             )
 
-        def validate_input(self, argin):
+        def validate_input(self, argin: str) -> Tuple[dict, ResultCode, str]:
             """
             Validate the configuration parameters against allowed values, as needed.
 
             :param argin: The JSON formatted string with configuration for the device.
-            :type argin: str
+
             :return: A tuple containing a return code and a string message.
-            :rtype: (ResultCode, str)
             """
             try:
                 configuration_dict = json.loads(argin)
@@ -551,7 +550,7 @@ class CspSubElementSubarray(SKASubarray):
         ),
     )
     @DebugIt()
-    def ConfigureScan(self, argin: str):
+    def ConfigureScan(self, argin: str) -> Tuple[ResultCode, str]:
         """
         Configure a complete scan for the subarray.
 
@@ -560,7 +559,6 @@ class CspSubElementSubarray(SKASubarray):
         :return:
             A tuple containing a return code and a string message indicating status.
             The message is for information purpose only.
-        :rtype: (ResultCode, str)
         """
         handler = self.get_command_object("ConfigureScan")
 

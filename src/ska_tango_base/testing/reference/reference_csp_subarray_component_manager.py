@@ -1,5 +1,8 @@
 # type: ignore
 """This module models component management for CSP subelement observation devices."""
+from threading import Event
+from typing import Callable
+
 from ska_control_model import CommunicationStatus, PowerState
 
 from ska_tango_base.base import check_communicating, check_on
@@ -184,12 +187,16 @@ class FakeCspSubarrayComponent(FakeBaseComponent):
         )
 
     @check_on
-    def configure(self, configuration, task_callback, task_abort_event):
+    def configure(
+        self,
+        configuration: dict,
+        task_callback: Callable,
+        task_abort_event: Event,
+    ):
         """
         Configure the component.
 
         :param configuration: the configuration to be configured
-        :type configuration: dict
         :param task_callback: a callback to be called whenever the
             status of this task changes.
         :param task_abort_event: a threading.Event that can be checked

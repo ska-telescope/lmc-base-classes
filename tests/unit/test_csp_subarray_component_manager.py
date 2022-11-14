@@ -1,6 +1,4 @@
 # type: ignore
-# flake8: noqa
-# pylint: skip-file  # TODO: Incrementally lint this repo
 """Tests for the ``csp_subelement_component_manager`` module."""
 import itertools
 
@@ -19,23 +17,44 @@ class TestCspSubelementSubarrayComponentManager:
 
     @pytest.fixture()
     def mock_resource_factory(self, mocker):
-        """Return a factory that provides mock resources."""
+        """
+        Return a factory that provides mock resources.
+
+        :param mocker: pytest fixture that wraps :py:mod:`unittest.mock`.
+
+        :return: a factory that provides mock resources.
+        """
         return mocker.Mock
 
     @pytest.fixture()
     def mock_config_factory(self):
-        """Return a factory that provides mock arguments to the configure() method."""
+        """
+        Return a factory that provides mock arguments to the configure() method.
+
+        :return: a factory that provides mock arguments to the
+            configure() method.
+        """
         mock_config_generator = ({"id": f"mock_id_{i}"} for i in itertools.count(1))
         return lambda: next(mock_config_generator)
 
     @pytest.fixture()
     def mock_scan_args(self, mocker):
-        """Return some mock arguments to the scan() method."""
+        """
+        Return some mock arguments to the scan() method.
+
+        :param mocker: pytest fixture that wraps :py:mod:`unittest.mock`.
+
+        :return: some mock arguments to the scan() method.
+        """
         return mocker.Mock()
 
     @pytest.fixture()
     def component(self):
-        """Return a component for testing."""
+        """
+        Return a component for testing.
+
+        :return: a component for testing
+        """
         return FakeCspSubarrayComponent()
 
     @pytest.fixture()
@@ -51,6 +70,7 @@ class TestCspSubelementSubarrayComponentManager:
         :param logger: a logger for the component manager
         :param callbacks: a dictionary of mocks, passed as callbacks to
             the command tracker under test
+        :param component: a subarray component for testing purposes
 
         :return: the component manager under test
         """
@@ -70,6 +90,8 @@ class TestCspSubelementSubarrayComponentManager:
         Test that state is updated when the component is connected / disconnected.
 
         :param component_manager: the component manager under test
+        :param callbacks: a dictionary of mocks, passed as callbacks to
+            the command tracker under test
         """
         assert component_manager.communication_state == CommunicationStatus.DISABLED
         callbacks.assert_not_called()
@@ -93,6 +115,8 @@ class TestCspSubelementSubarrayComponentManager:
         Test that we can simulate connection failure.
 
         :param component_manager: the component manager under test
+        :param callbacks: a dictionary of mocks, passed as callbacks to
+            the command tracker under test
         """
         assert component_manager.communication_state == CommunicationStatus.DISABLED
         callbacks.assert_not_called()
@@ -136,6 +160,8 @@ class TestCspSubelementSubarrayComponentManager:
         Test that commands fail when there is not connection to the component.
 
         :param component_manager: the component manager under test
+        :param callbacks: a dictionary of mocks, passed as callbacks to
+            the command tracker under test
         :param command: the command under test
         """
         assert component_manager.communication_state == CommunicationStatus.DISABLED
@@ -265,6 +291,11 @@ class TestCspSubelementSubarrayComponentManager:
         component is off?
 
         :param component_manager: the component manager under test
+        :param component: a subarray component for testing purposes
+        :param callbacks: a dictionary of mocks, passed as callbacks to
+            the command tracker under test
+        :param power_state: the power state to simulate; parametrized to
+            return each of OFF, STANDBY and ON.
         """
         component_manager.start_communicating()
         callbacks.assert_call(
@@ -293,6 +324,9 @@ class TestCspSubelementSubarrayComponentManager:
         component is off?
 
         :param component_manager: the component manager under test
+        :param component: a subarray component for testing purposes
+        :param callbacks: a dictionary of mocks, passed as callbacks to
+            the command tracker under test
         """
         component_manager.start_communicating()
         callbacks.assert_call(
@@ -313,7 +347,14 @@ class TestCspSubelementSubarrayComponentManager:
         component,
         callbacks,
     ):
-        """Test that the component manager can reset a faulty component."""
+        """
+        Test that the component manager can reset a faulty component.
+
+        :param component_manager: the component manager under test
+        :param component: a subarray component for testing purposes
+        :param callbacks: a dictionary of mocks, passed as callbacks to
+            the command tracker under test
+        """
         component_manager.start_communicating()
         callbacks.assert_call(
             "communication_state", CommunicationStatus.NOT_ESTABLISHED
@@ -333,7 +374,14 @@ class TestCspSubelementSubarrayComponentManager:
         callbacks,
         mock_resource_factory,
     ):
-        """Test management of a component during assignment of resources."""
+        """
+        Test management of a component during assignment of resources.
+
+        :param component_manager: the component manager under test
+        :param callbacks: a dictionary of mocks, passed as callbacks to
+            the command tracker under test
+        :param mock_resource_factory: a resource factory
+        """
         component_manager.start_communicating()
         callbacks.assert_call(
             "communication_state", CommunicationStatus.NOT_ESTABLISHED
@@ -366,7 +414,15 @@ class TestCspSubelementSubarrayComponentManager:
         mock_resource_factory,
         mock_config_factory,
     ):
-        """Test management of a component through configuration."""
+        """
+        Test management of a component through configuration.
+
+        :param component_manager: the component manager under test
+        :param callbacks: a dictionary of mocks, passed as callbacks to
+            the command tracker under test
+        :param mock_resource_factory: a resource factory
+        :param mock_config_factory: a configure factory
+        """
         component_manager.start_communicating()
         callbacks.assert_call(
             "communication_state", CommunicationStatus.NOT_ESTABLISHED
@@ -393,7 +449,7 @@ class TestCspSubelementSubarrayComponentManager:
         component_manager.deconfigure()
         callbacks.assert_call("component_state", configured=False)
 
-    def test_scan(
+    def test_scan(  # pylint: disable=too-many-arguments
         self,
         component_manager,
         component,
@@ -402,7 +458,17 @@ class TestCspSubelementSubarrayComponentManager:
         mock_config_factory,
         mock_scan_args,
     ):
-        """Test management of a scanning component."""
+        """
+        Test management of a scanning component.
+
+        :param component_manager: the component manager under test
+        :param component: a subarray component for testing purposes
+        :param callbacks: a dictionary of mocks, passed as callbacks to
+            the command tracker under test
+        :param mock_resource_factory: a resource factory
+        :param mock_config_factory: a configure factory
+        :param mock_scan_args: mock scan arguments
+        """
         component_manager.start_communicating()
         callbacks.assert_call(
             "communication_state", CommunicationStatus.NOT_ESTABLISHED
@@ -437,7 +503,7 @@ class TestCspSubelementSubarrayComponentManager:
         component_manager.deconfigure()
         callbacks.assert_call("component_state", configured=False)
 
-    def test_obsfault_reset(
+    def test_obsfault_reset(  # pylint: disable=too-many-arguments
         self,
         component_manager,
         component,
@@ -446,7 +512,17 @@ class TestCspSubelementSubarrayComponentManager:
         mock_config_factory,
         mock_scan_args,
     ):
-        """Test management of a faulting component."""
+        """
+        Test management of a faulting component.
+
+        :param component_manager: the component manager under test
+        :param component: a subarray component for testing purposes
+        :param callbacks: a dictionary of mocks, passed as callbacks to
+            the command tracker under test
+        :param mock_resource_factory: a resource factory
+        :param mock_config_factory: a configure factory
+        :param mock_scan_args: mock scan arguments
+        """
         component_manager.start_communicating()
         callbacks.assert_call(
             "communication_state", CommunicationStatus.NOT_ESTABLISHED
@@ -486,7 +562,7 @@ class TestCspSubelementSubarrayComponentManager:
             "component_state", obsfault=False, scanning=False, configured=False
         )
 
-    def test_obsfault_restart(
+    def test_obsfault_restart(  # pylint: disable=too-many-arguments
         self,
         component_manager,
         component,
@@ -495,7 +571,17 @@ class TestCspSubelementSubarrayComponentManager:
         mock_config_factory,
         mock_scan_args,
     ):
-        """Test management of a faulting component."""
+        """
+        Test management of a faulting component.
+
+        :param component_manager: the component manager under test
+        :param component: a subarray component for testing purposes
+        :param callbacks: a dictionary of mocks, passed as callbacks to
+            the command tracker under test
+        :param mock_resource_factory: a resource factory
+        :param mock_config_factory: a configure factory
+        :param mock_scan_args: mock scan arguments
+        """
         component_manager.start_communicating()
         callbacks.assert_call(
             "communication_state", CommunicationStatus.NOT_ESTABLISHED

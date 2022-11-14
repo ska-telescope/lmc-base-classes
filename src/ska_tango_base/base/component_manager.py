@@ -1,4 +1,3 @@
-# pylint: skip-file  # TODO: Incrementally lint this repo
 # -*- coding: utf-8 -*-
 #
 # This file is part of the SKA Tango Base project
@@ -267,10 +266,10 @@ class BaseComponentManager:
         callback_kwargs = {}
 
         with self._component_state_lock:
-            for state in kwargs:
-                if self._component_state[state] != kwargs[state]:
-                    self._component_state[state] = kwargs[state]
-                    callback_kwargs[state] = kwargs[state]
+            for key, value in kwargs.items():
+                if self._component_state[key] != value:
+                    self._component_state[key] = value
+                    callback_kwargs[key] = value
             if callback_kwargs:
                 self._push_component_state_update(**callback_kwargs)
 

@@ -1,14 +1,12 @@
 # type: ignore
-# flake8: noqa
-# pylint: skip-file  # TODO: Incrementally lint this repo
-#########################################################################################
+#######################################################################################
 # -*- coding: utf-8 -*-
 #
 # This file is part of the CspSubelementController project
 #
 #
 #
-#########################################################################################
+#######################################################################################
 """Contain the tests for the CspSubelementController."""
 
 import re
@@ -29,7 +27,7 @@ from ska_tango_base.commands import ResultCode
 from ska_tango_base.testing.reference import ReferenceBaseComponentManager
 
 
-class TestCspSubElementController:
+class TestCspSubElementController:  # pylint: disable=too-many-public-methods
     """Test case for CSP SubElement Controller class."""
 
     @pytest.fixture(scope="class")
@@ -111,11 +109,11 @@ class TestCspSubElementController:
 
         :param device_under_test: a proxy to the device under test
         """
-        buildPattern = re.compile(
+        build_pattern = re.compile(
             r"ska_tango_base, [0-9]+.[0-9]+.[0-9]+, "
             r"A set of generic base devices for SKA Telescope"
         )
-        assert (re.match(buildPattern, device_under_test.buildState)) is not None
+        assert (re.match(build_pattern, device_under_test.buildState)) is not None
 
     def test_versionId(self, device_under_test):
         """
@@ -123,8 +121,8 @@ class TestCspSubElementController:
 
         :param device_under_test: a proxy to the device under test
         """
-        versionIdPattern = re.compile(r"[0-9]+.[0-9]+.[0-9]+")
-        assert (re.match(versionIdPattern, device_under_test.versionId)) is not None
+        version_id_pattern = re.compile(r"[0-9]+.[0-9]+.[0-9]+")
+        assert (re.match(version_id_pattern, device_under_test.versionId)) is not None
 
     def test_healthState(self, device_under_test):
         """
@@ -171,6 +169,8 @@ class TestCspSubElementController:
         Test for powerDelayStandbyOn.
 
         :param device_under_test: a proxy to the device under test
+        :param device_properties: fixture that returns device properties
+            of the device under test
         """
         assert device_under_test.powerDelayStandbyOn == pytest.approx(
             float(device_properties["PowerDelayStandbyOn"])
@@ -183,6 +183,8 @@ class TestCspSubElementController:
         Test for powerDelayStandbyOff.
 
         :param device_under_test: a proxy to the device under test
+        :param device_properties: fixture that returns device properties
+            of the device under test
         """
         assert device_under_test.powerDelayStandbyOff == pytest.approx(
             float(device_properties["PowerDelayStandbyOff"])
@@ -424,7 +426,11 @@ class TestCspSubElementController:
 
 @pytest.mark.forked
 def test_multiple_devices_in_same_process(mocker):
-    """Test that we can run this device with other devices in a single process."""
+    """
+    Test that we can run this device with other devices in a single process.
+
+    :param mocker: pytest fixture that wraps :py:mod:`unittest.mock`.
+    """
     # Patch abstract method/s; it doesn't matter what we patch them with, so long as
     # they don't raise NotImplementedError.
     mocker.patch.object(SKAController, "create_component_manager")

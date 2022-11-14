@@ -1,14 +1,11 @@
 # type: ignore
-# flake8: noqa
 # pylint: skip-file  # TODO: Incrementally lint this repo
-#########################################################################################
+########################################################################
 # -*- coding: utf-8 -*-
 #
 # This file is part of the CspSubelementObsDevice project
 #
-#
-#
-#########################################################################################
+########################################################################
 """This module contains the tests for the CspSubelementObsDevice."""
 import json
 import re
@@ -34,11 +31,13 @@ from ska_tango_base.testing.reference import ReferenceCspObsComponentManager
 @pytest.fixture
 def csp_subelement_obsdevice_state_model(logger):
     """
-    Yield a new CspSubElementObsDevice StateModel for testing.
+    Return a new CspSubElementObsDevice StateModel for testing.
 
     :param logger: fixture that returns a logger
+
+    :return: a new CspSubElementObsDevice StateModel for testing.
     """
-    yield CspSubElementObsStateModel(logger)
+    return CspSubElementObsStateModel(logger)
 
 
 class TestCspSubElementObsDevice:
@@ -115,11 +114,11 @@ class TestCspSubElementObsDevice:
 
         :param device_under_test: a proxy to the device under test
         """
-        buildPattern = re.compile(
+        build_pattern = re.compile(
             r"ska_tango_base, [0-9]+.[0-9]+.[0-9]+, "
             r"A set of generic base devices for SKA Telescope"
         )
-        assert (re.match(buildPattern, device_under_test.buildState)) is not None
+        assert (re.match(build_pattern, device_under_test.buildState)) is not None
 
     def test_versionId(self, device_under_test):
         """
@@ -127,8 +126,8 @@ class TestCspSubElementObsDevice:
 
         :param device_under_test: a proxy to the device under test
         """
-        versionIdPattern = re.compile(r"[0-9]+.[0-9]+.[0-9]+")
-        assert (re.match(versionIdPattern, device_under_test.versionId)) is not None
+        version_id_pattern = re.compile(r"[0-9]+.[0-9]+.[0-9]+")
+        assert (re.match(version_id_pattern, device_under_test.versionId)) is not None
 
     def test_healthState(self, device_under_test):
         """
@@ -199,6 +198,8 @@ class TestCspSubElementObsDevice:
         Test for deviceID.
 
         :param device_under_test: a proxy to the device under test
+        :param device_properties: fixture that returns device properties
+            of the device under test
         """
         assert device_under_test.deviceID == int(device_properties["DeviceID"])
 
@@ -420,7 +421,9 @@ class TestCspSubElementObsDevice:
         # The device in in OFF/IDLE state, not valid to invoke ConfigureScan.
 
         with pytest.raises(tango.DevFailed, match="Component is not powered ON"):
-            device_under_test.ConfigureScan('{"id":"sbi-mvp01-20200325-00002"}')
+            device_under_test.ConfigureScan(
+                '{"id":"sbi-mvp01-20200325-00002"}'  # noqa: FS003
+            )
 
     def test_ConfigureScan_with_wrong_input_args(self, device_under_test):
         """
@@ -435,7 +438,7 @@ class TestCspSubElementObsDevice:
         # wrong configurationID key
         assert device_under_test.obsState == ObsState.IDLE
 
-        wrong_configuration = '{"subid":"sbi-mvp01-20200325-00002"}'
+        wrong_configuration = '{"subid":"sbi-mvp01-20200325-00002"}'  # noqa: FS003
         (result_code, _) = device_under_test.ConfigureScan(wrong_configuration)
         assert result_code == ResultCode.FAILED
         assert device_under_test.obsState == ObsState.IDLE
@@ -449,7 +452,7 @@ class TestCspSubElementObsDevice:
         device_under_test.On()
         assert device_under_test.obsState == ObsState.IDLE
 
-        (result_code, _) = device_under_test.ConfigureScan('{"foo": 1,}')
+        (result_code, _) = device_under_test.ConfigureScan('{"foo": 1,}')  # noqa: FS003
         assert result_code == ResultCode.FAILED
         assert device_under_test.obsState == ObsState.IDLE
 
@@ -474,7 +477,6 @@ class TestCspSubElementObsDevice:
         :param change_event_callbacks: dictionary of mock change event
             callbacks with asynchrony support
         """
-
         assert device_under_test.state() == tango.DevState.OFF
 
         for attribute in [
@@ -900,7 +902,7 @@ class TestCspSubElementObsDevice:
         # attributes. We need a better way to handle this.
 
         # Start configuring but then abort
-        [[result_code], [configure_command_id],] = device_under_test.ConfigureScan(
+        [[result_code], [configure_command_id]] = device_under_test.ConfigureScan(
             json.dumps({"id": "sbi-mvp01-20200325-00002"})
         )
         assert result_code == ResultCode.QUEUED
@@ -1038,7 +1040,11 @@ class TestCspSubElementObsDevice:
 
 @pytest.mark.forked
 def test_multiple_devices_in_same_process(mocker):
-    """Test that we can run this device with other devices in a single process."""
+    """
+    Test that we can run this device with other devices in a single process.
+
+    :param mocker: pytest fixture that wraps :py:mod:`unittest.mock`.
+    """
     # Patch abstract method/s; it doesn't matter what we patch them with, so long as
     # they don't raise NotImplementedError.
     mocker.patch.object(SKAObsDevice, "create_component_manager")

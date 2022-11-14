@@ -1,4 +1,3 @@
-# flake8: noqa
 # pylint: skip-file  # TODO: Incrementally lint this repo
 # type: ignore
 # -*- coding: utf-8 -*-
@@ -25,7 +24,7 @@ from tango.server import attribute, command, run
 
 from ska_tango_base.commands import ResultCode, SubmittedSlowCommand
 from ska_tango_base.faults import StateModelError
-from ska_tango_base.subarray import SKASubarray
+from ska_tango_base.subarray.subarray_device import SKASubarray
 
 __all__ = ["CspSubElementSubarray", "main"]
 
@@ -250,7 +249,8 @@ class CspSubElementSubarray(SKASubarray):
             # _list_of_devices_completed_task: for each task/command reports
             # the list of the devices that successfully completed the task.
             # Implemented as a defualt dictionary:
-            # keys: the command name in lower case (configurescan, assignresources, etc.)
+            # keys: the command name in lower case (configurescan,
+            # assignresources, etc.)
             # values: the list of devices' FQDN
             self._device._list_of_devices_completed_task = defaultdict(list)
 
@@ -260,21 +260,24 @@ class CspSubElementSubarray(SKASubarray):
             # values: the progress percentage (default 0)
             self._device._cmd_progress = defaultdict(int)
 
-            # _cmd_maximun_duration: command execution's expected maximum duration (sec.)
-            # implemented as a default dictionary:
-            # keys: the command name in lower case(configurescan, assignresources,..)
+            # _cmd_maximun_duration: command execution's expected maximum
+            # duration (sec.) implemented as a default dictionary:
+            # keys: the command name in lower case (configurescan,
+            # assignresources, ...)
             # values: the expected maximum duration in sec.
             self._device._cmd_maximum_duration = defaultdict(float)
 
-            # _cmd_measure_duration: command execution's measured duration (sec.)
-            # implemented as a default dictionary:
-            # keys: the command name in lower case(configurescan, assignresources,..)
+            # _cmd_measure_duration: command execution's measured duration
+            # (sec.) implemented as a default dictionary:
+            # keys: the command name in lower case (configurescan,
+            # assignresources, ...)
             # values: the measured execution time (sec.)
             self._device._cmd_measured_duration = defaultdict(float)
 
-            # _timeout_expired: boolean flag to signal timeout during command execution.
-            # To check and reset before a command execution.
-            # keys: the command name in lower case(configurescan, assignresources,..)
+            # _timeout_expired: boolean flag to signal timeout during command
+            # execution. To check and reset before a command execution.
+            # keys: the command name in lower case (configurescan,
+            # assignresources,..)
             # values: True/False
             self._device._timeout_expired = defaultdict(bool)
             # configure the flags to push event from the device server
@@ -303,86 +306,165 @@ class CspSubElementSubarray(SKASubarray):
     # ------------------
     # Attributes methods
     # ------------------
-
     def read_scanID(self):
-        """Return the scanID attribute."""
+        """
+        Return the scanID attribute.
+
+        :return: the scanID attribute.
+        """
         return self.component_manager.scan_id
 
     def read_configurationID(self):
-        """Return the configurationID attribute."""
+        """
+        Return the configurationID attribute.
+
+        :return: the configurationID attribute.
+        """
         return self.component_manager.config_id
 
     def read_sdpDestinationAddresses(self):
-        """Return the sdpDestinationAddresses attribute."""
+        """
+        Return the sdpDestinationAddresses attribute.
+
+        :return: the sdpDestinationAddresses attribute.
+        """
         return self._sdp_addresses
 
     def write_sdpDestinationAddresses(self, value):
-        """Set the sdpDestinationAddresses attribute."""
+        """
+        Set the sdpDestinationAddresses attribute.
+
+        :param value: the SDP destination addresses
+        """
         self._sdp_addresses = value
 
     def read_outputDataRateToSdp(self):
-        """Return the outputDataRateToSdp attribute."""
+        """
+        Return the outputDataRateToSdp attribute.
+
+        :return: the outputDataRateToSdp attribute.
+        """
         return self._sdp_output_data_rate
 
     def read_lastScanConfiguration(self):
-        """Return the lastScanConfiguration attribute."""
+        """
+        Return the lastScanConfiguration attribute.
+
+        :return: the lastScanConfiguration attribute.
+        """
         return self._last_scan_configuration
 
     def read_configureScanMeasuredDuration(self):
-        """Return the configureScanMeasuredDuration attribute."""
+        """
+        Return the configureScanMeasuredDuration attribute.
+
+        :return: the configureScanMeasuredDuration attribute.
+        """
         return self._cmd_measured_duration["configurescan"]
 
     def read_configureScanTimeoutExpiredFlag(self):
-        """Return the configureScanTimeoutExpiredFlag attribute."""
+        """
+        Return the configureScanTimeoutExpiredFlag attribute.
+
+        :return: the configureScanTimeoutExpiredFlag attribute.
+        """
         return self._timeout_expired["configurescan"]
 
     def read_listOfDevicesCompletedTasks(self):
-        """Return the listOfDevicesCompletedTasks attribute."""
+        """
+        Return the listOfDevicesCompletedTasks attribute.
+
+        :return: the listOfDevicesCompletedTasks attribute.
+        """
         dict_to_string = json.dumps(self._list_of_devices_completed_task)
         return dict_to_string
 
     def read_assignResourcesMaximumDuration(self):
-        """Return the assignResourcesMaximumDuration attribute."""
+        """
+        Return the assignResourcesMaximumDuration attribute.
+
+        :return: the assignResourcesMaximumDuration attribute.
+        """
         return self._cmd_maximum_duration["assignresources"]
 
     def write_assignResourcesMaximumDuration(self, value):
-        """Set the assignResourcesMaximumDuration attribute."""
+        """
+        Set the assignResourcesMaximumDuration attribute.
+
+        :param value: the new maximum duration
+        """
         self._cmd_maximum_duration["assignresources"] = value
 
     def read_assignResourcesMeasuredDuration(self):
-        """Return the assignResourcesMeasuredDuration attribute."""
+        """
+        Return the assignResourcesMeasuredDuration attribute.
+
+        :return: the assignResourcesMeasuredDuration attribute.
+        """
         return self._cmd_measured_duration["assignresources"]
 
     def read_assignResourcesProgress(self):
-        """Return the assignResourcesProgress attribute."""
+        """
+        Return the assignResourcesProgress attribute.
+
+        :return: the assignResourcesProgress attribute.
+        """
         return self._cmd_progress["assignresources"]
 
     def read_assignResourcesTimeoutExpiredFlag(self):
-        """Return the assignResourcesTimeoutExpiredFlag attribute."""
+        """
+        Return the assignResourcesTimeoutExpiredFlag attribute.
+
+        :return: the assignResourcesTimeoutExpiredFlag attribute.
+        """
         return self._timeout_expired["assignresources"]
 
     def read_releaseResourcesMaximumDuration(self):
-        """Return the releaseResourcesMaximumDuration attribute."""
+        """
+        Return the releaseResourcesMaximumDuration attribute.
+
+        :return: the releaseResourcesMaximumDuration attribute.
+        """
         return self._cmd_maximum_duration["releaseresources"]
 
     def write_releaseResourcesMaximumDuration(self, value):
-        """Set the releaseResourcesMaximumDuration attribute."""
+        """
+        Set the releaseResourcesMaximumDuration attribute.
+
+        :param value: the new maximum duration.
+        """
         self._cmd_maximum_duration["releaseresources"] = value
 
     def read_releaseResourcesMeasuredDuration(self):
-        """Return the releaseResourcesMeasuredDuration attribute."""
+        """
+        Return the releaseResourcesMeasuredDuration attribute.
+
+        :return: the releaseResourcesMeasuredDuration attribute.
+        """
         return self._cmd_measured_duration["releaseresources"]
 
     def read_releaseResourcesProgress(self):
-        """Return the releaseResourcesProgress attribute."""
+        """
+        Return the releaseResourcesProgress attribute.
+
+        :return: the releaseResourcesProgress attribute.
+        """
         return self._cmd_progress["releaseresources"]
 
     def read_releaseResourcesTimeoutExpiredFlag(self):
-        """Return the releaseResourcesTimeoutExpiredFlag attribute."""
+        """
+        Return the releaseResourcesTimeoutExpiredFlag attribute.
+
+        :return: the releaseResourcesTimeoutExpiredFlag attribute.
+        """
         return self._timeout_expired["releaseresources"]
 
     def read_sdpLinkActive(self):
-        """Return the sdpLinkActive attribute."""
+        """
+        Return the sdpLinkActive attribute.
+
+        :return: the sdpLinkActive attribute.
+        """
         return (False,)
 
     # --------
@@ -438,13 +520,14 @@ class CspSubElementSubarray(SKASubarray):
                 "ConfigureScan arguments validation successful",
             )
 
-    def is_ConfigureScan_allowed(self):
+    def is_ConfigureScan_allowed(self) -> bool:
         """
         Return whether the `Configure` command may be called in the current state.
 
+        :raises StateModelError: if the command is not allowed
+
         :return: whether the command may be called in the current device
             state
-        :rtype: bool
         """
         # If we return False here, Tango will raise an exception that incorrectly blames
         # refusal on device state.
@@ -452,7 +535,8 @@ class CspSubElementSubarray(SKASubarray):
         # So let's raise an exception ourselves.
         if self._obs_state not in [ObsState.IDLE, ObsState.READY]:
             raise StateModelError(
-                f"ConfigureScan command not permitted in observation state {self._obs_state.name}"
+                "ConfigureScan command not permitted in observation state "
+                f"{self._obs_state.name}"
             )
         return True
 
@@ -460,16 +544,18 @@ class CspSubElementSubarray(SKASubarray):
         dtype_in="DevString",
         doc_in="A Json-encoded string with the scan configuration.",
         dtype_out="DevVarLongStringArray",
-        doc_out="A tuple containing a return code and a string message indicating status."
-        "The message is for information purpose only.",
+        doc_out=(
+            "A tuple containing a return code and a string message "
+            "indicating status. The message is for information purpose "
+            "only."
+        ),
     )
     @DebugIt()
-    def ConfigureScan(self, argin):
+    def ConfigureScan(self, argin: str):
         """
         Configure a complete scan for the subarray.
 
         :param argin: JSON formatted string with the scan configuration.
-        :type argin: str
 
         :return:
             A tuple containing a return code and a string message indicating status.
@@ -486,13 +572,12 @@ class CspSubElementSubarray(SKASubarray):
 
         return [[result_code], [message]]
 
-    def is_Configure_allowed(self):
+    def is_Configure_allowed(self) -> bool:
         """
         Return whether the `Configure` command may be called in the current state.
 
         :return: whether the command may be called in the current device
             state
-        :rtype: bool
         """
         return self.is_ConfigureScan_allowed()
 
@@ -500,8 +585,11 @@ class CspSubElementSubarray(SKASubarray):
         dtype_in="DevString",
         doc_in="A Json-encoded string with the scan configuration.",
         dtype_out="DevVarLongStringArray",
-        doc_out="A tuple containing a return code and a string message indicating status."
-        "The message is for information purpose only.",
+        doc_out=(
+            "A tuple containing a return code and a string message "
+            "indicating status. The message is for information purpose "
+            "only."
+        ),
     )
     @DebugIt()
     def Configure(self, argin):
@@ -516,13 +604,15 @@ class CspSubElementSubarray(SKASubarray):
         """
         return self.ConfigureScan(argin)
 
-    def is_GoToIdle_allowed(self):
+    def is_GoToIdle_allowed(self) -> bool:
         """
         Return whether the `GoToIdle` command may be called in the current device state.
 
+        :raises StateModelError: if the command is not allowed
+
         :return: whether the command may be called in the current device
-            state
-        :rtype: bool
+            state. Can only return True, because an exception is raised
+            in the case of False.
         """
         # If we return False here, Tango will raise an exception that incorrectly blames
         # refusal on device state.
@@ -530,14 +620,18 @@ class CspSubElementSubarray(SKASubarray):
         # So let's raise an exception ourselves.
         if self._obs_state not in [ObsState.IDLE, ObsState.READY]:
             raise StateModelError(
-                f"GoToIdle command not permitted in observation state {self._obs_state.name}"
+                "GoToIdle command not permitted in observation state "
+                f"{self._obs_state.name}"
             )
         return True
 
     @command(
         dtype_out="DevVarLongStringArray",
-        doc_out="A tuple containing a return code and a string  message indicating status."
-        "The message is for information purpose only.",
+        doc_out=(
+            "A tuple containing a return code and a string message "
+            "indicating status. The message is for information purpose "
+            "only."
+        ),
     )
     @DebugIt()
     def GoToIdle(self):
@@ -556,8 +650,11 @@ class CspSubElementSubarray(SKASubarray):
 
     @command(
         dtype_out="DevVarLongStringArray",
-        doc_out="A tuple containing a return code and a string  message indicating status."
-        "The message is for information purpose only.",
+        doc_out=(
+            "A tuple containing a return code and a string message "
+            "indicating status. The message is for information purpose "
+            "only."
+        ),
     )
     @DebugIt()
     def End(self):
@@ -576,9 +673,16 @@ class CspSubElementSubarray(SKASubarray):
 # ----------
 
 
-def main(args=None, **kwargs):
-    """Run the CspSubElementSubarray module."""
-    return run((CspSubElementSubarray,), args=args, **kwargs)
+def main(*args: str, **kwargs: str) -> int:
+    """
+    Entry point for module.
+
+    :param args: positional arguments
+    :param kwargs: named arguments
+
+    :return: exit code
+    """
+    return run((CspSubElementSubarray,), args=args or None, **kwargs)
 
 
 if __name__ == "__main__":

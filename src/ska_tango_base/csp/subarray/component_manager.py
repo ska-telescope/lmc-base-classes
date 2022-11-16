@@ -1,5 +1,5 @@
 """This module models component management for CSP subarrays."""
-from ska_tango_base.subarray import SubarrayComponentManager
+from ska_tango_base.subarray.component_manager import SubarrayComponentManager
 
 
 class CspSubarrayComponentManager(SubarrayComponentManager):

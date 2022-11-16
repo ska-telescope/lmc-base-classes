@@ -1,4 +1,3 @@
-# flake8: noqa
 # type: ignore
 # pylint: skip-file  # TODO: Incrementally lint this repo
 # -*- coding: utf-8 -*-
@@ -15,6 +14,7 @@ General observing device for SKA CSP Subelement.
 import functools
 import json
 from json.decoder import JSONDecodeError
+from typing import Tuple
 
 from ska_control_model import ObsState, TaskStatus
 from tango import DebugIt
@@ -191,14 +191,13 @@ class CspSubElementObsDevice(SKAObsDevice):
     class InitCommand(SKAObsDevice.InitCommand):
         """A class for the CspSubElementObsDevice's init_device() "command"."""
 
-        def do(self):
+        def do(self) -> Tuple[ResultCode, str]:
             """
             Stateless hook for device initialisation.
 
             :return: A tuple containing a return code and a string
                 message indicating status. The message is for
                 information purpose only.
-            :rtype: (ResultCode, str)
             """
             super().do()
 
@@ -228,37 +227,68 @@ class CspSubElementObsDevice(SKAObsDevice):
     # ------------------
     # Attributes methods
     # ------------------
-
     def read_scanID(self):
-        """Return the scanID attribute."""
+        """
+        Return the scanID attribute.
+
+        :return: the scanID attribute.
+        """
         return self.component_manager.scan_id
 
     def read_configurationID(self):
-        """Return the configurationID attribute."""
+        """
+        Return the configurationID attribute.
+
+        :return: the configurationID attribute.
+        """
         return self.component_manager.config_id
 
     def read_deviceID(self):
-        """Return the deviceID attribute."""
+        """
+        Return the deviceID attribute.
+
+        :return: the deviceID attribute.
+        """
         return self.DeviceID
 
     def read_lastScanConfiguration(self):
-        """Return the lastScanConfiguration attribute."""
+        """
+        Return the lastScanConfiguration attribute.
+
+        :return: the lastScanConfiguration attribute.
+        """
         return self._last_scan_configuration
 
     def read_sdpDestinationAddresses(self):
-        """Return the sdpDestinationAddresses attribute."""
+        """
+        Return the sdpDestinationAddresses attribute.
+
+        :return: the sdpDestinationAddresses attribute.
+        """
         return json.dumps(self._sdp_addresses)
 
     def read_sdpLinkCapacity(self):
-        """Return the sdpLinkCapacity attribute."""
+        """
+        Return the sdpLinkCapacity attribute.
+
+        :return: the sdpLinkCapacity attribute.
+        """
         return self._sdp_links_capacity
 
     def read_sdpLinkActive(self):
-        """Return the sdpLinkActive attribute."""
+        """
+        Return the sdpLinkActive attribute.
+
+        :return: the sdpLinkActive attribute.
+        """
         return self._sdp_links_active
 
     def read_healthFailureMessage(self):
-        """Return the healthFailureMessage attribute."""
+        """
+        Return the healthFailureMessage attribute.
+
+        :return: the healthFailureMessage attribute.
+        """
         return self._health_failure_msg
 
     # --------
@@ -287,14 +317,13 @@ class CspSubElementObsDevice(SKAObsDevice):
                 logger=logger,
             )
 
-        def validate_input(self, argin):
+        def validate_input(self, argin: str) -> Tuple[dict, ResultCode, str]:
             """
             Validate the configuration parameters against allowed values, as needed.
 
             :param argin: The JSON formatted string with configuration for the device.
-            :type argin: str
+
             :return: A tuple containing a return code and a string message.
-            :rtype: (ResultCode, str)
             """
             try:
                 configuration_dict = json.loads(argin)
@@ -332,16 +361,14 @@ class CspSubElementObsDevice(SKAObsDevice):
                 logger=logger,
             )
 
-        def validate_input(self, argin):
+        def validate_input(self, argin: str) -> Tuple[ResultCode, str]:
             """
             Validate the command input argument.
 
             :param argin: the scan id
-            :type argin: str
             :return: A tuple containing a return code and a string
                 message indicating status. The message is for
                 information purpose only.
-            :rtype: (ResultCode, str)
             """
             if not argin.isdigit():
                 msg = f"Input argument '{argin}' is not an integer"
@@ -366,14 +393,13 @@ class CspSubElementObsDevice(SKAObsDevice):
             self._component_manager = component_manager
             super().__init__(callback=callback, logger=logger)
 
-        def do(self):
+        def do(self) -> Tuple[ResultCode, str]:
             """
             Stateless hook for Abort() command functionality.
 
             :return: A tuple containing a return code and a string
                 message indicating status. The message is for
                 information purpose only.
-            :rtype: (ResultCode, str)
             """
             command_id = self._command_tracker.new_command(
                 "Abort", completed_callback=self._completed
@@ -385,13 +411,14 @@ class CspSubElementObsDevice(SKAObsDevice):
             assert status == TaskStatus.IN_PROGRESS
             return ResultCode.STARTED, command_id
 
-    def is_ConfigureScan_allowed(self):
+    def is_ConfigureScan_allowed(self) -> bool:
         """
         Return whether the `ConfigureScan` command may be called in the current state.
 
+        :raises StateModelError: if the command is not allowed
+
         :return: whether the command may be called in the current device
             state
-        :rtype: bool
         """
         # If we return False here, Tango will raise an exception that incorrectly blames
         # refusal on device state.
@@ -399,7 +426,8 @@ class CspSubElementObsDevice(SKAObsDevice):
         # So let's raise an exception ourselves.
         if self._obs_state not in [ObsState.IDLE, ObsState.READY]:
             raise StateModelError(
-                f"ConfigureScan command not permitted in observation state {self._obs_state.name}"
+                "ConfigureScan command not permitted in observation state "
+                f"{self._obs_state.name}"
             )
         return True
 
@@ -407,20 +435,22 @@ class CspSubElementObsDevice(SKAObsDevice):
         dtype_in="DevString",
         doc_in="JSON formatted string with the scan configuration.",
         dtype_out="DevVarLongStringArray",
-        doc_out="A tuple containing a return code and a string message indicating status. "
-        "The message is for information purpose only.",
+        doc_out=(
+            "A tuple containing a return code and a string message "
+            "indicating status. The message is for information purpose "
+            "only."
+        ),
     )
     @DebugIt()
-    def ConfigureScan(self, argin):
+    def ConfigureScan(self, argin: str) -> Tuple[ResultCode, str]:
         """
         Configure the observing device parameters for the current scan.
 
         :param argin: JSON formatted string with the scan configuration.
-        :type argin: str
 
-        :return: A tuple containing a return code and a string message indicating status.
-            The message is for information purpose only.
-        :rtype: (ResultCode, str)
+        :return: A tuple containing a return code and a string message
+            indicating status. The message is for information purpose
+            only.
         """
         handler = self.get_command_object("ConfigureScan")
 
@@ -432,13 +462,14 @@ class CspSubElementObsDevice(SKAObsDevice):
 
         return [[result_code], [message]]
 
-    def is_Scan_allowed(self):
+    def is_Scan_allowed(self) -> bool:
         """
         Return whether the `Scan` command may be called in the current device state.
 
+        :raises StateModelError: if the command is not allowed
+
         :return: whether the command may be called in the current device
             state
-        :rtype: bool
         """
         # If we return False here, Tango will raise an exception that incorrectly blames
         # refusal on device state.
@@ -446,7 +477,8 @@ class CspSubElementObsDevice(SKAObsDevice):
         # So let's raise an exception ourselves.
         if self._obs_state != ObsState.READY:
             raise StateModelError(
-                f"Scan command not permitted in observation state {self._obs_state.name}"
+                "Scan command not permitted in observation state "
+                f"{self._obs_state.name}"
             )
         return True
 
@@ -454,20 +486,22 @@ class CspSubElementObsDevice(SKAObsDevice):
         dtype_in="DevString",
         doc_in="A string with the scan ID",
         dtype_out="DevVarLongStringArray",
-        doc_out="A tuple containing a return code and a string message indicating status."
-        "The message is for information purpose only.",
+        doc_out=(
+            "A tuple containing a return code and a string message "
+            "indicating status. The message is for information purpose "
+            "only."
+        ),
     )
     @DebugIt()
-    def Scan(self, argin):
+    def Scan(self, argin: str) -> Tuple[ResultCode, str]:
         """
         Start an observing scan.
 
         :param argin: A string with the scan ID
-        :type argin: str
 
-        :return: A tuple containing a return code and a string message indicating status.
-            The message is for information purpose only.
-        :rtype: (ResultCode, str)
+        :return: A tuple containing a return code and a string message
+            indicating status. The message is for information purpose
+            only.
         """
         handler = self.get_command_object("Scan")
 
@@ -479,13 +513,14 @@ class CspSubElementObsDevice(SKAObsDevice):
         (result_code, message) = handler(scan_id)
         return [[result_code], [message]]
 
-    def is_EndScan_allowed(self):
+    def is_EndScan_allowed(self) -> bool:
         """
         Return whether the `EndScan` command may be called in the current device state.
 
+        :raises StateModelError: if the command is not allowed
+
         :return: whether the command may be called in the current device
             state
-        :rtype: bool
         """
         # If we return False here, Tango will raise an exception that incorrectly blames
         # refusal on device state.
@@ -493,35 +528,40 @@ class CspSubElementObsDevice(SKAObsDevice):
         # So let's raise an exception ourselves.
         if self._obs_state != ObsState.SCANNING:
             raise StateModelError(
-                f"EndScan command not permitted in observation state {self._obs_state.name}"
+                "EndScan command not permitted in observation state "
+                f"{self._obs_state.name}"
             )
         return True
 
     @command(
         dtype_out="DevVarLongStringArray",
-        doc_out="A tuple containing a return code and a string message indicating status."
-        "The message is for information purpose only.",
+        doc_out=(
+            "A tuple containing a return code and a string message "
+            "indicating status. The message is for information purpose "
+            "only."
+        ),
     )
     @DebugIt()
-    def EndScan(self):
+    def EndScan(self) -> Tuple[ResultCode, str]:
         """
         End a running scan.
 
-        :return: A tuple containing a return code and a string message indicating status.
-            The message is for information purpose only.
-        :rtype: (ResultCode, str)
+        :return: A tuple containing a return code and a string message
+            indicating status. The message is for information purpose
+            only.
         """
         handler = self.get_command_object("EndScan")
         (result_code, message) = handler()
         return [[result_code], [message]]
 
-    def is_GoToIdle_allowed(self):
+    def is_GoToIdle_allowed(self) -> bool:
         """
         Return whether the `GoToIdle` command may be called in the current device state.
 
+        :raises StateModelError: if the command is not allowed
+
         :return: whether the command may be called in the current device
             state
-        :rtype: bool
         """
         # If we return False here, Tango will raise an exception that incorrectly blames
         # refusal on device state.
@@ -529,23 +569,27 @@ class CspSubElementObsDevice(SKAObsDevice):
         # So let's raise an exception ourselves.
         if self._obs_state != ObsState.READY:
             raise StateModelError(
-                f"GoToIdle command not permitted in observation state {self._obs_state.name}"
+                "GoToIdle command not permitted in observation state "
+                f"{self._obs_state.name}"
             )
         return True
 
     @command(
         dtype_out="DevVarLongStringArray",
-        doc_out="A tuple containing a return code and a string  message indicating status."
-        "The message is for information purpose only.",
+        doc_out=(
+            "A tuple containing a return code and a string message "
+            "indicating status. The message is for information purpose "
+            "only."
+        ),
     )
     @DebugIt()
-    def GoToIdle(self):
+    def GoToIdle(self) -> Tuple[ResultCode, str]:
         """
         Transit the device from READY to IDLE obsState.
 
-        :return: A tuple containing a return code and a string  message indicating status.
-            The message is for information purpose only.
-        :rtype: (ResultCode, str)
+        :return: A tuple containing a return code and a string message
+            indicating status. The message is for information purpose
+            only.
         """
         self._last_scan_configuration = ""
 
@@ -553,13 +597,14 @@ class CspSubElementObsDevice(SKAObsDevice):
         (result_code, message) = handler()
         return [[result_code], [message]]
 
-    def is_ObsReset_allowed(self):
+    def is_ObsReset_allowed(self) -> bool:
         """
         Return whether the `ObsReset` command may be called in the current device state.
 
+        :raises StateModelError: if the command is not allowed
+
         :return: whether the command may be called in the current device
             state
-        :rtype: bool
         """
         # If we return False here, Tango will raise an exception that incorrectly blames
         # refusal on device state.
@@ -567,35 +612,40 @@ class CspSubElementObsDevice(SKAObsDevice):
         # So let's raise an exception ourselves.
         if self._obs_state not in [ObsState.FAULT, ObsState.ABORTED]:
             raise StateModelError(
-                f"ObsReset command not permitted in observation state {self._obs_state.name}"
+                "ObsReset command not permitted in observation state "
+                f"{self._obs_state.name}"
             )
         return True
 
     @command(
         dtype_out="DevVarLongStringArray",
-        doc_out="A tuple containing a return code and a string message indicating status."
-        "The message is for information purpose only.",
+        doc_out=(
+            "A tuple containing a return code and a string message "
+            "indicating status. The message is for information purpose "
+            "only."
+        ),
     )
     @DebugIt()
-    def ObsReset(self):
+    def ObsReset(self) -> Tuple[ResultCode, str]:
         """
         Reset the observing device from a FAULT/ABORTED obsState to IDLE.
 
-        :return: A tuple containing a return code and a string message indicating status.
-            The message is for information purpose only.
-        :rtype: (ResultCode, str)
+        :return: A tuple containing a return code and a string message
+            indicating status. The message is for information purpose
+            only.
         """
         handler = self.get_command_object("ObsReset")
         (result_code, message) = handler()
         return [[result_code], [message]]
 
-    def is_Abort_allowed(self):
+    def is_Abort_allowed(self) -> bool:
         """
         Return whether the `Abort` command may be called in the current device state.
 
+        :raises StateModelError: if the command is not allowed
+
         :return: whether the command may be called in the current device
             state
-        :rtype: bool
         """
         # If we return False here, Tango will raise an exception that incorrectly blames
         # refusal on device state.
@@ -609,23 +659,27 @@ class CspSubElementObsDevice(SKAObsDevice):
             ObsState.RESETTING,
         ]:
             raise StateModelError(
-                f"Abort command not permitted in observation state {self._obs_state.name}"
+                "Abort command not permitted in observation state "
+                f"{self._obs_state.name}"
             )
         return True
 
     @command(
         dtype_out="DevVarLongStringArray",
-        doc_out="A tuple containing a return code and a string message indicating status."
-        "The message is for information purpose only.",
+        doc_out=(
+            "A tuple containing a return code and a string message "
+            "indicating status. The message is for information purpose "
+            "only."
+        ),
     )
     @DebugIt()
-    def Abort(self):
+    def Abort(self) -> Tuple[ResultCode, str]:
         """
-        Abort the current observing process and move the device to ABORTED obsState.
+        Abort the current observing process and move to ABORTED obsState.
 
-        :return: A tuple containing a return code and a string message indicating status.
-            The message is for information purpose only.
-        :rtype: (ResultCode, str)
+        :return: A tuple containing a return code and a string message
+            indicating status. The message is for information purpose
+            only.
         """
         handler = self.get_command_object("Abort")
         (result_code, message) = handler()
@@ -661,9 +715,16 @@ class CspSubElementObsDevice(SKAObsDevice):
 # ----------
 
 
-def main(args=None, **kwargs):
-    """Run the CspSubElementObsDevice module."""
-    return run((CspSubElementObsDevice,), args=args, **kwargs)
+def main(*args: str, **kwargs: str) -> int:
+    """
+    Entry point for module.
+
+    :param args: positional arguments
+    :param kwargs: named arguments
+
+    :return: exit code
+    """
+    return run((CspSubElementObsDevice,), args=args or None, **kwargs)
 
 
 if __name__ == "__main__":

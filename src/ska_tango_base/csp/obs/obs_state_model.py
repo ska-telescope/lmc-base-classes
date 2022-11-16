@@ -295,11 +295,8 @@ class CspSubElementObsStateModel(ObsStateModel):
         Initialise the model.
 
         :param logger: the logger to be used by this state model.
-        :type logger: a logger that implements the standard library
-            logger interface
         :param callback: A callback to be called when a transition
             causes a change to device obs_state
-        :type callback: callable
         """
         super().__init__(
             logger,

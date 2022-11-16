@@ -134,15 +134,19 @@ class FakeSubarrayComponent(FakeBaseComponent):
 
         :param capability_types: a list strings representing
             capability types.
-        :param time_to_return: time
-        :param time_to_complete: time
-        :param power: power state
-        :param fault: is in fault
-        :param resourced: is resourced
-        :param configured: is configured
-        :param scanning: is scanning
-        :param obsfault: is obs in fault
-        :param kwargs: additional arguments
+        :param time_to_return: the amount of time to delay before
+            returning from a command method. This simulates latency in
+            communication.
+        :param time_to_complete: the amount of time to delay before the
+            component calls a task callback to let it know that the task
+            has been completed
+        :param power: initial power state of this component
+        :param fault: initial fault state of this component
+        :param resourced: initial resourced state of this component
+        :param configured: initial configured state of this component
+        :param scanning: initial scanning state of this component
+        :param obsfault: initial obsfault state of this component
+        :param kwargs: additional keyword arguments
         """
         self._resource_pool = self._ResourcePool()
 

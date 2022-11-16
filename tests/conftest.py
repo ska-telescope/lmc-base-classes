@@ -1,4 +1,3 @@
-# type: ignore
 """This module defines elements of the pytest test harness shared by all tests."""
 from __future__ import annotations
 
@@ -28,7 +27,7 @@ def device_properties() -> dict[str, Any]:
 
 @pytest.fixture(name="tango_context")
 def fixture_tango_context(
-    device_test_config,
+    device_test_config: dict[str, Any],
 ) -> Generator[DeviceTestContext, None, None]:
     """
     Return a Tango test context in which the device under test is running.
@@ -71,7 +70,7 @@ def pytest_itemcollected(item: pytest.Item) -> None:
 
     :param item: the collected test for which this hook is called
     """
-    if "device_under_test" in item.fixturenames:
+    if "device_under_test" in item.fixturenames:  # type: ignore[attr-defined]
         item.add_marker("forked")
 
 
@@ -136,7 +135,7 @@ def fixture_multi_device_tango_context(
     :yields: a tango context
     """
 
-    def _get_open_port():
+    def _get_open_port() -> int:
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         s.bind(("", 0))
         s.listen(1)

@@ -1,4 +1,3 @@
-# pylint: skip-file  # TODO: Incrementally lint this repo
 # -*- coding: utf-8 -*-
 #
 # This file is part of the SKA Tango Base project
@@ -18,35 +17,65 @@ from __future__ import annotations
 import functools
 import json
 import logging
-from typing import Callable, List, Optional, Tuple, cast
+from typing import Any, Callable, List, Optional, Tuple, cast
 
 # SKA specific imports
 from ska_control_model import ObsState, ObsStateModel, PowerState, TaskStatus
 from tango import DebugIt
 from tango.server import attribute, command, device_property
 
-from ska_tango_base import SKAObsDevice
 from ska_tango_base.base.base_device import CommandTracker
 from ska_tango_base.commands import ResultCode, SlowCommand, SubmittedSlowCommand
 from ska_tango_base.faults import StateModelError
-from ska_tango_base.subarray import SubarrayComponentManager
+from ska_tango_base.obs.obs_device import SKAObsDevice
+from ska_tango_base.subarray.component_manager import SubarrayComponentManager
 
 DevVarLongStringArrayType = Tuple[List[ResultCode], List[Optional[str]]]
 
 __all__ = ["SKASubarray", "main"]
 
 
+# TODO: This is an abstract class because it does not define
+# `create_component_manager` and therefore inherits the abstract method from the
+# base device. There's no point implementing `create_component_manager` because
+# the SubarrayComponentManager is itself abstract.
+# pylint: disable-next=abstract-method, too-many-public-methods
 class SKASubarray(SKAObsDevice):
     """Implements the SKA SubArray device."""
 
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
+        """
+        Initialise this device object.
+
+        :param args: positional args to the init
+        :param kwargs: keyword args to the init
+        """
+        # We aren't supposed to define initialisation methods for Tango
+        # devices; we are only supposed to define an `init_device` method. But
+        # we insist on doing so here, just so that we can define some
+        # attributes, thereby stopping the linters from complaining about
+        # "attribute-defined-outside-init" etc. We still need to make sure that
+        # `init_device` initialises any values defined in here.
+        super().__init__(*args, **kwargs)
+
+        self.obs_state_model: ObsStateModel
+
+    # pylint: disable-next=too-few-public-methods
     class InitCommand(SKAObsDevice.InitCommand):
         """A class for the SKASubarray's init_device() "command"."""
 
         def do(  # type: ignore[override]
             self: SKASubarray.InitCommand,
+            *args: Any,
+            **kwargs: Any,
         ) -> tuple[ResultCode, str]:
             """
             Stateless hook for device initialisation.
+
+            :param args: positional arguments to the command. This
+                command does not take any, so this should be empty.
+            :param kwargs: keyword arguments to the command. This
+                command does not take any, so this should be empty.
 
             :return: A tuple containing a return code and a string
                 message indicating status. The message is for
@@ -54,6 +83,7 @@ class SKASubarray(SKAObsDevice):
             """
             super().do()
 
+            # pylint: disable-next=protected-access
             self._device._activation_time = 0.0
 
             message = "SKASubarray Init command completed OK"
@@ -61,7 +91,7 @@ class SKASubarray(SKAObsDevice):
             self._completed()
             return (ResultCode.OK, message)
 
-    class AbortCommand(SlowCommand):
+    class AbortCommand(SlowCommand):  # pylint: disable=too-few-public-methods
         """A class for SKASubarray's Abort() command."""
 
         def __init__(
@@ -86,9 +116,16 @@ class SKASubarray(SKAObsDevice):
 
         def do(  # type: ignore[override]
             self: SKASubarray.AbortCommand,
+            *args: Any,
+            **kwargs: Any,
         ) -> tuple[ResultCode, str]:
             """
             Stateless hook for Abort() command functionality.
+
+            :param args: positional arguments to the command. This
+                command does not take any, so this should be empty.
+            :param kwargs: keyword arguments to the command. This
+                command does not take any, so this should be empty.
 
             :return: A tuple containing a return code and a string
                 message indicating status. The message is for
@@ -157,6 +194,7 @@ class SKASubarray(SKAObsDevice):
             ),
         )
 
+    # pylint: disable-next=too-many-arguments
     def _component_state_changed(  # type: ignore[override]
         self: SKASubarray,
         fault: Optional[bool] = None,

@@ -1,5 +1,4 @@
 # type: ignore
-# flake8: noqa
 """Test various Tango devices with long running commmands working together."""
 import pytest
 import tango
@@ -49,14 +48,24 @@ def change_event_callbacks() -> MockTangoEventCallbackGroup:
 
 @pytest.mark.forked
 def test_device_init(device_under_test):
-    """Test device initialisation."""
+    """
+    Test device initialisation.
+
+    :param device_under_test: a proxy to the device under test
+    """
     state = device_under_test.State()
     assert state == tango.DevState.DISABLE
 
 
 @pytest.mark.forked
 def test_device(device_under_test, change_event_callbacks):
-    """Test our Multidevice."""
+    """
+    Test our Multidevice.
+
+    :param device_under_test: a proxy to the device under test
+    :param change_event_callbacks: dictionary of mock change event
+        callbacks with asynchrony support
+    """
     device_under_test.subscribe_event(
         "longRunningCommandResult",
         tango.EventType.CHANGE_EVENT,
@@ -72,7 +81,13 @@ def test_device(device_under_test, change_event_callbacks):
 
 @pytest.mark.forked
 def test_non_abort(device_under_test, change_event_callbacks):
-    """Test non abort."""
+    """
+    Test non abort.
+
+    :param device_under_test: a proxy to the device under test
+    :param change_event_callbacks: dictionary of mock change event
+        callbacks with asynchrony support
+    """
     device_under_test.subscribe_event(
         "longRunningCommandResult",
         tango.EventType.CHANGE_EVENT,
@@ -93,7 +108,13 @@ def test_non_abort(device_under_test, change_event_callbacks):
 
 @pytest.mark.forked
 def test_abort(device_under_test, change_event_callbacks):
-    """Test abort."""
+    """
+    Test abort.
+
+    :param device_under_test: a proxy to the device under test
+    :param change_event_callbacks: dictionary of mock change event
+        callbacks with asynchrony support
+    """
     device_under_test.subscribe_event(
         "longRunningCommandResult",
         tango.EventType.CHANGE_EVENT,
@@ -116,7 +137,13 @@ def test_abort(device_under_test, change_event_callbacks):
 
 @pytest.mark.forked
 def test_exception(device_under_test, change_event_callbacks):
-    """Test exception."""
+    """
+    Test exception.
+
+    :param device_under_test: a proxy to the device under test
+    :param change_event_callbacks: dictionary of mock change event
+        callbacks with asynchrony support
+    """
     device_under_test.subscribe_event(
         "longRunningCommandResult",
         tango.EventType.CHANGE_EVENT,
@@ -137,7 +164,13 @@ def test_exception(device_under_test, change_event_callbacks):
 
 @pytest.mark.forked
 def test_progress(device_under_test, change_event_callbacks):
-    """Test progress."""
+    """
+    Test progress.
+
+    :param device_under_test: a proxy to the device under test
+    :param change_event_callbacks: dictionary of mock change event
+        callbacks with asynchrony support
+    """
     device_under_test.subscribe_event(
         "longRunningCommandProgress",
         tango.EventType.CHANGE_EVENT,

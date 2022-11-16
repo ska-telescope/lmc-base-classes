@@ -74,7 +74,6 @@ class SKAController(SKABaseDevice):  # pylint: disable=abstract-method
             :return: A tuple containing a return code and a string
                 message indicating status. The message is for
                 information purpose only.
-            :rtype: (ResultCode, str)
             """
             # pylint: disable-next=protected-access
             self._device._element_logger_address = ""

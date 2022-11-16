@@ -1,4 +1,4 @@
-# pylint: skip-file  # TODO: Incrementally lint this repo
+# pylint: disable=too-many-lines  # TODO: pylint is right, this is too long
 # -*- coding: utf-8 -*-
 #
 # This file is part of the SKA Tango Base project
@@ -31,7 +31,7 @@ from ska_tango_base.commands import ResultCode
 from ska_tango_base.testing.reference import ReferenceSubarrayComponentManager
 
 
-class TestSKASubarray:
+class TestSKASubarray:  # pylint: disable=too-many-public-methods
     """Test cases for SKASubarray device."""
 
     @pytest.fixture(scope="class")
@@ -123,7 +123,8 @@ class TestSKASubarray:
         """
         assert device_under_test.state() == DevState.OFF
 
-    def test_assign_and_release_resources(
+    # TODO: pylint is right that this is too long and complex
+    def test_assign_and_release_resources(  # pylint: disable=too-many-statements
         self: TestSKASubarray,
         device_under_test: tango.DeviceProxy,
         change_event_callbacks: MockTangoEventCallbackGroup,
@@ -365,7 +366,8 @@ class TestSKASubarray:
 
         assert not device_under_test.assignedResources
 
-    def test_configure_and_end(
+    # TODO: pylint is right that this is too long and complex
+    def test_configure_and_end(  # pylint: disable=too-many-statements
         self: TestSKASubarray,
         device_under_test: tango.DeviceProxy,
         change_event_callbacks: MockTangoEventCallbackGroup,
@@ -612,7 +614,8 @@ class TestSKASubarray:
             "BAND2:0",
         ]
 
-    def test_scan_and_end_scan(
+    # TODO: pylint is right that this is too long and complex
+    def test_scan_and_end_scan(  # pylint: disable=too-many-statements
         self: TestSKASubarray,
         device_under_test: tango.DeviceProxy,
         change_event_callbacks: MockTangoEventCallbackGroup,
@@ -923,7 +926,8 @@ class TestSKASubarray:
             ),
         )
 
-    def test_abort_and_obsreset(
+    # TODO: pylint is right that this is too long and complex
+    def test_abort_and_obsreset(  # pylint: disable=too-many-statements
         self: TestSKASubarray,
         device_under_test: tango.DeviceProxy,
         change_event_callbacks: MockTangoEventCallbackGroup,

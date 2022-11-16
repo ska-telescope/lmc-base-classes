@@ -1,11 +1,9 @@
 # type: ignore
-# flake8: noqa
 """Multi device test utils."""
 import logging
 import uuid
-from ast import List
 from dataclasses import dataclass
-from typing import Any, Callable, Dict
+from typing import Any, Callable, Dict, List, Optional
 
 import tango
 from tango import EventData, EventType
@@ -51,8 +49,13 @@ class LongRunningDeviceInterface:
     track of commands IDs. They are handled here.
     """
 
-    def __init__(self, tango_devices: List, logger: logging.Logger):
-        """Init LRC device interface."""
+    def __init__(self, tango_devices: List[str], logger: logging.Logger):
+        """
+        Init LRC device interface.
+
+        :param tango_devices: list of device names
+        :param logger: a logger for this object to log with.
+        """
         self._logger = logger
         self._tango_devices = tango_devices
         self._long_running_device_proxies = []
@@ -77,7 +80,7 @@ class LongRunningDeviceInterface:
                     )
                 )
 
-    def push_event(self, ev: EventData):
+    def push_event(self, event_data: EventData):
         """
         Handle the attribute change events.
 
@@ -95,19 +98,21 @@ class LongRunningDeviceInterface:
             - Check whether all have completed
             - If so, fire the callback
             - Clean up
+
+        :param event_data: content of the event to be pushed.
         """
-        if ev.err:
-            self._logger.error("Event system DevError(s) occured: %s", str(ev.errors))
+        if event_data.err:
+            self._logger.error(
+                "Event system DevError(s) occured: %s", str(event_data.errors)
+            )
             return
 
-        if ev.attr_value and ev.attr_value.name == "longrunningcommandresult":
-            if ev.attr_value.value:
-                # push change event to new attribute for all tango devices
-                # for tango_dev in self._tango_devices:
-                #     tango_dev.push_change_event("lastResultCommandIDs", ev.attr_value.value[0])
-                #     tango_dev.push_change_event("lastResultCommandName", ev.attr_value.value[1])
-
-                event_command_id = ev.attr_value.value[0]
+        if (
+            event_data.attr_value
+            and event_data.attr_value.name == "longrunningcommandresult"
+        ):
+            if event_data.attr_value.value:
+                event_command_id = event_data.attr_value.value[0]
                 for stored_commands in self._stored_commands.values():
                     for stored_command in stored_commands:
                         if stored_command.command_id == event_command_id:
@@ -146,7 +151,7 @@ class LongRunningDeviceInterface:
         self,
         command_name: str,
         command_arg: Any = None,
-        on_completion_callback: Callable = None,
+        on_completion_callback: Optional[Callable] = None,
     ):
         """
         Execute the long running command with an argument if any.
@@ -158,13 +163,10 @@ class LongRunningDeviceInterface:
 
         :param command_name: A long running command that exists on the
             target Tango device.
-        :type command_name: str
         :param command_arg: The argument to be used in the long running
             command method.
-        :type command_arg: Any, optional
         :param on_completion_callback: The method to execute when the
             long running command has completed.
-        :type on_completion_callback: callable, optional
         """
         self.setup()
         unique_id = uuid.uuid4()

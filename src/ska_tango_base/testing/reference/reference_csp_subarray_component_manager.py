@@ -1,14 +1,17 @@
-# flake8: noqa
 # type: ignore
-# pylint: skip-file  # TODO: Incrementally lint this repo
 """This module models component management for CSP subelement observation devices."""
+from threading import Event
+from typing import Callable
+
 from ska_control_model import CommunicationStatus, PowerState
 
 from ska_tango_base.base import check_communicating, check_on
 from ska_tango_base.commands import ResultCode
 from ska_tango_base.csp.subarray import CspSubarrayComponentManager
 from ska_tango_base.executor import TaskExecutorComponentManager
-from ska_tango_base.testing.reference import FakeBaseComponent
+from ska_tango_base.testing.reference.reference_base_component_manager import (
+    FakeBaseComponent,
+)
 
 
 class FakeCspSubarrayComponent(FakeBaseComponent):
@@ -35,7 +38,7 @@ class FakeCspSubarrayComponent(FakeBaseComponent):
     delaying updating task and component state for a short time.
     """
 
-    def __init__(
+    def __init__(  # pylint: disable=too-many-arguments
         self,
         time_to_return=0.05,
         time_to_complete=0.4,
@@ -47,7 +50,23 @@ class FakeCspSubarrayComponent(FakeBaseComponent):
         obsfault=False,
         **kwargs,
     ):
-        """Initialise a new instance."""
+        """
+        Initialise a new instance.
+
+        :param time_to_return: the amount of time to delay before
+            returning from a command method. This simulates latency in
+            communication.
+        :param time_to_complete: the amount of time to delay before the
+            component calls a task callback to let it know that the task
+            has been completed
+        :param power: initial power state of this component
+        :param fault: initial fault state of this component
+        :param resourced: initial resourced state of this component
+        :param configured: initial configured state of this component
+        :param scanning: initial scanning state of this component
+        :param obsfault: initial obsfault state of this component
+        :param kwargs: additional keyword arguments
+        """
         self._config_id = ""
         self._scan_id = 0
 
@@ -84,7 +103,12 @@ class FakeCspSubarrayComponent(FakeBaseComponent):
         return self._scan_id
 
     @check_on
-    def assign(self, resources, task_callback, task_abort_event):
+    def assign(
+        self,
+        resources,  # pylint: disable=unused-argument
+        task_callback,
+        task_abort_event,
+    ):
         """
         Assign resources.
 
@@ -110,7 +134,12 @@ class FakeCspSubarrayComponent(FakeBaseComponent):
         )
 
     @check_on
-    def release(self, resources, task_callback, task_abort_event):
+    def release(
+        self,
+        resources,  # pylint: disable=unused-argument
+        task_callback,
+        task_abort_event,
+    ):
         """
         Release resources.
 
@@ -158,12 +187,16 @@ class FakeCspSubarrayComponent(FakeBaseComponent):
         )
 
     @check_on
-    def configure(self, configuration, task_callback, task_abort_event):
+    def configure(
+        self,
+        configuration: dict,
+        task_callback: Callable,
+        task_abort_event: Event,
+    ):
         """
         Configure the component.
 
         :param configuration: the configuration to be configured
-        :type configuration: dict
         :param task_callback: a callback to be called whenever the
             status of this task changes.
         :param task_abort_event: a threading.Event that can be checked
@@ -309,6 +342,7 @@ class FakeCspSubarrayComponent(FakeBaseComponent):
         )
 
 
+# pylint: disable-next=abstract-method
 class ReferenceCspSubarrayComponentManager(
     TaskExecutorComponentManager,
     CspSubarrayComponentManager,
@@ -430,22 +464,50 @@ class ReferenceCspSubarrayComponentManager(
 
     @check_communicating
     def off(self, task_callback=None):
-        """Turn the component off."""
+        """
+        Turn the component off.
+
+        :param task_callback: a callback to be called whenever the
+            status of this task changes.
+
+        :return: task status and a human-readable status message
+        """
         return self.submit_task(self._component.off, task_callback=task_callback)
 
     @check_communicating
     def standby(self, task_callback=None):
-        """Put the component into low-power standby mode."""
+        """
+        Put the component into low-power standby mode.
+
+        :param task_callback: a callback to be called whenever the
+            status of this task changes.
+
+        :return: task status and a human-readable status message
+        """
         return self.submit_task(self._component.standby, task_callback=task_callback)
 
     @check_communicating
     def on(self, task_callback=None):
-        """Turn the component on."""
+        """
+        Turn the component on.
+
+        :param task_callback: a callback to be called whenever the
+            status of this task changes.
+
+        :return: task status and a human-readable status message
+        """
         return self.submit_task(self._component.on, task_callback=task_callback)
 
     @check_communicating
     def reset(self, task_callback=None):
-        """Reset the component (from fault state)."""
+        """
+        Reset the component (from fault state).
+
+        :param task_callback: a callback to be called whenever the
+            status of this task changes.
+
+        :return: task status and a human-readable status message
+        """
         return self.submit_task(self._component.reset, task_callback=task_callback)
 
     @check_communicating
@@ -454,7 +516,10 @@ class ReferenceCspSubarrayComponentManager(
         Assign resources to the component.
 
         :param resources: resources to be assigned
-        :type resources: list(str)
+        :param task_callback: a callback to be called whenever the
+            status of this task changes.
+
+        :return: task status and a human-readable status message
         """
         return self.submit_task(
             self._component.assign, (resources,), task_callback=task_callback
@@ -466,7 +531,10 @@ class ReferenceCspSubarrayComponentManager(
         Release resources from the component.
 
         :param resources: resources to be released
-        :type resources: list(str)
+        :param task_callback: a callback to be called whenever the
+            status of this task changes.
+
+        :return: task status and a human-readable status message
         """
         return self.submit_task(
             self._component.release, (resources,), task_callback=task_callback
@@ -474,7 +542,14 @@ class ReferenceCspSubarrayComponentManager(
 
     @check_communicating
     def release_all(self, task_callback=None):
-        """Release all resources."""
+        """
+        Release all resources.
+
+        :param task_callback: a callback to be called whenever the
+            status of this task changes.
+
+        :return: task status and a human-readable status message
+        """
         return self.submit_task(
             self._component.release_all, task_callback=task_callback
         )
@@ -484,8 +559,11 @@ class ReferenceCspSubarrayComponentManager(
         """
         Configure the component.
 
-        :param configuration: the configuration to be configured
-        :type configuration: dict
+        :param configuration: the configuration to be applied
+        :param task_callback: a callback to be called whenever the
+            status of this task changes.
+
+        :return: task status and a human-readable status message
         """
         return self.submit_task(
             self._component.configure,
@@ -495,26 +573,55 @@ class ReferenceCspSubarrayComponentManager(
 
     @check_communicating
     def deconfigure(self, task_callback=None):
-        """Deconfigure this component."""
+        """
+        Deconfigure this component.
+
+        :param task_callback: a callback to be called whenever the
+            status of this task changes.
+
+        :return: task status and a human-readable status message
+        """
         return self.submit_task(
             self._component.deconfigure, task_callback=task_callback
         )
 
     @check_communicating
     def scan(self, args, task_callback=None):
-        """Start scanning."""
+        """
+        Start scanning.
+
+        :param args: arguments to the scan command
+        :param task_callback: a callback to be called whenever the
+            status of this task changes.
+
+        :return: task status and a human-readable status message
+        """
         return self.submit_task(
             self._component.scan, (args,), task_callback=task_callback
         )
 
     @check_communicating
     def end_scan(self, task_callback=None):
-        """End scanning."""
+        """
+        End scanning.
+
+        :param task_callback: a callback to be called whenever the
+            status of this task changes.
+
+        :return: task status and a human-readable status message
+        """
         return self.submit_task(self._component.end_scan, task_callback=task_callback)
 
     @check_communicating
     def obsreset(self, task_callback=None):
-        """Deconfigure the component but do not release resources."""
+        """
+        Deconfigure the component but do not release resources.
+
+        :param task_callback: a callback to be called whenever the
+            status of this task changes.
+
+        :return: task status and a human-readable status message
+        """
         return self.submit_task(self._component.obsreset, task_callback=task_callback)
 
     @check_communicating
@@ -524,17 +631,30 @@ class ReferenceCspSubarrayComponentManager(
 
         It will return to a state in which it is unconfigured and empty
         of assigned resources.
+
+        :param task_callback: a callback to be called whenever the
+            status of this task changes.
+
+        :return: task status and a human-readable status message
         """
         return self.submit_task(self._component.restart, task_callback=task_callback)
 
     @property
     @check_communicating
     def config_id(self):
-        """Return the configuration id."""
+        """
+        Return the configuration id.
+
+        :return: the configuration id.
+        """
         return self._component.config_id
 
     @property
     @check_on
     def scan_id(self):
-        """Return the scan id."""
+        """
+        Return the scan id.
+
+        :return: the scan id.
+        """
         return self._component.scan_id

@@ -1,4 +1,3 @@
-# flake8: noqa
 # type: ignore
 # pylint: skip-file  # TODO: Incrementally lint this repo
 # -*- coding: utf-8 -*-
@@ -16,7 +15,7 @@ CspSubElementController.
 Controller device for SKA CSP Subelement.
 """
 from collections import defaultdict
-from typing import List
+from typing import List, Tuple
 
 import tango
 from ska_control_model import AdminMode
@@ -217,7 +216,6 @@ class CspSubElementController(SKAController):
             :return: A tuple containing a return code and a string
                 message indicating status. The message is for
                 information purpose only.
-            :rtype: (ResultCode, str)
             """
             super().do()
 
@@ -227,8 +225,8 @@ class CspSubElementController(SKAController):
             # values: the progress percentage (default 0)
             self._device._cmd_progress = defaultdict(int)
 
-            # _cmd_maximun_duration: command execution's expected maximum duration (msec.)
-            # implemented as a default dictionary:
+            # _cmd_maximun_duration: command execution's expected maximum
+            # duration (msec.) implemented as a default dictionary:
             # keys: the command name in lower case(on, off, standby,..)
             # values: the expected maximum duration in sec.
             self._device._cmd_maximum_duration = defaultdict(float)
@@ -253,89 +251,172 @@ class CspSubElementController(SKAController):
     # ------------------
     # Attributes methods
     # ------------------
-
     def read_powerDelayStandbyOn(self):
-        """Return the powerDelayStandbyOn attribute."""
+        """
+        Return the powerDelayStandbyOn attribute.
+
+        :return: the powerDelayStandbyOn attribute.
+        """
         return self._power_delay_standby_on
 
     def write_powerDelayStandbyOn(self, value):
-        """Set the powerDelayStandbyOn attribute."""
+        """
+        Set the powerDelayStandbyOn attribute.
+
+        :param value: the new standby-on power delay.
+        """
         self._power_delay_standby_on = value
 
     def read_onProgress(self):
-        """Return the onProgress attribute."""
+        """
+        Return the onProgress attribute.
+
+        :return: the onProgress attribute.
+        """
         return self._cmd_progress["on"]
 
     def read_onMaximumDuration(self):
-        """Return the onMaximumDuration attribute."""
+        """
+        Return the onMaximumDuration attribute.
+
+        :return: the onMaximumDuration attribute.
+        """
         return self._cmd_maximum_duration["on"]
 
     def write_onMaximumDuration(self, value):
-        """Set the onMaximumDuration attribute."""
+        """
+        Set the onMaximumDuration attribute.
+
+        :param value: the new maximum duration
+        """
         self._cmd_maximum_duration["on"] = value
 
     def read_onMeasuredDuration(self):
-        """Return the onMeasuredDuration attribute."""
+        """
+        Return the onMeasuredDuration attribute.
+
+        :return: the onMeasuredDuration attribute.
+        """
         return self._cmd_measured_duration["on"]
 
     def read_standbyProgress(self):
-        """Return the standbyProgress attribute."""
+        """
+        Return the standbyProgress attribute.
+
+        :return: the standbyProgress attribute.
+        """
         return self._cmd_progress["standby"]
 
     def read_standbyMaximumDuration(self):
-        """Return the standbyMaximumDuration attribute."""
+        """
+        Return the standbyMaximumDuration attribute.
+
+        :return: the standbyMaximumDuration attribute.
+        """
         return self._cmd_maximum_duration["standby"]
 
     def write_standbyMaximumDuration(self, value):
-        """Set the standbyMaximumDuration attribute."""
+        """
+        Set the standbyMaximumDuration attribute.
+
+        :param value: the new maximum duration
+        """
         self._cmd_maximum_duration["standby"] = value
 
     def read_standbyMeasuredDuration(self):
-        """Return the standbyMeasuredDuration attribute."""
+        """
+        Return the standbyMeasuredDuration attribute.
+
+        :return: the standbyMeasuredDuration attribute.
+        """
         return self._cmd_measured_duration["standby"]
 
     def read_offProgress(self):
-        """Return the offProgress attribute."""
+        """
+        Return the offProgress attribute.
+
+        :return: the offProgress attribute.
+        """
         return self._cmd_progress["off"]
 
     def read_offMaximumDuration(self):
-        """Return the offMaximumDuration attribute."""
+        """
+        Return the offMaximumDuration attribute.
+
+        :return: the offMaximumDuration attribute.
+        """
         return self._cmd_maximum_duration["off"]
 
     def write_offMaximumDuration(self, value):
-        """Set the offMaximumDuration attribute."""
+        """
+        Set the offMaximumDuration attribute.
+
+        :param value: the new maximum duration.
+        """
         self._cmd_maximum_duration["off"] = value
 
     def read_offMeasuredDuration(self):
-        """Return the offMeasuredDuration attribute."""
+        """
+        Return the offMeasuredDuration attribute.
+
+        :return: the offMeasuredDuration attribute.
+        """
         return self._cmd_measured_duration["off"]
 
     def read_totalOutputDataRateToSdp(self):
-        """Return the totalOutputDataRateToSdp attribute."""
+        """
+        Return the totalOutputDataRateToSdp attribute.
+
+        :return: the totalOutputDataRateToSdp attribute.
+        """
         return self._total_output_rate_to_sdp
 
     def read_powerDelayStandbyOff(self):
-        """Return the powerDelayStandbyOff attribute."""
+        """
+        Return the powerDelayStandbyOff attribute.
+
+        :return: the powerDelayStandbyOff attribute.
+        """
         return self._power_delay_standby_off
 
     def write_powerDelayStandbyOff(self, value):
-        """Set the powerDelayStandbyOff attribute."""
+        """
+        Set the powerDelayStandbyOff attribute.
+
+        :param value: the new standby-off power delay.
+        """
         self._power_delay_standby_off = value
 
     def read_loadFirmwareProgress(self):
-        """Return the loadFirmwareProgress attribute."""
+        """
+        Return the loadFirmwareProgress attribute.
+
+        :return: the loadFirmwareProgress attribute.
+        """
         return self._cmd_progress["loadfirmware"]
 
     def read_loadFirmwareMaximumDuration(self):
-        """Return the loadFirmwareMaximumDuration attribute."""
+        """
+        Return the loadFirmwareMaximumDuration attribute.
+
+        :return: the loadFirmwareMaximumDuration attribute.
+        """
         return self._cmd_maximum_duration["loadfirmware"]
 
     def write_loadFirmwareMaximumDuration(self, value):
-        """Set the loadFirmwareMaximumDuration attribute."""
+        """
+        Set the loadFirmwareMaximumDuration attribute.
+
+        :param value: the new maximum duration.
+        """
         self._cmd_maximum_duration["loadfirmware"] = value
 
     def read_loadFirmwareMeasuredDuration(self):
-        """Return the loadFirmwareMeasuredDuration attribute."""
+        """
+        Return the loadFirmwareMeasuredDuration attribute.
+
+        :return: the loadFirmwareMeasuredDuration attribute.
+        """
         return self._cmd_measured_duration["loadfirmware"]
 
     # --------
@@ -345,10 +426,14 @@ class CspSubElementController(SKAController):
         """A class for the LoadFirmware command."""
 
         def __init__(self, logger=None):
-            """Initialise a new LoadFirmwareCommand instance."""
+            """
+            Initialise a new LoadFirmwareCommand instance.
+
+            :param logger: a logger for the command to log with
+            """
             super().__init__(logger=logger)
 
-        def do(self, argin):
+        def do(self, argin) -> Tuple[ResultCode, str]:
             """
             Stateless hook for device LoadFirmware() command.
 
@@ -357,7 +442,6 @@ class CspSubElementController(SKAController):
             :return: A tuple containing a return code and a string
                 message indicating status. The message is for
                 information purpose only.
-            :rtype: (ResultCode, str)
             """
             message = "LoadFirmware command completed OK"
             return (ResultCode.OK, message)
@@ -366,10 +450,14 @@ class CspSubElementController(SKAController):
         """A class for the CspSubElementController's PowerOnDevices command."""
 
         def __init__(self, logger=None):
-            """Initialise a new `PowerOnDevicesCommand``` instance."""
+            """
+            Initialise a new `PowerOnDevicesCommand``` instance.
+
+            :param logger: a logger for the command to log with
+            """
             super().__init__(logger=logger)
 
-        def do(self, argin):
+        def do(self, argin) -> Tuple[ResultCode, str]:
             """
             Stateless hook for device PowerOnDevices() command.
 
@@ -378,7 +466,6 @@ class CspSubElementController(SKAController):
             :return: A tuple containing a return code and a string
                 message indicating status. The message is for
                 information purpose only.
-            :rtype: (ResultCode, str)
             """
             message = "PowerOnDevices command completed OK"
             return (ResultCode.OK, message)
@@ -387,10 +474,14 @@ class CspSubElementController(SKAController):
         """A class for the CspSubElementController's PowerOffDevices command."""
 
         def __init__(self, logger=None):
-            """Initialise a new ``PowerOffDevicesCommand`` instance."""
+            """
+            Initialise a new ``PowerOffDevicesCommand`` instance.
+
+            :param logger: a logger for the command to log with
+            """
             super().__init__(logger=logger)
 
-        def do(self, argin):
+        def do(self, argin) -> Tuple[ResultCode, str]:
             """
             Stateless hook for device PowerOffDevices() command.
 
@@ -399,7 +490,6 @@ class CspSubElementController(SKAController):
             :return: A tuple containing a return code and a string
                 message indicating status. The message is for
                 information purpose only.
-            :rtype: (ResultCode, str)
             """
             message = "PowerOffDevices command completed OK"
             return (ResultCode.OK, message)
@@ -408,10 +498,14 @@ class CspSubElementController(SKAController):
         """A class for the CspSubElementController's ReInitDevices command."""
 
         def __init__(self, logger=None):
-            """Initialise a new ``ReInitDevicesCommand`` instance."""
+            """
+            Initialise a new ``ReInitDevicesCommand`` instance.
+
+            :param logger: a logger for the command to log with
+            """
             super().__init__(logger=logger)
 
-        def do(self, argin):
+        def do(self, argin) -> Tuple[ResultCode, str]:
             """
             Stateless hook for device ReInitDevices() command.
 
@@ -420,17 +514,15 @@ class CspSubElementController(SKAController):
             :return: A tuple containing a return code and a string
                 message indicating status. The message is for
                 information purpose only.
-            :rtype: (ResultCode, str)
             """
             message = "ReInitDevices command completed OK"
             return (ResultCode.OK, message)
 
-    def is_LoadFirmware_allowed(self):
+    def is_LoadFirmware_allowed(self) -> bool:
         """
         Check if the LoadFirmware command is allowed in the current state.
 
         :return: ``True`` if command is allowed
-        :rtype: bool
         """
         return (
             self.get_state() == tango.DevState.OFF
@@ -445,7 +537,7 @@ class CspSubElementController(SKAController):
         dtype_out="DevVarLongStringArray",
     )
     @DebugIt()
-    def LoadFirmware(self, argin: List[str]):
+    def LoadFirmware(self, argin: List[str]) -> Tuple[ResultCode, str]:
         """
         Deploy new versions of software and firmware.
 
@@ -461,18 +553,16 @@ class CspSubElementController(SKAController):
         :return: A tuple containing a return code and a string
             message indicating status. The message is for
             information purpose only.
-        :rtype: (ResultCode, str)
         """
         handler = self.get_command_object("LoadFirmware")
         (result_code, message) = handler(argin)
         return [[result_code], [message]]
 
-    def is_PowerOnDevices_allowed(self):
+    def is_PowerOnDevices_allowed(self) -> bool:
         """
         Check if the PowerOnDevice command is allowed in the current state.
 
         :return: ``True`` if command is allowed
-        :rtype: bool
         """
         return self.get_state() == tango.DevState.ON
 
@@ -483,7 +573,7 @@ class CspSubElementController(SKAController):
         doc_out="ReturnType, `informational message`",
     )
     @DebugIt()
-    def PowerOnDevices(self, argin: List[str]):
+    def PowerOnDevices(self, argin: List[str]) -> Tuple[ResultCode, str]:
         """
         Power-on a selected list of devices.
 
@@ -492,18 +582,16 @@ class CspSubElementController(SKAController):
         :return: A tuple containing a return code and a string
             message indicating status. The message is for
             information purpose only.
-        :rtype: (ResultCode, str)
         """
         handler = self.get_command_object("PowerOnDevices")
         (result_code, message) = handler(argin)
         return [[result_code], [message]]
 
-    def is_PowerOffDevices_allowed(self):
+    def is_PowerOffDevices_allowed(self) -> bool:
         """
         Check if the PowerOffDevices command is allowed in the current state.
 
         :return: ``True`` if command is allowed
-        :rtype: bool
         """
         return self.get_state() == tango.DevState.ON
 
@@ -514,7 +602,7 @@ class CspSubElementController(SKAController):
         doc_out="ReturnType, `informational message`",
     )
     @DebugIt()
-    def PowerOffDevices(self, argin: List[str]):
+    def PowerOffDevices(self, argin: List[str]) -> Tuple[ResultCode, str]:
         """
         Power-off a selected list of devices.
 
@@ -523,18 +611,16 @@ class CspSubElementController(SKAController):
         :return: A tuple containing a return code and a string
             message indicating status. The message is for
             information purpose only.
-        :rtype: (ResultCode, str)
         """
         handler = self.get_command_object("PowerOffDevices")
         (result_code, message) = handler(argin)
         return [[result_code], [message]]
 
-    def is_ReInitDevices_allowed(self):
+    def is_ReInitDevices_allowed(self) -> bool:
         """
         Check if the ReInitDevices command is allowed in the current state.
 
         :return: ``True`` if command is allowed
-        :rtype: bool
         """
         return self.get_state() == tango.DevState.ON
 
@@ -545,7 +631,7 @@ class CspSubElementController(SKAController):
         doc_out="ReturnType, `informational message`",
     )
     @DebugIt()
-    def ReInitDevices(self, argin: List[str]):
+    def ReInitDevices(self, argin: List[str]) -> Tuple[ResultCode, str]:
         """
         Reinitialize the devices passed in the input argument.
 
@@ -562,7 +648,6 @@ class CspSubElementController(SKAController):
         :return: A tuple containing a return code and a string
             message indicating status. The message is for
             information purpose only.
-        :rtype: (ResultCode, str)
         """
         handler = self.get_command_object("ReInitDevices")
         (result_code, message) = handler(argin)
@@ -574,16 +659,16 @@ class CspSubElementController(SKAController):
 # ----------
 
 
-def main(args=None, **kwargs):
+def main(*args: str, **kwargs: str) -> int:
     """
-    Entry point for the CspSubElementController module.
+    Entry point for module.
 
-    :param args: str
-    :param kwargs: str
+    :param args: positional arguments
+    :param kwargs: named arguments
 
     :return: exit code
     """
-    return run((CspSubElementController,), args=args, **kwargs)
+    return run((CspSubElementController,), args=args or None, **kwargs)
 
 
 if __name__ == "__main__":

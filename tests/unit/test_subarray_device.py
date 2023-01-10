@@ -927,7 +927,208 @@ class TestSKASubarray:  # pylint: disable=too-many-public-methods
         )
 
     # TODO: pylint is right that this is too long and complex
-    def test_abort_and_obsreset(  # pylint: disable=too-many-statements
+    def test_abort_and_obsreset_from_resourcing(
+        self: TestSKASubarray,
+        device_under_test: tango.DeviceProxy,
+        change_event_callbacks: MockTangoEventCallbackGroup,
+    ) -> None:
+        """
+        Test for Reset.
+
+        :param device_under_test: a proxy to the device under test
+        :param change_event_callbacks: dictionary of mock change event
+            callbacks with asynchrony support
+        """
+        assert device_under_test.state() == DevState.OFF
+
+        for attribute in [
+            "state",
+            "status",
+            "longRunningCommandProgress",
+            "longRunningCommandStatus",
+            "longRunningCommandResult",
+        ]:
+            device_under_test.subscribe_event(
+                attribute,
+                tango.EventType.CHANGE_EVENT,
+                change_event_callbacks[attribute],
+            )
+
+        change_event_callbacks["state"].assert_change_event(tango.DevState.OFF)
+        change_event_callbacks["status"].assert_change_event(
+            "The device is in OFF state."
+        )
+        change_event_callbacks["longRunningCommandProgress"].assert_change_event(None)
+        change_event_callbacks["longRunningCommandStatus"].assert_change_event(None)
+        change_event_callbacks["longRunningCommandResult"].assert_change_event(("", ""))
+
+        [[result_code], [on_command_id]] = device_under_test.On()
+        assert result_code == ResultCode.QUEUED
+
+        change_event_callbacks.assert_change_event(
+            "longRunningCommandStatus", (on_command_id, "QUEUED")
+        )
+        change_event_callbacks.assert_change_event(
+            "longRunningCommandStatus", (on_command_id, "IN_PROGRESS")
+        )
+        change_event_callbacks.assert_change_event(
+            "longRunningCommandProgress", (on_command_id, "33")
+        )
+        change_event_callbacks.assert_change_event(
+            "longRunningCommandProgress", (on_command_id, "66")
+        )
+
+        change_event_callbacks.assert_change_event("state", tango.DevState.ON)
+        change_event_callbacks.assert_change_event(
+            "status", "The device is in ON state."
+        )
+
+        assert device_under_test.state() == tango.DevState.ON
+
+        change_event_callbacks.assert_change_event(
+            "longRunningCommandResult",
+            (
+                on_command_id,
+                json.dumps([int(ResultCode.OK), "On command completed OK"]),
+            ),
+        )
+
+        change_event_callbacks.assert_change_event(
+            "longRunningCommandStatus", (on_command_id, "COMPLETED")
+        )
+
+        # assignment of resources
+        device_under_test.subscribe_event(
+            "obsState",
+            tango.EventType.CHANGE_EVENT,
+            change_event_callbacks["obsState"],
+        )
+        change_event_callbacks.assert_change_event("obsState", ObsState.EMPTY)
+
+        # TODO: Everything above here is just to turn on the device
+        # and clear the queue attributes.
+        # We need a better way to handle this.
+
+        resources_to_assign = ["BAND1"]
+        [
+            [result_code],
+            [assign_command_id],
+        ] = device_under_test.AssignResources(json.dumps(resources_to_assign))
+        assert result_code == ResultCode.QUEUED
+
+        change_event_callbacks.assert_change_event("obsState", ObsState.RESOURCING)
+        change_event_callbacks.assert_change_event(
+            "longRunningCommandStatus",
+            (on_command_id, "COMPLETED", assign_command_id, "QUEUED"),
+        )
+        change_event_callbacks.assert_change_event(
+            "longRunningCommandStatus",
+            (on_command_id, "COMPLETED", assign_command_id, "IN_PROGRESS"),
+        )
+
+        [[result_code], [abort_command_id]] = device_under_test.Abort()
+        assert result_code == ResultCode.STARTED
+
+        change_event_callbacks.assert_change_event("obsState", ObsState.ABORTING)
+        change_event_callbacks.assert_change_event(
+            "longRunningCommandStatus",
+            (
+                on_command_id,
+                "COMPLETED",
+                assign_command_id,
+                "IN_PROGRESS",
+                abort_command_id,
+                "IN_PROGRESS",
+            ),
+        )
+        change_event_callbacks.assert_change_event(
+            "longRunningCommandStatus",
+            (
+                on_command_id,
+                "COMPLETED",
+                assign_command_id,
+                "IN_PROGRESS",
+                abort_command_id,
+                "COMPLETED",
+            ),
+        )
+        change_event_callbacks.assert_change_event("obsState", ObsState.ABORTED)
+        change_event_callbacks.assert_change_event(
+            "longRunningCommandStatus",
+            (
+                on_command_id,
+                "COMPLETED",
+                assign_command_id,
+                "ABORTED",
+                abort_command_id,
+                "COMPLETED",
+            ),
+        )
+
+        change_event_callbacks.assert_not_called()
+
+        # Reset from aborted state
+        [[result_code], [reset_command_id]] = device_under_test.ObsReset()
+        assert result_code == ResultCode.QUEUED
+
+        change_event_callbacks.assert_change_event("obsState", ObsState.RESETTING)
+        change_event_callbacks.assert_change_event(
+            "longRunningCommandStatus",
+            (
+                on_command_id,
+                "COMPLETED",
+                assign_command_id,
+                "ABORTED",
+                abort_command_id,
+                "COMPLETED",
+                reset_command_id,
+                "QUEUED",
+            ),
+        )
+        change_event_callbacks.assert_change_event(
+            "longRunningCommandStatus",
+            (
+                on_command_id,
+                "COMPLETED",
+                assign_command_id,
+                "ABORTED",
+                abort_command_id,
+                "COMPLETED",
+                reset_command_id,
+                "IN_PROGRESS",
+            ),
+        )
+        change_event_callbacks.assert_change_event(
+            "longRunningCommandProgress", (reset_command_id, "33")
+        )
+        change_event_callbacks.assert_change_event(
+            "longRunningCommandProgress", (reset_command_id, "66")
+        )
+        change_event_callbacks.assert_change_event(
+            "longRunningCommandResult",
+            (
+                reset_command_id,
+                json.dumps([int(ResultCode.OK), "Obs reset completed OK"]),
+            ),
+        )
+        change_event_callbacks.assert_change_event(
+            "longRunningCommandStatus",
+            (
+                on_command_id,
+                "COMPLETED",
+                assign_command_id,
+                "ABORTED",
+                abort_command_id,
+                "COMPLETED",
+                reset_command_id,
+                "COMPLETED",
+            ),
+        )
+        change_event_callbacks.assert_change_event("obsState", ObsState.EMPTY)
+        assert device_under_test.obsState == ObsState.EMPTY
+
+    # TODO: pylint is right that this is too long and complex
+    def test_abort_and_obsreset_from_configuring(  # pylint: disable=too-many-statements
         self: TestSKASubarray,
         device_under_test: tango.DeviceProxy,
         change_event_callbacks: MockTangoEventCallbackGroup,

@@ -20,7 +20,7 @@ numpy = [
 pytango = "9.3.3"
 ska-ser-logging = "^0.4.1"
 transitions = "^0.9.0"
-ska-control-model = "^0.1.2"
+ska-control-model = {git = "https://gitlab.com/ska-telescope/ska-control-model.git", rev = "2bf725be259cf89580abffba0f9c812e21eac536"}
 
 [tool.poetry.dev-dependencies]
 black = "^22.8.0"

@@ -575,6 +575,7 @@ class SKASubarray(SKAObsDevice):
         # e.g. "Abort not allowed when the device is in ON state".
         # So let's raise an exception ourselves.
         if self._obs_state not in [
+            ObsState.RESOURCING,
             ObsState.IDLE,
             ObsState.CONFIGURING,
             ObsState.READY,

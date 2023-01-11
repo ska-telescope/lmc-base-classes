@@ -82,7 +82,7 @@ python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*"
 
 [[package]]
 name = "coverage"
-version = "7.0.4"
+version = "7.0.5"
 description = "Code coverage measurement for Python"
 category = "dev"
 optional = false
@@ -729,23 +729,21 @@ python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*"
 
 [[package]]
 name = "ska-control-model"
-version = "0.2.0"
+version = "0.3.0"
 description = "The SKA control model"
 category = "main"
 optional = false
-python-versions = "^3.7.2"
-develop = false
+python-versions = ">=3.7.2,<4.0.0"
 
 [package.dependencies]
 pytango = "9.3.3"
-transitions = "^0.9.0"
-typing-extensions = "^4.3.0"
+transitions = ">=0.9.0,<0.10.0"
+typing-extensions = ">=4.3.0,<5.0.0"
 
 [package.source]
-type = "git"
-url = "https://gitlab.com/ska-telescope/ska-control-model.git"
-reference = "2bf725be259cf89580abffba0f9c812e21eac536"
-resolved_reference = "2bf725be259cf89580abffba0f9c812e21eac536"
+type = "legacy"
+url = "https://artefact.skao.int/repository/pypi-internal/simple"
+reference = 'ska-nexus'
 
 [[package]]
 name = "ska-ser-logging"
@@ -873,7 +871,7 @@ testing = ["pytest (>=6)", "pytest-checkdocs (>=2.4)", "pytest-flake8", "pytest-
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.7.2"
-content-hash = "ae1a61b4c781e7cf19d8c4eebd24e64aa55859e22e8219c71c485dacf2c56ee1"
+content-hash = "506c7924950cfa85141c43a005ff4116ec0c09ba0360816e9568ce07e40e48dc"
 
 [metadata.files]
 astroid = []
@@ -935,7 +933,10 @@ pytest-pycodestyle = []
 pytest-pydocstyle = []
 restructuredtext-lint = []
 six = []
-ska-control-model = []
+ska-control-model = [
+    {file = "ska_control_model-0.3.0-py3-none-any.whl", hash = "sha256:640bb14ff9ab00ab321e3cb47c3059480bcf4d80a0e8b8bf583584c46ca19de3"},
+    {file = "ska_control_model-0.3.0.tar.gz", hash = "sha256:623516f5fb3eb3a24c9bcbee38c843e457bb51162cd247f5fce36c4d0217700e"},
+]
 ska-ser-logging = [
     {file = "ska_ser_logging-0.4.1+0a677a67-py3-none-any.whl", hash = "sha256:8b2bf14e9981966c22503b6b6477b6386dec1def1f71295579f0686d55b83841"},
     {file = "ska_ser_logging-0.4.1+0a677a67.tar.gz", hash = "sha256:558622000db39668d3a35b6986af9d70dac36635826636ef2c07f816a149a06d"},

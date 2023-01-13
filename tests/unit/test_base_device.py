@@ -47,7 +47,10 @@ from ska_tango_base.base.base_device import (  # CommandTracker,
     _Log4TangoLoggingLevel,
 )
 from ska_tango_base.commands import ResultCode
-from ska_tango_base.testing.reference import ReferenceBaseComponentManager
+from ska_tango_base.testing.reference import (
+    FakeBaseComponent,
+    ReferenceBaseComponentManager,
+)
 
 
 class TestTangoLoggingServiceHandler:
@@ -982,12 +985,10 @@ class TestSKABaseDevice:  # pylint: disable=too-many-public-methods
         change_event_callbacks.assert_change_event(
             "longRunningCommandStatus", (command_id, "IN_PROGRESS")
         )
-        change_event_callbacks.assert_change_event(
-            "longRunningCommandProgress", (command_id, "33")
-        )
-        change_event_callbacks.assert_change_event(
-            "longRunningCommandProgress", (command_id, "66")
-        )
+        for progress_point in FakeBaseComponent.PROGRESS_REPORTING_POINTS:
+            change_event_callbacks.assert_change_event(
+                "longRunningCommandProgress", (command_id, progress_point)
+            )
 
         change_event_callbacks.assert_change_event("state", DevState.ON)
         change_event_callbacks.assert_change_event(
@@ -1059,12 +1060,10 @@ class TestSKABaseDevice:  # pylint: disable=too-many-public-methods
         change_event_callbacks.assert_change_event(
             "longRunningCommandStatus", (command_id, "IN_PROGRESS")
         )
-        change_event_callbacks.assert_change_event(
-            "longRunningCommandProgress", (command_id, "33")
-        )
-        change_event_callbacks.assert_change_event(
-            "longRunningCommandProgress", (command_id, "66")
-        )
+        for progress_point in FakeBaseComponent.PROGRESS_REPORTING_POINTS:
+            change_event_callbacks.assert_change_event(
+                "longRunningCommandProgress", (command_id, progress_point)
+            )
 
         change_event_callbacks.assert_change_event("state", DevState.STANDBY)
         change_event_callbacks.assert_change_event(

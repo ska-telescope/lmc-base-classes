@@ -82,7 +82,7 @@ python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*"
 
 [[package]]
 name = "coverage"
-version = "6.5.0"
+version = "7.0.5"
 description = "Code coverage measurement for Python"
 category = "dev"
 optional = false
@@ -417,8 +417,8 @@ parse = {version = ">=1.18.0", markers = "python_version >= \"3.0\""}
 six = ">=1.11"
 
 [package.extras]
+develop = ["coverage (>=4.4)", "pytest-html (>=1.19.0)", "pytest-cov", "tox (>=2.8)", "pytest (<5.0)", "pytest (>=5.0)"]
 docs = ["sphinx (>=1.2)"]
-develop = ["pytest (>=5.0)", "pytest (<5.0)", "tox (>=2.8)", "pytest-cov", "pytest-html (>=1.19.0)", "coverage (>=4.4)"]
 
 [[package]]
 name = "pathspec"
@@ -463,8 +463,8 @@ python-versions = ">=3.6"
 importlib-metadata = {version = ">=0.12", markers = "python_version < \"3.8\""}
 
 [package.extras]
-testing = ["pytest-benchmark", "pytest"]
-dev = ["tox", "pre-commit"]
+dev = ["pre-commit", "tox"]
+testing = ["pytest", "pytest-benchmark"]
 
 [[package]]
 name = "py"
@@ -627,7 +627,7 @@ coverage = {version = ">=5.2.1", extras = ["toml"]}
 pytest = ">=4.6"
 
 [package.extras]
-testing = ["virtualenv", "pytest-xdist", "six", "process-tests", "hunter", "fields"]
+testing = ["fields", "hunter", "process-tests", "six", "pytest-xdist", "virtualenv"]
 
 [[package]]
 name = "pytest-forked"
@@ -729,13 +729,14 @@ python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*"
 
 [[package]]
 name = "ska-control-model"
-version = "0.1.2"
+version = "0.3.0"
 description = "The SKA control model"
 category = "main"
 optional = false
 python-versions = ">=3.7.2,<4.0.0"
 
 [package.dependencies]
+pytango = "9.3.3"
 transitions = ">=0.9.0,<0.10.0"
 typing-extensions = ">=4.3.0,<5.0.0"
 
@@ -820,8 +821,8 @@ python-versions = "*"
 six = "*"
 
 [package.extras]
-test = ["pytest"]
 diagrams = ["pygraphviz"]
+test = ["pytest"]
 
 [[package]]
 name = "typed-ast"
@@ -870,7 +871,7 @@ testing = ["pytest (>=6)", "pytest-checkdocs (>=2.4)", "pytest-flake8", "pytest-
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.7.2"
-content-hash = "fcee71f5f3accda480b69b9b27846f3e454adae203d8830a3c5f4d462325617d"
+content-hash = "506c7924950cfa85141c43a005ff4116ec0c09ba0360816e9568ce07e40e48dc"
 
 [metadata.files]
 astroid = []
@@ -933,8 +934,8 @@ pytest-pydocstyle = []
 restructuredtext-lint = []
 six = []
 ska-control-model = [
-    {file = "ska-control-model-0.1.2.tar.gz", hash = "sha256:8ae0e399189b99c64b4555bb91702ead2c373659dbebf37f451eb968a4d56dae"},
-    {file = "ska_control_model-0.1.2-py3-none-any.whl", hash = "sha256:aa5d57e579109d3e22487d73a3ee6059c0306e4daa960d3636c43027b376b1dd"},
+    {file = "ska_control_model-0.3.0-py3-none-any.whl", hash = "sha256:640bb14ff9ab00ab321e3cb47c3059480bcf4d80a0e8b8bf583584c46ca19de3"},
+    {file = "ska_control_model-0.3.0.tar.gz", hash = "sha256:623516f5fb3eb3a24c9bcbee38c843e457bb51162cd247f5fce36c4d0217700e"},
 ]
 ska-ser-logging = [
     {file = "ska_ser_logging-0.4.1+0a677a67-py3-none-any.whl", hash = "sha256:8b2bf14e9981966c22503b6b6477b6386dec1def1f71295579f0686d55b83841"},

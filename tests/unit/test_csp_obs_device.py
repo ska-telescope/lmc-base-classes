@@ -25,7 +25,10 @@ from tango.test_context import MultiDeviceTestContext
 from ska_tango_base import CspSubElementObsDevice, SKAObsDevice
 from ska_tango_base.commands import ResultCode
 from ska_tango_base.csp import CspSubElementObsStateModel
-from ska_tango_base.testing.reference import ReferenceCspObsComponentManager
+from ska_tango_base.testing.reference import (
+    FakeBaseComponent,
+    ReferenceCspObsComponentManager,
+)
 
 
 @pytest.fixture
@@ -281,12 +284,10 @@ class TestCspSubElementObsDevice:
         change_event_callbacks.assert_change_event(
             "longRunningCommandStatus", (on_command_id, "IN_PROGRESS")
         )
-        change_event_callbacks.assert_change_event(
-            "longRunningCommandProgress", (on_command_id, "33")
-        )
-        change_event_callbacks.assert_change_event(
-            "longRunningCommandProgress", (on_command_id, "66")
-        )
+        for progress_point in FakeBaseComponent.PROGRESS_REPORTING_POINTS:
+            change_event_callbacks.assert_change_event(
+                "longRunningCommandProgress", (on_command_id, progress_point)
+            )
 
         change_event_callbacks.assert_change_event("state", tango.DevState.ON)
         change_event_callbacks.assert_change_event(
@@ -335,12 +336,10 @@ class TestCspSubElementObsDevice:
             "longRunningCommandStatus",
             (on_command_id, "COMPLETED", config_command_id, "IN_PROGRESS"),
         )
-        change_event_callbacks.assert_change_event(
-            "longRunningCommandProgress", (config_command_id, "33")
-        )
-        change_event_callbacks.assert_change_event(
-            "longRunningCommandProgress", (config_command_id, "66")
-        )
+        for progress_point in FakeBaseComponent.PROGRESS_REPORTING_POINTS:
+            change_event_callbacks.assert_change_event(
+                "longRunningCommandProgress", (config_command_id, progress_point)
+            )
         change_event_callbacks.assert_change_event(
             "longRunningCommandResult",
             (
@@ -382,12 +381,10 @@ class TestCspSubElementObsDevice:
                 "IN_PROGRESS",
             ),
         )
-        change_event_callbacks.assert_change_event(
-            "longRunningCommandProgress", (gotoidle_command_id, "33")
-        )
-        change_event_callbacks.assert_change_event(
-            "longRunningCommandProgress", (gotoidle_command_id, "66")
-        )
+        for progress_point in FakeBaseComponent.PROGRESS_REPORTING_POINTS:
+            change_event_callbacks.assert_change_event(
+                "longRunningCommandProgress", (gotoidle_command_id, progress_point)
+            )
 
         change_event_callbacks.assert_change_event("obsState", ObsState.IDLE)
 
@@ -509,12 +506,10 @@ class TestCspSubElementObsDevice:
         change_event_callbacks.assert_change_event(
             "longRunningCommandStatus", (on_command_id, "IN_PROGRESS")
         )
-        change_event_callbacks.assert_change_event(
-            "longRunningCommandProgress", (on_command_id, "33")
-        )
-        change_event_callbacks.assert_change_event(
-            "longRunningCommandProgress", (on_command_id, "66")
-        )
+        for progress_point in FakeBaseComponent.PROGRESS_REPORTING_POINTS:
+            change_event_callbacks.assert_change_event(
+                "longRunningCommandProgress", (on_command_id, progress_point)
+            )
 
         change_event_callbacks.assert_change_event("state", tango.DevState.ON)
         change_event_callbacks.assert_change_event(
@@ -561,12 +556,10 @@ class TestCspSubElementObsDevice:
             "longRunningCommandStatus",
             (on_command_id, "COMPLETED", config_command_id, "IN_PROGRESS"),
         )
-        change_event_callbacks.assert_change_event(
-            "longRunningCommandProgress", (config_command_id, "33")
-        )
-        change_event_callbacks.assert_change_event(
-            "longRunningCommandProgress", (config_command_id, "66")
-        )
+        for progress_point in FakeBaseComponent.PROGRESS_REPORTING_POINTS:
+            change_event_callbacks.assert_change_event(
+                "longRunningCommandProgress", (config_command_id, progress_point)
+            )
         change_event_callbacks.assert_change_event(
             "longRunningCommandResult",
             (
@@ -612,12 +605,10 @@ class TestCspSubElementObsDevice:
             ),
         )
 
-        change_event_callbacks.assert_change_event(
-            "longRunningCommandProgress", (scan_command_id, "33")
-        )
-        change_event_callbacks.assert_change_event(
-            "longRunningCommandProgress", (scan_command_id, "66")
-        )
+        for progress_point in FakeBaseComponent.PROGRESS_REPORTING_POINTS:
+            change_event_callbacks.assert_change_event(
+                "longRunningCommandProgress", (scan_command_id, progress_point)
+            )
         change_event_callbacks.assert_change_event("obsState", ObsState.SCANNING)
         change_event_callbacks.assert_change_event(
             "longRunningCommandResult",
@@ -670,12 +661,10 @@ class TestCspSubElementObsDevice:
                 "IN_PROGRESS",
             ),
         )
-        change_event_callbacks.assert_change_event(
-            "longRunningCommandProgress", (endscan_command_id, "33")
-        )
-        change_event_callbacks.assert_change_event(
-            "longRunningCommandProgress", (endscan_command_id, "66")
-        )
+        for progress_point in FakeBaseComponent.PROGRESS_REPORTING_POINTS:
+            change_event_callbacks.assert_change_event(
+                "longRunningCommandProgress", (endscan_command_id, progress_point)
+            )
         change_event_callbacks.assert_change_event("obsState", ObsState.READY)
         change_event_callbacks.assert_change_event(
             "longRunningCommandResult",
@@ -867,12 +856,10 @@ class TestCspSubElementObsDevice:
         change_event_callbacks.assert_change_event(
             "longRunningCommandStatus", (on_command_id, "IN_PROGRESS")
         )
-        change_event_callbacks.assert_change_event(
-            "longRunningCommandProgress", (on_command_id, "33")
-        )
-        change_event_callbacks.assert_change_event(
-            "longRunningCommandProgress", (on_command_id, "66")
-        )
+        for progress_point in FakeBaseComponent.PROGRESS_REPORTING_POINTS:
+            change_event_callbacks.assert_change_event(
+                "longRunningCommandProgress", (on_command_id, progress_point)
+            )
         change_event_callbacks.assert_change_event("state", tango.DevState.ON)
         change_event_callbacks.assert_change_event(
             "status", "The device is in ON state."
@@ -989,12 +976,10 @@ class TestCspSubElementObsDevice:
                 "IN_PROGRESS",
             ),
         )
-        change_event_callbacks.assert_change_event(
-            "longRunningCommandProgress", (reset_command_id, "33")
-        )
-        change_event_callbacks.assert_change_event(
-            "longRunningCommandProgress", (reset_command_id, "66")
-        )
+        for progress_point in FakeBaseComponent.PROGRESS_REPORTING_POINTS:
+            change_event_callbacks.assert_change_event(
+                "longRunningCommandProgress", (reset_command_id, progress_point)
+            )
         change_event_callbacks.assert_change_event(
             "longRunningCommandResult",
             (

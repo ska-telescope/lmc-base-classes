@@ -1474,6 +1474,7 @@ class SKABaseDevice(Device):
             DevState.STANDBY,
             DevState.ON,
             DevState.UNKNOWN,
+            DevState.FAULT,
         ]
 
     @command(dtype_out="DevVarLongStringArray")

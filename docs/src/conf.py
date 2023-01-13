@@ -58,6 +58,7 @@ import sys
 autodoc_mock_imports = [
     'debugpy',
     'numpy',
+    'ska_control_model',
     'ska_ser_logging',
     'ska_tango_testing',
     'tango',
@@ -366,13 +367,14 @@ intersphinx_mapping = {
 }
 
 nitpick_ignore = [
-    # ska-control-model docs don't actually publish the docstring for
-    # the package itself.
+    # Sadly, we have to mock out ska-control-model because it depends on
+    # pytango (which depends on binary tango), solely because
+    # ska-control-model needs to know about DevState.
     ("py:mod", "ska_control_model"),  
-    # These next two are documented in ska-control-model. Need to figure
-    # out why intersphinx can't find them.
-    ("py:class", "PowerState"),
     ("py:class", "CommunicationStatus"),
+    ("py:class", "PowerState"),
+    ("py:class", "ResultCode"),
+    ("py:class", "TaskStatus"),
     # TODO: Can't figure this one out
     ("py:class", "ska_tango_base.base.component_manager.Wrapped"),
     # These ones look like sphinx bugs

@@ -251,7 +251,7 @@ class SKASubarray(SKAObsDevice):
 
     @attribute(
         dtype=("str",),
-        max_dim_x=100,
+        max_dim_x=512,
     )
     def assignedResources(self: SKASubarray) -> list[str]:
         """

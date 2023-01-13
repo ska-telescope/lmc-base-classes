@@ -28,7 +28,10 @@ from tango import DevState
 
 from ska_tango_base import SKASubarray
 from ska_tango_base.commands import ResultCode
-from ska_tango_base.testing.reference import ReferenceSubarrayComponentManager
+from ska_tango_base.testing.reference import (
+    FakeSubarrayComponent,
+    ReferenceSubarrayComponentManager,
+)
 
 
 class TestSKASubarray:  # pylint: disable=too-many-public-methods
@@ -168,12 +171,10 @@ class TestSKASubarray:  # pylint: disable=too-many-public-methods
         change_event_callbacks.assert_change_event(
             "longRunningCommandStatus", (on_command_id, "IN_PROGRESS")
         )
-        change_event_callbacks.assert_change_event(
-            "longRunningCommandProgress", (on_command_id, "33")
-        )
-        change_event_callbacks.assert_change_event(
-            "longRunningCommandProgress", (on_command_id, "66")
-        )
+        for progress_point in FakeSubarrayComponent.PROGRESS_REPORTING_POINTS:
+            change_event_callbacks.assert_change_event(
+                "longRunningCommandProgress", (on_command_id, progress_point)
+            )
 
         change_event_callbacks.assert_change_event("state", tango.DevState.ON)
         change_event_callbacks.assert_change_event(
@@ -220,12 +221,10 @@ class TestSKASubarray:  # pylint: disable=too-many-public-methods
             "longRunningCommandStatus",
             (on_command_id, "COMPLETED", assign_command_id, "IN_PROGRESS"),
         )
-        change_event_callbacks.assert_change_event(
-            "longRunningCommandProgress", (assign_command_id, "33")
-        )
-        change_event_callbacks.assert_change_event(
-            "longRunningCommandProgress", (assign_command_id, "66")
-        )
+        for progress_point in FakeSubarrayComponent.PROGRESS_REPORTING_POINTS:
+            change_event_callbacks.assert_change_event(
+                "longRunningCommandProgress", (assign_command_id, progress_point)
+            )
         change_event_callbacks.assert_change_event(
             "longRunningCommandResult",
             (
@@ -272,12 +271,10 @@ class TestSKASubarray:  # pylint: disable=too-many-public-methods
                 "IN_PROGRESS",
             ),
         )
-        change_event_callbacks.assert_change_event(
-            "longRunningCommandProgress", (release_command_id, "33")
-        )
-        change_event_callbacks.assert_change_event(
-            "longRunningCommandProgress", (release_command_id, "66")
-        )
+        for progress_point in FakeSubarrayComponent.PROGRESS_REPORTING_POINTS:
+            change_event_callbacks.assert_change_event(
+                "longRunningCommandProgress", (release_command_id, progress_point)
+            )
         change_event_callbacks.assert_change_event(
             "longRunningCommandResult",
             (
@@ -335,12 +332,10 @@ class TestSKASubarray:  # pylint: disable=too-many-public-methods
                 "IN_PROGRESS",
             ),
         )
-        change_event_callbacks.assert_change_event(
-            "longRunningCommandProgress", (releaseall_command_id, "33")
-        )
-        change_event_callbacks.assert_change_event(
-            "longRunningCommandProgress", (releaseall_command_id, "66")
-        )
+        for progress_point in FakeSubarrayComponent.PROGRESS_REPORTING_POINTS:
+            change_event_callbacks.assert_change_event(
+                "longRunningCommandProgress", (releaseall_command_id, progress_point)
+            )
 
         change_event_callbacks.assert_change_event(
             "longRunningCommandResult",
@@ -411,12 +406,10 @@ class TestSKASubarray:  # pylint: disable=too-many-public-methods
         change_event_callbacks.assert_change_event(
             "longRunningCommandStatus", (on_command_id, "IN_PROGRESS")
         )
-        change_event_callbacks.assert_change_event(
-            "longRunningCommandProgress", (on_command_id, "33")
-        )
-        change_event_callbacks.assert_change_event(
-            "longRunningCommandProgress", (on_command_id, "66")
-        )
+        for progress_point in FakeSubarrayComponent.PROGRESS_REPORTING_POINTS:
+            change_event_callbacks.assert_change_event(
+                "longRunningCommandProgress", (on_command_id, progress_point)
+            )
 
         change_event_callbacks.assert_change_event("state", tango.DevState.ON)
         change_event_callbacks.assert_change_event(
@@ -461,12 +454,10 @@ class TestSKASubarray:  # pylint: disable=too-many-public-methods
             "longRunningCommandStatus",
             (on_command_id, "COMPLETED", assign_command_id, "IN_PROGRESS"),
         )
-        change_event_callbacks.assert_change_event(
-            "longRunningCommandProgress", (assign_command_id, "33")
-        )
-        change_event_callbacks.assert_change_event(
-            "longRunningCommandProgress", (assign_command_id, "66")
-        )
+        for progress_point in FakeSubarrayComponent.PROGRESS_REPORTING_POINTS:
+            change_event_callbacks.assert_change_event(
+                "longRunningCommandProgress", (assign_command_id, progress_point)
+            )
         change_event_callbacks.assert_change_event(
             "longRunningCommandResult",
             (
@@ -519,12 +510,10 @@ class TestSKASubarray:  # pylint: disable=too-many-public-methods
                 "IN_PROGRESS",
             ),
         )
-        change_event_callbacks.assert_change_event(
-            "longRunningCommandProgress", (config_command_id, "33")
-        )
-        change_event_callbacks.assert_change_event(
-            "longRunningCommandProgress", (config_command_id, "66")
-        )
+        for progress_point in FakeSubarrayComponent.PROGRESS_REPORTING_POINTS:
+            change_event_callbacks.assert_change_event(
+                "longRunningCommandProgress", (config_command_id, progress_point)
+            )
         change_event_callbacks.assert_change_event(
             "longRunningCommandResult",
             (
@@ -581,12 +570,10 @@ class TestSKASubarray:  # pylint: disable=too-many-public-methods
             ),
         )
 
-        change_event_callbacks.assert_change_event(
-            "longRunningCommandProgress", (end_command_id, "33")
-        )
-        change_event_callbacks.assert_change_event(
-            "longRunningCommandProgress", (end_command_id, "66")
-        )
+        for progress_point in FakeSubarrayComponent.PROGRESS_REPORTING_POINTS:
+            change_event_callbacks.assert_change_event(
+                "longRunningCommandProgress", (end_command_id, progress_point)
+            )
         change_event_callbacks.assert_change_event("obsState", ObsState.IDLE)
         change_event_callbacks.assert_change_event(
             "longRunningCommandResult",
@@ -659,12 +646,10 @@ class TestSKASubarray:  # pylint: disable=too-many-public-methods
         change_event_callbacks.assert_change_event(
             "longRunningCommandStatus", (on_command_id, "IN_PROGRESS")
         )
-        change_event_callbacks.assert_change_event(
-            "longRunningCommandProgress", (on_command_id, "33")
-        )
-        change_event_callbacks.assert_change_event(
-            "longRunningCommandProgress", (on_command_id, "66")
-        )
+        for progress_point in FakeSubarrayComponent.PROGRESS_REPORTING_POINTS:
+            change_event_callbacks.assert_change_event(
+                "longRunningCommandProgress", (on_command_id, progress_point)
+            )
 
         change_event_callbacks.assert_change_event("state", tango.DevState.ON)
         change_event_callbacks.assert_change_event(
@@ -709,12 +694,10 @@ class TestSKASubarray:  # pylint: disable=too-many-public-methods
             "longRunningCommandStatus",
             (on_command_id, "COMPLETED", assign_command_id, "IN_PROGRESS"),
         )
-        change_event_callbacks.assert_change_event(
-            "longRunningCommandProgress", (assign_command_id, "33")
-        )
-        change_event_callbacks.assert_change_event(
-            "longRunningCommandProgress", (assign_command_id, "66")
-        )
+        for progress_point in FakeSubarrayComponent.PROGRESS_REPORTING_POINTS:
+            change_event_callbacks.assert_change_event(
+                "longRunningCommandProgress", (assign_command_id, progress_point)
+            )
         change_event_callbacks.assert_change_event(
             "longRunningCommandResult",
             (
@@ -765,12 +748,10 @@ class TestSKASubarray:  # pylint: disable=too-many-public-methods
                 "IN_PROGRESS",
             ),
         )
-        change_event_callbacks.assert_change_event(
-            "longRunningCommandProgress", (config_command_id, "33")
-        )
-        change_event_callbacks.assert_change_event(
-            "longRunningCommandProgress", (config_command_id, "66")
-        )
+        for progress_point in FakeSubarrayComponent.PROGRESS_REPORTING_POINTS:
+            change_event_callbacks.assert_change_event(
+                "longRunningCommandProgress", (config_command_id, progress_point)
+            )
         change_event_callbacks.assert_change_event(
             "longRunningCommandResult",
             (
@@ -832,13 +813,10 @@ class TestSKASubarray:  # pylint: disable=too-many-public-methods
                 "IN_PROGRESS",
             ),
         )
-
-        change_event_callbacks.assert_change_event(
-            "longRunningCommandProgress", (scan_command_id, "33")
-        )
-        change_event_callbacks.assert_change_event(
-            "longRunningCommandProgress", (scan_command_id, "66")
-        )
+        for progress_point in FakeSubarrayComponent.PROGRESS_REPORTING_POINTS:
+            change_event_callbacks.assert_change_event(
+                "longRunningCommandProgress", (scan_command_id, progress_point)
+            )
         change_event_callbacks.assert_change_event("obsState", ObsState.SCANNING)
         change_event_callbacks.assert_change_event(
             "longRunningCommandResult",
@@ -896,12 +874,10 @@ class TestSKASubarray:  # pylint: disable=too-many-public-methods
             ),
         )
 
-        change_event_callbacks.assert_change_event(
-            "longRunningCommandProgress", (endscan_command_id, "33")
-        )
-        change_event_callbacks.assert_change_event(
-            "longRunningCommandProgress", (endscan_command_id, "66")
-        )
+        for progress_point in FakeSubarrayComponent.PROGRESS_REPORTING_POINTS:
+            change_event_callbacks.assert_change_event(
+                "longRunningCommandProgress", (endscan_command_id, progress_point)
+            )
         change_event_callbacks.assert_change_event("obsState", ObsState.READY)
         change_event_callbacks.assert_change_event(
             "longRunningCommandResult",
@@ -971,12 +947,10 @@ class TestSKASubarray:  # pylint: disable=too-many-public-methods
         change_event_callbacks.assert_change_event(
             "longRunningCommandStatus", (on_command_id, "IN_PROGRESS")
         )
-        change_event_callbacks.assert_change_event(
-            "longRunningCommandProgress", (on_command_id, "33")
-        )
-        change_event_callbacks.assert_change_event(
-            "longRunningCommandProgress", (on_command_id, "66")
-        )
+        for progress_point in FakeSubarrayComponent.PROGRESS_REPORTING_POINTS:
+            change_event_callbacks.assert_change_event(
+                "longRunningCommandProgress", (on_command_id, progress_point)
+            )
 
         change_event_callbacks.assert_change_event("state", tango.DevState.ON)
         change_event_callbacks.assert_change_event(
@@ -1098,12 +1072,10 @@ class TestSKASubarray:  # pylint: disable=too-many-public-methods
                 "IN_PROGRESS",
             ),
         )
-        change_event_callbacks.assert_change_event(
-            "longRunningCommandProgress", (reset_command_id, "33")
-        )
-        change_event_callbacks.assert_change_event(
-            "longRunningCommandProgress", (reset_command_id, "66")
-        )
+        for progress_point in FakeSubarrayComponent.PROGRESS_REPORTING_POINTS:
+            change_event_callbacks.assert_change_event(
+                "longRunningCommandProgress", (reset_command_id, progress_point)
+            )
         change_event_callbacks.assert_change_event(
             "longRunningCommandResult",
             (
@@ -1172,13 +1144,10 @@ class TestSKASubarray:  # pylint: disable=too-many-public-methods
         change_event_callbacks.assert_change_event(
             "longRunningCommandStatus", (on_command_id, "IN_PROGRESS")
         )
-        change_event_callbacks.assert_change_event(
-            "longRunningCommandProgress", (on_command_id, "33")
-        )
-        change_event_callbacks.assert_change_event(
-            "longRunningCommandProgress", (on_command_id, "66")
-        )
-
+        for progress_point in FakeSubarrayComponent.PROGRESS_REPORTING_POINTS:
+            change_event_callbacks.assert_change_event(
+                "longRunningCommandProgress", (on_command_id, progress_point)
+            )
         change_event_callbacks.assert_change_event("state", tango.DevState.ON)
         change_event_callbacks.assert_change_event(
             "status", "The device is in ON state."
@@ -1222,12 +1191,10 @@ class TestSKASubarray:  # pylint: disable=too-many-public-methods
             "longRunningCommandStatus",
             (on_command_id, "COMPLETED", assign_command_id, "IN_PROGRESS"),
         )
-        change_event_callbacks.assert_change_event(
-            "longRunningCommandProgress", (assign_command_id, "33")
-        )
-        change_event_callbacks.assert_change_event(
-            "longRunningCommandProgress", (assign_command_id, "66")
-        )
+        for progress_point in FakeSubarrayComponent.PROGRESS_REPORTING_POINTS:
+            change_event_callbacks.assert_change_event(
+                "longRunningCommandProgress", (assign_command_id, progress_point)
+            )
         change_event_callbacks.assert_change_event(
             "longRunningCommandResult",
             (
@@ -1364,12 +1331,10 @@ class TestSKASubarray:  # pylint: disable=too-many-public-methods
                 "IN_PROGRESS",
             ),
         )
-        change_event_callbacks.assert_change_event(
-            "longRunningCommandProgress", (reset_command_id, "33")
-        )
-        change_event_callbacks.assert_change_event(
-            "longRunningCommandProgress", (reset_command_id, "66")
-        )
+        for progress_point in FakeSubarrayComponent.PROGRESS_REPORTING_POINTS:
+            change_event_callbacks.assert_change_event(
+                "longRunningCommandProgress", (reset_command_id, progress_point)
+            )
         change_event_callbacks.assert_change_event(
             "longRunningCommandResult",
             (

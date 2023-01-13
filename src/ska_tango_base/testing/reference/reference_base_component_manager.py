@@ -50,6 +50,8 @@ class FakeBaseComponent:
     delaying updating task and component state for a short time.
     """
 
+    PROGRESS_REPORTING_POINTS = ["33", "66"]
+
     def __init__(
         self: FakeBaseComponent,
         time_to_return: float = 0.05,
@@ -114,7 +116,7 @@ class FakeBaseComponent:
 
         # Kick off asynchronous processing, then return immediately. The asynchronous
         # processing will immediately report the task as IN_PROGRESS. Shortly afterwards
-        # it will report 33% progress, then 66% progress. We'll then see a state change
+        # it will report a number of progress points. We'll then see a state change
         # resulting from the task execution e.g. if the task was to turn the component
         # on, then we'll see the component come on. Finally, the asynchronous processing
         # will report the task as COMPLETE, and publish a result.
@@ -126,27 +128,22 @@ class FakeBaseComponent:
                 task_callback(status=TaskStatus.ABORTED)
                 return
 
-            sleep(self._time_to_complete / 3)
+            sleep_time = self._time_to_complete / (
+                len(self.PROGRESS_REPORTING_POINTS) + 1
+            )
+            for progress_point in self.PROGRESS_REPORTING_POINTS:
+                sleep(sleep_time)
 
-            if task_abort_event is not None and task_abort_event.is_set():
-                task_callback(status=TaskStatus.ABORTED)
-                return
+                if task_abort_event is not None and task_abort_event.is_set():
+                    task_callback(status=TaskStatus.ABORTED)
+                    return
 
-            if task_callback is not None:
-                task_callback(progress=33)
-
-            sleep(self._time_to_complete / 3)
-
-            if task_abort_event is not None and task_abort_event.is_set():
-                task_callback(status=TaskStatus.ABORTED)
-                return
-
-            if task_callback is not None:
-                task_callback(progress=66)
+                if task_callback is not None:
+                    task_callback(progress=progress_point)
 
             self._update_state(**state_kwargs)
 
-            sleep(self._time_to_complete / 3)
+            sleep(sleep_time)
 
             if task_abort_event is not None and task_abort_event.is_set():
                 task_callback(status=TaskStatus.ABORTED)

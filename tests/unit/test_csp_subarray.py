@@ -24,7 +24,10 @@ from ska_control_model import (
 
 from ska_tango_base.commands import ResultCode
 from ska_tango_base.csp import CspSubElementSubarray
-from ska_tango_base.testing.reference import ReferenceCspSubarrayComponentManager
+from ska_tango_base.testing.reference import (
+    FakeCspSubarrayComponent,
+    ReferenceCspSubarrayComponentManager,
+)
 
 # Device test case
 
@@ -368,12 +371,10 @@ class TestCspSubElementSubarray:  # pylint: disable=too-many-public-methods
         change_event_callbacks.assert_change_event(
             "longRunningCommandStatus", (on_command_id, "IN_PROGRESS")
         )
-        change_event_callbacks.assert_change_event(
-            "longRunningCommandProgress", (on_command_id, "33")
-        )
-        change_event_callbacks.assert_change_event(
-            "longRunningCommandProgress", (on_command_id, "66")
-        )
+        for progress_point in FakeCspSubarrayComponent.PROGRESS_REPORTING_POINTS:
+            change_event_callbacks.assert_change_event(
+                "longRunningCommandProgress", (on_command_id, progress_point)
+            )
 
         change_event_callbacks.assert_change_event("state", tango.DevState.ON)
         change_event_callbacks.assert_change_event(
@@ -417,12 +418,10 @@ class TestCspSubElementSubarray:  # pylint: disable=too-many-public-methods
             "longRunningCommandStatus",
             (on_command_id, "COMPLETED", assign_command_id, "IN_PROGRESS"),
         )
-        change_event_callbacks.assert_change_event(
-            "longRunningCommandProgress", (assign_command_id, "33")
-        )
-        change_event_callbacks.assert_change_event(
-            "longRunningCommandProgress", (assign_command_id, "66")
-        )
+        for progress_point in FakeCspSubarrayComponent.PROGRESS_REPORTING_POINTS:
+            change_event_callbacks.assert_change_event(
+                "longRunningCommandProgress", (assign_command_id, progress_point)
+            )
         change_event_callbacks.assert_change_event(
             "longRunningCommandResult",
             (
@@ -470,12 +469,10 @@ class TestCspSubElementSubarray:  # pylint: disable=too-many-public-methods
                 "IN_PROGRESS",
             ),
         )
-        change_event_callbacks.assert_change_event(
-            "longRunningCommandProgress", (config_command_id, "33")
-        )
-        change_event_callbacks.assert_change_event(
-            "longRunningCommandProgress", (config_command_id, "66")
-        )
+        for progress_point in FakeCspSubarrayComponent.PROGRESS_REPORTING_POINTS:
+            change_event_callbacks.assert_change_event(
+                "longRunningCommandProgress", (config_command_id, progress_point)
+            )
         change_event_callbacks.assert_change_event(
             "longRunningCommandResult",
             (
@@ -531,12 +528,10 @@ class TestCspSubElementSubarray:  # pylint: disable=too-many-public-methods
                 "IN_PROGRESS",
             ),
         )
-        change_event_callbacks.assert_change_event(
-            "longRunningCommandProgress", (gotoidle_command_id, "33")
-        )
-        change_event_callbacks.assert_change_event(
-            "longRunningCommandProgress", (gotoidle_command_id, "66")
-        )
+        for progress_point in FakeCspSubarrayComponent.PROGRESS_REPORTING_POINTS:
+            change_event_callbacks.assert_change_event(
+                "longRunningCommandProgress", (gotoidle_command_id, progress_point)
+            )
         change_event_callbacks.assert_change_event("obsState", ObsState.IDLE)
         change_event_callbacks.assert_change_event(
             "longRunningCommandResult",
@@ -619,12 +614,10 @@ class TestCspSubElementSubarray:  # pylint: disable=too-many-public-methods
         change_event_callbacks.assert_change_event(
             "longRunningCommandStatus", (on_command_id, "IN_PROGRESS")
         )
-        change_event_callbacks.assert_change_event(
-            "longRunningCommandProgress", (on_command_id, "33")
-        )
-        change_event_callbacks.assert_change_event(
-            "longRunningCommandProgress", (on_command_id, "66")
-        )
+        for progress_point in FakeCspSubarrayComponent.PROGRESS_REPORTING_POINTS:
+            change_event_callbacks.assert_change_event(
+                "longRunningCommandProgress", (on_command_id, progress_point)
+            )
 
         change_event_callbacks.assert_change_event("state", tango.DevState.ON)
         change_event_callbacks.assert_change_event(
@@ -668,12 +661,10 @@ class TestCspSubElementSubarray:  # pylint: disable=too-many-public-methods
             "longRunningCommandStatus",
             (on_command_id, "COMPLETED", assign_command_id, "IN_PROGRESS"),
         )
-        change_event_callbacks.assert_change_event(
-            "longRunningCommandProgress", (assign_command_id, "33")
-        )
-        change_event_callbacks.assert_change_event(
-            "longRunningCommandProgress", (assign_command_id, "66")
-        )
+        for progress_point in FakeCspSubarrayComponent.PROGRESS_REPORTING_POINTS:
+            change_event_callbacks.assert_change_event(
+                "longRunningCommandProgress", (assign_command_id, progress_point)
+            )
         change_event_callbacks.assert_change_event(
             "longRunningCommandResult",
             (
@@ -734,12 +725,10 @@ class TestCspSubElementSubarray:  # pylint: disable=too-many-public-methods
         change_event_callbacks.assert_change_event(
             "longRunningCommandStatus", (on_command_id, "IN_PROGRESS")
         )
-        change_event_callbacks.assert_change_event(
-            "longRunningCommandProgress", (on_command_id, "33")
-        )
-        change_event_callbacks.assert_change_event(
-            "longRunningCommandProgress", (on_command_id, "66")
-        )
+        for progress_point in FakeCspSubarrayComponent.PROGRESS_REPORTING_POINTS:
+            change_event_callbacks.assert_change_event(
+                "longRunningCommandProgress", (on_command_id, progress_point)
+            )
 
         change_event_callbacks.assert_change_event("state", tango.DevState.ON)
         change_event_callbacks.assert_change_event(
@@ -783,12 +772,10 @@ class TestCspSubElementSubarray:  # pylint: disable=too-many-public-methods
             "longRunningCommandStatus",
             (on_command_id, "COMPLETED", assign_command_id, "IN_PROGRESS"),
         )
-        change_event_callbacks.assert_change_event(
-            "longRunningCommandProgress", (assign_command_id, "33")
-        )
-        change_event_callbacks.assert_change_event(
-            "longRunningCommandProgress", (assign_command_id, "66")
-        )
+        for progress_point in FakeCspSubarrayComponent.PROGRESS_REPORTING_POINTS:
+            change_event_callbacks.assert_change_event(
+                "longRunningCommandProgress", (assign_command_id, progress_point)
+            )
         change_event_callbacks.assert_change_event(
             "longRunningCommandResult",
             (

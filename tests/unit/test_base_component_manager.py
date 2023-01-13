@@ -235,8 +235,8 @@ class TestReferenceBaseComponentManager:
         component_manager.standby(callbacks["standby_task"])
         callbacks.assert_call("standby_task", status=TaskStatus.QUEUED)
         callbacks.assert_call("standby_task", status=TaskStatus.IN_PROGRESS)
-        callbacks.assert_call("standby_task", progress=33)
-        callbacks.assert_call("standby_task", progress=66)
+        for progress_point in FakeBaseComponent.PROGRESS_REPORTING_POINTS:
+            callbacks.assert_call("standby_task", progress=progress_point)
         callbacks.assert_call("component_state", power=PowerState.STANDBY)
         callbacks.assert_call(
             "standby_task",
@@ -252,8 +252,8 @@ class TestReferenceBaseComponentManager:
         component_manager.off(callbacks["off_task"])
         callbacks.assert_call("off_task", status=TaskStatus.QUEUED)
         callbacks.assert_call("off_task", status=TaskStatus.IN_PROGRESS)
-        callbacks.assert_call("off_task", progress=33)
-        callbacks.assert_call("off_task", progress=66)
+        for progress_point in FakeBaseComponent.PROGRESS_REPORTING_POINTS:
+            callbacks.assert_call("off_task", progress=progress_point)
         callbacks.assert_call("component_state", power=PowerState.OFF)
         callbacks.assert_call(
             "off_task",

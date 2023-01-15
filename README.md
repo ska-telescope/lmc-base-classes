@@ -265,6 +265,10 @@ Tango devices can be launched with a `-v` parameter to set the logging level. Fo
 
 ### unreleased
 
+### 0.15.0
+
+- [MCCS-1208] Allow Abort() from RESOURCING, Off() from FAULT
+
 ### 0.14.0
 
 - [LOW-346] Provide polling mechanism as alternive concurrency mechanism

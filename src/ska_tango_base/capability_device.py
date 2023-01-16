@@ -14,10 +14,11 @@ from __future__ import annotations
 import logging
 from typing import Any, List, Optional, Tuple
 
+from ska_control_model import ResultCode
 from tango import DebugIt
 from tango.server import attribute, command, device_property
 
-from ska_tango_base.commands import DeviceInitCommand, FastCommand, ResultCode
+from ska_tango_base.commands import DeviceInitCommand, FastCommand
 from ska_tango_base.obs import SKAObsDevice
 
 DevVarLongStringArrayType = Tuple[List[ResultCode], List[Optional[str]]]

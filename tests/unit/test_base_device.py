@@ -28,6 +28,7 @@ from ska_control_model import (
     ControlMode,
     HealthState,
     LoggingLevel,
+    ResultCode,
     SimulationMode,
     TaskStatus,
     TestMode,
@@ -46,7 +47,6 @@ from ska_tango_base.base.base_device import (  # CommandTracker,
     TangoLoggingServiceHandler,
     _Log4TangoLoggingLevel,
 )
-from ska_tango_base.commands import ResultCode
 from ska_tango_base.testing.reference import (
     FakeBaseComponent,
     ReferenceBaseComponentManager,

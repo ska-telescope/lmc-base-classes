@@ -18,11 +18,11 @@ from ska_control_model import (
     ControlMode,
     HealthState,
     ObsState,
+    ResultCode,
     SimulationMode,
     TestMode,
 )
 
-from ska_tango_base.commands import ResultCode
 from ska_tango_base.csp import CspSubElementSubarray
 from ska_tango_base.testing.reference import (
     FakeCspSubarrayComponent,

@@ -2,11 +2,12 @@
 """Device to test multi layered commands."""
 from typing import Tuple
 
+from ska_control_model import ResultCode
 from tango import DebugIt
 from tango.server import command, device_property
 
 from ska_tango_base.base.base_device import SKABaseDevice
-from ska_tango_base.commands import FastCommand, ResultCode, SubmittedSlowCommand
+from ska_tango_base.commands import FastCommand, SubmittedSlowCommand
 
 from .multidevice_component_manager import MultiDeviceComponentManager
 

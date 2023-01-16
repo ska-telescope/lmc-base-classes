@@ -20,12 +20,18 @@ import logging
 from typing import Any, Callable, List, Optional, Tuple, cast
 
 # SKA specific imports
-from ska_control_model import ObsState, ObsStateModel, PowerState, TaskStatus
+from ska_control_model import (
+    ObsState,
+    ObsStateModel,
+    PowerState,
+    ResultCode,
+    TaskStatus,
+)
 from tango import DebugIt
 from tango.server import attribute, command, device_property
 
 from ska_tango_base.base.base_device import CommandTracker
-from ska_tango_base.commands import ResultCode, SlowCommand, SubmittedSlowCommand
+from ska_tango_base.commands import SlowCommand, SubmittedSlowCommand
 from ska_tango_base.faults import StateModelError
 from ska_tango_base.obs.obs_device import SKAObsDevice
 from ska_tango_base.subarray.component_manager import SubarrayComponentManager

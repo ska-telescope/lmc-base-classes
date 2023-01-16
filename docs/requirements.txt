@@ -1,7 +1,9 @@
 --extra-index-url https://artefact.skao.int/repository/pypi-all/simple
-docutils<0.17
-sphinx
-sphinx-autodoc-typehints
+docutils<0.18
+ska-control-model == 0.3.1
+sphinx == 5.1.1
+sphinx-autodoc-typehints == 1.19.1
 sphinx-rtd-theme
 sphinxcontrib-plantuml
+transitions
 typing_extensions

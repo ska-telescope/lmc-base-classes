@@ -2,9 +2,8 @@
 """Test various Tango devices with long running commmands working together."""
 import pytest
 import tango
+from ska_control_model import ResultCode
 from ska_tango_testing.mock.tango import MockTangoEventCallbackGroup
-
-from ska_tango_base.commands import ResultCode
 
 from .multidevice import ExampleMultiDevice
 

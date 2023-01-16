@@ -58,11 +58,9 @@ import sys
 autodoc_mock_imports = [
     'debugpy',
     'numpy',
-    'ska_control_model',
     'ska_ser_logging',
     'ska_tango_testing',
     'tango',
-    'transitions',
 ]
 
 autodoc_default_options = {
@@ -367,14 +365,11 @@ intersphinx_mapping = {
 }
 
 nitpick_ignore = [
-    # Sadly, we have to mock out ska-control-model because it depends on
-    # pytango (which depends on binary tango), solely because
-    # ska-control-model needs to know about DevState.
+     # ska-control-model API docs don't document the root package,
+     # and there's still two inexplicable sphinx cross-ref issues:
     ("py:mod", "ska_control_model"),  
     ("py:class", "CommunicationStatus"),
     ("py:class", "PowerState"),
-    ("py:class", "ResultCode"),
-    ("py:class", "TaskStatus"),
     # TODO: Can't figure this one out
     ("py:class", "ska_tango_base.base.component_manager.Wrapped"),
     # These ones look like sphinx bugs

@@ -3,10 +3,9 @@
 from threading import Event
 from typing import Callable, Optional, Tuple
 
-from ska_control_model import PowerState, TaskStatus
+from ska_control_model import PowerState, ResultCode, TaskStatus
 
 from ska_tango_base.base import check_communicating, check_on
-from ska_tango_base.commands import ResultCode
 from ska_tango_base.csp.obs import CspObsComponentManager
 from ska_tango_base.testing.reference.reference_base_component_manager import (
     FakeBaseComponent,

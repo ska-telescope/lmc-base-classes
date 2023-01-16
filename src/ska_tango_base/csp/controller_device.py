@@ -18,12 +18,12 @@ from collections import defaultdict
 from typing import List, Tuple
 
 import tango
-from ska_control_model import AdminMode
+from ska_control_model import AdminMode, ResultCode
 from tango import AttrWriteType, DebugIt
 from tango.server import attribute, command, device_property, run
 
 from ska_tango_base import SKAController
-from ska_tango_base.commands import FastCommand, ResultCode
+from ska_tango_base.commands import FastCommand
 
 __all__ = ["CspSubElementController", "main"]
 

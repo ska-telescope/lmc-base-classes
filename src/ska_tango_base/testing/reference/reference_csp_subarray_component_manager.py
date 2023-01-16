@@ -3,10 +3,9 @@
 from threading import Event
 from typing import Callable
 
-from ska_control_model import CommunicationStatus, PowerState
+from ska_control_model import CommunicationStatus, PowerState, ResultCode
 
 from ska_tango_base.base import check_communicating, check_on
-from ska_tango_base.commands import ResultCode
 from ska_tango_base.csp.subarray import CspSubarrayComponentManager
 from ska_tango_base.executor import TaskExecutorComponentManager
 from ska_tango_base.testing.reference.reference_base_component_manager import (

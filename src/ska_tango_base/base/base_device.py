@@ -44,6 +44,7 @@ from ska_control_model import (
     HealthState,
     LoggingLevel,
     PowerState,
+    ResultCode,
     SimulationMode,
     TaskStatus,
     TestMode,
@@ -56,7 +57,6 @@ from ska_tango_base.base import AdminModeModel, BaseComponentManager, OpStateMod
 from ska_tango_base.commands import (
     DeviceInitCommand,
     FastCommand,
-    ResultCode,
     SlowCommand,
     SubmittedSlowCommand,
 )
@@ -690,8 +690,8 @@ class SKABaseDevice(Device):
     """
     Device property.
 
-    Indication of importance of the device in the SKA hierarchy
-    to support drill-down navigation: 1..6, with 1 highest.
+    Indication of importance of the device in the SKA hierarchy to
+    support drill-down navigation: 1..6, with 1 highest.
     """
 
     GroupDefinitions = device_property(
@@ -736,7 +736,6 @@ class SKABaseDevice(Device):
                                "elt/switch/B", "elt/pdu/rackB"],
                  "subgroups": []}
            ]} ]
-
     """
 
     LoggingLevelDefault = device_property(
@@ -746,7 +745,7 @@ class SKABaseDevice(Device):
     Device property.
 
     Default logging level at device startup.
-    See :py:class:`~ska_control_model.logging_level.LoggingLevel`
+    See :py:class:`~ska_control_model.LoggingLevel`
     """
 
     LoggingTargetsDefault = device_property(
@@ -755,8 +754,8 @@ class SKABaseDevice(Device):
     """
     Device property.
 
-    Default logging targets at device startup.
-    See the project readme for details.
+    Default logging targets at device startup. See the project readme
+    for details.
     """
 
     # ---------
@@ -1129,7 +1128,7 @@ class SKABaseDevice(Device):
         Read the logging level of the device.
 
         Initialises to LoggingLevelDefault on startup.
-        See :py:class:`~ska_control_model.logging_level.LoggingLevel`
+        See :py:class:`~ska_control_model.LoggingLevel`
 
         :return:  Logging level of the device.
         """

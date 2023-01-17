@@ -17,13 +17,13 @@ from ska_control_model import (
     ControlMode,
     HealthState,
     ObsState,
+    ResultCode,
     SimulationMode,
     TestMode,
 )
 from tango.test_context import MultiDeviceTestContext
 
 from ska_tango_base import CspSubElementObsDevice, SKAObsDevice
-from ska_tango_base.commands import ResultCode
 from ska_tango_base.csp import CspSubElementObsStateModel
 from ska_tango_base.testing.reference import (
     FakeBaseComponent,

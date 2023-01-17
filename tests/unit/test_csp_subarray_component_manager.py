@@ -3,9 +3,8 @@
 import itertools
 
 import pytest
-from ska_control_model import CommunicationStatus, PowerState, TaskStatus
+from ska_control_model import CommunicationStatus, PowerState, ResultCode, TaskStatus
 
-from ska_tango_base.commands import ResultCode
 from ska_tango_base.testing.reference import (
     FakeCspSubarrayComponent,
     ReferenceCspSubarrayComponentManager,

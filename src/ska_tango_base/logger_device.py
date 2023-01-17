@@ -15,12 +15,12 @@ from __future__ import annotations
 
 from typing import Any, List, Optional, Tuple, cast
 
-from ska_control_model import LoggingLevel
+from ska_control_model import LoggingLevel, ResultCode
 from tango import DebugIt, DevFailed, DeviceProxy
 from tango.server import command
 
 from ska_tango_base.base import SKABaseDevice
-from ska_tango_base.commands import FastCommand, ResultCode
+from ska_tango_base.commands import FastCommand
 
 DevVarLongStringArrayType = Tuple[List[ResultCode], List[Optional[str]]]
 

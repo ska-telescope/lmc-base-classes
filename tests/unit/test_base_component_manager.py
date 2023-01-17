@@ -10,10 +10,9 @@ from __future__ import annotations
 import logging
 
 import pytest
-from ska_control_model import CommunicationStatus, PowerState, TaskStatus
+from ska_control_model import CommunicationStatus, PowerState, ResultCode, TaskStatus
 from ska_tango_testing.mock import MockCallableGroup
 
-from ska_tango_base.commands import ResultCode
 from ska_tango_base.testing.reference import (
     FakeBaseComponent,
     ReferenceBaseComponentManager,

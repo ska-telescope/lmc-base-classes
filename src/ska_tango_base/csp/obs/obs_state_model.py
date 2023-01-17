@@ -8,7 +8,7 @@ It comprises:
 
 * a :py:class:`.CspSubElementObsStateModel` that maps the underlying
   state machine state to a value of the
-  :py:class:`ska_control_model.obs_state.ObsState` enum.
+  :py:class:`ska_control_model.ObsState` enum.
 """
 import logging
 from typing import Any, Callable, Optional

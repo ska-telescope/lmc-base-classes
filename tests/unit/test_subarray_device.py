@@ -20,6 +20,7 @@ from ska_control_model import (
     HealthState,
     ObsMode,
     ObsState,
+    ResultCode,
     SimulationMode,
     TestMode,
 )
@@ -27,7 +28,6 @@ from ska_tango_testing.mock.tango import MockTangoEventCallbackGroup
 from tango import DevState
 
 from ska_tango_base import SKASubarray
-from ska_tango_base.commands import ResultCode
 from ska_tango_base.testing.reference import (
     FakeSubarrayComponent,
     ReferenceSubarrayComponentManager,

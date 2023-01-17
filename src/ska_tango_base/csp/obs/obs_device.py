@@ -16,11 +16,11 @@ import json
 from json.decoder import JSONDecodeError
 from typing import Tuple
 
-from ska_control_model import ObsState, TaskStatus
+from ska_control_model import ObsState, ResultCode, TaskStatus
 from tango import DebugIt
 from tango.server import attribute, command, device_property, run
 
-from ska_tango_base.commands import ResultCode, SlowCommand, SubmittedSlowCommand
+from ska_tango_base.commands import SlowCommand, SubmittedSlowCommand
 from ska_tango_base.csp.obs.obs_state_model import CspSubElementObsStateModel
 from ska_tango_base.faults import StateModelError
 from ska_tango_base.obs import SKAObsDevice

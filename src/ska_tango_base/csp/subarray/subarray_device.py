@@ -19,11 +19,11 @@ from collections import defaultdict
 from json.decoder import JSONDecodeError
 from typing import Tuple
 
-from ska_control_model import ObsState
+from ska_control_model import ObsState, ResultCode
 from tango import AttrWriteType, DebugIt
 from tango.server import attribute, command, run
 
-from ska_tango_base.commands import ResultCode, SubmittedSlowCommand
+from ska_tango_base.commands import SubmittedSlowCommand
 from ska_tango_base.faults import StateModelError
 from ska_tango_base.subarray.subarray_device import SKASubarray
 

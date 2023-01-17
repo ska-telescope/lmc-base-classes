@@ -14,10 +14,9 @@ from typing import Callable
 
 import pytest
 import pytest_mock
-from ska_control_model import CommunicationStatus, PowerState, TaskStatus
+from ska_control_model import CommunicationStatus, PowerState, ResultCode, TaskStatus
 from ska_tango_testing.mock import MockCallableGroup
 
-from ska_tango_base.commands import ResultCode
 from ska_tango_base.testing.reference import (
     FakeSubarrayComponent,
     ReferenceSubarrayComponentManager,
@@ -34,8 +33,7 @@ class TestResourcePool:
         """
         Fixture that yields the component's resource manager.
 
-        :return:
-            :py:class:`SubarrayComponentManager._ResourcePool`
+        :return: a resource pool.
         """
         # pylint: disable-next=protected-access
         return FakeSubarrayComponent._ResourcePool()

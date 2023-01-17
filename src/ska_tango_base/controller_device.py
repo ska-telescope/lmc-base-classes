@@ -14,11 +14,12 @@ from __future__ import annotations
 import logging
 from typing import Any, List, Optional, Tuple, cast
 
+from ska_control_model import ResultCode
 from tango import DebugIt
 from tango.server import attribute, command, device_property
 
 from ska_tango_base.base import SKABaseDevice
-from ska_tango_base.commands import DeviceInitCommand, FastCommand, ResultCode
+from ska_tango_base.commands import DeviceInitCommand, FastCommand
 from ska_tango_base.utils import (  # type: ignore[attr-defined]
     convert_dict_to_list,
     validate_capability_types,

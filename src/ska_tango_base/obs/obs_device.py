@@ -15,11 +15,11 @@ from __future__ import annotations
 
 from typing import Any
 
-from ska_control_model import ObsMode, ObsState
+from ska_control_model import ObsMode, ObsState, ResultCode
 from tango.server import attribute
 
 from ska_tango_base.base import SKABaseDevice
-from ska_tango_base.commands import DeviceInitCommand, ResultCode
+from ska_tango_base.commands import DeviceInitCommand
 
 __all__ = ["SKAObsDevice", "main"]
 

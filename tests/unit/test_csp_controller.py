@@ -17,13 +17,13 @@ from ska_control_model import (
     AdminMode,
     ControlMode,
     HealthState,
+    ResultCode,
     SimulationMode,
     TestMode,
 )
 from tango.test_context import MultiDeviceTestContext
 
 from ska_tango_base import CspSubElementController, SKAController
-from ska_tango_base.commands import ResultCode
 from ska_tango_base.testing.reference import ReferenceBaseComponentManager
 
 

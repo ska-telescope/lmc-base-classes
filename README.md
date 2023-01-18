@@ -265,6 +265,10 @@ Tango devices can be launched with a `-v` parameter to set the logging level. Fo
 
 ### unreleased
 
+### 0.16.0
+
+- [MCCS-1312] Update to pytango 9.3.6
+
 ### 0.15.0
 
 - [MCCS-1208] Allow Abort() from RESOURCING, Off() from FAULT

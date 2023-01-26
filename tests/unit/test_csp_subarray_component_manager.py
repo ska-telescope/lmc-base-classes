@@ -1,9 +1,14 @@
-# type: ignore
 """Tests for the ``csp_subelement_component_manager`` module."""
+from __future__ import annotations
+
 import itertools
+import logging
+import unittest.mock
+from typing import Callable, Type
 
 import pytest
 from ska_control_model import CommunicationStatus, PowerState, ResultCode, TaskStatus
+from ska_tango_testing.mock import MockCallableGroup
 
 from ska_tango_base.testing.reference import (
     FakeCspSubarrayComponent,
@@ -15,18 +20,20 @@ class TestCspSubelementSubarrayComponentManager:
     """Tests of the ``SubarrayComponentManager`` class."""
 
     @pytest.fixture()
-    def mock_resource_factory(self, mocker):
+    def mock_resource_factory(
+        self: TestCspSubelementSubarrayComponentManager,
+    ) -> Type[unittest.mock.Mock]:
         """
         Return a factory that provides mock resources.
 
-        :param mocker: pytest fixture that wraps :py:mod:`unittest.mock`.
-
         :return: a factory that provides mock resources.
         """
-        return mocker.Mock
+        return unittest.mock.Mock
 
     @pytest.fixture()
-    def mock_config_factory(self):
+    def mock_config_factory(
+        self: TestCspSubelementSubarrayComponentManager,
+    ) -> Callable[[], dict[str, str]]:
         """
         Return a factory that provides mock arguments to the configure() method.
 
@@ -37,18 +44,20 @@ class TestCspSubelementSubarrayComponentManager:
         return lambda: next(mock_config_generator)
 
     @pytest.fixture()
-    def mock_scan_args(self, mocker):
+    def mock_scan_args(
+        self: TestCspSubelementSubarrayComponentManager,
+    ) -> unittest.mock.Mock:
         """
         Return some mock arguments to the scan() method.
 
-        :param mocker: pytest fixture that wraps :py:mod:`unittest.mock`.
-
         :return: some mock arguments to the scan() method.
         """
-        return mocker.Mock()
+        return unittest.mock.Mock()
 
     @pytest.fixture()
-    def component(self):
+    def component(
+        self: TestCspSubelementSubarrayComponentManager,
+    ) -> FakeCspSubarrayComponent:
         """
         Return a component for testing.
 
@@ -58,11 +67,11 @@ class TestCspSubelementSubarrayComponentManager:
 
     @pytest.fixture()
     def component_manager(
-        self,
-        logger,
-        callbacks,
-        component,
-    ):
+        self: TestCspSubelementSubarrayComponentManager,
+        logger: logging.Logger,
+        callbacks: MockCallableGroup,
+        component: FakeCspSubarrayComponent,
+    ) -> ReferenceCspSubarrayComponentManager:
         """
         Fixture that returns the component manager under test.
 
@@ -81,10 +90,10 @@ class TestCspSubelementSubarrayComponentManager:
         )
 
     def test_state_changes_with_start_and_stop_communicating(
-        self,
-        component_manager,
-        callbacks,
-    ):
+        self: TestCspSubelementSubarrayComponentManager,
+        component_manager: ReferenceCspSubarrayComponentManager,
+        callbacks: MockCallableGroup,
+    ) -> None:
         """
         Test that state is updated when the component is connected / disconnected.
 
@@ -109,7 +118,11 @@ class TestCspSubelementSubarrayComponentManager:
         callbacks.assert_call("communication_state", CommunicationStatus.DISABLED)
         assert component_manager.communication_state == CommunicationStatus.DISABLED
 
-    def test_simulate_communication_failure(self, component_manager, callbacks):
+    def test_simulate_communication_failure(
+        self: TestCspSubelementSubarrayComponentManager,
+        component_manager: ReferenceCspSubarrayComponentManager,
+        callbacks: MockCallableGroup,
+    ) -> None:
         """
         Test that we can simulate connection failure.
 
@@ -153,8 +166,11 @@ class TestCspSubelementSubarrayComponentManager:
 
     @pytest.mark.parametrize("command", ["off", "standby", "on"])
     def test_command_fails_when_disconnected(
-        self, component_manager, callbacks, command
-    ):
+        self: TestCspSubelementSubarrayComponentManager,
+        component_manager: ReferenceCspSubarrayComponentManager,
+        callbacks: MockCallableGroup,
+        command: str,
+    ) -> None:
         """
         Test that commands fail when there is not connection to the component.
 
@@ -220,10 +236,10 @@ class TestCspSubelementSubarrayComponentManager:
             getattr(component_manager, command)()
 
     def test_command_succeeds_when_connected(
-        self,
-        component_manager,
-        callbacks,
-    ):
+        self: TestCspSubelementSubarrayComponentManager,
+        component_manager: ReferenceCspSubarrayComponentManager,
+        callbacks: MockCallableGroup,
+    ) -> None:
         """
         Test that commands succeed when there is a connection to the component.
 
@@ -276,12 +292,12 @@ class TestCspSubelementSubarrayComponentManager:
         "power_state", [PowerState.OFF, PowerState.STANDBY, PowerState.ON]
     )
     def test_simulate_power_state(
-        self,
-        component_manager,
-        component,
-        callbacks,
-        power_state,
-    ):
+        self: TestCspSubelementSubarrayComponentManager,
+        component_manager: ReferenceCspSubarrayComponentManager,
+        component: FakeCspSubarrayComponent,
+        callbacks: MockCallableGroup,
+        power_state: PowerState,
+    ) -> None:
         """
         Test how changes to the components result in actions on the state model.
 
@@ -310,11 +326,11 @@ class TestCspSubelementSubarrayComponentManager:
             callbacks.assert_call("component_state", power=power_state)
 
     def test_simulate_fault(
-        self,
-        component_manager,
-        component,
-        callbacks,
-    ):
+        self: TestCspSubelementSubarrayComponentManager,
+        component_manager: ReferenceCspSubarrayComponentManager,
+        component: FakeCspSubarrayComponent,
+        callbacks: MockCallableGroup,
+    ) -> None:
         """
         Test how changes to the components result in actions on the state model.
 
@@ -341,11 +357,11 @@ class TestCspSubelementSubarrayComponentManager:
         callbacks.assert_call("component_state", fault=False)
 
     def test_reset_from_fault(
-        self,
-        component_manager,
-        component,
-        callbacks,
-    ):
+        self: TestCspSubelementSubarrayComponentManager,
+        component_manager: ReferenceCspSubarrayComponentManager,
+        component: FakeCspSubarrayComponent,
+        callbacks: MockCallableGroup,
+    ) -> None:
         """
         Test that the component manager can reset a faulty component.
 
@@ -368,11 +384,11 @@ class TestCspSubelementSubarrayComponentManager:
         callbacks.assert_call("component_state", fault=False)
 
     def test_assign_release(
-        self,
-        component_manager,
-        callbacks,
-        mock_resource_factory,
-    ):
+        self: TestCspSubelementSubarrayComponentManager,
+        component_manager: ReferenceCspSubarrayComponentManager,
+        callbacks: MockCallableGroup,
+        mock_resource_factory: Callable[[], unittest.mock.Mock],
+    ) -> None:
         """
         Test management of a component during assignment of resources.
 
@@ -407,12 +423,12 @@ class TestCspSubelementSubarrayComponentManager:
         callbacks.assert_call("component_state", resourced=False)
 
     def test_configure(
-        self,
-        component_manager,
-        callbacks,
-        mock_resource_factory,
-        mock_config_factory,
-    ):
+        self: TestCspSubelementSubarrayComponentManager,
+        component_manager: ReferenceCspSubarrayComponentManager,
+        callbacks: MockCallableGroup,
+        mock_resource_factory: Callable[[], unittest.mock.Mock],
+        mock_config_factory: Callable[[], dict[str, str]],
+    ) -> None:
         """
         Test management of a component through configuration.
 
@@ -449,14 +465,14 @@ class TestCspSubelementSubarrayComponentManager:
         callbacks.assert_call("component_state", configured=False)
 
     def test_scan(  # pylint: disable=too-many-arguments
-        self,
-        component_manager,
-        component,
-        callbacks,
-        mock_resource_factory,
-        mock_config_factory,
-        mock_scan_args,
-    ):
+        self: TestCspSubelementSubarrayComponentManager,
+        component_manager: ReferenceCspSubarrayComponentManager,
+        component: FakeCspSubarrayComponent,
+        callbacks: MockCallableGroup,
+        mock_resource_factory: Callable[[], unittest.mock.Mock],
+        mock_config_factory: Callable[[], dict[str, str]],
+        mock_scan_args: unittest.mock.Mock,
+    ) -> None:
         """
         Test management of a scanning component.
 
@@ -503,14 +519,14 @@ class TestCspSubelementSubarrayComponentManager:
         callbacks.assert_call("component_state", configured=False)
 
     def test_obsfault_reset(  # pylint: disable=too-many-arguments
-        self,
-        component_manager,
-        component,
-        callbacks,
-        mock_resource_factory,
-        mock_config_factory,
-        mock_scan_args,
-    ):
+        self: TestCspSubelementSubarrayComponentManager,
+        component_manager: ReferenceCspSubarrayComponentManager,
+        component: FakeCspSubarrayComponent,
+        callbacks: MockCallableGroup,
+        mock_resource_factory: Callable[[], unittest.mock.Mock],
+        mock_config_factory: Callable[[], dict[str, str]],
+        mock_scan_args: unittest.mock.Mock,
+    ) -> None:
         """
         Test management of a faulting component.
 
@@ -562,14 +578,14 @@ class TestCspSubelementSubarrayComponentManager:
         )
 
     def test_obsfault_restart(  # pylint: disable=too-many-arguments
-        self,
-        component_manager,
-        component,
-        callbacks,
-        mock_resource_factory,
-        mock_config_factory,
-        mock_scan_args,
-    ):
+        self: TestCspSubelementSubarrayComponentManager,
+        component_manager: ReferenceCspSubarrayComponentManager,
+        component: FakeCspSubarrayComponent,
+        callbacks: MockCallableGroup,
+        mock_resource_factory: Callable[[], unittest.mock.Mock],
+        mock_config_factory: Callable[[], dict[str, str]],
+        mock_scan_args: unittest.mock.Mock,
+    ) -> None:
         """
         Test management of a faulting component.
 

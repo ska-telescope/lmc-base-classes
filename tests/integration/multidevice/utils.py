@@ -1,5 +1,6 @@
-# type: ignore
 """Multi device test utils."""
+from __future__ import annotations
+
 import logging
 import uuid
 from dataclasses import dataclass
@@ -49,7 +50,11 @@ class LongRunningDeviceInterface:
     track of commands IDs. They are handled here.
     """
 
-    def __init__(self, tango_devices: List[str], logger: logging.Logger):
+    def __init__(
+        self: LongRunningDeviceInterface,
+        tango_devices: List[str],
+        logger: logging.Logger,
+    ) -> None:
         """
         Init LRC device interface.
 
@@ -58,12 +63,12 @@ class LongRunningDeviceInterface:
         """
         self._logger = logger
         self._tango_devices = tango_devices
-        self._long_running_device_proxies = []
-        self._result_subscriptions = []
-        self._stored_commands: Dict[str, List[StoredCommand]] = {}
-        self._stored_callbacks: Dict[str, Callable] = {}
+        self._long_running_device_proxies: list[tango.DeviceProxy] = []
+        self._result_subscriptions: list[int] = []
+        self._stored_commands: Dict[uuid.UUID, List[StoredCommand]] = {}
+        self._stored_callbacks: Dict[uuid.UUID, Callable] = {}
 
-    def setup(self):
+    def setup(self: LongRunningDeviceInterface) -> None:
         """Only create the device proxy and subscribe when a command is invoked."""
         if not self._long_running_device_proxies:
             for device in self._tango_devices:
@@ -80,7 +85,7 @@ class LongRunningDeviceInterface:
                     )
                 )
 
-    def push_event(self, event_data: EventData):
+    def push_event(self: LongRunningDeviceInterface, event_data: EventData) -> None:
         """
         Handle the attribute change events.
 
@@ -148,11 +153,11 @@ class LongRunningDeviceInterface:
             del self._stored_commands[key]
 
     def execute_long_running_command(
-        self,
+        self: LongRunningDeviceInterface,
         command_name: str,
         command_arg: Any = None,
         on_completion_callback: Optional[Callable] = None,
-    ):
+    ) -> None:
         """
         Execute the long running command with an argument if any.
 
@@ -170,7 +175,9 @@ class LongRunningDeviceInterface:
         """
         self.setup()
         unique_id = uuid.uuid4()
-        self._stored_callbacks[unique_id] = on_completion_callback
+
+        if on_completion_callback is not None:
+            self._stored_callbacks[unique_id] = on_completion_callback
         self._stored_commands[unique_id] = []
         for device_proxy in self._long_running_device_proxies:
             _, command_id = device_proxy.command_inout(command_name, command_arg)

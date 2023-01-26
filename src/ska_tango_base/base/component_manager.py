@@ -38,7 +38,7 @@ from typing import Any, Callable, Optional, TypeVar, cast
 
 from ska_control_model import CommunicationStatus, PowerState, TaskStatus
 
-from ska_tango_base.faults import ComponentError
+from ..faults import ComponentError
 
 Wrapped = TypeVar("Wrapped", bound=Callable[..., Any])
 
@@ -306,7 +306,7 @@ class BaseComponentManager:
         raise NotImplementedError("BaseComponentManager is abstract.")
 
     @check_communicating
-    def on(
+    def on(  # pylint: disable=invalid-name
         self: BaseComponentManager, task_callback: Optional[Callable] = None
     ) -> tuple[TaskStatus, str]:
         """

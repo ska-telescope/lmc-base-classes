@@ -2,7 +2,7 @@
 disable=
     duplicate-code,
     fixme,
-    invalid-name,  # conflicts with Tango naming conventions
+    logging-fstring-interpolation,
 
 enable=
     useless-suppression,

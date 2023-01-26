@@ -11,7 +11,7 @@ from typing import Any, Callable, Optional
 
 from ska_control_model import TaskStatus
 
-from ska_tango_base.base.component_manager import BaseComponentManager
+from ..base.component_manager import BaseComponentManager
 
 
 class SubarrayComponentManager(BaseComponentManager):

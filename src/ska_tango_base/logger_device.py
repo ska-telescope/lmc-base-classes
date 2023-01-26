@@ -1,3 +1,4 @@
+# pylint: disable=invalid-name
 # -*- coding: utf-8 -*-
 #
 # This file is part of the SKA Tango Base project
@@ -13,16 +14,16 @@ remote logging for selected devices.
 """
 from __future__ import annotations
 
-from typing import Any, List, Optional, Tuple, cast
+from typing import Any, List, Tuple, cast
 
 from ska_control_model import LoggingLevel, ResultCode
 from tango import DebugIt, DevFailed, DeviceProxy
 from tango.server import command
 
-from ska_tango_base.base import SKABaseDevice
-from ska_tango_base.commands import FastCommand
+from .base import SKABaseDevice
+from .commands import FastCommand
 
-DevVarLongStringArrayType = Tuple[List[ResultCode], List[Optional[str]]]
+DevVarLongStringArrayType = Tuple[List[ResultCode], List[str]]
 
 __all__ = ["SKALogger", "main"]
 
@@ -45,7 +46,7 @@ class SKALogger(SKABaseDevice):
             self.SetLoggingLevelCommand(self.logger),
         )
 
-    def create_component_manager(self: SKALogger) -> None:  # type: ignore[override]
+    def create_component_manager(self: SKALogger) -> None:
         """
         Create and return the component manager for this device.
 
@@ -64,7 +65,7 @@ class SKALogger(SKABaseDevice):
     class SetLoggingLevelCommand(FastCommand):
         """A class for the SKALoggerDevice's SetLoggingLevel() command."""
 
-        def do(  # type: ignore[override]
+        def do(
             self: SKALogger.SetLoggingLevelCommand,
             *args: Any,
             **kwargs: Any,

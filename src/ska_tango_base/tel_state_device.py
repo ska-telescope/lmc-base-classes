@@ -13,7 +13,7 @@ from __future__ import annotations
 
 from tango.server import device_property
 
-from ska_tango_base.base import SKABaseDevice
+from .base import SKABaseDevice
 
 __all__ = ["SKATelState", "main"]
 

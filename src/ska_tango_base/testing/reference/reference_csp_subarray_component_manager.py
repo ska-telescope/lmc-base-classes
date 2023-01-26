@@ -1,16 +1,16 @@
-# type: ignore
 """This module models component management for CSP subelement observation devices."""
+from __future__ import annotations
+
+import logging
 from threading import Event
-from typing import Callable
+from typing import Any, Callable, Optional
 
-from ska_control_model import CommunicationStatus, PowerState, ResultCode
+from ska_control_model import CommunicationStatus, PowerState, ResultCode, TaskStatus
 
-from ska_tango_base.base import check_communicating, check_on
-from ska_tango_base.csp.subarray import CspSubarrayComponentManager
-from ska_tango_base.executor import TaskExecutorComponentManager
-from ska_tango_base.testing.reference.reference_base_component_manager import (
-    FakeBaseComponent,
-)
+from ...base import check_communicating, check_on
+from ...csp.subarray import CspSubarrayComponentManager
+from ...executor import TaskExecutorComponentManager
+from .reference_base_component_manager import FakeBaseComponent
 
 
 class FakeCspSubarrayComponent(FakeBaseComponent):
@@ -38,17 +38,17 @@ class FakeCspSubarrayComponent(FakeBaseComponent):
     """
 
     def __init__(  # pylint: disable=too-many-arguments
-        self,
-        time_to_return=0.05,
-        time_to_complete=0.4,
-        power=PowerState.OFF,
-        fault=None,
-        resourced=False,
-        configured=False,
-        scanning=False,
-        obsfault=False,
-        **kwargs,
-    ):
+        self: FakeCspSubarrayComponent,
+        time_to_return: float = 0.05,
+        time_to_complete: float = 0.4,
+        power: PowerState = PowerState.OFF,
+        fault: Optional[bool] = None,
+        resourced: bool = False,
+        configured: bool = False,
+        scanning: bool = False,
+        obsfault: bool = False,
+        **kwargs: Any,
+    ) -> None:
         """
         Initialise a new instance.
 
@@ -81,9 +81,9 @@ class FakeCspSubarrayComponent(FakeBaseComponent):
             **kwargs,
         )
 
-    @property
+    @property  # type: ignore[misc]  # mypy doesn't support decorated properties
     @check_on
-    def config_id(self):
+    def config_id(self: FakeCspSubarrayComponent) -> str:
         """
         Return the unique id of this configuration.
 
@@ -91,9 +91,9 @@ class FakeCspSubarrayComponent(FakeBaseComponent):
         """
         return self._config_id
 
-    @property
+    @property  # type: ignore[misc]  # mypy doesn't support decorated properties
     @check_on
-    def scan_id(self):
+    def scan_id(self: FakeCspSubarrayComponent) -> int:
         """
         Return the unique id of this scan.
 
@@ -103,11 +103,11 @@ class FakeCspSubarrayComponent(FakeBaseComponent):
 
     @check_on
     def assign(
-        self,
-        resources,  # pylint: disable=unused-argument
-        task_callback,
-        task_abort_event,
-    ):
+        self: FakeCspSubarrayComponent,
+        resources: dict,  # pylint: disable=unused-argument
+        task_callback: Optional[Callable],
+        task_abort_event: Event,
+    ) -> None:
         """
         Assign resources.
 
@@ -134,11 +134,11 @@ class FakeCspSubarrayComponent(FakeBaseComponent):
 
     @check_on
     def release(
-        self,
-        resources,  # pylint: disable=unused-argument
-        task_callback,
-        task_abort_event,
-    ):
+        self: FakeCspSubarrayComponent,
+        resources: dict,  # pylint: disable=unused-argument
+        task_callback: Optional[Callable],
+        task_abort_event: Event,
+    ) -> None:
         """
         Release resources.
 
@@ -164,7 +164,11 @@ class FakeCspSubarrayComponent(FakeBaseComponent):
         )
 
     @check_on
-    def release_all(self, task_callback, task_abort_event):
+    def release_all(
+        self: FakeCspSubarrayComponent,
+        task_callback: Optional[Callable],
+        task_abort_event: Event,
+    ) -> None:
         """
         Release all resources.
 
@@ -187,11 +191,11 @@ class FakeCspSubarrayComponent(FakeBaseComponent):
 
     @check_on
     def configure(
-        self,
-        configuration: dict,
-        task_callback: Callable,
+        self: FakeCspSubarrayComponent,
+        configuration: dict[str, str],
+        task_callback: Optional[Callable],
         task_abort_event: Event,
-    ):
+    ) -> None:
         """
         Configure the component.
 
@@ -215,7 +219,11 @@ class FakeCspSubarrayComponent(FakeBaseComponent):
         )
 
     @check_on
-    def deconfigure(self, task_callback, task_abort_event):
+    def deconfigure(
+        self: FakeCspSubarrayComponent,
+        task_callback: Optional[Callable],
+        task_abort_event: Event,
+    ) -> None:
         """
         Deconfigure this component.
 
@@ -237,7 +245,12 @@ class FakeCspSubarrayComponent(FakeBaseComponent):
         )
 
     @check_on
-    def scan(self, scan_id, task_callback, task_abort_event):
+    def scan(
+        self: FakeCspSubarrayComponent,
+        scan_id: int,
+        task_callback: Optional[Callable],
+        task_abort_event: Event,
+    ) -> None:
         """
         Start scanning.
 
@@ -260,7 +273,11 @@ class FakeCspSubarrayComponent(FakeBaseComponent):
         )
 
     @check_on
-    def end_scan(self, task_callback, task_abort_event):
+    def end_scan(
+        self: FakeCspSubarrayComponent,
+        task_callback: Optional[Callable],
+        task_abort_event: Event,
+    ) -> None:
         """
         End scanning.
 
@@ -282,12 +299,12 @@ class FakeCspSubarrayComponent(FakeBaseComponent):
         )
 
     @check_on
-    def simulate_scan_stopped(self):
+    def simulate_scan_stopped(self: FakeCspSubarrayComponent) -> None:
         """Tell the component to simulate spontaneous stopping its scan."""
         self._update_state(scanning=False)
 
     @check_on
-    def simulate_obsfault(self, obsfault):
+    def simulate_obsfault(self: FakeCspSubarrayComponent, obsfault: bool) -> None:
         """
         Tell the component to simulate (or stop simulating) an obsfault.
 
@@ -296,7 +313,11 @@ class FakeCspSubarrayComponent(FakeBaseComponent):
         self._update_state(obsfault=obsfault)
 
     @check_on
-    def obsreset(self, task_callback, task_abort_event):
+    def obsreset(
+        self: FakeCspSubarrayComponent,
+        task_callback: Optional[Callable],
+        task_abort_event: Event,
+    ) -> None:
         """
         Reset an observation that has faulted or been aborted.
 
@@ -318,7 +339,11 @@ class FakeCspSubarrayComponent(FakeBaseComponent):
         )
 
     @check_on
-    def restart(self, task_callback, task_abort_event):
+    def restart(
+        self: FakeCspSubarrayComponent,
+        task_callback: Optional[Callable],
+        task_abort_event: Event,
+    ) -> None:
         """
         Restart the component after it has faulted or been aborted.
 
@@ -358,12 +383,12 @@ class ReferenceCspSubarrayComponentManager(
     """
 
     def __init__(
-        self,
-        logger,
-        communication_state_callback,
-        component_state_callback,
-        _component=None,
-    ):
+        self: ReferenceCspSubarrayComponentManager,
+        logger: Optional[logging.Logger],
+        communication_state_callback: Optional[Callable[[CommunicationStatus], None]],
+        component_state_callback: Optional[Callable[..., None]],
+        _component: Optional[FakeCspSubarrayComponent] = None,
+    ) -> None:
         """
         Initialise a new ReferenceCspSubarrayComponentManager instance.
 
@@ -389,7 +414,7 @@ class ReferenceCspSubarrayComponentManager(
             obsfault=False,
         )
 
-    def start_communicating(self):
+    def start_communicating(self: ReferenceCspSubarrayComponentManager) -> None:
         """Establish communication with the component, then start monitoring."""
         if self.communication_state == CommunicationStatus.ESTABLISHED:
             return
@@ -410,7 +435,7 @@ class ReferenceCspSubarrayComponentManager(
         self._update_communication_state(CommunicationStatus.ESTABLISHED)
         self._component.set_state_change_callback(self._update_component_state)
 
-    def stop_communicating(self):
+    def stop_communicating(self: ReferenceCspSubarrayComponentManager) -> None:
         """Break off communication with the component."""
         if self.communication_state == CommunicationStatus.DISABLED:
             return
@@ -419,7 +444,9 @@ class ReferenceCspSubarrayComponentManager(
         self._update_component_state(power=PowerState.UNKNOWN, fault=None)
         self._update_communication_state(CommunicationStatus.DISABLED)
 
-    def simulate_communication_failure(self, fail_communicate):
+    def simulate_communication_failure(
+        self: ReferenceCspSubarrayComponentManager, fail_communicate: bool
+    ) -> None:
         """
         Simulate (or stop simulating) a failure to communicate with the component.
 
@@ -441,7 +468,7 @@ class ReferenceCspSubarrayComponentManager(
             self._component.set_state_change_callback(self._update_component_state)
 
     @property
-    def power_state(self):
+    def power_state(self: ReferenceCspSubarrayComponentManager) -> PowerState:
         """
         Power mode of the component.
 
@@ -453,7 +480,7 @@ class ReferenceCspSubarrayComponentManager(
         return self._component_state["power"]
 
     @property
-    def fault_state(self):
+    def fault_state(self: ReferenceCspSubarrayComponentManager) -> bool:
         """
         Whether the component is currently faulting.
 
@@ -462,7 +489,10 @@ class ReferenceCspSubarrayComponentManager(
         return self._component_state["fault"]
 
     @check_communicating
-    def off(self, task_callback=None):
+    def off(
+        self: ReferenceCspSubarrayComponentManager,
+        task_callback: Optional[Callable] = None,
+    ) -> tuple[TaskStatus, str]:
         """
         Turn the component off.
 
@@ -474,7 +504,10 @@ class ReferenceCspSubarrayComponentManager(
         return self.submit_task(self._component.off, task_callback=task_callback)
 
     @check_communicating
-    def standby(self, task_callback=None):
+    def standby(
+        self: ReferenceCspSubarrayComponentManager,
+        task_callback: Optional[Callable] = None,
+    ) -> tuple[TaskStatus, str]:
         """
         Put the component into low-power standby mode.
 
@@ -486,7 +519,10 @@ class ReferenceCspSubarrayComponentManager(
         return self.submit_task(self._component.standby, task_callback=task_callback)
 
     @check_communicating
-    def on(self, task_callback=None):
+    def on(
+        self: ReferenceCspSubarrayComponentManager,
+        task_callback: Optional[Callable] = None,
+    ) -> tuple[TaskStatus, str]:
         """
         Turn the component on.
 
@@ -498,7 +534,10 @@ class ReferenceCspSubarrayComponentManager(
         return self.submit_task(self._component.on, task_callback=task_callback)
 
     @check_communicating
-    def reset(self, task_callback=None):
+    def reset(
+        self: ReferenceCspSubarrayComponentManager,
+        task_callback: Optional[Callable] = None,
+    ) -> tuple[TaskStatus, str]:
         """
         Reset the component (from fault state).
 
@@ -510,7 +549,11 @@ class ReferenceCspSubarrayComponentManager(
         return self.submit_task(self._component.reset, task_callback=task_callback)
 
     @check_communicating
-    def assign(self, resources, task_callback=None):
+    def assign(
+        self: ReferenceCspSubarrayComponentManager,
+        resources: Any,  # TODO: What type this should be?
+        task_callback: Optional[Callable] = None,
+    ) -> tuple[TaskStatus, str]:
         """
         Assign resources to the component.
 
@@ -525,7 +568,11 @@ class ReferenceCspSubarrayComponentManager(
         )
 
     @check_communicating
-    def release(self, resources, task_callback=None):
+    def release(
+        self: ReferenceCspSubarrayComponentManager,
+        resources: Any,  # TODO: What type this should be?
+        task_callback: Optional[Callable] = None,
+    ) -> tuple[TaskStatus, str]:
         """
         Release resources from the component.
 
@@ -540,7 +587,10 @@ class ReferenceCspSubarrayComponentManager(
         )
 
     @check_communicating
-    def release_all(self, task_callback=None):
+    def release_all(
+        self: ReferenceCspSubarrayComponentManager,
+        task_callback: Optional[Callable] = None,
+    ) -> tuple[TaskStatus, str]:
         """
         Release all resources.
 
@@ -554,7 +604,11 @@ class ReferenceCspSubarrayComponentManager(
         )
 
     @check_communicating
-    def configure(self, configuration, task_callback=None):
+    def configure(
+        self: ReferenceCspSubarrayComponentManager,
+        configuration: Any,  # TODO: What type should this be?
+        task_callback: Optional[Callable] = None,
+    ) -> tuple[TaskStatus, str]:
         """
         Configure the component.
 
@@ -571,7 +625,10 @@ class ReferenceCspSubarrayComponentManager(
         )
 
     @check_communicating
-    def deconfigure(self, task_callback=None):
+    def deconfigure(
+        self: ReferenceCspSubarrayComponentManager,
+        task_callback: Optional[Callable] = None,
+    ) -> tuple[TaskStatus, str]:
         """
         Deconfigure this component.
 
@@ -585,7 +642,11 @@ class ReferenceCspSubarrayComponentManager(
         )
 
     @check_communicating
-    def scan(self, args, task_callback=None):
+    def scan(
+        self: ReferenceCspSubarrayComponentManager,
+        args: Any,  # TODO: Why type should this be?
+        task_callback: Optional[Callable] = None,
+    ) -> tuple[TaskStatus, str]:
         """
         Start scanning.
 
@@ -600,7 +661,10 @@ class ReferenceCspSubarrayComponentManager(
         )
 
     @check_communicating
-    def end_scan(self, task_callback=None):
+    def end_scan(
+        self: ReferenceCspSubarrayComponentManager,
+        task_callback: Optional[Callable] = None,
+    ) -> tuple[TaskStatus, str]:
         """
         End scanning.
 
@@ -612,7 +676,10 @@ class ReferenceCspSubarrayComponentManager(
         return self.submit_task(self._component.end_scan, task_callback=task_callback)
 
     @check_communicating
-    def obsreset(self, task_callback=None):
+    def obsreset(
+        self: ReferenceCspSubarrayComponentManager,
+        task_callback: Optional[Callable] = None,
+    ) -> tuple[TaskStatus, str]:
         """
         Deconfigure the component but do not release resources.
 
@@ -624,7 +691,10 @@ class ReferenceCspSubarrayComponentManager(
         return self.submit_task(self._component.obsreset, task_callback=task_callback)
 
     @check_communicating
-    def restart(self, task_callback=None):
+    def restart(
+        self: ReferenceCspSubarrayComponentManager,
+        task_callback: Optional[Callable] = None,
+    ) -> tuple[TaskStatus, str]:
         """
         Tell the component to restart.
 
@@ -638,9 +708,9 @@ class ReferenceCspSubarrayComponentManager(
         """
         return self.submit_task(self._component.restart, task_callback=task_callback)
 
-    @property
+    @property  # type: ignore[misc]  # mypy doesn't support decorated properties
     @check_communicating
-    def config_id(self):
+    def config_id(self: ReferenceCspSubarrayComponentManager) -> str:
         """
         Return the configuration id.
 
@@ -648,9 +718,9 @@ class ReferenceCspSubarrayComponentManager(
         """
         return self._component.config_id
 
-    @property
+    @property  # type: ignore[misc]  # mypy doesn't support decorated properties
     @check_on
-    def scan_id(self):
+    def scan_id(self: ReferenceCspSubarrayComponentManager) -> int:
         """
         Return the scan id.
 

@@ -1,3 +1,4 @@
+# pylint: disable=invalid-name
 # -*- coding: utf-8 -*-
 #
 # This file is part of the SKA Tango Base project
@@ -19,8 +20,8 @@ from typing import Any
 from tango import DebugIt
 from tango.server import attribute, command, device_property
 
-from ska_tango_base.base import SKABaseDevice
-from ska_tango_base.commands import FastCommand
+from .base import SKABaseDevice
+from .commands import FastCommand
 
 __all__ = ["SKAAlarmHandler", "main"]
 
@@ -146,7 +147,7 @@ class SKAAlarmHandler(SKABaseDevice):  # pylint: disable=abstract-method
     class GetAlarmRuleCommand(FastCommand):
         """A class for the SKAAlarmHandler's GetAlarmRule() command."""
 
-        def do(  # type: ignore[override]
+        def do(
             self: SKAAlarmHandler.GetAlarmRuleCommand,
             *args: Any,
             **kwargs: Any,
@@ -169,7 +170,7 @@ class SKAAlarmHandler(SKABaseDevice):  # pylint: disable=abstract-method
     class GetAlarmDataCommand(FastCommand):
         """A class for the SKAAlarmHandler's GetAlarmData() command."""
 
-        def do(  # type: ignore[override]
+        def do(
             self: SKAAlarmHandler.GetAlarmDataCommand,
             *args: Any,
             **kwargs: Any,
@@ -191,7 +192,7 @@ class SKAAlarmHandler(SKABaseDevice):  # pylint: disable=abstract-method
     class GetAlarmAdditionalInfoCommand(FastCommand):
         """A class for the SKAAlarmHandler's GetAlarmAdditionalInfo() command."""
 
-        def do(  # type: ignore[override]
+        def do(
             self: SKAAlarmHandler.GetAlarmAdditionalInfoCommand,
             *args: Any,
             **kwargs: Any,
@@ -213,7 +214,7 @@ class SKAAlarmHandler(SKABaseDevice):  # pylint: disable=abstract-method
     class GetAlarmStatsCommand(FastCommand):
         """A class for the SKAAlarmHandler's GetAlarmStats() command."""
 
-        def do(  # type: ignore[override]
+        def do(
             self: SKAAlarmHandler.GetAlarmStatsCommand,
             *args: Any,
             **kwargs: Any,
@@ -234,7 +235,7 @@ class SKAAlarmHandler(SKABaseDevice):  # pylint: disable=abstract-method
     class GetAlertStatsCommand(FastCommand):
         """A class for the SKAAlarmHandler's GetAlertStats() command."""
 
-        def do(  # type: ignore[override]
+        def do(
             self: SKAAlarmHandler.GetAlertStatsCommand,
             *args: Any,
             **kwargs: Any,

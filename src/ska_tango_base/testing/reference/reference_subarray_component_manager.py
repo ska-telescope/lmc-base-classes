@@ -14,10 +14,10 @@ from typing import Any, Callable, Optional
 
 from ska_control_model import CommunicationStatus, PowerState, ResultCode, TaskStatus
 
-from ska_tango_base.base import check_communicating, check_on
-from ska_tango_base.faults import CapabilityValidationError
-from ska_tango_base.subarray import SubarrayComponentManager
-from ska_tango_base.testing.reference.reference_base_component_manager import (
+from ...base import check_communicating, check_on
+from ...faults import CapabilityValidationError
+from ...subarray import SubarrayComponentManager
+from .reference_base_component_manager import (
     FakeBaseComponent,
     ReferenceBaseComponentManager,
 )

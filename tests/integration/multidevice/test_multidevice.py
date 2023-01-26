@@ -1,5 +1,6 @@
-# type: ignore
 """Test various Tango devices with long running commmands working together."""
+from typing import Any
+
 import pytest
 import tango
 from ska_control_model import ResultCode
@@ -9,7 +10,7 @@ from .multidevice import ExampleMultiDevice
 
 
 @pytest.fixture(scope="function")
-def device_test_config(device_properties):
+def device_test_config(device_properties: dict[str, str]) -> dict[str, Any]:
     """
     Return a specification of the device under test.
 
@@ -46,7 +47,7 @@ def change_event_callbacks() -> MockTangoEventCallbackGroup:
 
 
 @pytest.mark.forked
-def test_device_init(device_under_test):
+def test_device_init(device_under_test: tango.DeviceProxy) -> None:
     """
     Test device initialisation.
 
@@ -57,7 +58,10 @@ def test_device_init(device_under_test):
 
 
 @pytest.mark.forked
-def test_device(device_under_test, change_event_callbacks):
+def test_device(
+    device_under_test: tango.DeviceProxy,
+    change_event_callbacks: MockTangoEventCallbackGroup,
+) -> None:
     """
     Test our Multidevice.
 
@@ -79,7 +83,10 @@ def test_device(device_under_test, change_event_callbacks):
 
 
 @pytest.mark.forked
-def test_non_abort(device_under_test, change_event_callbacks):
+def test_non_abort(
+    device_under_test: tango.DeviceProxy,
+    change_event_callbacks: MockTangoEventCallbackGroup,
+) -> None:
     """
     Test non abort.
 
@@ -106,7 +113,10 @@ def test_non_abort(device_under_test, change_event_callbacks):
 
 
 @pytest.mark.forked
-def test_abort(device_under_test, change_event_callbacks):
+def test_abort(
+    device_under_test: tango.DeviceProxy,
+    change_event_callbacks: MockTangoEventCallbackGroup,
+) -> None:
     """
     Test abort.
 
@@ -135,7 +145,10 @@ def test_abort(device_under_test, change_event_callbacks):
 
 
 @pytest.mark.forked
-def test_exception(device_under_test, change_event_callbacks):
+def test_exception(
+    device_under_test: tango.DeviceProxy,
+    change_event_callbacks: MockTangoEventCallbackGroup,
+) -> None:
     """
     Test exception.
 
@@ -162,7 +175,10 @@ def test_exception(device_under_test, change_event_callbacks):
 
 
 @pytest.mark.forked
-def test_progress(device_under_test, change_event_callbacks):
+def test_progress(
+    device_under_test: tango.DeviceProxy,
+    change_event_callbacks: MockTangoEventCallbackGroup,
+) -> None:
     """
     Test progress.
 

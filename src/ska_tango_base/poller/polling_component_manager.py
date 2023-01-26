@@ -13,8 +13,7 @@ from typing import Any, Callable
 
 from ska_control_model import CommunicationStatus, PowerState
 
-from ska_tango_base.base import BaseComponentManager
-
+from ..base import BaseComponentManager
 from .poller import Poller, PollModel, PollRequestT, PollResponseT
 
 

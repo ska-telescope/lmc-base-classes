@@ -136,11 +136,11 @@ def fixture_multi_device_tango_context(
     """
 
     def _get_open_port() -> int:
-        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        s.bind(("", 0))
-        s.listen(1)
-        port = s.getsockname()[1]
-        s.close()
+        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        sock.bind(("", 0))
+        sock.listen(1)
+        port = sock.getsockname()[1]
+        sock.close()
         return port
 
     host = get_host_ip()

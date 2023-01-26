@@ -9,7 +9,7 @@ __all__ = (
     "CspSubElementSubarray",
 )
 
-from .controller_device import CspSubElementController  # type: ignore[attr-defined]
+from .controller_device import CspSubElementController
 from .obs import (
     CspObsComponentManager,
     CspSubElementObsDevice,

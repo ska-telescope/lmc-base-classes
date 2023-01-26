@@ -1,4 +1,4 @@
-# pylint: disable=too-many-lines
+# pylint: disable=invalid-name, too-many-lines
 # TODO: Split logging service out from base_device module, then split these
 # tests the same way.
 
@@ -39,14 +39,14 @@ from tango import DevFailed, DevState
 import ska_tango_base.base.base_device
 from ska_tango_base import SKABaseDevice
 from ska_tango_base.base import CommandTracker
-from ska_tango_base.base.base_device import (  # CommandTracker,
-    _DEBUGGER_PORT,
+from ska_tango_base.base.base_device import _DEBUGGER_PORT
+from ska_tango_base.base.logging import (
     _PYTHON_TO_TANGO_LOGGING_LEVEL,
-    LoggingTargetError,
     LoggingUtils,
     TangoLoggingServiceHandler,
     _Log4TangoLoggingLevel,
 )
+from ska_tango_base.faults import LoggingTargetError
 from ska_tango_base.testing.reference import (
     FakeBaseComponent,
     ReferenceBaseComponentManager,
@@ -384,7 +384,7 @@ class TestLoggingUtils:
         with pytest.raises(LoggingTargetError):
             LoggingUtils.get_syslog_address_and_socktype(bad_syslog_url)
 
-    @mock.patch("ska_tango_base.base.base_device.TangoLoggingServiceHandler")
+    @mock.patch("ska_tango_base.base.logging.TangoLoggingServiceHandler")
     @mock.patch("logging.handlers.SysLogHandler")
     @mock.patch("logging.handlers.RotatingFileHandler")
     @mock.patch("logging.StreamHandler")

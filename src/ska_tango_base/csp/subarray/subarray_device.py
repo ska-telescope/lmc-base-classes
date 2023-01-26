@@ -1,5 +1,4 @@
-# pylint: skip-file  # TODO: Incrementally lint this repo
-# type: ignore
+# pylint: disable=invalid-name
 # -*- coding: utf-8 -*-
 #
 # This file is part of the CspSubElementSubarray project
@@ -13,24 +12,35 @@ CspSubElementSubarray.
 
 Subarray device for SKA CSP SubElement
 """
+from __future__ import annotations
 
 import json
+import logging
 from collections import defaultdict
 from json.decoder import JSONDecodeError
-from typing import Tuple
+from typing import Any, Callable, List, Optional, Tuple, cast
 
 from ska_control_model import ObsState, ResultCode
 from tango import AttrWriteType, DebugIt
 from tango.server import attribute, command, run
 
-from ska_tango_base.commands import SubmittedSlowCommand
-from ska_tango_base.faults import StateModelError
-from ska_tango_base.subarray.subarray_device import SKASubarray
+from ...base import CommandTracker
+from ...commands import SubmittedSlowCommand
+from ...faults import StateModelError
+from ...subarray.subarray_device import SKASubarray
 
 __all__ = ["CspSubElementSubarray", "main"]
 
+DevVarLongStringArrayType = Tuple[List[ResultCode], List[str]]
 
+
+# TODO: This is an abstract class because it does not define
+# `create_component_manager` and therefore inherits the abstract method from the
+# base device. There's no point implementing `create_component_manager` because
+# the SubarrayComponentManager is itself abstract.
+# pylint: disable-next=abstract-method, too-many-public-methods
 class CspSubElementSubarray(SKASubarray):
+    # pylint: disable=attribute-defined-outside-init  # Tango devices have init_device
     """Subarray device for SKA CSP SubElement."""
 
     # -----------------
@@ -190,7 +200,7 @@ class CspSubElementSubarray(SKASubarray):
     # General methods
     # ---------------
 
-    def init_command_objects(self):
+    def init_command_objects(self: CspSubElementSubarray) -> None:
         """Set up the command objects."""
         super().init_command_objects()
 
@@ -216,18 +226,27 @@ class CspSubElementSubarray(SKASubarray):
             ),
         )
 
+    # pylint: disable-next=too-few-public-methods
     class InitCommand(SKASubarray.InitCommand):
+        # pylint: disable=protected-access  # command classes are friend classes
         """A class for the CspSubElementObsDevice's init_device() "command"."""
 
-        def do(self) -> Tuple[ResultCode, str]:
+        def do(
+            self: CspSubElementSubarray.InitCommand,
+            *args: Any,
+            **kwargs: Any,
+        ) -> Tuple[ResultCode, str]:
             """
             Stateless hook for device initialisation.
+
+            :param args: positional arguments to this do method
+            :param kwargs: keyword arguments to this do method
 
             :return: A tuple containing a return code and a string
                 message indicating status. The message is for
                 information purpose only.
             """
-            super().do()
+            super().do(*args, **kwargs)
 
             self._device._scan_id = 0
 
@@ -306,23 +325,25 @@ class CspSubElementSubarray(SKASubarray):
     # ------------------
     # Attributes methods
     # ------------------
-    def read_scanID(self):
+    def read_scanID(self: CspSubElementSubarray) -> int:
         """
         Return the scanID attribute.
 
         :return: the scanID attribute.
         """
-        return self.component_manager.scan_id
+        # TODO: Cannot cast this because the component manager class doesn't exist yet!
+        return self.component_manager.scan_id  # type: ignore[attr-defined]
 
-    def read_configurationID(self):
+    def read_configurationID(self: CspSubElementSubarray) -> str:
         """
         Return the configurationID attribute.
 
         :return: the configurationID attribute.
         """
-        return self.component_manager.config_id
+        # TODO: Cannot cast this because the component manager class doesn't exist yet!
+        return self.component_manager.config_id  # type: ignore[attr-defined]
 
-    def read_sdpDestinationAddresses(self):
+    def read_sdpDestinationAddresses(self: CspSubElementSubarray) -> str:
         """
         Return the sdpDestinationAddresses attribute.
 
@@ -330,7 +351,7 @@ class CspSubElementSubarray(SKASubarray):
         """
         return self._sdp_addresses
 
-    def write_sdpDestinationAddresses(self, value):
+    def write_sdpDestinationAddresses(self: CspSubElementSubarray, value: str) -> None:
         """
         Set the sdpDestinationAddresses attribute.
 
@@ -338,7 +359,7 @@ class CspSubElementSubarray(SKASubarray):
         """
         self._sdp_addresses = value
 
-    def read_outputDataRateToSdp(self):
+    def read_outputDataRateToSdp(self: CspSubElementSubarray) -> float:
         """
         Return the outputDataRateToSdp attribute.
 
@@ -346,7 +367,7 @@ class CspSubElementSubarray(SKASubarray):
         """
         return self._sdp_output_data_rate
 
-    def read_lastScanConfiguration(self):
+    def read_lastScanConfiguration(self: CspSubElementSubarray) -> str:
         """
         Return the lastScanConfiguration attribute.
 
@@ -354,7 +375,7 @@ class CspSubElementSubarray(SKASubarray):
         """
         return self._last_scan_configuration
 
-    def read_configureScanMeasuredDuration(self):
+    def read_configureScanMeasuredDuration(self: CspSubElementSubarray) -> float:
         """
         Return the configureScanMeasuredDuration attribute.
 
@@ -362,7 +383,7 @@ class CspSubElementSubarray(SKASubarray):
         """
         return self._cmd_measured_duration["configurescan"]
 
-    def read_configureScanTimeoutExpiredFlag(self):
+    def read_configureScanTimeoutExpiredFlag(self: CspSubElementSubarray) -> bool:
         """
         Return the configureScanTimeoutExpiredFlag attribute.
 
@@ -370,7 +391,7 @@ class CspSubElementSubarray(SKASubarray):
         """
         return self._timeout_expired["configurescan"]
 
-    def read_listOfDevicesCompletedTasks(self):
+    def read_listOfDevicesCompletedTasks(self: CspSubElementSubarray) -> str:
         """
         Return the listOfDevicesCompletedTasks attribute.
 
@@ -379,7 +400,7 @@ class CspSubElementSubarray(SKASubarray):
         dict_to_string = json.dumps(self._list_of_devices_completed_task)
         return dict_to_string
 
-    def read_assignResourcesMaximumDuration(self):
+    def read_assignResourcesMaximumDuration(self: CspSubElementSubarray) -> float:
         """
         Return the assignResourcesMaximumDuration attribute.
 
@@ -387,7 +408,9 @@ class CspSubElementSubarray(SKASubarray):
         """
         return self._cmd_maximum_duration["assignresources"]
 
-    def write_assignResourcesMaximumDuration(self, value):
+    def write_assignResourcesMaximumDuration(
+        self: CspSubElementSubarray, value: float
+    ) -> None:
         """
         Set the assignResourcesMaximumDuration attribute.
 
@@ -395,7 +418,7 @@ class CspSubElementSubarray(SKASubarray):
         """
         self._cmd_maximum_duration["assignresources"] = value
 
-    def read_assignResourcesMeasuredDuration(self):
+    def read_assignResourcesMeasuredDuration(self: CspSubElementSubarray) -> float:
         """
         Return the assignResourcesMeasuredDuration attribute.
 
@@ -403,7 +426,7 @@ class CspSubElementSubarray(SKASubarray):
         """
         return self._cmd_measured_duration["assignresources"]
 
-    def read_assignResourcesProgress(self):
+    def read_assignResourcesProgress(self: CspSubElementSubarray) -> int:
         """
         Return the assignResourcesProgress attribute.
 
@@ -411,7 +434,7 @@ class CspSubElementSubarray(SKASubarray):
         """
         return self._cmd_progress["assignresources"]
 
-    def read_assignResourcesTimeoutExpiredFlag(self):
+    def read_assignResourcesTimeoutExpiredFlag(self: CspSubElementSubarray) -> bool:
         """
         Return the assignResourcesTimeoutExpiredFlag attribute.
 
@@ -419,7 +442,7 @@ class CspSubElementSubarray(SKASubarray):
         """
         return self._timeout_expired["assignresources"]
 
-    def read_releaseResourcesMaximumDuration(self):
+    def read_releaseResourcesMaximumDuration(self: CspSubElementSubarray) -> float:
         """
         Return the releaseResourcesMaximumDuration attribute.
 
@@ -427,7 +450,9 @@ class CspSubElementSubarray(SKASubarray):
         """
         return self._cmd_maximum_duration["releaseresources"]
 
-    def write_releaseResourcesMaximumDuration(self, value):
+    def write_releaseResourcesMaximumDuration(
+        self: CspSubElementSubarray, value: float
+    ) -> None:
         """
         Set the releaseResourcesMaximumDuration attribute.
 
@@ -435,7 +460,7 @@ class CspSubElementSubarray(SKASubarray):
         """
         self._cmd_maximum_duration["releaseresources"] = value
 
-    def read_releaseResourcesMeasuredDuration(self):
+    def read_releaseResourcesMeasuredDuration(self: CspSubElementSubarray) -> float:
         """
         Return the releaseResourcesMeasuredDuration attribute.
 
@@ -443,7 +468,7 @@ class CspSubElementSubarray(SKASubarray):
         """
         return self._cmd_measured_duration["releaseresources"]
 
-    def read_releaseResourcesProgress(self):
+    def read_releaseResourcesProgress(self: CspSubElementSubarray) -> int:
         """
         Return the releaseResourcesProgress attribute.
 
@@ -451,7 +476,7 @@ class CspSubElementSubarray(SKASubarray):
         """
         return self._cmd_progress["releaseresources"]
 
-    def read_releaseResourcesTimeoutExpiredFlag(self):
+    def read_releaseResourcesTimeoutExpiredFlag(self: CspSubElementSubarray) -> bool:
         """
         Return the releaseResourcesTimeoutExpiredFlag attribute.
 
@@ -459,13 +484,13 @@ class CspSubElementSubarray(SKASubarray):
         """
         return self._timeout_expired["releaseresources"]
 
-    def read_sdpLinkActive(self):
+    def read_sdpLinkActive(self: CspSubElementSubarray) -> list[bool]:
         """
         Return the sdpLinkActive attribute.
 
         :return: the sdpLinkActive attribute.
         """
-        return (False,)
+        return [False]
 
     # --------
     # Commands
@@ -474,7 +499,13 @@ class CspSubElementSubarray(SKASubarray):
     class ConfigureScanCommand(SubmittedSlowCommand):
         """A class for the CspSubElementObsDevices's ConfigureScan command."""
 
-        def __init__(self, command_tracker, component_manager, callback, logger=None):
+        def __init__(  # type: ignore[no-untyped-def]
+            self: CspSubElementSubarray.ConfigureScanCommand,
+            command_tracker: CommandTracker,
+            component_manager,  # Can't type-hint this because the class doesn't exist!
+            callback: Callable,
+            logger: Optional[logging.Logger] = None,
+        ):
             """
             Initialise a new ConfigureScanCommand instance.
 
@@ -493,7 +524,9 @@ class CspSubElementSubarray(SKASubarray):
                 logger=logger,
             )
 
-        def validate_input(self, argin: str) -> Tuple[dict, ResultCode, str]:
+        def validate_input(
+            self: CspSubElementSubarray.ConfigureScanCommand, argin: str
+        ) -> Tuple[Optional[dict], ResultCode, str]:
             """
             Validate the configuration parameters against allowed values, as needed.
 
@@ -508,7 +541,7 @@ class CspSubElementSubarray(SKASubarray):
                 msg = f"Validate configuration failed with error:{err}"
                 self.logger.error(msg)
                 return (None, ResultCode.FAILED, msg)
-            except Exception as other_errs:
+            except Exception as other_errs:  # pylint: disable=broad-except
                 msg = f"Validate configuration failed with unknown error:{other_errs}"
                 self.logger.error(msg)
                 return (None, ResultCode.FAILED, msg)
@@ -519,7 +552,7 @@ class CspSubElementSubarray(SKASubarray):
                 "ConfigureScan arguments validation successful",
             )
 
-    def is_ConfigureScan_allowed(self) -> bool:
+    def is_ConfigureScan_allowed(self: CspSubElementSubarray) -> bool:
         """
         Return whether the `Configure` command may be called in the current state.
 
@@ -550,7 +583,9 @@ class CspSubElementSubarray(SKASubarray):
         ),
     )
     @DebugIt()
-    def ConfigureScan(self, argin: str) -> Tuple[ResultCode, str]:
+    def ConfigureScan(
+        self: CspSubElementSubarray, argin: str
+    ) -> DevVarLongStringArrayType:
         """
         Configure a complete scan for the subarray.
 
@@ -560,7 +595,10 @@ class CspSubElementSubarray(SKASubarray):
             A tuple containing a return code and a string message indicating status.
             The message is for information purpose only.
         """
-        handler = self.get_command_object("ConfigureScan")
+        handler = cast(
+            CspSubElementSubarray.ConfigureScanCommand,
+            self.get_command_object("ConfigureScan"),
+        )
 
         (configuration, result_code, message) = handler.validate_input(argin)
         if result_code == ResultCode.OK:
@@ -568,9 +606,9 @@ class CspSubElementSubarray(SKASubarray):
             self._last_scan_configuration = argin
             (result_code, message) = handler(configuration)
 
-        return [[result_code], [message]]
+        return ([result_code], [message])
 
-    def is_Configure_allowed(self) -> bool:
+    def is_Configure_allowed(self: CspSubElementSubarray) -> bool:
         """
         Return whether the `Configure` command may be called in the current state.
 
@@ -590,7 +628,7 @@ class CspSubElementSubarray(SKASubarray):
         ),
     )
     @DebugIt()
-    def Configure(self, argin):
+    def Configure(self: CspSubElementSubarray, argin: str) -> DevVarLongStringArrayType:
         """
         Redirect to ConfigureScan method. Configure a complete scan for the subarray.
 
@@ -602,7 +640,7 @@ class CspSubElementSubarray(SKASubarray):
         """
         return self.ConfigureScan(argin)
 
-    def is_GoToIdle_allowed(self) -> bool:
+    def is_GoToIdle_allowed(self: CspSubElementSubarray) -> bool:
         """
         Return whether the `GoToIdle` command may be called in the current device state.
 
@@ -632,7 +670,7 @@ class CspSubElementSubarray(SKASubarray):
         ),
     )
     @DebugIt()
-    def GoToIdle(self):
+    def GoToIdle(self: CspSubElementSubarray) -> DevVarLongStringArrayType:
         """
         Transit the subarray from READY to IDLE obsState.
 
@@ -644,7 +682,7 @@ class CspSubElementSubarray(SKASubarray):
 
         handler = self.get_command_object("GoToIdle")
         (result_code, message) = handler()
-        return [[result_code], [message]]
+        return ([result_code], [message])
 
     @command(
         dtype_out="DevVarLongStringArray",
@@ -655,7 +693,7 @@ class CspSubElementSubarray(SKASubarray):
         ),
     )
     @DebugIt()
-    def End(self):
+    def End(self: CspSubElementSubarray) -> DevVarLongStringArrayType:
         """
         Transit the subarray from READY to IDLE obsState. Redirect to GoToIdle command.
 

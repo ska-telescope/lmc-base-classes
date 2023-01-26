@@ -1,7 +1,9 @@
 """This module models component management for CSP subelement observation devices."""
-from typing import Callable, Optional
+from typing import Callable, Optional, Tuple
 
-from ska_tango_base.base import BaseComponentManager
+from ska_control_model import TaskStatus
+
+from ...base import BaseComponentManager
 
 
 class CspObsComponentManager(BaseComponentManager):
@@ -11,7 +13,7 @@ class CspObsComponentManager(BaseComponentManager):
         self,
         configuration: dict,
         task_callback: Optional[Callable] = None,
-    ) -> None:
+    ) -> Tuple[TaskStatus, str]:
         """
         Configure the component.
 
@@ -27,7 +29,7 @@ class CspObsComponentManager(BaseComponentManager):
     def deconfigure(
         self,
         task_callback: Optional[Callable] = None,
-    ) -> None:
+    ) -> Tuple[TaskStatus, str]:
         """
         Deconfigure this component.
 
@@ -43,7 +45,7 @@ class CspObsComponentManager(BaseComponentManager):
         self,
         args: str,
         task_callback: Optional[Callable] = None,
-    ) -> None:
+    ) -> Tuple[TaskStatus, str]:
         """
         Start scanning.
 
@@ -59,7 +61,7 @@ class CspObsComponentManager(BaseComponentManager):
     def end_scan(
         self,
         task_callback: Optional[Callable] = None,
-    ) -> None:
+    ) -> Tuple[TaskStatus, str]:
         """
         End scanning.
 
@@ -74,7 +76,7 @@ class CspObsComponentManager(BaseComponentManager):
     def abort(
         self,
         task_callback: Optional[Callable] = None,
-    ) -> None:
+    ) -> Tuple[TaskStatus, str]:
         """
         Tell the component to abort whatever it was doing.
 
@@ -89,7 +91,7 @@ class CspObsComponentManager(BaseComponentManager):
     def obsreset(
         self,
         task_callback: Optional[Callable] = None,
-    ) -> None:
+    ) -> Tuple[TaskStatus, str]:
         """
         Reset the configuration but do not release resources.
 
@@ -124,7 +126,7 @@ class CspObsComponentManager(BaseComponentManager):
         raise NotImplementedError("CspObsComponentManager is abstract.")
 
     @property
-    def scan_id(self) -> str:
+    def scan_id(self) -> int:
         """
         Return the scan id.
 

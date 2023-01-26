@@ -1,10 +1,10 @@
-# type: ignore
 """Test various Tango devices with long running commmands working together."""
 
 from typing import Dict, List
 
 import pytest
 import tango
+import tango.test_context
 from ska_tango_testing.mock.tango import MockTangoEventCallbackGroup
 
 from .multidevice import ExampleMultiDevice
@@ -105,7 +105,10 @@ def change_event_callbacks() -> MockTangoEventCallbackGroup:
 
 
 @pytest.mark.forked
-def test_multi_layer(multi_device_tango_context, change_event_callbacks) -> None:
+def test_multi_layer(
+    multi_device_tango_context: tango.test_context.MultiDeviceTestContext,
+    change_event_callbacks: MockTangoEventCallbackGroup,
+) -> None:
     """
     Test the long running commands between devices.
 

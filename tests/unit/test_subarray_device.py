@@ -1,4 +1,4 @@
-# pylint: disable=too-many-lines  # TODO: pylint is right, this is too long
+# pylint: disable=invalid-name, too-many-lines
 # -*- coding: utf-8 -*-
 #
 # This file is part of the SKA Tango Base project

@@ -1,6 +1,7 @@
-# type: ignore
 """Device to test multi layered commands."""
-from typing import Tuple
+from __future__ import annotations
+
+from typing import Any, Tuple
 
 from ska_control_model import ResultCode
 from tango import DebugIt
@@ -17,21 +18,23 @@ class ExampleMultiDevice(SKABaseDevice):
 
     client_devices = device_property(dtype="DevVarStringArray")
 
-    def create_component_manager(self) -> MultiDeviceComponentManager:
+    def create_component_manager(
+        self: ExampleMultiDevice,
+    ) -> MultiDeviceComponentManager:
         """
         Create a component manager.
 
         :return: the component manager
         """
         return MultiDeviceComponentManager(
+            self.logger,
             client_devices=self.client_devices,
             max_workers=2,
-            logger=self.logger,
             communication_state_callback=self._communication_state_changed,
             component_state_callback=self._component_state_changed,
         )
 
-    def init_command_objects(self):
+    def init_command_objects(self: ExampleMultiDevice) -> None:
         """Initialise the command handlers."""
         super().init_command_objects()
 
@@ -103,15 +106,22 @@ class ExampleMultiDevice(SKABaseDevice):
     class AddTwoCommand(FastCommand):
         """The command class for the Short command."""
 
-        def do(self, argin: int) -> Tuple[ResultCode, int]:
+        def do(
+            self: ExampleMultiDevice.AddTwoCommand,
+            *args: Any,
+            **kwargs: Any,
+        ) -> Tuple[ResultCode, int]:
             """
             Do command.
 
-            :param argin: the input integer
+            :param args: positional arguments to the method. There
+                should be only one: the input arg
+            :param kwargs: keyword arguments to the method.
 
             :return: a result code and the result of adding two to the
                 provided integer.
             """
+            argin = args[0]
             self.logger.info("In AddTwoCommand")
             result = argin + 2
             return ResultCode.OK, result
@@ -121,7 +131,7 @@ class ExampleMultiDevice(SKABaseDevice):
         dtype_out="DevVarStringArray",
     )
     @DebugIt()
-    def Short(self, argin: int) -> Tuple[str, str]:
+    def Short(self: ExampleMultiDevice, argin: int) -> Tuple[str, str]:
         """
         Short command.
 
@@ -141,7 +151,9 @@ class ExampleMultiDevice(SKABaseDevice):
         dtype_out="DevVarStringArray",
     )
     @DebugIt()
-    def NonAbortingLongRunning(self, argin: float) -> Tuple[str, str]:
+    def NonAbortingLongRunning(
+        self: ExampleMultiDevice, argin: float
+    ) -> Tuple[str, str]:
         """
         Non AbortingLongRunning command.
 
@@ -158,7 +170,7 @@ class ExampleMultiDevice(SKABaseDevice):
         dtype_out="DevVarStringArray",
     )
     @DebugIt()
-    def AbortingLongRunning(self, argin: float) -> Tuple[str, str]:
+    def AbortingLongRunning(self: ExampleMultiDevice, argin: float) -> Tuple[str, str]:
         """
         AbortingLongRunning.
 
@@ -172,7 +184,7 @@ class ExampleMultiDevice(SKABaseDevice):
 
     @command(dtype_out="DevVarStringArray")
     @DebugIt()
-    def LongRunningException(self) -> Tuple[str, str]:
+    def LongRunningException(self: ExampleMultiDevice) -> Tuple[str, str]:
         """
         Command that queues a task that raises an exception.
 
@@ -187,7 +199,7 @@ class ExampleMultiDevice(SKABaseDevice):
         dtype_out="DevVarStringArray",
     )
     @DebugIt()
-    def TestProgress(self, argin: float) -> Tuple[str, str]:
+    def TestProgress(self: ExampleMultiDevice, argin: float) -> Tuple[str, str]:
         """
         Command to test the progress indicator.
 
@@ -204,7 +216,7 @@ class ExampleMultiDevice(SKABaseDevice):
         dtype_out="DevVarStringArray",
     )
     @DebugIt()
-    def CallChildren(self, argin: float) -> Tuple[str, str]:
+    def CallChildren(self: ExampleMultiDevice, argin: float) -> Tuple[str, str]:
         """
         Command to call `CallChildren` on children, or block if not.
 

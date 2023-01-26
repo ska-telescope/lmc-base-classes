@@ -1,3 +1,4 @@
+# pylint: disable=invalid-name
 # -*- coding: utf-8 -*-
 #
 # This file is part of the SKA Tango Base project
@@ -30,13 +31,13 @@ from ska_control_model import (
 from tango import DebugIt
 from tango.server import attribute, command, device_property
 
-from ska_tango_base.base.base_device import CommandTracker
-from ska_tango_base.commands import SlowCommand, SubmittedSlowCommand
-from ska_tango_base.faults import StateModelError
-from ska_tango_base.obs.obs_device import SKAObsDevice
-from ska_tango_base.subarray.component_manager import SubarrayComponentManager
+from ..base import CommandTracker
+from ..commands import SlowCommand, SubmittedSlowCommand
+from ..faults import StateModelError
+from ..obs import SKAObsDevice
+from .component_manager import SubarrayComponentManager
 
-DevVarLongStringArrayType = Tuple[List[ResultCode], List[Optional[str]]]
+DevVarLongStringArrayType = Tuple[List[ResultCode], List[str]]
 
 __all__ = ["SKASubarray", "main"]
 
@@ -47,30 +48,15 @@ __all__ = ["SKASubarray", "main"]
 # the SubarrayComponentManager is itself abstract.
 # pylint: disable-next=abstract-method, too-many-public-methods
 class SKASubarray(SKAObsDevice):
+    # pylint: disable=attribute-defined-outside-init  # Tango devices have init_device
     """Implements the SKA SubArray device."""
-
-    def __init__(self, *args: Any, **kwargs: Any) -> None:
-        """
-        Initialise this device object.
-
-        :param args: positional args to the init
-        :param kwargs: keyword args to the init
-        """
-        # We aren't supposed to define initialisation methods for Tango
-        # devices; we are only supposed to define an `init_device` method. But
-        # we insist on doing so here, just so that we can define some
-        # attributes, thereby stopping the linters from complaining about
-        # "attribute-defined-outside-init" etc. We still need to make sure that
-        # `init_device` initialises any values defined in here.
-        super().__init__(*args, **kwargs)
-
-        self.obs_state_model: ObsStateModel
 
     # pylint: disable-next=too-few-public-methods
     class InitCommand(SKAObsDevice.InitCommand):
+        # pylint: disable=protected-access  # command classes are friend classes
         """A class for the SKASubarray's init_device() "command"."""
 
-        def do(  # type: ignore[override]
+        def do(
             self: SKASubarray.InitCommand,
             *args: Any,
             **kwargs: Any,
@@ -89,7 +75,6 @@ class SKASubarray(SKAObsDevice):
             """
             super().do()
 
-            # pylint: disable-next=protected-access
             self._device._activation_time = 0.0
 
             message = "SKASubarray Init command completed OK"
@@ -120,7 +105,7 @@ class SKASubarray(SKAObsDevice):
             self._component_manager = component_manager
             super().__init__(callback=callback, logger=logger)
 
-        def do(  # type: ignore[override]
+        def do(
             self: SKASubarray.AbortCommand,
             *args: Any,
             **kwargs: Any,
@@ -201,7 +186,7 @@ class SKASubarray(SKAObsDevice):
         )
 
     # pylint: disable-next=too-many-arguments
-    def _component_state_changed(  # type: ignore[override]
+    def _component_state_changed(
         self: SKASubarray,
         fault: Optional[bool] = None,
         power: Optional[PowerState] = None,

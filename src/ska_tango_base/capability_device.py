@@ -1,3 +1,4 @@
+# pylint: disable=invalid-name
 # -*- coding: utf-8 -*-
 #
 # This file is part of the SKA Tango Base project
@@ -18,10 +19,10 @@ from ska_control_model import ResultCode
 from tango import DebugIt
 from tango.server import attribute, command, device_property
 
-from ska_tango_base.commands import DeviceInitCommand, FastCommand
-from ska_tango_base.obs import SKAObsDevice
+from .commands import DeviceInitCommand, FastCommand
+from .obs import SKAObsDevice
 
-DevVarLongStringArrayType = Tuple[List[ResultCode], List[Optional[str]]]
+DevVarLongStringArrayType = Tuple[List[ResultCode], List[str]]
 
 __all__ = ["SKACapability", "main"]
 
@@ -46,9 +47,10 @@ class SKACapability(SKAObsDevice):  # pylint: disable=abstract-method
 
     # pylint: disable-next=too-few-public-methods
     class InitCommand(DeviceInitCommand):
+        # pylint: disable=protected-access  # command classes are friend classes
         """A class for the CapabilityDevice's init_device() "command"."""
 
-        def do(  # type: ignore[override]
+        def do(
             self: SKACapability.InitCommand,
             *args: Any,
             **kwargs: Any,
@@ -65,13 +67,10 @@ class SKACapability(SKAObsDevice):  # pylint: disable=abstract-method
                 message indicating status. The message is for
                 information purpose only.
             """
-            # pylint: disable-next=protected-access
             self._device._activation_time = 0.0
 
-            # pylint: disable-next=protected-access
             self._device._configured_instances = 0
 
-            # pylint: disable-next=protected-access
             self._device._used_components = [""]
 
             message = "SKACapability Init command completed OK"
@@ -149,6 +148,7 @@ class SKACapability(SKAObsDevice):  # pylint: disable=abstract-method
 
     # pylint: disable-next=too-few-public-methods
     class ConfigureInstancesCommand(FastCommand):
+        # pylint: disable=protected-access  # command classes are friend classes
         """A class for the SKALoggerDevice's SetLoggingLevel() command."""
 
         def __init__(
@@ -165,7 +165,7 @@ class SKACapability(SKAObsDevice):  # pylint: disable=abstract-method
             self._device = device
             super().__init__(logger=logger)
 
-        def do(  # type: ignore[override]
+        def do(
             self: SKACapability.ConfigureInstancesCommand,
             *args: Any,
             **kwargs: Any,
@@ -182,7 +182,6 @@ class SKACapability(SKAObsDevice):  # pylint: disable=abstract-method
                 message indicating status. The message is for
                 information purpose only.
             """
-            # pylint: disable-next=protected-access
             self._device._configured_instances = int(args[0])
 
             message = "ConfigureInstances command completed OK"

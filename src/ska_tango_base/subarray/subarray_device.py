@@ -18,7 +18,7 @@ from __future__ import annotations
 import functools
 import json
 import logging
-from typing import Any, Callable, List, Optional, Tuple, cast
+from typing import Any, Callable, Generic, List, Optional, Tuple, TypeVar
 
 # SKA specific imports
 from ska_control_model import (
@@ -42,12 +42,11 @@ DevVarLongStringArrayType = Tuple[List[ResultCode], List[str]]
 __all__ = ["SKASubarray", "main"]
 
 
-# TODO: This is an abstract class because it does not define
-# `create_component_manager` and therefore inherits the abstract method from the
-# base device. There's no point implementing `create_component_manager` because
-# the SubarrayComponentManager is itself abstract.
-# pylint: disable-next=abstract-method, too-many-public-methods
-class SKASubarray(SKAObsDevice):
+ComponentManagerT = TypeVar("ComponentManagerT", bound=SubarrayComponentManager)
+
+
+# pylint: disable-next=too-many-public-methods
+class SKASubarray(SKAObsDevice, Generic[ComponentManagerT]):
     # pylint: disable=attribute-defined-outside-init  # Tango devices have init_device
     """Implements the SKA SubArray device."""
 
@@ -132,6 +131,14 @@ class SKASubarray(SKAObsDevice):
 
             return ResultCode.STARTED, command_id
 
+    def create_component_manager(self: SKASubarray) -> ComponentManagerT:
+        """
+        Create and return a component manager for this device.
+
+        :raises NotImplementedError: because it is not implemented.
+        """
+        raise NotImplementedError("SKASubarray is abstract.")
+
     def _init_state_model(self: SKASubarray) -> None:
         """Set up the state model for the device."""
         super()._init_state_model()
@@ -179,7 +186,7 @@ class SKASubarray(SKAObsDevice):
             "Abort",
             self.AbortCommand(
                 self._command_tracker,
-                cast(SubarrayComponentManager, self.component_manager),
+                self.component_manager,
                 callback=functools.partial(_callback, "abort"),
                 logger=self.logger,
             ),
@@ -252,7 +259,7 @@ class SKASubarray(SKAObsDevice):
 
         :return: Resources assigned to the device.
         """
-        return cast(SubarrayComponentManager, self.component_manager).assigned_resources
+        return self.component_manager.assigned_resources
 
     @attribute(
         dtype=("str",),
@@ -268,9 +275,7 @@ class SKASubarray(SKAObsDevice):
         :return: A list of capability types with no. of instances used
             in the Subarray
         """
-        return cast(
-            SubarrayComponentManager, self.component_manager
-        ).configured_capabilities
+        return self.component_manager.configured_capabilities
 
     # --------
     # Commands

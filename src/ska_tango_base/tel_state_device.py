@@ -11,20 +11,35 @@ A generic base device for Telescope State for SKA.
 """
 from __future__ import annotations
 
+from typing import Generic, TypeVar
+
 from tango.server import device_property
 
-from .base import SKABaseDevice
+from .base import BaseComponentManager, SKABaseDevice
 
-__all__ = ["SKATelState", "main"]
+__all__ = ["TelStateComponentManager", "SKATelState", "main"]
 
 
-# TODO: This rather pointless class has no commands or attributes, so we
-# haven't provided it with a component manager either; hence its
-# `create_component_manager` is still the abstract one inherited from the base
-# device.
 # pylint: disable-next=abstract-method
-class SKATelState(SKABaseDevice):
+class TelStateComponentManager(BaseComponentManager):
+    """A stub for a telescope state component manager."""
+
+    # TODO
+
+
+ComponentManagerT = TypeVar("ComponentManagerT", bound=TelStateComponentManager)
+
+
+class SKATelState(SKABaseDevice, Generic[ComponentManagerT]):
     """A generic base device for Telescope State for SKA."""
+
+    def create_component_manager(self: SKATelState) -> ComponentManagerT:
+        """
+        Create and return a component manager for this device.
+
+        :raises NotImplementedError: because it is not implemented.
+        """
+        raise NotImplementedError("SKATelState is incomplete.")
 
     # -----------------
     # Device Properties

@@ -15,7 +15,7 @@ import functools
 import json
 import logging
 from json.decoder import JSONDecodeError
-from typing import Any, Callable, List, Optional, Tuple, cast
+from typing import Any, Callable, Generic, List, Optional, Tuple, TypeVar, cast
 
 from ska_control_model import ObsState, PowerState, ResultCode, TaskStatus
 from tango import DebugIt
@@ -25,6 +25,7 @@ from ...base import CommandTracker
 from ...commands import SlowCommand, SubmittedSlowCommand
 from ...faults import StateModelError
 from ...obs import SKAObsDevice
+from .component_manager import CspObsComponentManager
 from .obs_state_model import CspSubElementObsStateModel
 
 __all__ = ["CspSubElementObsDevice", "main"]
@@ -32,11 +33,11 @@ __all__ = ["CspSubElementObsDevice", "main"]
 DevVarLongStringArrayType = Tuple[List[ResultCode], List[str]]
 
 
-# TODO: This under-developed device class does not yet have a component
-# manager. Hence its `create_component_manager` method is still the abstract
-# method inherited from the base device.
-# pylint: disable-next=abstract-method
-class CspSubElementObsDevice(SKAObsDevice):  # pylint: disable=too-many-public-methods
+ComponentManagerT = TypeVar("ComponentManagerT", bound=CspObsComponentManager)
+
+
+# pylint: disable-next=too-many-public-methods
+class CspSubElementObsDevice(SKAObsDevice, Generic[ComponentManagerT]):
     # pylint: disable=attribute-defined-outside-init  # Tango devices have init_device
     """
     General observing device for SKA CSP Subelement.
@@ -242,6 +243,14 @@ class CspSubElementObsDevice(SKAObsDevice):  # pylint: disable=too-many-public-m
             self._completed()
             return (ResultCode.OK, message)
 
+    def create_component_manager(self: CspSubElementObsDevice) -> ComponentManagerT:
+        """
+        Create and return a component manager for this device.
+
+        :raises NotImplementedError: because it is not implemented.
+        """
+        raise NotImplementedError("CspSubElementObsDevice is abstract.")
+
     # ------------------
     # Attributes methods
     # ------------------
@@ -251,9 +260,7 @@ class CspSubElementObsDevice(SKAObsDevice):  # pylint: disable=too-many-public-m
 
         :return: the scanID attribute.
         """
-        # TODO: self.component_manager isn't even defined,
-        # so we can't cast this to anything.
-        return self.component_manager.scan_id  # type: ignore[attr-defined]
+        return self.component_manager.scan_id
 
     def read_configurationID(self: CspSubElementObsDevice) -> str:
         """
@@ -261,9 +268,7 @@ class CspSubElementObsDevice(SKAObsDevice):  # pylint: disable=too-many-public-m
 
         :return: the configurationID attribute.
         """
-        # TODO: self.component_manager isn't even defined,
-        # so we can't cast this to anything.
-        return self.component_manager.config_id  # type: ignore[attr-defined]
+        return self.component_manager.config_id
 
     def read_deviceID(self: CspSubElementObsDevice) -> int:
         """
@@ -320,10 +325,10 @@ class CspSubElementObsDevice(SKAObsDevice):  # pylint: disable=too-many-public-m
     class ConfigureScanCommand(SubmittedSlowCommand):
         """A class for the CspSubElementObsDevices's ConfigureScan command."""
 
-        def __init__(  # type: ignore[no-untyped-def]
+        def __init__(
             self: CspSubElementObsDevice.ConfigureScanCommand,
             command_tracker: CommandTracker,
-            component_manager,  # can't type-hint this because class does not exist yet!
+            component_manager: ComponentManagerT,
             callback: Callable,
             logger: Optional[logging.Logger] = None,
         ) -> None:
@@ -375,10 +380,10 @@ class CspSubElementObsDevice(SKAObsDevice):  # pylint: disable=too-many-public-m
     class ScanCommand(SubmittedSlowCommand):
         """A class for the CspSubElementObsDevices's Scan command."""
 
-        def __init__(  # type: ignore[no-untyped-def]
+        def __init__(
             self: CspSubElementObsDevice.ScanCommand,
             command_tracker: CommandTracker,
-            component_manager,  # can't type-hint this because class does not exist yet!
+            component_manager: ComponentManagerT,
             logger: Optional[logging.Logger] = None,
         ) -> None:
             """
@@ -416,10 +421,10 @@ class CspSubElementObsDevice(SKAObsDevice):  # pylint: disable=too-many-public-m
     class AbortCommand(SlowCommand):  # pylint: disable=too-few-public-methods
         """A class for the CspSubElementObsDevices's Abort command."""
 
-        def __init__(  # type: ignore[no-untyped-def]
+        def __init__(
             self: CspSubElementObsDevice.AbortCommand,
             command_tracker: CommandTracker,
-            component_manager,  # can't type-hint this because class does not exist yet!
+            component_manager: ComponentManagerT,
             callback: Callable,
             logger: Optional[logging.Logger] = None,
         ) -> None:

@@ -14,19 +14,28 @@ from SKAObsDevice instead of just SKABaseDevice.
 """
 from __future__ import annotations
 
-from typing import Any
+from typing import Any, Generic, TypeVar
 
 from ska_control_model import ObsMode, ObsState, ResultCode
 from tango.server import attribute
 
-from ..base import SKABaseDevice
+from ..base import BaseComponentManager, SKABaseDevice
 from ..commands import DeviceInitCommand
 
-__all__ = ["SKAObsDevice", "main"]
+__all__ = ["ObsDeviceComponentManager", "SKAObsDevice", "main"]
 
 
-# pylint: disable-next=abstract-method  # Yes, this is an abstract class.
-class SKAObsDevice(SKABaseDevice):
+# pylint: disable-next=abstract-method
+class ObsDeviceComponentManager(BaseComponentManager):
+    """A stub for an observing device component manager."""
+
+    # TODO
+
+
+ComponentManagerT = TypeVar("ComponentManagerT", bound=ObsDeviceComponentManager)
+
+
+class SKAObsDevice(SKABaseDevice, Generic[ComponentManagerT]):
     # pylint: disable=attribute-defined-outside-init  # Tango devices have init_device
     """A generic base device for Observations for SKA."""
 
@@ -70,6 +79,14 @@ class SKAObsDevice(SKABaseDevice):
             self.logger.info(message)
             self._completed()
             return (ResultCode.OK, message)
+
+    def create_component_manager(self: SKAObsDevice) -> ComponentManagerT:
+        """
+        Create and return a component manager for this device.
+
+        :raises NotImplementedError: because it is not implemented.
+        """
+        raise NotImplementedError("SKAObsDevice is abstract.")
 
     # -----------------
     # Device Properties

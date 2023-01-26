@@ -23,7 +23,7 @@ import threading
 import traceback
 from functools import partial
 from types import FunctionType, MethodType
-from typing import Any, Callable, List, Optional, Tuple
+from typing import Any, Callable, Generic, List, Optional, Tuple, TypeVar
 
 import debugpy
 import ska_ser_logging
@@ -259,8 +259,11 @@ class CommandTracker:  # pylint: disable=too-many-instance-attributes
         return TaskStatus.NOT_FOUND
 
 
+ComponentManagerT = TypeVar("ComponentManagerT", bound=BaseComponentManager)
+
+
 # pylint: disable-next=too-many-instance-attributes, too-many-public-methods
-class SKABaseDevice(Device):
+class SKABaseDevice(Device, Generic[ComponentManagerT]):
     # pylint: disable=attribute-defined-outside-init  # Tango devices have init_device
     """A generic base device for SKA."""
 
@@ -704,7 +707,7 @@ class SKABaseDevice(Device):
         valid_targets = LoggingUtils.sanitise_logging_targets(targets, device_name)
         LoggingUtils.update_logging_handlers(valid_targets, self.logger)
 
-    def create_component_manager(self: SKABaseDevice) -> BaseComponentManager:
+    def create_component_manager(self: SKABaseDevice) -> ComponentManagerT:
         """
         Create and return a component manager for this device.
 
@@ -1215,7 +1218,7 @@ class SKABaseDevice(Device):
 
         def __init__(
             self: SKABaseDevice.AbortCommandsCommand,
-            component_manager: BaseComponentManager,
+            component_manager: ComponentManagerT,
             logger: Optional[logging.Logger] = None,
         ) -> None:
             """

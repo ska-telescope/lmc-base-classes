@@ -18,7 +18,7 @@ import json
 import logging
 from collections import defaultdict
 from json.decoder import JSONDecodeError
-from typing import Any, Callable, List, Optional, Tuple, cast
+from typing import Any, Callable, Generic, List, Optional, Tuple, TypeVar, cast
 
 from ska_control_model import ObsState, ResultCode
 from tango import AttrWriteType, DebugIt
@@ -27,19 +27,25 @@ from tango.server import attribute, command, run
 from ...base import CommandTracker
 from ...commands import SubmittedSlowCommand
 from ...faults import StateModelError
-from ...subarray.subarray_device import SKASubarray
+from ...subarray import SKASubarray, SubarrayComponentManager
 
-__all__ = ["CspSubElementSubarray", "main"]
+__all__ = ["CspSubarrayComponentManager", "CspSubElementSubarray", "main"]
 
 DevVarLongStringArrayType = Tuple[List[ResultCode], List[str]]
 
 
-# TODO: This is an abstract class because it does not define
-# `create_component_manager` and therefore inherits the abstract method from the
-# base device. There's no point implementing `create_component_manager` because
-# the SubarrayComponentManager is itself abstract.
-# pylint: disable-next=abstract-method, too-many-public-methods
-class CspSubElementSubarray(SKASubarray):
+# pylint: disable-next=abstract-method
+class CspSubarrayComponentManager(SubarrayComponentManager):
+    """A stub for a CSP subarray component manager."""
+
+    # TODO
+
+
+ComponentManagerT = TypeVar("ComponentManagerT", bound=CspSubarrayComponentManager)
+
+
+# pylint: disable-next=too-many-public-methods
+class CspSubElementSubarray(SKASubarray, Generic[ComponentManagerT]):
     # pylint: disable=attribute-defined-outside-init  # Tango devices have init_device
     """Subarray device for SKA CSP SubElement."""
 
@@ -322,6 +328,14 @@ class CspSubElementSubarray(SKASubarray):
             self._completed()
             return (ResultCode.OK, message)
 
+    def create_component_manager(self: CspSubElementSubarray) -> ComponentManagerT:
+        """
+        Create and return a component manager for this device.
+
+        :raises NotImplementedError: because it is not implemented.
+        """
+        raise NotImplementedError("CspSubElementSubarray is abstract.")
+
     # ------------------
     # Attributes methods
     # ------------------
@@ -331,8 +345,7 @@ class CspSubElementSubarray(SKASubarray):
 
         :return: the scanID attribute.
         """
-        # TODO: Cannot cast this because the component manager class doesn't exist yet!
-        return self.component_manager.scan_id  # type: ignore[attr-defined]
+        return self.component_manager.scan_id
 
     def read_configurationID(self: CspSubElementSubarray) -> str:
         """
@@ -340,8 +353,7 @@ class CspSubElementSubarray(SKASubarray):
 
         :return: the configurationID attribute.
         """
-        # TODO: Cannot cast this because the component manager class doesn't exist yet!
-        return self.component_manager.config_id  # type: ignore[attr-defined]
+        return self.component_manager.config_id
 
     def read_sdpDestinationAddresses(self: CspSubElementSubarray) -> str:
         """
@@ -499,10 +511,10 @@ class CspSubElementSubarray(SKASubarray):
     class ConfigureScanCommand(SubmittedSlowCommand):
         """A class for the CspSubElementObsDevices's ConfigureScan command."""
 
-        def __init__(  # type: ignore[no-untyped-def]
+        def __init__(
             self: CspSubElementSubarray.ConfigureScanCommand,
             command_tracker: CommandTracker,
-            component_manager,  # Can't type-hint this because the class doesn't exist!
+            component_manager: ComponentManagerT,
             callback: Callable,
             logger: Optional[logging.Logger] = None,
         ):

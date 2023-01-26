@@ -15,21 +15,28 @@ separate from the "built-in" Tango attribute alarms.
 """
 from __future__ import annotations
 
-from typing import Any
+from typing import Any, Generic, TypeVar
 
 from tango import DebugIt
 from tango.server import attribute, command, device_property
 
-from .base import SKABaseDevice
+from .base import BaseComponentManager, SKABaseDevice
 from .commands import FastCommand
 
-__all__ = ["SKAAlarmHandler", "main"]
+__all__ = ["AlarmHandlerComponentManager", "SKAAlarmHandler", "main"]
 
 
-# TODO: This under-developed device class does not yet have a component
-# manager; hence it still inherits the abstract `create_component_manager`
-# method from the base device.
-class SKAAlarmHandler(SKABaseDevice):  # pylint: disable=abstract-method
+# pylint: disable-next=abstract-method
+class AlarmHandlerComponentManager(BaseComponentManager):
+    """A stub for an alarm handler component manager."""
+
+    # TODO
+
+
+ComponentManagerT = TypeVar("ComponentManagerT", bound=AlarmHandlerComponentManager)
+
+
+class SKAAlarmHandler(SKABaseDevice, Generic[ComponentManagerT]):
     """A generic base device for Alarms for SKA."""
 
     # -----------------
@@ -71,6 +78,14 @@ class SKAAlarmHandler(SKABaseDevice):  # pylint: disable=abstract-method
             "GetAlertStats",
             self.GetAlertStatsCommand(self.logger),
         )
+
+    def create_component_manager(self: SKAAlarmHandler) -> ComponentManagerT:
+        """
+        Create and return a component manager for this device.
+
+        :raises NotImplementedError: because it is not implemented.
+        """
+        raise NotImplementedError("SKAAlarmHandler is incomplete.")
 
     # ----------
     # Attributes

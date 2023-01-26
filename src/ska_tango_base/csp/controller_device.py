@@ -17,7 +17,7 @@ from __future__ import annotations
 
 import logging
 from collections import defaultdict
-from typing import Any, List, Optional, Tuple
+from typing import Any, Generic, List, Optional, Tuple, TypeVar
 
 import tango
 from ska_control_model import AdminMode, ResultCode
@@ -25,18 +25,25 @@ from tango import AttrWriteType, DebugIt
 from tango.server import attribute, command, device_property, run
 
 from ..commands import FastCommand
-from ..controller_device import SKAController
+from ..controller_device import ControllerComponentManager, SKAController
 
-__all__ = ["CspSubElementController", "main"]
+__all__ = ["CspControllerComponentManager", "CspSubElementController", "main"]
 
 DevVarLongStringArrayType = Tuple[List[ResultCode], List[str]]
 
 
-# TODO: This under-developed device class does not yet have a component
-# manager. Hence its `create_component_manager` method is still the abstract
-# method inherited from the base device.
 # pylint: disable-next=abstract-method
-class CspSubElementController(SKAController):  # pylint: disable=too-many-public-methods
+class CspControllerComponentManager(ControllerComponentManager):
+    """A stub for a CSP controller component manager."""
+
+    # TODO
+
+
+ComponentManagerT = TypeVar("ComponentManagerT", bound=ControllerComponentManager)
+
+
+# pylint: disable-next=too-many-public-methods
+class CspSubElementController(SKAController, Generic[ComponentManagerT]):
     # pylint: disable=attribute-defined-outside-init  # Tango devices have init_device
     """
     Controller device for SKA CSP Subelement.
@@ -52,6 +59,14 @@ class CspSubElementController(SKAController):  # pylint: disable=too-many-public
             - Delay in sec between  power-up stages in Standby-> Off transition.
             - Type:'DevFloat'
     """
+
+    def create_component_manager(self: CspSubElementController) -> ComponentManagerT:
+        """
+        Create and return a component manager for this device.
+
+        :raises NotImplementedError: because it is not implemented.
+        """
+        raise NotImplementedError("CspSubElementController is incomplete.")
 
     # -----------------
     # Device Properties

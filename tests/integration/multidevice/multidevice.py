@@ -13,7 +13,7 @@ from ska_tango_base.commands import FastCommand, SubmittedSlowCommand
 from .multidevice_component_manager import MultiDeviceComponentManager
 
 
-class ExampleMultiDevice(SKABaseDevice):
+class ExampleMultiDevice(SKABaseDevice[MultiDeviceComponentManager]):
     """Implement commands to test queued work."""
 
     client_devices = device_property(dtype="DevVarStringArray")

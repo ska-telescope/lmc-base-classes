@@ -3,7 +3,7 @@ from __future__ import annotations
 
 import logging
 from threading import Event
-from typing import Any, Callable, Optional, Tuple, cast
+from typing import Any, Callable, Optional, Tuple
 
 from ska_control_model import CommunicationStatus, PowerState, ResultCode, TaskStatus
 
@@ -266,7 +266,7 @@ class FakeCspObsComponent(FakeBaseComponent):
 
 
 class ReferenceCspObsComponentManager(
-    ReferenceBaseComponentManager,
+    ReferenceBaseComponentManager[FakeCspObsComponent],
     CspObsComponentManager,
 ):
     """
@@ -324,7 +324,7 @@ class ReferenceCspObsComponentManager(
         """
         self.logger.info("Configuring component")
         return self.submit_task(
-            cast(FakeCspObsComponent, self._component).configure_scan,
+            self._component.configure_scan,
             (configuration,),
             task_callback=task_callback,
         )
@@ -344,7 +344,7 @@ class ReferenceCspObsComponentManager(
         """
         self.logger.info("Deconfiguring component")
         return self.submit_task(
-            cast(FakeCspObsComponent, self._component).deconfigure,
+            self._component.deconfigure,
             task_callback=task_callback,
         )
 
@@ -365,7 +365,7 @@ class ReferenceCspObsComponentManager(
         """
         self.logger.info("Starting scan in component")
         return self.submit_task(
-            cast(FakeCspObsComponent, self._component).scan,
+            self._component.scan,
             (args,),
             task_callback=task_callback,
         )
@@ -384,7 +384,7 @@ class ReferenceCspObsComponentManager(
         """
         self.logger.info("Stopping scan in component")
         return self.submit_task(
-            cast(FakeCspObsComponent, self._component).end_scan,
+            self._component.end_scan,
             task_callback=task_callback,
         )
 
@@ -417,7 +417,7 @@ class ReferenceCspObsComponentManager(
         """
         self.logger.info("Resetting component")
         return self.submit_task(
-            cast(FakeCspObsComponent, self._component).obsreset,
+            self._component.obsreset,
             task_callback=task_callback,
         )
 
@@ -429,12 +429,12 @@ class ReferenceCspObsComponentManager(
 
         :return: the configuration id.
         """
-        return cast(FakeCspObsComponent, self._component).config_id
+        return self._component.config_id
 
     # @config_id.setter  # type: ignore[misc]
     # @check_communicating
     # def config_id(self: ReferenceCspObsComponentManager, config_id: str) -> None:
-    #     cast(FakeCspObsComponent, self._component).config_id = config_id
+    #     self._component.config_id = config_id
 
     @property  # type: ignore[misc]  # mypy doesn't support decorated properties
     @check_on
@@ -444,4 +444,4 @@ class ReferenceCspObsComponentManager(
 
         :return: the scan id.
         """
-        return cast(FakeCspObsComponent, self._component).scan_id
+        return self._component.scan_id

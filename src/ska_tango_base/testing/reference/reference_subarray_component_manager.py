@@ -486,7 +486,7 @@ class FakeSubarrayComponent(FakeBaseComponent):
 
 
 class ReferenceSubarrayComponentManager(
-    ReferenceBaseComponentManager, SubarrayComponentManager
+    ReferenceBaseComponentManager[FakeSubarrayComponent], SubarrayComponentManager
 ):
     """
     A component manager for SKA subarray Tango devices.
@@ -505,7 +505,7 @@ class ReferenceSubarrayComponentManager(
         logger: logging.Logger,
         communication_state_callback: Callable[[CommunicationStatus], None],
         component_state_callback: Callable[[], None],
-        _component: Optional[FakeBaseComponent] = None,
+        _component: Optional[FakeSubarrayComponent] = None,
     ):
         """
         Initialise a new ReferenceSubarrayComponentManager instance.
@@ -530,7 +530,6 @@ class ReferenceSubarrayComponentManager(
             scanning=False,
             obsfault=False,
         )
-        self._component: FakeSubarrayComponent  # for the type checker
 
     @check_communicating
     def assign(

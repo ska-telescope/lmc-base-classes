@@ -16,7 +16,7 @@ from __future__ import annotations
 import logging
 import threading
 from time import sleep
-from typing import Any, Callable, Optional, Tuple
+from typing import Any, Callable, Generic, Optional, Tuple, TypeVar
 
 from ska_control_model import CommunicationStatus, PowerState, ResultCode, TaskStatus
 
@@ -288,7 +288,10 @@ class FakeBaseComponent:
         return self._state["power"]
 
 
-class ReferenceBaseComponentManager(TaskExecutorComponentManager):
+ComponentT = TypeVar("ComponentT", bound=FakeBaseComponent)
+
+
+class ReferenceBaseComponentManager(TaskExecutorComponentManager, Generic[ComponentT]):
     """
     A component manager for Tango devices.
 
@@ -318,7 +321,7 @@ class ReferenceBaseComponentManager(TaskExecutorComponentManager):
         communication_state_callback: Callable[[CommunicationStatus], None],
         component_state_callback: Callable[[], None],
         *args: Any,
-        _component: Optional[FakeBaseComponent] = None,
+        _component: Optional[ComponentT] = None,
         **kwargs: Any,
     ) -> None:
         """
@@ -339,7 +342,7 @@ class ReferenceBaseComponentManager(TaskExecutorComponentManager):
         """
         self._fail_communicate = False
 
-        self._component = _component or FakeBaseComponent()
+        self._component: ComponentT = _component or FakeBaseComponent()
 
         super().__init__(
             logger,

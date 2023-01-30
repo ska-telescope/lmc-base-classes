@@ -1,5 +1,5 @@
 """This module models component management for CSP subarrays."""
-from ska_tango_base.subarray.component_manager import SubarrayComponentManager
+from ...subarray import SubarrayComponentManager
 
 
 class CspSubarrayComponentManager(SubarrayComponentManager):
@@ -26,7 +26,7 @@ class CspSubarrayComponentManager(SubarrayComponentManager):
         raise NotImplementedError("CspSubarrayComponentManager is abstract.")
 
     @property
-    def scan_id(self) -> str:
+    def scan_id(self) -> int:
         """
         Return the scan id.
 

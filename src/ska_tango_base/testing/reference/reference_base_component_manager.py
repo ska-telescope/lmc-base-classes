@@ -16,12 +16,12 @@ from __future__ import annotations
 import logging
 import threading
 from time import sleep
-from typing import Any, Callable, Optional, Tuple
+from typing import Any, Callable, Generic, Optional, Tuple, TypeVar
 
 from ska_control_model import CommunicationStatus, PowerState, ResultCode, TaskStatus
 
-from ska_tango_base.base import check_communicating
-from ska_tango_base.executor import TaskExecutorComponentManager
+from ...base import check_communicating
+from ...executor import TaskExecutorComponentManager
 
 
 class FakeBaseComponent:
@@ -105,7 +105,7 @@ class FakeBaseComponent:
 
     def _simulate_task_execution(
         self: FakeBaseComponent,
-        task_callback: Callable,
+        task_callback: Optional[Callable],
         task_abort_event: threading.Event,
         result: Any,
         **state_kwargs: Any,
@@ -120,11 +120,14 @@ class FakeBaseComponent:
         # on, then we'll see the component come on. Finally, the asynchronous processing
         # will report the task as COMPLETE, and publish a result.
         def simulate_async_task_execution() -> None:
-            if task_callback is not None:
-                task_callback(status=TaskStatus.IN_PROGRESS)
+            def _call_task_callback(*args: Any, **kwargs: Any) -> None:
+                if task_callback is not None:
+                    task_callback(*args, **kwargs)
 
-            if task_abort_event is not None and task_abort_event.is_set():
-                task_callback(status=TaskStatus.ABORTED)
+            _call_task_callback(status=TaskStatus.IN_PROGRESS)
+
+            if task_abort_event.is_set():
+                _call_task_callback(status=TaskStatus.ABORTED)
                 return
 
             sleep_time = self._time_to_complete / (
@@ -133,23 +136,21 @@ class FakeBaseComponent:
             for progress_point in self.PROGRESS_REPORTING_POINTS:
                 sleep(sleep_time)
 
-                if task_abort_event is not None and task_abort_event.is_set():
-                    task_callback(status=TaskStatus.ABORTED)
+                if task_abort_event.is_set():
+                    _call_task_callback(status=TaskStatus.ABORTED)
                     return
 
-                if task_callback is not None:
-                    task_callback(progress=progress_point)
+                _call_task_callback(progress=progress_point)
 
             self._update_state(**state_kwargs)
 
             sleep(sleep_time)
 
-            if task_abort_event is not None and task_abort_event.is_set():
-                task_callback(status=TaskStatus.ABORTED)
+            if task_abort_event.is_set():
+                _call_task_callback(status=TaskStatus.ABORTED)
                 return
 
-            if task_callback is not None:
-                task_callback(status=TaskStatus.COMPLETED, result=result)
+            _call_task_callback(status=TaskStatus.COMPLETED, result=result)
 
         threading.Thread(target=simulate_async_task_execution).start()
 
@@ -201,7 +202,7 @@ class FakeBaseComponent:
             "Standby", PowerState.STANDBY, task_callback, task_abort_event
         )
 
-    def on(
+    def on(  # pylint: disable=invalid-name
         self: FakeBaseComponent,
         task_callback: Callable,
         task_abort_event: threading.Event,
@@ -287,7 +288,10 @@ class FakeBaseComponent:
         return self._state["power"]
 
 
-class ReferenceBaseComponentManager(TaskExecutorComponentManager):
+ComponentT = TypeVar("ComponentT", bound=FakeBaseComponent)
+
+
+class ReferenceBaseComponentManager(TaskExecutorComponentManager, Generic[ComponentT]):
     """
     A component manager for Tango devices.
 
@@ -317,7 +321,7 @@ class ReferenceBaseComponentManager(TaskExecutorComponentManager):
         communication_state_callback: Callable[[CommunicationStatus], None],
         component_state_callback: Callable[[], None],
         *args: Any,
-        _component: Optional[FakeBaseComponent] = None,
+        _component: Optional[ComponentT] = None,
         **kwargs: Any,
     ) -> None:
         """
@@ -338,7 +342,7 @@ class ReferenceBaseComponentManager(TaskExecutorComponentManager):
         """
         self._fail_communicate = False
 
-        self._component = _component or FakeBaseComponent()
+        self._component: ComponentT = _component or FakeBaseComponent()
 
         super().__init__(
             logger,

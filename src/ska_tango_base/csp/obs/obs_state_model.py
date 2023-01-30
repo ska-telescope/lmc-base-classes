@@ -15,7 +15,7 @@ from typing import Any, Callable, Optional
 
 from transitions.extensions import LockedMachine as Machine
 
-from ska_tango_base.obs import ObsStateModel
+from ...obs import ObsStateModel
 
 __all__ = ["CspSubElementObsStateMachine", "CspSubElementObsStateModel"]
 

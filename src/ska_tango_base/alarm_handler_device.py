@@ -1,3 +1,4 @@
+# pylint: disable=invalid-name
 # -*- coding: utf-8 -*-
 #
 # This file is part of the SKA Tango Base project
@@ -14,21 +15,28 @@ separate from the "built-in" Tango attribute alarms.
 """
 from __future__ import annotations
 
-from typing import Any
+from typing import Any, Generic, TypeVar
 
 from tango import DebugIt
 from tango.server import attribute, command, device_property
 
-from ska_tango_base.base import SKABaseDevice
-from ska_tango_base.commands import FastCommand
+from .base import BaseComponentManager, SKABaseDevice
+from .commands import FastCommand
 
-__all__ = ["SKAAlarmHandler", "main"]
+__all__ = ["AlarmHandlerComponentManager", "SKAAlarmHandler", "main"]
 
 
-# TODO: This under-developed device class does not yet have a component
-# manager; hence it still inherits the abstract `create_component_manager`
-# method from the base device.
-class SKAAlarmHandler(SKABaseDevice):  # pylint: disable=abstract-method
+# pylint: disable-next=abstract-method
+class AlarmHandlerComponentManager(BaseComponentManager):
+    """A stub for an alarm handler component manager."""
+
+    # TODO
+
+
+ComponentManagerT = TypeVar("ComponentManagerT", bound=AlarmHandlerComponentManager)
+
+
+class SKAAlarmHandler(SKABaseDevice, Generic[ComponentManagerT]):
     """A generic base device for Alarms for SKA."""
 
     # -----------------
@@ -70,6 +78,14 @@ class SKAAlarmHandler(SKABaseDevice):  # pylint: disable=abstract-method
             "GetAlertStats",
             self.GetAlertStatsCommand(self.logger),
         )
+
+    def create_component_manager(self: SKAAlarmHandler) -> ComponentManagerT:
+        """
+        Create and return a component manager for this device.
+
+        :raises NotImplementedError: because it is not implemented.
+        """
+        raise NotImplementedError("SKAAlarmHandler is incomplete.")
 
     # ----------
     # Attributes
@@ -146,7 +162,7 @@ class SKAAlarmHandler(SKABaseDevice):  # pylint: disable=abstract-method
     class GetAlarmRuleCommand(FastCommand):
         """A class for the SKAAlarmHandler's GetAlarmRule() command."""
 
-        def do(  # type: ignore[override]
+        def do(
             self: SKAAlarmHandler.GetAlarmRuleCommand,
             *args: Any,
             **kwargs: Any,
@@ -169,7 +185,7 @@ class SKAAlarmHandler(SKABaseDevice):  # pylint: disable=abstract-method
     class GetAlarmDataCommand(FastCommand):
         """A class for the SKAAlarmHandler's GetAlarmData() command."""
 
-        def do(  # type: ignore[override]
+        def do(
             self: SKAAlarmHandler.GetAlarmDataCommand,
             *args: Any,
             **kwargs: Any,
@@ -191,7 +207,7 @@ class SKAAlarmHandler(SKABaseDevice):  # pylint: disable=abstract-method
     class GetAlarmAdditionalInfoCommand(FastCommand):
         """A class for the SKAAlarmHandler's GetAlarmAdditionalInfo() command."""
 
-        def do(  # type: ignore[override]
+        def do(
             self: SKAAlarmHandler.GetAlarmAdditionalInfoCommand,
             *args: Any,
             **kwargs: Any,
@@ -213,7 +229,7 @@ class SKAAlarmHandler(SKABaseDevice):  # pylint: disable=abstract-method
     class GetAlarmStatsCommand(FastCommand):
         """A class for the SKAAlarmHandler's GetAlarmStats() command."""
 
-        def do(  # type: ignore[override]
+        def do(
             self: SKAAlarmHandler.GetAlarmStatsCommand,
             *args: Any,
             **kwargs: Any,
@@ -234,7 +250,7 @@ class SKAAlarmHandler(SKABaseDevice):  # pylint: disable=abstract-method
     class GetAlertStatsCommand(FastCommand):
         """A class for the SKAAlarmHandler's GetAlertStats() command."""
 
-        def do(  # type: ignore[override]
+        def do(
             self: SKAAlarmHandler.GetAlertStatsCommand,
             *args: Any,
             **kwargs: Any,

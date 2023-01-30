@@ -1,4 +1,3 @@
-# pylint: skip-file  # TODO: Incrementally lint this repo
 # -*- coding: utf-8 -*-
 #
 # This file is part of the SKA Tango Base project
@@ -36,7 +35,7 @@ from tango import (
 )
 from tango.server import attribute, command
 
-from ska_tango_base.faults import GroupDefinitionsError, SKABaseError
+from .faults import GroupDefinitionsError, SKABaseError
 
 int_types = {
     tango.CmdArgType.DevUShort,
@@ -136,7 +135,7 @@ def exception_manager(
             message,
             class_name + "::" + calframe[2][3],
         )
-    except Exception as anything:
+    except Exception as anything:  # pylint: disable=broad-except
         # Find caller from the relative point of this executing handler
         curframe = inspect.currentframe()
         calframe = inspect.getouterframes(curframe, 2)
@@ -176,7 +175,7 @@ def get_dev_info(
     :return: database device info instance
     """
     dev_info = DbDevInfo()
-    dev_info._class = device_server_name
+    dev_info._class = device_server_name  # pylint: disable=protected-access
     dev_info.server = f"{device_server_name}/{domain_name}"
     # add the device
     dev_info.name = f"{domain_name}/{device_ref}"
@@ -191,7 +190,7 @@ def dp_set_property(device_name: str, property_name: str, property_value: Any) -
     :param property_name: tango property name
     :param property_value: tango property value
     """
-    dp = DeviceProxy(device_name)
+    device_proxy = DeviceProxy(device_name)
     db_datum = DbDatum()
     db_datum.name = property_name
     if isinstance(property_value, list):
@@ -199,7 +198,7 @@ def dp_set_property(device_name: str, property_name: str, property_value: Any) -
             db_datum.value_string.append(value)
     else:
         db_datum.value_string.append(property_value)
-    dp.put_property(db_datum)
+    device_proxy.put_property(db_datum)
 
 
 def get_device_group_and_id(device_name: str) -> list[str]:
@@ -210,7 +209,6 @@ def get_device_group_and_id(device_name: str) -> list[str]:
 
     :return: group & id part of tango device name
     """
-    device_name = device_name
     return device_name.split("/")[1:]
 
 
@@ -233,7 +231,7 @@ def convert_api_value(param_dict: dict[str, str]) -> tuple[str, Any]:
     value_type = pydoc.locate(type_str)
     value_str = str(param_dict.get("value"))
     if value_type == bool:
-        if not value_str.lower() in ["true", "false"]:
+        if value_str.lower() not in ["true", "false"]:
             raise Exception(
                 f"Parameter value {param_dict.get('value')} is not of type {value_type}"
             )
@@ -261,7 +259,7 @@ def coerce_value(value: DevState) -> str:
 
 def get_dp_attribute(  # noqa C901
     device_proxy: DeviceProxy,
-    attribute: attribute,
+    dp_attribute: attribute,
     with_value: bool = False,
     with_context: bool = False,
 ) -> dict:
@@ -269,22 +267,26 @@ def get_dp_attribute(  # noqa C901
     Get an attribute from a DeviceProxy.
 
     :param device_proxy:a tango device proxy
-    :param attribute: Attribute
+    :param dp_attribute: Attribute
     :param with_value: default False
     :param with_context: default False
 
     :return: dictionary of attribute info
     """
     attr_dict = {
-        "name": attribute.name,
-        "polling_frequency": attribute.events.per_event.period,
+        "name": dp_attribute.name,
+        "polling_frequency": dp_attribute.events.per_event.period,
         "min_value": (
-            attribute.min_value if attribute.min_value != "Not specified" else None
+            dp_attribute.min_value
+            if dp_attribute.min_value != "Not specified"
+            else None
         ),
         "max_value": (
-            attribute.max_value if attribute.max_value != "Not specified" else None
+            dp_attribute.max_value
+            if dp_attribute.max_value != "Not specified"
+            else None
         ),
-        "readonly": attribute.writable
+        "readonly": dp_attribute.writable
         not in [
             AttrWriteType.READ_WRITE,
             AttrWriteType.WRITE,
@@ -293,18 +295,18 @@ def get_dp_attribute(  # noqa C901
     }
 
     # TBD - use tango_type_conversion dict, or just str(attribute.data_format)
-    if attribute.data_format == tango.AttrDataFormat.SCALAR:
-        if attribute.data_type in int_types:
+    if dp_attribute.data_format == tango.AttrDataFormat.SCALAR:
+        if dp_attribute.data_type in int_types:
             attr_dict["data_type"] = "int"
-        elif attribute.data_type in float_types:
+        elif dp_attribute.data_type in float_types:
             attr_dict["data_type"] = "float"
-        elif attribute.data_type == tango.CmdArgType.DevString:
+        elif dp_attribute.data_type == tango.CmdArgType.DevString:
             attr_dict["data_type"] = "str"
-        elif attribute.data_type == tango.CmdArgType.DevBoolean:
+        elif dp_attribute.data_type == tango.CmdArgType.DevBoolean:
             attr_dict["data_type"] = "bool"
-        elif attribute.data_type == tango.CmdArgType.DevEncoded:
+        elif dp_attribute.data_type == tango.CmdArgType.DevEncoded:
             attr_dict["data_type"] = "encoded"
-        elif attribute.data_type == tango.CmdArgType.DevVoid:
+        elif dp_attribute.data_type == tango.CmdArgType.DevVoid:
             attr_dict["data_type"] = "void"
     else:
         # Data types we aren't really going to represent
@@ -317,13 +319,13 @@ def get_dp_attribute(  # noqa C901
 
     if with_value:
         try:
-            attr_value = device_proxy.read_attribute(attribute.name)
+            attr_value = device_proxy.read_attribute(dp_attribute.name)
             attr_dict["value"] = coerce_value(attr_value.value)
             attr_dict["is_alarm"] = attr_value.quality == AttrQuality.ATTR_ALARM
-            ts = datetime.fromtimestamp(attr_value.time.tv_sec)
-            ts.replace(microsecond=attr_value.time.tv_usec)
-            attr_dict["timestamp"] = ts.isoformat()
-        except Exception:
+            timestamp = datetime.fromtimestamp(attr_value.time.tv_sec)
+            timestamp.replace(microsecond=attr_value.time.tv_usec)
+            attr_dict["timestamp"] = timestamp.isoformat()
+        except Exception:  # pylint: disable=broad-except
             # TBD - decide what to do - add log?
             pass
 
@@ -331,13 +333,13 @@ def get_dp_attribute(  # noqa C901
 
 
 def get_dp_command(
-    device_name: str, command: command, with_context: bool = False
+    device_name: str, dp_command: command, with_context: bool = False
 ) -> dict:
     """
     Get a command from a DeviceProxy.
 
     :param device_name: tango device name
-    :param command: tango command
+    :param dp_command: tango command
     :param with_context: default False
 
     :return: dictionary of command info
@@ -350,14 +352,14 @@ def get_dp_command(
                 return {}
             # ugghhh POGO replaces quotes with backticks :(
             return ast.literal_eval(command_desc.replace("`", "'"))
-        except Exception:
+        except Exception:  # pylint: disable=broad-except
             # TBD - decide what to do - add log?
             pass
         return {}
 
     command_dict = {
-        "name": command.cmd_name,
-        "parameters": command_parameters(command.in_type_desc),
+        "name": dp_command.cmd_name,
+        "parameters": command_parameters(dp_command.in_type_desc),
     }
 
     if with_context:

@@ -1,4 +1,4 @@
-# type: ignore
+# pylint: disable=invalid-name
 ########################################################################################
 # -*- coding: utf-8 -*-
 #
@@ -8,8 +8,11 @@
 #
 ########################################################################################
 """This module tests the :py:mod:``ska_tango_base.csp.subarray_device`` module."""
+from __future__ import annotations
+
 import json
 import re
+from typing import Any
 
 import pytest
 import tango
@@ -22,6 +25,7 @@ from ska_control_model import (
     SimulationMode,
     TestMode,
 )
+from ska_tango_testing.mock.tango import MockTangoEventCallbackGroup
 
 from ska_tango_base.csp import CspSubElementSubarray
 from ska_tango_base.testing.reference import (
@@ -29,14 +33,12 @@ from ska_tango_base.testing.reference import (
     ReferenceCspSubarrayComponentManager,
 )
 
-# Device test case
-
 
 class TestCspSubElementSubarray:  # pylint: disable=too-many-public-methods
     """Test case for CSP SubElement Subarray class."""
 
     @pytest.fixture(scope="class")
-    def device_properties(self):
+    def device_properties(self: TestCspSubElementSubarray) -> dict[str, list[str]]:
         """
         Fixture that returns device properties of the device under test.
 
@@ -45,7 +47,9 @@ class TestCspSubElementSubarray:  # pylint: disable=too-many-public-methods
         return {"CapabilityTypes": ["id"]}
 
     @pytest.fixture(scope="class")
-    def device_test_config(self, device_properties):
+    def device_test_config(
+        self: TestCspSubElementSubarray, device_properties: dict[str, list[str]]
+    ) -> dict[str, Any]:
         """
         Return a specification of the device to be tested.
 
@@ -76,14 +80,18 @@ class TestCspSubElementSubarray:  # pylint: disable=too-many-public-methods
         }
 
     @pytest.mark.skip(reason="Not implemented")
-    def test_properties(self, device_under_test):
+    def test_properties(
+        self: TestCspSubElementSubarray, device_under_test: tango.DeviceProxy
+    ) -> None:
         """
         Test the device properties.
 
         :param device_under_test: a proxy to the device under test
         """
 
-    def test_State(self, device_under_test):
+    def test_State(
+        self: TestCspSubElementSubarray, device_under_test: tango.DeviceProxy
+    ) -> None:
         """
         Test for State.
 
@@ -91,7 +99,9 @@ class TestCspSubElementSubarray:  # pylint: disable=too-many-public-methods
         """
         assert device_under_test.state() == tango.DevState.OFF
 
-    def test_Status(self, device_under_test):
+    def test_Status(
+        self: TestCspSubElementSubarray, device_under_test: tango.DeviceProxy
+    ) -> None:
         """
         Test for Status.
 
@@ -99,7 +109,9 @@ class TestCspSubElementSubarray:  # pylint: disable=too-many-public-methods
         """
         assert device_under_test.Status() == "The device is in OFF state."
 
-    def test_GetVersionInfo(self, device_under_test):
+    def test_GetVersionInfo(
+        self: TestCspSubElementSubarray, device_under_test: tango.DeviceProxy
+    ) -> None:
         """
         Test for GetVersionInfo.
 
@@ -113,7 +125,9 @@ class TestCspSubElementSubarray:  # pylint: disable=too-many-public-methods
         assert len(version_info) == 1
         assert re.match(version_pattern, version_info[0])
 
-    def test_buildState(self, device_under_test):
+    def test_buildState(
+        self: TestCspSubElementSubarray, device_under_test: tango.DeviceProxy
+    ) -> None:
         """
         Test for buildState.
 
@@ -125,7 +139,9 @@ class TestCspSubElementSubarray:  # pylint: disable=too-many-public-methods
         )
         assert (re.match(build_pattern, device_under_test.buildState)) is not None
 
-    def test_versionId(self, device_under_test):
+    def test_versionId(
+        self: TestCspSubElementSubarray, device_under_test: tango.DeviceProxy
+    ) -> None:
         """
         Test for versionId.
 
@@ -134,7 +150,9 @@ class TestCspSubElementSubarray:  # pylint: disable=too-many-public-methods
         version_id_pattern = re.compile(r"[0-9]+.[0-9]+.[0-9]+")
         assert (re.match(version_id_pattern, device_under_test.versionId)) is not None
 
-    def test_healthState(self, device_under_test):
+    def test_healthState(
+        self: TestCspSubElementSubarray, device_under_test: tango.DeviceProxy
+    ) -> None:
         """
         Test for healthState.
 
@@ -142,7 +160,9 @@ class TestCspSubElementSubarray:  # pylint: disable=too-many-public-methods
         """
         assert device_under_test.healthState == HealthState.UNKNOWN
 
-    def test_adminMode(self, device_under_test):
+    def test_adminMode(
+        self: TestCspSubElementSubarray, device_under_test: tango.DeviceProxy
+    ) -> None:
         """
         Test for adminMode.
 
@@ -150,7 +170,9 @@ class TestCspSubElementSubarray:  # pylint: disable=too-many-public-methods
         """
         assert device_under_test.adminMode == AdminMode.ONLINE
 
-    def test_controlMode(self, device_under_test):
+    def test_controlMode(
+        self: TestCspSubElementSubarray, device_under_test: tango.DeviceProxy
+    ) -> None:
         """
         Test for controlMode.
 
@@ -158,7 +180,9 @@ class TestCspSubElementSubarray:  # pylint: disable=too-many-public-methods
         """
         assert device_under_test.controlMode == ControlMode.REMOTE
 
-    def test_simulationMode(self, device_under_test):
+    def test_simulationMode(
+        self: TestCspSubElementSubarray, device_under_test: tango.DeviceProxy
+    ) -> None:
         """
         Test for simulationMode.
 
@@ -166,7 +190,9 @@ class TestCspSubElementSubarray:  # pylint: disable=too-many-public-methods
         """
         assert device_under_test.simulationMode == SimulationMode.FALSE
 
-    def test_testMode(self, device_under_test):
+    def test_testMode(
+        self: TestCspSubElementSubarray, device_under_test: tango.DeviceProxy
+    ) -> None:
         """
         Test for testMode.
 
@@ -174,7 +200,11 @@ class TestCspSubElementSubarray:  # pylint: disable=too-many-public-methods
         """
         assert device_under_test.testMode == TestMode.NONE
 
-    def test_scanID(self, device_under_test, change_event_callbacks):
+    def test_scanID(
+        self: TestCspSubElementSubarray,
+        device_under_test: tango.DeviceProxy,
+        change_event_callbacks: MockTangoEventCallbackGroup,
+    ) -> None:
         """
         Test for scanID.
 
@@ -198,17 +228,25 @@ class TestCspSubElementSubarray:  # pylint: disable=too-many-public-methods
 
         assert device_under_test.scanID == 0
 
-    def test_sdpDestinationAddresses(self, device_under_test):
+    def test_sdpDestinationAddresses(
+        self: TestCspSubElementSubarray, device_under_test: tango.DeviceProxy
+    ) -> None:
         """
         Test for sdpDestinationAddresses.
 
         :param device_under_test: a proxy to the device under test
         """
-        addresses_dict = {"outputHost": [], "outputMac": [], "outputPort": []}
+        addresses_dict: dict[str, list] = {
+            "outputHost": [],
+            "outputMac": [],
+            "outputPort": [],
+        }
         device_under_test.sdpDestinationAddresses = json.dumps(addresses_dict)
         assert device_under_test.sdpDestinationAddresses == json.dumps(addresses_dict)
 
-    def test_sdpLinkActivity(self, device_under_test):
+    def test_sdpLinkActivity(
+        self: TestCspSubElementSubarray, device_under_test: tango.DeviceProxy
+    ) -> None:
         """
         Test for sdpLinkActive.
 
@@ -219,7 +257,9 @@ class TestCspSubElementSubarray:  # pylint: disable=too-many-public-methods
         expected = [False for i in range(0, n_links)]
         assert all(a == b for a, b in zip(actual, expected))
 
-    def test_outputDataRateToSdp(self, device_under_test):
+    def test_outputDataRateToSdp(
+        self: TestCspSubElementSubarray, device_under_test: tango.DeviceProxy
+    ) -> None:
         """
         Test for outputDataRateToSdp.
 
@@ -227,7 +267,9 @@ class TestCspSubElementSubarray:  # pylint: disable=too-many-public-methods
         """
         assert device_under_test.outputDataRateToSdp == 0
 
-    def test_listOfDevicesCompletedTasks(self, device_under_test):
+    def test_listOfDevicesCompletedTasks(
+        self: TestCspSubElementSubarray, device_under_test: tango.DeviceProxy
+    ) -> None:
         """
         Test for listOfDevicesCompletedTasks.
 
@@ -236,7 +278,9 @@ class TestCspSubElementSubarray:  # pylint: disable=too-many-public-methods
         attr_value_as_dict = json.loads(device_under_test.listOfDevicesCompletedTasks)
         assert not bool(attr_value_as_dict)
 
-    def test_assignResourcesMaximumDuration(self, device_under_test):
+    def test_assignResourcesMaximumDuration(
+        self: TestCspSubElementSubarray, device_under_test: tango.DeviceProxy
+    ) -> None:
         """
         Test for assignResourcesMaximumDuration.
 
@@ -245,7 +289,9 @@ class TestCspSubElementSubarray:  # pylint: disable=too-many-public-methods
         device_under_test.assignResourcesMaximumDuration = 5
         assert device_under_test.assignResourcesMaximumDuration == 5
 
-    def test_configureScanMeasuredDuration(self, device_under_test):
+    def test_configureScanMeasuredDuration(
+        self: TestCspSubElementSubarray, device_under_test: tango.DeviceProxy
+    ) -> None:
         """
         Test for configureScanMeasuredDuration.
 
@@ -253,7 +299,9 @@ class TestCspSubElementSubarray:  # pylint: disable=too-many-public-methods
         """
         assert device_under_test.configureScanMeasuredDuration == 0
 
-    def test_configurationProgress(self, device_under_test):
+    def test_configurationProgress(
+        self: TestCspSubElementSubarray, device_under_test: tango.DeviceProxy
+    ) -> None:
         """
         Test for configurationProgress.
 
@@ -261,7 +309,9 @@ class TestCspSubElementSubarray:  # pylint: disable=too-many-public-methods
         """
         assert device_under_test.configurationProgress == 0
 
-    def test_assignResourcesMeasuredDuration(self, device_under_test):
+    def test_assignResourcesMeasuredDuration(
+        self: TestCspSubElementSubarray, device_under_test: tango.DeviceProxy
+    ) -> None:
         """
         Test for assignResourcesMeasuredDuration.
 
@@ -269,7 +319,9 @@ class TestCspSubElementSubarray:  # pylint: disable=too-many-public-methods
         """
         assert device_under_test.assignResourcesMeasuredDuration == 0
 
-    def test_assignResourcesProgress(self, device_under_test):
+    def test_assignResourcesProgress(
+        self: TestCspSubElementSubarray, device_under_test: tango.DeviceProxy
+    ) -> None:
         """
         Test for assignResourcesProgress.
 
@@ -277,7 +329,9 @@ class TestCspSubElementSubarray:  # pylint: disable=too-many-public-methods
         """
         assert device_under_test.assignResourcesProgress == 0
 
-    def test_releaseResourcesMaximumDuration(self, device_under_test):
+    def test_releaseResourcesMaximumDuration(
+        self: TestCspSubElementSubarray, device_under_test: tango.DeviceProxy
+    ) -> None:
         """
         Test for releaseResourcesMaximumDuration.
 
@@ -286,7 +340,9 @@ class TestCspSubElementSubarray:  # pylint: disable=too-many-public-methods
         device_under_test.releaseResourcesMaximumDuration = 5
         assert device_under_test.releaseResourcesMaximumDuration == 5
 
-    def test_releaseResourcesMeasuredDuration(self, device_under_test):
+    def test_releaseResourcesMeasuredDuration(
+        self: TestCspSubElementSubarray, device_under_test: tango.DeviceProxy
+    ) -> None:
         """
         Test for releaseResourcesMeasuredDuration.
 
@@ -294,7 +350,9 @@ class TestCspSubElementSubarray:  # pylint: disable=too-many-public-methods
         """
         assert device_under_test.releaseResourcesMeasuredDuration == 0
 
-    def test_releaseResourcesProgress(self, device_under_test):
+    def test_releaseResourcesProgress(
+        self: TestCspSubElementSubarray, device_under_test: tango.DeviceProxy
+    ) -> None:
         """
         Test for releaseResourcesProgress.
 
@@ -302,7 +360,9 @@ class TestCspSubElementSubarray:  # pylint: disable=too-many-public-methods
         """
         assert device_under_test.releaseResourcesProgress == 0
 
-    def test_configureScanTimeoutExpiredFlag(self, device_under_test):
+    def test_configureScanTimeoutExpiredFlag(
+        self: TestCspSubElementSubarray, device_under_test: tango.DeviceProxy
+    ) -> None:
         """
         Test for timeoutExpiredFlag.
 
@@ -310,7 +370,9 @@ class TestCspSubElementSubarray:  # pylint: disable=too-many-public-methods
         """
         assert not device_under_test.configureScanTimeoutExpiredFlag
 
-    def test_assignResourcesTimeoutExpiredFlag(self, device_under_test):
+    def test_assignResourcesTimeoutExpiredFlag(
+        self: TestCspSubElementSubarray, device_under_test: tango.DeviceProxy
+    ) -> None:
         """
         Test for timeoutExpiredFlag.
 
@@ -318,7 +380,9 @@ class TestCspSubElementSubarray:  # pylint: disable=too-many-public-methods
         """
         assert not device_under_test.assignResourcesTimeoutExpiredFlag
 
-    def test_releaseResourcesTimeoutExpiredFlag(self, device_under_test):
+    def test_releaseResourcesTimeoutExpiredFlag(
+        self: TestCspSubElementSubarray, device_under_test: tango.DeviceProxy
+    ) -> None:
         """
         Test for timeoutExpiredFlag.
 
@@ -329,8 +393,11 @@ class TestCspSubElementSubarray:  # pylint: disable=too-many-public-methods
     # TODO: Pylint is right that this test is way too long.
     @pytest.mark.parametrize("command_alias", ["Configure", "ConfigureScan"])
     def test_ConfigureScan_and_GoToIdle(  # pylint: disable=too-many-statements
-        self, device_under_test, change_event_callbacks, command_alias
-    ):
+        self: TestCspSubElementSubarray,
+        device_under_test: tango.DeviceProxy,
+        change_event_callbacks: MockTangoEventCallbackGroup,
+        command_alias: str,
+    ) -> None:
         """
         Test for ConfigureScan.
 
@@ -557,7 +624,9 @@ class TestCspSubElementSubarray:  # pylint: disable=too-many-public-methods
         assert device_under_test.configurationID == ""
         assert device_under_test.lastScanConfiguration == ""
 
-    def test_ConfigureScan_when_in_wrong_state(self, device_under_test):
+    def test_ConfigureScan_when_in_wrong_state(
+        self: TestCspSubElementSubarray, device_under_test: tango.DeviceProxy
+    ) -> None:
         """
         Test for ConfigureScan when the device is in wrong state.
 
@@ -573,8 +642,10 @@ class TestCspSubElementSubarray:  # pylint: disable=too-many-public-methods
             )
 
     def test_ConfigureScan_with_wrong_configId_key(
-        self, device_under_test, change_event_callbacks
-    ):
+        self: TestCspSubElementSubarray,
+        device_under_test: tango.DeviceProxy,
+        change_event_callbacks: MockTangoEventCallbackGroup,
+    ) -> None:
         """
         Test that ConfigureScan handles a wrong configuration id key.
 
@@ -684,8 +755,10 @@ class TestCspSubElementSubarray:  # pylint: disable=too-many-public-methods
         assert device_under_test.obsState == ObsState.IDLE
 
     def test_ConfigureScan_with_json_syntax_error(
-        self, device_under_test, change_event_callbacks
-    ):
+        self: TestCspSubElementSubarray,
+        device_under_test: tango.DeviceProxy,
+        change_event_callbacks: MockTangoEventCallbackGroup,
+    ) -> None:
         """
         Test for ConfigureScan when syntax error in json configuration.
 

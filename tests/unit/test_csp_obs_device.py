@@ -1,5 +1,4 @@
-# type: ignore
-# pylint: skip-file  # TODO: Incrementally lint this repo
+# pylint: disable=invalid-name, too-many-lines
 ########################################################################
 # -*- coding: utf-8 -*-
 #
@@ -7,10 +6,16 @@
 #
 ########################################################################
 """This module contains the tests for the CspSubelementObsDevice."""
+from __future__ import annotations
+
 import json
+import logging
 import re
+import time
+from typing import Any
 
 import pytest
+import pytest_mock
 import tango
 from ska_control_model import (
     AdminMode,
@@ -21,6 +26,7 @@ from ska_control_model import (
     SimulationMode,
     TestMode,
 )
+from ska_tango_testing.mock.tango import MockTangoEventCallbackGroup
 from tango.test_context import MultiDeviceTestContext
 
 from ska_tango_base import CspSubElementObsDevice, SKAObsDevice
@@ -32,7 +38,9 @@ from ska_tango_base.testing.reference import (
 
 
 @pytest.fixture
-def csp_subelement_obsdevice_state_model(logger):
+def csp_subelement_obsdevice_state_model(
+    logger: logging.Logger,
+) -> CspSubElementObsStateModel:
     """
     Return a new CspSubElementObsDevice StateModel for testing.
 
@@ -43,11 +51,11 @@ def csp_subelement_obsdevice_state_model(logger):
     return CspSubElementObsStateModel(logger)
 
 
-class TestCspSubElementObsDevice:
+class TestCspSubElementObsDevice:  # pylint: disable=too-many-public-methods
     """Test case for CSP SubElement ObsDevice class."""
 
     @pytest.fixture(scope="class")
-    def device_properties(self):
+    def device_properties(self: TestCspSubElementObsDevice) -> dict[str, str]:
         """
         Fixture that returns properties of the device under test.
 
@@ -56,7 +64,9 @@ class TestCspSubElementObsDevice:
         return {"DeviceID": "11"}
 
     @pytest.fixture(scope="class")
-    def device_test_config(self, device_properties):
+    def device_test_config(
+        self: TestCspSubElementObsDevice, device_properties: dict[str, str]
+    ) -> dict[str, Any]:
         """
         Specify device configuration, including properties and memorized attributes.
 
@@ -81,7 +91,9 @@ class TestCspSubElementObsDevice:
             "memorized": {"adminMode": str(AdminMode.ONLINE.value)},
         }
 
-    def test_State(self, device_under_test):
+    def test_State(
+        self: TestCspSubElementObsDevice, device_under_test: tango.DeviceProxy
+    ) -> None:
         """
         Test for State.
 
@@ -89,7 +101,9 @@ class TestCspSubElementObsDevice:
         """
         assert device_under_test.state() == tango.DevState.OFF
 
-    def test_Status(self, device_under_test):
+    def test_Status(
+        self: TestCspSubElementObsDevice, device_under_test: tango.DeviceProxy
+    ) -> None:
         """
         Test for Status.
 
@@ -97,7 +111,9 @@ class TestCspSubElementObsDevice:
         """
         assert device_under_test.Status() == "The device is in OFF state."
 
-    def test_GetVersionInfo(self, device_under_test):
+    def test_GetVersionInfo(
+        self: TestCspSubElementObsDevice, device_under_test: tango.DeviceProxy
+    ) -> None:
         """
         Test for GetVersionInfo.
 
@@ -111,7 +127,9 @@ class TestCspSubElementObsDevice:
         assert len(version_info) == 1
         assert re.match(version_pattern, version_info[0])
 
-    def test_buildState(self, device_under_test):
+    def test_buildState(
+        self: TestCspSubElementObsDevice, device_under_test: tango.DeviceProxy
+    ) -> None:
         """
         Test for buildState.
 
@@ -123,7 +141,9 @@ class TestCspSubElementObsDevice:
         )
         assert (re.match(build_pattern, device_under_test.buildState)) is not None
 
-    def test_versionId(self, device_under_test):
+    def test_versionId(
+        self: TestCspSubElementObsDevice, device_under_test: tango.DeviceProxy
+    ) -> None:
         """
         Test for versionId.
 
@@ -132,7 +152,9 @@ class TestCspSubElementObsDevice:
         version_id_pattern = re.compile(r"[0-9]+.[0-9]+.[0-9]+")
         assert (re.match(version_id_pattern, device_under_test.versionId)) is not None
 
-    def test_healthState(self, device_under_test):
+    def test_healthState(
+        self: TestCspSubElementObsDevice, device_under_test: tango.DeviceProxy
+    ) -> None:
         """
         Test for healthState.
 
@@ -140,7 +162,9 @@ class TestCspSubElementObsDevice:
         """
         assert device_under_test.healthState == HealthState.UNKNOWN
 
-    def test_adminMode(self, device_under_test):
+    def test_adminMode(
+        self: TestCspSubElementObsDevice, device_under_test: tango.DeviceProxy
+    ) -> None:
         """
         Test for adminMode.
 
@@ -148,7 +172,9 @@ class TestCspSubElementObsDevice:
         """
         assert device_under_test.adminMode == AdminMode.ONLINE
 
-    def test_controlMode(self, device_under_test):
+    def test_controlMode(
+        self: TestCspSubElementObsDevice, device_under_test: tango.DeviceProxy
+    ) -> None:
         """
         Test for controlMode.
 
@@ -156,7 +182,9 @@ class TestCspSubElementObsDevice:
         """
         assert device_under_test.controlMode == ControlMode.REMOTE
 
-    def test_simulationMode(self, device_under_test):
+    def test_simulationMode(
+        self: TestCspSubElementObsDevice, device_under_test: tango.DeviceProxy
+    ) -> None:
         """
         Test for simulationMode.
 
@@ -164,7 +192,9 @@ class TestCspSubElementObsDevice:
         """
         assert device_under_test.simulationMode == SimulationMode.FALSE
 
-    def test_testMode(self, device_under_test):
+    def test_testMode(
+        self: TestCspSubElementObsDevice, device_under_test: tango.DeviceProxy
+    ) -> None:
         """
         Test for testMode.
 
@@ -172,7 +202,11 @@ class TestCspSubElementObsDevice:
         """
         assert device_under_test.testMode == TestMode.NONE
 
-    def test_scanID(self, device_under_test, change_event_callbacks):
+    def test_scanID(
+        self: TestCspSubElementObsDevice,
+        device_under_test: tango.DeviceProxy,
+        change_event_callbacks: MockTangoEventCallbackGroup,
+    ) -> None:
         """
         Test for scanID.
 
@@ -196,7 +230,11 @@ class TestCspSubElementObsDevice:
 
         assert device_under_test.scanID == 0
 
-    def test_deviceID(self, device_under_test, device_properties):
+    def test_deviceID(
+        self: TestCspSubElementObsDevice,
+        device_under_test: tango.DeviceProxy,
+        device_properties: dict[str, str],
+    ) -> None:
         """
         Test for deviceID.
 
@@ -206,27 +244,34 @@ class TestCspSubElementObsDevice:
         """
         assert device_under_test.deviceID == int(device_properties["DeviceID"])
 
-    def test_sdpDestinationAddresses(self, device_under_test):
+    def test_sdpDestinationAddresses(
+        self: TestCspSubElementObsDevice, device_under_test: tango.DeviceProxy
+    ) -> None:
         """
         Test for sdpDestinationAddresses.
 
         :param device_under_test: a proxy to the device under test
         """
-        addresses_dict = {"outputHost": [], "outputMac": [], "outputPort": []}
+        addresses_dict: dict[str, list] = {
+            "outputHost": [],
+            "outputMac": [],
+            "outputPort": [],
+        }
         assert device_under_test.sdpDestinationAddresses == json.dumps(addresses_dict)
 
-    def test_sdpLinkActivity(self, device_under_test):
+    def test_sdpLinkActivity(
+        self: TestCspSubElementObsDevice, device_under_test: tango.DeviceProxy
+    ) -> None:
         """
         Test for sdpLinkActive.
 
         :param device_under_test: a proxy to the device under test
         """
-        actual = device_under_test.sdpLinkActive
-        n_links = len(actual)
-        expected = [False for i in range(0, n_links)]
-        assert all([a == b for a, b in zip(actual, expected)])
+        assert [i is False for i in device_under_test.sdpLinkActive]
 
-    def test_sdpLinkCapacity(self, device_under_test):
+    def test_sdpLinkCapacity(
+        self: TestCspSubElementObsDevice, device_under_test: tango.DeviceProxy
+    ) -> None:
         """
         Test for sdpLinkCapacity.
 
@@ -234,7 +279,9 @@ class TestCspSubElementObsDevice:
         """
         assert device_under_test.sdpLinkCapacity == 0
 
-    def test_healthFailureMessage(self, device_under_test):
+    def test_healthFailureMessage(
+        self: TestCspSubElementObsDevice, device_under_test: tango.DeviceProxy
+    ) -> None:
         """
         Test for healthFailureMessage.
 
@@ -243,8 +290,10 @@ class TestCspSubElementObsDevice:
         assert device_under_test.healthFailureMessage == ""
 
     def test_ConfigureScan_and_GoToIdle(
-        self, device_under_test, change_event_callbacks
-    ):
+        self: TestCspSubElementObsDevice,
+        device_under_test: tango.DeviceProxy,
+        change_event_callbacks: MockTangoEventCallbackGroup,
+    ) -> None:
         """
         Test for ConfigureScan.
 
@@ -409,7 +458,9 @@ class TestCspSubElementObsDevice:
 
         assert device_under_test.configurationId == ""
 
-    def test_ConfigureScan_when_in_wrong_state(self, device_under_test):
+    def test_ConfigureScan_when_in_wrong_state(
+        self: TestCspSubElementObsDevice, device_under_test: tango.DeviceProxy
+    ) -> None:
         """
         Test for ConfigureScan when the device is in wrong state.
 
@@ -422,7 +473,9 @@ class TestCspSubElementObsDevice:
                 '{"id":"sbi-mvp01-20200325-00002"}'  # noqa: FS003
             )
 
-    def test_ConfigureScan_with_wrong_input_args(self, device_under_test):
+    def test_ConfigureScan_with_wrong_input_args(
+        self: TestCspSubElementObsDevice, device_under_test: tango.DeviceProxy
+    ) -> None:
         """
         Test ConfigureScan's handling of wrong input arguments.
 
@@ -440,7 +493,9 @@ class TestCspSubElementObsDevice:
         assert result_code == ResultCode.FAILED
         assert device_under_test.obsState == ObsState.IDLE
 
-    def test_ConfigureScan_with_json_syntax_error(self, device_under_test):
+    def test_ConfigureScan_with_json_syntax_error(
+        self: TestCspSubElementObsDevice, device_under_test: tango.DeviceProxy
+    ) -> None:
         """
         Test for ConfigureScan when syntax error in json configuration.
 
@@ -453,7 +508,9 @@ class TestCspSubElementObsDevice:
         assert result_code == ResultCode.FAILED
         assert device_under_test.obsState == ObsState.IDLE
 
-    def test_GoToIdle_when_in_wrong_state(self, device_under_test):
+    def test_GoToIdle_when_in_wrong_state(
+        self: TestCspSubElementObsDevice, device_under_test: tango.DeviceProxy
+    ) -> None:
         """
         Test for GoToIdle when the device is in wrong state.
 
@@ -466,7 +523,13 @@ class TestCspSubElementObsDevice:
         ):
             device_under_test.GoToIdle()
 
-    def test_Scan_and_EndScan(self, device_under_test, change_event_callbacks):
+    # TODO: pylint is right that this is too long and complex
+    # pylint: disable-next=too-many-statements
+    def test_Scan_and_EndScan(
+        self: TestCspSubElementObsDevice,
+        device_under_test: tango.DeviceProxy,
+        change_event_callbacks: MockTangoEventCallbackGroup,
+    ) -> None:
         """
         Test for Scan.
 
@@ -689,7 +752,11 @@ class TestCspSubElementObsDevice:
 
         assert device_under_test.scanId == 0
 
-    def test_Scan_when_in_wrong_state(self, device_under_test, change_event_callbacks):
+    def test_Scan_when_in_wrong_state(
+        self: TestCspSubElementObsDevice,
+        device_under_test: tango.DeviceProxy,
+        change_event_callbacks: MockTangoEventCallbackGroup,
+    ) -> None:
         """
         Test for Scan when the device is in wrong state.
 
@@ -718,7 +785,11 @@ class TestCspSubElementObsDevice:
         ):
             device_under_test.Scan("32")
 
-    def test_Scan_with_wrong_argument(self, device_under_test, change_event_callbacks):
+    def test_Scan_with_wrong_argument(
+        self: TestCspSubElementObsDevice,
+        device_under_test: tango.DeviceProxy,
+        change_event_callbacks: MockTangoEventCallbackGroup,
+    ) -> None:
         """
         Test for Scan when a wrong input argument is passed.
 
@@ -767,8 +838,10 @@ class TestCspSubElementObsDevice:
         assert device_under_test.obsState == ObsState.READY
 
     def test_EndScan_when_in_wrong_state(
-        self, device_under_test, change_event_callbacks
-    ):
+        self: TestCspSubElementObsDevice,
+        device_under_test: tango.DeviceProxy,
+        change_event_callbacks: MockTangoEventCallbackGroup,
+    ) -> None:
         """
         Test for EndScan when the device is in wrong state.
 
@@ -816,7 +889,11 @@ class TestCspSubElementObsDevice:
         ):
             device_under_test.EndScan()
 
-    def test_abort_and_obsreset(self, device_under_test, change_event_callbacks):
+    def test_abort_and_obsreset(
+        self: TestCspSubElementObsDevice,
+        device_under_test: tango.DeviceProxy,
+        change_event_callbacks: MockTangoEventCallbackGroup,
+    ) -> None:
         """
         Test for Abort.
 
@@ -1004,7 +1081,9 @@ class TestCspSubElementObsDevice:
 
         assert device_under_test.obsState == ObsState.IDLE
 
-    def test_ObsReset_when_in_wrong_state(self, device_under_test):
+    def test_ObsReset_when_in_wrong_state(
+        self: TestCspSubElementObsDevice, device_under_test: tango.DeviceProxy
+    ) -> None:
         """
         Test for ObsReset when the device is in wrong state.
 
@@ -1012,8 +1091,6 @@ class TestCspSubElementObsDevice:
         """
         # Set the device in ON/IDLE state
         device_under_test.On()
-
-        import time
 
         time.sleep(3)
         with pytest.raises(
@@ -1024,7 +1101,7 @@ class TestCspSubElementObsDevice:
 
 
 @pytest.mark.forked
-def test_multiple_devices_in_same_process(mocker):
+def test_multiple_devices_in_same_process(mocker: pytest_mock.MockerFixture) -> None:
     """
     Test that we can run this device with other devices in a single process.
 

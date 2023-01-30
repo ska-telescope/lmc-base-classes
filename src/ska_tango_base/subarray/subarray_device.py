@@ -1,3 +1,4 @@
+# pylint: disable=invalid-name
 # -*- coding: utf-8 -*-
 #
 # This file is part of the SKA Tango Base project
@@ -17,7 +18,7 @@ from __future__ import annotations
 import functools
 import json
 import logging
-from typing import Any, Callable, List, Optional, Tuple, cast
+from typing import Any, Callable, Generic, List, Optional, Tuple, TypeVar
 
 # SKA specific imports
 from ska_control_model import (
@@ -30,47 +31,31 @@ from ska_control_model import (
 from tango import DebugIt
 from tango.server import attribute, command, device_property
 
-from ska_tango_base.base.base_device import CommandTracker
-from ska_tango_base.commands import SlowCommand, SubmittedSlowCommand
-from ska_tango_base.faults import StateModelError
-from ska_tango_base.obs.obs_device import SKAObsDevice
-from ska_tango_base.subarray.component_manager import SubarrayComponentManager
+from ..base import CommandTracker
+from ..commands import SlowCommand, SubmittedSlowCommand
+from ..faults import StateModelError
+from ..obs import SKAObsDevice
+from .component_manager import SubarrayComponentManager
 
-DevVarLongStringArrayType = Tuple[List[ResultCode], List[Optional[str]]]
+DevVarLongStringArrayType = Tuple[List[ResultCode], List[str]]
 
 __all__ = ["SKASubarray", "main"]
 
 
-# TODO: This is an abstract class because it does not define
-# `create_component_manager` and therefore inherits the abstract method from the
-# base device. There's no point implementing `create_component_manager` because
-# the SubarrayComponentManager is itself abstract.
-# pylint: disable-next=abstract-method, too-many-public-methods
-class SKASubarray(SKAObsDevice):
+ComponentManagerT = TypeVar("ComponentManagerT", bound=SubarrayComponentManager)
+
+
+# pylint: disable-next=too-many-public-methods
+class SKASubarray(SKAObsDevice, Generic[ComponentManagerT]):
+    # pylint: disable=attribute-defined-outside-init  # Tango devices have init_device
     """Implements the SKA SubArray device."""
-
-    def __init__(self, *args: Any, **kwargs: Any) -> None:
-        """
-        Initialise this device object.
-
-        :param args: positional args to the init
-        :param kwargs: keyword args to the init
-        """
-        # We aren't supposed to define initialisation methods for Tango
-        # devices; we are only supposed to define an `init_device` method. But
-        # we insist on doing so here, just so that we can define some
-        # attributes, thereby stopping the linters from complaining about
-        # "attribute-defined-outside-init" etc. We still need to make sure that
-        # `init_device` initialises any values defined in here.
-        super().__init__(*args, **kwargs)
-
-        self.obs_state_model: ObsStateModel
 
     # pylint: disable-next=too-few-public-methods
     class InitCommand(SKAObsDevice.InitCommand):
+        # pylint: disable=protected-access  # command classes are friend classes
         """A class for the SKASubarray's init_device() "command"."""
 
-        def do(  # type: ignore[override]
+        def do(
             self: SKASubarray.InitCommand,
             *args: Any,
             **kwargs: Any,
@@ -89,7 +74,6 @@ class SKASubarray(SKAObsDevice):
             """
             super().do()
 
-            # pylint: disable-next=protected-access
             self._device._activation_time = 0.0
 
             message = "SKASubarray Init command completed OK"
@@ -120,7 +104,7 @@ class SKASubarray(SKAObsDevice):
             self._component_manager = component_manager
             super().__init__(callback=callback, logger=logger)
 
-        def do(  # type: ignore[override]
+        def do(
             self: SKASubarray.AbortCommand,
             *args: Any,
             **kwargs: Any,
@@ -146,6 +130,14 @@ class SKASubarray(SKAObsDevice):
             assert status == TaskStatus.IN_PROGRESS
 
             return ResultCode.STARTED, command_id
+
+    def create_component_manager(self: SKASubarray) -> ComponentManagerT:
+        """
+        Create and return a component manager for this device.
+
+        :raises NotImplementedError: because it is not implemented.
+        """
+        raise NotImplementedError("SKASubarray is abstract.")
 
     def _init_state_model(self: SKASubarray) -> None:
         """Set up the state model for the device."""
@@ -194,14 +186,14 @@ class SKASubarray(SKAObsDevice):
             "Abort",
             self.AbortCommand(
                 self._command_tracker,
-                cast(SubarrayComponentManager, self.component_manager),
+                self.component_manager,
                 callback=functools.partial(_callback, "abort"),
                 logger=self.logger,
             ),
         )
 
     # pylint: disable-next=too-many-arguments
-    def _component_state_changed(  # type: ignore[override]
+    def _component_state_changed(
         self: SKASubarray,
         fault: Optional[bool] = None,
         power: Optional[PowerState] = None,
@@ -267,7 +259,7 @@ class SKASubarray(SKAObsDevice):
 
         :return: Resources assigned to the device.
         """
-        return cast(SubarrayComponentManager, self.component_manager).assigned_resources
+        return self.component_manager.assigned_resources
 
     @attribute(
         dtype=("str",),
@@ -283,9 +275,7 @@ class SKASubarray(SKAObsDevice):
         :return: A list of capability types with no. of instances used
             in the Subarray
         """
-        return cast(
-            SubarrayComponentManager, self.component_manager
-        ).configured_capabilities
+        return self.component_manager.configured_capabilities
 
     # --------
     # Commands

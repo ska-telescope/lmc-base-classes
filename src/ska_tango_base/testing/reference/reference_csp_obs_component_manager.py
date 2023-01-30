@@ -1,13 +1,15 @@
-# type: ignore
 """This module models component management for CSP subelement observation devices."""
+from __future__ import annotations
+
+import logging
 from threading import Event
-from typing import Callable, Optional, Tuple
+from typing import Any, Callable, Optional, Tuple
 
-from ska_control_model import PowerState, ResultCode, TaskStatus
+from ska_control_model import CommunicationStatus, PowerState, ResultCode, TaskStatus
 
-from ska_tango_base.base import check_communicating, check_on
-from ska_tango_base.csp.obs import CspObsComponentManager
-from ska_tango_base.testing.reference.reference_base_component_manager import (
+from ...base import check_communicating, check_on
+from ...csp.obs import CspObsComponentManager
+from .reference_base_component_manager import (
     FakeBaseComponent,
     ReferenceBaseComponentManager,
 )
@@ -39,16 +41,16 @@ class FakeCspObsComponent(FakeBaseComponent):
     """
 
     def __init__(  # pylint: disable=too-many-arguments
-        self,
-        time_to_return=0.05,
-        time_to_complete=0.4,
-        power=PowerState.OFF,
-        fault=None,
-        configured=False,
-        scanning=False,
-        obsfault=False,
-        **kwargs,
-    ):
+        self: FakeCspObsComponent,
+        time_to_return: float = 0.05,
+        time_to_complete: float = 0.4,
+        power: PowerState = PowerState.OFF,
+        fault: Optional[bool] = None,
+        configured: bool = False,
+        scanning: bool = False,
+        obsfault: bool = False,
+        **kwargs: Any,
+    ) -> None:
         """
         Initialise a new instance.
 
@@ -79,9 +81,9 @@ class FakeCspObsComponent(FakeBaseComponent):
             **kwargs,
         )
 
-    @property
+    @property  # type: ignore[misc]  # mypy doesn't support decorated properties
     @check_on
-    def config_id(self) -> str:
+    def config_id(self: FakeCspObsComponent) -> str:
         """
         Return the configuration ID.
 
@@ -89,9 +91,9 @@ class FakeCspObsComponent(FakeBaseComponent):
         """
         return self._config_id
 
-    @property
+    @property  # type: ignore[misc]  # mypy doesn't support decorated properties
     @check_on
-    def scan_id(self) -> str:
+    def scan_id(self: FakeCspObsComponent) -> int:
         """
         Return the scan ID.
 
@@ -100,7 +102,7 @@ class FakeCspObsComponent(FakeBaseComponent):
         return self._scan_id
 
     def configure_scan(
-        self,
+        self: FakeCspObsComponent,
         configuration: dict,
         task_callback: Optional[Callable],
         task_abort_event: Event,
@@ -115,13 +117,14 @@ class FakeCspObsComponent(FakeBaseComponent):
             for whether this task has been aborted.
         """
         if self.power_state != PowerState.ON:
-            task_callback(
-                status=TaskStatus.COMPLETED,
-                result=(
-                    ResultCode.FAILED,
-                    "Configure failed: component is not ON.",
-                ),
-            )
+            if task_callback is not None:
+                task_callback(
+                    status=TaskStatus.COMPLETED,
+                    result=(
+                        ResultCode.FAILED,
+                        "Configure failed: component is not ON.",
+                    ),
+                )
             return
 
         self._config_id = configuration["id"]
@@ -131,7 +134,9 @@ class FakeCspObsComponent(FakeBaseComponent):
         )
 
     def deconfigure(
-        self, task_callback: Optional[Callable], task_abort_event: Event
+        self: FakeCspObsComponent,
+        task_callback: Optional[Callable],
+        task_abort_event: Event,
     ) -> None:
         """
         Deconfigure this component.
@@ -142,13 +147,14 @@ class FakeCspObsComponent(FakeBaseComponent):
             for whether this task has been aborted.
         """
         if self.power_state != PowerState.ON:
-            task_callback(
-                status=TaskStatus.COMPLETED,
-                result=(
-                    ResultCode.FAILED,
-                    "Deconfigure failed: component is not ON.",
-                ),
-            )
+            if task_callback is not None:
+                task_callback(
+                    status=TaskStatus.COMPLETED,
+                    result=(
+                        ResultCode.FAILED,
+                        "Deconfigure failed: component is not ON.",
+                    ),
+                )
             return
 
         self._config_id = ""
@@ -158,7 +164,7 @@ class FakeCspObsComponent(FakeBaseComponent):
         )
 
     def scan(
-        self, scan_id: str, task_callback: Optional[Callable], task_abort_event: Event
+        self, scan_id: int, task_callback: Optional[Callable], task_abort_event: Event
     ) -> None:
         """
         Start scanning.
@@ -170,13 +176,14 @@ class FakeCspObsComponent(FakeBaseComponent):
             for whether this task has been aborted.
         """
         if self.power_state != PowerState.ON:
-            task_callback(
-                status=TaskStatus.COMPLETED,
-                result=(
-                    ResultCode.FAILED,
-                    "Scan commencement failed: component is not ON.",
-                ),
-            )
+            if task_callback is not None:
+                task_callback(
+                    status=TaskStatus.COMPLETED,
+                    result=(
+                        ResultCode.FAILED,
+                        "Scan commencement failed: component is not ON.",
+                    ),
+                )
             return
 
         self._scan_id = scan_id
@@ -186,10 +193,10 @@ class FakeCspObsComponent(FakeBaseComponent):
         )
 
     def end_scan(
-        self,
+        self: FakeCspObsComponent,
         task_callback: Optional[Callable],
         task_abort_event: Event,
-    ):
+    ) -> None:
         """
         End scanning.
 
@@ -199,13 +206,14 @@ class FakeCspObsComponent(FakeBaseComponent):
             for whether this task has been aborted.
         """
         if self.power_state != PowerState.ON:
-            task_callback(
-                status=TaskStatus.COMPLETED,
-                result=(
-                    ResultCode.FAILED,
-                    "End scan failed: component is not ON.",
-                ),
-            )
+            if task_callback is not None:
+                task_callback(
+                    status=TaskStatus.COMPLETED,
+                    result=(
+                        ResultCode.FAILED,
+                        "End scan failed: component is not ON.",
+                    ),
+                )
             return
 
         self._scan_id = 0
@@ -215,13 +223,13 @@ class FakeCspObsComponent(FakeBaseComponent):
         )
 
     @check_on
-    def simulate_scan_stopped(self) -> None:
+    def simulate_scan_stopped(self: FakeCspObsComponent) -> None:
         """Tell the component to simulate spontaneous stopping its scan."""
         self._scan_id = 0
         self._update_state(scanning=False)
 
     @check_on
-    def simulate_obsfault(self, obsfault: bool) -> None:
+    def simulate_obsfault(self: FakeCspObsComponent, obsfault: bool) -> None:
         """
         Tell the component to simulate an obsfault, or the absence of one.
 
@@ -232,7 +240,7 @@ class FakeCspObsComponent(FakeBaseComponent):
 
     @check_on
     def obsreset(
-        self,
+        self: FakeCspObsComponent,
         task_callback: Optional[Callable],
         task_abort_event: Event,
     ) -> None:
@@ -258,7 +266,7 @@ class FakeCspObsComponent(FakeBaseComponent):
 
 
 class ReferenceCspObsComponentManager(
-    ReferenceBaseComponentManager,
+    ReferenceBaseComponentManager[FakeCspObsComponent],
     CspObsComponentManager,
 ):
     """
@@ -273,12 +281,12 @@ class ReferenceCspObsComponentManager(
     """
 
     def __init__(
-        self,
-        logger,
-        communication_state_callback,
-        component_state_callback,
-        _component=None,
-    ):
+        self: ReferenceCspObsComponentManager,
+        logger: logging.Logger,
+        communication_state_callback: Callable[[CommunicationStatus], None],
+        component_state_callback: Callable[..., None],
+        _component: Optional[FakeCspObsComponent] = None,
+    ) -> None:
         """
         Initialise a new ``ReferenceCspObsComponentManager`` instance.
 
@@ -301,7 +309,9 @@ class ReferenceCspObsComponentManager(
     @check_communicating
     @check_on
     def configure_scan(
-        self, configuration, task_callback=None
+        self: ReferenceCspObsComponentManager,
+        configuration: dict,
+        task_callback: Optional[Callable] = None,
     ) -> Tuple[TaskStatus, str]:
         """
         Configure the component.
@@ -320,7 +330,10 @@ class ReferenceCspObsComponentManager(
         )
 
     @check_communicating
-    def deconfigure(self, task_callback=None) -> Tuple[TaskStatus, str]:
+    def deconfigure(
+        self: ReferenceCspObsComponentManager,
+        task_callback: Optional[Callable] = None,
+    ) -> Tuple[TaskStatus, str]:
         """
         Tell the component to deconfigure.
 
@@ -331,11 +344,16 @@ class ReferenceCspObsComponentManager(
         """
         self.logger.info("Deconfiguring component")
         return self.submit_task(
-            self._component.deconfigure, task_callback=task_callback
+            self._component.deconfigure,
+            task_callback=task_callback,
         )
 
     @check_communicating
-    def scan(self, args, task_callback=None) -> Tuple[TaskStatus, str]:
+    def scan(
+        self: ReferenceCspObsComponentManager,
+        args: Any,  # TODO: What should this type be?
+        task_callback: Optional[Callable] = None,
+    ) -> Tuple[TaskStatus, str]:
         """
         Tell the component to start scanning.
 
@@ -347,11 +365,15 @@ class ReferenceCspObsComponentManager(
         """
         self.logger.info("Starting scan in component")
         return self.submit_task(
-            self._component.scan, (args,), task_callback=task_callback
+            self._component.scan,
+            (args,),
+            task_callback=task_callback,
         )
 
     @check_communicating
-    def end_scan(self, task_callback=None) -> Tuple[TaskStatus, str]:
+    def end_scan(
+        self: ReferenceCspObsComponentManager, task_callback: Optional[Callable] = None
+    ) -> Tuple[TaskStatus, str]:
         """
         Tell the component to stop scanning.
 
@@ -361,10 +383,15 @@ class ReferenceCspObsComponentManager(
         :return: task status and human-readable status messsage
         """
         self.logger.info("Stopping scan in component")
-        return self.submit_task(self._component.end_scan, task_callback=task_callback)
+        return self.submit_task(
+            self._component.end_scan,
+            task_callback=task_callback,
+        )
 
     @check_communicating
-    def abort(self, task_callback=None) -> Tuple[TaskStatus, str]:
+    def abort(
+        self: ReferenceCspObsComponentManager, task_callback: Optional[Callable] = None
+    ) -> Tuple[TaskStatus, str]:
         """
         Tell the component to stop scanning.
 
@@ -377,7 +404,9 @@ class ReferenceCspObsComponentManager(
         return self.abort_commands(task_callback=task_callback)
 
     @check_communicating
-    def obsreset(self, task_callback=None) -> Tuple[TaskStatus, str]:
+    def obsreset(
+        self: ReferenceCspObsComponentManager, task_callback: Optional[Callable] = None
+    ) -> Tuple[TaskStatus, str]:
         """
         Perform an obsreset on the component.
 
@@ -387,11 +416,14 @@ class ReferenceCspObsComponentManager(
         :return: task status and human-readable status messsage
         """
         self.logger.info("Resetting component")
-        return self.submit_task(self._component.obsreset, task_callback=task_callback)
+        return self.submit_task(
+            self._component.obsreset,
+            task_callback=task_callback,
+        )
 
-    @property
+    @property  # type: ignore[misc]  # mypy doesn't support decorated properties
     @check_communicating
-    def config_id(self):
+    def config_id(self: ReferenceCspObsComponentManager) -> str:
         """
         Return the configuration id.
 
@@ -399,14 +431,14 @@ class ReferenceCspObsComponentManager(
         """
         return self._component.config_id
 
-    @config_id.setter
-    @check_communicating
-    def config_id(self, config_id):
-        self._component.config_id = config_id
+    # @config_id.setter  # type: ignore[misc]
+    # @check_communicating
+    # def config_id(self: ReferenceCspObsComponentManager, config_id: str) -> None:
+    #     self._component.config_id = config_id
 
-    @property
+    @property  # type: ignore[misc]  # mypy doesn't support decorated properties
     @check_on
-    def scan_id(self):
+    def scan_id(self: ReferenceCspObsComponentManager) -> int:
         """
         Return the scan id.
 

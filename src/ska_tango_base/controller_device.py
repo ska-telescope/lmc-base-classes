@@ -1,3 +1,4 @@
+# pylint: disable=invalid-name
 # -*- coding: utf-8 -*-
 #
 # This file is part of the SKA Tango Base project
@@ -12,27 +13,30 @@ Controller device
 from __future__ import annotations
 
 import logging
-from typing import Any, List, Optional, Tuple, cast
+from typing import Any, Generic, List, Optional, Tuple, TypeVar, cast
 
 from ska_control_model import ResultCode
 from tango import DebugIt
 from tango.server import attribute, command, device_property
 
-from ska_tango_base.base import SKABaseDevice
-from ska_tango_base.commands import DeviceInitCommand, FastCommand
-from ska_tango_base.utils import (  # type: ignore[attr-defined]
-    convert_dict_to_list,
-    validate_capability_types,
-    validate_input_sizes,
-)
+from .base import BaseComponentManager, SKABaseDevice
+from .commands import DeviceInitCommand, FastCommand
+from .utils import convert_dict_to_list, validate_capability_types, validate_input_sizes
 
-__all__ = ["SKAController", "main"]
+__all__ = ["ControllerComponentManager", "SKAController", "main"]
 
 
-# TODO: This under-developed device class does not yet have a component
-# manager. Hence its `create_component_manager` method is still the abstract
-# method inherited from the base device.
-class SKAController(SKABaseDevice):  # pylint: disable=abstract-method
+# pylint: disable-next=abstract-method
+class ControllerComponentManager(BaseComponentManager):
+    """A stub for an controller component manager."""
+
+    # TODO
+
+
+ComponentManagerT = TypeVar("ComponentManagerT", bound=ControllerComponentManager)
+
+
+class SKAController(SKABaseDevice, Generic[ComponentManagerT]):
     """Controller device."""
 
     # -----------------
@@ -57,9 +61,10 @@ class SKAController(SKABaseDevice):  # pylint: disable=abstract-method
 
     # pylint: disable-next=too-few-public-methods
     class InitCommand(DeviceInitCommand):
+        # pylint: disable=protected-access  # command classes are friend classes
         """A class for the SKAController's init_device() "command"."""
 
-        def do(  # type: ignore[override]
+        def do(
             self: SKAController.InitCommand,
             *args: Any,
             **kwargs: Any,
@@ -76,28 +81,14 @@ class SKAController(SKABaseDevice):  # pylint: disable=abstract-method
                 message indicating status. The message is for
                 information purpose only.
             """
-            # pylint: disable-next=protected-access
             self._device._element_logger_address = ""
-
-            # pylint: disable-next=protected-access
             self._device._element_alarm_address = ""
-
-            # pylint: disable-next=protected-access
             self._device._element_tel_state_address = ""
-
-            # pylint: disable-next=protected-access
             self._device._element_database_address = ""
-
-            # pylint: disable-next=protected-access
             self._device._element_alarm_device = ""
-
-            # pylint: disable-next=protected-access
             self._device._element_tel_state_device = ""
-
-            # pylint: disable-next=protected-access
             self._device._element_database_device = ""
 
-            # pylint: disable-next=protected-access
             self._device._max_capabilities = {}
             if self._device.MaxCapabilities:
                 for max_capability in self._device.MaxCapabilities:
@@ -105,18 +96,24 @@ class SKAController(SKABaseDevice):  # pylint: disable=abstract-method
                         capability_type,
                         max_capability_instances,
                     ) = max_capability.split(":")
-                    # pylint: disable-next=protected-access
                     self._device._max_capabilities[capability_type] = int(
                         max_capability_instances
                     )
 
-            # pylint: disable-next=protected-access
             self._device._available_capabilities = self._device._max_capabilities.copy()
 
             message = "SKAController Init command completed OK"
             self.logger.info(message)
             self._completed()
             return (ResultCode.OK, message)
+
+    def create_component_manager(self: SKAController) -> ComponentManagerT:
+        """
+        Create and return a component manager for this device.
+
+        :raises NotImplementedError: because it is not implemented.
+        """
+        raise NotImplementedError("SKAController is incomplete.")
 
     # ----------
     # Attributes
@@ -198,6 +195,7 @@ class SKAController(SKABaseDevice):  # pylint: disable=abstract-method
 
     # pylint: disable-next=too-few-public-methods
     class IsCapabilityAchievableCommand(FastCommand):
+        # pylint: disable=protected-access  # command classes are friend classes
         """A class for the SKAController's IsCapabilityAchievable() command."""
 
         def __init__(
@@ -214,7 +212,7 @@ class SKAController(SKABaseDevice):  # pylint: disable=abstract-method
             self._device = device
             super().__init__(logger=logger)
 
-        def do(  # type: ignore[override]
+        def do(
             self: SKAController.IsCapabilityAchievableCommand,
             *args: Any,
             **kwargs: Any,
@@ -237,14 +235,14 @@ class SKAController(SKABaseDevice):  # pylint: disable=abstract-method
             validate_input_sizes(command_name, argin)
             validate_capability_types(
                 command_name,
-                capability_types,  # pylint: disable-next=protected-access
+                capability_types,
                 list(self._device._max_capabilities.keys()),
             )
 
             for capability_type, capability_instances in zip(
                 capability_types, capabilities_instances
             ):
-                if (  # pylint: disable=protected-access
+                if (
                     not self._device._available_capabilities[capability_type]
                     >= capability_instances
                 ):

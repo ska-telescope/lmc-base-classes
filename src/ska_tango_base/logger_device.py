@@ -1,3 +1,4 @@
+# pylint: disable=invalid-name
 # -*- coding: utf-8 -*-
 #
 # This file is part of the SKA Tango Base project
@@ -13,21 +14,31 @@ remote logging for selected devices.
 """
 from __future__ import annotations
 
-from typing import Any, List, Optional, Tuple, cast
+from typing import Any, Generic, List, Tuple, TypeVar, cast
 
 from ska_control_model import LoggingLevel, ResultCode
 from tango import DebugIt, DevFailed, DeviceProxy
 from tango.server import command
 
-from ska_tango_base.base import SKABaseDevice
-from ska_tango_base.commands import FastCommand
+from .base import BaseComponentManager, SKABaseDevice
+from .commands import FastCommand
 
-DevVarLongStringArrayType = Tuple[List[ResultCode], List[Optional[str]]]
+DevVarLongStringArrayType = Tuple[List[ResultCode], List[str]]
 
-__all__ = ["SKALogger", "main"]
+__all__ = ["LoggerComponentManager", "SKALogger", "main"]
 
 
-class SKALogger(SKABaseDevice):
+# pylint: disable-next=abstract-method
+class LoggerComponentManager(BaseComponentManager):
+    """A stub for an logger component manager."""
+
+    # TODO
+
+
+ComponentManagerT = TypeVar("ComponentManagerT", bound=LoggerComponentManager)
+
+
+class SKALogger(SKABaseDevice, Generic[ComponentManagerT]):
     """A generic base device for Logging for SKA."""
 
     # -----------------
@@ -45,13 +56,14 @@ class SKALogger(SKABaseDevice):
             self.SetLoggingLevelCommand(self.logger),
         )
 
-    def create_component_manager(self: SKALogger) -> None:  # type: ignore[override]
+    def create_component_manager(self: SKALogger) -> ComponentManagerT:
         """
         Create and return the component manager for this device.
 
         :return: None, this device doesn't have a component manager
         """
-        return None  # This device doesn't have a component manager yet
+        # TODO: This should raise NotImplementedError, but that would break some tests.
+        return None  # type: ignore[return-value]
 
     # ----------
     # Attributes
@@ -64,7 +76,7 @@ class SKALogger(SKABaseDevice):
     class SetLoggingLevelCommand(FastCommand):
         """A class for the SKALoggerDevice's SetLoggingLevel() command."""
 
-        def do(  # type: ignore[override]
+        def do(
             self: SKALogger.SetLoggingLevelCommand,
             *args: Any,
             **kwargs: Any,

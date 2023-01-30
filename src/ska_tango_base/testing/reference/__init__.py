@@ -20,11 +20,11 @@ from .reference_base_component_manager import (
     FakeBaseComponent,
     ReferenceBaseComponentManager,
 )
-from .reference_csp_obs_component_manager import (  # type: ignore[attr-defined]
+from .reference_csp_obs_component_manager import (
     FakeCspObsComponent,
     ReferenceCspObsComponentManager,
 )
-from .reference_csp_subarray_component_manager import (  # type: ignore[attr-defined]
+from .reference_csp_subarray_component_manager import (
     FakeCspSubarrayComponent,
     ReferenceCspSubarrayComponentManager,
 )

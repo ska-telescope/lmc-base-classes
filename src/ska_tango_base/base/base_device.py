@@ -1,4 +1,4 @@
-# pylint: skip-file  # TODO: Incrementally lint this repo
+# pylint: disable=invalid-name, too-many-lines  # TODO: split this module
 # -*- coding: utf-8 -*-
 #
 # This file is part of the SKA Tango Base project
@@ -13,30 +13,20 @@ device.
 """
 from __future__ import annotations
 
-import enum
 import inspect
 import itertools
 import json
 import logging
 import logging.handlers
 import queue
-import socket
-import sys
 import threading
 import traceback
-import warnings
 from functools import partial
 from types import FunctionType, MethodType
-from typing import Any, Callable, List, Optional, Tuple, Union, cast
-from urllib.parse import urlparse
-from urllib.request import url2pathname
+from typing import Any, Callable, Generic, List, Optional, Tuple, TypeVar
 
-# SKA specific imports
 import debugpy
-import ska_ser_logging  # type: ignore[import]
-
-# Tango imports
-import tango
+import ska_ser_logging
 from ska_control_model import (
     AdminMode,
     CommunicationStatus,
@@ -52,358 +42,35 @@ from ska_control_model import (
 from tango import DebugIt, DevState, is_omni_thread
 from tango.server import Device, attribute, command, device_property
 
-from ska_tango_base import release
-from ska_tango_base.base import AdminModeModel, BaseComponentManager, OpStateModel
-from ska_tango_base.commands import (
-    DeviceInitCommand,
-    FastCommand,
-    SlowCommand,
-    SubmittedSlowCommand,
+from .. import release
+from ..commands import DeviceInitCommand, FastCommand, SlowCommand, SubmittedSlowCommand
+from ..faults import GroupDefinitionsError, LoggingLevelError
+from ..utils import generate_command_id, get_groups_from_json
+from .admin_mode_model import AdminModeModel
+from .component_manager import BaseComponentManager
+from .logging import (
+    _LMC_TO_PYTHON_LOGGING_LEVEL,
+    _LMC_TO_TANGO_LOGGING_LEVEL,
+    LoggingUtils,
 )
-from ska_tango_base.faults import (
-    GroupDefinitionsError,
-    LoggingLevelError,
-    LoggingTargetError,
-)
-from ska_tango_base.utils import (  # type: ignore[attr-defined]
-    generate_command_id,
-    get_groups_from_json,
-)
+from .op_state_model import OpStateModel
 
-DevVarLongStringArrayType = Tuple[List[ResultCode], List[Optional[str]]]
+DevVarLongStringArrayType = Tuple[List[ResultCode], List[str]]
 
 MAX_REPORTED_CONCURRENT_COMMANDS = 16
 MAX_REPORTED_QUEUED_COMMANDS = 64
 
 
-LOG_FILE_SIZE = 1024 * 1024  # Log file size 1MB.
 _DEBUGGER_PORT = 5678
-
-
-class _Log4TangoLoggingLevel(enum.IntEnum):
-    """
-    Python enumerated type for Tango log4tango logging levels.
-
-    This is different to tango.LogLevel, and is required if using
-    a device's set_log_level() method.  It is not currently exported
-    via PyTango, so we hard code it here in the interim.
-
-    Source:
-       https://gitlab.com/tango-controls/cppTango/blob/
-       4feffd7c8e24b51c9597a40b9ef9982dd6e99cdf/log4tango/include/log4tango/Level.hh#L86-93
-    """
-
-    OFF = 100
-    FATAL = 200
-    ERROR = 300
-    WARN = 400
-    INFO = 500
-    DEBUG = 600
-
-
-_PYTHON_TO_TANGO_LOGGING_LEVEL = {
-    logging.CRITICAL: _Log4TangoLoggingLevel.FATAL,
-    logging.ERROR: _Log4TangoLoggingLevel.ERROR,
-    logging.WARNING: _Log4TangoLoggingLevel.WARN,
-    logging.INFO: _Log4TangoLoggingLevel.INFO,
-    logging.DEBUG: _Log4TangoLoggingLevel.DEBUG,
-}
-
-_LMC_TO_TANGO_LOGGING_LEVEL = {
-    LoggingLevel.OFF: _Log4TangoLoggingLevel.OFF,
-    LoggingLevel.FATAL: _Log4TangoLoggingLevel.FATAL,
-    LoggingLevel.ERROR: _Log4TangoLoggingLevel.ERROR,
-    LoggingLevel.WARNING: _Log4TangoLoggingLevel.WARN,
-    LoggingLevel.INFO: _Log4TangoLoggingLevel.INFO,
-    LoggingLevel.DEBUG: _Log4TangoLoggingLevel.DEBUG,
-}
-
-_LMC_TO_PYTHON_LOGGING_LEVEL = {
-    LoggingLevel.OFF: logging.CRITICAL,  # there is no "off"
-    LoggingLevel.FATAL: logging.CRITICAL,
-    LoggingLevel.ERROR: logging.ERROR,
-    LoggingLevel.WARNING: logging.WARNING,
-    LoggingLevel.INFO: logging.INFO,
-    LoggingLevel.DEBUG: logging.DEBUG,
-}
-
-
-class TangoLoggingServiceHandler(logging.Handler):
-    """Handler that emit logs via Tango device's logger to TLS."""
-
-    def __init__(self: TangoLoggingServiceHandler, tango_logger: tango.Logger) -> None:
-        super().__init__()
-        self.tango_logger = tango_logger
-
-    def emit(self: TangoLoggingServiceHandler, record: logging.LogRecord) -> None:
-        try:
-            msg = self.format(record)
-            tango_level = _PYTHON_TO_TANGO_LOGGING_LEVEL[record.levelno]
-            self.acquire()
-            try:
-                self.tango_logger.log(tango_level, msg)
-            finally:
-                self.release()
-        except Exception:
-            self.handleError(record)
-
-    def __repr__(self: TangoLoggingServiceHandler) -> str:
-        python_level = logging.getLevelName(self.level)
-        if self.tango_logger:
-            tango_level = _Log4TangoLoggingLevel(self.tango_logger.get_level()).name
-            name = self.tango_logger.get_name()
-        else:
-            tango_level = "UNKNOWN"
-            name = "!No Tango logger!"
-        return (
-            f"<{self.__class__.__name__} {name} (Python {python_level}, Tango "
-            f"{tango_level})>"
-        )
-
-
-class LoggingUtils:
-    """
-    Utility functions to aid logger configuration.
-
-    These functions are encapsulated in class to aid testing - it
-    allows dependent functions to be mocked.
-    """
-
-    @staticmethod
-    def sanitise_logging_targets(targets: list[str], device_name: str) -> list[str]:
-        """
-        Validate and return logging targets '<type>::<name>' strings.
-
-        :param targets:
-            List of candidate logging target strings, like '<type>[::<name>]'
-            Empty and whitespace-only strings are ignored.  Can also be None.
-
-        :param device_name:
-            Tango device name, like 'domain/family/member', used
-            for the default file name
-
-        :return: list of '<type>::<name>' strings, with default name, if applicable
-
-        :raises LoggingTargetError: for invalid target string that cannot be corrected
-        """
-        default_target_names: dict[str, str | None] = {
-            "console": "cout",
-            "file": f"{device_name.replace('/', '_')}.log",
-            "syslog": None,
-            "tango": "logger",
-        }
-
-        valid_targets = []
-        if targets:
-            for target in targets:
-                target = target.strip()
-                if not target:
-                    continue
-                if "::" in target:
-                    target_type, target_name = target.split("::", 1)
-                else:
-                    target_type = target
-                    target_name = ""
-                if target_type not in default_target_names:
-                    raise LoggingTargetError(
-                        f"Invalid target type: {target_type} - options are "
-                        f"{list(default_target_names.keys())}"
-                    )
-                if not target_name:
-                    target_name = cast(str, default_target_names[target_type])
-                if not target_name:
-                    raise LoggingTargetError(
-                        f"Target name required for type {target_type}"
-                    )
-                valid_target = f"{target_type}::{target_name}"
-                valid_targets.append(valid_target)
-
-        return valid_targets
-
-    @staticmethod
-    def get_syslog_address_and_socktype(
-        url: str,
-    ) -> tuple[Union[tuple[str, int], str], socket.SocketKind | None]:  # noqa: F821
-        """
-        Parse syslog URL and extract address and socktype parameters for SysLogHandler.
-
-        :param url: Universal resource locator string for syslog target.
-            Three types are supported: file path, remote UDP server,
-            remote TCP server.
-
-            - Output to a file: 'file://<path to file>'. For example,
-              'file:///dev/log' will write to '/dev/log'.
-
-            - Output to remote server over UDP:
-              'udp://<hostname>:<port>'. For example,
-              'udp://syslog.com:514' will send to host 'syslog.com' on
-              UDP port 514
-
-            - Output to remote server over TCP:
-              'tcp://<hostname>:<port>'. For example,
-              'tcp://rsyslog.com:601' will send to host 'rsyslog.com' on
-              TCP port 601
-
-            For backwards compatibility, if the protocol prefix is
-            missing, the type is interpreted as file. This is
-            deprecated. For example, '/dev/log' is equivalent to
-            'file:///dev/log'.
-
-        :return: An (address, socktype) tuple.
-
-            For file types:
-
-            - the address is the file path as as string
-
-            - socktype is None
-
-            For UDP and TCP:
-
-            - the address is tuple of (hostname, port), with hostname a
-              string, and port an integer.
-
-            - socktype is socket.SOCK_DGRAM for UDP, or
-              socket.SOCK_STREAM for TCP.
-
-        :raises LoggingTargetError: for invalid url string
-        """
-        address: tuple[str, int] | str = ""
-        socktype = None
-        parsed = urlparse(url)
-        if parsed.scheme in ["file", ""]:
-            address = url2pathname(parsed.netloc + parsed.path)
-            socktype = None
-            if not address:
-                raise LoggingTargetError(
-                    f"Invalid syslog URL - empty file path from '{url}'"
-                )
-            if parsed.scheme == "":
-                warnings.warn(
-                    "Specifying syslog URL without protocol is deprecated, "
-                    f"use 'file://{url}' instead of '{url}'",
-                    DeprecationWarning,
-                )
-        elif parsed.scheme in ["udp", "tcp"]:
-            if not parsed.hostname:
-                raise LoggingTargetError(
-                    f"Invalid syslog URL - could not extract hostname from '{url}'"
-                )
-            try:
-                port = parsed.port
-                if not port:
-                    raise LoggingTargetError(
-                        f"Invalid syslog URL - could not extract integer port number "
-                        f"from '{url}'"
-                    )
-            except (TypeError, ValueError):
-                raise LoggingTargetError(
-                    f"Invalid syslog URL - could not extract integer port number from "
-                    f"'{url}'"
-                )
-            address = (parsed.hostname, port)
-            socktype = (
-                socket.SOCK_DGRAM if parsed.scheme == "udp" else socket.SOCK_STREAM
-            )
-        else:
-            raise LoggingTargetError(
-                f"Invalid syslog URL - expected file, udp or tcp protocol scheme in "
-                f"'{url}'"
-            )
-        return address, socktype
-
-    @staticmethod
-    def create_logging_handler(
-        target: str, tango_logger: Optional[tango.Logger] = None
-    ) -> Any:
-        """
-        Create a Python log handler based on the target type.
-
-        Supported target types are "console", "file", "syslog", "tango".
-
-        :param target:
-            Logging target for logger, <type>::<name>
-
-        :param tango_logger:
-            Instance of tango.Logger, optional.  Only required if creating
-            a target of type "tango".
-
-        :return: StreamHandler, RotatingFileHandler, SysLogHandler, or
-            TangoLoggingServiceHandler
-
-        :raises LoggingTargetError: for invalid target string
-        """
-        if "::" in target:
-            target_type, target_name = target.split("::", 1)
-        else:
-            raise LoggingTargetError(
-                f"Invalid target requested - missing '::' separator: {target}"
-            )
-        handler: Union[
-            logging.StreamHandler,
-            logging.handlers.RotatingFileHandler,
-            logging.handlers.SysLogHandler,
-            TangoLoggingServiceHandler,
-        ]
-        if target_type == "console":
-            handler = logging.StreamHandler(sys.stdout)
-        elif target_type == "file":
-            log_file_name = target_name
-            handler = logging.handlers.RotatingFileHandler(
-                log_file_name, "a", LOG_FILE_SIZE, 2, None, False
-            )
-        elif target_type == "syslog":
-            address, socktype = LoggingUtils.get_syslog_address_and_socktype(
-                target_name
-            )
-            handler = logging.handlers.SysLogHandler(
-                address=address,
-                facility=logging.handlers.SysLogHandler.LOG_SYSLOG,
-                socktype=socktype,
-            )
-        elif target_type == "tango":
-            if tango_logger:
-                handler = TangoLoggingServiceHandler(tango_logger)
-            else:
-                raise LoggingTargetError(
-                    "Missing tango_logger instance for 'tango' target type"
-                )
-        else:
-            raise LoggingTargetError(
-                f"Invalid target type requested: '{target_type}' in '{target}'"
-            )
-        formatter = ska_ser_logging.get_default_formatter(tags=True)
-        handler.setFormatter(formatter)
-        handler.name = target
-        return handler
-
-    @staticmethod
-    def update_logging_handlers(targets: list[str], logger: logging.Logger) -> None:
-        old_targets = [handler.name for handler in logger.handlers]
-        added_targets = set(targets) - set(old_targets)
-        removed_targets = set(old_targets) - set(targets)
-
-        for handler in list(logger.handlers):
-            if handler.name in removed_targets:
-                logger.removeHandler(handler)
-        for target in targets:
-            if target in added_targets:
-                handler = LoggingUtils.create_logging_handler(
-                    # TODO investigate this type: ignore
-                    target,
-                    logger.tango_logger,  # type: ignore[attr-defined]
-                )
-                logger.addHandler(handler)
-
-        logger.info("Logging targets set to %s", targets)
 
 
 __all__ = ["SKABaseDevice", "main", "CommandTracker"]
 
 
-class CommandTracker:
+class CommandTracker:  # pylint: disable=too-many-instance-attributes
     """A class for keeping track of the state and progress of commands."""
 
-    def __init__(
+    def __init__(  # pylint: disable=too-many-arguments
         self: CommandTracker,
         queue_changed_callback: Callable[[list[tuple[str, str]]], None],
         status_changed_callback: Callable[[list[tuple[str, TaskStatus]]], None],
@@ -466,7 +133,7 @@ class CommandTracker:
 
         threading.Timer(self._removal_time, remove, (command_id,)).start()
 
-    def update_command_info(
+    def update_command_info(  # pylint: disable=too-many-arguments
         self: CommandTracker,
         command_id: str,
         status: Optional[TaskStatus] = None,
@@ -522,9 +189,9 @@ class CommandTracker:
         ], f"Unsupported keyword {keyword} in _commands_by_keyword"
         with self.__lock:
             return list(
-                (command_id, self._commands[command_id][keyword])
-                for command_id in self._commands
-                if self._commands[command_id][keyword] is not None
+                (command_id, command[keyword])
+                for command_id, command in self._commands.items()
+                if command[keyword] is not None
             )
 
     @property
@@ -592,20 +259,30 @@ class CommandTracker:
         return TaskStatus.NOT_FOUND
 
 
-class SKABaseDevice(Device):
+ComponentManagerT = TypeVar("ComponentManagerT", bound=BaseComponentManager)
+
+
+# pylint: disable-next=too-many-instance-attributes, too-many-public-methods
+class SKABaseDevice(Device, Generic[ComponentManagerT]):
+    # pylint: disable=attribute-defined-outside-init  # Tango devices have init_device
     """A generic base device for SKA."""
 
     _global_debugger_listening = False
     _global_debugger_allocated_port = 0
 
-    class InitCommand(DeviceInitCommand):
+    class InitCommand(DeviceInitCommand):  # pylint: disable=too-few-public-methods
         """A class for the SKABaseDevice's init_device() "command"."""
 
-        def do(  # type: ignore[override]
+        def do(
             self: SKABaseDevice.InitCommand,
+            *args: Any,
+            **kwargs: Any,
         ) -> tuple[ResultCode, str]:
             """
             Stateless hook for device initialisation.
+
+            :param args: positional arguments to this do method
+            :param kwargs: keyword arguments to this do method
 
             :return: A tuple containing a return code and a string
                 message indicating status. The message is for
@@ -621,7 +298,7 @@ class SKABaseDevice(Device):
 
     def _init_logging(self: SKABaseDevice) -> None:
         """Initialize the logging mechanism, using default properties."""
-
+        # pylint: disable-next=too-few-public-methods
         class EnsureTagsFilter(logging.Filter):
             """
             Ensure all records have a "tags" field.
@@ -655,7 +332,10 @@ class SKABaseDevice(Device):
         # add a filter with this device's name
         device_name_tag = f"tango-device:{device_name}"
 
+        # pylint: disable-next=too-few-public-methods
         class TangoDeviceTagsFilter(logging.Filter):
+            """Filter that adds tango device name to the emitted record."""
+
             def filter(  # noqa: A003
                 self: TangoDeviceTagsFilter, record: logging.LogRecord
             ) -> bool:
@@ -744,8 +424,8 @@ class SKABaseDevice(Device):
     """
     Device property.
 
-    Default logging level at device startup.
-    See :py:class:`~ska_control_model.LoggingLevel`
+    Default logging level at device startup. See
+    :py:class:`~ska_control_model.LoggingLevel`
     """
 
     LoggingTargetsDefault = device_property(
@@ -958,7 +638,9 @@ class SKABaseDevice(Device):
             )()
 
             self.init_command_objects()
-        except Exception as exc:
+        except Exception as exc:  # pylint: disable=broad-except
+            # Deliberately catching all exceptions here, because an uncaught
+            # exception would take our execution thread down.
             if hasattr(self, "logger"):
                 self.logger.exception("init_device() failed.")
             else:
@@ -998,11 +680,11 @@ class SKABaseDevice(Device):
         """
         try:
             lmc_logging_level = LoggingLevel(value)
-        except ValueError:
+        except ValueError as value_error:
             raise LoggingLevelError(
                 f"Invalid level - {value} - must be one of "
-                f"{[v for v in LoggingLevel.__members__.values()]} "
-            )
+                f"{list(LoggingLevel.__members__.values())} "
+            ) from value_error
         self._logging_level = lmc_logging_level
         self.logger.setLevel(_LMC_TO_PYTHON_LOGGING_LEVEL[lmc_logging_level])
         self.logger.tango_logger.set_level(  # type: ignore[attr-defined]
@@ -1025,7 +707,7 @@ class SKABaseDevice(Device):
         valid_targets = LoggingUtils.sanitise_logging_targets(targets, device_name)
         LoggingUtils.update_logging_handlers(valid_targets, self.logger)
 
-    def create_component_manager(self: SKABaseDevice) -> BaseComponentManager:
+    def create_component_manager(self: SKABaseDevice) -> ComponentManagerT:
         """
         Create and return a component manager for this device.
 
@@ -1531,12 +1213,12 @@ class SKABaseDevice(Device):
         result_code, unique_id = handler()
         return ([result_code], [unique_id])
 
-    class AbortCommandsCommand(SlowCommand):
+    class AbortCommandsCommand(SlowCommand):  # pylint: disable=too-few-public-methods
         """The command class for the AbortCommand command."""
 
         def __init__(
             self: SKABaseDevice.AbortCommandsCommand,
-            component_manager: BaseComponentManager,
+            component_manager: ComponentManagerT,
             logger: Optional[logging.Logger] = None,
         ) -> None:
             """
@@ -1550,14 +1232,19 @@ class SKABaseDevice(Device):
             self._component_manager = component_manager
             super().__init__(None, logger=logger)
 
-        def do(  # type: ignore[override]
+        def do(
             self: SKABaseDevice.AbortCommandsCommand,
+            *args: Any,
+            **kwargs: Any,
         ) -> tuple[ResultCode, str]:
             """
             Abort long running commands.
 
             Abort the currently executing LRC and remove all enqueued
             LRCs.
+
+            :param args: positional arguments to this do method
+            :param kwargs: keyword arguments to this do method
 
             :return: A tuple containing a return code and a string
                 message indicating status. The message is for
@@ -1580,6 +1267,7 @@ class SKABaseDevice(Device):
         (return_code, message) = handler()
         return ([return_code], [message])
 
+    # pylint: disable-next=too-few-public-methods
     class CheckLongRunningCommandStatusCommand(FastCommand):
         """The command class for the CheckLongRunningCommandStatus command."""
 
@@ -1598,8 +1286,10 @@ class SKABaseDevice(Device):
             self._command_tracker = command_tracker
             super().__init__(logger=logger)
 
-        def do(  # type: ignore[override]
-            self: SKABaseDevice.CheckLongRunningCommandStatusCommand, argin: str
+        def do(
+            self: SKABaseDevice.CheckLongRunningCommandStatusCommand,
+            *args: Any,
+            **kwargs: Any,
         ) -> str:
             """
             Determine the status of the command ID passed in, if any.
@@ -1608,11 +1298,13 @@ class SKABaseDevice(Device):
             - Check `command_status` to see if it's in progress
             - Check `command_ids_in_queue` to see if it's queued
 
-            :param argin: The command ID
+            :param args: positional arguments to this do method. There
+                should be only one: the command_id.
+            :param kwargs: keyword arguments to this do method
 
             :return: The string of the TaskStatus
             """
-            command_id = argin
+            command_id = args[0]
             enum_status = self._command_tracker.get_command_status(command_id)
             return TaskStatus(enum_status).name
 
@@ -1630,6 +1322,7 @@ class SKABaseDevice(Device):
         return handler(argin)
 
     class DebugDeviceCommand(FastCommand):
+        # pylint: disable=protected-access  # command classes are friend classes
         """A class for the SKABaseDevice's DebugDevice() command."""
 
         def __init__(
@@ -1646,7 +1339,11 @@ class SKABaseDevice(Device):
             self._device = device
             super().__init__(logger)
 
-        def do(self: SKABaseDevice.DebugDeviceCommand) -> int:  # type: ignore[override]
+        def do(
+            self: SKABaseDevice.DebugDeviceCommand,
+            *args: Any,
+            **kwargs: Any,
+        ) -> int:
             """
             Stateless hook for device DebugDevice() command.
 
@@ -1656,6 +1353,9 @@ class SKABaseDevice(Device):
 
             If the debugger is already listening, additional execution of this
             command will trigger a breakpoint.
+
+            :param args: positional arguments to this do method
+            :param kwargs: keyword arguments to this do method
 
             :return: The TCP port the debugger is listening on.
             """
@@ -1669,6 +1369,7 @@ class SKABaseDevice(Device):
             else:
                 self.logger.warning("Triggering debugger breakpoint...")
                 debugpy.breakpoint()
+
             return SKABaseDevice._global_debugger_allocated_port
 
         def start_debugger_and_get_port(
@@ -1716,6 +1417,7 @@ class SKABaseDevice(Device):
             methods = []
             for name, method in inspect.getmembers(self._device, inspect.ismethod):
                 methods.append((self._device, name, method))
+
             for command_object in self._device._command_objects.values():
                 for name, method in inspect.getmembers(
                     command_object, inspect.ismethod
@@ -1794,8 +1496,8 @@ class SKABaseDevice(Device):
 
         :return: the  port the debugger is listening on
         """
-        command = self.get_command_object("DebugDevice")
-        return command()
+        command_object = self.get_command_object("DebugDevice")
+        return command_object()
 
     def set_state(self: SKABaseDevice, state: DevState) -> None:
         """

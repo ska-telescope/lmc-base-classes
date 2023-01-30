@@ -5,5 +5,5 @@ __all__ = (
     "CspSubElementSubarray",
 )
 
-from .component_manager import CspSubarrayComponentManager  # type: ignore[attr-defined]
-from .subarray_device import CspSubElementSubarray  # type: ignore[attr-defined]
+from .component_manager import CspSubarrayComponentManager
+from .subarray_device import CspSubElementSubarray

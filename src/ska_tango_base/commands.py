@@ -45,7 +45,7 @@ from ska_control_model import ResultCode, TaskStatus
 from tango.server import Device
 from typing_extensions import Protocol
 
-from ska_tango_base.base.component_manager import BaseComponentManager
+from .base.component_manager import BaseComponentManager
 
 __all__ = [
     "ResultCode",
@@ -128,6 +128,7 @@ class _BaseCommand:
             "subclass; try FastCommand or SlowCommand instead."
         )
 
+    # pylint: disable-next=invalid-name
     def do(self: _BaseCommand, *args: Any, **kwargs: Any) -> Any:
         """
         Perform the user-specified functionality of the command.

@@ -15,7 +15,7 @@ import pytest
 import tango
 from _pytest.fixtures import SubRequest
 
-from ska_tango_base.utils import (  # type: ignore[attr-defined]
+from ska_tango_base.utils import (
     GroupDefinitionsError,
     for_testing_only,
     get_groups_from_json,
@@ -332,6 +332,6 @@ def test_for_testing_only_decorator() -> None:
         """
         return "bah"
 
-    with pytest.warns(None) as warning_record:  # type: ignore[call-overload]
+    with pytest.warns(None) as warning_record:
         assert dummy() == "bah"
     assert len(warning_record) == 0  # no warning was raised because we are testing

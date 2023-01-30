@@ -1,5 +1,4 @@
-# type: ignore
-# pylint: skip-file  # TODO: Incrementally lint this repo
+# pylint: disable=invalid-name
 # -*- coding: utf-8 -*-
 #
 # This file is part of the CspSubElementController project
@@ -14,21 +13,38 @@ CspSubElementController.
 
 Controller device for SKA CSP Subelement.
 """
+from __future__ import annotations
+
+import logging
 from collections import defaultdict
-from typing import List, Tuple
+from typing import Any, Generic, List, Optional, Tuple, TypeVar
 
 import tango
 from ska_control_model import AdminMode, ResultCode
 from tango import AttrWriteType, DebugIt
 from tango.server import attribute, command, device_property, run
 
-from ska_tango_base import SKAController
-from ska_tango_base.commands import FastCommand
+from ..commands import FastCommand
+from ..controller_device import ControllerComponentManager, SKAController
 
-__all__ = ["CspSubElementController", "main"]
+__all__ = ["CspControllerComponentManager", "CspSubElementController", "main"]
+
+DevVarLongStringArrayType = Tuple[List[ResultCode], List[str]]
 
 
-class CspSubElementController(SKAController):
+# pylint: disable-next=abstract-method
+class CspControllerComponentManager(ControllerComponentManager):
+    """A stub for a CSP controller component manager."""
+
+    # TODO
+
+
+ComponentManagerT = TypeVar("ComponentManagerT", bound=ControllerComponentManager)
+
+
+# pylint: disable-next=too-many-public-methods
+class CspSubElementController(SKAController, Generic[ComponentManagerT]):
+    # pylint: disable=attribute-defined-outside-init  # Tango devices have init_device
     """
     Controller device for SKA CSP Subelement.
 
@@ -43,6 +59,14 @@ class CspSubElementController(SKAController):
             - Delay in sec between  power-up stages in Standby-> Off transition.
             - Type:'DevFloat'
     """
+
+    def create_component_manager(self: CspSubElementController) -> ComponentManagerT:
+        """
+        Create and return a component manager for this device.
+
+        :raises NotImplementedError: because it is not implemented.
+        """
+        raise NotImplementedError("CspSubElementController is incomplete.")
 
     # -----------------
     # Device Properties
@@ -190,7 +214,7 @@ class CspSubElementController(SKAController):
     # General methods
     # ---------------
 
-    def init_command_objects(self):
+    def init_command_objects(self: CspSubElementController) -> None:
         """Set up the command objects."""
         super().init_command_objects()
         self.register_command_object(
@@ -206,18 +230,27 @@ class CspSubElementController(SKAController):
             "ReInitDevices", self.ReInitDevicesCommand(logger=self.logger)
         )
 
+    # pylint: disable-next=too-few-public-methods
     class InitCommand(SKAController.InitCommand):
+        # pylint: disable=protected-access  # command classes are friend classes
         """A class for the CspSubElementController's init_device() "command"."""
 
-        def do(self):
+        def do(
+            self: CspSubElementController.InitCommand,
+            *args: Any,
+            **kwargs: Any,
+        ) -> Tuple[ResultCode, str]:
             """
             Stateless hook for device initialisation.
+
+            :param args: positional arguments to this do method
+            :param kwargs: keyword arguments to this do method
 
             :return: A tuple containing a return code and a string
                 message indicating status. The message is for
                 information purpose only.
             """
-            super().do()
+            super().do(*args, **kwargs)
 
             # _cmd_progress: command execution's progress percentage
             # implemented as a default dictionary:
@@ -251,7 +284,7 @@ class CspSubElementController(SKAController):
     # ------------------
     # Attributes methods
     # ------------------
-    def read_powerDelayStandbyOn(self):
+    def read_powerDelayStandbyOn(self: CspSubElementController) -> float:
         """
         Return the powerDelayStandbyOn attribute.
 
@@ -259,7 +292,7 @@ class CspSubElementController(SKAController):
         """
         return self._power_delay_standby_on
 
-    def write_powerDelayStandbyOn(self, value):
+    def write_powerDelayStandbyOn(self: CspSubElementController, value: float) -> None:
         """
         Set the powerDelayStandbyOn attribute.
 
@@ -267,7 +300,7 @@ class CspSubElementController(SKAController):
         """
         self._power_delay_standby_on = value
 
-    def read_onProgress(self):
+    def read_onProgress(self: CspSubElementController) -> int:
         """
         Return the onProgress attribute.
 
@@ -275,7 +308,7 @@ class CspSubElementController(SKAController):
         """
         return self._cmd_progress["on"]
 
-    def read_onMaximumDuration(self):
+    def read_onMaximumDuration(self: CspSubElementController) -> float:
         """
         Return the onMaximumDuration attribute.
 
@@ -283,7 +316,7 @@ class CspSubElementController(SKAController):
         """
         return self._cmd_maximum_duration["on"]
 
-    def write_onMaximumDuration(self, value):
+    def write_onMaximumDuration(self: CspSubElementController, value: float) -> None:
         """
         Set the onMaximumDuration attribute.
 
@@ -291,7 +324,7 @@ class CspSubElementController(SKAController):
         """
         self._cmd_maximum_duration["on"] = value
 
-    def read_onMeasuredDuration(self):
+    def read_onMeasuredDuration(self: CspSubElementController) -> float:
         """
         Return the onMeasuredDuration attribute.
 
@@ -299,7 +332,7 @@ class CspSubElementController(SKAController):
         """
         return self._cmd_measured_duration["on"]
 
-    def read_standbyProgress(self):
+    def read_standbyProgress(self: CspSubElementController) -> int:
         """
         Return the standbyProgress attribute.
 
@@ -307,7 +340,7 @@ class CspSubElementController(SKAController):
         """
         return self._cmd_progress["standby"]
 
-    def read_standbyMaximumDuration(self):
+    def read_standbyMaximumDuration(self: CspSubElementController) -> float:
         """
         Return the standbyMaximumDuration attribute.
 
@@ -315,7 +348,9 @@ class CspSubElementController(SKAController):
         """
         return self._cmd_maximum_duration["standby"]
 
-    def write_standbyMaximumDuration(self, value):
+    def write_standbyMaximumDuration(
+        self: CspSubElementController, value: float
+    ) -> None:
         """
         Set the standbyMaximumDuration attribute.
 
@@ -323,7 +358,7 @@ class CspSubElementController(SKAController):
         """
         self._cmd_maximum_duration["standby"] = value
 
-    def read_standbyMeasuredDuration(self):
+    def read_standbyMeasuredDuration(self: CspSubElementController) -> float:
         """
         Return the standbyMeasuredDuration attribute.
 
@@ -331,7 +366,7 @@ class CspSubElementController(SKAController):
         """
         return self._cmd_measured_duration["standby"]
 
-    def read_offProgress(self):
+    def read_offProgress(self: CspSubElementController) -> int:
         """
         Return the offProgress attribute.
 
@@ -339,7 +374,7 @@ class CspSubElementController(SKAController):
         """
         return self._cmd_progress["off"]
 
-    def read_offMaximumDuration(self):
+    def read_offMaximumDuration(self: CspSubElementController) -> float:
         """
         Return the offMaximumDuration attribute.
 
@@ -347,7 +382,7 @@ class CspSubElementController(SKAController):
         """
         return self._cmd_maximum_duration["off"]
 
-    def write_offMaximumDuration(self, value):
+    def write_offMaximumDuration(self: CspSubElementController, value: float) -> None:
         """
         Set the offMaximumDuration attribute.
 
@@ -355,7 +390,7 @@ class CspSubElementController(SKAController):
         """
         self._cmd_maximum_duration["off"] = value
 
-    def read_offMeasuredDuration(self):
+    def read_offMeasuredDuration(self: CspSubElementController) -> float:
         """
         Return the offMeasuredDuration attribute.
 
@@ -363,7 +398,7 @@ class CspSubElementController(SKAController):
         """
         return self._cmd_measured_duration["off"]
 
-    def read_totalOutputDataRateToSdp(self):
+    def read_totalOutputDataRateToSdp(self: CspSubElementController) -> float:
         """
         Return the totalOutputDataRateToSdp attribute.
 
@@ -371,7 +406,7 @@ class CspSubElementController(SKAController):
         """
         return self._total_output_rate_to_sdp
 
-    def read_powerDelayStandbyOff(self):
+    def read_powerDelayStandbyOff(self: CspSubElementController) -> float:
         """
         Return the powerDelayStandbyOff attribute.
 
@@ -379,7 +414,7 @@ class CspSubElementController(SKAController):
         """
         return self._power_delay_standby_off
 
-    def write_powerDelayStandbyOff(self, value):
+    def write_powerDelayStandbyOff(self: CspSubElementController, value: float) -> None:
         """
         Set the powerDelayStandbyOff attribute.
 
@@ -387,7 +422,7 @@ class CspSubElementController(SKAController):
         """
         self._power_delay_standby_off = value
 
-    def read_loadFirmwareProgress(self):
+    def read_loadFirmwareProgress(self: CspSubElementController) -> int:
         """
         Return the loadFirmwareProgress attribute.
 
@@ -395,7 +430,7 @@ class CspSubElementController(SKAController):
         """
         return self._cmd_progress["loadfirmware"]
 
-    def read_loadFirmwareMaximumDuration(self):
+    def read_loadFirmwareMaximumDuration(self: CspSubElementController) -> float:
         """
         Return the loadFirmwareMaximumDuration attribute.
 
@@ -403,7 +438,9 @@ class CspSubElementController(SKAController):
         """
         return self._cmd_maximum_duration["loadfirmware"]
 
-    def write_loadFirmwareMaximumDuration(self, value):
+    def write_loadFirmwareMaximumDuration(
+        self: CspSubElementController, value: float
+    ) -> None:
         """
         Set the loadFirmwareMaximumDuration attribute.
 
@@ -411,7 +448,7 @@ class CspSubElementController(SKAController):
         """
         self._cmd_maximum_duration["loadfirmware"] = value
 
-    def read_loadFirmwareMeasuredDuration(self):
+    def read_loadFirmwareMeasuredDuration(self: CspSubElementController) -> float:
         """
         Return the loadFirmwareMeasuredDuration attribute.
 
@@ -422,10 +459,13 @@ class CspSubElementController(SKAController):
     # --------
     # Commands
     # --------
-    class LoadFirmwareCommand(FastCommand):
+    class LoadFirmwareCommand(FastCommand):  # pylint: disable=too-few-public-methods
         """A class for the LoadFirmware command."""
 
-        def __init__(self, logger=None):
+        def __init__(
+            self: CspSubElementController.LoadFirmwareCommand,
+            logger: Optional[logging.Logger] = None,
+        ):
             """
             Initialise a new LoadFirmwareCommand instance.
 
@@ -433,11 +473,16 @@ class CspSubElementController(SKAController):
             """
             super().__init__(logger=logger)
 
-        def do(self, argin) -> Tuple[ResultCode, str]:
+        def do(
+            self: CspSubElementController.LoadFirmwareCommand,
+            *args: Any,
+            **kwargs: Any,
+        ) -> Tuple[ResultCode, str]:
             """
             Stateless hook for device LoadFirmware() command.
 
-            :param argin: argument to command, currently unused
+            :param args: positional arguments to this do method
+            :param kwargs: keyword arguments to this do method
 
             :return: A tuple containing a return code and a string
                 message indicating status. The message is for
@@ -446,10 +491,13 @@ class CspSubElementController(SKAController):
             message = "LoadFirmware command completed OK"
             return (ResultCode.OK, message)
 
-    class PowerOnDevicesCommand(FastCommand):
+    class PowerOnDevicesCommand(FastCommand):  # pylint: disable=too-few-public-methods
         """A class for the CspSubElementController's PowerOnDevices command."""
 
-        def __init__(self, logger=None):
+        def __init__(
+            self: CspSubElementController.PowerOnDevicesCommand,
+            logger: Optional[logging.Logger] = None,
+        ):
             """
             Initialise a new `PowerOnDevicesCommand``` instance.
 
@@ -457,11 +505,16 @@ class CspSubElementController(SKAController):
             """
             super().__init__(logger=logger)
 
-        def do(self, argin) -> Tuple[ResultCode, str]:
+        def do(
+            self: CspSubElementController.PowerOnDevicesCommand,
+            *args: Any,
+            **kwargs: Any,
+        ) -> Tuple[ResultCode, str]:
             """
             Stateless hook for device PowerOnDevices() command.
 
-            :param argin: argument to command, currently unused
+            :param args: positional arguments to this do method
+            :param kwargs: keyword arguments to this do method
 
             :return: A tuple containing a return code and a string
                 message indicating status. The message is for
@@ -470,10 +523,13 @@ class CspSubElementController(SKAController):
             message = "PowerOnDevices command completed OK"
             return (ResultCode.OK, message)
 
-    class PowerOffDevicesCommand(FastCommand):
+    class PowerOffDevicesCommand(FastCommand):  # pylint: disable=too-few-public-methods
         """A class for the CspSubElementController's PowerOffDevices command."""
 
-        def __init__(self, logger=None):
+        def __init__(
+            self: CspSubElementController.PowerOffDevicesCommand,
+            logger: Optional[logging.Logger] = None,
+        ):
             """
             Initialise a new ``PowerOffDevicesCommand`` instance.
 
@@ -481,11 +537,16 @@ class CspSubElementController(SKAController):
             """
             super().__init__(logger=logger)
 
-        def do(self, argin) -> Tuple[ResultCode, str]:
+        def do(
+            self: CspSubElementController.PowerOffDevicesCommand,
+            *args: Any,
+            **kwargs: Any,
+        ) -> Tuple[ResultCode, str]:
             """
             Stateless hook for device PowerOffDevices() command.
 
-            :param argin: argument to command, currently unused
+            :param args: positional arguments to this do method
+            :param kwargs: keyword arguments to this do method
 
             :return: A tuple containing a return code and a string
                 message indicating status. The message is for
@@ -494,10 +555,13 @@ class CspSubElementController(SKAController):
             message = "PowerOffDevices command completed OK"
             return (ResultCode.OK, message)
 
-    class ReInitDevicesCommand(FastCommand):
+    class ReInitDevicesCommand(FastCommand):  # pylint: disable=too-few-public-methods
         """A class for the CspSubElementController's ReInitDevices command."""
 
-        def __init__(self, logger=None):
+        def __init__(
+            self: CspSubElementController.ReInitDevicesCommand,
+            logger: Optional[logging.Logger] = None,
+        ):
             """
             Initialise a new ``ReInitDevicesCommand`` instance.
 
@@ -505,11 +569,16 @@ class CspSubElementController(SKAController):
             """
             super().__init__(logger=logger)
 
-        def do(self, argin) -> Tuple[ResultCode, str]:
+        def do(
+            self: CspSubElementController.ReInitDevicesCommand,
+            *args: Any,
+            **kwargs: Any,
+        ) -> Tuple[ResultCode, str]:
             """
             Stateless hook for device ReInitDevices() command.
 
-            :param argin: argument to command, currently unused
+            :param args: positional arguments to this do method
+            :param kwargs: keyword arguments to this do method
 
             :return: A tuple containing a return code and a string
                 message indicating status. The message is for
@@ -518,7 +587,7 @@ class CspSubElementController(SKAController):
             message = "ReInitDevices command completed OK"
             return (ResultCode.OK, message)
 
-    def is_LoadFirmware_allowed(self) -> bool:
+    def is_LoadFirmware_allowed(self: CspSubElementController) -> bool:
         """
         Check if the LoadFirmware command is allowed in the current state.
 
@@ -537,7 +606,9 @@ class CspSubElementController(SKAController):
         dtype_out="DevVarLongStringArray",
     )
     @DebugIt()
-    def LoadFirmware(self, argin: List[str]) -> Tuple[ResultCode, str]:
+    def LoadFirmware(
+        self: CspSubElementController, argin: List[str]
+    ) -> DevVarLongStringArrayType:
         """
         Deploy new versions of software and firmware.
 
@@ -556,9 +627,9 @@ class CspSubElementController(SKAController):
         """
         handler = self.get_command_object("LoadFirmware")
         (result_code, message) = handler(argin)
-        return [[result_code], [message]]
+        return ([result_code], [message])
 
-    def is_PowerOnDevices_allowed(self) -> bool:
+    def is_PowerOnDevices_allowed(self: CspSubElementController) -> bool:
         """
         Check if the PowerOnDevice command is allowed in the current state.
 
@@ -573,7 +644,9 @@ class CspSubElementController(SKAController):
         doc_out="ReturnType, `informational message`",
     )
     @DebugIt()
-    def PowerOnDevices(self, argin: List[str]) -> Tuple[ResultCode, str]:
+    def PowerOnDevices(
+        self: CspSubElementController, argin: List[str]
+    ) -> DevVarLongStringArrayType:
         """
         Power-on a selected list of devices.
 
@@ -585,9 +658,9 @@ class CspSubElementController(SKAController):
         """
         handler = self.get_command_object("PowerOnDevices")
         (result_code, message) = handler(argin)
-        return [[result_code], [message]]
+        return ([result_code], [message])
 
-    def is_PowerOffDevices_allowed(self) -> bool:
+    def is_PowerOffDevices_allowed(self: CspSubElementController) -> bool:
         """
         Check if the PowerOffDevices command is allowed in the current state.
 
@@ -602,7 +675,9 @@ class CspSubElementController(SKAController):
         doc_out="ReturnType, `informational message`",
     )
     @DebugIt()
-    def PowerOffDevices(self, argin: List[str]) -> Tuple[ResultCode, str]:
+    def PowerOffDevices(
+        self: CspSubElementController, argin: List[str]
+    ) -> DevVarLongStringArrayType:
         """
         Power-off a selected list of devices.
 
@@ -614,9 +689,9 @@ class CspSubElementController(SKAController):
         """
         handler = self.get_command_object("PowerOffDevices")
         (result_code, message) = handler(argin)
-        return [[result_code], [message]]
+        return ([result_code], [message])
 
-    def is_ReInitDevices_allowed(self) -> bool:
+    def is_ReInitDevices_allowed(self: CspSubElementController) -> bool:
         """
         Check if the ReInitDevices command is allowed in the current state.
 
@@ -631,7 +706,9 @@ class CspSubElementController(SKAController):
         doc_out="ReturnType, `informational message`",
     )
     @DebugIt()
-    def ReInitDevices(self, argin: List[str]) -> Tuple[ResultCode, str]:
+    def ReInitDevices(
+        self: CspSubElementController, argin: List[str]
+    ) -> DevVarLongStringArrayType:
         """
         Reinitialize the devices passed in the input argument.
 
@@ -651,7 +728,7 @@ class CspSubElementController(SKAController):
         """
         handler = self.get_command_object("ReInitDevices")
         (result_code, message) = handler(argin)
-        return [[result_code], [message]]
+        return ([result_code], [message])
 
 
 # ----------

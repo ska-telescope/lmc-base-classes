@@ -11,8 +11,8 @@ from typing import Any, Callable, Optional
 
 from ska_control_model import TaskStatus
 
-from ska_tango_base.base.base_device import BaseComponentManager
-from ska_tango_base.executor.executor import TaskExecutor
+from ..base import BaseComponentManager
+from .executor import TaskExecutor
 
 
 # pylint: disable-next=abstract-method  # Yes this is an abstract class.

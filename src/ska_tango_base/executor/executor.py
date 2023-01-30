@@ -33,12 +33,11 @@ class TaskExecutor:
         self._abort_event = threading.Event()
         self._submit_lock = threading.Lock()
 
-    # TODO add a return or leave as ignore!!!
-    def submit(  # type: ignore[return]
+    def submit(
         self: TaskExecutor,
         func: Callable,
-        args: Optional[Any] = None,  # should this be *args??
-        kwargs: Optional[Any] = None,  # should this be **kwargs??
+        args: Optional[Any] = None,
+        kwargs: Optional[Any] = None,
         task_callback: Optional[Callable] = None,
     ) -> tuple[TaskStatus, str]:
         """
@@ -59,13 +58,18 @@ class TaskExecutor:
                     func,
                     args,
                     kwargs,
-                    task_callback,  # type: ignore[arg-type]
+                    task_callback,
                     self._abort_event,
                 )
             except RuntimeError:
+                message = "Queue is aborting"
                 if task_callback is not None:
-                    message = "Queue is aborting"
                     task_callback(status=TaskStatus.REJECTED, message=message)
+                return TaskStatus.REJECTED, message
+            except Exception as exception:  # pylint: disable=broad-except
+                message = f"Unhandled exception: {str(exception)}"
+                if task_callback is not None:
+                    task_callback(status=TaskStatus.FAILED, message=message)
                 return TaskStatus.REJECTED, message
             else:
                 if task_callback is not None:
@@ -113,7 +117,7 @@ class TaskExecutor:
         func: Callable,
         args: Any,
         kwargs: Any,
-        task_callback: Callable,
+        task_callback: Optional[Callable],
         abort_event: threading.Event,
     ) -> None:
         # Let the submit method finish before we start. This prevents this thread from

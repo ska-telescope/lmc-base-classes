@@ -1,4 +1,4 @@
-# type: ignore
+# pylint: disable=invalid-name
 #######################################################################################
 # -*- coding: utf-8 -*-
 #
@@ -8,10 +8,13 @@
 #
 #######################################################################################
 """Contain the tests for the CspSubelementController."""
+from __future__ import annotations
 
 import re
+from typing import Any
 
 import pytest
+import pytest_mock
 import tango
 from ska_control_model import (
     AdminMode,
@@ -21,6 +24,7 @@ from ska_control_model import (
     SimulationMode,
     TestMode,
 )
+from ska_tango_testing.mock.tango import MockTangoEventCallbackGroup
 from tango.test_context import MultiDeviceTestContext
 
 from ska_tango_base import CspSubElementController, SKAController
@@ -31,7 +35,7 @@ class TestCspSubElementController:  # pylint: disable=too-many-public-methods
     """Test case for CSP SubElement Controller class."""
 
     @pytest.fixture(scope="class")
-    def device_properties(self):
+    def device_properties(self: TestCspSubElementController) -> dict[str, str]:
         """
         Fixture that returns properties of the device under test.
 
@@ -40,7 +44,9 @@ class TestCspSubElementController:  # pylint: disable=too-many-public-methods
         return {"PowerDelayStandbyOn": "1.5", "PowerDelayStandbyOff": "1.0"}
 
     @pytest.fixture(scope="class")
-    def device_test_config(self, device_properties):
+    def device_test_config(
+        self: TestCspSubElementController, device_properties: dict[str, str]
+    ) -> dict[str, Any]:
         """
         Specify device configuration, including properties and memorized attributes.
 
@@ -66,14 +72,18 @@ class TestCspSubElementController:  # pylint: disable=too-many-public-methods
         }
 
     @pytest.mark.skip("Not implemented")
-    def test_properties(self, device_under_test):
+    def test_properties(
+        self: TestCspSubElementController, device_under_test: tango.DeviceProxy
+    ) -> None:
         """
         Test device properties.
 
         :param device_under_test: a proxy to the device under test
         """
 
-    def test_State(self, device_under_test):
+    def test_State(
+        self: TestCspSubElementController, device_under_test: tango.DeviceProxy
+    ) -> None:
         """
         Test for State.
 
@@ -81,7 +91,9 @@ class TestCspSubElementController:  # pylint: disable=too-many-public-methods
         """
         assert device_under_test.state() == tango.DevState.OFF
 
-    def test_Status(self, device_under_test):
+    def test_Status(
+        self: TestCspSubElementController, device_under_test: tango.DeviceProxy
+    ) -> None:
         """
         Test for Status.
 
@@ -89,7 +101,9 @@ class TestCspSubElementController:  # pylint: disable=too-many-public-methods
         """
         assert device_under_test.Status() == "The device is in OFF state."
 
-    def test_GetVersionInfo(self, device_under_test):
+    def test_GetVersionInfo(
+        self: TestCspSubElementController, device_under_test: tango.DeviceProxy
+    ) -> None:
         """
         Test for GetVersionInfo.
 
@@ -103,7 +117,9 @@ class TestCspSubElementController:  # pylint: disable=too-many-public-methods
         assert len(version_info) == 1
         assert re.match(version_pattern, version_info[0])
 
-    def test_buildState(self, device_under_test):
+    def test_buildState(
+        self: TestCspSubElementController, device_under_test: tango.DeviceProxy
+    ) -> None:
         """
         Test for buildState.
 
@@ -115,7 +131,9 @@ class TestCspSubElementController:  # pylint: disable=too-many-public-methods
         )
         assert (re.match(build_pattern, device_under_test.buildState)) is not None
 
-    def test_versionId(self, device_under_test):
+    def test_versionId(
+        self: TestCspSubElementController, device_under_test: tango.DeviceProxy
+    ) -> None:
         """
         Test for versionId.
 
@@ -124,7 +142,9 @@ class TestCspSubElementController:  # pylint: disable=too-many-public-methods
         version_id_pattern = re.compile(r"[0-9]+.[0-9]+.[0-9]+")
         assert (re.match(version_id_pattern, device_under_test.versionId)) is not None
 
-    def test_healthState(self, device_under_test):
+    def test_healthState(
+        self: TestCspSubElementController, device_under_test: tango.DeviceProxy
+    ) -> None:
         """
         Test for healthState.
 
@@ -132,7 +152,9 @@ class TestCspSubElementController:  # pylint: disable=too-many-public-methods
         """
         assert device_under_test.healthState == HealthState.UNKNOWN
 
-    def test_adminMode(self, device_under_test):
+    def test_adminMode(
+        self: TestCspSubElementController, device_under_test: tango.DeviceProxy
+    ) -> None:
         """
         Test for adminMode.
 
@@ -140,7 +162,9 @@ class TestCspSubElementController:  # pylint: disable=too-many-public-methods
         """
         assert device_under_test.adminMode == AdminMode.ONLINE
 
-    def test_controlMode(self, device_under_test):
+    def test_controlMode(
+        self: TestCspSubElementController, device_under_test: tango.DeviceProxy
+    ) -> None:
         """
         Test for controlMode.
 
@@ -148,7 +172,9 @@ class TestCspSubElementController:  # pylint: disable=too-many-public-methods
         """
         assert device_under_test.controlMode == ControlMode.REMOTE
 
-    def test_simulationMode(self, device_under_test):
+    def test_simulationMode(
+        self: TestCspSubElementController, device_under_test: tango.DeviceProxy
+    ) -> None:
         """
         Test for simulationMode.
 
@@ -156,7 +182,9 @@ class TestCspSubElementController:  # pylint: disable=too-many-public-methods
         """
         assert device_under_test.simulationMode == SimulationMode.FALSE
 
-    def test_testMode(self, device_under_test):
+    def test_testMode(
+        self: TestCspSubElementController, device_under_test: tango.DeviceProxy
+    ) -> None:
         """
         Test for testMode.
 
@@ -164,7 +192,11 @@ class TestCspSubElementController:  # pylint: disable=too-many-public-methods
         """
         assert device_under_test.testMode == TestMode.NONE
 
-    def test_powerDelayStandbyOn(self, device_under_test, device_properties):
+    def test_powerDelayStandbyOn(
+        self: TestCspSubElementController,
+        device_under_test: tango.DeviceProxy,
+        device_properties: dict[str, str],
+    ) -> None:
         """
         Test for powerDelayStandbyOn.
 
@@ -178,7 +210,11 @@ class TestCspSubElementController:  # pylint: disable=too-many-public-methods
         device_under_test.powerDelayStandbyOn = 3
         assert device_under_test.powerDelayStandbyOn == 3
 
-    def test_powerDelayStandbyOff(self, device_under_test, device_properties):
+    def test_powerDelayStandbyOff(
+        self: TestCspSubElementController,
+        device_under_test: tango.DeviceProxy,
+        device_properties: dict[str, str],
+    ) -> None:
         """
         Test for powerDelayStandbyOff.
 
@@ -192,7 +228,9 @@ class TestCspSubElementController:  # pylint: disable=too-many-public-methods
         device_under_test.powerDelayStandbyOff = 2
         assert device_under_test.powerDelayStandbyOff == 2
 
-    def test_onProgress(self, device_under_test):
+    def test_onProgress(
+        self: TestCspSubElementController, device_under_test: tango.DeviceProxy
+    ) -> None:
         """
         Test for onProgress.
 
@@ -200,7 +238,9 @@ class TestCspSubElementController:  # pylint: disable=too-many-public-methods
         """
         assert device_under_test.onProgress == 0
 
-    def test_onMaximumDuration(self, device_under_test):
+    def test_onMaximumDuration(
+        self: TestCspSubElementController, device_under_test: tango.DeviceProxy
+    ) -> None:
         """
         Test for onMaximumDuration.
 
@@ -209,7 +249,9 @@ class TestCspSubElementController:  # pylint: disable=too-many-public-methods
         device_under_test.onMaximumDuration = 5
         assert device_under_test.onMaximumDuration == 5
 
-    def test_onMeasuredDuration(self, device_under_test):
+    def test_onMeasuredDuration(
+        self: TestCspSubElementController, device_under_test: tango.DeviceProxy
+    ) -> None:
         """
         Test for onMeasuredDuration.
 
@@ -217,7 +259,9 @@ class TestCspSubElementController:  # pylint: disable=too-many-public-methods
         """
         assert device_under_test.onMeasuredDuration == 0
 
-    def test_standbyProgress(self, device_under_test):
+    def test_standbyProgress(
+        self: TestCspSubElementController, device_under_test: tango.DeviceProxy
+    ) -> None:
         """
         Test for standbyProgress.
 
@@ -225,7 +269,9 @@ class TestCspSubElementController:  # pylint: disable=too-many-public-methods
         """
         assert device_under_test.standbyProgress == 0
 
-    def test_standbyMaximumDuration(self, device_under_test):
+    def test_standbyMaximumDuration(
+        self: TestCspSubElementController, device_under_test: tango.DeviceProxy
+    ) -> None:
         """
         Test for standbyMaximumDuration.
 
@@ -234,7 +280,9 @@ class TestCspSubElementController:  # pylint: disable=too-many-public-methods
         device_under_test.standbyMaximumDuration = 5
         assert device_under_test.standbyMaximumDuration == 5
 
-    def test_standbyMeasuredDuration(self, device_under_test):
+    def test_standbyMeasuredDuration(
+        self: TestCspSubElementController, device_under_test: tango.DeviceProxy
+    ) -> None:
         """
         Test for standbyMeasuredDuration.
 
@@ -242,7 +290,9 @@ class TestCspSubElementController:  # pylint: disable=too-many-public-methods
         """
         assert device_under_test.standbyMeasuredDuration == 0
 
-    def test_offProgress(self, device_under_test):
+    def test_offProgress(
+        self: TestCspSubElementController, device_under_test: tango.DeviceProxy
+    ) -> None:
         """
         Test for offProgress.
 
@@ -250,7 +300,9 @@ class TestCspSubElementController:  # pylint: disable=too-many-public-methods
         """
         assert device_under_test.offProgress == 0
 
-    def test_offMaximumDuration(self, device_under_test):
+    def test_offMaximumDuration(
+        self: TestCspSubElementController, device_under_test: tango.DeviceProxy
+    ) -> None:
         """
         Test for offMaximumDuration.
 
@@ -259,7 +311,9 @@ class TestCspSubElementController:  # pylint: disable=too-many-public-methods
         device_under_test.offMaximumDuration = 5
         assert device_under_test.offMaximumDuration == 5
 
-    def test_offMeasuredDuration(self, device_under_test):
+    def test_offMeasuredDuration(
+        self: TestCspSubElementController, device_under_test: tango.DeviceProxy
+    ) -> None:
         """
         Test for offMeasuredDuration.
 
@@ -267,7 +321,9 @@ class TestCspSubElementController:  # pylint: disable=too-many-public-methods
         """
         assert device_under_test.offMeasuredDuration == 0
 
-    def test_loadFirmwareProgress(self, device_under_test):
+    def test_loadFirmwareProgress(
+        self: TestCspSubElementController, device_under_test: tango.DeviceProxy
+    ) -> None:
         """
         Test for loadFirmwareProgress.
 
@@ -275,7 +331,9 @@ class TestCspSubElementController:  # pylint: disable=too-many-public-methods
         """
         assert device_under_test.loadFirmwareProgress == 0
 
-    def test_loadFirmwareMaximumDuration(self, device_under_test):
+    def test_loadFirmwareMaximumDuration(
+        self: TestCspSubElementController, device_under_test: tango.DeviceProxy
+    ) -> None:
         """
         Test for loadFirmwareMaximumDuration.
 
@@ -284,7 +342,9 @@ class TestCspSubElementController:  # pylint: disable=too-many-public-methods
         device_under_test.loadFirmwareMaximumDuration = 5
         assert device_under_test.loadFirmwareMaximumDuration == 5
 
-    def test_loadFirmwareMeasuredDuration(self, device_under_test):
+    def test_loadFirmwareMeasuredDuration(
+        self: TestCspSubElementController, device_under_test: tango.DeviceProxy
+    ) -> None:
         """
         Test for loadFirmwareMeasuredDuration.
 
@@ -292,7 +352,9 @@ class TestCspSubElementController:  # pylint: disable=too-many-public-methods
         """
         assert device_under_test.loadFirmwareMeasuredDuration == 0
 
-    def test_LoadFirmware(self, device_under_test):
+    def test_LoadFirmware(
+        self: TestCspSubElementController, device_under_test: tango.DeviceProxy
+    ) -> None:
         """
         Test for LoadFirmware.
 
@@ -305,7 +367,9 @@ class TestCspSubElementController:  # pylint: disable=too-many-public-methods
             ["file", "test/dev/b", "918698a7fea3"]
         ) == [[ResultCode.OK], ["LoadFirmware command completed OK"]]
 
-    def test_LoadFirmware_when_in_wrong_state(self, device_under_test):
+    def test_LoadFirmware_when_in_wrong_state(
+        self: TestCspSubElementController, device_under_test: tango.DeviceProxy
+    ) -> None:
         """
         Test for LoadFirmware when the device is in wrong state.
 
@@ -319,7 +383,11 @@ class TestCspSubElementController:  # pylint: disable=too-many-public-methods
         ):
             device_under_test.LoadFirmware(["file", "test/dev/b", "918698a7fea3"])
 
-    def test_power_on_and_off_devices(self, device_under_test, change_event_callbacks):
+    def test_power_on_and_off_devices(
+        self: TestCspSubElementController,
+        device_under_test: tango.DeviceProxy,
+        change_event_callbacks: MockTangoEventCallbackGroup,
+    ) -> None:
         """
         Test for PowerOnDevices.
 
@@ -354,7 +422,9 @@ class TestCspSubElementController:  # pylint: disable=too-many-public-methods
         )
         assert result_code == ResultCode.OK
 
-    def test_PowerOnDevices_when_in_wrong_state(self, device_under_test):
+    def test_PowerOnDevices_when_in_wrong_state(
+        self: TestCspSubElementController, device_under_test: tango.DeviceProxy
+    ) -> None:
         """
         Test for PowerOnDevices when the Controller is in wrong state.
 
@@ -366,7 +436,9 @@ class TestCspSubElementController:  # pylint: disable=too-many-public-methods
         ):
             device_under_test.PowerOnDevices(["test/dev/1", "test/dev/2"])
 
-    def test_PowerOffDevices_when_in_wrong_state(self, device_under_test):
+    def test_PowerOffDevices_when_in_wrong_state(
+        self: TestCspSubElementController, device_under_test: tango.DeviceProxy
+    ) -> None:
         """
         Test for PowerOffDevices when the Controller is in wrong state.
 
@@ -378,7 +450,11 @@ class TestCspSubElementController:  # pylint: disable=too-many-public-methods
         ):
             device_under_test.PowerOffDevices(["test/dev/1", "test/dev/2"])
 
-    def test_ReInitDevices(self, device_under_test, change_event_callbacks):
+    def test_ReInitDevices(
+        self: TestCspSubElementController,
+        device_under_test: tango.DeviceProxy,
+        change_event_callbacks: MockTangoEventCallbackGroup,
+    ) -> None:
         """
         Test for ReInitDevices.
 
@@ -410,7 +486,9 @@ class TestCspSubElementController:  # pylint: disable=too-many-public-methods
             ["ReInitDevices command completed OK"],
         ]
 
-    def test_ReInitDevices_when_in_wrong_state(self, device_under_test):
+    def test_ReInitDevices_when_in_wrong_state(
+        self: TestCspSubElementController, device_under_test: tango.DeviceProxy
+    ) -> None:
         """
         Test for ReInitDevices whe the device is in a wrong state.
 
@@ -425,7 +503,7 @@ class TestCspSubElementController:  # pylint: disable=too-many-public-methods
 
 
 @pytest.mark.forked
-def test_multiple_devices_in_same_process(mocker):
+def test_multiple_devices_in_same_process(mocker: pytest_mock.MockerFixture) -> None:
     """
     Test that we can run this device with other devices in a single process.
 

@@ -9,5 +9,6 @@ Base subpackage
 
   Admin Mode Model<admin_mode_model>
   Op State Model<op_state_model>
+  Logging<logging>
   Base Component Manager<component_manager>
   Base Device<base_device>

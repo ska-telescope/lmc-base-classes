@@ -265,6 +265,11 @@ Tango devices can be launched with a `-v` parameter to set the logging level. Fo
 
 ### unreleased
 
+### 0.16.1
+
+- [LOW-418] Remove redundant production Dockerfile, relax pytango constraint
+- [LOW-415] Complete linting and type-hinting
+
 ### 0.16.0
 
 - [MCCS-1312] Update to pytango 9.3.6

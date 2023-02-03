@@ -61,15 +61,15 @@ class TaskExecutor:
                     task_callback,
                     self._abort_event,
                 )
-            except RuntimeError:
+            except RuntimeError as exception:
                 message = "Queue is aborting"
                 if task_callback is not None:
-                    task_callback(status=TaskStatus.REJECTED, message=message)
+                    task_callback(status=TaskStatus.REJECTED, exception=exception)
                 return TaskStatus.REJECTED, message
             except Exception as exception:  # pylint: disable=broad-except
                 message = f"Unhandled exception: {str(exception)}"
                 if task_callback is not None:
-                    task_callback(status=TaskStatus.FAILED, message=message)
+                    task_callback(status=TaskStatus.FAILED, exception=exception)
                 return TaskStatus.REJECTED, message
             else:
                 if task_callback is not None:

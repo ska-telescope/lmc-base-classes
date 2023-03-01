@@ -1,27 +1,36 @@
 {
     "name": "ska_tango_base vscode development container",
-    "context": "..",
-    "dockerFile": "Dockerfile",
-    "settings": {
-        "terminal.integrated.shell.linux": "/bin/bash",
-        "python.pythonPath": "/usr/bin/python3",
-        "files.exclude": {
-            ".coverage*": true,
-            "**/*.egg*": true,
-            "**/__pycache__": true
-        },
-        "files.watcherExclude": {
-            ".coverage*": true,
-            "**/*.egg*": true,
-            "**/__pycache__": true
+    "build": {
+        "dockerfile": "Dockerfile",
+        "context": ".."
+    },
+    "customizations": {
+        "vscode": {
+            "settings": {
+                "terminal.integrated.profiles.linux": {
+                    "bash": {
+                        "path": "/bin/bash"
+                    }
+                },
+                "terminal.integration.defaultProfile.linux": "bash",
+                "python.pythonPath": "/usr/bin/python3",
+                "python.linting.enabled": true,
+                "python.linting.pylintEnabled": true,
+                "python.linting.pylintPath": "/usr/local/bin/pylint",
+                "coverage-gutters.manualCoverageFilePaths": [
+                    "/workspaces/ska-low-mccs/build/reports/code-coverage.xml"
+                ],
+                "coverage-gutters.showLineCoverage": true
+            },
+            "extensions": [
+                "ms-python.python",
+                "lextudio.restructuredtext",
+                "trond-snekvik.simple-rst",
+                "davidanson.vscode-markdownlint",
+                "ryanluker.vscode-coverage-gutters"
+            ]
         }
     },
-    "extensions": [
-        "ms-python.python",
-        "lextudio.restructuredtext",
-        "davidanson.vscode-markdownlint",
-        "alexkrechik.cucumberautocomplete",
-    ],
     "postCreateCommand": "sudo poetry config virtualenvs.create false && sudo poetry install",
     "remoteUser": "tango",
     "remoteEnv": {

@@ -205,7 +205,7 @@ class TestSKASubarray:  # pylint: disable=too-many-public-methods
         )
         change_event_callbacks.assert_change_event("obsState", ObsState.EMPTY)
 
-        resources_to_assign = ["BAND1", "BAND2"]
+        resources_to_assign = {"resources": ["BAND1", "BAND2"]}
         [
             [result_code],
             [assign_command_id],
@@ -238,10 +238,13 @@ class TestSKASubarray:  # pylint: disable=too-many-public-methods
         )
         change_event_callbacks.assert_change_event("obsState", ObsState.IDLE)
 
-        assert list(device_under_test.assignedResources) == resources_to_assign
+        assert (
+            list(device_under_test.assignedResources)
+            == resources_to_assign["resources"]
+        )
 
         # Test partial release of resources
-        resources_to_release = ["BAND1"]
+        resources_to_release = {"resources": ["BAND1"]}
         [
             [result_code],
             [release_command_id],
@@ -438,7 +441,7 @@ class TestSKASubarray:  # pylint: disable=too-many-public-methods
         )
         change_event_callbacks.assert_change_event("obsState", ObsState.EMPTY)
 
-        resources_to_assign = ["BAND1"]
+        resources_to_assign = {"resources": ["BAND1"]}
         [
             [result_code],
             [assign_command_id],
@@ -471,7 +474,10 @@ class TestSKASubarray:  # pylint: disable=too-many-public-methods
         )
         change_event_callbacks.assert_change_event("obsState", ObsState.IDLE)
 
-        assert list(device_under_test.assignedResources) == resources_to_assign
+        assert (
+            list(device_under_test.assignedResources)
+            == resources_to_assign["resources"]
+        )
 
         # TODO: Everything above here is just to turn on the device, assign it some
         # resources, and clear the queue attributes. We need a better way to handle
@@ -481,7 +487,7 @@ class TestSKASubarray:  # pylint: disable=too-many-public-methods
             "BAND2:0",
         ]
 
-        configuration_to_apply = {"BAND1": 2}
+        configuration_to_apply = {"configuration": {"BAND1": 2}}
         [[result_code], [config_command_id]] = device_under_test.Configure(
             json.dumps(configuration_to_apply)
         )
@@ -678,7 +684,7 @@ class TestSKASubarray:  # pylint: disable=too-many-public-methods
         )
         change_event_callbacks.assert_change_event("obsState", ObsState.EMPTY)
 
-        resources_to_assign = ["BAND1"]
+        resources_to_assign = {"resources": ["BAND1"]}
         [
             [result_code],
             [assign_command_id],
@@ -711,7 +717,10 @@ class TestSKASubarray:  # pylint: disable=too-many-public-methods
         )
         change_event_callbacks.assert_change_event("obsState", ObsState.IDLE)
 
-        assert list(device_under_test.assignedResources) == resources_to_assign
+        assert (
+            list(device_under_test.assignedResources)
+            == resources_to_assign["resources"]
+        )
 
         # configuration
         assert list(device_under_test.configuredCapabilities) == [
@@ -719,7 +728,7 @@ class TestSKASubarray:  # pylint: disable=too-many-public-methods
             "BAND2:0",
         ]
 
-        configuration_to_apply = {"BAND1": 2}
+        configuration_to_apply = {"configuration": {"BAND1": 2}}
         [[result_code], [config_command_id]] = device_under_test.Configure(
             json.dumps(configuration_to_apply)
         )
@@ -781,7 +790,7 @@ class TestSKASubarray:  # pylint: disable=too-many-public-methods
         # resources, configure it, and clear the queue attributes. We need a better way
         # to handle this.
 
-        dummy_scan_arg = 5
+        dummy_scan_arg = {"args": 5}
         [[result_code], [scan_command_id]] = device_under_test.Scan(
             json.dumps(dummy_scan_arg)
         )
@@ -983,7 +992,7 @@ class TestSKASubarray:  # pylint: disable=too-many-public-methods
         # and clear the queue attributes.
         # We need a better way to handle this.
 
-        resources_to_assign = ["BAND1"]
+        resources_to_assign = {"resources": ["BAND1"]}
         [
             [result_code],
             [assign_command_id],
@@ -1175,7 +1184,7 @@ class TestSKASubarray:  # pylint: disable=too-many-public-methods
         )
         change_event_callbacks.assert_change_event("obsState", ObsState.EMPTY)
 
-        resources_to_assign = ["BAND1"]
+        resources_to_assign = {"resources": ["BAND1"]}
         [
             [result_code],
             [assign_command_id],
@@ -1208,7 +1217,10 @@ class TestSKASubarray:  # pylint: disable=too-many-public-methods
         )
         change_event_callbacks.assert_change_event("obsState", ObsState.IDLE)
 
-        assert list(device_under_test.assignedResources) == resources_to_assign
+        assert (
+            list(device_under_test.assignedResources)
+            == resources_to_assign["resources"]
+        )
 
         # TODO: Everything above here is just to turn on the device, assign it some
         # resources, and clear the queue attributes. We need a better way to handle
@@ -1220,7 +1232,7 @@ class TestSKASubarray:  # pylint: disable=too-many-public-methods
             "BAND2:0",
         ]
 
-        configuration_to_apply = {"BAND1": 2}
+        configuration_to_apply = {"configuration": {"BAND1": 2}}
         [[result_code], [configure_command_id]] = device_under_test.Configure(
             json.dumps(configuration_to_apply)
         )

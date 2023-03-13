@@ -524,19 +524,19 @@ class TestSubarrayComponentManager:
         mock_resource_1 = mock_resource_factory()
         mock_resource_2 = mock_resource_factory()
 
-        component_manager.assign(set([mock_resource_1]))
+        component_manager.assign(resources=set([mock_resource_1]))
         callbacks.assert_call("component_state", resourced=True)
 
-        component_manager.assign(set([mock_resource_2]))
+        component_manager.assign(resources=set([mock_resource_2]))
         callbacks.assert_not_called()
 
-        component_manager.release(set([mock_resource_1]))
+        component_manager.release(resources=set([mock_resource_1]))
         callbacks.assert_not_called()
 
-        component_manager.release(set([mock_resource_2]))
+        component_manager.release(resources=set([mock_resource_2]))
         callbacks.assert_call("component_state", resourced=False)
 
-        component_manager.assign(set([mock_resource_1, mock_resource_2]))
+        component_manager.assign(resources=set([mock_resource_1, mock_resource_2]))
         callbacks.assert_call("component_state", resourced=True)
 
         component_manager.release_all()
@@ -572,16 +572,16 @@ class TestSubarrayComponentManager:
         callbacks.assert_call("component_state", power=PowerState.ON)
 
         mock_resource = mock_resource_factory()
-        component_manager.assign(set([mock_resource]))
+        component_manager.assign(resources=set([mock_resource]))
         callbacks.assert_call("component_state", resourced=True)
 
         mock_configuration_1 = mock_config_factory()
         mock_configuration_2 = mock_config_factory()
 
-        component_manager.configure(mock_configuration_1)
+        component_manager.configure(configuration=mock_configuration_1)
         callbacks.assert_call("component_state", configured=True)
 
-        component_manager.configure(mock_configuration_2)
+        component_manager.configure(configuration=mock_configuration_2)
         callbacks.assert_not_called()
 
         component_manager.deconfigure()
@@ -622,21 +622,21 @@ class TestSubarrayComponentManager:
         callbacks.assert_call("component_state", power=PowerState.ON)
 
         mock_resource = mock_resource_factory()
-        component_manager.assign(set([mock_resource]))
+        component_manager.assign(resources=set([mock_resource]))
         callbacks.assert_call("component_state", resourced=True)
 
         mock_configuration = mock_config_factory()
 
-        component_manager.configure(mock_configuration)
+        component_manager.configure(configuration=mock_configuration)
         callbacks.assert_call("component_state", configured=True)
 
-        component_manager.scan(mock_scan_args)
+        component_manager.scan(args=mock_scan_args)
         callbacks.assert_call("component_state", scanning=True)
 
         component_manager.end_scan()
         callbacks.assert_call("component_state", scanning=False)
 
-        component_manager.scan(mock_scan_args)
+        component_manager.scan(args=mock_scan_args)
         callbacks.assert_call("component_state", scanning=True)
 
         component.simulate_scan_stopped()
@@ -679,12 +679,12 @@ class TestSubarrayComponentManager:
         callbacks.assert_call("component_state", power=PowerState.ON)
 
         mock_resource = mock_resource_factory()
-        component_manager.assign(set([mock_resource]))
+        component_manager.assign(resources=set([mock_resource]))
         callbacks.assert_call("component_state", resourced=True)
 
         mock_configuration = mock_config_factory()
 
-        component_manager.configure(mock_configuration)
+        component_manager.configure(configuration=mock_configuration)
         callbacks.assert_call("component_state", configured=True)
 
         component.simulate_obsfault(True)
@@ -693,10 +693,10 @@ class TestSubarrayComponentManager:
         component_manager.obsreset()
         callbacks.assert_call("component_state", obsfault=False, configured=False)
 
-        component_manager.configure(mock_configuration)
+        component_manager.configure(configuration=mock_configuration)
         callbacks.assert_call("component_state", configured=True)
 
-        component_manager.scan(mock_scan_args)
+        component_manager.scan(args=mock_scan_args)
         callbacks.assert_call("component_state", scanning=True)
 
         component.simulate_obsfault(True)
@@ -738,12 +738,12 @@ class TestSubarrayComponentManager:
         callbacks.assert_call("component_state", power=PowerState.ON)
 
         mock_resource = mock_resource_factory()
-        component_manager.assign(set([mock_resource]))
+        component_manager.assign(resources=set([mock_resource]))
         callbacks.assert_call("component_state", resourced=True)
 
         mock_configuration = mock_config_factory()
 
-        component_manager.configure(mock_configuration)
+        component_manager.configure(configuration=mock_configuration)
         callbacks.assert_call("component_state", configured=True)
 
         component.simulate_obsfault(True)
@@ -757,13 +757,13 @@ class TestSubarrayComponentManager:
             resourced=False,
         )
 
-        component_manager.assign(set([mock_resource]))
+        component_manager.assign(resources=set([mock_resource]))
         callbacks.assert_call("component_state", resourced=True)
 
-        component_manager.configure(mock_configuration)
+        component_manager.configure(configuration=mock_configuration)
         callbacks.assert_call("component_state", configured=True)
 
-        component_manager.scan(mock_scan_args)
+        component_manager.scan(args=mock_scan_args)
         callbacks.assert_call("component_state", scanning=True)
 
         component.simulate_obsfault(True)

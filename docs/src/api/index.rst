@@ -10,7 +10,6 @@ API
   Executor subpackage<executor/index>
   Obs subpackage<obs/index>
   Poller subpackage<poller/index>
-  CSP subpackage<csp/index>
   Subarray subpackage<subarray/index>
   Testing subpackage<testing/index>
 

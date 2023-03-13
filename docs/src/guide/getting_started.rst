@@ -58,8 +58,6 @@ Writing a component manager involves the following steps.
    .. inheritance-diagram::
       ska_tango_base.base.component_manager
       ska_tango_base.subarray.component_manager
-      ska_tango_base.csp.obs.component_manager
-      ska_tango_base.csp.subarray.component_manager
       :parts: 1
   
 
@@ -235,9 +233,6 @@ Writing the Tango device involves the following steps:
       ska_tango_base.base.SKABaseDevice
       ska_tango_base.obs.SKAObsDevice
       ska_tango_base.subarray.SKASubarray
-      ska_tango_base.csp.CspSubElementController
-      ska_tango_base.csp.CspSubElementObsDevice
-      ska_tango_base.csp.CspSubElementSubarray
       :top-classes: ska_tango_base.base.SKABaseDevice
       :parts: 1
 

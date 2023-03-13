@@ -3,7 +3,6 @@
 __all__ = (
     # subpackages
     "base",
-    "csp",
     "obs",
     "subarray",
     # modules
@@ -21,16 +20,12 @@ __all__ = (
     "SKAObsDevice",
     "SKASubarray",
     "SKATelState",
-    "CspSubElementController",
-    "CspSubElementObsDevice",
-    "CspSubElementSubarray",
 )
 
 from .alarm_handler_device import SKAAlarmHandler
 from .base import SKABaseDevice
 from .capability_device import SKACapability
 from .controller_device import SKAController
-from .csp import CspSubElementController, CspSubElementObsDevice, CspSubElementSubarray
 from .logger_device import SKALogger
 from .obs import SKAObsDevice
 from .subarray import SKASubarray

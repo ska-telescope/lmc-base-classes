@@ -108,7 +108,7 @@ class SKASubarray(SKAObsDevice, Generic[ComponentManagerT]):
                 "assign",
                 callback=callback,
                 logger=logger,
-                validator=JsonValidator(schema),
+                validator=JsonValidator("AssignResources", schema, logger=logger),
             )
 
     class ReleaseResourcesCommand(SubmittedSlowCommand):
@@ -140,7 +140,7 @@ class SKASubarray(SKAObsDevice, Generic[ComponentManagerT]):
                 "release",
                 callback=callback,
                 logger=logger,
-                validator=JsonValidator(schema),
+                validator=JsonValidator("ReleaseResources", schema, logger=logger),
             )
 
     class ReleaseAllResourcesCommand(SubmittedSlowCommand):
@@ -172,7 +172,7 @@ class SKASubarray(SKAObsDevice, Generic[ComponentManagerT]):
                 "release_all",
                 callback=callback,
                 logger=logger,
-                validator=JsonValidator(schema),
+                validator=JsonValidator("ReleaseAllResources", schema, logger=logger),
             )
 
     class ConfigureCommand(SubmittedSlowCommand):
@@ -204,7 +204,7 @@ class SKASubarray(SKAObsDevice, Generic[ComponentManagerT]):
                 "configure",
                 callback=callback,
                 logger=logger,
-                validator=JsonValidator(schema),
+                validator=JsonValidator("Configure", schema, logger=logger),
             )
 
     class ScanCommand(SubmittedSlowCommand):
@@ -236,7 +236,7 @@ class SKASubarray(SKAObsDevice, Generic[ComponentManagerT]):
                 "scan",
                 callback=callback,
                 logger=logger,
-                validator=JsonValidator(schema),
+                validator=JsonValidator("Scan", schema, logger=logger),
             )
 
     class EndScanCommand(SubmittedSlowCommand):
@@ -268,7 +268,7 @@ class SKASubarray(SKAObsDevice, Generic[ComponentManagerT]):
                 "end_scan",
                 callback=callback,
                 logger=logger,
-                validator=JsonValidator(schema),
+                validator=JsonValidator("EndScan", schema, logger=logger),
             )
 
     class EndCommand(SubmittedSlowCommand):
@@ -300,7 +300,7 @@ class SKASubarray(SKAObsDevice, Generic[ComponentManagerT]):
                 "deconfigure",
                 callback=callback,
                 logger=logger,
-                validator=JsonValidator(schema),
+                validator=JsonValidator("End", schema, logger=logger),
             )
 
     class AbortCommand(SlowCommand):
@@ -382,7 +382,7 @@ class SKASubarray(SKAObsDevice, Generic[ComponentManagerT]):
                 "obsreset",
                 callback=callback,
                 logger=logger,
-                validator=JsonValidator(schema),
+                validator=JsonValidator("ObsReset", schema, logger=logger),
             )
 
     class RestartCommand(SubmittedSlowCommand):
@@ -414,7 +414,7 @@ class SKASubarray(SKAObsDevice, Generic[ComponentManagerT]):
                 "restart",
                 callback=callback,
                 logger=logger,
-                validator=JsonValidator(schema),
+                validator=JsonValidator("Restart", schema, logger=logger),
             )
 
     def create_component_manager(self: SKASubarray) -> ComponentManagerT:

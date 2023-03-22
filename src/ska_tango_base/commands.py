@@ -127,9 +127,10 @@ class JsonValidator(ArgumentValidator):  # pylint: disable=too-few-public-method
     """
     An argument validator for JSON commands.
 
-    It checks that the argument is called with no more than one positional
-    argument and no keyword arguments, unpacks the positional argument (if any)
-    from JSON into a dictionary, and validates against JSON schema.
+    It checks that the argument is called with no more than one
+    positional argument and no keyword arguments, unpacks the positional
+    argument (if any) from JSON into a dictionary, and validates against
+    JSON schema.
     """
 
     DEFAULT_SCHEMA = {
@@ -140,19 +141,32 @@ class JsonValidator(ArgumentValidator):  # pylint: disable=too-few-public-method
         "type": "object",
     }
 
-    def __init__(self, schema: Optional[dict]) -> None:
+    def __init__(
+        self,
+        command_name: str,
+        schema: Optional[dict],
+        logger: Optional[logging.Logger] = None,
+    ) -> None:
         """
         Initialise a new instance.
 
+        :param command_name: name of the command to be validated.
         :param schema: an optional schema against which the JSON
             argument should be validated. If not provided, a warning is
             issued.
+        :param logger: a logger for this validator to use
         """
+        self._command_name = command_name
+        self._logger = logger
+
         if schema is None:
-            warnings.warn(
-                f"JSON argument to command {self.__class__.__name__} "
+            warning_msg = (
+                f"JSON argument to command {command_name} "
                 "will only be validated as a dictionary."
             )
+            warnings.warn(warning_msg)
+            if logger:
+                logger.warn(warning_msg)
         self._schema = schema or self.DEFAULT_SCHEMA
 
     def validate(self: JsonValidator, *args: Any, **kwargs: Any) -> tuple[tuple, dict]:
@@ -168,11 +182,15 @@ class JsonValidator(ArgumentValidator):  # pylint: disable=too-few-public-method
 
         :returns: validated args and kwargs
         """
-        assert not kwargs, "JSON validation does not permit kwargs"
+        assert not kwargs, (
+            f"Command {self._command_name} was invoked with kwargs. "
+            "JSON validation does not permit kwargs"
+        )
         if args:
-            assert (
-                len(args) == 1
-            ), "JSON validation only permits one positional argument."
+            assert len(args) == 1, (
+                f"Command {self._command_name} was invoked with {len(args)} args. "
+                "JSON validation only permits one positional argument."
+            )
 
             decoded_dict = json.loads(args[0])
         else:

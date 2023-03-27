@@ -39,7 +39,6 @@ class SKAObsDevice(SKABaseDevice, Generic[ComponentManagerT]):
     # pylint: disable=attribute-defined-outside-init  # Tango devices have init_device
     """A generic base device for Observations for SKA."""
 
-    # pylint: disable-next=too-few-public-methods
     class InitCommand(DeviceInitCommand):
         # pylint: disable=protected-access  # command classes are friend classes
         """A class for the SKAObsDevice's init_device() "command"."""

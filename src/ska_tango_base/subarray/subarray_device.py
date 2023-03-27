@@ -16,7 +16,6 @@ etc.
 from __future__ import annotations
 
 import functools
-import json
 import logging
 from typing import Any, Callable, Generic, List, Optional, Tuple, TypeVar
 
@@ -32,7 +31,7 @@ from tango import DebugIt
 from tango.server import attribute, command, device_property
 
 from ..base import CommandTracker
-from ..commands import SlowCommand, SubmittedSlowCommand
+from ..commands import JsonValidator, SlowCommand, SubmittedSlowCommand
 from ..faults import StateModelError
 from ..obs import SKAObsDevice
 from .component_manager import SubarrayComponentManager
@@ -50,7 +49,6 @@ class SKASubarray(SKAObsDevice, Generic[ComponentManagerT]):
     # pylint: disable=attribute-defined-outside-init  # Tango devices have init_device
     """Implements the SKA SubArray device."""
 
-    # pylint: disable-next=too-few-public-methods
     class InitCommand(SKAObsDevice.InitCommand):
         # pylint: disable=protected-access  # command classes are friend classes
         """A class for the SKASubarray's init_device() "command"."""
@@ -81,7 +79,231 @@ class SKASubarray(SKAObsDevice, Generic[ComponentManagerT]):
             self._completed()
             return (ResultCode.OK, message)
 
-    class AbortCommand(SlowCommand):  # pylint: disable=too-few-public-methods
+    class AssignResourcesCommand(SubmittedSlowCommand):
+        """A class for SKASubarray's AssignResources() command."""
+
+        def __init__(  # pylint: disable=too-many-arguments
+            self: SKASubarray.AssignResourcesCommand,
+            command_tracker: CommandTracker,
+            component_manager: SubarrayComponentManager,
+            callback: Optional[Callable] = None,
+            logger: Optional[logging.Logger] = None,
+            schema: Optional[dict] = None,
+        ) -> None:
+            """
+            Initialise a new instance.
+
+            :param command_tracker: the device's command tracker
+            :param component_manager: the device's component manager
+            :param callback: an optional callback to be called when this
+                command starts and finishes.
+            :param logger: a logger for this command to log with.
+            :param schema: an optional JSON schema for the command
+                argument.
+            """
+            super().__init__(
+                "AssignResources",
+                command_tracker,
+                component_manager,
+                "assign",
+                callback=callback,
+                logger=logger,
+                validator=JsonValidator("AssignResources", schema, logger=logger),
+            )
+
+    class ReleaseResourcesCommand(SubmittedSlowCommand):
+        """A class for SKASubarray's ReleaseResources() command."""
+
+        def __init__(  # pylint: disable=too-many-arguments
+            self: SKASubarray.ReleaseResourcesCommand,
+            command_tracker: CommandTracker,
+            component_manager: SubarrayComponentManager,
+            callback: Optional[Callable] = None,
+            logger: Optional[logging.Logger] = None,
+            schema: Optional[dict] = None,
+        ) -> None:
+            """
+            Initialise a new instance.
+
+            :param command_tracker: the device's command tracker
+            :param component_manager: the device's component manager
+            :param callback: an optional callback to be called when this
+                command starts and finishes.
+            :param logger: a logger for this command to log with.
+            :param schema: an optional JSON schema for the command
+                argument.
+            """
+            super().__init__(
+                "ReleaseResources",
+                command_tracker,
+                component_manager,
+                "release",
+                callback=callback,
+                logger=logger,
+                validator=JsonValidator("ReleaseResources", schema, logger=logger),
+            )
+
+    class ReleaseAllResourcesCommand(SubmittedSlowCommand):
+        """A class for SKASubarray's ReleaseAllResources() command."""
+
+        def __init__(  # pylint: disable=too-many-arguments
+            self: SKASubarray.ReleaseAllResourcesCommand,
+            command_tracker: CommandTracker,
+            component_manager: SubarrayComponentManager,
+            callback: Optional[Callable] = None,
+            logger: Optional[logging.Logger] = None,
+            schema: Optional[dict] = None,
+        ) -> None:
+            """
+            Initialise a new instance.
+
+            :param command_tracker: the device's command tracker
+            :param component_manager: the device's component manager
+            :param callback: an optional callback to be called when this
+                command starts and finishes.
+            :param logger: a logger for this command to log with.
+            :param schema: an optional JSON schema for the command
+                argument.
+            """
+            super().__init__(
+                "ReleaseAllResources",
+                command_tracker,
+                component_manager,
+                "release_all",
+                callback=callback,
+                logger=logger,
+                validator=JsonValidator("ReleaseAllResources", schema, logger=logger),
+            )
+
+    class ConfigureCommand(SubmittedSlowCommand):
+        """A class for SKASubarray's Configure() command."""
+
+        def __init__(  # pylint: disable=too-many-arguments
+            self: SKASubarray.ConfigureCommand,
+            command_tracker: CommandTracker,
+            component_manager: SubarrayComponentManager,
+            callback: Optional[Callable] = None,
+            logger: Optional[logging.Logger] = None,
+            schema: Optional[dict] = None,
+        ) -> None:
+            """
+            Initialise a new instance.
+
+            :param command_tracker: the device's command tracker
+            :param component_manager: the device's component manager
+            :param callback: an optional callback to be called when this
+                command starts and finishes.
+            :param logger: a logger for this command to log with.
+            :param schema: an optional JSON schema for the command
+                argument.
+            """
+            super().__init__(
+                "Configure",
+                command_tracker,
+                component_manager,
+                "configure",
+                callback=callback,
+                logger=logger,
+                validator=JsonValidator("Configure", schema, logger=logger),
+            )
+
+    class ScanCommand(SubmittedSlowCommand):
+        """A class for SKASubarray's Scan() command."""
+
+        def __init__(  # pylint: disable=too-many-arguments
+            self: SKASubarray.ScanCommand,
+            command_tracker: CommandTracker,
+            component_manager: SubarrayComponentManager,
+            callback: Optional[Callable] = None,
+            logger: Optional[logging.Logger] = None,
+            schema: Optional[dict] = None,
+        ) -> None:
+            """
+            Initialise a new instance.
+
+            :param command_tracker: the device's command tracker
+            :param component_manager: the device's component manager
+            :param callback: an optional callback to be called when this
+                command starts and finishes.
+            :param logger: a logger for this command to log with.
+            :param schema: an optional JSON schema for the command
+                argument.
+            """
+            super().__init__(
+                "Scan",
+                command_tracker,
+                component_manager,
+                "scan",
+                callback=callback,
+                logger=logger,
+                validator=JsonValidator("Scan", schema, logger=logger),
+            )
+
+    class EndScanCommand(SubmittedSlowCommand):
+        """A class for SKASubarray's EndScan() command."""
+
+        def __init__(  # pylint: disable=too-many-arguments
+            self: SKASubarray.EndScanCommand,
+            command_tracker: CommandTracker,
+            component_manager: SubarrayComponentManager,
+            callback: Optional[Callable] = None,
+            logger: Optional[logging.Logger] = None,
+            schema: Optional[dict] = None,
+        ) -> None:
+            """
+            Initialise a new instance.
+
+            :param command_tracker: the device's command tracker
+            :param component_manager: the device's component manager
+            :param callback: an optional callback to be called when this
+                command starts and finishes.
+            :param logger: a logger for this command to log with.
+            :param schema: an optional JSON schema for the command
+                argument.
+            """
+            super().__init__(
+                "EndScan",
+                command_tracker,
+                component_manager,
+                "end_scan",
+                callback=callback,
+                logger=logger,
+                validator=JsonValidator("EndScan", schema, logger=logger),
+            )
+
+    class EndCommand(SubmittedSlowCommand):
+        """A class for SKASubarray's End() command."""
+
+        def __init__(  # pylint: disable=too-many-arguments
+            self: SKASubarray.EndCommand,
+            command_tracker: CommandTracker,
+            component_manager: SubarrayComponentManager,
+            callback: Optional[Callable] = None,
+            logger: Optional[logging.Logger] = None,
+            schema: Optional[dict] = None,
+        ) -> None:
+            """
+            Initialise a new instance.
+
+            :param command_tracker: the device's command tracker
+            :param component_manager: the device's component manager
+            :param callback: an optional callback to be called when this
+                command starts and finishes.
+            :param logger: a logger for this command to log with.
+            :param schema: an optional JSON schema for the command
+                argument.
+            """
+            super().__init__(
+                "End",
+                command_tracker,
+                component_manager,
+                "deconfigure",
+                callback=callback,
+                logger=logger,
+                validator=JsonValidator("End", schema, logger=logger),
+            )
+
+    class AbortCommand(SlowCommand):
         """A class for SKASubarray's Abort() command."""
 
         def __init__(
@@ -131,6 +353,70 @@ class SKASubarray(SKAObsDevice, Generic[ComponentManagerT]):
 
             return ResultCode.STARTED, command_id
 
+    class ObsResetCommand(SubmittedSlowCommand):
+        """A class for SKASubarray's ObsReset() command."""
+
+        def __init__(  # pylint: disable=too-many-arguments
+            self: SKASubarray.ObsResetCommand,
+            command_tracker: CommandTracker,
+            component_manager: SubarrayComponentManager,
+            callback: Optional[Callable] = None,
+            logger: Optional[logging.Logger] = None,
+            schema: Optional[dict] = None,
+        ) -> None:
+            """
+            Initialise a new instance.
+
+            :param command_tracker: the device's command tracker
+            :param component_manager: the device's component manager
+            :param callback: an optional callback to be called when this
+                command starts and finishes.
+            :param logger: a logger for this command to log with.
+            :param schema: an optional JSON schema for the command
+                argument.
+            """
+            super().__init__(
+                "ObsReset",
+                command_tracker,
+                component_manager,
+                "obsreset",
+                callback=callback,
+                logger=logger,
+                validator=JsonValidator("ObsReset", schema, logger=logger),
+            )
+
+    class RestartCommand(SubmittedSlowCommand):
+        """A class for SKASubarray's Restart() command."""
+
+        def __init__(  # pylint: disable=too-many-arguments
+            self: SKASubarray.RestartCommand,
+            command_tracker: CommandTracker,
+            component_manager: SubarrayComponentManager,
+            callback: Optional[Callable] = None,
+            logger: Optional[logging.Logger] = None,
+            schema: Optional[dict] = None,
+        ) -> None:
+            """
+            Initialise a new instance.
+
+            :param command_tracker: the device's command tracker
+            :param component_manager: the device's component manager
+            :param callback: an optional callback to be called when this
+                command starts and finishes.
+            :param logger: a logger for this command to log with.
+            :param schema: an optional JSON schema for the command
+                argument.
+            """
+            super().__init__(
+                "Restart",
+                command_tracker,
+                component_manager,
+                "restart",
+                callback=callback,
+                logger=logger,
+                validator=JsonValidator("Restart", schema, logger=logger),
+            )
+
     def create_component_manager(self: SKASubarray) -> ComponentManagerT:
         """
         Create and return a component manager for this device.
@@ -154,16 +440,17 @@ class SKASubarray(SKAObsDevice, Generic[ComponentManagerT]):
             action = "invoked" if running else "completed"
             self.obs_state_model.perform_action(f"{hook}_{action}")
 
-        for (command_name, method_name, state_model_hook) in [
-            ("AssignResources", "assign", "assign"),
-            ("ReleaseResources", "release", "release"),
-            ("ReleaseAllResources", "release_all", "release"),
-            ("Configure", "configure", "configure"),
-            ("Scan", "scan", None),
-            ("EndScan", "end_scan", None),
-            ("End", "deconfigure", None),
-            ("ObsReset", "obsreset", "obsreset"),
-            ("Restart", "restart", "restart"),
+        for (command_name, command_class, state_model_hook) in [
+            ("AssignResources", self.AssignResourcesCommand, "assign"),
+            ("ReleaseResources", self.ReleaseResourcesCommand, "release"),
+            ("ReleaseAllResources", self.ReleaseAllResourcesCommand, "release"),
+            ("Configure", self.ConfigureCommand, "configure"),
+            ("Scan", self.ScanCommand, None),
+            ("EndScan", self.EndScanCommand, None),
+            ("End", self.EndCommand, None),
+            ("Abort", self.AbortCommand, "abort"),
+            ("ObsReset", self.ObsResetCommand, "obsreset"),
+            ("Restart", self.RestartCommand, "restart"),
         ]:
             callback = (
                 None
@@ -172,25 +459,13 @@ class SKASubarray(SKAObsDevice, Generic[ComponentManagerT]):
             )
             self.register_command_object(
                 command_name,
-                SubmittedSlowCommand(
-                    command_name,
+                command_class(
                     self._command_tracker,
                     self.component_manager,
-                    method_name,
                     callback=callback,
                     logger=None,
                 ),
             )
-
-        self.register_command_object(
-            "Abort",
-            self.AbortCommand(
-                self._command_tracker,
-                self.component_manager,
-                callback=functools.partial(_callback, "abort"),
-                logger=self.logger,
-            ),
-        )
 
     # pylint: disable-next=too-many-arguments
     def _component_state_changed(
@@ -320,8 +595,7 @@ class SKASubarray(SKAObsDevice, Generic[ComponentManagerT]):
             the command was not excepted, the message explains why.
         """
         handler = self.get_command_object("AssignResources")
-        args = json.loads(argin)
-        (result_code, message) = handler(args)
+        (result_code, message) = handler(argin)
         return ([result_code], [message])
 
     def is_ReleaseResources_allowed(self: SKASubarray) -> bool:
@@ -361,8 +635,7 @@ class SKASubarray(SKAObsDevice, Generic[ComponentManagerT]):
         :return: A tuple containing a result code and the unique ID of the command
         """
         handler = self.get_command_object("ReleaseResources")
-        args = json.loads(argin)
-        (result_code, message) = handler(args)
+        (result_code, message) = handler(argin)
         return ([result_code], [message])
 
     def is_ReleaseAllResources_allowed(self: SKASubarray) -> bool:
@@ -441,8 +714,7 @@ class SKASubarray(SKAObsDevice, Generic[ComponentManagerT]):
         :return: A tuple containing a result code and the unique ID of the command
         """
         handler = self.get_command_object("Configure")
-        args = json.loads(argin)
-        (result_code, message) = handler(args)
+        (result_code, message) = handler(argin)
         return ([result_code], [message])
 
     def is_Scan_allowed(self: SKASubarray) -> bool:
@@ -482,8 +754,7 @@ class SKASubarray(SKAObsDevice, Generic[ComponentManagerT]):
         :return: A tuple containing a result code and the unique ID of the command
         """
         handler = self.get_command_object("Scan")
-        args = json.loads(argin)
-        (result_code, message) = handler(args)
+        (result_code, message) = handler(argin)
         return ([result_code], [message])
 
     def is_EndScan_allowed(self: SKASubarray) -> bool:

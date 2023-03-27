@@ -632,19 +632,19 @@ class ReferenceSubarrayComponentManager(
         self: ReferenceSubarrayComponentManager,
         task_callback: Optional[Callable[[], None]] = None,
         *,
-        args: Any,
+        scan_args: Any,
     ) -> tuple[TaskStatus, str]:
         """
         Start scanning.
 
-        :param args: additional arguments
+        :param scan_args: additional arguments
         :param task_callback: a callback to be called whenever the
             status of this task changes.
 
         :return: task status and message
         """
         return self.submit_task(
-            self._component.scan, (args,), task_callback=task_callback
+            self._component.scan, (scan_args,), task_callback=task_callback
         )
 
     @check_communicating

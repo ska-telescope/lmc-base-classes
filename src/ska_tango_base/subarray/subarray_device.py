@@ -440,7 +440,6 @@ class SKASubarray(SKAObsDevice, Generic[ComponentManagerT]):
             action = "invoked" if running else "completed"
             self.obs_state_model.perform_action(f"{hook}_{action}")
 
-        state_model_hook: Optional[str]
         for (command_name, command_class, state_model_hook) in [
             ("AssignResources", self.AssignResourcesCommand, "assign"),
             ("ReleaseResources", self.ReleaseResourcesCommand, "release"),

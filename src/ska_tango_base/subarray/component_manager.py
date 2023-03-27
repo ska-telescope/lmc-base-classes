@@ -109,12 +109,12 @@ class SubarrayComponentManager(BaseComponentManager):
         self: SubarrayComponentManager,
         task_callback: Optional[Callable] = None,
         *,
-        args: str,
+        scan_args: str,
     ) -> tuple[TaskStatus, str]:
         """
         Start scanning.
 
-        :param args: scan parameters encoded in a json string
+        :param scan_args: scan parameters encoded in a json string
         :param task_callback: callback to be called when the status of
             the command changes
 

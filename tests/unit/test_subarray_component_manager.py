@@ -630,13 +630,13 @@ class TestSubarrayComponentManager:
         component_manager.configure(configuration=mock_configuration)
         callbacks.assert_call("component_state", configured=True)
 
-        component_manager.scan(args=mock_scan_args)
+        component_manager.scan(scan_args=mock_scan_args)
         callbacks.assert_call("component_state", scanning=True)
 
         component_manager.end_scan()
         callbacks.assert_call("component_state", scanning=False)
 
-        component_manager.scan(args=mock_scan_args)
+        component_manager.scan(scan_args=mock_scan_args)
         callbacks.assert_call("component_state", scanning=True)
 
         component.simulate_scan_stopped()
@@ -650,9 +650,6 @@ class TestSubarrayComponentManager:
         component_manager: ReferenceSubarrayComponentManager,
         component: FakeSubarrayComponent,
         callbacks: MockCallableGroup,
-        # initial_power_mode,
-        # initial_fault,
-        # mock_obs_state_model,
         mock_resource_factory: unittest.mock.Mock,
         mock_config_factory: Callable,
         mock_scan_args: str,
@@ -696,7 +693,7 @@ class TestSubarrayComponentManager:
         component_manager.configure(configuration=mock_configuration)
         callbacks.assert_call("component_state", configured=True)
 
-        component_manager.scan(args=mock_scan_args)
+        component_manager.scan(scan_args=mock_scan_args)
         callbacks.assert_call("component_state", scanning=True)
 
         component.simulate_obsfault(True)
@@ -763,7 +760,7 @@ class TestSubarrayComponentManager:
         component_manager.configure(configuration=mock_configuration)
         callbacks.assert_call("component_state", configured=True)
 
-        component_manager.scan(args=mock_scan_args)
+        component_manager.scan(scan_args=mock_scan_args)
         callbacks.assert_call("component_state", scanning=True)
 
         component.simulate_obsfault(True)

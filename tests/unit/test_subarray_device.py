@@ -790,7 +790,7 @@ class TestSKASubarray:  # pylint: disable=too-many-public-methods
         # resources, configure it, and clear the queue attributes. We need a better way
         # to handle this.
 
-        dummy_scan_arg = {"args": 5}
+        dummy_scan_arg = {"scan_args": 5}
         [[result_code], [scan_command_id]] = device_under_test.Scan(
             json.dumps(dummy_scan_arg)
         )

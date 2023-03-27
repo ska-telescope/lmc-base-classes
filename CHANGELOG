@@ -2,6 +2,10 @@
 
 ## unreleased
 
+## 0.18.0
+
+- [MCCS-1424] JSON validation support
+
 ## 0.17.0
 
 - [MCCS-1358] Remove CSP-specific content (into separate ska-csp-lmc-base repo)

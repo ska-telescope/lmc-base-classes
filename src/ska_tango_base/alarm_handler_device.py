@@ -157,8 +157,6 @@ class SKAAlarmHandler(SKABaseDevice, Generic[ComponentManagerT]):
     # --------
     # Commands
     # --------
-
-    # pylint: disable-next=too-few-public-methods
     class GetAlarmRuleCommand(FastCommand):
         """A class for the SKAAlarmHandler's GetAlarmRule() command."""
 
@@ -181,7 +179,6 @@ class SKAAlarmHandler(SKABaseDevice, Generic[ComponentManagerT]):
             """
             return ""
 
-    # pylint: disable-next=too-few-public-methods
     class GetAlarmDataCommand(FastCommand):
         """A class for the SKAAlarmHandler's GetAlarmData() command."""
 
@@ -203,7 +200,6 @@ class SKAAlarmHandler(SKABaseDevice, Generic[ComponentManagerT]):
             """
             return ""
 
-    # pylint: disable-next=too-few-public-methods
     class GetAlarmAdditionalInfoCommand(FastCommand):
         """A class for the SKAAlarmHandler's GetAlarmAdditionalInfo() command."""
 
@@ -225,7 +221,6 @@ class SKAAlarmHandler(SKABaseDevice, Generic[ComponentManagerT]):
             """
             return ""
 
-    # pylint: disable-next=too-few-public-methods
     class GetAlarmStatsCommand(FastCommand):
         """A class for the SKAAlarmHandler's GetAlarmStats() command."""
 
@@ -246,7 +241,6 @@ class SKAAlarmHandler(SKABaseDevice, Generic[ComponentManagerT]):
             """
             return ""
 
-    # pylint: disable-next=too-few-public-methods
     class GetAlertStatsCommand(FastCommand):
         """A class for the SKAAlarmHandler's GetAlertStats() command."""
 

@@ -534,8 +534,9 @@ class ReferenceSubarrayComponentManager(
     @check_communicating
     def assign(
         self: ReferenceSubarrayComponentManager,
-        resources: set[str],
         task_callback: Optional[Callable[[], None]] = None,
+        *,
+        resources: set[str],
     ) -> tuple[TaskStatus, str]:
         """
         Assign resources to the component.
@@ -553,8 +554,9 @@ class ReferenceSubarrayComponentManager(
     @check_communicating
     def release(
         self: ReferenceSubarrayComponentManager,
-        resources: set[str],
         task_callback: Optional[Callable[[], None]] = None,
+        *,
+        resources: set[str],
     ) -> tuple[TaskStatus, str]:
         """
         Release resources from the component.
@@ -589,8 +591,9 @@ class ReferenceSubarrayComponentManager(
     @check_communicating
     def configure(
         self: ReferenceSubarrayComponentManager,
-        configuration: dict[str, Any],
         task_callback: Optional[Callable[[], None]] = None,
+        *,
+        configuration: dict[str, Any],
     ) -> tuple[TaskStatus, str]:
         """
         Configure the component.
@@ -627,20 +630,21 @@ class ReferenceSubarrayComponentManager(
     @check_communicating
     def scan(
         self: ReferenceSubarrayComponentManager,
-        args: Any,
         task_callback: Optional[Callable[[], None]] = None,
+        *,
+        scan_args: Any,
     ) -> tuple[TaskStatus, str]:
         """
         Start scanning.
 
-        :param args: additional arguments
+        :param scan_args: additional arguments
         :param task_callback: a callback to be called whenever the
             status of this task changes.
 
         :return: task status and message
         """
         return self.submit_task(
-            self._component.scan, (args,), task_callback=task_callback
+            self._component.scan, (scan_args,), task_callback=task_callback
         )
 
     @check_communicating

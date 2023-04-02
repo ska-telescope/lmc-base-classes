@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "ska-tango-base"
-version = "0.16.1"
+version = "0.18.0"
 description = "SKA Tango base classes"
 authors = ["SKA India and SARAO and CSIRO and INAF and STFC"]
 license = "BSD 3-Clause"
@@ -21,6 +21,7 @@ pytango = "^9.3.3"
 ska-ser-logging = "^0.4.1"
 transitions = "^0.9.0"
 ska-control-model = "^0.3.1"
+jsonschema = "^4.17.3"
 
 [tool.poetry.dev-dependencies]
 pytango = "9.3.6"
@@ -47,20 +48,7 @@ ska_tango_testing = "0.2.0"
 toml = "^0.10.2"
 pytest-pydocstyle = "2.2.1"
 pytest-pycodestyle = "2.2.1"
-
-[tool.poetry.scripts]
-SKAAlarmHandler = "ska_tango_base.alarm_handler_device:main"
-SKABaseDevice = "ska_tango_base.base.base_device:main"
-SKACapability = "ska_tango_base.capability_device:main"
-SKAExampleDevice = "ska_tango_base.example_device:main"
-SKALogger = "ska_tango_base.logger_device:main"
-SKAController = "ska_tango_base.controller_device:main"
-SKAObsDevice = "ska_tango_base.obs.obs_device:main"
-SKASubarray = "ska_tango_base.subarray.subarray_device:main"
-SKATelState = "ska_tango_base.tel_state_device:main"
-CspSubelementController = "ska_tango_base.csp_subelement_controller:main"
-CspSubelementObsDevice = "ska_tango_base.csp_subelement_obsdevice:main"
-CspSubelementSubarray = "ska_tango_base.csp_subelement_subarray:main"
+types-jsonschema = "^4.17.0.4"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]

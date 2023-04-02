@@ -53,7 +53,6 @@ class SKACapability(SKAObsDevice, Generic[ComponentManagerT]):
             self.ConfigureInstancesCommand(self, self.logger),
         )
 
-    # pylint: disable-next=too-few-public-methods
     class InitCommand(DeviceInitCommand):
         # pylint: disable=protected-access  # command classes are friend classes
         """A class for the CapabilityDevice's init_device() "command"."""
@@ -162,7 +161,6 @@ class SKACapability(SKAObsDevice, Generic[ComponentManagerT]):
     # Commands
     # --------
 
-    # pylint: disable-next=too-few-public-methods
     class ConfigureInstancesCommand(FastCommand):
         # pylint: disable=protected-access  # command classes are friend classes
         """A class for the SKALoggerDevice's SetLoggingLevel() command."""

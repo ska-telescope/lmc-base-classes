@@ -270,7 +270,7 @@ class SKABaseDevice(Device, Generic[ComponentManagerT]):
     _global_debugger_listening = False
     _global_debugger_allocated_port = 0
 
-    class InitCommand(DeviceInitCommand):  # pylint: disable=too-few-public-methods
+    class InitCommand(DeviceInitCommand):
         """A class for the SKABaseDevice's init_device() "command"."""
 
         def do(
@@ -1213,7 +1213,7 @@ class SKABaseDevice(Device, Generic[ComponentManagerT]):
         result_code, unique_id = handler()
         return ([result_code], [unique_id])
 
-    class AbortCommandsCommand(SlowCommand):  # pylint: disable=too-few-public-methods
+    class AbortCommandsCommand(SlowCommand):
         """The command class for the AbortCommand command."""
 
         def __init__(
@@ -1267,7 +1267,6 @@ class SKABaseDevice(Device, Generic[ComponentManagerT]):
         (return_code, message) = handler()
         return ([return_code], [message])
 
-    # pylint: disable-next=too-few-public-methods
     class CheckLongRunningCommandStatusCommand(FastCommand):
         """The command class for the CheckLongRunningCommandStatus command."""
 

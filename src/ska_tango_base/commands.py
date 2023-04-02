@@ -38,9 +38,12 @@ The following command classes are provided:
 from __future__ import annotations
 
 import functools
+import json
 import logging
+import warnings
 from typing import Any, Callable, Optional
 
+import jsonschema
 from ska_control_model import ResultCode, TaskStatus
 from tango.server import Device
 from typing_extensions import Protocol
@@ -54,6 +57,8 @@ __all__ = [
     "DeviceInitCommand",
     "SubmittedSlowCommand",
     "CommandTrackerProtocol",
+    "ArgumentValidator",
+    "JsonValidator",
 ]
 
 module_logger = logging.getLogger(__name__)
@@ -93,6 +98,107 @@ class CommandTrackerProtocol(Protocol):
         """
 
 
+class ArgumentValidator:  # pylint: disable=too-few-public-methods
+    """Base class for command argument validators."""
+
+    def validate(
+        self: ArgumentValidator, *args: Any, **kwargs: Any
+    ) -> tuple[tuple, dict]:
+        """
+        Parse and/or validate the call arguments.
+
+        This is a default implementation that performs no parsing or
+        validating, and simply returns the arguments as received.
+
+        Subclasses may override this method to parse, validate and
+        transform the arguments.
+
+        :param args: positional args to the command
+        :param kwargs: keyword args to the command
+
+        :return: an (args, kwargs) tuple with which to invoke the do()
+            hook. This default implementation simply returns the
+            arguments as received.
+        """
+        return (args, kwargs)
+
+
+class JsonValidator(ArgumentValidator):  # pylint: disable=too-few-public-methods
+    """
+    An argument validator for JSON commands.
+
+    It checks that the argument is called with no more than one
+    positional argument and no keyword arguments, unpacks the positional
+    argument (if any) from JSON into a dictionary, and validates against
+    JSON schema.
+    """
+
+    DEFAULT_SCHEMA = {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "https://example.com/product.schema.json",
+        "title": "Default schema",
+        "description": "Validates the item as a dictionary",
+        "type": "object",
+    }
+
+    def __init__(
+        self,
+        command_name: str,
+        schema: Optional[dict],
+        logger: Optional[logging.Logger] = None,
+    ) -> None:
+        """
+        Initialise a new instance.
+
+        :param command_name: name of the command to be validated.
+        :param schema: an optional schema against which the JSON
+            argument should be validated. If not provided, a warning is
+            issued.
+        :param logger: a logger for this validator to use
+        """
+        self._command_name = command_name
+        self._logger = logger
+
+        if schema is None:
+            warning_msg = (
+                f"JSON argument to command {command_name} "
+                "will only be validated as a dictionary."
+            )
+            warnings.warn(warning_msg)
+            if logger:
+                logger.warn(warning_msg)
+        self._schema = schema or self.DEFAULT_SCHEMA
+
+    def validate(self: JsonValidator, *args: Any, **kwargs: Any) -> tuple[tuple, dict]:
+        """
+        Validate the command arguments.
+
+        Checks that there is only one positional argument and no keyword
+        arguments; unpacks the positional argument from JSON into a
+        dictionary; and validate against the provided JSON schema.
+
+        :param args: positional args to the command
+        :param kwargs: keyword args to the command
+
+        :returns: validated args and kwargs
+        """
+        assert not kwargs, (
+            f"Command {self._command_name} was invoked with kwargs. "
+            "JSON validation does not permit kwargs"
+        )
+        if args:
+            assert len(args) == 1, (
+                f"Command {self._command_name} was invoked with {len(args)} args. "
+                "JSON validation only permits one positional argument."
+            )
+
+            decoded_dict = json.loads(args[0])
+        else:
+            decoded_dict = {}
+        jsonschema.validate(decoded_dict, self._schema)
+        return (), decoded_dict
+
+
 class _BaseCommand:
     """
     Abstract base class for Tango device server commands.
@@ -101,32 +207,54 @@ class _BaseCommand:
     runs the command.
     """
 
-    def __init__(self: _BaseCommand, logger: Optional[logging.Logger] = None) -> None:
+    def __init__(
+        self: _BaseCommand,
+        logger: Optional[logging.Logger] = None,
+        validator: Optional[ArgumentValidator] = None,
+    ) -> None:
         """
         Initialise a new BaseCommand instance.
 
         :param logger: the logger to be used by this Command. If not
             provided, then a default module logger will be used.
+        :param validator: an optional validator to use to parse,
+            validate and/or unpack command arguments.
         """
         self._name = self.__class__.__name__
         self.logger = logger or module_logger
+        self._validator = validator or ArgumentValidator()
 
     def __call__(self: _BaseCommand, *args: Any, **kwargs: Any) -> Any:
         """
-        Invoke the command.
+        Handle a call to the command.
 
-        This is implemented to simply call the do() hook, thus running
-        the user-specified functionality therein.
+        This is implemented to call the parse() hook and then the
+        invoke() hook.
 
-        :param args: positional args to the component manager method
-        :param kwargs: keyword args to the component manager method
+        :param args: positional args to the command
+        :param kwargs: keyword args to the command
 
-        :raises NotImplementedError: method does not exist
+        :return: the result of invoking the user-provided functionality
         """
-        raise NotImplementedError(
-            "_BaseCommand is abstract; __call__() needs to be implemented by a "
-            "subclass; try FastCommand or SlowCommand instead."
-        )
+        (args, kwargs) = self._validator.validate(*args, **kwargs)
+        return self.invoke(*args, **kwargs)
+
+    def invoke(self: _BaseCommand, *args: Any, **kwargs: Any) -> Any:
+        """
+        Invoke the do() hook.
+
+        This default implementation simply calls the do() hook, and
+        returns whatever that hook returns.
+
+        Subclasses may override this hook to handle invokation patterns
+        such as for asynchronous invokation.
+
+        :param args: positional args to the command
+        :param kwargs: keyword args to the command
+
+        :return: the result of calling the do() hook.
+        """
+        return self.do(*args, **kwargs)
 
     # pylint: disable-next=invalid-name
     def do(self: _BaseCommand, *args: Any, **kwargs: Any) -> Any:
@@ -155,7 +283,7 @@ class FastCommand(_BaseCommand):
     safely run synchronously.
     """
 
-    def __call__(self: FastCommand, *args: Any, **kwargs: Any) -> Any:
+    def invoke(self: FastCommand, *args: Any, **kwargs: Any) -> Any:
         """
         Invoke the command.
 
@@ -195,6 +323,7 @@ class SlowCommand(_BaseCommand):
         self: SlowCommand,
         callback: Optional[Callable],
         logger: Optional[logging.Logger] = None,
+        validator: Optional[ArgumentValidator] = None,
     ) -> None:
         """
         Initialise a new BaseCommand instance.
@@ -202,11 +331,13 @@ class SlowCommand(_BaseCommand):
         :param callback: a callback to be called when this command
             starts and finishes.
         :param logger: a logger for this command to log with.
+        :param validator: an optional validator to use to parse,
+            validate and/or unpack command arguments.
         """
         self._callback = callback
-        super().__init__(logger=logger)
+        super().__init__(logger=logger, validator=validator)
 
-    def __call__(self: SlowCommand, *args: Any, **kwargs: Any) -> Any:
+    def invoke(self: SlowCommand, *args: Any, **kwargs: Any) -> Any:
         """
         Invoke the command.
 
@@ -240,7 +371,7 @@ class SlowCommand(_BaseCommand):
             self._callback(False)
 
 
-# pylint: disable-next=abstract-method, too-few-public-methods
+# pylint: disable-next=abstract-method
 class DeviceInitCommand(SlowCommand):
     """
     A ``SlowCommand`` with a fixed initialisation interface.
@@ -254,13 +385,18 @@ class DeviceInitCommand(SlowCommand):
     """
 
     def __init__(
-        self: DeviceInitCommand, device: Device, logger: Optional[logging.Logger] = None
+        self: DeviceInitCommand,
+        device: Device,
+        logger: Optional[logging.Logger] = None,
+        validator: Optional[ArgumentValidator] = None,
     ) -> None:
         """
         Initialise a new instance.
 
         :param device: the device that this command will initialise
         :param logger: a logger for this command to log with.
+        :param validator: an optional validator to use to parse,
+            validate and/or unpack command arguments.
         """
         self._device = device
 
@@ -268,10 +404,9 @@ class DeviceInitCommand(SlowCommand):
             if running:
                 device.op_state_model.perform_action("init_completed")
 
-        super().__init__(callback=_callback, logger=logger)
+        super().__init__(callback=_callback, logger=logger, validator=validator)
 
 
-# pylint: disable-next=too-few-public-methods
 class SubmittedSlowCommand(SlowCommand):
     """
     A SlowCommand with lots of implementation-dependent boilerplate in it.
@@ -302,6 +437,7 @@ class SubmittedSlowCommand(SlowCommand):
         method_name: str,
         callback: Optional[Callable] = None,
         logger: Optional[logging.Logger] = None,
+        validator: Optional[ArgumentValidator] = None,
     ) -> None:
         """
         Initialise a new instance.
@@ -316,12 +452,14 @@ class SubmittedSlowCommand(SlowCommand):
         :param callback: an optional callback to be called when this
             command starts and finishes.
         :param logger: a logger for this command to log with.
+        :param validator: an optional validator to use to parse,
+            validate and/or unpack command arguments.
         """
         self._command_name = command_name
         self._command_tracker = command_tracker
         self._component_manager = component_manager
         self._method_name = method_name
-        super().__init__(callback=callback, logger=logger)
+        super().__init__(callback=callback, logger=logger, validator=validator)
 
     def do(
         self: SubmittedSlowCommand, *args: Any, **kwargs: Any
@@ -341,12 +479,11 @@ class SubmittedSlowCommand(SlowCommand):
             self._command_name, completed_callback=self._completed
         )
         method = getattr(self._component_manager, self._method_name)
-        result = method(
+        status, message = method(
             *args,
             functools.partial(self._command_tracker.update_command_info, command_id),
             **kwargs,
         )
-        status, message = result
         if status == TaskStatus.QUEUED:
             return ResultCode.QUEUED, command_id
         if status == TaskStatus.REJECTED:

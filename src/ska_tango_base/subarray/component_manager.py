@@ -30,15 +30,16 @@ class SubarrayComponentManager(BaseComponentManager):
 
     def assign(
         self: SubarrayComponentManager,
-        resources: set[str],
         task_callback: Optional[Callable[[], None]] = None,
+        *,
+        resources: set[str],
     ) -> tuple[TaskStatus, str]:
         """
         Assign resources to the component.
 
-        :param resources: resources to be assigned
         :param task_callback: callback to be called when the status of
             the command changes
+        :param resources: resources to be assigned;
 
         :raises NotImplementedError: This is an abstract class
         """
@@ -46,8 +47,9 @@ class SubarrayComponentManager(BaseComponentManager):
 
     def release(
         self: SubarrayComponentManager,
-        resources: set[str],
         task_callback: Optional[Callable[[], None]] = None,
+        *,
+        resources: set[str],
     ) -> tuple[TaskStatus, str]:
         """
         Release resources from the component.
@@ -75,8 +77,9 @@ class SubarrayComponentManager(BaseComponentManager):
 
     def configure(
         self,
-        configuration: dict[str, Any],
         task_callback: Optional[Callable[[], None]] = None,
+        *,
+        configuration: dict[str, Any],
     ) -> tuple[TaskStatus, str]:
         """
         Configure the component.
@@ -104,13 +107,14 @@ class SubarrayComponentManager(BaseComponentManager):
 
     def scan(
         self: SubarrayComponentManager,
-        args: str,
         task_callback: Optional[Callable] = None,
+        *,
+        scan_args: str,
     ) -> tuple[TaskStatus, str]:
         """
         Start scanning.
 
-        :param args: scan parameters encoded in a json string
+        :param scan_args: scan parameters encoded in a json string
         :param task_callback: callback to be called when the status of
             the command changes
 

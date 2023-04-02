@@ -72,7 +72,6 @@ class SKALogger(SKABaseDevice, Generic[ComponentManagerT]):
     # --------
     # Commands
     # --------
-    # pylint: disable-next=too-few-public-methods
     class SetLoggingLevelCommand(FastCommand):
         """A class for the SKALoggerDevice's SetLoggingLevel() command."""
 

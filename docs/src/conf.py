@@ -382,6 +382,7 @@ nitpick_ignore = [
     ("py:class", "ska_tango_base.alarm_handler_device.ComponentManagerT"),
     ("py:class", "ska_tango_base.base.base_device.ComponentManagerT"),
     ("py:class", "ska_tango_base.capability_device.ComponentManagerT"),
+    ("py:class", "ska_tango_base.commands.CommandReturnT"),
     ("py:class", "ska_tango_base.controller_device.ComponentManagerT"),
     ("py:class", "ska_tango_base.logger_device.ComponentManagerT"),
     ("py:class", "ska_tango_base.obs.obs_device.ComponentManagerT"),

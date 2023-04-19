@@ -10,16 +10,21 @@ from __future__ import annotations
 
 import logging
 import threading
-from typing import Any, Callable, Optional
+from typing import Any, Callable
 
-from ska_control_model import CommunicationStatus, PowerState, ResultCode, TaskStatus
+from ska_control_model import PowerState, ResultCode, TaskStatus
 
-from ...base import check_communicating, check_on
+from ...base import (
+    CommunicationStatusCallbackType,
+    TaskCallbackType,
+    check_communicating,
+    check_on,
+)
 from ...faults import CapabilityValidationError
 from ...subarray import SubarrayComponentManager
 from .reference_base_component_manager import (
     FakeBaseComponent,
-    ReferenceBaseComponentManager,
+    GenericBaseComponentManager,
 )
 
 
@@ -53,7 +58,7 @@ class FakeSubarrayComponent(FakeBaseComponent):
 
         def __init__(self: FakeSubarrayComponent._ResourcePool) -> None:
             """Initialise a new instance."""
-            self._resources: set = set()
+            self._resources: set[str] = set()
 
         def __len__(self: FakeSubarrayComponent._ResourcePool) -> int:
             """
@@ -113,7 +118,7 @@ class FakeSubarrayComponent(FakeBaseComponent):
             :return: whether this resource pool contains the specified
                 resources
             """
-            return resources in self._resources
+            return self._resources.issuperset(resources)
 
     def __init__(  # pylint: disable=too-many-arguments
         self: FakeSubarrayComponent,
@@ -121,7 +126,7 @@ class FakeSubarrayComponent(FakeBaseComponent):
         time_to_return: float = 0.05,
         time_to_complete: float = 0.4,
         power: PowerState = PowerState.OFF,
-        fault: Optional[bool] = None,
+        fault: bool | None = None,
         resourced: bool = False,
         configured: bool = False,
         scanning: bool = False,
@@ -171,7 +176,7 @@ class FakeSubarrayComponent(FakeBaseComponent):
             **kwargs,
         )
 
-    @property  # type: ignore[misc]
+    @property
     @check_on
     def configured_capabilities(self: FakeSubarrayComponent) -> list[str]:
         """
@@ -212,7 +217,7 @@ class FakeSubarrayComponent(FakeBaseComponent):
     def assign(
         self: FakeSubarrayComponent,
         resources: set[str],
-        task_callback: Callable,
+        task_callback: TaskCallbackType,
         task_abort_event: threading.Event,
     ) -> None:
         """
@@ -244,7 +249,7 @@ class FakeSubarrayComponent(FakeBaseComponent):
     def release(
         self: FakeSubarrayComponent,
         resources: set[str],
-        task_callback: Callable,
+        task_callback: TaskCallbackType,
         task_abort_event: threading.Event,
     ) -> None:
         """
@@ -275,7 +280,7 @@ class FakeSubarrayComponent(FakeBaseComponent):
     @check_on
     def release_all(
         self: FakeSubarrayComponent,
-        task_callback: Callable,
+        task_callback: TaskCallbackType,
         task_abort_event: threading.Event,
     ) -> None:
         """
@@ -302,8 +307,8 @@ class FakeSubarrayComponent(FakeBaseComponent):
     @check_on
     def configure(
         self: FakeSubarrayComponent,
-        configuration: dict,
-        task_callback: Callable,
+        configuration: dict[str, int],
+        task_callback: TaskCallbackType,
         task_abort_event: threading.Event,
     ) -> None:
         """
@@ -341,7 +346,7 @@ class FakeSubarrayComponent(FakeBaseComponent):
     @check_on
     def deconfigure(
         self: FakeSubarrayComponent,
-        task_callback: Callable,
+        task_callback: TaskCallbackType,
         task_abort_event: threading.Event,
     ) -> None:
         """
@@ -370,7 +375,7 @@ class FakeSubarrayComponent(FakeBaseComponent):
     def scan(
         self: FakeSubarrayComponent,
         args: Any,  # pylint: disable=unused-argument
-        task_callback: Callable,
+        task_callback: TaskCallbackType,
         task_abort_event: threading.Event,
     ) -> None:
         """
@@ -396,7 +401,7 @@ class FakeSubarrayComponent(FakeBaseComponent):
     @check_on
     def end_scan(
         self: FakeSubarrayComponent,
-        task_callback: Callable,
+        task_callback: TaskCallbackType,
         task_abort_event: threading.Event,
     ) -> None:
         """
@@ -435,7 +440,7 @@ class FakeSubarrayComponent(FakeBaseComponent):
     @check_on
     def obsreset(
         self: FakeSubarrayComponent,
-        task_callback: Callable,
+        task_callback: TaskCallbackType,
         task_abort_event: threading.Event,
     ) -> None:
         """
@@ -460,7 +465,7 @@ class FakeSubarrayComponent(FakeBaseComponent):
     @check_on
     def restart(
         self: FakeSubarrayComponent,
-        task_callback: Callable,
+        task_callback: TaskCallbackType,
         task_abort_event: threading.Event,
     ) -> None:
         """
@@ -486,7 +491,7 @@ class FakeSubarrayComponent(FakeBaseComponent):
 
 
 class ReferenceSubarrayComponentManager(
-    ReferenceBaseComponentManager[FakeSubarrayComponent], SubarrayComponentManager
+    GenericBaseComponentManager[FakeSubarrayComponent], SubarrayComponentManager
 ):
     """
     A component manager for SKA subarray Tango devices.
@@ -503,9 +508,9 @@ class ReferenceSubarrayComponentManager(
         self: ReferenceSubarrayComponentManager,
         capability_types: list[str],
         logger: logging.Logger,
-        communication_state_callback: Callable[[CommunicationStatus], None],
+        communication_state_callback: CommunicationStatusCallbackType,
         component_state_callback: Callable[[], None],
-        _component: Optional[FakeSubarrayComponent] = None,
+        _component: FakeSubarrayComponent | None = None,
     ):
         """
         Initialise a new ReferenceSubarrayComponentManager instance.
@@ -521,10 +526,10 @@ class ReferenceSubarrayComponentManager(
             component manager; for testing purposes only.
         """
         super().__init__(
+            _component or FakeSubarrayComponent(capability_types),
             logger,
             communication_state_callback,
             component_state_callback,
-            _component=_component or FakeSubarrayComponent(capability_types),
             resourced=False,
             configured=False,
             scanning=False,
@@ -534,7 +539,7 @@ class ReferenceSubarrayComponentManager(
     @check_communicating
     def assign(
         self: ReferenceSubarrayComponentManager,
-        task_callback: Optional[Callable[[], None]] = None,
+        task_callback: TaskCallbackType | None = None,
         *,
         resources: set[str],
     ) -> tuple[TaskStatus, str]:
@@ -554,7 +559,7 @@ class ReferenceSubarrayComponentManager(
     @check_communicating
     def release(
         self: ReferenceSubarrayComponentManager,
-        task_callback: Optional[Callable[[], None]] = None,
+        task_callback: TaskCallbackType | None = None,
         *,
         resources: set[str],
     ) -> tuple[TaskStatus, str]:
@@ -574,7 +579,7 @@ class ReferenceSubarrayComponentManager(
     @check_communicating
     def release_all(
         self: ReferenceSubarrayComponentManager,
-        task_callback: Optional[Callable[[], None]] = None,
+        task_callback: TaskCallbackType | None = None,
     ) -> tuple[TaskStatus, str]:
         """
         Release all resources.
@@ -591,7 +596,7 @@ class ReferenceSubarrayComponentManager(
     @check_communicating
     def configure(
         self: ReferenceSubarrayComponentManager,
-        task_callback: Optional[Callable[[], None]] = None,
+        task_callback: TaskCallbackType | None = None,
         *,
         configuration: dict[str, Any],
     ) -> tuple[TaskStatus, str]:
@@ -613,7 +618,7 @@ class ReferenceSubarrayComponentManager(
     @check_communicating
     def deconfigure(
         self: ReferenceSubarrayComponentManager,
-        task_callback: Optional[Callable[[], None]] = None,
+        task_callback: TaskCallbackType | None = None,
     ) -> tuple[TaskStatus, str]:
         """
         Deconfigure this component.
@@ -630,7 +635,7 @@ class ReferenceSubarrayComponentManager(
     @check_communicating
     def scan(
         self: ReferenceSubarrayComponentManager,
-        task_callback: Optional[Callable[[], None]] = None,
+        task_callback: TaskCallbackType | None = None,
         *,
         scan_args: Any,
     ) -> tuple[TaskStatus, str]:
@@ -650,7 +655,7 @@ class ReferenceSubarrayComponentManager(
     @check_communicating
     def end_scan(
         self: ReferenceSubarrayComponentManager,
-        task_callback: Optional[Callable[[], None]] = None,
+        task_callback: TaskCallbackType | None = None,
     ) -> tuple[TaskStatus, str]:
         """
         End scanning.
@@ -665,7 +670,7 @@ class ReferenceSubarrayComponentManager(
     @check_communicating
     def abort(
         self: ReferenceSubarrayComponentManager,
-        task_callback: Optional[Callable[[], None]] = None,
+        task_callback: TaskCallbackType | None = None,
     ) -> tuple[TaskStatus, str]:
         """
         Tell the component to abort the observation.
@@ -680,7 +685,7 @@ class ReferenceSubarrayComponentManager(
     @check_communicating
     def obsreset(
         self: ReferenceSubarrayComponentManager,
-        task_callback: Optional[Callable[[], None]] = None,
+        task_callback: TaskCallbackType | None = None,
     ) -> tuple[TaskStatus, str]:
         """
         Deconfigure the component but do not release resources.
@@ -695,7 +700,7 @@ class ReferenceSubarrayComponentManager(
     @check_communicating
     def restart(
         self: ReferenceSubarrayComponentManager,
-        task_callback: Optional[Callable[[], None]] = None,
+        task_callback: TaskCallbackType | None = None,
     ) -> tuple[TaskStatus, str]:
         """
         Tell the component to restart.
@@ -710,7 +715,7 @@ class ReferenceSubarrayComponentManager(
         """
         return self.submit_task(self._component.restart, task_callback=task_callback)
 
-    @property  # type: ignore[misc]
+    @property
     @check_communicating
     def assigned_resources(self: ReferenceSubarrayComponentManager) -> list[str]:
         """
@@ -721,7 +726,7 @@ class ReferenceSubarrayComponentManager(
         # pylint: disable-next=protected-access
         return sorted(self._component._resource_pool.get())
 
-    @property  # type: ignore[misc]
+    @property
     @check_communicating
     def configured_capabilities(self: ReferenceSubarrayComponentManager) -> list[str]:
         """

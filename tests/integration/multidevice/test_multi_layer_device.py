@@ -1,12 +1,11 @@
 """Test various Tango devices with long running commmands working together."""
 
-from typing import Dict, List
-
 import pytest
 import tango
 import tango.test_context
 from ska_tango_testing.mock.tango import MockTangoEventCallbackGroup
 
+from ...conftest import DeviceSpecType
 from .multidevice import ExampleMultiDevice
 
 # Testing a chain of calls
@@ -28,8 +27,8 @@ from .multidevice import ExampleMultiDevice
 #       test/lowlevel/6
 
 
-@pytest.fixture(scope="module")
-def devices_to_test() -> List[Dict]:
+@pytest.fixture(name="devices_to_test", scope="module")
+def devices_to_test_fixture() -> list[DeviceSpecType]:
     """
     Fixture for devices to test.
 
@@ -88,8 +87,8 @@ def devices_to_test() -> List[Dict]:
     ]
 
 
-@pytest.fixture()
-def change_event_callbacks() -> MockTangoEventCallbackGroup:
+@pytest.fixture(name="change_event_callbacks")
+def change_event_callbacks_fixture() -> MockTangoEventCallbackGroup:
     """
     Return a dictionary of Tango device change event callbacks with asynchrony support.
 

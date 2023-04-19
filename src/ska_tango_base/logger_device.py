@@ -14,7 +14,7 @@ remote logging for selected devices.
 """
 from __future__ import annotations
 
-from typing import Any, Generic, List, Tuple, TypeVar, cast
+from typing import Any, TypeVar, cast
 
 from ska_control_model import LoggingLevel, ResultCode
 from tango import DebugIt, DevFailed, DeviceProxy
@@ -23,7 +23,7 @@ from tango.server import command
 from .base import BaseComponentManager, SKABaseDevice
 from .commands import FastCommand
 
-DevVarLongStringArrayType = Tuple[List[ResultCode], List[str]]
+DevVarLongStringArrayType = tuple[list[ResultCode], list[str]]
 
 __all__ = ["LoggerComponentManager", "SKALogger", "main"]
 
@@ -38,7 +38,7 @@ class LoggerComponentManager(BaseComponentManager):
 ComponentManagerT = TypeVar("ComponentManagerT", bound=LoggerComponentManager)
 
 
-class SKALogger(SKABaseDevice, Generic[ComponentManagerT]):
+class SKALogger(SKABaseDevice[ComponentManagerT]):
     """A generic base device for Logging for SKA."""
 
     # -----------------
@@ -48,7 +48,7 @@ class SKALogger(SKABaseDevice, Generic[ComponentManagerT]):
     # ---------------
     # General methods
     # ---------------
-    def init_command_objects(self: SKALogger) -> None:
+    def init_command_objects(self: SKALogger[ComponentManagerT]) -> None:
         """Set up the command objects."""
         super().init_command_objects()
         self.register_command_object(
@@ -56,7 +56,9 @@ class SKALogger(SKABaseDevice, Generic[ComponentManagerT]):
             self.SetLoggingLevelCommand(self.logger),
         )
 
-    def create_component_manager(self: SKALogger) -> ComponentManagerT:
+    def create_component_manager(
+        self: SKALogger[ComponentManagerT],
+    ) -> ComponentManagerT:
         """
         Create and return the component manager for this device.
 
@@ -72,14 +74,14 @@ class SKALogger(SKABaseDevice, Generic[ComponentManagerT]):
     # --------
     # Commands
     # --------
-    class SetLoggingLevelCommand(FastCommand):
+    class SetLoggingLevelCommand(FastCommand[tuple[ResultCode, str]]):
         """A class for the SKALoggerDevice's SetLoggingLevel() command."""
 
         def do(
             self: SKALogger.SetLoggingLevelCommand,
             *args: Any,
             **kwargs: Any,
-        ) -> Tuple[ResultCode, str]:
+        ) -> tuple[ResultCode, str]:
             """
             Stateless hook for SetLoggingLevel() command functionality.
 
@@ -94,7 +96,7 @@ class SKALogger(SKABaseDevice, Generic[ComponentManagerT]):
                 message indicating status. The message is for
                 information purpose only.
             """
-            argin = cast(Tuple[List[str], List[Any]], args[0])
+            argin = cast(tuple[list[str], list[Any]], args[0])
             logging_levels = argin[0][:]
             logging_devices = argin[1][:]
             for level, device in zip(logging_levels, logging_devices):
@@ -114,7 +116,7 @@ class SKALogger(SKABaseDevice, Generic[ComponentManagerT]):
             self.logger.info(message)
             return (ResultCode.OK, message)
 
-    @command(
+    @command(  # type: ignore[misc]  # "Untyped decorator makes function untyped"
         dtype_in="DevVarLongStringArray",
         doc_in="Logging level for selected devices:"
         "(0=OFF, 1=FATAL, 2=ERROR, 3=WARNING, 4=INFO, 5=DEBUG)."
@@ -122,9 +124,9 @@ class SKALogger(SKABaseDevice, Generic[ComponentManagerT]):
         dtype_out="DevVarLongStringArray",
         doc_out="(ResultCode, 'informational message')",
     )
-    @DebugIt()
+    @DebugIt()  # type: ignore[misc]  # "Untyped decorator makes function untyped"
     def SetLoggingLevel(
-        self: SKALogger, argin: DevVarLongStringArrayType
+        self: SKALogger[ComponentManagerT], argin: DevVarLongStringArrayType
     ) -> DevVarLongStringArrayType:
         """
         Set the logging level of the specified devices.
@@ -158,7 +160,7 @@ def main(*args: str, **kwargs: str) -> int:
 
     :return: exit code
     """
-    return SKALogger.run_server(args=args or None, **kwargs)
+    return cast(int, SKALogger.run_server(args=args or None, **kwargs))
 
 
 if __name__ == "__main__":

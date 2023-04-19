@@ -17,7 +17,7 @@ import re
 import socket
 import time
 import unittest
-from typing import Any
+from typing import Any, cast
 from unittest import mock
 
 import pytest
@@ -102,7 +102,7 @@ class TestTangoLoggingServiceHandler:
 
         :return: the requested logging level
         """
-        return request.param
+        return cast(LoggingLevel, request.param)
 
     def test_emit_message_at_correct_level(
         self: TestTangoLoggingServiceHandler,
@@ -174,7 +174,7 @@ class TestTangoLoggingServiceHandler:
 
         tango_logger.log.side_effect = cause_exception
         # monkey patch
-        tls_handler.handleError = mock.MagicMock()  # type: ignore[assignment]
+        tls_handler.handleError = mock.MagicMock()  # type: ignore[method-assign]
         # act
         tls_handler.emit(record)
         # assert
@@ -239,7 +239,7 @@ class TestLoggingUtils:
     )
     def good_logging_targets(
         self: TestLoggingUtils, request: SubRequest
-    ) -> tuple[str, str, str]:
+    ) -> tuple[str, str, list[str]]:
         """
         Return some good logging targets for use in testing.
 
@@ -274,7 +274,8 @@ class TestLoggingUtils:
         return targets_in, dev_name
 
     def test_sanitise_logging_targets_success(
-        self: TestLoggingUtils, good_logging_targets: tuple[list[str], str, str]
+        self: TestLoggingUtils,
+        good_logging_targets: tuple[list[str] | None, str, list[str]],
     ) -> None:
         """
         Test that good logging targets can be sanitised.
@@ -346,7 +347,7 @@ class TestLoggingUtils:
             "invalid://somehost:1234",
         ]
     )
-    def bad_syslog_url(self: TestLoggingUtils, request: SubRequest) -> str:
+    def bad_syslog_url(self: TestLoggingUtils, request: SubRequest) -> str | None:
         """
         Return a bad logging target URL.
 
@@ -354,7 +355,7 @@ class TestLoggingUtils:
 
         :return: any return code
         """
-        return request.param
+        return cast(str | None, request.param)
 
     def test_get_syslog_address_and_socktype_success(
         self: TestLoggingUtils,
@@ -481,7 +482,7 @@ class TestLoggingUtils:
         orig_create_logging_handler = LoggingUtils.create_logging_handler
         try:
             mocked_creator = mock.MagicMock(side_effect=null_creator)
-            LoggingUtils.create_logging_handler = (  # type: ignore[assignment]
+            LoggingUtils.create_logging_handler = (  # type: ignore[method-assign]
                 mocked_creator
             )
 
@@ -546,7 +547,7 @@ class TestLoggingUtils:
 
         finally:
             # monkey patch
-            LoggingUtils.create_logging_handler = (  # type: ignore[assignment]
+            LoggingUtils.create_logging_handler = (  # type: ignore[method-assign]
                 orig_create_logging_handler
             )
 
@@ -1191,24 +1192,24 @@ class TestSKABaseDevice:  # pylint: disable=too-many-public-methods
         assert device_under_test.loggingTargets == ("tango::logger",)
 
         # test console target
-        device_under_test.loggingTargets = ["console::cout"]
+        device_under_test.loggingTargets = ("console::cout",)
         assert device_under_test.loggingTargets == ("console::cout",)
-        device_under_test.loggingTargets = [
+        device_under_test.loggingTargets = (
             "console::cout",
             "file::/tmp/dummy",
             "syslog::udp://localhost:514",
-        ]
+        )
         assert device_under_test.loggingTargets == (
             "console::cout",
             "file::/tmp/dummy",
             "syslog::udp://localhost:514",
         )
-        device_under_test.loggingTargets = ["tango::logger"]
+        device_under_test.loggingTargets = ("tango::logger",)
         assert device_under_test.loggingTargets == ("tango::logger",)
-        device_under_test.loggingTargets = []
+        device_under_test.loggingTargets = tuple()
         assert device_under_test.loggingTargets is None
         with pytest.raises(DevFailed):
-            device_under_test.loggingTargets = ["invalid::type"]
+            device_under_test.loggingTargets = ("invalid::type",)
 
     def test_healthState(
         self: TestSKABaseDevice, device_under_test: tango.DeviceProxy

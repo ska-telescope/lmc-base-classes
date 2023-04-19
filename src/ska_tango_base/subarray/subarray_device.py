@@ -17,9 +17,8 @@ from __future__ import annotations
 
 import functools
 import logging
-from typing import Any, Callable, Generic, List, Optional, Tuple, TypeVar
+from typing import Any, Callable, TypeVar, cast
 
-# SKA specific imports
 from ska_control_model import (
     ObsState,
     ObsStateModel,
@@ -36,7 +35,7 @@ from ..faults import StateModelError
 from ..obs import SKAObsDevice
 from .component_manager import SubarrayComponentManager
 
-DevVarLongStringArrayType = Tuple[List[ResultCode], List[str]]
+DevVarLongStringArrayType = tuple[list[ResultCode], list[str]]
 
 __all__ = ["SKASubarray", "main"]
 
@@ -45,9 +44,30 @@ ComponentManagerT = TypeVar("ComponentManagerT", bound=SubarrayComponentManager)
 
 
 # pylint: disable-next=too-many-public-methods
-class SKASubarray(SKAObsDevice, Generic[ComponentManagerT]):
+class SKASubarray(SKAObsDevice[ComponentManagerT]):
     # pylint: disable=attribute-defined-outside-init  # Tango devices have init_device
     """Implements the SKA SubArray device."""
+
+    def __init__(
+        self: SKASubarray[ComponentManagerT],
+        *args: Any,
+        **kwargs: Any,
+    ) -> None:
+        """
+        Initialise a new instance.
+
+        :param args: positional arguments.
+        :param kwargs: keyword arguments.
+        """
+        # This __init__ method is created for type-hinting purposes only.
+        # Tango devices are not supposed to have __init__ methods,
+        # And they have a strange __new__ method,
+        # that calls __init__ when you least expect it.
+        # So don't put anything executable in here
+        # (other than the super() call).
+        self._activation_time: float
+
+        super().__init__(*args, **kwargs)
 
     class InitCommand(SKAObsDevice.InitCommand):
         # pylint: disable=protected-access  # command classes are friend classes
@@ -86,9 +106,9 @@ class SKASubarray(SKAObsDevice, Generic[ComponentManagerT]):
             self: SKASubarray.AssignResourcesCommand,
             command_tracker: CommandTracker,
             component_manager: SubarrayComponentManager,
-            callback: Optional[Callable] = None,
-            logger: Optional[logging.Logger] = None,
-            schema: Optional[dict] = None,
+            callback: Callable[[bool], None] | None = None,
+            logger: logging.Logger | None = None,
+            schema: dict[str, Any] | None = None,
         ) -> None:
             """
             Initialise a new instance.
@@ -118,9 +138,9 @@ class SKASubarray(SKAObsDevice, Generic[ComponentManagerT]):
             self: SKASubarray.ReleaseResourcesCommand,
             command_tracker: CommandTracker,
             component_manager: SubarrayComponentManager,
-            callback: Optional[Callable] = None,
-            logger: Optional[logging.Logger] = None,
-            schema: Optional[dict] = None,
+            callback: Callable[[bool], None] | None = None,
+            logger: logging.Logger | None = None,
+            schema: dict[str, Any] | None = None,
         ) -> None:
             """
             Initialise a new instance.
@@ -150,9 +170,9 @@ class SKASubarray(SKAObsDevice, Generic[ComponentManagerT]):
             self: SKASubarray.ReleaseAllResourcesCommand,
             command_tracker: CommandTracker,
             component_manager: SubarrayComponentManager,
-            callback: Optional[Callable] = None,
-            logger: Optional[logging.Logger] = None,
-            schema: Optional[dict] = None,
+            callback: Callable[[bool], None] | None = None,
+            logger: logging.Logger | None = None,
+            schema: dict[str, Any] | None = None,
         ) -> None:
             """
             Initialise a new instance.
@@ -182,9 +202,9 @@ class SKASubarray(SKAObsDevice, Generic[ComponentManagerT]):
             self: SKASubarray.ConfigureCommand,
             command_tracker: CommandTracker,
             component_manager: SubarrayComponentManager,
-            callback: Optional[Callable] = None,
-            logger: Optional[logging.Logger] = None,
-            schema: Optional[dict] = None,
+            callback: Callable[[bool], None] | None = None,
+            logger: logging.Logger | None = None,
+            schema: dict[str, Any] | None = None,
         ) -> None:
             """
             Initialise a new instance.
@@ -214,9 +234,9 @@ class SKASubarray(SKAObsDevice, Generic[ComponentManagerT]):
             self: SKASubarray.ScanCommand,
             command_tracker: CommandTracker,
             component_manager: SubarrayComponentManager,
-            callback: Optional[Callable] = None,
-            logger: Optional[logging.Logger] = None,
-            schema: Optional[dict] = None,
+            callback: Callable[[bool], None] | None = None,
+            logger: logging.Logger | None = None,
+            schema: dict[str, Any] | None = None,
         ) -> None:
             """
             Initialise a new instance.
@@ -246,9 +266,9 @@ class SKASubarray(SKAObsDevice, Generic[ComponentManagerT]):
             self: SKASubarray.EndScanCommand,
             command_tracker: CommandTracker,
             component_manager: SubarrayComponentManager,
-            callback: Optional[Callable] = None,
-            logger: Optional[logging.Logger] = None,
-            schema: Optional[dict] = None,
+            callback: Callable[[bool], None] | None = None,
+            logger: logging.Logger | None = None,
+            schema: dict[str, Any] | None = None,
         ) -> None:
             """
             Initialise a new instance.
@@ -278,9 +298,9 @@ class SKASubarray(SKAObsDevice, Generic[ComponentManagerT]):
             self: SKASubarray.EndCommand,
             command_tracker: CommandTracker,
             component_manager: SubarrayComponentManager,
-            callback: Optional[Callable] = None,
-            logger: Optional[logging.Logger] = None,
-            schema: Optional[dict] = None,
+            callback: Callable[[bool], None] | None = None,
+            logger: logging.Logger | None = None,
+            schema: dict[str, Any] | None = None,
         ) -> None:
             """
             Initialise a new instance.
@@ -303,15 +323,15 @@ class SKASubarray(SKAObsDevice, Generic[ComponentManagerT]):
                 validator=JsonValidator("End", schema, logger=logger),
             )
 
-    class AbortCommand(SlowCommand):
+    class AbortCommand(SlowCommand[tuple[ResultCode, str]]):
         """A class for SKASubarray's Abort() command."""
 
         def __init__(
             self: SKASubarray.AbortCommand,
             command_tracker: CommandTracker,
             component_manager: SubarrayComponentManager,
-            callback: Callable[[], None],
-            logger: Optional[logging.Logger] = None,
+            callback: Callable[[bool], None],
+            logger: logging.Logger | None = None,
         ) -> None:
             """
             Initialise a new AbortCommand instance.
@@ -360,9 +380,9 @@ class SKASubarray(SKAObsDevice, Generic[ComponentManagerT]):
             self: SKASubarray.ObsResetCommand,
             command_tracker: CommandTracker,
             component_manager: SubarrayComponentManager,
-            callback: Optional[Callable] = None,
-            logger: Optional[logging.Logger] = None,
-            schema: Optional[dict] = None,
+            callback: Callable[[bool], None] | None = None,
+            logger: logging.Logger | None = None,
+            schema: dict[str, Any] | None = None,
         ) -> None:
             """
             Initialise a new instance.
@@ -392,9 +412,9 @@ class SKASubarray(SKAObsDevice, Generic[ComponentManagerT]):
             self: SKASubarray.RestartCommand,
             command_tracker: CommandTracker,
             component_manager: SubarrayComponentManager,
-            callback: Optional[Callable] = None,
-            logger: Optional[logging.Logger] = None,
-            schema: Optional[dict] = None,
+            callback: Callable[[bool], None] | None = None,
+            logger: logging.Logger | None = None,
+            schema: dict[str, Any] | None = None,
         ) -> None:
             """
             Initialise a new instance.
@@ -417,7 +437,9 @@ class SKASubarray(SKAObsDevice, Generic[ComponentManagerT]):
                 validator=JsonValidator("Restart", schema, logger=logger),
             )
 
-    def create_component_manager(self: SKASubarray) -> ComponentManagerT:
+    def create_component_manager(
+        self: SKASubarray[ComponentManagerT],
+    ) -> ComponentManagerT:
         """
         Create and return a component manager for this device.
 
@@ -425,22 +447,22 @@ class SKASubarray(SKAObsDevice, Generic[ComponentManagerT]):
         """
         raise NotImplementedError("SKASubarray is abstract.")
 
-    def _init_state_model(self: SKASubarray) -> None:
+    def _init_state_model(self: SKASubarray[ComponentManagerT]) -> None:
         """Set up the state model for the device."""
         super()._init_state_model()
         self.obs_state_model = ObsStateModel(
             logger=self.logger, callback=self._update_obs_state
         )
 
-    def init_command_objects(self: SKASubarray) -> None:
+    def init_command_objects(self: SKASubarray[ComponentManagerT]) -> None:
         """Set up the command objects."""
         super().init_command_objects()
 
-        def _callback(hook: Callable, running: bool) -> None:
+        def _callback(hook: str, running: bool) -> None:
             action = "invoked" if running else "completed"
             self.obs_state_model.perform_action(f"{hook}_{action}")
 
-        for (command_name, command_class, state_model_hook) in [
+        for command_name, command_class, state_model_hook in [
             ("AssignResources", self.AssignResourcesCommand, "assign"),
             ("ReleaseResources", self.ReleaseResourcesCommand, "release"),
             ("ReleaseAllResources", self.ReleaseAllResourcesCommand, "release"),
@@ -469,12 +491,12 @@ class SKASubarray(SKAObsDevice, Generic[ComponentManagerT]):
 
     # pylint: disable-next=too-many-arguments
     def _component_state_changed(
-        self: SKASubarray,
-        fault: Optional[bool] = None,
-        power: Optional[PowerState] = None,
-        resourced: Optional[bool] = None,
-        configured: Optional[bool] = None,
-        scanning: Optional[bool] = None,
+        self: SKASubarray[ComponentManagerT],
+        fault: bool | None = None,
+        power: PowerState | None = None,
+        resourced: bool | None = None,
+        configured: bool | None = None,
+        scanning: bool | None = None,
     ) -> None:
         super()._component_state_changed(fault=fault, power=power)
 
@@ -508,13 +530,13 @@ class SKASubarray(SKAObsDevice, Generic[ComponentManagerT]):
     # ----------
     # Attributes
     # ----------
-    @attribute(
+    @attribute(  # type: ignore[misc]  # "Untyped decorator makes function untyped"
         dtype="double",
         unit="s",
         standard_unit="s",
         display_unit="s",
     )
-    def activationTime(self: SKASubarray) -> float:
+    def activationTime(self: SKASubarray[ComponentManagerT]) -> float:
         """
         Read the time of activation in seconds since Unix epoch.
 
@@ -522,11 +544,11 @@ class SKASubarray(SKAObsDevice, Generic[ComponentManagerT]):
         """
         return self._activation_time
 
-    @attribute(
+    @attribute(  # type: ignore[misc]  # "Untyped decorator makes function untyped"
         dtype=("str",),
         max_dim_x=512,
     )
-    def assignedResources(self: SKASubarray) -> list[str]:
+    def assignedResources(self: SKASubarray[ComponentManagerT]) -> list[str]:
         """
         Read the resources assigned to the device.
 
@@ -536,11 +558,11 @@ class SKASubarray(SKAObsDevice, Generic[ComponentManagerT]):
         """
         return self.component_manager.assigned_resources
 
-    @attribute(
+    @attribute(  # type: ignore[misc]  # "Untyped decorator makes function untyped"
         dtype=("str",),
         max_dim_x=10,
     )
-    def configuredCapabilities(self: SKASubarray) -> list[str]:
+    def configuredCapabilities(self: SKASubarray[ComponentManagerT]) -> list[str]:
         """
         Read capabilities configured in the Subarray.
 
@@ -555,7 +577,7 @@ class SKASubarray(SKAObsDevice, Generic[ComponentManagerT]):
     # --------
     # Commands
     # --------
-    def is_AssignResources_allowed(self: SKASubarray) -> bool:
+    def is_AssignResources_allowed(self: SKASubarray[ComponentManagerT]) -> bool:
         """
         Return whether the `AssignResource` command may be called in the current state.
 
@@ -575,12 +597,14 @@ class SKASubarray(SKAObsDevice, Generic[ComponentManagerT]):
             )
         return True
 
-    @command(
+    @command(  # type: ignore[misc]  # "Untyped decorator makes function untyped"
         dtype_in="DevString",
         dtype_out="DevVarLongStringArray",
     )
-    @DebugIt()
-    def AssignResources(self: SKASubarray, argin: str) -> DevVarLongStringArrayType:
+    @DebugIt()  # type: ignore[misc]  # "Untyped decorator makes function untyped"
+    def AssignResources(
+        self: SKASubarray[ComponentManagerT], argin: str
+    ) -> DevVarLongStringArrayType:
         """
         Assign resources to this subarray.
 
@@ -598,7 +622,7 @@ class SKASubarray(SKAObsDevice, Generic[ComponentManagerT]):
         (result_code, message) = handler(argin)
         return ([result_code], [message])
 
-    def is_ReleaseResources_allowed(self: SKASubarray) -> bool:
+    def is_ReleaseResources_allowed(self: SKASubarray[ComponentManagerT]) -> bool:
         """
         Return whether the `ReleaseResources` command may be called in current state.
 
@@ -618,12 +642,14 @@ class SKASubarray(SKAObsDevice, Generic[ComponentManagerT]):
             )
         return True
 
-    @command(
+    @command(  # type: ignore[misc]  # "Untyped decorator makes function untyped"
         dtype_in="DevString",
         dtype_out="DevVarLongStringArray",
     )
-    @DebugIt()
-    def ReleaseResources(self: SKASubarray, argin: str) -> DevVarLongStringArrayType:
+    @DebugIt()  # type: ignore[misc]  # "Untyped decorator makes function untyped"
+    def ReleaseResources(
+        self: SKASubarray[ComponentManagerT], argin: str
+    ) -> DevVarLongStringArrayType:
         """
         Delta removal of assigned resources.
 
@@ -638,7 +664,7 @@ class SKASubarray(SKAObsDevice, Generic[ComponentManagerT]):
         (result_code, message) = handler(argin)
         return ([result_code], [message])
 
-    def is_ReleaseAllResources_allowed(self: SKASubarray) -> bool:
+    def is_ReleaseAllResources_allowed(self: SKASubarray[ComponentManagerT]) -> bool:
         """
         Return whether `ReleaseAllResources` may be called in the current device state.
 
@@ -658,12 +684,14 @@ class SKASubarray(SKAObsDevice, Generic[ComponentManagerT]):
             )
         return True
 
-    @command(
+    @command(  # type: ignore[misc]  # "Untyped decorator makes function untyped"
         dtype_out="DevVarLongStringArray",
         doc_out="([Command ResultCode], [Unique ID of the command])",
     )
-    @DebugIt()
-    def ReleaseAllResources(self: SKASubarray) -> DevVarLongStringArrayType:
+    @DebugIt()  # type: ignore[misc]  # "Untyped decorator makes function untyped"
+    def ReleaseAllResources(
+        self: SKASubarray[ComponentManagerT],
+    ) -> DevVarLongStringArrayType:
         """
         Remove all resources to tear down to an empty subarray.
 
@@ -676,7 +704,7 @@ class SKASubarray(SKAObsDevice, Generic[ComponentManagerT]):
         (result_code, message) = handler()
         return ([result_code], [message])
 
-    def is_Configure_allowed(self: SKASubarray) -> bool:
+    def is_Configure_allowed(self: SKASubarray[ComponentManagerT]) -> bool:
         """
         Return whether `Configure` may be called in the current device state.
 
@@ -696,12 +724,14 @@ class SKASubarray(SKAObsDevice, Generic[ComponentManagerT]):
             )
         return True
 
-    @command(
+    @command(  # type: ignore[misc]  # "Untyped decorator makes function untyped"
         dtype_in="DevString",
         dtype_out="DevVarLongStringArray",
     )
-    @DebugIt()
-    def Configure(self: SKASubarray, argin: str) -> DevVarLongStringArrayType:
+    @DebugIt()  # type: ignore[misc]  # "Untyped decorator makes function untyped"
+    def Configure(
+        self: SKASubarray[ComponentManagerT], argin: str
+    ) -> DevVarLongStringArrayType:
         """
         Configure the capabilities of this subarray.
 
@@ -717,7 +747,7 @@ class SKASubarray(SKAObsDevice, Generic[ComponentManagerT]):
         (result_code, message) = handler(argin)
         return ([result_code], [message])
 
-    def is_Scan_allowed(self: SKASubarray) -> bool:
+    def is_Scan_allowed(self: SKASubarray[ComponentManagerT]) -> bool:
         """
         Return whether the `Scan` command may be called in the current device state.
 
@@ -737,12 +767,14 @@ class SKASubarray(SKAObsDevice, Generic[ComponentManagerT]):
             )
         return True
 
-    @command(
+    @command(  # type: ignore[misc]  # "Untyped decorator makes function untyped"
         dtype_in="DevString",
         dtype_out="DevVarLongStringArray",
     )
-    @DebugIt()
-    def Scan(self: SKASubarray, argin: str) -> DevVarLongStringArrayType:
+    @DebugIt()  # type: ignore[misc]  # "Untyped decorator makes function untyped"
+    def Scan(
+        self: SKASubarray[ComponentManagerT], argin: str
+    ) -> DevVarLongStringArrayType:
         """
         Start scanning.
 
@@ -757,7 +789,7 @@ class SKASubarray(SKAObsDevice, Generic[ComponentManagerT]):
         (result_code, message) = handler(argin)
         return ([result_code], [message])
 
-    def is_EndScan_allowed(self: SKASubarray) -> bool:
+    def is_EndScan_allowed(self: SKASubarray[ComponentManagerT]) -> bool:
         """
         Return whether the `EndScan` command may be called in the current device state.
 
@@ -777,11 +809,11 @@ class SKASubarray(SKAObsDevice, Generic[ComponentManagerT]):
             )
         return True
 
-    @command(
+    @command(  # type: ignore[misc]  # "Untyped decorator makes function untyped"
         dtype_out="DevVarLongStringArray",
     )
-    @DebugIt()
-    def EndScan(self: SKASubarray) -> DevVarLongStringArrayType:
+    @DebugIt()  # type: ignore[misc]  # "Untyped decorator makes function untyped"
+    def EndScan(self: SKASubarray[ComponentManagerT]) -> DevVarLongStringArrayType:
         """
         End the scan.
 
@@ -794,7 +826,7 @@ class SKASubarray(SKAObsDevice, Generic[ComponentManagerT]):
         (result_code, message) = handler()
         return ([result_code], [message])
 
-    def is_End_allowed(self: SKASubarray) -> bool:
+    def is_End_allowed(self: SKASubarray[ComponentManagerT]) -> bool:
         """
         Return whether the `End` command may be called in the current device state.
 
@@ -813,9 +845,11 @@ class SKASubarray(SKAObsDevice, Generic[ComponentManagerT]):
             )
         return True
 
-    @command(dtype_out="DevVarLongStringArray")
-    @DebugIt()
-    def End(self: SKASubarray) -> DevVarLongStringArrayType:
+    @command(  # type: ignore[misc]  # "Untyped decorator makes function untyped"
+        dtype_out="DevVarLongStringArray"
+    )
+    @DebugIt()  # type: ignore[misc]  # "Untyped decorator makes function untyped"
+    def End(self: SKASubarray[ComponentManagerT]) -> DevVarLongStringArrayType:
         """
         End the scan block.
 
@@ -828,7 +862,7 @@ class SKASubarray(SKAObsDevice, Generic[ComponentManagerT]):
         (result_code, message) = handler()
         return ([result_code], [message])
 
-    def is_Abort_allowed(self: SKASubarray) -> bool:
+    def is_Abort_allowed(self: SKASubarray[ComponentManagerT]) -> bool:
         """
         Return whether the `Abort` command may be called in the current device state.
 
@@ -855,9 +889,11 @@ class SKASubarray(SKAObsDevice, Generic[ComponentManagerT]):
             )
         return True
 
-    @command(dtype_out="DevVarLongStringArray")
-    @DebugIt()
-    def Abort(self: SKASubarray) -> DevVarLongStringArrayType:
+    @command(  # type: ignore[misc]  # "Untyped decorator makes function untyped"
+        dtype_out="DevVarLongStringArray"
+    )
+    @DebugIt()  # type: ignore[misc]  # "Untyped decorator makes function untyped"
+    def Abort(self: SKASubarray[ComponentManagerT]) -> DevVarLongStringArrayType:
         """
         Abort any long-running command such as ``Configure()`` or ``Scan()``.
 
@@ -870,7 +906,7 @@ class SKASubarray(SKAObsDevice, Generic[ComponentManagerT]):
         (result_code, message) = handler()
         return ([result_code], [message])
 
-    def is_ObsReset_allowed(self: SKASubarray) -> bool:
+    def is_ObsReset_allowed(self: SKASubarray[ComponentManagerT]) -> bool:
         """
         Return whether the `ObsReset` command may be called in the current device state.
 
@@ -890,11 +926,11 @@ class SKASubarray(SKAObsDevice, Generic[ComponentManagerT]):
             )
         return True
 
-    @command(
+    @command(  # type: ignore[misc]  # "Untyped decorator makes function untyped"
         dtype_out="DevVarLongStringArray",
     )
-    @DebugIt()
-    def ObsReset(self: SKASubarray) -> DevVarLongStringArrayType:
+    @DebugIt()  # type: ignore[misc]  # "Untyped decorator makes function untyped"
+    def ObsReset(self: SKASubarray[ComponentManagerT]) -> DevVarLongStringArrayType:
         """
         Reset the current observation process.
 
@@ -907,7 +943,7 @@ class SKASubarray(SKAObsDevice, Generic[ComponentManagerT]):
         (result_code, message) = handler()
         return ([result_code], [message])
 
-    def is_Restart_allowed(self: SKASubarray) -> bool:
+    def is_Restart_allowed(self: SKASubarray[ComponentManagerT]) -> bool:
         """
         Return whether the `Restart` command may be called in the current device state.
 
@@ -927,11 +963,11 @@ class SKASubarray(SKAObsDevice, Generic[ComponentManagerT]):
             )
         return True
 
-    @command(
+    @command(  # type: ignore[misc]  # "Untyped decorator makes function untyped"
         dtype_out="DevVarLongStringArray",
     )
-    @DebugIt()
-    def Restart(self: SKASubarray) -> DevVarLongStringArrayType:
+    @DebugIt()  # type: ignore[misc]  # "Untyped decorator makes function untyped"
+    def Restart(self: SKASubarray[ComponentManagerT]) -> DevVarLongStringArrayType:
         """
         Restart the subarray. That is, deconfigure and release all resources.
 
@@ -957,7 +993,7 @@ def main(*args: str, **kwargs: str) -> int:
 
     :return: exit code
     """
-    return SKASubarray.run_server(args=args or None, **kwargs)
+    return cast(int, SKASubarray.run_server(args=args or None, **kwargs))
 
 
 if __name__ == "__main__":

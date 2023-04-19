@@ -34,7 +34,7 @@ from __future__ import annotations
 import functools
 import logging
 import threading
-from typing import Any, Callable, Optional, TypeVar, cast
+from typing import Any, Callable, Protocol, TypeVar, cast
 
 from ska_control_model import CommunicationStatus, PowerState, TaskStatus
 
@@ -114,7 +114,7 @@ def check_on(func: Wrapped) -> Wrapped:
     """
 
     @functools.wraps(func)
-    def _wrapper(component: Any, *args: Any, **kwargs: Any) -> Wrapped:
+    def _wrapper(component: Any, *args: Any, **kwargs: Any) -> Any:
         """
         Check that the component is on and not faulty before calling the function.
 
@@ -136,6 +136,29 @@ def check_on(func: Wrapped) -> Wrapped:
     return cast(Wrapped, _wrapper)
 
 
+CommunicationStatusCallbackType = Callable[[CommunicationStatus], None]
+
+
+class TaskCallbackType(Protocol):  # pylint: disable=too-few-public-methods
+    """Structural subtyping protocol for a TaskCallback."""
+
+    def __call__(
+        self: TaskCallbackType,
+        status: TaskStatus | None = None,
+        progress: int | None = None,
+        result: Any = None,
+        exception: Exception | None = None,
+    ) -> None:
+        """
+        Call the callback with an update on the task.
+
+        :param status: status of the task.
+        :param progress: progress of the task.
+        :param result: result of the task.
+        :param exception: an exception raised from the task.
+        """
+
+
 class BaseComponentManager:
     """
     An abstract base class for a component manager for SKA Tango devices.
@@ -154,10 +177,8 @@ class BaseComponentManager:
     def __init__(
         self: BaseComponentManager,
         logger: logging.Logger,
-        communication_state_callback: Optional[
-            Callable[[CommunicationStatus], None]
-        ] = None,
-        component_state_callback: Optional[Callable[..., None]] = None,
+        communication_state_callback: CommunicationStatusCallbackType | None = None,
+        component_state_callback: Callable[..., None] | None = None,
         **state: Any,
     ) -> None:
         """
@@ -279,7 +300,7 @@ class BaseComponentManager:
 
     @check_communicating
     def off(
-        self: BaseComponentManager, task_callback: Optional[Callable] = None
+        self: BaseComponentManager, task_callback: TaskCallbackType | None = None
     ) -> tuple[TaskStatus, str]:
         """
         Turn the component off.
@@ -293,7 +314,7 @@ class BaseComponentManager:
 
     @check_communicating
     def standby(
-        self: BaseComponentManager, task_callback: Optional[Callable] = None
+        self: BaseComponentManager, task_callback: TaskCallbackType | None = None
     ) -> tuple[TaskStatus, str]:
         """
         Put the component into low-power standby mode.
@@ -307,7 +328,7 @@ class BaseComponentManager:
 
     @check_communicating
     def on(  # pylint: disable=invalid-name
-        self: BaseComponentManager, task_callback: Optional[Callable] = None
+        self: BaseComponentManager, task_callback: TaskCallbackType | None = None
     ) -> tuple[TaskStatus, str]:
         """
         Turn the component on.
@@ -321,7 +342,7 @@ class BaseComponentManager:
 
     @check_communicating
     def reset(
-        self: BaseComponentManager, task_callback: Optional[Callable] = None
+        self: BaseComponentManager, task_callback: TaskCallbackType | None = None
     ) -> tuple[TaskStatus, str]:
         """
         Reset the component (from fault state).
@@ -335,7 +356,7 @@ class BaseComponentManager:
 
     @check_communicating
     def abort_commands(
-        self: BaseComponentManager, task_callback: Optional[Callable] = None
+        self: BaseComponentManager, task_callback: TaskCallbackType | None = None
     ) -> tuple[TaskStatus, str]:
         """
         Abort all tasks queued & running.

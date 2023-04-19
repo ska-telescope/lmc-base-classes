@@ -41,7 +41,7 @@ import functools
 import json
 import logging
 import warnings
-from typing import Any, Callable, Optional
+from typing import Any, Callable, Generic, TypeVar
 
 import jsonschema
 from ska_control_model import ResultCode, TaskStatus
@@ -70,7 +70,7 @@ class CommandTrackerProtocol(Protocol):
     def new_command(
         self: CommandTrackerProtocol,
         command_name: str,
-        completed_callback: Optional[Callable[[], None]] = None,
+        completed_callback: Callable[[], None] | None = None,
     ) -> str:
         """
         Create a new command.
@@ -82,10 +82,10 @@ class CommandTrackerProtocol(Protocol):
     def update_command_info(  # pylint: disable=too-many-arguments
         self: CommandTrackerProtocol,
         command_id: str,
-        status: Optional[TaskStatus] = None,
-        progress: Optional[int] = None,
-        result: Optional[tuple[ResultCode, str]] = None,
-        exception: Optional[Exception] = None,
+        status: TaskStatus | None = None,
+        progress: int | None = None,
+        result: tuple[ResultCode, str] | None = None,
+        exception: Exception | None = None,
     ) -> None:
         """
         Update status information on the command.
@@ -103,7 +103,7 @@ class ArgumentValidator:  # pylint: disable=too-few-public-methods
 
     def validate(
         self: ArgumentValidator, *args: Any, **kwargs: Any
-    ) -> tuple[tuple, dict]:
+    ) -> tuple[tuple[Any, ...], dict[str, Any]]:
         """
         Parse and/or validate the call arguments.
 
@@ -123,6 +123,10 @@ class ArgumentValidator:  # pylint: disable=too-few-public-methods
         return (args, kwargs)
 
 
+# TODO: Make this a TypedDict
+SchemaDictType = dict[str, Any]
+
+
 class JsonValidator(ArgumentValidator):  # pylint: disable=too-few-public-methods
     """
     An argument validator for JSON commands.
@@ -133,7 +137,7 @@ class JsonValidator(ArgumentValidator):  # pylint: disable=too-few-public-method
     JSON schema.
     """
 
-    DEFAULT_SCHEMA = {
+    DEFAULT_SCHEMA: SchemaDictType = {
         "$schema": "https://json-schema.org/draft/2020-12/schema",
         "$id": "https://example.com/product.schema.json",
         "title": "Default schema",
@@ -144,8 +148,8 @@ class JsonValidator(ArgumentValidator):  # pylint: disable=too-few-public-method
     def __init__(
         self,
         command_name: str,
-        schema: Optional[dict],
-        logger: Optional[logging.Logger] = None,
+        schema: SchemaDictType | None,
+        logger: logging.Logger | None = None,
     ) -> None:
         """
         Initialise a new instance.
@@ -169,7 +173,9 @@ class JsonValidator(ArgumentValidator):  # pylint: disable=too-few-public-method
                 logger.warn(warning_msg)
         self._schema = schema or self.DEFAULT_SCHEMA
 
-    def validate(self: JsonValidator, *args: Any, **kwargs: Any) -> tuple[tuple, dict]:
+    def validate(
+        self: JsonValidator, *args: Any, **kwargs: Any
+    ) -> tuple[tuple[Any, ...], dict[str, Any]]:
         """
         Validate the command arguments.
 
@@ -199,7 +205,10 @@ class JsonValidator(ArgumentValidator):  # pylint: disable=too-few-public-method
         return (), decoded_dict
 
 
-class _BaseCommand:
+CommandReturnT = TypeVar("CommandReturnT")
+
+
+class _BaseCommand(Generic[CommandReturnT]):
     """
     Abstract base class for Tango device server commands.
 
@@ -208,9 +217,9 @@ class _BaseCommand:
     """
 
     def __init__(
-        self: _BaseCommand,
-        logger: Optional[logging.Logger] = None,
-        validator: Optional[ArgumentValidator] = None,
+        self: _BaseCommand[CommandReturnT],
+        logger: logging.Logger | None = None,
+        validator: ArgumentValidator | None = None,
     ) -> None:
         """
         Initialise a new BaseCommand instance.
@@ -224,7 +233,9 @@ class _BaseCommand:
         self.logger = logger or module_logger
         self._validator = validator or ArgumentValidator()
 
-    def __call__(self: _BaseCommand, *args: Any, **kwargs: Any) -> Any:
+    def __call__(
+        self: _BaseCommand[CommandReturnT], *args: Any, **kwargs: Any
+    ) -> CommandReturnT:
         """
         Handle a call to the command.
 
@@ -239,7 +250,9 @@ class _BaseCommand:
         (args, kwargs) = self._validator.validate(*args, **kwargs)
         return self.invoke(*args, **kwargs)
 
-    def invoke(self: _BaseCommand, *args: Any, **kwargs: Any) -> Any:
+    def invoke(
+        self: _BaseCommand[CommandReturnT], *args: Any, **kwargs: Any
+    ) -> CommandReturnT:
         """
         Invoke the do() hook.
 
@@ -257,7 +270,9 @@ class _BaseCommand:
         return self.do(*args, **kwargs)
 
     # pylint: disable-next=invalid-name
-    def do(self: _BaseCommand, *args: Any, **kwargs: Any) -> Any:
+    def do(
+        self: _BaseCommand[CommandReturnT], *args: Any, **kwargs: Any
+    ) -> CommandReturnT:
         """
         Perform the user-specified functionality of the command.
 
@@ -275,7 +290,7 @@ class _BaseCommand:
 
 
 # pylint: disable-next=abstract-method  # Yes, this is an abstract class.
-class FastCommand(_BaseCommand):
+class FastCommand(_BaseCommand[CommandReturnT]):
     """
     An abstract class for Tango device server commands that execute quickly.
 
@@ -283,7 +298,9 @@ class FastCommand(_BaseCommand):
     safely run synchronously.
     """
 
-    def invoke(self: FastCommand, *args: Any, **kwargs: Any) -> Any:
+    def invoke(
+        self: FastCommand[CommandReturnT], *args: Any, **kwargs: Any
+    ) -> CommandReturnT:
         """
         Invoke the command.
 
@@ -309,7 +326,7 @@ class FastCommand(_BaseCommand):
 
 
 # pylint: disable-next=abstract-method  # Yes, this is an abstract class.
-class SlowCommand(_BaseCommand):
+class SlowCommand(_BaseCommand[CommandReturnT]):
     """
     An abstract class for Tango device server commands that execute slowly.
 
@@ -320,10 +337,10 @@ class SlowCommand(_BaseCommand):
     """
 
     def __init__(
-        self: SlowCommand,
-        callback: Optional[Callable],
-        logger: Optional[logging.Logger] = None,
-        validator: Optional[ArgumentValidator] = None,
+        self: SlowCommand[CommandReturnT],
+        callback: Callable[[bool], None] | None,
+        logger: logging.Logger | None = None,
+        validator: ArgumentValidator | None = None,
     ) -> None:
         """
         Initialise a new BaseCommand instance.
@@ -337,7 +354,9 @@ class SlowCommand(_BaseCommand):
         self._callback = callback
         super().__init__(logger=logger, validator=validator)
 
-    def invoke(self: SlowCommand, *args: Any, **kwargs: Any) -> Any:
+    def invoke(
+        self: SlowCommand[CommandReturnT], *args: Any, **kwargs: Any
+    ) -> CommandReturnT:
         """
         Invoke the command.
 
@@ -362,17 +381,17 @@ class SlowCommand(_BaseCommand):
             self._completed()
             raise
 
-    def _invoked(self: SlowCommand) -> None:
+    def _invoked(self: SlowCommand[CommandReturnT]) -> None:
         if self._callback is not None:
             self._callback(True)
 
-    def _completed(self: SlowCommand) -> None:
+    def _completed(self: SlowCommand[CommandReturnT]) -> None:
         if self._callback is not None:
             self._callback(False)
 
 
 # pylint: disable-next=abstract-method
-class DeviceInitCommand(SlowCommand):
+class DeviceInitCommand(SlowCommand[tuple[ResultCode, str]]):
     """
     A ``SlowCommand`` with a fixed initialisation interface.
 
@@ -387,8 +406,8 @@ class DeviceInitCommand(SlowCommand):
     def __init__(
         self: DeviceInitCommand,
         device: Device,
-        logger: Optional[logging.Logger] = None,
-        validator: Optional[ArgumentValidator] = None,
+        logger: logging.Logger | None = None,
+        validator: ArgumentValidator | None = None,
     ) -> None:
         """
         Initialise a new instance.
@@ -407,7 +426,7 @@ class DeviceInitCommand(SlowCommand):
         super().__init__(callback=_callback, logger=logger, validator=validator)
 
 
-class SubmittedSlowCommand(SlowCommand):
+class SubmittedSlowCommand(SlowCommand[tuple[ResultCode, str]]):
     """
     A SlowCommand with lots of implementation-dependent boilerplate in it.
 
@@ -435,9 +454,9 @@ class SubmittedSlowCommand(SlowCommand):
         command_tracker: CommandTrackerProtocol,
         component_manager: BaseComponentManager,
         method_name: str,
-        callback: Optional[Callable] = None,
-        logger: Optional[logging.Logger] = None,
-        validator: Optional[ArgumentValidator] = None,
+        callback: Callable[[bool], None] | None = None,
+        logger: logging.Logger | None = None,
+        validator: ArgumentValidator | None = None,
     ) -> None:
         """
         Initialise a new instance.

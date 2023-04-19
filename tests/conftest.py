@@ -3,7 +3,7 @@ from __future__ import annotations
 
 import logging
 import socket
-from typing import Any, Dict, Generator, List
+from typing import Any, Generator, cast
 
 import pytest
 import pytest_mock
@@ -118,10 +118,14 @@ def logger() -> logging.Logger:
     return logging.Logger("Test logger")
 
 
+# TODO: Placeholder for a better type specification
+DeviceSpecType = dict[str, Any]
+
+
 @pytest.fixture(name="multi_device_tango_context", scope="function")
 def fixture_multi_device_tango_context(
     mocker: pytest_mock.MockerFixture,
-    devices_to_test: List[Dict],
+    devices_to_test: DeviceSpecType,
 ) -> Generator[MultiDeviceTestContext, None, None]:
     """
     Create and return a TANGO MultiDeviceTestContext object.
@@ -139,7 +143,7 @@ def fixture_multi_device_tango_context(
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         sock.bind(("", 0))
         sock.listen(1)
-        port = sock.getsockname()[1]
+        port = cast(int, sock.getsockname()[1])
         sock.close()
         return port
 

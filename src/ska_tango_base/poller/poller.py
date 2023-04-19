@@ -94,7 +94,7 @@ class PollModel(Generic[PollRequestT, PollResponseT]):
         """
 
 
-class Poller:
+class Poller(Generic[PollRequestT, PollResponseT]):
     """A generic hardware polling mechanism."""
 
     class _State(enum.Enum):
@@ -102,7 +102,9 @@ class Poller:
         POLLING = enum.auto()
         KILLED = enum.auto()
 
-    def __init__(self, poll_model: PollModel, poll_rate: float = 1.0) -> None:
+    def __init__(
+        self, poll_model: PollModel[PollRequestT, PollResponseT], poll_rate: float = 1.0
+    ) -> None:
         """
         Initialise a new instance.
 

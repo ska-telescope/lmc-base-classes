@@ -14,7 +14,7 @@ from SKAObsDevice instead of just SKABaseDevice.
 """
 from __future__ import annotations
 
-from typing import Any, Generic, TypeVar
+from typing import Any, TypeVar, cast
 
 from ska_control_model import ObsMode, ObsState, ResultCode
 from tango.server import attribute
@@ -35,9 +35,33 @@ class ObsDeviceComponentManager(BaseComponentManager):
 ComponentManagerT = TypeVar("ComponentManagerT", bound=ObsDeviceComponentManager)
 
 
-class SKAObsDevice(SKABaseDevice, Generic[ComponentManagerT]):
-    # pylint: disable=attribute-defined-outside-init  # Tango devices have init_device
+class SKAObsDevice(SKABaseDevice[ComponentManagerT]):
     """A generic base device for Observations for SKA."""
+
+    def __init__(
+        self: SKAObsDevice[ComponentManagerT],
+        *args: Any,
+        **kwargs: Any,
+    ) -> None:
+        """
+        Initialise a new instance.
+
+        :param args: positional arguments.
+        :param kwargs: keyword arguments.
+        """
+        # This __init__ method is created for type-hinting purposes only.
+        # Tango devices are not supposed to have __init__ methods,
+        # And they have a strange __new__ method,
+        # that calls __init__ when you least expect it.
+        # So don't put anything executable in here
+        # (other than the super() call).
+
+        self._obs_state: ObsState
+        self._obs_mode: ObsMode
+        self._config_progress: int
+        self._config_delay_expected: int
+
+        super().__init__(*args, **kwargs)
 
     class InitCommand(DeviceInitCommand):
         # pylint: disable=protected-access  # command classes are friend classes
@@ -79,7 +103,9 @@ class SKAObsDevice(SKABaseDevice, Generic[ComponentManagerT]):
             self._completed()
             return (ResultCode.OK, message)
 
-    def create_component_manager(self: SKAObsDevice) -> ComponentManagerT:
+    def create_component_manager(
+        self: SKAObsDevice[ComponentManagerT],
+    ) -> ComponentManagerT:
         """
         Create and return a component manager for this device.
 
@@ -94,7 +120,9 @@ class SKAObsDevice(SKABaseDevice, Generic[ComponentManagerT]):
     # ---------------
     # General methods
     # ---------------
-    def _update_obs_state(self: SKAObsDevice, obs_state: ObsState) -> None:
+    def _update_obs_state(
+        self: SKAObsDevice[ComponentManagerT], obs_state: ObsState
+    ) -> None:
         """
         Perform Tango operations in response to a change in obsState.
 
@@ -112,8 +140,10 @@ class SKAObsDevice(SKABaseDevice, Generic[ComponentManagerT]):
     # Attributes
     # ----------
 
-    @attribute(dtype=ObsState)
-    def obsState(self: SKAObsDevice) -> ObsState:
+    @attribute(  # type: ignore[misc]  # "Untyped decorator makes function untyped"
+        dtype=ObsState
+    )
+    def obsState(self: SKAObsDevice[ComponentManagerT]) -> ObsState:
         """
         Read the Observation State of the device.
 
@@ -121,8 +151,10 @@ class SKAObsDevice(SKABaseDevice, Generic[ComponentManagerT]):
         """
         return self._obs_state
 
-    @attribute(dtype=ObsMode)
-    def obsMode(self: SKAObsDevice) -> ObsMode:
+    @attribute(  # type: ignore[misc]  # "Untyped decorator makes function untyped"
+        dtype=ObsMode
+    )
+    def obsMode(self: SKAObsDevice[ComponentManagerT]) -> ObsMode:
         """
         Read the Observation Mode of the device.
 
@@ -130,13 +162,13 @@ class SKAObsDevice(SKABaseDevice, Generic[ComponentManagerT]):
         """
         return self._obs_mode
 
-    @attribute(
+    @attribute(  # type: ignore[misc]  # "Untyped decorator makes function untyped"
         dtype="uint16",
         unit="%",
         max_value=100,
         min_value=0,
     )
-    def configurationProgress(self: SKAObsDevice) -> int:
+    def configurationProgress(self: SKAObsDevice[ComponentManagerT]) -> int:
         """
         Read the percentage configuration progress of the device.
 
@@ -144,8 +176,10 @@ class SKAObsDevice(SKABaseDevice, Generic[ComponentManagerT]):
         """
         return self._config_progress
 
-    @attribute(dtype="uint16", unit="seconds")
-    def configurationDelayExpected(self: SKAObsDevice) -> int:
+    @attribute(  # type: ignore[misc]  # "Untyped decorator makes function untyped"
+        dtype="uint16", unit="seconds"
+    )
+    def configurationDelayExpected(self: SKAObsDevice[ComponentManagerT]) -> int:
         """
         Read the expected Configuration Delay in seconds.
 
@@ -172,7 +206,7 @@ def main(*args: str, **kwargs: str) -> int:
 
     :return: exit code
     """
-    return SKAObsDevice.run_server(args=args or None, **kwargs)
+    return cast(int, SKAObsDevice.run_server(args=args or None, **kwargs))
 
 
 if __name__ == "__main__":

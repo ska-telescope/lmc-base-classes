@@ -23,7 +23,7 @@ import threading
 import traceback
 from functools import partial
 from types import FunctionType, MethodType
-from typing import Any, Callable, Generic, List, Optional, Tuple, TypeVar
+from typing import Any, Callable, Generic, TypedDict, TypeVar, cast
 
 import debugpy
 import ska_ser_logging
@@ -55,7 +55,7 @@ from .logging import (
 )
 from .op_state_model import OpStateModel
 
-DevVarLongStringArrayType = Tuple[List[ResultCode], List[str]]
+DevVarLongStringArrayType = tuple[list[ResultCode], list[str]]
 
 MAX_REPORTED_CONCURRENT_COMMANDS = 16
 MAX_REPORTED_QUEUED_COMMANDS = 64
@@ -67,6 +67,13 @@ _DEBUGGER_PORT = 5678
 __all__ = ["SKABaseDevice", "main", "CommandTracker"]
 
 
+class _CommandData(TypedDict):
+    name: str
+    status: TaskStatus
+    progress: int | None
+    completed_callback: Callable[[], None] | None
+
+
 class CommandTracker:  # pylint: disable=too-many-instance-attributes
     """A class for keeping track of the state and progress of commands."""
 
@@ -76,7 +83,7 @@ class CommandTracker:  # pylint: disable=too-many-instance-attributes
         status_changed_callback: Callable[[list[tuple[str, TaskStatus]]], None],
         progress_changed_callback: Callable[[list[tuple[str, int]]], None],
         result_callback: Callable[[str, tuple[ResultCode, str]], None],
-        exception_callback: Optional[Callable[[str, Exception], None]] = None,
+        exception_callback: Callable[[str, Exception], None] | None = None,
         removal_time: float = 10.0,
     ) -> None:
         """
@@ -94,18 +101,18 @@ class CommandTracker:  # pylint: disable=too-many-instance-attributes
         self._status_changed_callback = status_changed_callback
         self._progress_changed_callback = progress_changed_callback
         self._result_callback = result_callback
-        self._most_recent_result: Optional[
-            tuple[str, Optional[tuple[ResultCode, str]]]
-        ] = None
+        self._most_recent_result: tuple[
+            str, tuple[ResultCode, str] | None
+        ] | None = None
         self._exception_callback = exception_callback
-        self._most_recent_exception: Optional[tuple[str, Exception]] = None
-        self._commands: dict[str, Any] = {}
+        self._most_recent_exception: tuple[str, Exception] | None = None
+        self._commands: dict[str, _CommandData] = {}
         self._removal_time = removal_time
 
     def new_command(
         self: CommandTracker,
         command_name: str,
-        completed_callback: Optional[Callable[[], None]] = None,
+        completed_callback: Callable[[], None] | None = None,
     ) -> str:
         """
         Create a new command.
@@ -136,10 +143,10 @@ class CommandTracker:  # pylint: disable=too-many-instance-attributes
     def update_command_info(  # pylint: disable=too-many-arguments
         self: CommandTracker,
         command_id: str,
-        status: Optional[TaskStatus] = None,
-        progress: Optional[int] = None,
-        result: Optional[tuple[ResultCode, str]] = None,
-        exception: Optional[Exception] = None,
+        status: TaskStatus | None = None,
+        progress: int | None = None,
+        result: tuple[ResultCode, str] | None = None,
+        exception: Exception | None = None,
     ) -> None:
         """
         Update status information on the command.
@@ -179,21 +186,6 @@ class CommandTracker:  # pylint: disable=too-many-instance-attributes
                     self._commands[command_id]["progress"] = None
                     self._schedule_removal(command_id)
 
-    def _commands_by_keyword(
-        self: CommandTracker, keyword: str
-    ) -> list[tuple[str, Any]]:
-        assert keyword in [
-            "name",
-            "status",
-            "progress",
-        ], f"Unsupported keyword {keyword} in _commands_by_keyword"
-        with self.__lock:
-            return list(
-                (command_id, command[keyword])
-                for command_id, command in self._commands.items()
-                if command[keyword] is not None
-            )
-
     @property
     def commands_in_queue(self: CommandTracker) -> list[tuple[str, str]]:
         """
@@ -202,7 +194,12 @@ class CommandTracker:  # pylint: disable=too-many-instance-attributes
         :return: a list of (command_id, command_name) tuples, ordered by
             when invoked.
         """
-        return self._commands_by_keyword("name")
+        with self.__lock:
+            return list(
+                (command_id, command["name"])
+                for command_id, command in self._commands.items()
+                if command["name"] is not None
+            )
 
     @property
     def command_statuses(self: CommandTracker) -> list[tuple[str, TaskStatus]]:
@@ -212,7 +209,12 @@ class CommandTracker:  # pylint: disable=too-many-instance-attributes
         :return: a list of (command_id, status) tuples, ordered by when
             invoked.
         """
-        return self._commands_by_keyword("status")
+        with self.__lock:
+            return list(
+                (command_id, command["status"])
+                for command_id, command in self._commands.items()
+                if command["status"] is not None
+            )
 
     @property
     def command_progresses(self: CommandTracker) -> list[tuple[str, int]]:
@@ -222,12 +224,17 @@ class CommandTracker:  # pylint: disable=too-many-instance-attributes
         :return: a list of (command_id, progress) tuples, ordered by
             when invoked.
         """
-        return self._commands_by_keyword("progress")
+        with self.__lock:
+            return list(
+                (command_id, command["progress"])
+                for command_id, command in self._commands.items()
+                if command["progress"] is not None
+            )
 
     @property
     def command_result(
         self: CommandTracker,
-    ) -> Optional[tuple[str, Optional[tuple[ResultCode, str]]]]:
+    ) -> tuple[str, tuple[ResultCode, str] | None] | None:
         """
         Return the result of the most recently completed command.
 
@@ -237,7 +244,7 @@ class CommandTracker:  # pylint: disable=too-many-instance-attributes
         return self._most_recent_result
 
     @property
-    def command_exception(self: CommandTracker) -> Optional[tuple[str, Exception]]:
+    def command_exception(self: CommandTracker) -> tuple[str, Exception] | None:
         """
         Return the most recent exception, if any.
 
@@ -263,7 +270,10 @@ ComponentManagerT = TypeVar("ComponentManagerT", bound=BaseComponentManager)
 
 
 # pylint: disable-next=too-many-instance-attributes, too-many-public-methods
-class SKABaseDevice(Device, Generic[ComponentManagerT]):
+class SKABaseDevice(
+    Device,  # type: ignore[misc]  # Cannot subclass Device (has type Any)
+    Generic[ComponentManagerT],
+):
     # pylint: disable=attribute-defined-outside-init  # Tango devices have init_device
     """A generic base device for SKA."""
 
@@ -296,8 +306,11 @@ class SKABaseDevice(Device, Generic[ComponentManagerT]):
     _logging_config_lock = threading.Lock()
     _logging_configured = False
 
-    def _init_logging(self: SKABaseDevice) -> None:
+    def _init_logging(self: SKABaseDevice[ComponentManagerT]) -> None:
         """Initialize the logging mechanism, using default properties."""
+        # TODO: This comment stops black adding a blank line here,
+        # causing flake8-docstrings D202 error.
+
         # pylint: disable-next=too-few-public-methods
         class EnsureTagsFilter(logging.Filter):
             """
@@ -310,7 +323,7 @@ class SKABaseDevice(Device, Generic[ComponentManagerT]):
                 self: EnsureTagsFilter, record: logging.LogRecord
             ) -> bool:
                 if not hasattr(record, "tags"):
-                    record.tags = ""  # type: ignore[attr-defined]
+                    record.tags = ""
                 return True
 
         # There may be multiple devices in a single device server - these will all be
@@ -339,7 +352,7 @@ class SKABaseDevice(Device, Generic[ComponentManagerT]):
             def filter(  # noqa: A003
                 self: TangoDeviceTagsFilter, record: logging.LogRecord
             ) -> bool:
-                record.tags = device_name_tag  # type: ignore[attr-defined]
+                record.tags = device_name_tag
                 return True
 
         self.logger.addFilter(TangoDeviceTagsFilter())
@@ -442,7 +455,9 @@ class SKABaseDevice(Device, Generic[ComponentManagerT]):
     # Callbacks
     # ---------
     def _update_state(
-        self: SKABaseDevice, state: DevState, status: Optional[str] = None
+        self: SKABaseDevice[ComponentManagerT],
+        state: DevState,
+        status: str | None = None,
     ) -> None:
         """
         Perform Tango operations in response to a change in op state.
@@ -461,17 +476,23 @@ class SKABaseDevice(Device, Generic[ComponentManagerT]):
         self.push_change_event("status")
         self.push_archive_event("status")
 
-    def _update_admin_mode(self: SKABaseDevice, admin_mode: AdminMode) -> None:
+    def _update_admin_mode(
+        self: SKABaseDevice[ComponentManagerT], admin_mode: AdminMode
+    ) -> None:
         self._admin_mode = admin_mode
         self.push_change_event("adminMode", self._admin_mode)
         self.push_archive_event("adminMode", self._admin_mode)
 
-    def _update_health_state(self: SKABaseDevice, health_state: HealthState) -> None:
+    def _update_health_state(
+        self: SKABaseDevice[ComponentManagerT], health_state: HealthState
+    ) -> None:
         self._health_state = health_state
         self.push_change_event("healthState", self._health_state)
         self.push_archive_event("healthState", self._health_state)
 
-    def _update_commands_in_queue(self: SKABaseDevice, commands_in_queue: list) -> None:
+    def _update_commands_in_queue(
+        self: SKABaseDevice[ComponentManagerT], commands_in_queue: list[tuple[str, str]]
+    ) -> None:
         if commands_in_queue:
             command_ids, command_names = zip(*commands_in_queue)
             self._command_ids_in_queue = [
@@ -493,7 +514,8 @@ class SKABaseDevice(Device, Generic[ComponentManagerT]):
         )
 
     def _update_command_statuses(
-        self: SKABaseDevice, command_statuses: list[tuple[str, TaskStatus]]
+        self: SKABaseDevice[ComponentManagerT],
+        command_statuses: list[tuple[str, TaskStatus]],
     ) -> None:
         statuses = [(uid, status.name) for (uid, status) in command_statuses]
         self._command_statuses = [
@@ -503,7 +525,8 @@ class SKABaseDevice(Device, Generic[ComponentManagerT]):
         self.push_archive_event("longRunningCommandStatus", self._command_statuses)
 
     def _update_command_progresses(
-        self: SKABaseDevice, command_progresses: list
+        self: SKABaseDevice[ComponentManagerT],
+        command_progresses: list[tuple[str, int]],
     ) -> None:
         self._command_progresses = [
             str(item) for item in itertools.chain.from_iterable(command_progresses)
@@ -512,14 +535,18 @@ class SKABaseDevice(Device, Generic[ComponentManagerT]):
         self.push_archive_event("longRunningCommandProgress", self._command_progresses)
 
     def _update_command_result(
-        self: SKABaseDevice, command_id: str, command_result: tuple[ResultCode, str]
+        self: SKABaseDevice[ComponentManagerT],
+        command_id: str,
+        command_result: tuple[ResultCode, str],
     ) -> None:
         self._command_result = (command_id, json.dumps(command_result))
         self.push_change_event("longRunningCommandResult", self._command_result)
         self.push_archive_event("longRunningCommandResult", self._command_result)
 
     def _update_command_exception(
-        self: SKABaseDevice, command_id: str, command_exception: Exception
+        self: SKABaseDevice[ComponentManagerT],
+        command_id: str,
+        command_exception: Exception,
     ) -> None:
         self.logger.error(
             f"Command '{command_id}' raised exception {command_exception}"
@@ -529,7 +556,7 @@ class SKABaseDevice(Device, Generic[ComponentManagerT]):
         self.push_archive_event("longRunningCommandResult", self._command_result)
 
     def _communication_state_changed(
-        self: SKABaseDevice, communication_state: CommunicationStatus
+        self: SKABaseDevice[ComponentManagerT], communication_state: CommunicationStatus
     ) -> None:
         action_map = {
             CommunicationStatus.DISABLED: "component_disconnected",
@@ -541,9 +568,9 @@ class SKABaseDevice(Device, Generic[ComponentManagerT]):
             self.op_state_model.perform_action(action)
 
     def _component_state_changed(
-        self: SKABaseDevice,
-        fault: Optional[bool] = None,
-        power: Optional[PowerState] = None,
+        self: SKABaseDevice[ComponentManagerT],
+        fault: bool | None = None,
+        power: PowerState | None = None,
     ) -> None:
         if power is not None:
             action_map = {
@@ -565,7 +592,7 @@ class SKABaseDevice(Device, Generic[ComponentManagerT]):
     # ---------------
     # General methods
     # ---------------
-    def init_device(self: SKABaseDevice) -> None:
+    def init_device(self: SKABaseDevice[ComponentManagerT]) -> None:
         """
         Initialise the tango device after startup.
 
@@ -577,7 +604,9 @@ class SKABaseDevice(Device, Generic[ComponentManagerT]):
         try:
             super().init_device()
 
-            self._omni_queue: queue.SimpleQueue = queue.SimpleQueue()
+            self._omni_queue: queue.SimpleQueue[
+                tuple[str, Any, Any]
+            ] = queue.SimpleQueue()
 
             # this can be removed when cppTango issue #935 is implemented
             self._init_active = True
@@ -651,7 +680,7 @@ class SKABaseDevice(Device, Generic[ComponentManagerT]):
                 "The device is in FAULT state - init_device failed.",
             )
 
-    def _init_state_model(self: SKABaseDevice) -> None:
+    def _init_state_model(self: SKABaseDevice[ComponentManagerT]) -> None:
         """Initialise the state model for the device."""
         self._command_tracker = CommandTracker(
             queue_changed_callback=self._update_commands_in_queue,
@@ -668,7 +697,9 @@ class SKABaseDevice(Device, Generic[ComponentManagerT]):
             logger=self.logger, callback=self._update_admin_mode
         )
 
-    def set_logging_level(self: SKABaseDevice, value: LoggingLevel) -> None:
+    def set_logging_level(
+        self: SKABaseDevice[ComponentManagerT], value: LoggingLevel
+    ) -> None:
         """
         Set the logging level for the device.
 
@@ -694,7 +725,9 @@ class SKABaseDevice(Device, Generic[ComponentManagerT]):
             "Logging level set to %s on Python and Tango loggers", lmc_logging_level
         )
 
-    def set_logging_targets(self: SKABaseDevice, targets: list[str]) -> None:
+    def set_logging_targets(
+        self: SKABaseDevice[ComponentManagerT], targets: list[str]
+    ) -> None:
         """
         Set the additional logging targets for the device.
 
@@ -707,7 +740,9 @@ class SKABaseDevice(Device, Generic[ComponentManagerT]):
         valid_targets = LoggingUtils.sanitise_logging_targets(targets, device_name)
         LoggingUtils.update_logging_handlers(valid_targets, self.logger)
 
-    def create_component_manager(self: SKABaseDevice) -> ComponentManagerT:
+    def create_component_manager(
+        self: SKABaseDevice[ComponentManagerT],
+    ) -> ComponentManagerT:
         """
         Create and return a component manager for this device.
 
@@ -719,9 +754,9 @@ class SKABaseDevice(Device, Generic[ComponentManagerT]):
         )
 
     def register_command_object(
-        self: SKABaseDevice,
+        self: SKABaseDevice[ComponentManagerT],
         command_name: str,
-        command_object: FastCommand | SlowCommand,
+        command_object: FastCommand[Any] | SlowCommand[Any],
     ) -> None:
         """
         Register an object as a handler for a command.
@@ -734,8 +769,8 @@ class SKABaseDevice(Device, Generic[ComponentManagerT]):
         self._command_objects[command_name] = command_object
 
     def get_command_object(
-        self: SKABaseDevice, command_name: str
-    ) -> FastCommand | SlowCommand:
+        self: SKABaseDevice[ComponentManagerT], command_name: str
+    ) -> FastCommand[Any] | SlowCommand[Any]:
         """
         Return the command object (handler) for a given command.
 
@@ -746,11 +781,11 @@ class SKABaseDevice(Device, Generic[ComponentManagerT]):
         """
         return self._command_objects[command_name]
 
-    def init_command_objects(self: SKABaseDevice) -> None:
+    def init_command_objects(self: SKABaseDevice[ComponentManagerT]) -> None:
         """Register command objects (handlers) for this device's commands."""
-        self._command_objects: dict[str, FastCommand | SlowCommand] = {}
+        self._command_objects: dict[str, FastCommand[Any] | SlowCommand[Any]] = {}
 
-        for (command_name, method_name) in [
+        for command_name, method_name in [
             ("Off", "off"),
             ("Standby", "standby"),
             ("On", "on"),
@@ -786,8 +821,10 @@ class SKABaseDevice(Device, Generic[ComponentManagerT]):
     # Attributes
     # ----------
 
-    @attribute(dtype="str")
-    def buildState(self: SKABaseDevice) -> str:
+    @attribute(  # type: ignore[misc]  # "Untyped decorator makes function untyped"
+        dtype="str"
+    )
+    def buildState(self: SKABaseDevice[ComponentManagerT]) -> str:
         """
         Read the Build State of the device.
 
@@ -795,8 +832,10 @@ class SKABaseDevice(Device, Generic[ComponentManagerT]):
         """
         return self._build_state
 
-    @attribute(dtype="str")
-    def versionId(self: SKABaseDevice) -> str:
+    @attribute(  # type: ignore[misc]  # "Untyped decorator makes function untyped"
+        dtype="str"
+    )
+    def versionId(self: SKABaseDevice[ComponentManagerT]) -> str:
         """
         Read the Version Id of the device.
 
@@ -805,7 +844,7 @@ class SKABaseDevice(Device, Generic[ComponentManagerT]):
         return self._version_id
 
     @attribute(dtype=LoggingLevel)
-    def loggingLevel(self: SKABaseDevice) -> LoggingLevel:
+    def loggingLevel(self: SKABaseDevice[ComponentManagerT]) -> LoggingLevel:
         """
         Read the logging level of the device.
 
@@ -817,7 +856,9 @@ class SKABaseDevice(Device, Generic[ComponentManagerT]):
         return self._logging_level
 
     @loggingLevel.write  # type: ignore[no-redef]
-    def loggingLevel(self: SKABaseDevice, value: LoggingLevel) -> None:
+    def loggingLevel(
+        self: SKABaseDevice[ComponentManagerT], value: LoggingLevel
+    ) -> None:
         """
         Set the logging level for the device.
 
@@ -828,7 +869,7 @@ class SKABaseDevice(Device, Generic[ComponentManagerT]):
         self.set_logging_level(value)
 
     @attribute(dtype=("str",), max_dim_x=4)
-    def loggingTargets(self: SKABaseDevice) -> list[str]:
+    def loggingTargets(self: SKABaseDevice[ComponentManagerT]) -> list[str]:
         """
         Read the additional logging targets of the device.
 
@@ -840,7 +881,9 @@ class SKABaseDevice(Device, Generic[ComponentManagerT]):
         return [str(handler.name) for handler in self.logger.handlers]
 
     @loggingTargets.write  # type: ignore[no-redef]
-    def loggingTargets(self: SKABaseDevice, value: list[str]) -> None:
+    def loggingTargets(
+        self: SKABaseDevice[ComponentManagerT], value: list[str]
+    ) -> None:
         """
         Set the additional logging targets for the device.
 
@@ -851,8 +894,10 @@ class SKABaseDevice(Device, Generic[ComponentManagerT]):
         """
         self.set_logging_targets(value)
 
-    @attribute(dtype=HealthState)
-    def healthState(self: SKABaseDevice) -> HealthState:
+    @attribute(  # type: ignore[misc]  # "Untyped decorator makes function untyped"
+        dtype=HealthState
+    )
+    def healthState(self: SKABaseDevice[ComponentManagerT]) -> HealthState:
         """
         Read the Health State of the device.
 
@@ -864,7 +909,7 @@ class SKABaseDevice(Device, Generic[ComponentManagerT]):
         return self._health_state
 
     @attribute(dtype=AdminMode, memorized=True, hw_memorized=True)
-    def adminMode(self: SKABaseDevice) -> AdminMode:
+    def adminMode(self: SKABaseDevice[ComponentManagerT]) -> AdminMode:
         """
         Read the Admin Mode of the device.
 
@@ -876,7 +921,7 @@ class SKABaseDevice(Device, Generic[ComponentManagerT]):
         return self._admin_mode
 
     @adminMode.write  # type: ignore[no-redef]
-    def adminMode(self: SKABaseDevice, value: AdminMode) -> None:
+    def adminMode(self: SKABaseDevice[ComponentManagerT], value: AdminMode) -> None:
         """
         Set the Admin Mode of the device.
 
@@ -901,7 +946,7 @@ class SKABaseDevice(Device, Generic[ComponentManagerT]):
             raise ValueError(f"Unknown adminMode {value}")
 
     @attribute(dtype=ControlMode, memorized=True, hw_memorized=True)
-    def controlMode(self: SKABaseDevice) -> ControlMode:
+    def controlMode(self: SKABaseDevice[ComponentManagerT]) -> ControlMode:
         """
         Read the Control Mode of the device.
 
@@ -915,7 +960,7 @@ class SKABaseDevice(Device, Generic[ComponentManagerT]):
         return self._control_mode
 
     @controlMode.write  # type: ignore[no-redef]
-    def controlMode(self: SKABaseDevice, value: ControlMode) -> None:
+    def controlMode(self: SKABaseDevice[ComponentManagerT], value: ControlMode) -> None:
         """
         Set the Control Mode of the device.
 
@@ -924,7 +969,7 @@ class SKABaseDevice(Device, Generic[ComponentManagerT]):
         self._control_mode = value
 
     @attribute(dtype=SimulationMode, memorized=True, hw_memorized=True)
-    def simulationMode(self: SKABaseDevice) -> SimulationMode:
+    def simulationMode(self: SKABaseDevice[ComponentManagerT]) -> SimulationMode:
         """
         Read the Simulation Mode of the device.
 
@@ -937,7 +982,9 @@ class SKABaseDevice(Device, Generic[ComponentManagerT]):
         return self._simulation_mode
 
     @simulationMode.write  # type: ignore[no-redef]
-    def simulationMode(self: SKABaseDevice, value: SimulationMode) -> None:
+    def simulationMode(
+        self: SKABaseDevice[ComponentManagerT], value: SimulationMode
+    ) -> None:
         """
         Set the Simulation Mode of the device.
 
@@ -946,7 +993,7 @@ class SKABaseDevice(Device, Generic[ComponentManagerT]):
         self._simulation_mode = value
 
     @attribute(dtype=TestMode, memorized=True, hw_memorized=True)
-    def testMode(self: SKABaseDevice) -> TestMode:
+    def testMode(self: SKABaseDevice[ComponentManagerT]) -> TestMode:
         """
         Read the Test Mode of the device.
 
@@ -957,7 +1004,7 @@ class SKABaseDevice(Device, Generic[ComponentManagerT]):
         return self._test_mode
 
     @testMode.write  # type: ignore[no-redef]
-    def testMode(self: SKABaseDevice, value: TestMode) -> None:
+    def testMode(self: SKABaseDevice[ComponentManagerT], value: TestMode) -> None:
         """
         Set the Test Mode of the device.
 
@@ -965,8 +1012,10 @@ class SKABaseDevice(Device, Generic[ComponentManagerT]):
         """
         self._test_mode = value
 
-    @attribute(dtype=("str",), max_dim_x=MAX_REPORTED_QUEUED_COMMANDS)
-    def longRunningCommandsInQueue(self: SKABaseDevice) -> list[str]:
+    @attribute(  # type: ignore[misc]  # "Untyped decorator makes function untyped"
+        dtype=("str",), max_dim_x=MAX_REPORTED_QUEUED_COMMANDS
+    )
+    def longRunningCommandsInQueue(self: SKABaseDevice[ComponentManagerT]) -> list[str]:
         """
         Read the long running commands in the queue.
 
@@ -977,8 +1026,12 @@ class SKABaseDevice(Device, Generic[ComponentManagerT]):
         """
         return self._commands_in_queue
 
-    @attribute(dtype=("str",), max_dim_x=MAX_REPORTED_QUEUED_COMMANDS)
-    def longRunningCommandIDsInQueue(self: SKABaseDevice) -> list[str]:
+    @attribute(  # type: ignore[misc]  # "Untyped decorator makes function untyped"
+        dtype=("str",), max_dim_x=MAX_REPORTED_QUEUED_COMMANDS
+    )
+    def longRunningCommandIDsInQueue(
+        self: SKABaseDevice[ComponentManagerT],
+    ) -> list[str]:
         """
         Read the IDs of the long running commands in the queue.
 
@@ -989,10 +1042,10 @@ class SKABaseDevice(Device, Generic[ComponentManagerT]):
         """
         return self._command_ids_in_queue
 
-    @attribute(
+    @attribute(  # type: ignore[misc]  # "Untyped decorator makes function untyped"
         dtype=("str",), max_dim_x=MAX_REPORTED_CONCURRENT_COMMANDS * 2  # 2 per command
     )
-    def longRunningCommandStatus(self: SKABaseDevice) -> list[str]:
+    def longRunningCommandStatus(self: SKABaseDevice[ComponentManagerT]) -> list[str]:
         """
         Read the status of the currently executing long running commands.
 
@@ -1004,10 +1057,10 @@ class SKABaseDevice(Device, Generic[ComponentManagerT]):
         """
         return self._command_statuses
 
-    @attribute(
+    @attribute(  # type: ignore[misc]  # "Untyped decorator makes function untyped"
         dtype=("str",), max_dim_x=MAX_REPORTED_CONCURRENT_COMMANDS * 2  # 2 per command
     )
-    def longRunningCommandProgress(self: SKABaseDevice) -> list[str]:
+    def longRunningCommandProgress(self: SKABaseDevice[ComponentManagerT]) -> list[str]:
         """
         Read the progress of the currently executing long running command.
 
@@ -1019,11 +1072,13 @@ class SKABaseDevice(Device, Generic[ComponentManagerT]):
         """
         return self._command_progresses
 
-    @attribute(
+    @attribute(  # type: ignore[misc]  # "Untyped decorator makes function untyped"
         dtype=("str",),
         max_dim_x=2,  # Always the last result (unique_id, JSON-encoded result)
     )
-    def longRunningCommandResult(self: SKABaseDevice) -> tuple[str, str]:
+    def longRunningCommandResult(
+        self: SKABaseDevice[ComponentManagerT],
+    ) -> tuple[str, str]:
         """
         Read the result of the completed long running command.
 
@@ -1038,9 +1093,11 @@ class SKABaseDevice(Device, Generic[ComponentManagerT]):
     # --------
     # Commands
     # --------
-    @command(dtype_out=("str",))
-    @DebugIt()
-    def GetVersionInfo(self: SKABaseDevice) -> list[str]:
+    @command(  # type: ignore[misc]  # "Untyped decorator makes function untyped"
+        dtype_out=("str",)
+    )
+    @DebugIt()  # type: ignore[misc]  # "Untyped decorator makes function untyped"
+    def GetVersionInfo(self: SKABaseDevice[ComponentManagerT]) -> list[str]:
         """
         Return the version information of the device.
 
@@ -1051,7 +1108,7 @@ class SKABaseDevice(Device, Generic[ComponentManagerT]):
         """
         return [f"{self.__class__.__name__}, {self._build_state}"]
 
-    def is_Reset_allowed(self: SKABaseDevice) -> bool:
+    def is_Reset_allowed(self: SKABaseDevice[ComponentManagerT]) -> bool:
         """
         Return whether the `Reset` command may be called in the current device state.
 
@@ -1064,9 +1121,11 @@ class SKABaseDevice(Device, Generic[ComponentManagerT]):
             DevState.FAULT,
         ]
 
-    @command(dtype_out="DevVarLongStringArray")
-    @DebugIt()
-    def Reset(self: SKABaseDevice) -> DevVarLongStringArrayType:
+    @command(  # type: ignore[misc]  # "Untyped decorator makes function untyped"
+        dtype_out="DevVarLongStringArray"
+    )
+    @DebugIt()  # type: ignore[misc]  # "Untyped decorator makes function untyped"
+    def Reset(self: SKABaseDevice[ComponentManagerT]) -> DevVarLongStringArrayType:
         """
         Reset the device.
 
@@ -1109,7 +1168,7 @@ class SKABaseDevice(Device, Generic[ComponentManagerT]):
         result_code, unique_id = handler()
         return ([result_code], [unique_id])
 
-    def is_Standby_allowed(self: SKABaseDevice) -> bool:
+    def is_Standby_allowed(self: SKABaseDevice[ComponentManagerT]) -> bool:
         """
         Return whether the `Standby` command may be called in the current device state.
 
@@ -1123,9 +1182,11 @@ class SKABaseDevice(Device, Generic[ComponentManagerT]):
             DevState.UNKNOWN,
         ]
 
-    @command(dtype_out="DevVarLongStringArray")
-    @DebugIt()
-    def Standby(self: SKABaseDevice) -> DevVarLongStringArrayType:
+    @command(  # type: ignore[misc]  # "Untyped decorator makes function untyped"
+        dtype_out="DevVarLongStringArray"
+    )
+    @DebugIt()  # type: ignore[misc]  # "Untyped decorator makes function untyped"
+    def Standby(self: SKABaseDevice[ComponentManagerT]) -> DevVarLongStringArrayType:
         """
         Put the device into standby mode.
 
@@ -1143,7 +1204,7 @@ class SKABaseDevice(Device, Generic[ComponentManagerT]):
         result_code, unique_id = handler()
         return ([result_code], [unique_id])
 
-    def is_Off_allowed(self: SKABaseDevice) -> bool:
+    def is_Off_allowed(self: SKABaseDevice[ComponentManagerT]) -> bool:
         """
         Return whether the `Off` command may be called in the current device state.
 
@@ -1158,9 +1219,11 @@ class SKABaseDevice(Device, Generic[ComponentManagerT]):
             DevState.FAULT,
         ]
 
-    @command(dtype_out="DevVarLongStringArray")
-    @DebugIt()
-    def Off(self: SKABaseDevice) -> DevVarLongStringArrayType:
+    @command(  # type: ignore[misc]  # "Untyped decorator makes function untyped"
+        dtype_out="DevVarLongStringArray"
+    )
+    @DebugIt()  # type: ignore[misc]  # "Untyped decorator makes function untyped"
+    def Off(self: SKABaseDevice[ComponentManagerT]) -> DevVarLongStringArrayType:
         """
         Turn the device off.
 
@@ -1179,7 +1242,7 @@ class SKABaseDevice(Device, Generic[ComponentManagerT]):
 
         return ([result_code], [unique_id])
 
-    def is_On_allowed(self: SKABaseDevice) -> bool:
+    def is_On_allowed(self: SKABaseDevice[ComponentManagerT]) -> bool:
         """
         Return whether the `On` command may be called in the current device state.
 
@@ -1193,9 +1256,11 @@ class SKABaseDevice(Device, Generic[ComponentManagerT]):
             DevState.UNKNOWN,
         ]
 
-    @command(dtype_out="DevVarLongStringArray")
-    @DebugIt()
-    def On(self: SKABaseDevice) -> DevVarLongStringArrayType:
+    @command(  # type: ignore[misc]  # "Untyped decorator makes function untyped"
+        dtype_out="DevVarLongStringArray"
+    )
+    @DebugIt()  # type: ignore[misc]  # "Untyped decorator makes function untyped"
+    def On(self: SKABaseDevice[ComponentManagerT]) -> DevVarLongStringArrayType:
         """
         Turn device on.
 
@@ -1213,13 +1278,13 @@ class SKABaseDevice(Device, Generic[ComponentManagerT]):
         result_code, unique_id = handler()
         return ([result_code], [unique_id])
 
-    class AbortCommandsCommand(SlowCommand):
+    class AbortCommandsCommand(SlowCommand[tuple[ResultCode, str]]):
         """The command class for the AbortCommand command."""
 
         def __init__(
             self: SKABaseDevice.AbortCommandsCommand,
             component_manager: ComponentManagerT,
-            logger: Optional[logging.Logger] = None,
+            logger: logging.Logger | None = None,
         ) -> None:
             """
             Initialise a new AbortCommandsCommand instance.
@@ -1253,9 +1318,13 @@ class SKABaseDevice(Device, Generic[ComponentManagerT]):
             self._component_manager.abort_commands()
             return (ResultCode.STARTED, "Aborting commands")
 
-    @command(dtype_out="DevVarLongStringArray")
-    @DebugIt()
-    def AbortCommands(self: SKABaseDevice) -> DevVarLongStringArrayType:
+    @command(  # type: ignore[misc]  # "Untyped decorator makes function untyped"
+        dtype_out="DevVarLongStringArray"
+    )
+    @DebugIt()  # type: ignore[misc]  # "Untyped decorator makes function untyped"
+    def AbortCommands(
+        self: SKABaseDevice[ComponentManagerT],
+    ) -> DevVarLongStringArrayType:
         """
         Empty out long running commands in queue.
 
@@ -1267,13 +1336,13 @@ class SKABaseDevice(Device, Generic[ComponentManagerT]):
         (return_code, message) = handler()
         return ([return_code], [message])
 
-    class CheckLongRunningCommandStatusCommand(FastCommand):
+    class CheckLongRunningCommandStatusCommand(FastCommand[str]):
         """The command class for the CheckLongRunningCommandStatus command."""
 
         def __init__(
             self: SKABaseDevice.CheckLongRunningCommandStatusCommand,
             command_tracker: CommandTracker,
-            logger: Optional[logging.Logger] = None,
+            logger: logging.Logger | None = None,
         ) -> None:
             """
             Initialise a new CheckLongRunningCommandStatusCommand instance.
@@ -1307,9 +1376,13 @@ class SKABaseDevice(Device, Generic[ComponentManagerT]):
             enum_status = self._command_tracker.get_command_status(command_id)
             return TaskStatus(enum_status).name
 
-    @command(dtype_in=str, dtype_out=str)
-    @DebugIt()
-    def CheckLongRunningCommandStatus(self: SKABaseDevice, argin: str) -> str:
+    @command(  # type: ignore[misc]  # "Untyped decorator makes function untyped"
+        dtype_in=str, dtype_out=str
+    )
+    @DebugIt()  # type: ignore[misc]  # "Untyped decorator makes function untyped"
+    def CheckLongRunningCommandStatus(
+        self: SKABaseDevice[ComponentManagerT], argin: str
+    ) -> str:
         """
         Check the status of a long running command by ID.
 
@@ -1317,17 +1390,20 @@ class SKABaseDevice(Device, Generic[ComponentManagerT]):
 
         :return: command status
         """
-        handler = self.get_command_object("CheckLongRunningCommandStatus")
+        handler = cast(
+            Callable[[str], str],
+            self.get_command_object("CheckLongRunningCommandStatus"),
+        )
         return handler(argin)
 
-    class DebugDeviceCommand(FastCommand):
+    class DebugDeviceCommand(FastCommand[int]):
         # pylint: disable=protected-access  # command classes are friend classes
         """A class for the SKABaseDevice's DebugDevice() command."""
 
         def __init__(
             self: SKABaseDevice.DebugDeviceCommand,
             device: Device,
-            logger: Optional[logging.Logger] = None,
+            logger: logging.Logger | None = None,
         ) -> None:
             """
             Initialise a new instance.
@@ -1382,7 +1458,9 @@ class SKABaseDevice(Device, Generic[ComponentManagerT]):
             :return: allocated port
             """
             self.logger.warning("Starting debugger...")
-            interface, allocated_port = debugpy.listen(("0.0.0.0", port))
+            interface, allocated_port = cast(
+                tuple[str, int], debugpy.listen(("0.0.0.0", port))
+            )
             self.logger.warning(
                 f"Debugger listening on {interface}:{allocated_port}. Performance may "
                 "be degraded."
@@ -1457,7 +1535,7 @@ class SKABaseDevice(Device, Generic[ComponentManagerT]):
             self: SKABaseDevice.DebugDeviceCommand,
             owner: object,
             name: str,
-            method: object,
+            method: Callable[..., Any],
         ) -> None:
             """
             Ensure method calls trigger the debugger.
@@ -1473,20 +1551,20 @@ class SKABaseDevice(Device, Generic[ComponentManagerT]):
             """
 
             def debug_thread_wrapper(
-                orig_method: Callable, *args: Any, **kwargs: Any
-            ) -> Callable:
+                orig_method: Callable[..., Any], *args: Any, **kwargs: Any
+            ) -> Any:
                 debugpy.debug_this_thread()
                 return orig_method(*args, **kwargs)
 
             patched_method = partial(debug_thread_wrapper, method)
             setattr(owner, name, patched_method)
 
-    @command(
+    @command(  # type: ignore[misc]  # "Untyped decorator makes function untyped"
         dtype_out="DevUShort",
         doc_out="The TCP port the debugger is listening on.",
     )
-    @DebugIt()
-    def DebugDevice(self: SKABaseDevice) -> int:
+    @DebugIt()  # type: ignore[misc]  # "Untyped decorator makes function untyped"
+    def DebugDevice(self: SKABaseDevice[ComponentManagerT]) -> int:
         """
         Enable remote debugging of this device.
 
@@ -1495,10 +1573,10 @@ class SKABaseDevice(Device, Generic[ComponentManagerT]):
 
         :return: the  port the debugger is listening on
         """
-        command_object = self.get_command_object("DebugDevice")
+        command_object = cast(Callable[[], int], self.get_command_object("DebugDevice"))
         return command_object()
 
-    def set_state(self: SKABaseDevice, state: DevState) -> None:
+    def set_state(self: SKABaseDevice[ComponentManagerT], state: DevState) -> None:
         """
         Set the device server state.
 
@@ -1509,7 +1587,7 @@ class SKABaseDevice(Device, Generic[ComponentManagerT]):
         """
         self._submit_tango_operation("set_state", state)
 
-    def set_status(self: SKABaseDevice, status: str) -> None:
+    def set_status(self: SKABaseDevice[ComponentManagerT], status: str) -> None:
         """
         Set the device server status string.
 
@@ -1521,7 +1599,7 @@ class SKABaseDevice(Device, Generic[ComponentManagerT]):
         self._submit_tango_operation("set_status", status)
 
     def push_change_event(
-        self: SKABaseDevice, name: str, value: Optional[Any] = None
+        self: SKABaseDevice[ComponentManagerT], name: str, value: Any = None
     ) -> None:
         """
         Push a device server change event.
@@ -1538,7 +1616,7 @@ class SKABaseDevice(Device, Generic[ComponentManagerT]):
             self._submit_tango_operation("push_change_event", name, value)
 
     def push_archive_event(
-        self: SKABaseDevice, name: str, value: Optional[Any] = None
+        self: SKABaseDevice[ComponentManagerT], name: str, value: Any = None
     ) -> None:
         """
         Push a device server archive event.
@@ -1554,7 +1632,9 @@ class SKABaseDevice(Device, Generic[ComponentManagerT]):
         else:
             self._submit_tango_operation("push_archive_event", name, value)
 
-    def add_attribute(self: SKABaseDevice, *args: Any, **kwargs: Any) -> None:
+    def add_attribute(
+        self: SKABaseDevice[ComponentManagerT], *args: Any, **kwargs: Any
+    ) -> None:
         """
         Add a device attribute.
 
@@ -1567,7 +1647,10 @@ class SKABaseDevice(Device, Generic[ComponentManagerT]):
         self._submit_tango_operation("add_attribute", *args, *kwargs)
 
     def set_change_event(
-        self: SKABaseDevice, name: str, implemented: bool, detect: bool = True
+        self: SKABaseDevice[ComponentManagerT],
+        name: str,
+        implemented: bool,
+        detect: bool = True,
     ) -> None:
         """
         Set an attribute's change event.
@@ -1583,15 +1666,20 @@ class SKABaseDevice(Device, Generic[ComponentManagerT]):
         self._submit_tango_operation("set_change_event", name, implemented, detect)
 
     def _submit_tango_operation(
-        self, command_name: str, *args: Any, **kwargs: Any
+        self: SKABaseDevice[ComponentManagerT],
+        command_name: str,
+        *args: Any,
+        **kwargs: Any,
     ) -> None:
         if is_omni_thread() and self._omni_queue.empty():
             getattr(super(), command_name)(*args, **kwargs)
         else:
             self._omni_queue.put((command_name, args, kwargs))
 
-    @command(polling_period=5)
-    def ExecutePendingOperations(self: SKABaseDevice) -> None:
+    @command(  # type: ignore[misc]  # "Untyped decorator makes function untyped"
+        polling_period=5
+    )
+    def ExecutePendingOperations(self: SKABaseDevice[ComponentManagerT]) -> None:
         """
         Execute any Tango operations that have been pushed on the queue.
 
@@ -1622,7 +1710,7 @@ def main(*args: str, **kwargs: str) -> int:
 
     :return: exit code
     """
-    return SKABaseDevice.run_server(args=args or None, **kwargs)
+    return cast(int, SKABaseDevice.run_server(args=args or None, **kwargs))
 
 
 if __name__ == "__main__":

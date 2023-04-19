@@ -13,6 +13,8 @@ from typing import Any, Callable
 
 from ska_control_model import CommunicationStatus, PowerState
 
+from ska_tango_base.base.component_manager import CommunicationStatusCallbackType
+
 from ..base import BaseComponentManager
 from .poller import Poller, PollModel, PollRequestT, PollResponseT
 
@@ -23,10 +25,10 @@ class PollingComponentManager(
     """Abstract base class for a component manager that polls its component."""
 
     def __init__(
-        self: PollingComponentManager,
+        self: PollingComponentManager[PollRequestT, PollResponseT],
         logger: Logger,
-        communication_state_callback: Callable,
-        component_state_callback: Callable,
+        communication_state_callback: CommunicationStatusCallbackType,
+        component_state_callback: Callable[..., None],
         poll_rate: float = 0.1,
         **kwargs: Any,
     ) -> None:
@@ -54,7 +56,9 @@ class PollingComponentManager(
             **kwargs,
         )
 
-    def start_communicating(self) -> None:
+    def start_communicating(
+        self: PollingComponentManager[PollRequestT, PollResponseT]
+    ) -> None:
         """Start polling the component."""
         if self.communication_state == CommunicationStatus.ESTABLISHED:
             return
@@ -65,7 +69,9 @@ class PollingComponentManager(
         # is the case by calling our `poll_succeeded` method.
         self._poller.start_polling()
 
-    def polling_started(self) -> None:
+    def polling_started(
+        self: PollingComponentManager[PollRequestT, PollResponseT]
+    ) -> None:
         """
         Respond to polling having started.
 
@@ -74,7 +80,9 @@ class PollingComponentManager(
         # There's no need to do anything here. We wait to receive some polled
         # values before we declare communication to be established.
 
-    def stop_communicating(self) -> None:
+    def stop_communicating(
+        self: PollingComponentManager[PollRequestT, PollResponseT]
+    ) -> None:
         """Stop polling the spectrum analyser."""
         if self.communication_state == CommunicationStatus.DISABLED:
             return
@@ -84,7 +92,9 @@ class PollingComponentManager(
 
         self._poller.stop_polling()
 
-    def polling_stopped(self) -> None:
+    def polling_stopped(
+        self: PollingComponentManager[PollRequestT, PollResponseT]
+    ) -> None:
         """
         Respond to polling having stopped.
 
@@ -93,7 +103,9 @@ class PollingComponentManager(
         self._update_component_state(power=PowerState.UNKNOWN, fault=None)
         self._update_communication_state(CommunicationStatus.DISABLED)
 
-    def poll_failed(self, exception: Exception) -> None:
+    def poll_failed(
+        self: PollingComponentManager[PollRequestT, PollResponseT], exception: Exception
+    ) -> None:
         """
         Respond to an exception being raised by a poll attempt.
 
@@ -105,7 +117,10 @@ class PollingComponentManager(
         self._update_communication_state(CommunicationStatus.NOT_ESTABLISHED)
         self.logger.error(f"Poll failed: {repr(exception)}")
 
-    def poll_succeeded(self, poll_response: PollResponseT) -> None:
+    def poll_succeeded(
+        self: PollingComponentManager[PollRequestT, PollResponseT],
+        poll_response: PollResponseT,
+    ) -> None:
         """
         Handle a successful poll, including any values received.
 
@@ -120,7 +135,9 @@ class PollingComponentManager(
         self.logger.debug("Setting communications ESTABLISHED")
         self._update_communication_state(CommunicationStatus.ESTABLISHED)
 
-    def get_request(self) -> PollRequestT:
+    def get_request(
+        self: PollingComponentManager[PollRequestT, PollResponseT]
+    ) -> PollRequestT:
         """
         Return the reads and writes to be executed in the next poll.
 
@@ -131,7 +148,7 @@ class PollingComponentManager(
         raise NotImplementedError("PollingComponentManager is abstract.")
 
     def poll(
-        self,
+        self: PollingComponentManager[PollRequestT, PollResponseT],
         poll_request: PollRequestT,
     ) -> PollResponseT:
         """

@@ -1472,7 +1472,9 @@ class TestSKASubarray:  # pylint: disable=too-many-public-methods
         """
         assert device_under_test.controlMode == ControlMode.REMOTE
 
-    def test_healthState(self, device_under_test: tango.DeviceProxy) -> None:
+    def test_healthState(
+        self: TestSKASubarray, device_under_test: tango.DeviceProxy
+    ) -> None:
         """
         Test for healthState.
 

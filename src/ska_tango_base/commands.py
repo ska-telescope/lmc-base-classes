@@ -146,7 +146,7 @@ class JsonValidator(ArgumentValidator):  # pylint: disable=too-few-public-method
     }
 
     def __init__(
-        self,
+        self: JsonValidator,
         command_name: str,
         schema: SchemaDictType | None,
         logger: logging.Logger | None = None,

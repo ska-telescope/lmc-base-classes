@@ -77,7 +77,7 @@ class SubarrayComponentManager(ObsDeviceComponentManager):
         raise NotImplementedError("SubarrayComponentManager is abstract.")
 
     def configure(
-        self,
+        self: SubarrayComponentManager,
         task_callback: TaskCallbackType | None = None,
         *,
         configuration: dict[str, Any],

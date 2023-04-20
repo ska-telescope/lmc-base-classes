@@ -57,7 +57,7 @@ class TestTangoLoggingServiceHandler:
     """This class contains tests of the TangoLoggingServiceHandler class."""
 
     @pytest.fixture(name="tango_logger")
-    def fixture_tango_logger(self) -> mock.MagicMock:
+    def fixture_tango_logger(self: TestTangoLoggingServiceHandler) -> mock.MagicMock:
         """
         Return a mock logger for a Tango device.
 
@@ -1363,7 +1363,7 @@ class TestSKABaseDevice:  # pylint: disable=too-many-public-methods
 
     @pytest.mark.usefixtures("patch_debugger_to_start_on_ephemeral_port")
     def test_DebugDevice_does_not_break_a_command(
-        self,
+        self: TestSKABaseDevice,
         device_under_test: tango.DeviceProxy,
         change_event_callbacks: MockTangoEventCallbackGroup,
     ) -> None:

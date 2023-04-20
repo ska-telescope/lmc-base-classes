@@ -9,12 +9,12 @@ from __future__ import annotations
 
 from threading import Event, Lock
 from time import sleep
-from typing import Callable, Optional
 
 import pytest
 from ska_control_model import TaskStatus
 from ska_tango_testing.mock import MockCallableGroup
 
+from ska_tango_base.base import TaskCallbackType
 from ska_tango_base.executor import TaskExecutor
 
 
@@ -71,7 +71,8 @@ class TestTaskExecutor:
 
         def _claim_lock(
             lock: Lock,
-            task_callback: Optional[Callable],
+            *,
+            task_callback: TaskCallbackType | None,
             task_abort_event: Event,
         ) -> None:
             if task_callback is not None:
@@ -143,7 +144,8 @@ class TestTaskExecutor:
 
         def _claim_lock(
             lock: Lock,
-            task_callback: Callable,
+            *,
+            task_callback: TaskCallbackType,
             task_abort_event: Event,
         ) -> None:
             if task_callback is not None:
@@ -182,9 +184,7 @@ class TestTaskExecutor:
             args=[locks[max_workers + 1]],
             task_callback=callbacks[f"job_{max_workers + 1}"],
         )
-        callbacks[f"job_{max_workers + 1}"].assert_call(
-            status=TaskStatus.REJECTED, message="Queue is aborting"
-        )
+        callbacks[f"job_{max_workers + 1}"].assert_call(status=TaskStatus.REJECTED)
 
         for i in range(max_workers + 1):
             locks[i].release()
@@ -222,7 +222,8 @@ class TestTaskExecutor:
         exception_to_raise = ValueError("Exception under test")
 
         def _raise_exception(
-            task_callback: Callable,
+            *,
+            task_callback: TaskCallbackType,
             task_abort_event: Event,  # pylint: disable=unused-argument
         ) -> None:
             task_callback(status=TaskStatus.IN_PROGRESS)

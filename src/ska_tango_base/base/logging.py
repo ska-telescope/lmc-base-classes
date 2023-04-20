@@ -13,7 +13,7 @@ import logging.handlers
 import socket
 import sys
 import warnings
-from typing import Any, Optional, Union, cast
+from typing import Any, Union, cast
 from urllib.parse import urlparse
 from urllib.request import url2pathname
 
@@ -141,7 +141,9 @@ class LoggingUtils:
     """
 
     @staticmethod
-    def sanitise_logging_targets(targets: list[str], device_name: str) -> list[str]:
+    def sanitise_logging_targets(
+        targets: list[str] | None, device_name: str
+    ) -> list[str]:
         """
         Validate and return logging targets '<type>::<name>' strings.
 
@@ -284,7 +286,7 @@ class LoggingUtils:
 
     @staticmethod
     def create_logging_handler(
-        target: str, tango_logger: Optional[tango.Logger] = None
+        target: str, tango_logger: tango.Logger | None = None
     ) -> Any:
         """
         Create a Python log handler based on the target type.
@@ -310,7 +312,7 @@ class LoggingUtils:
                 f"Invalid target requested - missing '::' separator: {target}"
             )
         handler: Union[
-            logging.StreamHandler,
+            logging.StreamHandler[Any],
             logging.handlers.RotatingFileHandler,
             logging.handlers.SysLogHandler,
             TangoLoggingServiceHandler,

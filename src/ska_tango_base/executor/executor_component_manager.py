@@ -7,12 +7,12 @@
 """This module provides an abstract component manager for SKA Tango base devices."""
 from __future__ import annotations
 
-from typing import Any, Callable, Optional
+from typing import Any
 
 from ska_control_model import TaskStatus
 
-from ..base import BaseComponentManager
-from .executor import TaskExecutor
+from ..base import BaseComponentManager, TaskCallbackType
+from .executor import TaskExecutor, TaskFunctionType
 
 
 # pylint: disable-next=abstract-method  # Yes this is an abstract class.
@@ -22,7 +22,7 @@ class TaskExecutorComponentManager(BaseComponentManager):
     def __init__(
         self: TaskExecutorComponentManager,
         *args: Any,
-        max_workers: Optional[int] = None,
+        max_workers: int | None = None,
         **kwargs: Any,
     ) -> None:
         """
@@ -37,10 +37,10 @@ class TaskExecutorComponentManager(BaseComponentManager):
 
     def submit_task(
         self: TaskExecutorComponentManager,
-        func: Callable,
-        args: Optional[Any] = None,
-        kwargs: Optional[Any] = None,
-        task_callback: Optional[Callable] = None,
+        func: TaskFunctionType,
+        args: Any = None,
+        kwargs: Any = None,
+        task_callback: TaskCallbackType | None = None,
     ) -> tuple[TaskStatus, str]:
         """
         Submit a task to the task executor.
@@ -58,7 +58,8 @@ class TaskExecutorComponentManager(BaseComponentManager):
         )
 
     def abort_commands(
-        self: TaskExecutorComponentManager, task_callback: Optional[Callable] = None
+        self: TaskExecutorComponentManager,
+        task_callback: TaskCallbackType | None = None,
     ) -> tuple[TaskStatus, str]:
         """
         Tell the task executor to abort all tasks.

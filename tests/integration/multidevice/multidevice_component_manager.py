@@ -5,15 +5,19 @@ import logging
 import time
 from functools import partial
 from threading import Event
-from typing import Any, Callable, List, NoReturn, Optional, Tuple
+from typing import Any, NoReturn
 
 from ska_control_model import TaskStatus
 
+from ska_tango_base.base import TaskCallbackType
 from ska_tango_base.executor import TaskExecutorComponentManager
 
 from .utils import LongRunningDeviceInterface
 
 
+# TODO: Is it really okay that this method doesn't implement
+# start_communicating() and stop_communicating()?
+# pylint: disable-next=abstract-method
 class MultiDeviceComponentManager(TaskExecutorComponentManager):
     """Component Manager for Multi Device."""
 
@@ -21,8 +25,8 @@ class MultiDeviceComponentManager(TaskExecutorComponentManager):
         self: MultiDeviceComponentManager,
         logger: logging.Logger,
         *args: Any,
-        client_devices: List,
-        max_workers: Optional[int] = None,
+        client_devices: list[str],
+        max_workers: int | None = None,
         **kwargs: Any,
     ) -> None:
         """
@@ -49,8 +53,8 @@ class MultiDeviceComponentManager(TaskExecutorComponentManager):
         self: MultiDeviceComponentManager,
         sleep_time: float,
         *,
-        task_callback: Callable,
-        task_abort_event: Event,
+        task_callback: TaskCallbackType,
+        task_abort_event: Event,  # pylint: disable=unused-argument
     ) -> None:
         """
         Take a long time to run.
@@ -71,8 +75,8 @@ class MultiDeviceComponentManager(TaskExecutorComponentManager):
     def non_aborting_lrc(
         self: MultiDeviceComponentManager,
         sleep_time: float,
-        task_callback: Optional[Callable] = None,
-    ) -> Tuple[TaskStatus, str]:
+        task_callback: TaskCallbackType | None = None,
+    ) -> tuple[TaskStatus, str]:
         """
         Take a long time to complete.
 
@@ -93,7 +97,7 @@ class MultiDeviceComponentManager(TaskExecutorComponentManager):
         self: MultiDeviceComponentManager,
         sleep_time: float,
         *,
-        task_callback: Callable,
+        task_callback: TaskCallbackType,
         task_abort_event: Event,
     ) -> None:
         """
@@ -127,8 +131,8 @@ class MultiDeviceComponentManager(TaskExecutorComponentManager):
     def aborting_lrc(
         self: MultiDeviceComponentManager,
         sleep_time: float,
-        task_callback: Optional[Callable] = None,
-    ) -> Tuple[TaskStatus, str]:
+        task_callback: TaskCallbackType | None = None,
+    ) -> tuple[TaskStatus, str]:
         """
         Abort a task in progress.
 
@@ -145,9 +149,9 @@ class MultiDeviceComponentManager(TaskExecutorComponentManager):
 
     @staticmethod
     def _throw_exc(
-        logger: logging.Logger,
-        task_callback: Optional[Callable] = None,
-        task_abort_event: Optional[Event] = None,
+        logger: logging.Logger,  # pylint: disable-next=unused-argument
+        task_callback: TaskCallbackType | None = None,
+        task_abort_event: Event | None = None,  # pylint: disable=unused-argument
     ) -> NoReturn:
         """
         Throw an exception.
@@ -161,8 +165,8 @@ class MultiDeviceComponentManager(TaskExecutorComponentManager):
         raise RuntimeError("Something went wrong")
 
     def throw_exc(
-        self: MultiDeviceComponentManager, task_callback: Optional[Callable] = None
-    ) -> Tuple[TaskStatus, str]:
+        self: MultiDeviceComponentManager, task_callback: TaskCallbackType | None = None
+    ) -> tuple[TaskStatus, str]:
         """
         Illustrate exceptions.
 
@@ -180,8 +184,8 @@ class MultiDeviceComponentManager(TaskExecutorComponentManager):
     def _show_progress(
         logger: logging.Logger,
         sleep_time: float,
-        task_callback: Optional[Callable] = None,
-        task_abort_event: Optional[Event] = None,
+        task_callback: TaskCallbackType | None = None,
+        task_abort_event: Event | None = None,  # pylint: disable=unused-argument
     ) -> None:
         """
         Illustrate progress.
@@ -204,8 +208,8 @@ class MultiDeviceComponentManager(TaskExecutorComponentManager):
     def show_progress(
         self: MultiDeviceComponentManager,
         sleep_time: float,
-        task_callback: Optional[Callable] = None,
-    ) -> Tuple[TaskStatus, str]:
+        task_callback: TaskCallbackType | None = None,
+    ) -> tuple[TaskStatus, str]:
         """
         Illustrate progress.
 
@@ -226,8 +230,8 @@ class MultiDeviceComponentManager(TaskExecutorComponentManager):
     def _simulate_work(
         logger: logging.Logger,
         sleep_time: float,
-        task_callback: Optional[Callable] = None,
-        task_abort_event: Optional[Event] = None,
+        task_callback: TaskCallbackType | None = None,
+        task_abort_event: Event | None = None,  # pylint: disable=unused-argument
     ) -> None:
         """
         Simulate some work for the leaf devices.
@@ -246,7 +250,7 @@ class MultiDeviceComponentManager(TaskExecutorComponentManager):
 
     def _all_children_completed_cb(
         self: MultiDeviceComponentManager,
-        task_callback: Optional[Callable],
+        task_callback: TaskCallbackType | None,
         command_name: str,
         command_ids: list[str],
     ) -> None:
@@ -259,10 +263,10 @@ class MultiDeviceComponentManager(TaskExecutorComponentManager):
 
     def _call_children(
         self: MultiDeviceComponentManager,
-        logger: logging.Logger,
+        logger: logging.Logger,  # pylint: disable=unused-argument
         sleep_time: float,
-        task_callback: Optional[Callable] = None,
-        task_abort_event: Optional[Event] = None,
+        task_callback: TaskCallbackType | None = None,
+        task_abort_event: Event | None = None,  # pylint: disable=unused-argument
     ) -> None:
         """
         Call child devices.
@@ -284,8 +288,8 @@ class MultiDeviceComponentManager(TaskExecutorComponentManager):
     def call_children(
         self: MultiDeviceComponentManager,
         sleep_time: float,
-        task_callback: Optional[Callable] = None,
-    ) -> Tuple[TaskStatus, str]:
+        task_callback: TaskCallbackType | None = None,
+    ) -> tuple[TaskStatus, str]:
         """
         Call child devices or sleep.
 

@@ -129,7 +129,7 @@ class TestSKAController:
         [([[2], ["BAND1"]], False), ([[1], ["BAND1"]], True)],
     )
     def test_isCapabilityAchievable(
-        self,
+        self: TestSKAController,
         device_under_test: tango.DeviceProxy,
         capability: tuple[list[int], list[str]],
         success: bool,

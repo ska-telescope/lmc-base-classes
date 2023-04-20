@@ -10,7 +10,7 @@ from __future__ import annotations
 import itertools
 import logging
 import unittest.mock
-from typing import Callable
+from typing import Callable, cast
 
 import pytest
 import pytest_mock
@@ -165,7 +165,7 @@ class TestSubarrayComponentManager:
     @pytest.fixture()
     def mock_resource_factory(
         self: TestSubarrayComponentManager, mocker: pytest_mock.MockerFixture
-    ) -> unittest.mock.Mock:
+    ) -> type[unittest.mock.Mock]:
         """
         Return a factory that provides mock resources.
 
@@ -174,10 +174,12 @@ class TestSubarrayComponentManager:
 
         :return: a factory that provides mock resources
         """
-        return mocker.Mock
+        return cast(type[unittest.mock.Mock], mocker.Mock)
 
     @pytest.fixture()
-    def mock_config_factory(self: TestSubarrayComponentManager) -> Callable:
+    def mock_config_factory(
+        self: TestSubarrayComponentManager,
+    ) -> Callable[[], dict[str, int]]:
         """
         Return a factory that provides mock arguments to the configure() method.
 
@@ -198,7 +200,7 @@ class TestSubarrayComponentManager:
 
         :return: mock scan arguments
         """
-        return mocker.Mock()
+        return cast(unittest.mock.Mock, mocker.Mock())
 
     def test_state_changes_with_start_and_stop_communicating(
         self: TestSubarrayComponentManager,
@@ -550,7 +552,7 @@ class TestSubarrayComponentManager:
         # initial_fault,
         # mock_obs_state_model,
         mock_resource_factory: unittest.mock.Mock,
-        mock_config_factory: Callable,
+        mock_config_factory: Callable[[], dict[str, int]],
     ) -> None:
         """
         Test management of a component through configuration.
@@ -597,7 +599,7 @@ class TestSubarrayComponentManager:
         # initial_fault,
         # mock_obs_state_model,
         mock_resource_factory: unittest.mock.Mock,
-        mock_config_factory: Callable,
+        mock_config_factory: Callable[[], dict[str, int]],
         mock_scan_args: list[str],
     ) -> None:
         """
@@ -651,7 +653,7 @@ class TestSubarrayComponentManager:
         component: FakeSubarrayComponent,
         callbacks: MockCallableGroup,
         mock_resource_factory: unittest.mock.Mock,
-        mock_config_factory: Callable,
+        mock_config_factory: Callable[[], dict[str, int]],
         mock_scan_args: str,
     ) -> None:
         """
@@ -710,7 +712,7 @@ class TestSubarrayComponentManager:
         component: FakeSubarrayComponent,
         callbacks: MockCallableGroup,
         mock_resource_factory: unittest.mock.Mock,
-        mock_config_factory: Callable,
+        mock_config_factory: Callable[[], dict[str, int]],
         mock_scan_args: str,
     ) -> None:
         """

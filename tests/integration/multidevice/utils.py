@@ -4,7 +4,7 @@ from __future__ import annotations
 import logging
 import uuid
 from dataclasses import dataclass
-from typing import Any, Callable, Dict, List, Optional
+from typing import Any, Callable
 
 import tango
 from tango import EventData, EventType
@@ -52,7 +52,7 @@ class LongRunningDeviceInterface:
 
     def __init__(
         self: LongRunningDeviceInterface,
-        tango_devices: List[str],
+        tango_devices: list[str],
         logger: logging.Logger,
     ) -> None:
         """
@@ -65,8 +65,8 @@ class LongRunningDeviceInterface:
         self._tango_devices = tango_devices
         self._long_running_device_proxies: list[tango.DeviceProxy] = []
         self._result_subscriptions: list[int] = []
-        self._stored_commands: Dict[uuid.UUID, List[StoredCommand]] = {}
-        self._stored_callbacks: Dict[uuid.UUID, Callable] = {}
+        self._stored_commands: dict[uuid.UUID, list[StoredCommand]] = {}
+        self._stored_callbacks: dict[uuid.UUID, Callable[[str, list[str]], None]] = {}
 
     def setup(self: LongRunningDeviceInterface) -> None:
         """Only create the device proxy and subscribe when a command is invoked."""
@@ -156,7 +156,7 @@ class LongRunningDeviceInterface:
         self: LongRunningDeviceInterface,
         command_name: str,
         command_arg: Any = None,
-        on_completion_callback: Optional[Callable] = None,
+        on_completion_callback: Callable[[str, list[str]], None] | None = None,
     ) -> None:
         """
         Execute the long running command with an argument if any.

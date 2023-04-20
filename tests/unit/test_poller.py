@@ -9,9 +9,9 @@ Test of the ska_tango_base.poller subpackage.
 
 There's just one test here. We provide a fake poll model that calls
 """
+from __future__ import annotations
 
 from threading import Barrier
-from typing import Dict
 
 import pytest
 from ska_tango_testing.mock import MockCallableGroup
@@ -20,7 +20,7 @@ from ska_tango_base.poller import Poller, PollModel
 
 
 @pytest.fixture(name="config")
-def fixture_config() -> Dict[str, int]:
+def fixture_config() -> dict[str, int]:
     """
     Return a dictionary of config information.
 
@@ -69,8 +69,8 @@ def fixture_barrier() -> Barrier:
 def fixture_poll_model(
     callbacks: MockCallableGroup,
     barrier: Barrier,
-    config: Dict[str, int],
-) -> PollModel:
+    config: dict[str, int],
+) -> PollModel[int, int]:
     """
     Return a poll model for the poller under test to drive.
 
@@ -85,10 +85,10 @@ def fixture_poll_model(
 
     class _FakePollModel(PollModel[int, int]):
         def __init__(
-            self,
+            self: _FakePollModel,
             callbacks: MockCallableGroup,
             barrier: Barrier,
-            config: Dict[str, int],
+            config: dict[str, int],
         ):
             self._callbacks = callbacks
             self._barrier = barrier
@@ -98,37 +98,37 @@ def fixture_poll_model(
             self._fail_per = config["fail_per"]
             self._hang_after = config["hang_after"]
 
-        def get_request(self) -> int:
+        def get_request(self: _FakePollModel) -> int:
             self._poll_count += 1
             self._callbacks["requested"](self._poll_count)
             return self._poll_count
 
-        def poll(self, poll_request: int) -> int:
+        def poll(self: _FakePollModel, poll_request: int) -> int:
             self._callbacks["polled"](poll_request)
             if poll_request % self._fail_per == 0:
                 raise ValueError(f"poll_request is a multiple of {self._fail_per}.")
             return -poll_request
 
-        def polling_started(self) -> None:
+        def polling_started(self: _FakePollModel) -> None:
             self._callbacks["started"]()
 
-        def polling_stopped(self) -> None:
+        def polling_stopped(self: _FakePollModel) -> None:
             self._callbacks["stopped"]()
 
-        def poll_succeeded(self, poll_response: int) -> None:
+        def poll_succeeded(self: _FakePollModel, poll_response: int) -> None:
             self._callbacks["succeeded"](poll_response)
 
             if -poll_response % self._hang_after == 0:
                 self._barrier.wait()
 
-        def poll_failed(self, exception: Exception) -> None:
+        def poll_failed(self: _FakePollModel, exception: Exception) -> None:
             self._callbacks["failed"](exception)
 
     return _FakePollModel(callbacks, barrier, config)
 
 
 @pytest.fixture(name="poller")
-def fixture_poller(poll_model: PollModel) -> Poller:
+def fixture_poller(poll_model: PollModel[int, int]) -> Poller[int, int]:
     """
     Return the poller under test.
 
@@ -140,10 +140,10 @@ def fixture_poller(poll_model: PollModel) -> Poller:
 
 
 def test_poller(
-    poller: Poller,
+    poller: Poller[int, int],
     callbacks: MockCallableGroup,
     barrier: Barrier,
-    config: Dict[str, int],
+    config: dict[str, int],
 ) -> None:  # noqa: DAR401
     """
     Test the poller.

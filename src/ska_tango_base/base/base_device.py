@@ -182,6 +182,7 @@ class CommandTracker:  # pylint: disable=too-many-instance-attributes
                     TaskStatus.ABORTED,
                     TaskStatus.COMPLETED,
                     TaskStatus.FAILED,
+                    TaskStatus.REJECTED,
                 ]:
                     self._commands[command_id]["progress"] = None
                     self._schedule_removal(command_id)

@@ -75,7 +75,7 @@ class TaskExecutor:
                 return TaskStatus.REJECTED, "Queue is aborting"
             except Exception as exception:  # pylint: disable=broad-except
                 if task_callback is not None:
-                    task_callback(status=TaskStatus.FAILED)
+                    task_callback(status=TaskStatus.FAILED, exception=exception)
                 return TaskStatus.REJECTED, f"Unhandled exception: {str(exception)}"
 
             if task_callback is not None:

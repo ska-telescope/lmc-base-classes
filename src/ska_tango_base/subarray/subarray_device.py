@@ -45,7 +45,6 @@ ComponentManagerT = TypeVar("ComponentManagerT", bound=SubarrayComponentManager)
 
 # pylint: disable-next=too-many-public-methods
 class SKASubarray(SKAObsDevice[ComponentManagerT]):
-    # pylint: disable=attribute-defined-outside-init  # Tango devices have init_device
     """Implements the SKA SubArray device."""
 
     def __init__(
@@ -66,6 +65,7 @@ class SKASubarray(SKAObsDevice[ComponentManagerT]):
         # So don't put anything executable in here
         # (other than the super() call).
         self._activation_time: float
+        self.obs_state_model: ObsStateModel
 
         super().__init__(*args, **kwargs)
 

@@ -103,7 +103,7 @@ def fixture_poll_model(
             self._callbacks["requested"](self._poll_count)
             return self._poll_count
 
-        def poll(self, poll_request: int) -> int:
+        def poll(self: _FakePollModel, poll_request: int) -> int:
             self._callbacks["polled"](poll_request)
             if poll_request % self._fail_per == 0:
                 raise ValueError(f"poll_request is a multiple of {self._fail_per}.")

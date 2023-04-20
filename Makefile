@@ -32,11 +32,6 @@ include .make/docs.mk
 # include your own private variables for custom deployment configuration
 -include PrivateRules.mak
 
-# Add this for typehints & static type checking
-# Remove the -e (exclude) when formatting complete
-python-post-format:
-	$(PYTHON_RUNNER) docformatter -r -i --wrap-summaries 88 --wrap-descriptions 72 --pre-summary-newline $(PYTHON_LINT_TARGET)
-
 python-post-lint:
 	$(PYTHON_RUNNER) mypy --config-file mypy.ini $(PYTHON_LINT_TARGET)
 

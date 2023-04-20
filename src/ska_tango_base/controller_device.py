@@ -13,7 +13,7 @@ Controller device
 from __future__ import annotations
 
 import logging
-from typing import Any, Generic, List, Optional, Tuple, TypeVar, cast
+from typing import Any, Callable, TypeVar, cast
 
 from ska_control_model import ResultCode
 from tango import DebugIt
@@ -36,8 +36,33 @@ class ControllerComponentManager(BaseComponentManager):
 ComponentManagerT = TypeVar("ComponentManagerT", bound=ControllerComponentManager)
 
 
-class SKAController(SKABaseDevice, Generic[ComponentManagerT]):
+class SKAController(SKABaseDevice[ComponentManagerT]):
     """Controller device."""
+
+    def __init__(
+        self: SKAController[ComponentManagerT],
+        *args: Any,
+        **kwargs: Any,
+    ) -> None:
+        """
+        Initialise a new instance.
+
+        :param args: positional arguments.
+        :param kwargs: keyword arguments.
+        """
+        # This __init__ method is created for type-hinting purposes only.
+        # Tango devices are not supposed to have __init__ methods,
+        # And they have a strange __new__ method,
+        # that calls __init__ when you least expect it.
+        # So don't put anything executable in here
+        # (other than the super() call).
+
+        self._element_logger_address: str
+        self._element_alarm_address: str
+        self._element_tel_state_address: str
+        self._element_database_address: str
+
+        super().__init__(*args, **kwargs)
 
     # -----------------
     # Device Properties
@@ -51,7 +76,7 @@ class SKAController(SKABaseDevice, Generic[ComponentManagerT]):
         dtype=("str",),
     )
 
-    def init_command_objects(self: SKAController) -> None:
+    def init_command_objects(self: SKAController[ComponentManagerT]) -> None:
         """Set up the command objects."""
         super().init_command_objects()
         self.register_command_object(
@@ -106,7 +131,9 @@ class SKAController(SKABaseDevice, Generic[ComponentManagerT]):
             self._completed()
             return (ResultCode.OK, message)
 
-    def create_component_manager(self: SKAController) -> ComponentManagerT:
+    def create_component_manager(
+        self: SKAController[ComponentManagerT],
+    ) -> ComponentManagerT:
         """
         Create and return a component manager for this device.
 
@@ -118,8 +145,10 @@ class SKAController(SKABaseDevice, Generic[ComponentManagerT]):
     # Attributes
     # ----------
 
-    @attribute(dtype="str", doc="FQDN of Element Logger")
-    def elementLoggerAddress(self: SKAController) -> str:
+    @attribute(  # type: ignore[misc]  # "Untyped decorator makes function untyped"
+        dtype="str", doc="FQDN of Element Logger"
+    )
+    def elementLoggerAddress(self: SKAController[ComponentManagerT]) -> str:
         """
         Read FQDN of Element Logger device.
 
@@ -127,8 +156,10 @@ class SKAController(SKABaseDevice, Generic[ComponentManagerT]):
         """
         return self._element_logger_address
 
-    @attribute(dtype="str", doc="FQDN of Element Alarm Handlers")
-    def elementAlarmAddress(self: SKAController) -> str:
+    @attribute(  # type: ignore[misc]  # "Untyped decorator makes function untyped"
+        dtype="str", doc="FQDN of Element Alarm Handlers"
+    )
+    def elementAlarmAddress(self: SKAController[ComponentManagerT]) -> str:
         """
         Read FQDN of Element Alarm device.
 
@@ -136,8 +167,10 @@ class SKAController(SKABaseDevice, Generic[ComponentManagerT]):
         """
         return self._element_alarm_address
 
-    @attribute(dtype="str", doc="FQDN of Element TelState device")
-    def elementTelStateAddress(self: SKAController) -> str:
+    @attribute(  # type: ignore[misc]  # "Untyped decorator makes function untyped"
+        dtype="str", doc="FQDN of Element TelState device"
+    )
+    def elementTelStateAddress(self: SKAController[ComponentManagerT]) -> str:
         """
         Read FQDN of Element TelState device.
 
@@ -145,8 +178,10 @@ class SKAController(SKABaseDevice, Generic[ComponentManagerT]):
         """
         return self._element_tel_state_address
 
-    @attribute(dtype="str", doc="FQDN of Element Database device")
-    def elementDatabaseAddress(self: SKAController) -> str:
+    @attribute(  # type: ignore[misc]  # "Untyped decorator makes function untyped"
+        dtype="str", doc="FQDN of Element Database device"
+    )
+    def elementDatabaseAddress(self: SKAController[ComponentManagerT]) -> str:
         """
         Read FQDN of Element Database device.
 
@@ -154,7 +189,7 @@ class SKAController(SKABaseDevice, Generic[ComponentManagerT]):
         """
         return self._element_database_address
 
-    @attribute(
+    @attribute(  # type: ignore[misc]  # "Untyped decorator makes function untyped"
         dtype=("str",),
         max_dim_x=20,
         doc=(
@@ -162,7 +197,7 @@ class SKAController(SKABaseDevice, Generic[ComponentManagerT]):
             " e.g. 'CORRELATOR:512', 'PSS-BEAMS:4'."
         ),
     )
-    def maxCapabilities(self: SKAController) -> list[str]:
+    def maxCapabilities(self: SKAController[ComponentManagerT]) -> list[str]:
         """
         Read maximum number of instances of each capability type.
 
@@ -171,7 +206,7 @@ class SKAController(SKABaseDevice, Generic[ComponentManagerT]):
         """
         return convert_dict_to_list(self._max_capabilities)
 
-    @attribute(
+    @attribute(  # type: ignore[misc]  # "Untyped decorator makes function untyped"
         dtype=("str",),
         max_dim_x=20,
         doc=(
@@ -179,7 +214,7 @@ class SKAController(SKABaseDevice, Generic[ComponentManagerT]):
             "e.g. 'CORRELATOR:512', 'PSS-BEAMS:4'."
         ),
     )
-    def availableCapabilities(self: SKAController) -> list[str]:
+    def availableCapabilities(self: SKAController[ComponentManagerT]) -> list[str]:
         """
         Read list of available number of instances of each capability type.
 
@@ -192,14 +227,14 @@ class SKAController(SKABaseDevice, Generic[ComponentManagerT]):
     # Commands
     # --------
 
-    class IsCapabilityAchievableCommand(FastCommand):
+    class IsCapabilityAchievableCommand(FastCommand[bool]):
         # pylint: disable=protected-access  # command classes are friend classes
         """A class for the SKAController's IsCapabilityAchievable() command."""
 
         def __init__(
             self: SKAController.IsCapabilityAchievableCommand,
-            device: SKAController,
-            logger: Optional[logging.Logger] = None,
+            device: SKAController[ComponentManagerT],
+            logger: logging.Logger | None = None,
         ):
             """
             Initialise a new instance.
@@ -227,7 +262,7 @@ class SKAController(SKABaseDevice, Generic[ComponentManagerT]):
 
             :return: Whether the capability is achievable
             """
-            argin = cast(Tuple[List[int], List[str]], args[0])
+            argin = cast(tuple[list[int], list[str]], args[0])
             command_name = "IsCapabilityAchievable"
             capabilities_instances, capability_types = argin
             validate_input_sizes(command_name, argin)
@@ -247,15 +282,15 @@ class SKAController(SKABaseDevice, Generic[ComponentManagerT]):
                     return False
             return True
 
-    @command(
+    @command(  # type: ignore[misc]  # "Untyped decorator makes function untyped"
         dtype_in="DevVarLongStringArray",
         doc_in="[nrInstances][Capability types]",
         dtype_out=bool,
         doc_out="(ResultCode, 'Command unique ID')",
     )
-    @DebugIt()
+    @DebugIt()  # type: ignore[misc]  # "Untyped decorator makes function untyped"
     def IsCapabilityAchievable(
-        self: SKAController, argin: tuple[list[int], list[str]]
+        self: SKAController[ComponentManagerT], argin: tuple[list[int], list[str]]
     ) -> bool:
         """
         Check if provided capabilities can be achieved by the resource(s).
@@ -270,7 +305,10 @@ class SKAController(SKABaseDevice, Generic[ComponentManagerT]):
 
         :return: True or False
         """
-        handler = self.get_command_object("IsCapabilityAchievable")
+        handler = cast(
+            Callable[[tuple[list[int], list[str]]], bool],
+            self.get_command_object("IsCapabilityAchievable"),
+        )
         return handler(argin)
 
 
@@ -286,7 +324,7 @@ def main(*args: str, **kwargs: str) -> int:
 
     :return: exit code
     """
-    return SKAController.run_server(args=args or None, **kwargs)
+    return cast(int, SKAController.run_server(args=args or None, **kwargs))
 
 
 if __name__ == "__main__":

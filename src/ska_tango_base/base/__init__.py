@@ -10,8 +10,10 @@ __all__ = (
     "AdminModeModel",
     "BaseComponentManager",
     "CommandTracker",
+    "CommunicationStatusCallbackType",
     "OpStateModel",
     "SKABaseDevice",
+    "TaskCallbackType",
     "check_communicating",
     "check_on",
 )
@@ -19,5 +21,11 @@ __all__ = (
 # Note: order of imports is important - start with lowest in the hierarchy
 from .admin_mode_model import AdminModeModel
 from .base_device import CommandTracker, SKABaseDevice
-from .component_manager import BaseComponentManager, check_communicating, check_on
+from .component_manager import (
+    BaseComponentManager,
+    CommunicationStatusCallbackType,
+    TaskCallbackType,
+    check_communicating,
+    check_on,
+)
 from .op_state_model import OpStateModel

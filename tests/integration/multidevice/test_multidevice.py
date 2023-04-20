@@ -9,8 +9,8 @@ from ska_tango_testing.mock.tango import MockTangoEventCallbackGroup
 from .multidevice import ExampleMultiDevice
 
 
-@pytest.fixture(scope="function")
-def device_test_config(device_properties: dict[str, str]) -> dict[str, Any]:
+@pytest.fixture(name="device_test_config", scope="function")
+def device_test_config_fixture(device_properties: dict[str, str]) -> dict[str, Any]:
     """
     Return a specification of the device under test.
 
@@ -31,8 +31,8 @@ def device_test_config(device_properties: dict[str, str]) -> dict[str, Any]:
     }
 
 
-@pytest.fixture()
-def change_event_callbacks() -> MockTangoEventCallbackGroup:
+@pytest.fixture(name="change_event_callbacks")
+def change_event_callbacks_fixture() -> MockTangoEventCallbackGroup:
     """
     Return a dictionary of Tango device change event callbacks with asynchrony support.
 

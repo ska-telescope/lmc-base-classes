@@ -11,7 +11,7 @@ A generic base device for Telescope State for SKA.
 """
 from __future__ import annotations
 
-from typing import Generic, TypeVar
+from typing import TypeVar, cast
 
 from tango.server import device_property
 
@@ -30,10 +30,12 @@ class TelStateComponentManager(BaseComponentManager):
 ComponentManagerT = TypeVar("ComponentManagerT", bound=TelStateComponentManager)
 
 
-class SKATelState(SKABaseDevice, Generic[ComponentManagerT]):
+class SKATelState(SKABaseDevice[ComponentManagerT]):
     """A generic base device for Telescope State for SKA."""
 
-    def create_component_manager(self: SKATelState) -> ComponentManagerT:
+    def create_component_manager(
+        self: SKATelState[ComponentManagerT],
+    ) -> ComponentManagerT:
         """
         Create and return a component manager for this device.
 
@@ -72,7 +74,7 @@ def main(*args: str, **kwargs: str) -> int:
 
     :return: exit code
     """
-    return SKATelState.run_server(args=args or None, **kwargs)
+    return cast(int, SKATelState.run_server(args=args or None, **kwargs))
 
 
 if __name__ == "__main__":

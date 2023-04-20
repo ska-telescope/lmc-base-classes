@@ -20,7 +20,7 @@ import warnings
 from builtins import str
 from contextlib import contextmanager
 from datetime import datetime
-from typing import Any, Callable, Generator, List, Optional, Tuple
+from typing import Any, Callable, Generator, cast
 
 import tango
 from tango import (
@@ -96,8 +96,8 @@ tango_type_conversion = {
 
 @contextmanager
 def exception_manager(
-    cls: type[Exception], callback: Optional[Callable] = None
-) -> Generator:
+    cls: type[Exception], callback: Callable[[], None] | None = None
+) -> Generator[None, None, None]:
     """
     Return a context manager that manages exceptions.
 
@@ -218,21 +218,22 @@ def convert_api_value(param_dict: dict[str, str]) -> tuple[str, Any]:
 
     :param param_dict: parameters
 
-    :raises Exception: invalid type
+    :raises TypeError: invalid type
+    :raises ValueError: value not of specified type
 
     :return: tuple(name, value)
     """
     valid_types = ["int", "bool", "str", "float"]
     type_str = param_dict.get("type", "str").lower()
     if type_str not in valid_types:
-        raise Exception("Valid types must be from {", ".join(valid_types)}")
+        raise TypeError(f"Valid types must be from {', '.join(valid_types)}")
 
     value_type: Any  # for type checker
     value_type = pydoc.locate(type_str)
     value_str = str(param_dict.get("value"))
     if value_type == bool:
         if value_str.lower() not in ["true", "false"]:
-            raise Exception(
+            raise ValueError(
                 f"Parameter value {param_dict.get('value')} is not of type {value_type}"
             )
         value = value_str.lower() == "true"
@@ -241,7 +242,7 @@ def convert_api_value(param_dict: dict[str, str]) -> tuple[str, Any]:
     return str(param_dict.get("name")), value
 
 
-def coerce_value(value: DevState) -> str:
+def coerce_value(value: Any) -> Any:
     """
     Coerce tango.DevState values to string, leaving other values alone.
 
@@ -262,7 +263,7 @@ def get_dp_attribute(  # noqa C901
     dp_attribute: attribute,
     with_value: bool = False,
     with_context: bool = False,
-) -> dict:
+) -> dict[str, Any]:
     """
     Get an attribute from a DeviceProxy.
 
@@ -334,7 +335,7 @@ def get_dp_attribute(  # noqa C901
 
 def get_dp_command(
     device_name: str, dp_command: command, with_context: bool = False
-) -> dict:
+) -> dict[str, Any]:
     """
     Get a command from a DeviceProxy.
 
@@ -351,7 +352,9 @@ def get_dp_command(
             if command_desc in non_json:
                 return {}
             # ugghhh POGO replaces quotes with backticks :(
-            return ast.literal_eval(command_desc.replace("`", "'"))
+            return cast(
+                dict[str, Any], ast.literal_eval(command_desc.replace("`", "'"))
+            )
         except Exception:  # pylint: disable=broad-except
             # TBD - decide what to do - add log?
             pass
@@ -381,7 +384,7 @@ def get_tango_device_type_id(tango_address: str) -> list[str]:
     return tango_address.split("/")[1:3]
 
 
-def get_groups_from_json(json_definitions: List[str]) -> dict:
+def get_groups_from_json(json_definitions: list[str]) -> dict[str, Any]:
     """
     Return a dict of tango.Group objects matching the JSON definitions.
 
@@ -497,7 +500,7 @@ def get_groups_from_json(json_definitions: List[str]) -> dict:
         raise GroupDefinitionsError(ska_error).with_traceback(sys.exc_info()[2])
 
 
-def _validate_group(definition: dict) -> None:
+def _validate_group(definition: dict[str, Any]) -> None:
     """
     Validate and clean up groups definition, raise AssertError if invalid.
 
@@ -530,7 +533,7 @@ def _validate_group(definition: dict) -> None:
         _validate_group(subgroup_definition)  # recurse
 
 
-def _build_group(definition: dict) -> tango.Group:
+def _build_group(definition: dict[str, Any]) -> tango.Group:
     """
     Return tango.Group object according to defined hierarchy.
 
@@ -577,7 +580,7 @@ def validate_capability_types(
         )
 
 
-def validate_input_sizes(command_name: str, argin: Tuple[List[int], List[str]]) -> None:
+def validate_input_sizes(command_name: str, argin: tuple[list[int], list[str]]) -> None:
     """
     Check the validity of the input parameters passed to the specified command.
 
@@ -610,8 +613,9 @@ def convert_dict_to_list(dictionary: dict[Any, Any]) -> list[str]:
 
 
 def for_testing_only(
-    func: Callable, _testing_check: Callable[[], bool] = lambda: "pytest" in sys.modules
-) -> Callable:
+    func: Callable[..., Any],
+    _testing_check: Callable[[], bool] = lambda: "pytest" in sys.modules,
+) -> Callable[..., Any]:
     """
     Return a function that warns if called outside of testing, then calls a function.
 
@@ -632,7 +636,7 @@ def for_testing_only(
     """
 
     @functools.wraps(func)
-    def _wrapper(*args: Any, **kwargs: Any) -> Callable:
+    def _wrapper(*args: Any, **kwargs: Any) -> Any:
         """
         Raise a warning if not testing, then call the function.
 
@@ -640,7 +644,7 @@ def for_testing_only(
         the decorator.
 
         :param args: function arguments
-        :param kwargs: funtion keyword arguments
+        :param kwargs: function keyword arguments
 
         :return: the wrapped function
         """

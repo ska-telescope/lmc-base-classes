@@ -15,7 +15,7 @@ separate from the "built-in" Tango attribute alarms.
 """
 from __future__ import annotations
 
-from typing import Any, Generic, TypeVar
+from typing import Any, Callable, TypeVar, cast
 
 from tango import DebugIt
 from tango.server import attribute, command, device_property
@@ -36,7 +36,7 @@ class AlarmHandlerComponentManager(BaseComponentManager):
 ComponentManagerT = TypeVar("ComponentManagerT", bound=AlarmHandlerComponentManager)
 
 
-class SKAAlarmHandler(SKABaseDevice, Generic[ComponentManagerT]):
+class SKAAlarmHandler(SKABaseDevice[ComponentManagerT]):
     """A generic base device for Alarms for SKA."""
 
     # -----------------
@@ -55,7 +55,7 @@ class SKAAlarmHandler(SKABaseDevice, Generic[ComponentManagerT]):
     # General methods
     # ---------------
 
-    def init_command_objects(self: SKAAlarmHandler) -> None:
+    def init_command_objects(self: SKAAlarmHandler[ComponentManagerT]) -> None:
         """Set up the command objects."""
         super().init_command_objects()
         self.register_command_object(
@@ -79,7 +79,9 @@ class SKAAlarmHandler(SKABaseDevice, Generic[ComponentManagerT]):
             self.GetAlertStatsCommand(self.logger),
         )
 
-    def create_component_manager(self: SKAAlarmHandler) -> ComponentManagerT:
+    def create_component_manager(
+        self: SKAAlarmHandler[ComponentManagerT],
+    ) -> ComponentManagerT:
         """
         Create and return a component manager for this device.
 
@@ -91,8 +93,10 @@ class SKAAlarmHandler(SKABaseDevice, Generic[ComponentManagerT]):
     # Attributes
     # ----------
 
-    @attribute(dtype="int", doc="Number of active Alerts")
-    def statsNrAlerts(self: SKAAlarmHandler) -> int:
+    @attribute(  # type: ignore[misc]  # "Untyped decorator makes function untyped"
+        dtype="int", doc="Number of active Alerts"
+    )
+    def statsNrAlerts(self: SKAAlarmHandler[ComponentManagerT]) -> int:
         """
         Read number of active alerts.
 
@@ -100,8 +104,10 @@ class SKAAlarmHandler(SKABaseDevice, Generic[ComponentManagerT]):
         """
         return 0
 
-    @attribute(dtype="int", doc="Number of active Alarms")
-    def statsNrAlarms(self: SKAAlarmHandler) -> int:
+    @attribute(  # type: ignore[misc]  # "Untyped decorator makes function untyped"
+        dtype="int", doc="Number of active Alarms"
+    )
+    def statsNrAlarms(self: SKAAlarmHandler[ComponentManagerT]) -> int:
         """
         Read number of active alarms.
 
@@ -109,8 +115,10 @@ class SKAAlarmHandler(SKABaseDevice, Generic[ComponentManagerT]):
         """
         return 0
 
-    @attribute(dtype="int", doc="Number of New active alarms")
-    def statsNrNewAlarms(self: SKAAlarmHandler) -> int:
+    @attribute(  # type: ignore[misc]  # "Untyped decorator makes function untyped"
+        dtype="int", doc="Number of New active alarms"
+    )
+    def statsNrNewAlarms(self: SKAAlarmHandler[ComponentManagerT]) -> int:
         """
         Read number of new active alarms.
 
@@ -118,8 +126,10 @@ class SKAAlarmHandler(SKABaseDevice, Generic[ComponentManagerT]):
         """
         return 0
 
-    @attribute(dtype="double", doc="Number of unacknowledged alarms")
-    def statsNrUnackAlarms(self: SKAAlarmHandler) -> float:
+    @attribute(  # type: ignore[misc]  # "Untyped decorator makes function untyped"
+        dtype="double", doc="Number of unacknowledged alarms"
+    )
+    def statsNrUnackAlarms(self: SKAAlarmHandler[ComponentManagerT]) -> float:
         """
         Read number of unacknowledged alarms.
 
@@ -127,8 +137,10 @@ class SKAAlarmHandler(SKABaseDevice, Generic[ComponentManagerT]):
         """
         return 0.0
 
-    @attribute(dtype="double", doc="Number of returned alarms")
-    def statsNrRtnAlarms(self: SKAAlarmHandler) -> float:
+    @attribute(  # type: ignore[misc]  # "Untyped decorator makes function untyped"
+        dtype="double", doc="Number of returned alarms"
+    )
+    def statsNrRtnAlarms(self: SKAAlarmHandler[ComponentManagerT]) -> float:
         """
         Read number of returned alarms.
 
@@ -136,8 +148,10 @@ class SKAAlarmHandler(SKABaseDevice, Generic[ComponentManagerT]):
         """
         return 0.0
 
-    @attribute(dtype=("str",), max_dim_x=10000, doc="List of active alerts")
-    def activeAlerts(self: SKAAlarmHandler) -> list[str]:
+    @attribute(  # type: ignore[misc]  # "Untyped decorator makes function untyped"
+        dtype=("str",), max_dim_x=10000, doc="List of active alerts"
+    )
+    def activeAlerts(self: SKAAlarmHandler[ComponentManagerT]) -> list[str]:
         """
         Read list of active alerts.
 
@@ -145,8 +159,10 @@ class SKAAlarmHandler(SKABaseDevice, Generic[ComponentManagerT]):
         """
         return [""]
 
-    @attribute(dtype=("str",), max_dim_x=10000, doc="List of active alarms")
-    def activeAlarms(self: SKAAlarmHandler) -> list[str]:
+    @attribute(  # type: ignore[misc]  # "Untyped decorator makes function untyped"
+        dtype=("str",), max_dim_x=10000, doc="List of active alarms"
+    )
+    def activeAlarms(self: SKAAlarmHandler[ComponentManagerT]) -> list[str]:
         """
         Read list of active alarms.
 
@@ -157,7 +173,7 @@ class SKAAlarmHandler(SKABaseDevice, Generic[ComponentManagerT]):
     # --------
     # Commands
     # --------
-    class GetAlarmRuleCommand(FastCommand):
+    class GetAlarmRuleCommand(FastCommand[str]):
         """A class for the SKAAlarmHandler's GetAlarmRule() command."""
 
         def do(
@@ -179,7 +195,7 @@ class SKAAlarmHandler(SKABaseDevice, Generic[ComponentManagerT]):
             """
             return ""
 
-    class GetAlarmDataCommand(FastCommand):
+    class GetAlarmDataCommand(FastCommand[str]):
         """A class for the SKAAlarmHandler's GetAlarmData() command."""
 
         def do(
@@ -200,7 +216,7 @@ class SKAAlarmHandler(SKABaseDevice, Generic[ComponentManagerT]):
             """
             return ""
 
-    class GetAlarmAdditionalInfoCommand(FastCommand):
+    class GetAlarmAdditionalInfoCommand(FastCommand[str]):
         """A class for the SKAAlarmHandler's GetAlarmAdditionalInfo() command."""
 
         def do(
@@ -221,7 +237,7 @@ class SKAAlarmHandler(SKABaseDevice, Generic[ComponentManagerT]):
             """
             return ""
 
-    class GetAlarmStatsCommand(FastCommand):
+    class GetAlarmStatsCommand(FastCommand[str]):
         """A class for the SKAAlarmHandler's GetAlarmStats() command."""
 
         def do(
@@ -241,7 +257,7 @@ class SKAAlarmHandler(SKABaseDevice, Generic[ComponentManagerT]):
             """
             return ""
 
-    class GetAlertStatsCommand(FastCommand):
+    class GetAlertStatsCommand(FastCommand[str]):
         """A class for the SKAAlarmHandler's GetAlertStats() command."""
 
         def do(
@@ -261,14 +277,14 @@ class SKAAlarmHandler(SKABaseDevice, Generic[ComponentManagerT]):
             """
             return ""
 
-    @command(
+    @command(  # type: ignore[misc]  # "Untyped decorator makes function untyped"
         dtype_in="str",
         doc_in="Alarm name",
         dtype_out="str",
         doc_out="JSON string",
     )
-    @DebugIt()
-    def GetAlarmRule(self: SKAAlarmHandler, argin: str) -> str:
+    @DebugIt()  # type: ignore[misc]  # "Untyped decorator makes function untyped"
+    def GetAlarmRule(self: SKAAlarmHandler[ComponentManagerT], argin: str) -> str:
         """
         Get all configuration info of the alarm, e.g. rule, defined action, etc.
 
@@ -279,17 +295,17 @@ class SKAAlarmHandler(SKABaseDevice, Generic[ComponentManagerT]):
 
         :return: JSON string containing configuration information of the alarm
         """
-        handler = self.get_command_object("GetAlarmRule")
+        handler = cast(Callable[[str], str], self.get_command_object("GetAlarmRule"))
         return handler(argin)
 
-    @command(
+    @command(  # type: ignore[misc]  # "Untyped decorator makes function untyped"
         dtype_in="str",
         doc_in="Alarm name",
         dtype_out="str",
         doc_out="JSON string",
     )
-    @DebugIt()
-    def GetAlarmData(self: SKAAlarmHandler, argin: str) -> str:
+    @DebugIt()  # type: ignore[misc]  # "Untyped decorator makes function untyped"
+    def GetAlarmData(self: SKAAlarmHandler[ComponentManagerT], argin: str) -> str:
         """
         Get data on all attributes participating in the alarm rule.
 
@@ -302,17 +318,19 @@ class SKAAlarmHandler(SKABaseDevice, Generic[ComponentManagerT]):
 
         :return: JSON string containing alarm data
         """
-        handler = self.get_command_object("GetAlarmData")
+        handler = cast(Callable[[str], str], self.get_command_object("GetAlarmData"))
         return handler(argin)
 
-    @command(
+    @command(  # type: ignore[misc]  # "Untyped decorator makes function untyped"
         dtype_in="str",
         doc_in="Alarm name",
         dtype_out="str",
         doc_out="JSON string",
     )
-    @DebugIt()
-    def GetAlarmAdditionalInfo(self: SKAAlarmHandler, argin: str) -> str:
+    @DebugIt()  # type: ignore[misc]  # "Untyped decorator makes function untyped"
+    def GetAlarmAdditionalInfo(
+        self: SKAAlarmHandler[ComponentManagerT], argin: str
+    ) -> str:
         """
         Get additional alarm information.
 
@@ -323,15 +341,17 @@ class SKAAlarmHandler(SKABaseDevice, Generic[ComponentManagerT]):
 
         :return: JSON string containing additional alarm information
         """
-        handler = self.get_command_object("GetAlarmAdditionalInfo")
+        handler = cast(
+            Callable[[str], str], self.get_command_object("GetAlarmAdditionalInfo")
+        )
         return handler(argin)
 
-    @command(
+    @command(  # type: ignore[misc]  # "Untyped decorator makes function untyped"
         dtype_out="str",
         doc_out="JSON string",
     )
-    @DebugIt()
-    def GetAlarmStats(self: SKAAlarmHandler) -> str:
+    @DebugIt()  # type: ignore[misc]  # "Untyped decorator makes function untyped"
+    def GetAlarmStats(self: SKAAlarmHandler[ComponentManagerT]) -> str:
         """
         Get current alarm stats.
 
@@ -340,15 +360,15 @@ class SKAAlarmHandler(SKABaseDevice, Generic[ComponentManagerT]):
 
         :return: JSON string containing alarm statistics
         """
-        handler = self.get_command_object("GetAlarmStats")
+        handler = cast(Callable[[], str], self.get_command_object("GetAlarmStats"))
         return handler()
 
-    @command(
+    @command(  # type: ignore[misc]  # "Untyped decorator makes function untyped"
         dtype_out="str",
         doc_out="JSON string",
     )
-    @DebugIt()
-    def GetAlertStats(self: SKAAlarmHandler) -> str:
+    @DebugIt()  # type: ignore[misc]  # "Untyped decorator makes function untyped"
+    def GetAlertStats(self: SKAAlarmHandler[ComponentManagerT]) -> str:
         """
         Get current alert stats.
 
@@ -357,7 +377,7 @@ class SKAAlarmHandler(SKABaseDevice, Generic[ComponentManagerT]):
 
         :return: JSON string containing alert statistics
         """
-        handler = self.get_command_object("GetAlertStats")
+        handler = cast(Callable[[], str], self.get_command_object("GetAlertStats"))
         return handler()
 
 
@@ -375,7 +395,7 @@ def main(*args: str, **kwargs: str) -> int:
 
     :return: exit code
     """
-    return SKAAlarmHandler.run_server(args=args or None, **kwargs)
+    return cast(int, SKAAlarmHandler.run_server(args=args or None, **kwargs))
 
 
 if __name__ == "__main__":

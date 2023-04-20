@@ -16,11 +16,15 @@ from __future__ import annotations
 import logging
 import threading
 from time import sleep
-from typing import Any, Callable, Generic, Optional, Tuple, TypeVar
+from typing import Any, Callable, Generic, TypeVar, cast
 
 from ska_control_model import CommunicationStatus, PowerState, ResultCode, TaskStatus
 
-from ...base import check_communicating
+from ...base import (
+    CommunicationStatusCallbackType,
+    TaskCallbackType,
+    check_communicating,
+)
 from ...executor import TaskExecutorComponentManager
 
 
@@ -56,7 +60,7 @@ class FakeBaseComponent:
         time_to_return: float = 0.05,
         time_to_complete: float = 0.4,
         power: PowerState = PowerState.OFF,
-        fault: Optional[bool] = None,
+        fault: bool | None = None,
         **state_kwargs: Any,
     ) -> None:
         """
@@ -72,7 +76,7 @@ class FakeBaseComponent:
         :param fault: initial fault state of this component
         :param state_kwargs: extra keyword arguments
         """
-        self._state_change_callback: Optional[Callable[..., None]] = None
+        self._state_change_callback: Callable[..., None] | None = None
         self._state_lock = threading.Lock()
         self._state = dict(state_kwargs)
         self._state["power"] = power
@@ -83,7 +87,7 @@ class FakeBaseComponent:
 
     def set_state_change_callback(
         self: FakeBaseComponent,
-        state_change_callback: Optional[Callable[..., None]],
+        state_change_callback: Callable[..., None] | None,
     ) -> None:
         """
         Set a callback to be called when the state of this component changes.
@@ -105,7 +109,7 @@ class FakeBaseComponent:
 
     def _simulate_task_execution(
         self: FakeBaseComponent,
-        task_callback: Optional[Callable],
+        task_callback: TaskCallbackType | None,
         task_abort_event: threading.Event,
         result: Any,
         **state_kwargs: Any,
@@ -158,7 +162,7 @@ class FakeBaseComponent:
         self: FakeBaseComponent,
         command_name: str,
         power_state: PowerState,
-        task_callback: Callable,
+        task_callback: TaskCallbackType,
         task_abort_event: threading.Event,
     ) -> None:
         self._simulate_task_execution(
@@ -170,7 +174,7 @@ class FakeBaseComponent:
 
     def off(
         self: FakeBaseComponent,
-        task_callback: Callable,
+        task_callback: TaskCallbackType,
         task_abort_event: threading.Event,
     ) -> None:
         """
@@ -187,7 +191,7 @@ class FakeBaseComponent:
 
     def standby(
         self: FakeBaseComponent,
-        task_callback: Callable,
+        task_callback: TaskCallbackType,
         task_abort_event: threading.Event,
     ) -> None:
         """
@@ -204,7 +208,7 @@ class FakeBaseComponent:
 
     def on(  # pylint: disable=invalid-name
         self: FakeBaseComponent,
-        task_callback: Callable,
+        task_callback: TaskCallbackType,
         task_abort_event: threading.Event,
     ) -> None:
         """
@@ -232,7 +236,7 @@ class FakeBaseComponent:
 
     def reset(
         self: FakeBaseComponent,
-        task_callback: Callable,
+        task_callback: TaskCallbackType,
         task_abort_event: threading.Event,
     ) -> None:
         """
@@ -276,7 +280,7 @@ class FakeBaseComponent:
 
         :return: whether this component is faulty.
         """
-        return self._state["fault"]
+        return cast(bool, self._state["fault"])
 
     @property
     def power_state(self: FakeBaseComponent) -> PowerState:
@@ -285,15 +289,15 @@ class FakeBaseComponent:
 
         :return: the power state of this component.
         """
-        return self._state["power"]
+        return cast(PowerState, self._state["power"])
 
 
 ComponentT = TypeVar("ComponentT", bound=FakeBaseComponent)
 
 
-class ReferenceBaseComponentManager(TaskExecutorComponentManager, Generic[ComponentT]):
+class GenericBaseComponentManager(TaskExecutorComponentManager, Generic[ComponentT]):
     """
-    A component manager for Tango devices.
+    A generic component manager for Tango devices.
 
     It supports:
 
@@ -316,34 +320,30 @@ class ReferenceBaseComponentManager(TaskExecutorComponentManager, Generic[Compon
     """
 
     def __init__(
-        self: ReferenceBaseComponentManager,
+        self: GenericBaseComponentManager[ComponentT],
+        component: ComponentT,
         logger: logging.Logger,
-        communication_state_callback: Callable[[CommunicationStatus], None],
+        communication_state_callback: CommunicationStatusCallbackType,
         component_state_callback: Callable[[], None],
         *args: Any,
-        _component: Optional[ComponentT] = None,
         **kwargs: Any,
     ) -> None:
         """
         Initialise a new ComponentManager instance.
 
+        :param component: the component that this component manager
+            manages.
         :param logger: a logger for this component manager
         :param communication_state_callback: callback for communication state
         :param component_state_callback: callback for component state
         :param args: extra arguments
-        :param _component: allows setting of the component to be
-            managed. Note: the component will normally be a part of the
-            external system under control, such as a piece of hardware
-            or an external service. So there normally will not be a
-            "component" software object to pass in here. Instead, you
-            would pass in information needed to establish communication
-            with your component, such as an FQDN, or an IP address/port.
         :param kwargs: extra keyword arguments
         """
         self._fail_communicate = False
 
-        self._component: ComponentT = _component or FakeBaseComponent()
+        self._component = component
 
+        print(f"XXX: args is {args}, kwargs is {kwargs}")
         super().__init__(
             logger,
             communication_state_callback,
@@ -354,7 +354,7 @@ class ReferenceBaseComponentManager(TaskExecutorComponentManager, Generic[Compon
             **kwargs,
         )
 
-    def start_communicating(self: ReferenceBaseComponentManager) -> None:
+    def start_communicating(self: GenericBaseComponentManager[ComponentT]) -> None:
         """Establish communication with the component, then start monitoring."""
         if self.communication_state == CommunicationStatus.ESTABLISHED:
             return
@@ -375,7 +375,7 @@ class ReferenceBaseComponentManager(TaskExecutorComponentManager, Generic[Compon
         self._update_communication_state(CommunicationStatus.ESTABLISHED)
         self._component.set_state_change_callback(self._update_component_state)
 
-    def stop_communicating(self: ReferenceBaseComponentManager) -> None:
+    def stop_communicating(self: GenericBaseComponentManager[ComponentT]) -> None:
         """Break off communication with the component."""
         if self.communication_state == CommunicationStatus.DISABLED:
             return
@@ -385,7 +385,7 @@ class ReferenceBaseComponentManager(TaskExecutorComponentManager, Generic[Compon
         self._update_communication_state(CommunicationStatus.DISABLED)
 
     def simulate_communication_failure(
-        self: ReferenceBaseComponentManager, fail_communicate: bool
+        self: GenericBaseComponentManager[ComponentT], fail_communicate: bool
     ) -> None:
         """
         Simulate (or stop simulating) a failure to communicate with the component.
@@ -408,7 +408,7 @@ class ReferenceBaseComponentManager(TaskExecutorComponentManager, Generic[Compon
             self._component.set_state_change_callback(self._update_component_state)
 
     @property
-    def power_state(self: ReferenceBaseComponentManager) -> PowerState:
+    def power_state(self: GenericBaseComponentManager[ComponentT]) -> PowerState:
         """
         Power mode of the component.
 
@@ -417,22 +417,22 @@ class ReferenceBaseComponentManager(TaskExecutorComponentManager, Generic[Compon
 
         :return: the power mode of the component
         """
-        return self._component_state["power"]
+        return cast(PowerState, self._component_state["power"])
 
     @property
-    def fault_state(self: ReferenceBaseComponentManager) -> bool:
+    def fault_state(self: GenericBaseComponentManager[ComponentT]) -> bool:
         """
         Whether the component is currently faulting.
 
         :return: whether the component is faulting
         """
-        return self._component_state["fault"]
+        return cast(bool, self._component_state["fault"])
 
     @check_communicating
     def off(
-        self: ReferenceBaseComponentManager,
-        task_callback: Optional[Callable[[], None]] = None,
-    ) -> Tuple[TaskStatus, str]:
+        self: GenericBaseComponentManager[ComponentT],
+        task_callback: TaskCallbackType | None = None,
+    ) -> tuple[TaskStatus, str]:
         """
         Turn the component off.
 
@@ -445,9 +445,9 @@ class ReferenceBaseComponentManager(TaskExecutorComponentManager, Generic[Compon
 
     @check_communicating
     def standby(
-        self: ReferenceBaseComponentManager,
-        task_callback: Optional[Callable[[], None]] = None,
-    ) -> Tuple[TaskStatus, str]:
+        self: GenericBaseComponentManager[ComponentT],
+        task_callback: TaskCallbackType | None = None,
+    ) -> tuple[TaskStatus, str]:
         """
         Put the component into low-power standby mode.
 
@@ -460,9 +460,9 @@ class ReferenceBaseComponentManager(TaskExecutorComponentManager, Generic[Compon
 
     @check_communicating
     def on(
-        self: ReferenceBaseComponentManager,
-        task_callback: Optional[Callable[[], None]] = None,
-    ) -> Tuple[TaskStatus, str]:
+        self: GenericBaseComponentManager[ComponentT],
+        task_callback: TaskCallbackType | None = None,
+    ) -> tuple[TaskStatus, str]:
         """
         Turn the component on.
 
@@ -475,9 +475,9 @@ class ReferenceBaseComponentManager(TaskExecutorComponentManager, Generic[Compon
 
     @check_communicating
     def reset(
-        self: ReferenceBaseComponentManager,
-        task_callback: Optional[Callable[[], None]] = None,
-    ) -> Tuple[TaskStatus, str]:
+        self: GenericBaseComponentManager[ComponentT],
+        task_callback: TaskCallbackType | None = None,
+    ) -> tuple[TaskStatus, str]:
         """
         Reset the component (from fault state).
 
@@ -487,3 +487,41 @@ class ReferenceBaseComponentManager(TaskExecutorComponentManager, Generic[Compon
         :return: TaskStatus and message
         """
         return self.submit_task(self._component.reset, task_callback=task_callback)
+
+
+class ReferenceBaseComponentManager(GenericBaseComponentManager[FakeBaseComponent]):
+    """A reference base component manager for Tango devices."""
+
+    def __init__(
+        self: ReferenceBaseComponentManager,
+        logger: logging.Logger,
+        communication_state_callback: CommunicationStatusCallbackType,
+        component_state_callback: Callable[[], None],
+        *args: Any,
+        _component: FakeBaseComponent | None = None,
+        **kwargs: Any,
+    ) -> None:
+        """
+        Initialise a new ComponentManager instance.
+
+        :param logger: a logger for this component manager
+        :param communication_state_callback: callback for communication state
+        :param component_state_callback: callback for component state
+        :param args: extra arguments
+        :param _component: allows setting of the component to be
+            managed. Note: the component will normally be a part of the
+            external system under control, such as a piece of hardware
+            or an external service. So there normally will not be a
+            "component" software object to pass in here. Instead, you
+            would pass in information needed to establish communication
+            with your component, such as an FQDN, or an IP address/port.
+        :param kwargs: extra keyword arguments
+        """
+        super().__init__(
+            _component or FakeBaseComponent(),
+            logger,
+            communication_state_callback,
+            component_state_callback,
+            *args,
+            **kwargs,
+        )

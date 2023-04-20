@@ -1,19 +1,10 @@
-# GitLab CI in conjunction with GitLab Runner can use Docker Engine to test and build any application.
-# Docker, when used with GitLab CI, runs each job in a separate and isolated container using the predefined image that is set up in .gitlab-ci.yml.
+image: $SKA_K8S_TOOLS_DOCKER_BUILDER_IMAGE
+variables:
+  GIT_SUBMODULE_STRATEGY: recursive
 
-# Because pytango 9.3.6
-image: artefact.skao.int/ska-tango-images-pytango-builder:9.3.34
-
-# cache is used to specify a list of files and directories which should be cached between jobs. You can only use paths that are within the project workspace.
-# If cache is defined outside the scope of jobs, it means it is set globally and all jobs will use that definition
 cache:
   paths:
     - build
-
-# The YAML file defines a set of jobs with constraints stating when they should be run.
-# You can specify an unlimited number of jobs which are defined as top-level elements with an arbitrary name and always have to contain at least the script clause.
-# In this case we have only the test job which produce an artifacts (it must be placed into a directory called "public")
-# It is also specified that only the master branch will be subject of this job.
 
 stages:
   - lint
@@ -24,62 +15,18 @@ stages:
   - publish
   - scan
 
-clean shell runner:
-  stage: .pre
-  tags:
-    - k8srunner
-  script:
-    # Gitlab CI badges creation
-    - rm -rf build/*
-
-python-test:
-  retry: 2
-    
-#Join linting reports (This stage is temporary!)
-join_linting_reports:
-  stage: join-reports
-  tags:
-    - k8srunner
-  script:
-    - echo "This step is needed as the artifacts can't be passed in the same stage"
-    - make join-lint-reports
-  artifacts:
-    paths:
-      - build/
-    when: always
-
-# Standardised included jobs
-variables:
-  GIT_SUBMODULE_STRATEGY: recursive
-
-# Include CI templates
 include:
-  # Python packages build,lint, test and publish
   - project: 'ska-telescope/templates-repository'
     file: 'gitlab-ci/includes/python.gitlab-ci.yml'
-
-  # Docs build
   - project: 'ska-telescope/templates-repository'
     file: 'gitlab-ci/includes/docs.gitlab-ci.yml'
-
-# .post step finalisers eg: badges
   - project: 'ska-telescope/templates-repository'
     file: 'gitlab-ci/includes/finaliser.gitlab-ci.yml'
-
-# changelog release page
   - project: 'ska-telescope/templates-repository'
     file: 'gitlab-ci/includes/release.gitlab-ci.yml'
 
-# because pytango 9.3.6
-python-lint:
-  image: artefact.skao.int/ska-tango-images-pytango-builder:9.3.34
-
-# because pytango 9.3.6
-python-test:
-  image: artefact.skao.int/ska-tango-images-pytango-builder:9.3.34
-
 docs-build:
-  image: readthedocs/build:latest
+  image: artefact.skao.int/ska-cicd-k8s-tools-build-deploy:0.8.7
 
 docs-pages:
-  image: readthedocs/build:latest
+  image: artefact.skao.int/ska-cicd-k8s-tools-build-deploy:0.8.7

@@ -9,17 +9,25 @@ from __future__ import annotations
 
 import concurrent.futures
 import threading
-from typing import Any, Callable, Optional
+from typing import Any, Callable
 
 from ska_control_model import TaskStatus
 
+from ..base import TaskCallbackType
+
 __all__ = ["TaskExecutor", "TaskStatus"]
+
+
+# TODO: Placeholder for a future, better world in which we can typehint this
+# as a callable that accepts arbitrary positional args, a task callback
+# kwarg, an abort event kwargs, and arbitrary additional kwargs.
+TaskFunctionType = Callable[..., None]
 
 
 class TaskExecutor:
     """An asynchronous executor of tasks."""
 
-    def __init__(self: TaskExecutor, max_workers: Optional[int]) -> None:
+    def __init__(self: TaskExecutor, max_workers: int | None) -> None:
         """
         Initialise a new instance.
 
@@ -35,10 +43,10 @@ class TaskExecutor:
 
     def submit(
         self: TaskExecutor,
-        func: Callable,
-        args: Optional[Any] = None,
-        kwargs: Optional[Any] = None,
-        task_callback: Optional[Callable] = None,
+        func: TaskFunctionType,
+        args: Any = None,
+        kwargs: Any = None,
+        task_callback: TaskCallbackType | None = None,
     ) -> tuple[TaskStatus, str]:
         """
         Submit a new task.
@@ -62,22 +70,20 @@ class TaskExecutor:
                     self._abort_event,
                 )
             except RuntimeError:
-                message = "Queue is aborting"
                 if task_callback is not None:
-                    task_callback(status=TaskStatus.REJECTED, message=message)
-                return TaskStatus.REJECTED, message
+                    task_callback(status=TaskStatus.REJECTED)
+                return TaskStatus.REJECTED, "Queue is aborting"
             except Exception as exception:  # pylint: disable=broad-except
-                message = f"Unhandled exception: {str(exception)}"
                 if task_callback is not None:
-                    task_callback(status=TaskStatus.FAILED, message=message)
-                return TaskStatus.REJECTED, message
-            else:
-                if task_callback is not None:
-                    task_callback(status=TaskStatus.QUEUED)
-                return TaskStatus.QUEUED, "Task queued"
+                    task_callback(status=TaskStatus.FAILED)
+                return TaskStatus.REJECTED, f"Unhandled exception: {str(exception)}"
+
+            if task_callback is not None:
+                task_callback(status=TaskStatus.QUEUED)
+            return TaskStatus.QUEUED, "Task queued"
 
     def abort(
-        self: TaskExecutor, task_callback: Optional[Callable] = None
+        self: TaskExecutor, task_callback: TaskCallbackType | None = None
     ) -> tuple[TaskStatus, str]:
         """
         Tell this executor to abort execution.
@@ -114,10 +120,10 @@ class TaskExecutor:
 
     def _run(  # pylint: disable=too-many-arguments
         self: TaskExecutor,
-        func: Callable,
+        func: TaskFunctionType,
         args: Any,
         kwargs: Any,
-        task_callback: Optional[Callable],
+        task_callback: TaskCallbackType | None,
         abort_event: threading.Event,
     ) -> None:
         # Let the submit method finish before we start. This prevents this thread from

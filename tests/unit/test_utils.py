@@ -8,15 +8,16 @@
 from __future__ import annotations
 
 import json
+import warnings
 from contextlib import nullcontext
-from typing import Any, ContextManager, Dict, cast
+from typing import Any, ContextManager, cast
 
 import pytest
 import tango
 from _pytest.fixtures import SubRequest
 
+from ska_tango_base.faults import GroupDefinitionsError
 from ska_tango_base.utils import (
-    GroupDefinitionsError,
     for_testing_only,
     get_groups_from_json,
     get_tango_device_type_id,
@@ -136,7 +137,7 @@ BAD_GROUP_KEYS = [
 ]
 
 
-def _jsonify_group_configs(group_configs: list[Dict[str, Any]]) -> list[str]:
+def _jsonify_group_configs(group_configs: list[dict[str, Any]]) -> list[str]:
     """
     Return a list of JSON definitions for groups.
 
@@ -150,7 +151,7 @@ def _jsonify_group_configs(group_configs: list[Dict[str, Any]]) -> list[str]:
     return definitions
 
 
-def _get_group_configs_from_keys(group_keys: list[str]) -> list[Dict[str, Any]]:
+def _get_group_configs_from_keys(group_keys: list[str]) -> list[dict[str, Any]]:
     """
     Provide list of group configs based on keys for TEST_GROUPS.
 
@@ -160,7 +161,7 @@ def _get_group_configs_from_keys(group_keys: list[str]) -> list[Dict[str, Any]]:
     """
     group_configs = []
     for group_key in group_keys:
-        group_config = cast(Dict[str, Any], TEST_GROUPS[group_key])
+        group_config = cast(dict[str, Any], TEST_GROUPS[group_key])
         group_configs.append(group_config)
     return group_configs
 
@@ -184,7 +185,7 @@ def _group_id_name(keys: list[str]) -> str:
     params=VALID_GROUP_KEYS,
     ids=_group_id_name,
 )
-def fixture_valid_group_configs(request: SubRequest) -> list[Dict[str, Any]]:
+def fixture_valid_group_configs(request: SubRequest) -> list[dict[str, Any]]:
     """
     Provide valid lists of groups configs, one at a time.
 
@@ -198,7 +199,7 @@ def fixture_valid_group_configs(request: SubRequest) -> list[Dict[str, Any]]:
 @pytest.fixture(
     name="bad_group_configs", scope="module", params=BAD_GROUP_KEYS, ids=_group_id_name
 )
-def fixture_bad_group_configs(request: SubRequest) -> list[Dict[str, Any]]:
+def fixture_bad_group_configs(request: SubRequest) -> list[dict[str, Any]]:
     """
     Provide bad lists of groups configs, one at a time.
 
@@ -216,7 +217,7 @@ def test_get_groups_from_json_empty_list() -> None:
     assert not get_groups_from_json(["  ", "", " "])
 
 
-def _validate_group(definition: Dict[str, Any], group: tango.Group) -> None:
+def _validate_group(definition: dict[str, Any], group: tango.Group) -> None:
     """
     Compare groups test definition dict to actual tango.Group.
 
@@ -241,7 +242,7 @@ def _validate_group(definition: Dict[str, Any], group: tango.Group) -> None:
         _validate_group(expected_subgroup, subgroup)
 
 
-def test_get_groups_from_json_valid(valid_group_configs: list[Dict[str, Any]]) -> None:
+def test_get_groups_from_json_valid(valid_group_configs: list[dict[str, Any]]) -> None:
     """
     Test the ``get_groups_from_json`` helper function's handling of valid input.
 
@@ -258,7 +259,7 @@ def test_get_groups_from_json_valid(valid_group_configs: list[Dict[str, Any]]) -
         _validate_group(group_config, group)
 
 
-def test_get_groups_from_json_invalid(bad_group_configs: list[Dict[str, Any]]) -> None:
+def test_get_groups_from_json_invalid(bad_group_configs: list[dict[str, Any]]) -> None:
     """
     Test the ``get_groups_from_json`` helper function's handling of invalid input.
 
@@ -289,7 +290,7 @@ def test_get_tango_device_type_id() -> None:
         (True, nullcontext()),
     ],
 )
-def test_for_testing_only(in_test: bool, context: ContextManager) -> None:
+def test_for_testing_only(in_test: bool, context: ContextManager[None]) -> None:
     """
     Test the @for_testing_only decorator.
 
@@ -332,6 +333,6 @@ def test_for_testing_only_decorator() -> None:
         """
         return "bah"
 
-    with pytest.warns(None) as warning_record:
+    with warnings.catch_warnings(record=True) as warning_record:
         assert dummy() == "bah"
     assert len(warning_record) == 0  # no warning was raised because we are testing

@@ -113,7 +113,7 @@ Create a component manager
         def __init__(
             self,
             *args,
-            max_workers: Optional[int] = None,
+            max_workers: int | None = None,
             logger: logging.Logger = None,
             **kwargs,
         ):
@@ -166,7 +166,7 @@ Add a method to submit the slow method
 
     # class SampleComponentManager
 
-        def submit_slow_method(self, task_callback: Optional[Callable] = None):
+        def submit_slow_method(self, task_callback: Callable | None = None):
             """Submit the slow task. 
 
             This method returns immediately after it submitted

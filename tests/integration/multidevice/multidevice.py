@@ -1,7 +1,8 @@
+# pylint: disable=invalid-name
 """Device to test multi layered commands."""
 from __future__ import annotations
 
-from typing import Any, Tuple
+from typing import Any
 
 from ska_control_model import ResultCode
 from tango import DebugIt
@@ -103,14 +104,14 @@ class ExampleMultiDevice(SKABaseDevice[MultiDeviceComponentManager]):
             ),
         )
 
-    class AddTwoCommand(FastCommand):
+    class AddTwoCommand(FastCommand[tuple[ResultCode, int]]):
         """The command class for the Short command."""
 
         def do(
             self: ExampleMultiDevice.AddTwoCommand,
             *args: Any,
             **kwargs: Any,
-        ) -> Tuple[ResultCode, int]:
+        ) -> tuple[ResultCode, int]:
             """
             Do command.
 
@@ -126,12 +127,12 @@ class ExampleMultiDevice(SKABaseDevice[MultiDeviceComponentManager]):
             result = argin + 2
             return ResultCode.OK, result
 
-    @command(
+    @command(  # type: ignore[misc]  # "Untyped decorator makes function untyped"
         dtype_in=int,
         dtype_out="DevVarStringArray",
     )
-    @DebugIt()
-    def Short(self: ExampleMultiDevice, argin: int) -> Tuple[str, str]:
+    @DebugIt()  # type: ignore[misc]  # "Untyped decorator makes function untyped"
+    def Short(self: ExampleMultiDevice, argin: int) -> tuple[str, str]:
         """
         Short command.
 
@@ -146,14 +147,14 @@ class ExampleMultiDevice(SKABaseDevice[MultiDeviceComponentManager]):
         (return_code, message) = handler(argin)
         return f"{return_code}", f"{message}"
 
-    @command(
+    @command(  # type: ignore[misc]  # "Untyped decorator makes function untyped"
         dtype_in=float,
         dtype_out="DevVarStringArray",
     )
-    @DebugIt()
+    @DebugIt()  # type: ignore[misc]  # "Untyped decorator makes function untyped"
     def NonAbortingLongRunning(
         self: ExampleMultiDevice, argin: float
-    ) -> Tuple[str, str]:
+    ) -> tuple[str, str]:
         """
         Non AbortingLongRunning command.
 
@@ -165,12 +166,12 @@ class ExampleMultiDevice(SKABaseDevice[MultiDeviceComponentManager]):
         (return_code, message) = handler(argin)
         return f"{return_code}", message
 
-    @command(
+    @command(  # type: ignore[misc]  # "Untyped decorator makes function untyped"
         dtype_in=float,
         dtype_out="DevVarStringArray",
     )
-    @DebugIt()
-    def AbortingLongRunning(self: ExampleMultiDevice, argin: float) -> Tuple[str, str]:
+    @DebugIt()  # type: ignore[misc]  # "Untyped decorator makes function untyped"
+    def AbortingLongRunning(self: ExampleMultiDevice, argin: float) -> tuple[str, str]:
         """
         AbortingLongRunning.
 
@@ -182,9 +183,11 @@ class ExampleMultiDevice(SKABaseDevice[MultiDeviceComponentManager]):
         (return_code, message) = handler(argin)
         return f"{return_code}", message
 
-    @command(dtype_out="DevVarStringArray")
-    @DebugIt()
-    def LongRunningException(self: ExampleMultiDevice) -> Tuple[str, str]:
+    @command(  # type: ignore[misc]  # "Untyped decorator makes function untyped"
+        dtype_out="DevVarStringArray"
+    )
+    @DebugIt()  # type: ignore[misc]  # "Untyped decorator makes function untyped"
+    def LongRunningException(self: ExampleMultiDevice) -> tuple[str, str]:
         """
         Command that queues a task that raises an exception.
 
@@ -194,12 +197,12 @@ class ExampleMultiDevice(SKABaseDevice[MultiDeviceComponentManager]):
         (return_code, message) = handler()
         return f"{return_code}", f"{message}"
 
-    @command(
+    @command(  # type: ignore[misc]  # "Untyped decorator makes function untyped"
         dtype_in=float,
         dtype_out="DevVarStringArray",
     )
-    @DebugIt()
-    def TestProgress(self: ExampleMultiDevice, argin: float) -> Tuple[str, str]:
+    @DebugIt()  # type: ignore[misc]  # "Untyped decorator makes function untyped"
+    def TestProgress(self: ExampleMultiDevice, argin: float) -> tuple[str, str]:
         """
         Command to test the progress indicator.
 
@@ -211,12 +214,12 @@ class ExampleMultiDevice(SKABaseDevice[MultiDeviceComponentManager]):
         (return_code, message) = handler(argin)
         return f"{return_code}", message
 
-    @command(
+    @command(  # type: ignore[misc]  # "Untyped decorator makes function untyped"
         dtype_in=float,
         dtype_out="DevVarStringArray",
     )
-    @DebugIt()
-    def CallChildren(self: ExampleMultiDevice, argin: float) -> Tuple[str, str]:
+    @DebugIt()  # type: ignore[misc]  # "Untyped decorator makes function untyped"
+    def CallChildren(self: ExampleMultiDevice, argin: float) -> tuple[str, str]:
         """
         Command to call `CallChildren` on children, or block if not.
 

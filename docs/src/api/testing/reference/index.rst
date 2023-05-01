@@ -9,3 +9,4 @@ Reference Testing Devices
 
   Reference Base Component Manager<reference_base_component_manager>
   Reference Subarray Component Manager<reference_subarray_component_manager>
+  Reference Subarray Device<reference_subarray_device>

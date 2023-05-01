@@ -343,7 +343,6 @@ class GenericBaseComponentManager(TaskExecutorComponentManager, Generic[Componen
 
         self._component = component
 
-        print(f"XXX: args is {args}, kwargs is {kwargs}")
         super().__init__(
             logger,
             communication_state_callback,

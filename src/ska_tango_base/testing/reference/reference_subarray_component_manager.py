@@ -20,7 +20,6 @@ from ...base import (
     check_communicating,
     check_on,
 )
-from ...faults import CapabilityValidationError
 from ...subarray import SubarrayComponentManager
 from .reference_base_component_manager import (
     FakeBaseComponent,
@@ -192,27 +191,6 @@ class FakeSubarrayComponent(FakeBaseComponent):
             configured_capabilities.append(f"{capability_type}:{capability_instances}")
         return sorted(configured_capabilities)
 
-    def _validate_capability_types(
-        self: FakeSubarrayComponent, capability_types: list[str]
-    ) -> None:
-        """
-        Check the validity of the input parameter passed to the Configure command.
-
-        :param capability_types: a list strings representing
-            capability types.
-
-        :raises CapabilityValidationError: If any of the capabilities
-            requested are not valid.
-        """
-        invalid_capabilities = list(
-            set(capability_types) - set(self._configured_capabilities)
-        )
-
-        if invalid_capabilities:
-            raise CapabilityValidationError(
-                f"Invalid capability types requested {invalid_capabilities}"
-            )
-
     @check_on
     def assign(
         self: FakeSubarrayComponent,
@@ -307,14 +285,20 @@ class FakeSubarrayComponent(FakeBaseComponent):
     @check_on
     def configure(
         self: FakeSubarrayComponent,
-        configuration: dict[str, int],
+        blocks: int | None,
+        channels: int | None,
         task_callback: TaskCallbackType,
         task_abort_event: threading.Event,
     ) -> None:
         """
         Configure the component.
 
-        :param configuration: the configuration to be configured
+        :param blocks: the number of blocks.
+            (This not meant to be particularly meaningful. The "blocks"
+            are just MacGuffins that give us something to configure.)
+        :param channels: the number of channels.
+            (This not meant to be particularly meaningful. The "blocks"
+            are just MacGuffins that give us something to configure.)
         :param task_callback: a callback to be called whenever the
             status of this task changes.
         :param task_abort_event: a threading.Event that can be checked
@@ -330,13 +314,11 @@ class FakeSubarrayComponent(FakeBaseComponent):
                 "Configure failed; component is in fault.",
             )
         else:
-            capability_types = list(configuration.keys())
-            self._validate_capability_types(capability_types)
-
             # Perform the configuration.
-            for capability_type, capability_instances in configuration.items():
-                self._configured_capabilities[capability_type] += capability_instances
-
+            if blocks is not None:
+                self._configured_capabilities["blocks"] += blocks
+            if channels is not None:
+                self._configured_capabilities["channels"] += channels
             result = (ResultCode.OK, "Configure completed OK")
 
         self._simulate_task_execution(
@@ -374,14 +356,14 @@ class FakeSubarrayComponent(FakeBaseComponent):
     @check_on
     def scan(
         self: FakeSubarrayComponent,
-        args: Any,  # pylint: disable=unused-argument
+        scan_id: str,
         task_callback: TaskCallbackType,
         task_abort_event: threading.Event,
     ) -> None:
         """
         Start scanning.
 
-        :param args: positional arguments
+        :param scan_id: ID of the scan
         :param task_callback: a callback to be called whenever the
             status of this task changes.
         :param task_abort_event: a threading.Event that can be checked
@@ -390,10 +372,10 @@ class FakeSubarrayComponent(FakeBaseComponent):
         if self._state["fault"]:
             result = (
                 ResultCode.FAILED,
-                "Scan commencement failed; component is in fault.",
+                f"Scan {scan_id} commencement failed; component is in fault.",
             )
         else:
-            result = (ResultCode.OK, "Scan commencement completed OK")
+            result = (ResultCode.OK, f"Scan {scan_id} commencement completed OK")
         self._simulate_task_execution(
             task_callback, task_abort_event, result, scanning=True
         )
@@ -539,19 +521,19 @@ class ReferenceSubarrayComponentManager(
     @check_communicating
     def assign(
         self: ReferenceSubarrayComponentManager,
-        task_callback: TaskCallbackType | None = None,
-        *,
-        resources: set[str],
+        task_callback: TaskCallbackType | None,
+        **kwargs: Any,
     ) -> tuple[TaskStatus, str]:
         """
         Assign resources to the component.
 
-        :param resources: resources to be assigned
         :param task_callback: a callback to be called whenever the
             status of this task changes.
+        :param kwargs: keyword arguments to the command
 
         :return: task status and message
         """
+        resources = set(kwargs["resources"])
         return self.submit_task(
             self._component.assign, (resources,), task_callback=task_callback
         )
@@ -559,19 +541,19 @@ class ReferenceSubarrayComponentManager(
     @check_communicating
     def release(
         self: ReferenceSubarrayComponentManager,
-        task_callback: TaskCallbackType | None = None,
-        *,
-        resources: set[str],
+        task_callback: TaskCallbackType | None,
+        **kwargs: Any,
     ) -> tuple[TaskStatus, str]:
         """
         Release resources from the component.
 
-        :param resources: resources to be released
         :param task_callback: a callback to be called whenever the
             status of this task changes.
+        :param kwargs: keyword arguments to the command
 
         :return: task status and message
         """
+        resources = set(kwargs["resources"])
         return self.submit_task(
             self._component.release, (resources,), task_callback=task_callback
         )
@@ -579,7 +561,7 @@ class ReferenceSubarrayComponentManager(
     @check_communicating
     def release_all(
         self: ReferenceSubarrayComponentManager,
-        task_callback: TaskCallbackType | None = None,
+        task_callback: TaskCallbackType | None,
     ) -> tuple[TaskStatus, str]:
         """
         Release all resources.
@@ -596,29 +578,30 @@ class ReferenceSubarrayComponentManager(
     @check_communicating
     def configure(
         self: ReferenceSubarrayComponentManager,
-        task_callback: TaskCallbackType | None = None,
-        *,
-        configuration: dict[str, Any],
+        task_callback: TaskCallbackType | None,
+        **kwargs: Any,
     ) -> tuple[TaskStatus, str]:
         """
         Configure the component.
 
-        :param configuration: the configuration to be configured
         :param task_callback: a callback to be called whenever the
             status of this task changes.
+        :param kwargs: keyword arguments to the command
 
         :return: task status and message
         """
+        blocks = kwargs.get("blocks")
+        channels = kwargs.get("channels")
         return self.submit_task(
             self._component.configure,
-            (configuration,),
+            (blocks, channels),
             task_callback=task_callback,
         )
 
     @check_communicating
     def deconfigure(
         self: ReferenceSubarrayComponentManager,
-        task_callback: TaskCallbackType | None = None,
+        task_callback: TaskCallbackType | None,
     ) -> tuple[TaskStatus, str]:
         """
         Deconfigure this component.
@@ -635,27 +618,26 @@ class ReferenceSubarrayComponentManager(
     @check_communicating
     def scan(
         self: ReferenceSubarrayComponentManager,
-        task_callback: TaskCallbackType | None = None,
-        *,
-        scan_args: Any,
+        task_callback: TaskCallbackType | None,
+        **kwargs: Any,
     ) -> tuple[TaskStatus, str]:
         """
         Start scanning.
 
-        :param scan_args: additional arguments
         :param task_callback: a callback to be called whenever the
             status of this task changes.
+        :param kwargs: keyword arguments to the command
 
         :return: task status and message
         """
         return self.submit_task(
-            self._component.scan, (scan_args,), task_callback=task_callback
+            self._component.scan, (kwargs["scan_id"],), task_callback=task_callback
         )
 
     @check_communicating
     def end_scan(
         self: ReferenceSubarrayComponentManager,
-        task_callback: TaskCallbackType | None = None,
+        task_callback: TaskCallbackType | None,
     ) -> tuple[TaskStatus, str]:
         """
         End scanning.
@@ -670,7 +652,7 @@ class ReferenceSubarrayComponentManager(
     @check_communicating
     def abort(
         self: ReferenceSubarrayComponentManager,
-        task_callback: TaskCallbackType | None = None,
+        task_callback: TaskCallbackType | None,
     ) -> tuple[TaskStatus, str]:
         """
         Tell the component to abort the observation.
@@ -685,7 +667,7 @@ class ReferenceSubarrayComponentManager(
     @check_communicating
     def obsreset(
         self: ReferenceSubarrayComponentManager,
-        task_callback: TaskCallbackType | None = None,
+        task_callback: TaskCallbackType | None,
     ) -> tuple[TaskStatus, str]:
         """
         Deconfigure the component but do not release resources.
@@ -700,7 +682,7 @@ class ReferenceSubarrayComponentManager(
     @check_communicating
     def restart(
         self: ReferenceSubarrayComponentManager,
-        task_callback: TaskCallbackType | None = None,
+        task_callback: TaskCallbackType | None,
     ) -> tuple[TaskStatus, str]:
         """
         Tell the component to restart.

@@ -2,6 +2,13 @@
 
 ## unreleased
 
+## 0.18.1
+
+- [MCCS-1494] Bug fixes to subarray subclassing following addition of JSON validation support
+- [KAR-497] Further task callback parameters bug fixes
+- [MCCS-1579] Strict type-checking, leading to bug fixes in task callback parameters
+  and subarray resource pool checking
+
 ## 0.18.0
 
 - [MCCS-1424] JSON validation support

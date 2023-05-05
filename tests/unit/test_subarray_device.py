@@ -27,11 +27,7 @@ from ska_control_model import (
 from ska_tango_testing.mock.tango import MockTangoEventCallbackGroup
 from tango import DevState
 
-from ska_tango_base import SKASubarray
-from ska_tango_base.testing.reference import (
-    FakeSubarrayComponent,
-    ReferenceSubarrayComponentManager,
-)
+from ska_tango_base.testing.reference import FakeSubarrayComponent, ReferenceSkaSubarray
 
 
 class TestSKASubarray:  # pylint: disable=too-many-public-methods
@@ -45,7 +41,7 @@ class TestSKASubarray:  # pylint: disable=too-many-public-methods
         :return: properties of the device under test
         """
         return {
-            "CapabilityTypes": ["BAND1", "BAND2"],
+            "CapabilityTypes": ["blocks", "channels"],
             "LoggingTargetsDefault": "",
             "GroupDefinitions": "",
             "SkaLevel": "4",
@@ -70,13 +66,7 @@ class TestSKASubarray:  # pylint: disable=too-many-public-methods
             configured
         """
         return {
-            "device": SKASubarray,
-            "component_manager_patch": lambda self: ReferenceSubarrayComponentManager(
-                self.CapabilityTypes,
-                self.logger,
-                self._communication_state_changed,
-                self._component_state_changed,
-            ),
+            "device": ReferenceSkaSubarray,
             "properties": device_properties,
             "memorized": {"adminMode": str(AdminMode.ONLINE.value)},
         }
@@ -483,11 +473,11 @@ class TestSKASubarray:  # pylint: disable=too-many-public-methods
         # resources, and clear the queue attributes. We need a better way to handle
         # this.
         assert list(device_under_test.configuredCapabilities) == [
-            "BAND1:0",
-            "BAND2:0",
+            "blocks:0",
+            "channels:0",
         ]
 
-        configuration_to_apply = {"configuration": {"BAND1": 2}}
+        configuration_to_apply = {"blocks": 1, "channels": 2}
         [[result_code], [config_command_id]] = device_under_test.Configure(
             json.dumps(configuration_to_apply)
         )
@@ -541,8 +531,8 @@ class TestSKASubarray:  # pylint: disable=too-many-public-methods
         change_event_callbacks.assert_change_event("obsState", ObsState.READY)
 
         assert list(device_under_test.configuredCapabilities) == [
-            "BAND1:2",
-            "BAND2:0",
+            "blocks:1",
+            "channels:2",
         ]
 
         # test deconfigure
@@ -603,8 +593,8 @@ class TestSKASubarray:  # pylint: disable=too-many-public-methods
         )
 
         assert list(device_under_test.configuredCapabilities) == [
-            "BAND1:0",
-            "BAND2:0",
+            "blocks:0",
+            "channels:0",
         ]
 
     # TODO: pylint is right that this is too long and complex
@@ -724,11 +714,11 @@ class TestSKASubarray:  # pylint: disable=too-many-public-methods
 
         # configuration
         assert list(device_under_test.configuredCapabilities) == [
-            "BAND1:0",
-            "BAND2:0",
+            "blocks:0",
+            "channels:0",
         ]
 
-        configuration_to_apply = {"configuration": {"BAND1": 2}}
+        configuration_to_apply = {"blocks": 2}
         [[result_code], [config_command_id]] = device_under_test.Configure(
             json.dumps(configuration_to_apply)
         )
@@ -782,15 +772,15 @@ class TestSKASubarray:  # pylint: disable=too-many-public-methods
         change_event_callbacks.assert_change_event("obsState", ObsState.READY)
 
         assert list(device_under_test.configuredCapabilities) == [
-            "BAND1:2",
-            "BAND2:0",
+            "blocks:2",
+            "channels:0",
         ]
 
         # TODO: Everything above here is just to turn on the device, assign it some
         # resources, configure it, and clear the queue attributes. We need a better way
         # to handle this.
 
-        dummy_scan_arg = {"scan_args": 5}
+        dummy_scan_arg = {"scan_id": "scan_25"}
         [[result_code], [scan_command_id]] = device_under_test.Scan(
             json.dumps(dummy_scan_arg)
         )
@@ -831,7 +821,9 @@ class TestSKASubarray:  # pylint: disable=too-many-public-methods
             "longRunningCommandResult",
             (
                 scan_command_id,
-                json.dumps([int(ResultCode.OK), "Scan commencement completed OK"]),
+                json.dumps(
+                    [int(ResultCode.OK), "Scan scan_25 commencement completed OK"]
+                ),
             ),
         )
         change_event_callbacks.assert_change_event(
@@ -1228,11 +1220,11 @@ class TestSKASubarray:  # pylint: disable=too-many-public-methods
 
         # Start configuring but then abort
         assert list(device_under_test.configuredCapabilities) == [
-            "BAND1:0",
-            "BAND2:0",
+            "blocks:0",
+            "channels:0",
         ]
 
-        configuration_to_apply = {"configuration": {"BAND1": 2}}
+        configuration_to_apply = {"blocks": 2}
         [[result_code], [configure_command_id]] = device_under_test.Configure(
             json.dumps(configuration_to_apply)
         )
@@ -1372,8 +1364,8 @@ class TestSKASubarray:  # pylint: disable=too-many-public-methods
         change_event_callbacks.assert_change_event("obsState", ObsState.IDLE)
 
         assert list(device_under_test.configuredCapabilities) == [
-            "BAND1:0",
-            "BAND2:0",
+            "blocks:0",
+            "channels:0",
         ]
         assert device_under_test.obsState == ObsState.IDLE
 

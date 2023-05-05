@@ -31,16 +31,16 @@ class SubarrayComponentManager(ObsDeviceComponentManager):
 
     def assign(
         self: SubarrayComponentManager,
-        task_callback: TaskCallbackType | None = None,
-        *,
-        resources: set[str],
+        task_callback: TaskCallbackType | None,
+        **kwargs: Any,
     ) -> tuple[TaskStatus, str]:
         """
         Assign resources to the component.
 
         :param task_callback: callback to be called when the status of
             the command changes
-        :param resources: resources to be assigned;
+        :param kwargs: keyword arguments.
+            These will be the root keys defined by the command schema.
 
         :raises NotImplementedError: This is an abstract class
         """
@@ -48,23 +48,23 @@ class SubarrayComponentManager(ObsDeviceComponentManager):
 
     def release(
         self: SubarrayComponentManager,
-        task_callback: TaskCallbackType | None = None,
-        *,
-        resources: set[str],
+        task_callback: TaskCallbackType | None,
+        **kwargs: Any,
     ) -> tuple[TaskStatus, str]:
         """
         Release resources from the component.
 
-        :param resources: resources to be released
         :param task_callback: callback to be called when the status of
             the command changes
+        :param kwargs: keyword arguments.
+            These will be the root keys defined by the command schema.
 
         :raises NotImplementedError: This is an abstract class
         """
         raise NotImplementedError("SubarrayComponentManager is abstract.")
 
     def release_all(
-        self: SubarrayComponentManager, task_callback: TaskCallbackType | None = None
+        self: SubarrayComponentManager, task_callback: TaskCallbackType | None
     ) -> tuple[TaskStatus, str]:
         """
         Release all resources.
@@ -78,23 +78,23 @@ class SubarrayComponentManager(ObsDeviceComponentManager):
 
     def configure(
         self: SubarrayComponentManager,
-        task_callback: TaskCallbackType | None = None,
-        *,
-        configuration: dict[str, Any],
+        task_callback: TaskCallbackType | None,
+        **kwargs: Any,
     ) -> tuple[TaskStatus, str]:
         """
         Configure the component.
 
-        :param configuration: the configuration to be configured
         :param task_callback: callback to be called when the status of
             the command changes
+        :param kwargs: keyword arguments.
+            These will be the root keys defined by the command schema.
 
         :raises NotImplementedError: This is an abstract class
         """
         raise NotImplementedError("SubarrayComponentManager is abstract.")
 
     def deconfigure(
-        self: SubarrayComponentManager, task_callback: TaskCallbackType | None = None
+        self: SubarrayComponentManager, task_callback: TaskCallbackType | None
     ) -> tuple[TaskStatus, str]:
         """
         Deconfigure this component.
@@ -108,23 +108,23 @@ class SubarrayComponentManager(ObsDeviceComponentManager):
 
     def scan(
         self: SubarrayComponentManager,
-        task_callback: TaskCallbackType | None = None,
-        *,
-        scan_args: str,
+        task_callback: TaskCallbackType | None,
+        **kwargs: Any,
     ) -> tuple[TaskStatus, str]:
         """
         Start scanning.
 
-        :param scan_args: scan parameters encoded in a json string
         :param task_callback: callback to be called when the status of
             the command changes
+        :param kwargs: keyword arguments.
+            These will be the root keys defined by the command schema.
 
         :raises NotImplementedError: This is an abstract class
         """
         raise NotImplementedError("SubarrayComponentManager is abstract.")
 
     def end_scan(
-        self: SubarrayComponentManager, task_callback: TaskCallbackType | None = None
+        self: SubarrayComponentManager, task_callback: TaskCallbackType | None
     ) -> tuple[TaskStatus, str]:
         """
         End scanning.
@@ -137,7 +137,7 @@ class SubarrayComponentManager(ObsDeviceComponentManager):
         raise NotImplementedError("SubarrayComponentManager is abstract.")
 
     def abort(
-        self: SubarrayComponentManager, task_callback: TaskCallbackType | None = None
+        self: SubarrayComponentManager, task_callback: TaskCallbackType | None
     ) -> tuple[TaskStatus, str]:
         """
         Tell the component to abort whatever it was doing.
@@ -150,7 +150,7 @@ class SubarrayComponentManager(ObsDeviceComponentManager):
         raise NotImplementedError("SubarrayComponentManager is abstract.")
 
     def obsreset(
-        self: SubarrayComponentManager, task_callback: TaskCallbackType | None = None
+        self: SubarrayComponentManager, task_callback: TaskCallbackType | None
     ) -> tuple[TaskStatus, str]:
         """
         Reset the component to unconfigured but do not release resources.
@@ -163,7 +163,7 @@ class SubarrayComponentManager(ObsDeviceComponentManager):
         raise NotImplementedError("SubarrayComponentManager is abstract.")
 
     def restart(
-        self: SubarrayComponentManager, task_callback: TaskCallbackType | None = None
+        self: SubarrayComponentManager, task_callback: TaskCallbackType | None
     ) -> tuple[TaskStatus, str]:
         """
         Deconfigure and release all resources.

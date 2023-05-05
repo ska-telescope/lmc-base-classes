@@ -166,13 +166,12 @@ class SKASubarray(SKAObsDevice[ComponentManagerT]):
     class ReleaseAllResourcesCommand(SubmittedSlowCommand):
         """A class for SKASubarray's ReleaseAllResources() command."""
 
-        def __init__(  # pylint: disable=too-many-arguments
+        def __init__(
             self: SKASubarray.ReleaseAllResourcesCommand,
             command_tracker: CommandTracker,
             component_manager: SubarrayComponentManager,
             callback: Callable[[bool], None] | None = None,
             logger: logging.Logger | None = None,
-            schema: dict[str, Any] | None = None,
         ) -> None:
             """
             Initialise a new instance.
@@ -182,8 +181,6 @@ class SKASubarray(SKAObsDevice[ComponentManagerT]):
             :param callback: an optional callback to be called when this
                 command starts and finishes.
             :param logger: a logger for this command to log with.
-            :param schema: an optional JSON schema for the command
-                argument.
             """
             super().__init__(
                 "ReleaseAllResources",
@@ -192,7 +189,6 @@ class SKASubarray(SKAObsDevice[ComponentManagerT]):
                 "release_all",
                 callback=callback,
                 logger=logger,
-                validator=JsonValidator("ReleaseAllResources", schema, logger=logger),
             )
 
     class ConfigureCommand(SubmittedSlowCommand):
@@ -262,13 +258,12 @@ class SKASubarray(SKAObsDevice[ComponentManagerT]):
     class EndScanCommand(SubmittedSlowCommand):
         """A class for SKASubarray's EndScan() command."""
 
-        def __init__(  # pylint: disable=too-many-arguments
+        def __init__(
             self: SKASubarray.EndScanCommand,
             command_tracker: CommandTracker,
             component_manager: SubarrayComponentManager,
             callback: Callable[[bool], None] | None = None,
             logger: logging.Logger | None = None,
-            schema: dict[str, Any] | None = None,
         ) -> None:
             """
             Initialise a new instance.
@@ -278,8 +273,6 @@ class SKASubarray(SKAObsDevice[ComponentManagerT]):
             :param callback: an optional callback to be called when this
                 command starts and finishes.
             :param logger: a logger for this command to log with.
-            :param schema: an optional JSON schema for the command
-                argument.
             """
             super().__init__(
                 "EndScan",
@@ -288,19 +281,17 @@ class SKASubarray(SKAObsDevice[ComponentManagerT]):
                 "end_scan",
                 callback=callback,
                 logger=logger,
-                validator=JsonValidator("EndScan", schema, logger=logger),
             )
 
     class EndCommand(SubmittedSlowCommand):
         """A class for SKASubarray's End() command."""
 
-        def __init__(  # pylint: disable=too-many-arguments
+        def __init__(
             self: SKASubarray.EndCommand,
             command_tracker: CommandTracker,
             component_manager: SubarrayComponentManager,
             callback: Callable[[bool], None] | None = None,
             logger: logging.Logger | None = None,
-            schema: dict[str, Any] | None = None,
         ) -> None:
             """
             Initialise a new instance.
@@ -310,8 +301,6 @@ class SKASubarray(SKAObsDevice[ComponentManagerT]):
             :param callback: an optional callback to be called when this
                 command starts and finishes.
             :param logger: a logger for this command to log with.
-            :param schema: an optional JSON schema for the command
-                argument.
             """
             super().__init__(
                 "End",
@@ -320,7 +309,6 @@ class SKASubarray(SKAObsDevice[ComponentManagerT]):
                 "deconfigure",
                 callback=callback,
                 logger=logger,
-                validator=JsonValidator("End", schema, logger=logger),
             )
 
     class AbortCommand(SlowCommand[tuple[ResultCode, str]]):
@@ -376,13 +364,12 @@ class SKASubarray(SKAObsDevice[ComponentManagerT]):
     class ObsResetCommand(SubmittedSlowCommand):
         """A class for SKASubarray's ObsReset() command."""
 
-        def __init__(  # pylint: disable=too-many-arguments
+        def __init__(
             self: SKASubarray.ObsResetCommand,
             command_tracker: CommandTracker,
             component_manager: SubarrayComponentManager,
             callback: Callable[[bool], None] | None = None,
             logger: logging.Logger | None = None,
-            schema: dict[str, Any] | None = None,
         ) -> None:
             """
             Initialise a new instance.
@@ -392,8 +379,6 @@ class SKASubarray(SKAObsDevice[ComponentManagerT]):
             :param callback: an optional callback to be called when this
                 command starts and finishes.
             :param logger: a logger for this command to log with.
-            :param schema: an optional JSON schema for the command
-                argument.
             """
             super().__init__(
                 "ObsReset",
@@ -402,19 +387,17 @@ class SKASubarray(SKAObsDevice[ComponentManagerT]):
                 "obsreset",
                 callback=callback,
                 logger=logger,
-                validator=JsonValidator("ObsReset", schema, logger=logger),
             )
 
     class RestartCommand(SubmittedSlowCommand):
         """A class for SKASubarray's Restart() command."""
 
-        def __init__(  # pylint: disable=too-many-arguments
+        def __init__(
             self: SKASubarray.RestartCommand,
             command_tracker: CommandTracker,
             component_manager: SubarrayComponentManager,
             callback: Callable[[bool], None] | None = None,
             logger: logging.Logger | None = None,
-            schema: dict[str, Any] | None = None,
         ) -> None:
             """
             Initialise a new instance.
@@ -424,8 +407,6 @@ class SKASubarray(SKAObsDevice[ComponentManagerT]):
             :param callback: an optional callback to be called when this
                 command starts and finishes.
             :param logger: a logger for this command to log with.
-            :param schema: an optional JSON schema for the command
-                argument.
             """
             super().__init__(
                 "Restart",
@@ -434,7 +415,6 @@ class SKASubarray(SKAObsDevice[ComponentManagerT]):
                 "restart",
                 callback=callback,
                 logger=logger,
-                validator=JsonValidator("Restart", schema, logger=logger),
             )
 
     def create_component_manager(

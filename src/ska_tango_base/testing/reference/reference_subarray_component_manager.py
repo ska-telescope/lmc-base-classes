@@ -297,7 +297,7 @@ class FakeSubarrayComponent(FakeBaseComponent):
             (This not meant to be particularly meaningful. The "blocks"
             are just MacGuffins that give us something to configure.)
         :param channels: the number of channels.
-            (This not meant to be particularly meaningful. The "blocks"
+            (This not meant to be particularly meaningful. The "channels"
             are just MacGuffins that give us something to configure.)
         :param task_callback: a callback to be called whenever the
             status of this task changes.

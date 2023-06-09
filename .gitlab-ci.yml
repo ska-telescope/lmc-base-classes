@@ -53,11 +53,6 @@ variables:
 
 # Include CI templates
 include:
-# OCI Images
-  # do a custom set of build and publish stages
-  - project: 'ska-telescope/templates-repository'
-    file: 'gitlab-ci/includes/oci-image.gitlab-ci.yml'
-
   # Python packages build,lint, test and publish
   - project: 'ska-telescope/templates-repository'
     file: 'gitlab-ci/includes/python.gitlab-ci.yml'
@@ -83,7 +78,7 @@ python-test:
   image: artefact.skao.int/ska-tango-images-pytango-builder:9.3.28
 
 docs-build:
-  image: readthedocs/build:latest
+  image: artefact.skao.int/ska-cicd-k8s-tools-build-deploy:0.8.7
 
 docs-pages:
-  image: readthedocs/build:latest
+  image: artefact.skao.int/ska-cicd-k8s-tools-build-deploy:0.8.7

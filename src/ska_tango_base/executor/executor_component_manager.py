@@ -35,28 +35,28 @@ class TaskExecutorComponentManager(BaseComponentManager):
         self._task_executor = TaskExecutor(max_workers)
         super().__init__(*args, **kwargs)
 
-    def submit_task(
+    def submit_task(  # pylint: disable=too-many-arguments
         self: TaskExecutorComponentManager,
-        is_cmd_allowed: Callable[[], bool],
         func: TaskFunctionType,
         args: Any = None,
         kwargs: Any = None,
+        is_cmd_allowed: Callable[[], bool] | None = None,
         task_callback: TaskCallbackType | None = None,
     ) -> tuple[TaskStatus, str]:
         """
         Submit a task to the task executor.
 
-        :param is_cmd_allowed: sanity check for func
         :param func: function/bound method to be run
         :param args: positional arguments to the function
         :param kwargs: keyword arguments to the function
+        :param is_cmd_allowed: sanity check for func
         :param task_callback: callback to be called whenever the status
             of the task changes.
 
         :return: tuple of taskstatus & message
         """
         return self._task_executor.submit(
-            is_cmd_allowed, func, args, kwargs, task_callback=task_callback
+            func, args, kwargs, is_cmd_allowed, task_callback=task_callback
         )
 
     def abort_commands(

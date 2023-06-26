@@ -43,21 +43,21 @@ class TaskExecutor:
         self._abort_event = threading.Event()
         self._submit_lock = threading.Lock()
 
-    def submit(
+    def submit(  # pylint: disable=too-many-arguments
         self: TaskExecutor,
-        is_cmd_allowed: Callable[[], bool],
         func: TaskFunctionType,
         args: Any = None,
         kwargs: Any = None,
+        is_cmd_allowed: Callable[[], bool] | None = None,
         task_callback: TaskCallbackType | None = None,
     ) -> tuple[TaskStatus, str]:
         """
         Submit a new task.
 
-        :param is_cmd_allowed: sanity check for func
         :param func: the function to be executed.
         :param args: positional arguments to the function
         :param kwargs: keyword arguments to the function
+        :param is_cmd_allowed: sanity check for func
         :param task_callback: the callback to be called when the status
             or progress of the task execution changes
 
@@ -67,10 +67,10 @@ class TaskExecutor:
             try:
                 self._executor.submit(
                     self._run,
-                    is_cmd_allowed,
                     func,
                     args,
                     kwargs,
+                    is_cmd_allowed,
                     task_callback,
                     self._abort_event,
                 )
@@ -125,10 +125,10 @@ class TaskExecutor:
 
     def _run(  # pylint: disable=too-many-arguments
         self: TaskExecutor,
-        is_cmd_allowed: Callable[[], bool],
         func: TaskFunctionType,
         args: Any,
         kwargs: Any,
+        is_cmd_allowed: Callable[[], bool],
         task_callback: TaskCallbackType | None,
         abort_event: threading.Event,
     ) -> None:
@@ -141,7 +141,7 @@ class TaskExecutor:
         if abort_event.is_set():
             if task_callback is not None:
                 task_callback(status=TaskStatus.ABORTED)
-        elif not is_cmd_allowed():
+        elif is_cmd_allowed is not None and not is_cmd_allowed():
             if task_callback is not None:
                 task_callback(status=TaskStatus.FAILED, result="Command not allowed")
         else:

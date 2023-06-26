@@ -27,11 +27,13 @@ TaskFunctionType = Callable[..., None]
 class TaskExecutor:
     """An asynchronous executor of tasks."""
 
-    def __init__(self: TaskExecutor, max_workers: int | None) -> None:
+    def __init__(self: TaskExecutor, max_workers: int | None = 1) -> None:
         """
         Initialise a new instance.
 
         :param max_workers: the maximum number of worker threads
+            This is meant to be kept at the default value to allow
+            the sequential execution of LRC except for special cases
         """
         self._max_workers = max_workers
 
@@ -43,6 +45,7 @@ class TaskExecutor:
 
     def submit(
         self: TaskExecutor,
+        is_cmd_allowed: Callable[[], bool],
         func: TaskFunctionType,
         args: Any = None,
         kwargs: Any = None,
@@ -51,6 +54,7 @@ class TaskExecutor:
         """
         Submit a new task.
 
+        :param is_cmd_allowed: sanity check for func
         :param func: the function to be executed.
         :param args: positional arguments to the function
         :param kwargs: keyword arguments to the function
@@ -63,6 +67,7 @@ class TaskExecutor:
             try:
                 self._executor.submit(
                     self._run,
+                    is_cmd_allowed,
                     func,
                     args,
                     kwargs,
@@ -120,6 +125,7 @@ class TaskExecutor:
 
     def _run(  # pylint: disable=too-many-arguments
         self: TaskExecutor,
+        is_cmd_allowed: Callable[[], bool],
         func: TaskFunctionType,
         args: Any,
         kwargs: Any,
@@ -135,6 +141,9 @@ class TaskExecutor:
         if abort_event.is_set():
             if task_callback is not None:
                 task_callback(status=TaskStatus.ABORTED)
+        elif not is_cmd_allowed():
+            if task_callback is not None:
+                task_callback(status=TaskStatus.FAILED, result="Command not allowed")
         else:
             # Don't set the task to IN_PROGRESS yet, in case func is itself implemented
             # asynchronously. We leave it to func to set the task to IN_PROGRESS, and

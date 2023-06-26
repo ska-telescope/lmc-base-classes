@@ -28,18 +28,16 @@ class TestTaskExecutor:
 
         :return: the maximum number of worker threads
         """
-        return 3
+        return 1
 
     @pytest.fixture()
-    def executor(self: TestTaskExecutor, max_workers: int) -> TaskExecutor:
+    def executor(self: TestTaskExecutor) -> TaskExecutor:
         """
         Return the TaskExecutor under test.
 
-        :param max_workers: maximum number of worker threads.
-
         :return: a TaskExecutor
         """
-        return TaskExecutor(max_workers)
+        return TaskExecutor()
 
     @pytest.fixture()
     def callbacks(self: TestTaskExecutor, max_workers: int) -> MockCallableGroup:
@@ -91,6 +89,7 @@ class TestTaskExecutor:
 
         for i in range(max_workers + 1):
             executor.submit(
+                lambda: True,
                 _claim_lock,
                 args=[locks[i]],
                 task_callback=callbacks[f"job_{i}"],
@@ -164,6 +163,7 @@ class TestTaskExecutor:
 
         for i in range(max_workers + 1):
             executor.submit(
+                lambda: True,
                 _claim_lock,
                 args=[locks[i]],
                 task_callback=callbacks[f"job_{i}"],
@@ -180,6 +180,7 @@ class TestTaskExecutor:
         callbacks["abort"].assert_call(status=TaskStatus.IN_PROGRESS)
 
         executor.submit(
+            lambda: True,
             _claim_lock,
             args=[locks[max_workers + 1]],
             task_callback=callbacks[f"job_{max_workers + 1}"],
@@ -196,6 +197,7 @@ class TestTaskExecutor:
         sleep(0.1)  # TODO: Abort command needs to signal completion too
 
         executor.submit(
+            lambda: True,
             _claim_lock,
             args=[locks[max_workers + 1]],
             task_callback=callbacks[f"job_{max_workers + 1}"],
@@ -229,7 +231,9 @@ class TestTaskExecutor:
             task_callback(status=TaskStatus.IN_PROGRESS)
             raise exception_to_raise
 
-        executor.submit(_raise_exception, task_callback=callbacks["job_0"])
+        executor.submit(
+            lambda: True, _raise_exception, task_callback=callbacks["job_0"]
+        )
 
         callbacks.assert_call("job_0", status=TaskStatus.QUEUED)
         callbacks.assert_call("job_0", status=TaskStatus.IN_PROGRESS)

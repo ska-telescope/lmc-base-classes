@@ -128,7 +128,7 @@ class TaskExecutor:
         func: TaskFunctionType,
         args: Any,
         kwargs: Any,
-        is_cmd_allowed: Callable[[], bool],
+        is_cmd_allowed: Callable[[], bool] | None,
         task_callback: TaskCallbackType | None,
         abort_event: threading.Event,
     ) -> None:

@@ -211,7 +211,11 @@ class TestSubarrayComponentManager:
         :param callbacks: a dictionary of mocks, passed as callbacks to
             the command tracker under test
         """
-        assert component_manager.communication_state == CommunicationStatus.DISABLED
+        # https://github.com/python/mypy/issues/15509#issuecomment-1618666579
+        # assert component_manager.communication_state == CommunicationStatus.DISABLED
+        communication_state = component_manager.communication_state
+        assert communication_state == CommunicationStatus.DISABLED
+
         callbacks.assert_not_called()
 
         component_manager.start_communicating()
@@ -219,7 +223,10 @@ class TestSubarrayComponentManager:
             "communication_state", CommunicationStatus.NOT_ESTABLISHED
         )
         callbacks.assert_call("communication_state", CommunicationStatus.ESTABLISHED)
-        assert component_manager.communication_state == CommunicationStatus.ESTABLISHED
+
+        # https://github.com/python/mypy/issues/15509#issuecomment-1618666579
+        communication_state = component_manager.communication_state
+        assert communication_state == CommunicationStatus.ESTABLISHED
 
         callbacks.assert_call("component_state", power=PowerState.OFF)
 
@@ -227,7 +234,10 @@ class TestSubarrayComponentManager:
 
         callbacks.assert_call("component_state", power=PowerState.UNKNOWN)
         callbacks.assert_call("communication_state", CommunicationStatus.DISABLED)
-        assert component_manager.communication_state == CommunicationStatus.DISABLED
+
+        # https://github.com/python/mypy/issues/15509#issuecomment-1618666579
+        communication_state = component_manager.communication_state
+        assert communication_state == CommunicationStatus.DISABLED
 
     def test_simulate_communication_failure(
         self: TestSubarrayComponentManager,
@@ -241,7 +251,11 @@ class TestSubarrayComponentManager:
         :param callbacks: a dictionary of mocks, passed as callbacks to
             the command tracker under test
         """
-        assert component_manager.communication_state == CommunicationStatus.DISABLED
+        # https://github.com/python/mypy/issues/15509#issuecomment-1618666579
+        # assert component_manager.communication_state == CommunicationStatus.DISABLED
+        communication_state = component_manager.communication_state
+        assert communication_state == CommunicationStatus.DISABLED
+
         callbacks.assert_not_called()
 
         component_manager.simulate_communication_failure(True)
@@ -250,14 +264,19 @@ class TestSubarrayComponentManager:
         callbacks.assert_call(
             "communication_state", CommunicationStatus.NOT_ESTABLISHED
         )
-        assert (
-            component_manager.communication_state == CommunicationStatus.NOT_ESTABLISHED
-        )
+
+        # https://github.com/python/mypy/issues/15509#issuecomment-1618666579
+        communication_state = component_manager.communication_state
+        assert communication_state == CommunicationStatus.NOT_ESTABLISHED
+
         callbacks.assert_not_called()
 
         component_manager.simulate_communication_failure(False)
         callbacks.assert_call("communication_state", CommunicationStatus.ESTABLISHED)
-        assert component_manager.communication_state == CommunicationStatus.ESTABLISHED
+
+        # https://github.com/python/mypy/issues/15509#issuecomment-1618666579
+        communication_state = component_manager.communication_state
+        assert communication_state == CommunicationStatus.ESTABLISHED
 
         callbacks.assert_call("component_state", power=PowerState.OFF)
 
@@ -265,15 +284,20 @@ class TestSubarrayComponentManager:
         callbacks.assert_call(
             "communication_state", CommunicationStatus.NOT_ESTABLISHED
         )
-        assert (
-            component_manager.communication_state == CommunicationStatus.NOT_ESTABLISHED
-        )
+
+        # https://github.com/python/mypy/issues/15509#issuecomment-1618666579
+        communication_state = component_manager.communication_state
+        assert communication_state == CommunicationStatus.NOT_ESTABLISHED
+
         callbacks.assert_not_called()
 
         component_manager.stop_communicating()
         callbacks.assert_call("component_state", power=PowerState.UNKNOWN)
         callbacks.assert_call("communication_state", CommunicationStatus.DISABLED)
-        assert component_manager.communication_state == CommunicationStatus.DISABLED
+
+        # https://github.com/python/mypy/issues/15509#issuecomment-1618666579
+        communication_state = component_manager.communication_state
+        assert communication_state == CommunicationStatus.DISABLED
 
     @pytest.mark.parametrize("command", ["off", "standby", "on"])
     def test_command_fails_when_disconnected(
@@ -290,7 +314,11 @@ class TestSubarrayComponentManager:
             the command tracker under test
         :param command: the command under test
         """
-        assert component_manager.communication_state == CommunicationStatus.DISABLED
+        # https://github.com/python/mypy/issues/15509#issuecomment-1618666579
+        # assert component_manager.communication_state == CommunicationStatus.DISABLED
+        communication_state = component_manager.communication_state
+        assert communication_state == CommunicationStatus.DISABLED
+
         callbacks.assert_not_called()
 
         with pytest.raises(
@@ -304,9 +332,11 @@ class TestSubarrayComponentManager:
         callbacks.assert_call(
             "communication_state", CommunicationStatus.NOT_ESTABLISHED
         )
-        assert (
-            component_manager.communication_state == CommunicationStatus.NOT_ESTABLISHED
-        )
+
+        # https://github.com/python/mypy/issues/15509#issuecomment-1618666579
+        communication_state = component_manager.communication_state
+        assert communication_state == CommunicationStatus.NOT_ESTABLISHED
+
         callbacks.assert_not_called()
 
         with pytest.raises(
@@ -317,16 +347,22 @@ class TestSubarrayComponentManager:
 
         component_manager.simulate_communication_failure(False)
         callbacks.assert_call("communication_state", CommunicationStatus.ESTABLISHED)
-        assert component_manager.communication_state == CommunicationStatus.ESTABLISHED
+
+        # https://github.com/python/mypy/issues/15509#issuecomment-1618666579
+        communication_state = component_manager.communication_state
+        assert communication_state == CommunicationStatus.ESTABLISHED
+
         callbacks.assert_call("component_state", power=PowerState.OFF)
 
         component_manager.simulate_communication_failure(True)
         callbacks.assert_call(
             "communication_state", CommunicationStatus.NOT_ESTABLISHED
         )
-        assert (
-            component_manager.communication_state == CommunicationStatus.NOT_ESTABLISHED
-        )
+
+        # https://github.com/python/mypy/issues/15509#issuecomment-1618666579
+        communication_state = component_manager.communication_state
+        assert communication_state == CommunicationStatus.NOT_ESTABLISHED
+
         callbacks.assert_not_called()
 
         with pytest.raises(
@@ -358,7 +394,11 @@ class TestSubarrayComponentManager:
         :param callbacks: a dictionary of mocks, passed as callbacks to
             the command tracker under test
         """
-        assert component_manager.communication_state == CommunicationStatus.DISABLED
+        # https://github.com/python/mypy/issues/15509#issuecomment-1618666579
+        # assert component_manager.communication_state == CommunicationStatus.DISABLED
+        communication_state = component_manager.communication_state
+        assert communication_state == CommunicationStatus.DISABLED
+
         callbacks.assert_not_called()
 
         component_manager.start_communicating()
@@ -366,7 +406,11 @@ class TestSubarrayComponentManager:
             "communication_state", CommunicationStatus.NOT_ESTABLISHED
         )
         callbacks.assert_call("communication_state", CommunicationStatus.ESTABLISHED)
-        assert component_manager.communication_state == CommunicationStatus.ESTABLISHED
+
+        # https://github.com/python/mypy/issues/15509#issuecomment-1618666579
+        communication_state = component_manager.communication_state
+        assert communication_state == CommunicationStatus.ESTABLISHED
+
         callbacks.assert_call("component_state", power=PowerState.OFF)
 
         component_manager.standby(callbacks["standby_task"])

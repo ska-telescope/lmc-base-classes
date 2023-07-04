@@ -2,11 +2,11 @@
 """Device to test multi layered commands."""
 from __future__ import annotations
 
-from typing import Any
+from typing import Any, cast
 
 from ska_control_model import ResultCode
 from tango import DebugIt
-from tango.server import command, device_property
+from tango.server import attribute, command, device_property
 
 from ska_tango_base.base.base_device import SKABaseDevice
 from ska_tango_base.commands import FastCommand, SubmittedSlowCommand
@@ -30,9 +30,8 @@ class ExampleMultiDevice(SKABaseDevice[MultiDeviceComponentManager]):
         return MultiDeviceComponentManager(
             self.logger,
             client_devices=self.client_devices,
-            max_workers=2,
             communication_state_callback=self._communication_state_changed,
-            component_state_callback=self._component_state_changed,
+            component_state_callback=self.component_state_changed_callback,
         )
 
     def init_command_objects(self: ExampleMultiDevice) -> None:
@@ -44,65 +43,69 @@ class ExampleMultiDevice(SKABaseDevice[MultiDeviceComponentManager]):
             self.AddTwoCommand(logger=self.logger),
         )
 
-        self.register_command_object(
-            "NonAbortingLongRunning",
-            SubmittedSlowCommand(
-                "NonAbortingLongRunning",
-                self._command_tracker,
-                self.component_manager,
-                "non_aborting_lrc",
-                callback=None,
-                logger=self.logger,
-            ),
-        )
+        for command_name, method_name in [
+            ("NonAbortingLongRunning", "non_aborting_lrc"),
+            ("AbortingLongRunning", "aborting_lrc"),
+            ("LongRunningException", "throw_exc"),
+            ("TestProgress", "show_progress"),
+            ("CallChildren", "call_children"),
+            ("Transpose", "transpose"),
+            ("Invert", "invert"),
+        ]:
+            self.register_command_object(
+                command_name,
+                SubmittedSlowCommand(
+                    command_name,
+                    self._command_tracker,
+                    self.component_manager,
+                    method_name,
+                    callback=None,
+                    logger=self.logger,
+                ),
+            )
 
-        self.register_command_object(
-            "AbortingLongRunning",
-            SubmittedSlowCommand(
-                "AbortingLongRunning",
-                self._command_tracker,
-                self.component_manager,
-                "aborting_lrc",
-                callback=None,
-                logger=self.logger,
-            ),
-        )
+    class InitCommand(SKABaseDevice.InitCommand):
+        # pylint: disable=protected-access
+        """ExampleMultiDevice Init command."""
 
-        self.register_command_object(
-            "LongRunningException",
-            SubmittedSlowCommand(
-                "LongRunningException",
-                self._command_tracker,
-                self.component_manager,
-                "throw_exc",
-                callback=None,
-                logger=self.logger,
-            ),
-        )
+        def do(
+            self: SKABaseDevice.InitCommand,
+            *args: Any,
+            **kwargs: Any,
+        ) -> tuple[ResultCode, str]:
+            """
+            Initialise ExampleMultiDevice.
 
-        self.register_command_object(
-            "TestProgress",
-            SubmittedSlowCommand(
-                "TestProgress",
-                self._command_tracker,
-                self.component_manager,
-                "show_progress",
-                callback=None,
-                logger=self.logger,
-            ),
-        )
+            :param args: positional arguments
+            :param kwargs: keyword arguments
 
-        self.register_command_object(
-            "CallChildren",
-            SubmittedSlowCommand(
-                "CallChildren",
-                self._command_tracker,
-                self.component_manager,
-                "call_children",
-                callback=None,
-                logger=self.logger,
-            ),
-        )
+            :return: A tuple containing a return code and a string
+            """
+            self._device._matrix_operation = ""
+
+            return (ResultCode.OK, "Multidevice initialised successfully")
+
+    def component_state_changed_callback(
+        # pylint: disable=attribute-defined-outside-init
+        self: ExampleMultiDevice,
+        **state_change: dict[str, Any],
+    ) -> None:
+        """
+        Handle change in the state of the component.
+
+        :param state_change: keyword arguments to the method
+        """
+        recent_operation = state_change.get("matrix_operation", "")
+        self._matrix_operation = recent_operation
+
+    @attribute(dtype="str")  # type: ignore[misc]
+    def matrixOperation(self: ExampleMultiDevice) -> str:
+        """
+        Return the recent matrix operation.
+
+        :return: A string representing the most recent operation
+        """
+        return self._matrix_operation  # type: ignore[return-value]
 
     class AddTwoCommand(FastCommand[tuple[ResultCode, int]]):
         """The command class for the Short command."""
@@ -230,3 +233,47 @@ class ExampleMultiDevice(SKABaseDevice[MultiDeviceComponentManager]):
         handler = self.get_command_object("CallChildren")
         (return_code, message) = handler(argin)
         return f"{return_code}", message
+
+    @command(  # type: ignore[misc]  # "Untyped decorator makes function untyped"
+        dtype_out="DevVarStringArray",
+    )
+    @DebugIt()  # type: ignore[misc]  # "Untyped decorator makes function untyped"
+    def Transpose(self: ExampleMultiDevice) -> tuple[str, str]:
+        """
+        Transpose a matrix.
+
+        :return: a string result code and message
+        """
+        handler = self.get_command_object("Transpose")
+        (return_code, message) = handler()
+        return f"{return_code}", message
+
+    @command(  # type: ignore[misc]  # "Untyped decorator makes function untyped"
+        dtype_out="DevVarStringArray",
+    )
+    @DebugIt()  # type: ignore[misc]  # "Untyped decorator makes function untyped"
+    def Invert(self: ExampleMultiDevice) -> tuple[str, str]:
+        """
+        Invert a matrix.
+
+        :return: a string result code and message
+        """
+        handler = self.get_command_object("Invert")
+        (return_code, message) = handler()
+        return f"{return_code}", message
+
+
+def main(*args: str, **kwargs: str) -> int:
+    """
+    Entry point for module.
+
+    :param args: positional arguments
+    :param kwargs: named arguments
+
+    :return: exit code
+    """
+    return cast(int, ExampleMultiDevice.run_server(args=args or None, **kwargs))
+
+
+if __name__ == "__main__":
+    main()

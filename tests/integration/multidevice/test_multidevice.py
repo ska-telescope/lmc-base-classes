@@ -42,7 +42,8 @@ def change_event_callbacks_fixture() -> MockTangoEventCallbackGroup:
     return MockTangoEventCallbackGroup(
         "longRunningCommandProgress",
         "longRunningCommandResult",
-        timeout=5.0,
+        "longRunningCommandStatus",
+        timeout=15.0,
     )
 
 
@@ -205,3 +206,52 @@ def test_progress(
         progresses = list(next_event["attribute_value"])
         assert command_id in progresses
         assert progresses[progresses.index(command_id) + 1] == f"{i}"
+
+
+@pytest.mark.forked
+def test_device_allows_commands_to_be_queued(
+    device_under_test: tango.DeviceProxy,
+    change_event_callbacks: MockTangoEventCallbackGroup,
+) -> None:
+    """
+    Test input queue accepts multiple commands.
+
+    This test also checks that each command is checked
+    against its is_allowed method before executing it
+
+    :param device_under_test: a proxy to the device under test
+    :param change_event_callbacks: dictionary of mock change event
+        callbacks with asynchrony support
+    """
+    device_under_test.subscribe_event(
+        "longRunningCommandStatus",
+        tango.EventType.CHANGE_EVENT,
+        change_event_callbacks["longRunningCommandStatus"],
+    )
+    change_event_callbacks.assert_change_event("longRunningCommandStatus", None)
+
+    # Previously, triggering Invert after Invert should have immediately
+    # fail. But the device will queue the command evoked (1+n)times and
+    # inform client later that the 2nd, 3rd, ... invokation failed
+
+    # check that all commands were queued
+    command_ids = []
+    for cmd in ("Transpose", "Invert", "Invert"):
+        result_code, cmd_id = device_under_test.command_inout(cmd)
+        command_ids.append(cmd_id)
+        assert ResultCode(int(result_code)) == ResultCode.QUEUED
+
+    # check that only the last command invokation failed
+    # pylint: disable=unbalanced-tuple-unpacking
+    transpose_id, invert_id1, invert_id2 = command_ids
+    expected_event = (
+        transpose_id,
+        "COMPLETED",
+        invert_id1,
+        "COMPLETED",
+        invert_id2,
+        "FAILED",
+    )
+    change_event_callbacks.assert_change_event(
+        "longRunningCommandStatus", expected_event
+    )

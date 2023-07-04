@@ -5,7 +5,7 @@ import logging
 import time
 from functools import partial
 from threading import Event
-from typing import Any, NoReturn
+from typing import Any, NoReturn, cast
 
 from ska_control_model import TaskStatus
 
@@ -26,7 +26,6 @@ class MultiDeviceComponentManager(TaskExecutorComponentManager):
         logger: logging.Logger,
         *args: Any,
         client_devices: list[str],
-        max_workers: int | None = None,
         **kwargs: Any,
     ) -> None:
         """
@@ -34,8 +33,6 @@ class MultiDeviceComponentManager(TaskExecutorComponentManager):
 
         :param args: positional arguments to pass to the parent class.
         :param client_devices: list of client devices.
-        :param max_workers: optional maximum number of workers in the
-            task executor
         :param logger: a logger for this component manager to log with.
         :param kwargs: keyword arguments to pass to the parent class.
         """
@@ -47,7 +44,7 @@ class MultiDeviceComponentManager(TaskExecutorComponentManager):
                 self.client_devices, logger
             )
 
-        super().__init__(logger, *args, max_workers=max_workers, **kwargs)
+        super().__init__(logger, *args, matrix_operation="", **kwargs)
 
     def _non_aborting_lrc(
         self: MultiDeviceComponentManager,
@@ -315,4 +312,90 @@ class MultiDeviceComponentManager(TaskExecutorComponentManager):
                 task_callback=task_callback,
             )
 
+        return task_status, response
+
+    def is_transpose_allowed(self: MultiDeviceComponentManager) -> bool:
+        """Determine whether transpose is allowed.
+
+        :return: A boolean indicating the matrix is already transposed
+        """
+        matrix_operation = self.component_state["matrix_operation"]
+        return cast(bool, matrix_operation != "transpose")
+
+    def _transpose(
+        self: MultiDeviceComponentManager,
+        task_callback: TaskCallbackType,
+        task_abort_event: Event,  # pylint: disable=unused-argument
+    ) -> None:
+        """
+        Simulate matrix transpose.
+
+        :param task_callback: Update state, defaults to None
+        :param task_abort_event: Check for abort, defaults to None
+        """
+        time.sleep(3.5)
+        self._update_component_state(matrix_operation="transpose")
+        if task_callback is not None:
+            task_callback(status=TaskStatus.COMPLETED, result="Transpose complete")
+
+    def transpose(
+        self: MultiDeviceComponentManager,
+        task_callback: TaskCallbackType | None = None,
+    ) -> tuple[TaskStatus, str]:
+        """
+        Transpose a matrix.
+
+        :param task_callback: Update task state, defaults to None
+
+        :return: a tuple consisting of a task status code and a
+            human-readable status message.
+        """
+        task_status, response = self.submit_task(
+            self._transpose,
+            is_cmd_allowed=self.is_transpose_allowed,
+            task_callback=task_callback,
+        )
+        return task_status, response
+
+    def is_inverse_allowed(self: MultiDeviceComponentManager) -> bool:
+        """Determine whether inverse is allowed.
+
+        :return: A boolean indicating the matrix is already inversed
+        """
+        matrix_operation = self.component_state["matrix_operation"]
+        return cast(bool, matrix_operation != "inverse")
+
+    def _invert(
+        self: MultiDeviceComponentManager,
+        task_callback: TaskCallbackType,
+        task_abort_event: Event,  # pylint: disable=unused-argument
+    ) -> None:
+        """
+        Simulate matrix inverstion.
+
+        :param task_callback: Update state, defaults to None
+        :param task_abort_event: Check for abort, defaults to None
+        """
+        time.sleep(3.5)
+        self._update_component_state(matrix_operation="inverse")
+        if task_callback is not None:
+            task_callback(status=TaskStatus.COMPLETED, result="Inverse complete")
+
+    def invert(
+        self: MultiDeviceComponentManager,
+        task_callback: TaskCallbackType | None = None,
+    ) -> tuple[TaskStatus, str]:
+        """
+        Invert a matrix.
+
+        :param task_callback: Update task state, defaults to None
+
+        :return: a tuple consisting of a task status code and a
+            human-readable status message.
+        """
+        task_status, response = self.submit_task(
+            self._invert,
+            is_cmd_allowed=self.is_inverse_allowed,
+            task_callback=task_callback,
+        )
         return task_status, response

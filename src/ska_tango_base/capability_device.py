@@ -12,13 +12,13 @@ Capability handling device
 """
 from __future__ import annotations
 
-import logging
 from typing import Any, TypeVar, cast
 
 from ska_control_model import ResultCode
 from tango import DebugIt
 from tango.server import attribute, command, device_property
 
+from .base.logging import LoggerType
 from .commands import DeviceInitCommand, FastCommand
 from .obs import ObsDeviceComponentManager, SKAObsDevice
 
@@ -193,7 +193,7 @@ class SKACapability(SKAObsDevice[ComponentManagerT]):
         def __init__(
             self: SKACapability.ConfigureInstancesCommand,
             device: SKACapability[ComponentManagerT],
-            logger: logging.Logger | None = None,
+            logger: LoggerType | None = None,
         ) -> None:
             """
             Initialise a new instance.

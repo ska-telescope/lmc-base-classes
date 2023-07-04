@@ -362,6 +362,7 @@ intersphinx_mapping = {
         None,
     ),
     "tango": ("https://pytango.readthedocs.io/en/v9.3.4/", None),
+    "structlog": ("https://www.structlog.org/en/stable/", None),
 }
 
 nitpick_ignore = [

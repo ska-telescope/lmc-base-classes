@@ -1,13 +1,14 @@
 """Multi device test utils."""
 from __future__ import annotations
 
-import logging
 import uuid
 from dataclasses import dataclass
 from typing import Any, Callable
 
 import tango
 from tango import EventData, EventType
+
+from ska_tango_base.base.logging import LoggerType
 
 
 @dataclass
@@ -53,7 +54,7 @@ class LongRunningDeviceInterface:
     def __init__(
         self: LongRunningDeviceInterface,
         tango_devices: list[str],
-        logger: logging.Logger,
+        logger: LoggerType,
     ) -> None:
         """
         Init LRC device interface.

@@ -8,7 +8,6 @@
 """This module models component management for SKA subarray devices."""
 from __future__ import annotations
 
-import logging
 import threading
 from typing import Any, Callable
 
@@ -20,6 +19,7 @@ from ...base import (
     check_communicating,
     check_on,
 )
+from ...base.logging import LoggerType
 from ...subarray import SubarrayComponentManager
 from .reference_base_component_manager import (
     FakeBaseComponent,
@@ -489,7 +489,7 @@ class ReferenceSubarrayComponentManager(
     def __init__(
         self: ReferenceSubarrayComponentManager,
         capability_types: list[str],
-        logger: logging.Logger,
+        logger: LoggerType,
         communication_state_callback: CommunicationStatusCallbackType,
         component_state_callback: Callable[[], None],
         _component: FakeSubarrayComponent | None = None,

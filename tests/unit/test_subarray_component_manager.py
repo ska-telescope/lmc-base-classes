@@ -8,7 +8,6 @@
 from __future__ import annotations
 
 import itertools
-import logging
 import unittest.mock
 from typing import Callable, cast
 
@@ -17,6 +16,7 @@ import pytest_mock
 from ska_control_model import CommunicationStatus, PowerState, ResultCode, TaskStatus
 from ska_tango_testing.mock import MockCallableGroup
 
+from ska_tango_base.base.logging import LoggerType
 from ska_tango_base.testing.reference import (
     FakeSubarrayComponent,
     ReferenceSubarrayComponentManager,
@@ -138,7 +138,7 @@ class TestSubarrayComponentManager:
     @pytest.fixture()
     def component_manager(
         self: TestSubarrayComponentManager,
-        logger: logging.Logger,
+        logger: LoggerType,
         callbacks: MockCallableGroup,
         component: FakeSubarrayComponent,
         mock_capability_types: list[str],

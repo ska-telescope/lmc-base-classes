@@ -7,12 +7,11 @@
 """Tests for the :py:mod:`ska_tango_base.base.component_manager` module."""
 from __future__ import annotations
 
-import logging
-
 import pytest
 from ska_control_model import CommunicationStatus, PowerState, ResultCode, TaskStatus
 from ska_tango_testing.mock import MockCallableGroup
 
+from ska_tango_base.base.logging import LoggerType
 from ska_tango_base.testing.reference import (
     FakeBaseComponent,
     ReferenceBaseComponentManager,
@@ -39,7 +38,7 @@ class TestReferenceBaseComponentManager:
     @pytest.fixture()
     def component_manager(
         self: TestReferenceBaseComponentManager,
-        logger: logging.Logger,
+        logger: LoggerType,
         callbacks: MockCallableGroup,
         component: FakeBaseComponent,
     ) -> ReferenceBaseComponentManager:

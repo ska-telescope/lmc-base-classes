@@ -114,7 +114,7 @@ Create a component manager
             self,
             *args,
             max_workers: int | None = None,
-            logger: logging.Logger = None,
+            logger: LoggerType = None,
             **kwargs,
         ):
             """Init SampleComponentManager."""
@@ -131,7 +131,7 @@ Add a method that should be executed in a background thread
     # class SampleComponentManager
 
         def _a_very_slow_method(
-            logger: logging.Logger,
+            logger: LoggerType,
             task_callback: Callable,
             task_abort_event: Event,
         ):

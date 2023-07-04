@@ -32,13 +32,13 @@ The basic model is:
 from __future__ import annotations
 
 import functools
-import logging
 import threading
 from typing import Any, Callable, Protocol, TypeVar, cast
 
 from ska_control_model import CommunicationStatus, PowerState, TaskStatus
 
 from ..faults import ComponentError
+from .logging import LoggerType
 
 Wrapped = TypeVar("Wrapped", bound=Callable[..., Any])
 
@@ -176,7 +176,7 @@ class BaseComponentManager:
 
     def __init__(
         self: BaseComponentManager,
-        logger: logging.Logger,
+        logger: LoggerType,
         communication_state_callback: CommunicationStatusCallbackType | None = None,
         component_state_callback: Callable[..., None] | None = None,
         **state: Any,

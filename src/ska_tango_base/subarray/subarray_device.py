@@ -30,6 +30,7 @@ from tango import DebugIt
 from tango.server import attribute, command, device_property
 
 from ..base import CommandTracker
+from ..base.logging import LoggerType
 from ..commands import JsonValidator, SlowCommand, SubmittedSlowCommand
 from ..faults import StateModelError
 from ..obs import SKAObsDevice
@@ -107,7 +108,7 @@ class SKASubarray(SKAObsDevice[ComponentManagerT]):
             command_tracker: CommandTracker,
             component_manager: SubarrayComponentManager,
             callback: Callable[[bool], None] | None = None,
-            logger: logging.Logger | None = None,
+            logger: LoggerType | None = None,
             schema: dict[str, Any] | None = None,
         ) -> None:
             """
@@ -139,7 +140,7 @@ class SKASubarray(SKAObsDevice[ComponentManagerT]):
             command_tracker: CommandTracker,
             component_manager: SubarrayComponentManager,
             callback: Callable[[bool], None] | None = None,
-            logger: logging.Logger | None = None,
+            logger: LoggerType | None = None,
             schema: dict[str, Any] | None = None,
         ) -> None:
             """
@@ -171,7 +172,7 @@ class SKASubarray(SKAObsDevice[ComponentManagerT]):
             command_tracker: CommandTracker,
             component_manager: SubarrayComponentManager,
             callback: Callable[[bool], None] | None = None,
-            logger: logging.Logger | None = None,
+            logger: LoggerType | None = None,
         ) -> None:
             """
             Initialise a new instance.
@@ -199,7 +200,7 @@ class SKASubarray(SKAObsDevice[ComponentManagerT]):
             command_tracker: CommandTracker,
             component_manager: SubarrayComponentManager,
             callback: Callable[[bool], None] | None = None,
-            logger: logging.Logger | None = None,
+            logger: LoggerType | None = None,
             schema: dict[str, Any] | None = None,
         ) -> None:
             """
@@ -231,7 +232,7 @@ class SKASubarray(SKAObsDevice[ComponentManagerT]):
             command_tracker: CommandTracker,
             component_manager: SubarrayComponentManager,
             callback: Callable[[bool], None] | None = None,
-            logger: logging.Logger | None = None,
+            logger: LoggerType | None = None,
             schema: dict[str, Any] | None = None,
         ) -> None:
             """
@@ -263,7 +264,7 @@ class SKASubarray(SKAObsDevice[ComponentManagerT]):
             command_tracker: CommandTracker,
             component_manager: SubarrayComponentManager,
             callback: Callable[[bool], None] | None = None,
-            logger: logging.Logger | None = None,
+            logger: LoggerType | None = None,
         ) -> None:
             """
             Initialise a new instance.
@@ -291,7 +292,7 @@ class SKASubarray(SKAObsDevice[ComponentManagerT]):
             command_tracker: CommandTracker,
             component_manager: SubarrayComponentManager,
             callback: Callable[[bool], None] | None = None,
-            logger: logging.Logger | None = None,
+            logger: LoggerType | None = None,
         ) -> None:
             """
             Initialise a new instance.
@@ -319,7 +320,7 @@ class SKASubarray(SKAObsDevice[ComponentManagerT]):
             command_tracker: CommandTracker,
             component_manager: SubarrayComponentManager,
             callback: Callable[[bool], None],
-            logger: logging.Logger | None = None,
+            logger: LoggerType | None = None,
         ) -> None:
             """
             Initialise a new AbortCommand instance.
@@ -369,7 +370,7 @@ class SKASubarray(SKAObsDevice[ComponentManagerT]):
             command_tracker: CommandTracker,
             component_manager: SubarrayComponentManager,
             callback: Callable[[bool], None] | None = None,
-            logger: logging.Logger | None = None,
+            logger: LoggerType | None = None,
         ) -> None:
             """
             Initialise a new instance.
@@ -397,7 +398,7 @@ class SKASubarray(SKAObsDevice[ComponentManagerT]):
             command_tracker: CommandTracker,
             component_manager: SubarrayComponentManager,
             callback: Callable[[bool], None] | None = None,
-            logger: logging.Logger | None = None,
+            logger: LoggerType | None = None,
         ) -> None:
             """
             Initialise a new instance.
@@ -431,7 +432,7 @@ class SKASubarray(SKAObsDevice[ComponentManagerT]):
         """Set up the state model for the device."""
         super()._init_state_model()
         self.obs_state_model = ObsStateModel(
-            logger=self.logger, callback=self._update_obs_state
+            logger=cast(logging.Logger, self.logger), callback=self._update_obs_state
         )
 
     def init_command_objects(self: SKASubarray[ComponentManagerT]) -> None:

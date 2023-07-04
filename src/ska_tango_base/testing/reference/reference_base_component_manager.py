@@ -13,7 +13,6 @@ package.
 """
 from __future__ import annotations
 
-import logging
 import threading
 from time import sleep
 from typing import Any, Callable, Generic, TypeVar, cast
@@ -25,6 +24,7 @@ from ...base import (
     TaskCallbackType,
     check_communicating,
 )
+from ...base.logging import LoggerType
 from ...executor import TaskExecutorComponentManager
 
 
@@ -322,7 +322,7 @@ class GenericBaseComponentManager(TaskExecutorComponentManager, Generic[Componen
     def __init__(
         self: GenericBaseComponentManager[ComponentT],
         component: ComponentT,
-        logger: logging.Logger,
+        logger: LoggerType,
         communication_state_callback: CommunicationStatusCallbackType,
         component_state_callback: Callable[[], None],
         *args: Any,
@@ -493,7 +493,7 @@ class ReferenceBaseComponentManager(GenericBaseComponentManager[FakeBaseComponen
 
     def __init__(
         self: ReferenceBaseComponentManager,
-        logger: logging.Logger,
+        logger: LoggerType,
         communication_state_callback: CommunicationStatusCallbackType,
         component_state_callback: Callable[[], None],
         *args: Any,

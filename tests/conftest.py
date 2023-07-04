@@ -1,16 +1,18 @@
 """This module defines elements of the pytest test harness shared by all tests."""
 from __future__ import annotations
 
-import logging
 import socket
 from typing import Any, Generator, cast
 
 import pytest
 import pytest_mock
+import structlog
 import tango
 from ska_tango_testing.mock import MockCallableGroup
 from ska_tango_testing.mock.tango import MockTangoEventCallbackGroup
 from tango.test_context import DeviceTestContext, MultiDeviceTestContext, get_host_ip
+
+from ska_tango_base.base.logging import LoggerType
 
 
 @pytest.fixture(scope="class")
@@ -109,13 +111,13 @@ def change_event_callbacks() -> MockTangoEventCallbackGroup:
 
 
 @pytest.fixture()
-def logger() -> logging.Logger:
+def logger() -> LoggerType:
     """
     Return a default logger for tests.
 
     :return: a default logger for tests.
     """
-    return logging.Logger("Test logger")
+    return structlog.stdlib.get_logger()
 
 
 # TODO: Placeholder for a better type specification

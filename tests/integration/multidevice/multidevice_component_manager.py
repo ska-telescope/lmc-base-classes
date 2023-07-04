@@ -1,7 +1,6 @@
 """Component Manager for Multi Device."""
 from __future__ import annotations
 
-import logging
 import time
 from functools import partial
 from threading import Event
@@ -10,6 +9,7 @@ from typing import Any, NoReturn
 from ska_control_model import TaskStatus
 
 from ska_tango_base.base import TaskCallbackType
+from ska_tango_base.base.logging import LoggerType
 from ska_tango_base.executor import TaskExecutorComponentManager
 
 from .utils import LongRunningDeviceInterface
@@ -23,7 +23,7 @@ class MultiDeviceComponentManager(TaskExecutorComponentManager):
 
     def __init__(
         self: MultiDeviceComponentManager,
-        logger: logging.Logger,
+        logger: LoggerType,
         *args: Any,
         client_devices: list[str],
         max_workers: int | None = None,
@@ -149,7 +149,7 @@ class MultiDeviceComponentManager(TaskExecutorComponentManager):
 
     @staticmethod
     def _throw_exc(
-        logger: logging.Logger,  # pylint: disable-next=unused-argument
+        logger: LoggerType,  # pylint: disable-next=unused-argument
         task_callback: TaskCallbackType | None = None,
         task_abort_event: Event | None = None,  # pylint: disable=unused-argument
     ) -> NoReturn:
@@ -182,7 +182,7 @@ class MultiDeviceComponentManager(TaskExecutorComponentManager):
 
     @staticmethod
     def _show_progress(
-        logger: logging.Logger,
+        logger: LoggerType,
         sleep_time: float,
         task_callback: TaskCallbackType | None = None,
         task_abort_event: Event | None = None,  # pylint: disable=unused-argument
@@ -228,7 +228,7 @@ class MultiDeviceComponentManager(TaskExecutorComponentManager):
 
     @staticmethod
     def _simulate_work(
-        logger: logging.Logger,
+        logger: LoggerType,
         sleep_time: float,
         task_callback: TaskCallbackType | None = None,
         task_abort_event: Event | None = None,  # pylint: disable=unused-argument
@@ -263,7 +263,7 @@ class MultiDeviceComponentManager(TaskExecutorComponentManager):
 
     def _call_children(
         self: MultiDeviceComponentManager,
-        logger: logging.Logger,  # pylint: disable=unused-argument
+        logger: LoggerType,  # pylint: disable=unused-argument
         sleep_time: float,
         task_callback: TaskCallbackType | None = None,
         task_abort_event: Event | None = None,  # pylint: disable=unused-argument

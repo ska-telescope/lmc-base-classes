@@ -26,7 +26,6 @@ from types import FunctionType, MethodType
 from typing import Any, Callable, Generic, TypedDict, TypeVar, cast
 
 import debugpy
-import ska_ser_logging
 from ska_control_model import (
     AdminMode,
     CommunicationStatus,
@@ -48,11 +47,7 @@ from ..faults import GroupDefinitionsError, LoggingLevelError
 from ..utils import generate_command_id, get_groups_from_json
 from .admin_mode_model import AdminModeModel
 from .component_manager import BaseComponentManager
-from .logging import (
-    _LMC_TO_PYTHON_LOGGING_LEVEL,
-    _LMC_TO_TANGO_LOGGING_LEVEL,
-    LoggingUtils,
-)
+from .logging import DeviceLoggingManager, LoggerType
 from .op_state_model import OpStateModel
 
 DevVarLongStringArrayType = tuple[list[ResultCode], list[str]]
@@ -304,63 +299,15 @@ class SKABaseDevice(
             self._completed()
             return (ResultCode.OK, message)
 
-    _logging_config_lock = threading.Lock()
-    _logging_configured = False
-
     def _init_logging(self: SKABaseDevice[ComponentManagerT]) -> None:
         """Initialize the logging mechanism, using default properties."""
-        # TODO: This comment stops black adding a blank line here,
-        # causing flake8-docstrings D202 error.
-
-        # pylint: disable-next=too-few-public-methods
-        class EnsureTagsFilter(logging.Filter):
-            """
-            Ensure all records have a "tags" field.
-
-            The tag will be the empty string if a tag is not provided.
-            """
-
-            def filter(  # noqa: A003
-                self: EnsureTagsFilter, record: logging.LogRecord
-            ) -> bool:
-                if not hasattr(record, "tags"):
-                    record.tags = ""
-                return True
-
-        # There may be multiple devices in a single device server - these will all be
-        # starting at the same time, so use a lock to prevent race conditions, and
-        # a flag to ensure the SKA standard logging configuration is only applied once.
-        with SKABaseDevice._logging_config_lock:
-            if not SKABaseDevice._logging_configured:
-                ska_ser_logging.configure_logging(tags_filter=EnsureTagsFilter)
-                SKABaseDevice._logging_configured = True
-
         device_name = self.get_name()
-        self.logger = logging.getLogger(device_name)
-        # device may be reinitialised, so remove existing handlers and filters
-        for handler in list(self.logger.handlers):
-            self.logger.removeHandler(handler)
-        for filt in list(self.logger.filters):
-            self.logger.removeFilter(filt)
-
-        # add a filter with this device's name
-        device_name_tag = f"tango-device:{device_name}"
-
-        # pylint: disable-next=too-few-public-methods
-        class TangoDeviceTagsFilter(logging.Filter):
-            """Filter that adds tango device name to the emitted record."""
-
-            def filter(  # noqa: A003
-                self: TangoDeviceTagsFilter, record: logging.LogRecord
-            ) -> bool:
-                record.tags = device_name_tag
-                return True
-
-        self.logger.addFilter(TangoDeviceTagsFilter())
-        # before setting targets, give Python logger a reference to the log4tango logger
-        # to support the TangoLoggingServiceHandler target option
-
-        self.logger.tango_logger = self.get_logger()  # type: ignore[attr-defined]
+        python_logger = logging.getLogger(device_name)
+        tango_logger = self.get_logger()
+        self._logging_manager = DeviceLoggingManager(
+            device_name, python_logger, tango_logger
+        )
+        self.logger = self._logging_manager.get_logger()
 
         # initialise using defaults in device properties
         self._logging_level = None
@@ -691,11 +638,11 @@ class SKABaseDevice(
             exception_callback=self._update_command_exception,
         )
         self.op_state_model = OpStateModel(
-            logger=self.logger,
+            logger=cast(logging.Logger, self.logger),
             callback=self._update_state,
         )
         self.admin_mode_model = AdminModeModel(
-            logger=self.logger, callback=self._update_admin_mode
+            logger=cast(logging.Logger, self.logger), callback=self._update_admin_mode
         )
 
     def set_logging_level(
@@ -718,10 +665,7 @@ class SKABaseDevice(
                 f"{list(LoggingLevel.__members__.values())} "
             ) from value_error
         self._logging_level = lmc_logging_level
-        self.logger.setLevel(_LMC_TO_PYTHON_LOGGING_LEVEL[lmc_logging_level])
-        self.logger.tango_logger.set_level(  # type: ignore[attr-defined]
-            _LMC_TO_TANGO_LOGGING_LEVEL[lmc_logging_level]
-        )
+        self._logging_manager.set_levels(lmc_logging_level)
         self.logger.info(
             "Logging level set to %s on Python and Tango loggers", lmc_logging_level
         )
@@ -737,9 +681,7 @@ class SKABaseDevice(
 
         :param targets: Logging targets for logger
         """
-        device_name = self.get_name()
-        valid_targets = LoggingUtils.sanitise_logging_targets(targets, device_name)
-        LoggingUtils.update_logging_handlers(valid_targets, self.logger)
+        self._logging_manager.set_logging_targets(targets)
 
     def create_component_manager(
         self: SKABaseDevice[ComponentManagerT],
@@ -879,7 +821,7 @@ class SKABaseDevice(
 
         :return:  Logging level of the device.
         """
-        return [str(handler.name) for handler in self.logger.handlers]
+        return [str(handler.name) for handler in self._logging_manager.handlers]
 
     @loggingTargets.write  # type: ignore[no-redef]
     def loggingTargets(
@@ -1285,7 +1227,7 @@ class SKABaseDevice(
         def __init__(
             self: SKABaseDevice.AbortCommandsCommand,
             component_manager: ComponentManagerT,
-            logger: logging.Logger | None = None,
+            logger: LoggerType | None = None,
         ) -> None:
             """
             Initialise a new AbortCommandsCommand instance.
@@ -1343,7 +1285,7 @@ class SKABaseDevice(
         def __init__(
             self: SKABaseDevice.CheckLongRunningCommandStatusCommand,
             command_tracker: CommandTracker,
-            logger: logging.Logger | None = None,
+            logger: LoggerType | None = None,
         ) -> None:
             """
             Initialise a new CheckLongRunningCommandStatusCommand instance.
@@ -1404,7 +1346,7 @@ class SKABaseDevice(
         def __init__(
             self: SKABaseDevice.DebugDeviceCommand,
             device: Device,
-            logger: logging.Logger | None = None,
+            logger: LoggerType | None = None,
         ) -> None:
             """
             Initialise a new instance.

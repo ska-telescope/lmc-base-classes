@@ -12,18 +12,23 @@ import logging
 import logging.handlers
 import socket
 import sys
+import threading
 import warnings
 from typing import Any, Union, cast
 from urllib.parse import urlparse
 from urllib.request import url2pathname
 
 import ska_ser_logging
+import structlog
 import tango
 from ska_control_model import LoggingLevel
 
 from ..faults import LoggingTargetError
 
 _LOG_FILE_SIZE = 1024 * 1024  # Log file size 1MB.
+
+
+LoggerType = structlog.stdlib.BoundLogger
 
 
 __all__ = [
@@ -350,7 +355,11 @@ class LoggingUtils:
         return handler
 
     @staticmethod
-    def update_logging_handlers(targets: list[str], logger: logging.Logger) -> None:
+    def update_logging_handlers(
+        targets: list[str],
+        python_logger: logging.Logger,
+        tango_logger: tango.Logger | None = None,
+    ) -> None:
         """
         Update a logger's handlers.
 
@@ -358,22 +367,153 @@ class LoggingUtils:
             name is not included here will be removed. Names for which
             the logger currently does not have a handler will have
             handlers created and added.
-        :param logger: the logger whose handlers are to be updated.
+        :param python_logger: the python logger whose handlers are to be
+            updated.
+        :param tango_logger: an optional Tango logger, needed when the
+            targets list includes a Tango logging service.
         """
-        old_targets = [handler.name for handler in logger.handlers]
+        old_targets = [handler.name for handler in python_logger.handlers]
         added_targets = set(targets) - set(old_targets)
         removed_targets = set(old_targets) - set(targets)
 
-        for handler in list(logger.handlers):
+        for handler in list(python_logger.handlers):
             if handler.name in removed_targets:
-                logger.removeHandler(handler)
+                python_logger.removeHandler(handler)
         for target in targets:
             if target in added_targets:
                 handler = LoggingUtils.create_logging_handler(
                     # TODO investigate this type: ignore.
                     target,
-                    logger.tango_logger,  # type: ignore[attr-defined]
+                    tango_logger,
                 )
-                logger.addHandler(handler)
+                python_logger.addHandler(handler)
 
-        logger.info("Logging targets set to %s", targets)
+        python_logger.info("Logging targets set to %s", targets)
+
+
+# pylint: disable-next=too-few-public-methods
+class EnsureTagsFilter(logging.Filter):
+    """
+    Ensure all records have a "tags" field.
+
+    The tag will be the empty string if a tag is not provided.
+    """
+
+    def filter(self: EnsureTagsFilter, record: logging.LogRecord) -> bool:  # noqa: A003
+        if not hasattr(record, "tags"):
+            record.tags = ""
+        return True
+
+
+def _render_to_tags(
+    _: logging.Logger, __: str, event_dict: structlog.typing.EventDict
+) -> structlog.typing.EventDict:
+    """
+    Render the event dictionary into keyword arguments for `logging.log`.
+
+    The ``event`` field is translated into ``msg`` and the rest of the
+    *event_dict* is rendered into the ``tags`` field.
+
+    :param event_dict: the event dict to be rendered into
+        keyword arguments for `logging.log`.
+
+    :returns: an updated event dictionary
+    """
+    message = event_dict.pop("event")
+    kwargs = {
+        kw: event_dict.pop(kw)
+        for kw in ("exc_info", "stack_info", "stackLevel")
+        if kw in event_dict
+    }
+    tags_list = [f"{k}:{v}" for k, v in event_dict.items()]
+    extra = {"tags": ",".join(tags_list)}
+    return {"msg": message, "extra": extra, **kwargs}
+
+
+class DeviceLoggingManager:
+    """A manager for logging from a Tango device."""
+
+    _logging_config_lock = threading.Lock()
+    _logging_configured = False
+
+    def __init__(
+        self,
+        device_name: str,
+        python_logger: logging.Logger,
+        tango_logger: tango.Logger,
+    ) -> None:
+        """
+        Initialise a new instance.
+
+        :param device_name: name of the Tango device
+        :param python_logger: the underlying python logger
+        :param tango_logger: the underlying tango logger
+        """
+        # There may be multiple Tango devices running in a single process,
+        # which means multiple instance of this DeviceLoggingManager,
+        # but we only want to apply the SKA standard logging configuration once.
+        # So use a lock to prevent race conditions,
+        # and a flag to ensure the SKA logging configuration is only applied once.
+        with self._logging_config_lock:
+            if not self._logging_configured:
+                ska_ser_logging.configure_logging(tags_filter=EnsureTagsFilter)
+                self._logging_configured = True
+
+        self._device_name = device_name
+        self._python_logger = python_logger
+        self._tango_logger = tango_logger
+
+        # device may be reinitialised, so remove existing handlers
+        for handler in list(python_logger.handlers):
+            python_logger.removeHandler(handler)
+
+    def set_levels(self, level: LoggingLevel) -> None:
+        """
+        Set the logging level of both underlying loggers.
+
+        :param level: the logging level to set.
+        """
+        self._python_logger.setLevel(_LMC_TO_PYTHON_LOGGING_LEVEL[level])
+        self._tango_logger.set_level(_LMC_TO_TANGO_LOGGING_LEVEL[level])
+
+    def set_logging_targets(self, targets: list[str]) -> None:
+        """
+        Set the additional logging targets for the device.
+
+        Note that this excludes the handlers provided by the ska_ser_logging
+        library defaults.
+
+        :param targets: Logging targets for logger
+        """
+        valid_targets = LoggingUtils.sanitise_logging_targets(
+            targets, self._device_name
+        )
+        LoggingUtils.update_logging_handlers(
+            valid_targets, self._python_logger, self._tango_logger
+        )
+
+    @property
+    def handlers(self) -> list[logging.Handler]:
+        """
+        Return the handlers registered with the underlying python logger.
+
+        :return: the handlers registered with the underlying python logger.
+        """
+        return self._python_logger.handlers
+
+    def get_logger(self) -> LoggerType:
+        """
+        Return a logger for the device.
+
+        :return: a logger for the device.
+        """
+        return cast(
+            LoggerType,
+            structlog.wrap_logger(
+                self._python_logger,
+                [
+                    structlog.stdlib.PositionalArgumentsFormatter(),
+                    _render_to_tags,
+                ],
+            ),
+        ).bind(**{"tango-device": self._device_name})

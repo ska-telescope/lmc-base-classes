@@ -39,16 +39,17 @@ from __future__ import annotations
 
 import functools
 import json
-import logging
 import warnings
 from typing import Any, Callable, Generic, TypeVar
 
 import jsonschema
+import structlog
 from ska_control_model import ResultCode, TaskStatus
 from tango.server import Device
 from typing_extensions import Protocol
 
 from .base.component_manager import BaseComponentManager
+from .base.logging import LoggerType
 
 __all__ = [
     "ResultCode",
@@ -61,7 +62,7 @@ __all__ = [
     "JsonValidator",
 ]
 
-module_logger = logging.getLogger(__name__)
+module_logger = structlog.getLogger(__name__)
 
 
 class CommandTrackerProtocol(Protocol):
@@ -149,7 +150,7 @@ class JsonValidator(ArgumentValidator):  # pylint: disable=too-few-public-method
         self: JsonValidator,
         command_name: str,
         schema: SchemaDictType | None,
-        logger: logging.Logger | None = None,
+        logger: LoggerType | None = None,
     ) -> None:
         """
         Initialise a new instance.
@@ -218,7 +219,7 @@ class _BaseCommand(Generic[CommandReturnT]):
 
     def __init__(
         self: _BaseCommand[CommandReturnT],
-        logger: logging.Logger | None = None,
+        logger: LoggerType | None = None,
         validator: ArgumentValidator | None = None,
     ) -> None:
         """
@@ -230,7 +231,10 @@ class _BaseCommand(Generic[CommandReturnT]):
             validate and/or unpack command arguments.
         """
         self._name = self.__class__.__name__
-        self.logger = logger or module_logger
+
+        logger = logger or module_logger
+        self.logger = logger.bind(command_name=self._name)
+
         self._validator = validator or ArgumentValidator()
 
     def __call__(
@@ -339,7 +343,7 @@ class SlowCommand(_BaseCommand[CommandReturnT]):
     def __init__(
         self: SlowCommand[CommandReturnT],
         callback: Callable[[bool], None] | None,
-        logger: logging.Logger | None = None,
+        logger: LoggerType | None = None,
         validator: ArgumentValidator | None = None,
     ) -> None:
         """
@@ -406,7 +410,7 @@ class DeviceInitCommand(SlowCommand[tuple[ResultCode, str]]):
     def __init__(
         self: DeviceInitCommand,
         device: Device,
-        logger: logging.Logger | None = None,
+        logger: LoggerType | None = None,
         validator: ArgumentValidator | None = None,
     ) -> None:
         """
@@ -455,7 +459,7 @@ class SubmittedSlowCommand(SlowCommand[tuple[ResultCode, str]]):
         component_manager: BaseComponentManager,
         method_name: str,
         callback: Callable[[bool], None] | None = None,
-        logger: logging.Logger | None = None,
+        logger: LoggerType | None = None,
         validator: ArgumentValidator | None = None,
     ) -> None:
         """

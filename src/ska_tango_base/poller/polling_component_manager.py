@@ -8,7 +8,6 @@
 """This module provides a polling component manager."""
 from __future__ import annotations
 
-from logging import Logger
 from typing import Any, Callable
 
 from ska_control_model import CommunicationStatus, PowerState
@@ -16,6 +15,7 @@ from ska_control_model import CommunicationStatus, PowerState
 from ska_tango_base.base.component_manager import CommunicationStatusCallbackType
 
 from ..base import BaseComponentManager
+from ..base.logging import LoggerType
 from .poller import Poller, PollModel, PollRequestT, PollResponseT
 
 
@@ -26,7 +26,7 @@ class PollingComponentManager(
 
     def __init__(
         self: PollingComponentManager[PollRequestT, PollResponseT],
-        logger: Logger,
+        logger: LoggerType,
         communication_state_callback: CommunicationStatusCallbackType,
         component_state_callback: Callable[..., None],
         poll_rate: float = 0.1,

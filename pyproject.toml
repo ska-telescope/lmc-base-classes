@@ -22,6 +22,7 @@ ska-ser-logging = "^0.4.1"
 transitions = "^0.9.0"
 ska-control-model = "^0.3.1"
 jsonschema = "^4.17.3"
+structlog = "^23.1.0"
 
 [tool.poetry.group.dev.dependencies]
 pytango = "9.3.6"

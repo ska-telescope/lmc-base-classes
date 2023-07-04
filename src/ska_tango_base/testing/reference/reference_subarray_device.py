@@ -11,12 +11,12 @@ It inherits from SKASubarray but provides schemas for some commands.
 """
 from __future__ import annotations
 
-import logging
 from typing import Callable, Final, cast
 
 from ska_control_model import ResultCode
 
 from ...base import CommandTracker
+from ...base.logging import LoggerType
 from ...subarray.subarray_device import SKASubarray
 from .reference_subarray_component_manager import ReferenceSubarrayComponentManager
 
@@ -68,7 +68,7 @@ class ReferenceSkaSubarray(SKASubarray[ReferenceSubarrayComponentManager]):
             command_tracker: CommandTracker,
             component_manager: ReferenceSubarrayComponentManager,
             callback: Callable[[bool], None] | None = None,
-            logger: logging.Logger | None = None,
+            logger: LoggerType | None = None,
         ) -> None:
             """
             Initialise a new instance.
@@ -112,7 +112,7 @@ class ReferenceSkaSubarray(SKASubarray[ReferenceSubarrayComponentManager]):
             command_tracker: CommandTracker,
             component_manager: ReferenceSubarrayComponentManager,
             callback: Callable[[bool], None] | None = None,
-            logger: logging.Logger | None = None,
+            logger: LoggerType | None = None,
         ) -> None:
             """
             Initialise a new instance.
@@ -160,7 +160,7 @@ class ReferenceSkaSubarray(SKASubarray[ReferenceSubarrayComponentManager]):
             command_tracker: CommandTracker,
             component_manager: ReferenceSubarrayComponentManager,
             callback: Callable[[bool], None] | None = None,
-            logger: logging.Logger | None = None,
+            logger: LoggerType | None = None,
         ) -> None:
             """
             Initialise a new instance.
@@ -203,7 +203,7 @@ class ReferenceSkaSubarray(SKASubarray[ReferenceSubarrayComponentManager]):
             command_tracker: CommandTracker,
             component_manager: ReferenceSubarrayComponentManager,
             callback: Callable[[bool], None] | None = None,
-            logger: logging.Logger | None = None,
+            logger: LoggerType | None = None,
         ) -> None:
             """
             Initialise a new instance.

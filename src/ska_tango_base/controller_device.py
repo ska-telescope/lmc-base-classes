@@ -12,7 +12,6 @@ Controller device
 """
 from __future__ import annotations
 
-import logging
 from typing import Any, Callable, TypeVar, cast
 
 from ska_control_model import ResultCode
@@ -20,6 +19,7 @@ from tango import DebugIt
 from tango.server import attribute, command, device_property
 
 from .base import BaseComponentManager, SKABaseDevice
+from .base.logging import LoggerType
 from .commands import DeviceInitCommand, FastCommand
 from .utils import convert_dict_to_list, validate_capability_types, validate_input_sizes
 
@@ -234,7 +234,7 @@ class SKAController(SKABaseDevice[ComponentManagerT]):
         def __init__(
             self: SKAController.IsCapabilityAchievableCommand,
             device: SKAController[ComponentManagerT],
-            logger: logging.Logger | None = None,
+            logger: LoggerType | None = None,
         ):
             """
             Initialise a new instance.

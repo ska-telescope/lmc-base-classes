@@ -43,7 +43,7 @@ def change_event_callbacks_fixture() -> MockTangoEventCallbackGroup:
         "longRunningCommandProgress",
         "longRunningCommandResult",
         "longRunningCommandStatus",
-        timeout=15.0,
+        timeout=5.0,
     )
 
 
@@ -252,6 +252,10 @@ def test_device_allows_commands_to_be_queued(
         invert_id2,
         "FAILED",
     )
-    change_event_callbacks.assert_change_event(
-        "longRunningCommandStatus", expected_event
-    )
+    events_count = 6
+    for _ in range(events_count):
+        next_event = change_event_callbacks.assert_against_call(
+            "longRunningCommandStatus"
+        )
+    final_event = next_event["attribute_value"]
+    assert final_event == expected_event

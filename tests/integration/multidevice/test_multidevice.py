@@ -230,9 +230,9 @@ def test_device_allows_commands_to_be_queued(
     )
     change_event_callbacks.assert_change_event("longRunningCommandStatus", None)
 
-    # Previously, triggering Invert after Invert should have immediately
-    # fail. But the device will queue the (1+n)times evoked command and
-    # inform client later that the 2nd, 3rd, ... invokation failed
+    # Command triggers: Transpose > Invert > Invert
+    # The device will queue all these commands and 
+    # inform later that 2nd Invert failed
 
     # check that all commands were queued
     command_ids = []
@@ -244,7 +244,7 @@ def test_device_allows_commands_to_be_queued(
     # check that only the last command invokation failed
     # pylint: disable=unbalanced-tuple-unpacking
     transpose_id, invert_id1, invert_id2 = command_ids
-    expected_event = (
+    status_event = (
         transpose_id,
         "COMPLETED",
         invert_id1,
@@ -252,10 +252,10 @@ def test_device_allows_commands_to_be_queued(
         invert_id2,
         "FAILED",
     )
-    events_count = 6
-    for _ in range(events_count):
+    event_count = 6
+    for _ in range(event_count):
         next_event = change_event_callbacks.assert_against_call(
             "longRunningCommandStatus"
         )
-    final_event = next_event["attribute_value"]
-    assert final_event == expected_event
+    status = next_event["attribute_value"]
+    assert status == status_event

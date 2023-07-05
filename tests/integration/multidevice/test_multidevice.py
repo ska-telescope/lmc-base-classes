@@ -217,7 +217,7 @@ def test_device_allows_commands_to_be_queued(
     Test input queue accepts multiple commands.
 
     This test also checks that each command is checked
-    against its is_allowed method before executing it
+    against its is_cmd_allowed method before executing it
 
     :param device_under_test: a proxy to the device under test
     :param change_event_callbacks: dictionary of mock change event
@@ -231,7 +231,7 @@ def test_device_allows_commands_to_be_queued(
     change_event_callbacks.assert_change_event("longRunningCommandStatus", None)
 
     # Previously, triggering Invert after Invert should have immediately
-    # fail. But the device will queue the command evoked (1+n)times and
+    # fail. But the device will queue the (1+n)times evoked command and
     # inform client later that the 2nd, 3rd, ... invokation failed
 
     # check that all commands were queued

@@ -314,7 +314,7 @@ class MultiDeviceComponentManager(TaskExecutorComponentManager):
 
         return task_status, response
 
-    def is_transpose_allowed(self: MultiDeviceComponentManager) -> bool:
+    def _is_transpose_allowed(self: MultiDeviceComponentManager) -> bool:
         """Determine whether transpose is allowed.
 
         :return: A boolean indicating the matrix is already transposed
@@ -352,12 +352,12 @@ class MultiDeviceComponentManager(TaskExecutorComponentManager):
         """
         task_status, response = self.submit_task(
             self._transpose,
-            is_cmd_allowed=self.is_transpose_allowed,
+            is_cmd_allowed=self._is_transpose_allowed,
             task_callback=task_callback,
         )
         return task_status, response
 
-    def is_inverse_allowed(self: MultiDeviceComponentManager) -> bool:
+    def _is_inverse_allowed(self: MultiDeviceComponentManager) -> bool:
         """Determine whether inverse is allowed.
 
         :return: A boolean indicating the matrix is already inversed
@@ -395,7 +395,7 @@ class MultiDeviceComponentManager(TaskExecutorComponentManager):
         """
         task_status, response = self.submit_task(
             self._invert,
-            is_cmd_allowed=self.is_inverse_allowed,
+            is_cmd_allowed=self._is_inverse_allowed,
             task_callback=task_callback,
         )
         return task_status, response

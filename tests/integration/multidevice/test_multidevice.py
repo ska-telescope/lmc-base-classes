@@ -231,7 +231,7 @@ def test_device_allows_commands_to_be_queued(
     change_event_callbacks.assert_change_event("longRunningCommandStatus", None)
 
     # Command triggers: Transpose > Invert > Invert
-    # The device will queue all these commands and 
+    # The device will queue all these commands and
     # inform later that 2nd Invert failed
 
     # check that all commands were queued

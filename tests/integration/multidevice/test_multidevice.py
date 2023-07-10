@@ -250,7 +250,7 @@ def test_device_allows_commands_to_be_queued(
         invert_id1,
         "COMPLETED",
         invert_id2,
-        "FAILED",
+        "REJECTED",
     )
     event_count = 6
     for _ in range(event_count):

@@ -143,7 +143,7 @@ class TaskExecutor:
                 task_callback(status=TaskStatus.ABORTED)
         elif is_cmd_allowed is not None and not is_cmd_allowed():
             if task_callback is not None:
-                task_callback(status=TaskStatus.FAILED, result="Command not allowed")
+                task_callback(status=TaskStatus.REJECTED, result="Command not allowed")
         else:
             # Don't set the task to IN_PROGRESS yet, in case func is itself implemented
             # asynchronously. We leave it to func to set the task to IN_PROGRESS, and

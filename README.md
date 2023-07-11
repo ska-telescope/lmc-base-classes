@@ -263,7 +263,9 @@ Tango devices can be launched with a `-v` parameter to set the logging level. Fo
 
 ## Version History
 
-### unreleased
+### 0.15.1
+
+- Unpin PyTango version
 
 ### 0.15.0
 

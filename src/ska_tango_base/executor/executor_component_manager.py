@@ -7,7 +7,7 @@
 """This module provides an abstract component manager for SKA Tango base devices."""
 from __future__ import annotations
 
-from typing import Any
+from typing import Any, Callable
 
 from ska_control_model import TaskStatus
 
@@ -22,7 +22,7 @@ class TaskExecutorComponentManager(BaseComponentManager):
     def __init__(
         self: TaskExecutorComponentManager,
         *args: Any,
-        max_workers: int | None = None,
+        max_workers: int | None = 1,
         **kwargs: Any,
     ) -> None:
         """
@@ -35,11 +35,12 @@ class TaskExecutorComponentManager(BaseComponentManager):
         self._task_executor = TaskExecutor(max_workers)
         super().__init__(*args, **kwargs)
 
-    def submit_task(
+    def submit_task(  # pylint: disable=too-many-arguments
         self: TaskExecutorComponentManager,
         func: TaskFunctionType,
         args: Any = None,
         kwargs: Any = None,
+        is_cmd_allowed: Callable[[], bool] | None = None,
         task_callback: TaskCallbackType | None = None,
     ) -> tuple[TaskStatus, str]:
         """
@@ -48,13 +49,14 @@ class TaskExecutorComponentManager(BaseComponentManager):
         :param func: function/bound method to be run
         :param args: positional arguments to the function
         :param kwargs: keyword arguments to the function
+        :param is_cmd_allowed: sanity check for func
         :param task_callback: callback to be called whenever the status
             of the task changes.
 
         :return: tuple of taskstatus & message
         """
         return self._task_executor.submit(
-            func, args, kwargs, task_callback=task_callback
+            func, args, kwargs, is_cmd_allowed, task_callback=task_callback
         )
 
     def abort_commands(

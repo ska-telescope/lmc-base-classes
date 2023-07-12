@@ -27,11 +27,13 @@ TaskFunctionType = Callable[..., None]
 class TaskExecutor:
     """An asynchronous executor of tasks."""
 
-    def __init__(self: TaskExecutor, max_workers: int | None) -> None:
+    def __init__(self: TaskExecutor, max_workers: int | None = 1) -> None:
         """
         Initialise a new instance.
 
         :param max_workers: the maximum number of worker threads
+            This is meant to be kept at the default value to allow
+            the sequential execution of LRC except for special cases
         """
         self._max_workers = max_workers
 
@@ -41,11 +43,12 @@ class TaskExecutor:
         self._abort_event = threading.Event()
         self._submit_lock = threading.Lock()
 
-    def submit(
+    def submit(  # pylint: disable=too-many-arguments
         self: TaskExecutor,
         func: TaskFunctionType,
         args: Any = None,
         kwargs: Any = None,
+        is_cmd_allowed: Callable[[], bool] | None = None,
         task_callback: TaskCallbackType | None = None,
     ) -> tuple[TaskStatus, str]:
         """
@@ -54,6 +57,7 @@ class TaskExecutor:
         :param func: the function to be executed.
         :param args: positional arguments to the function
         :param kwargs: keyword arguments to the function
+        :param is_cmd_allowed: sanity check for func
         :param task_callback: the callback to be called when the status
             or progress of the task execution changes
 
@@ -66,6 +70,7 @@ class TaskExecutor:
                     func,
                     args,
                     kwargs,
+                    is_cmd_allowed,
                     task_callback,
                     self._abort_event,
                 )
@@ -123,6 +128,7 @@ class TaskExecutor:
         func: TaskFunctionType,
         args: Any,
         kwargs: Any,
+        is_cmd_allowed: Callable[[], bool] | None,
         task_callback: TaskCallbackType | None,
         abort_event: threading.Event,
     ) -> None:
@@ -135,6 +141,9 @@ class TaskExecutor:
         if abort_event.is_set():
             if task_callback is not None:
                 task_callback(status=TaskStatus.ABORTED)
+        elif is_cmd_allowed is not None and not is_cmd_allowed():
+            if task_callback is not None:
+                task_callback(status=TaskStatus.REJECTED, result="Command not allowed")
         else:
             # Don't set the task to IN_PROGRESS yet, in case func is itself implemented
             # asynchronously. We leave it to func to set the task to IN_PROGRESS, and

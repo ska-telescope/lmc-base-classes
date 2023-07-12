@@ -175,7 +175,7 @@ Add a method to submit the slow method
             :param task_callback: Update task state, defaults to None
             """
             task_status, response = self.submit_task(
-                self._a_very_slow_method, args=[], task_callback=task_callback
+                self._a_very_slow_method, args=[], is_cmd_allowed=self._a_check, task_callback=task_callback
             )
             return task_status, response
 

@@ -46,7 +46,8 @@ class _Log4TangoLoggingLevel(enum.IntEnum):
 
     Source:
        https://gitlab.com/tango-controls/cppTango/blob/
-       4feffd7c8e24b51c9597a40b9ef9982dd6e99cdf/log4tango/include/log4tango/Level.hh#L86-93
+       4feffd7c8e24b51c9597a40b9ef9982dd6e99cdf/log4tango/include/log4tango/Level.hh
+       #L86-93
     """
 
     OFF = 100

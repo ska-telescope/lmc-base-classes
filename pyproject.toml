@@ -50,6 +50,15 @@ pytest-pydocstyle = "^2.3.2"
 pytest-pycodestyle = "^2.3.1"
 types-jsonschema = "^4.17.0.7"
 
+[tool.poetry.group.docs.dependencies]
+Sphinx = "^5.2"
+sphinx-autodoc-typehints = "^1.19"
+ska-ser-sphinx-theme = { git = "https://gitlab.com/ska-telescope/ska-ser-sphinx-theme.git", rev = "7ad8e78a1193ac48c39aa9e104a028792522c2cb" }
+jsonschema = "^4.18.3"
+ska-control-model = "^0.3.1"
+sphinxcontrib-plantuml = "^0.25"
+transitions = "^0.9.0"
+
 [build-system]
 requires = ["poetry-core>=1.0.0"]
 build-backend = "poetry.core.masonry.api"

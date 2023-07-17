@@ -2,6 +2,8 @@
 
 ## unreleased
 
+- [MCCS-1636] Use ska-ser-sphinx-theme for documentation
+
 ## 0.18.1
 
 - [MCCS-1494] Bug fixes to subarray subclassing following addition of JSON validation support

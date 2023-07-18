@@ -11,11 +11,12 @@ name = 'ska-nexus'
 url = 'https://artefact.skao.int/repository/pypi-internal/simple'
 
 [tool.poetry.dependencies]
-python = "~3.10"
+python = "^3.8.1"
 debugpy = "^1.6.2"
 numpy = [
-    {version = "1.21.1", python = ">=3.7,<3.10"},
-    {version = "1.23.0", python = "3.10"}
+    {version = ">=1.21.0", python = ">=3.7,<3.10"},
+    {version = ">=1.21.6", python = "3.10"},
+    {version = ">=1.23.2", python = "3.11"}
 ]
 pytango = "^9.3.3"
 ska-ser-logging = "^0.4.1"
@@ -33,7 +34,7 @@ flake8-builtins = "^2.1.0"
 flake8-docstrings = "^1.7.0"
 flake8-use-fstring = "^1.4"
 flake8-rst-docstrings = "^0.3.0"
-mypy = "^1.2.0"
+mypy = "1.2.0"
 pep8-naming = "^0.13.3"
 pylint = "^2.17.2"
 pylint-junit = "^0.3.2"

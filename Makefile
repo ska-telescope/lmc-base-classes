@@ -9,6 +9,7 @@ IMAGE_FOR_DIAGRAMS = artefact.skao.int/ska-tango-images-pytango-builder:9.3.28
 
 #PYTHON_RUNNER = poetry run
 
+PYTHON_LINE_LENGTH = 99
 PYTHON_SWITCHES_FOR_ISORT = -w=88
 PYTHON_SWITCHES_FOR_BLACK = --line-length 88
 PYTHON_TEST_FILE = tests

@@ -80,7 +80,10 @@ class TestReferenceBaseComponentManager:
             "communication_state", CommunicationStatus.NOT_ESTABLISHED
         )
         callbacks.assert_call("communication_state", CommunicationStatus.ESTABLISHED)
-        assert component_manager.communication_state == CommunicationStatus.ESTABLISHED
+        assert (
+            component_manager.communication_state
+            == CommunicationStatus.ESTABLISHED  # type: ignore[comparison-overlap]
+        )
 
         callbacks.assert_call("component_state", power=PowerState.OFF)
 
@@ -112,7 +115,8 @@ class TestReferenceBaseComponentManager:
             "communication_state", CommunicationStatus.NOT_ESTABLISHED
         )
         assert (
-            component_manager.communication_state == CommunicationStatus.NOT_ESTABLISHED
+            component_manager.communication_state
+            == CommunicationStatus.NOT_ESTABLISHED  # type: ignore[comparison-overlap]
         )
         callbacks.assert_not_called()
 
@@ -167,7 +171,8 @@ class TestReferenceBaseComponentManager:
             "communication_state", CommunicationStatus.NOT_ESTABLISHED
         )
         assert (
-            component_manager.communication_state == CommunicationStatus.NOT_ESTABLISHED
+            component_manager.communication_state
+            == CommunicationStatus.NOT_ESTABLISHED  # type: ignore[comparison-overlap]
         )
         callbacks.assert_not_called()
 
@@ -228,7 +233,10 @@ class TestReferenceBaseComponentManager:
             "communication_state", CommunicationStatus.NOT_ESTABLISHED
         )
         callbacks.assert_call("communication_state", CommunicationStatus.ESTABLISHED)
-        assert component_manager.communication_state == CommunicationStatus.ESTABLISHED
+        assert (
+            component_manager.communication_state
+            == CommunicationStatus.ESTABLISHED  # type: ignore[comparison-overlap]
+        )
         callbacks.assert_call("component_state", power=PowerState.OFF)
 
         component_manager.standby(callbacks["standby_task"])

@@ -445,7 +445,10 @@ def get_groups_from_json(json_definitions: list[str]) -> dict[str, Any]:
                     {
                         "group_name": "rackA",
                         "devices": [
-                            "elt/server/1", "elt/server/2", "elt/switch/A", "elt/pdu/rackA"
+                            "elt/server/1",
+                            "elt/server/2",
+                            "elt/switch/A",
+                            "elt/pdu/rackA",
                         ]
                     },
                     {

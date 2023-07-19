@@ -3,46 +3,45 @@
 #
 # Distributed under the terms of the BSD 3-clause new license.
 # See LICENSE.txt for more info.
+include .make/base.mk
+include .make/raw.mk
 
 PROJECT = ska-tango-base
-IMAGE_FOR_DIAGRAMS = artefact.skao.int/ska-tango-images-pytango-builder:9.3.28
 
-#PYTHON_RUNNER = poetry run
-
-PYTHON_LINE_LENGTH = 99
-PYTHON_SWITCHES_FOR_ISORT = -w=88
-PYTHON_SWITCHES_FOR_BLACK = --line-length 88
-PYTHON_TEST_FILE = tests
-PYTHON_VARS_AFTER_PYTEST = --forked
-
-## Paths containing python to be formatted and linted
-PYTHON_LINT_TARGET = src/ tests/
-
-DOCS_SOURCEDIR=./docs/src
-DOCS_SPHINXOPTS=-W --keep-going -n
-
-#
-# include makefile to pick up the standard Make targets, e.g., 'make build'
-
-include .make/k8s.mk
+#####################
+# PYTHON
+#####################
 include .make/python.mk
-include .make/raw.mk
-include .make/base.mk
-include .make/docs.mk
 
-# include your own private variables for custom deployment configuration
--include PrivateRules.mak
+IMAGE_FOR_DIAGRAMS = artefact.skao.int/ska-tango-images-pytango-builder:9.3.28
+PYTHON_LINE_LENGTH = 88
+PYTHON_VARS_AFTER_PYTEST = --forked
 
 python-post-lint:
 	$(PYTHON_RUNNER) mypy --config-file mypy.ini $(PYTHON_LINT_TARGET)
 
-#python-post-test: ## test ska_tango_base Python code
-#	scripts/validate-metadata.sh
-
 python-pre-test:
 	python3 -m pip install --extra-index-url https://artefact.skao.int/repository/pypi-all/simple debugpy ska-ser-logging ska-tango-testing
 
-docs-pre-build:
-	python3 -m pip install -r docs/requirements.txt
+.PHONY: python-post-lint python-pre-test
 
-.PHONY: python-post-format python-post-lint python-pre-test docs-pre-build
+
+#####################
+# DOCS
+#####################
+include .make/docs.mk
+
+DOCS_SPHINXOPTS=-W --keep-going
+
+docs-pre-build:
+	poetry config virtualenvs.create false
+	poetry install --no-root --only docs
+
+.PHONY: docs-pre-build
+
+
+# include your own private variables for custom deployment configuration
+-include PrivateRules.mak
+
+
+

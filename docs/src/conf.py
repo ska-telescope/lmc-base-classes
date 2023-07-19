@@ -72,14 +72,6 @@ autodoc_default_options = {
 autoclass_content = 'both'
 
 
-def setup(app):
-    """
-    Initialise app.
-    """
-    app.add_css_file("css/custom.css")
-    app.add_js_file("js/gitlab.js")
-
-
 # -- Path set up --------------------------------------------------------------
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
@@ -109,7 +101,7 @@ plantuml_syntax_error_image = True
 
 
 # Add any paths that contain templates here, relative to this directory.
-templates_path = ['_templates']
+# templates_path = []
 
 # The suffix of source filenames.
 source_suffix = '.rst'
@@ -184,7 +176,7 @@ pygments_style = 'sphinx'
 
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
-html_theme = "sphinx_rtd_theme"
+html_theme = "ska_ser_sphinx_theme"
 
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the
@@ -210,22 +202,13 @@ html_theme = "sphinx_rtd_theme"
 # pixels large.
 #html_favicon = None
 
-html_context = {
-    "display_gitlab": True,  # Integrate GitHub
-    "favicon": "img/favicon.ico",
-    "logo": "img/logo.png",
-    "theme_logo_only": True,
-    "gitlab_user": "ska-telescope",  # Username
-    "gitlab_repo": "ska-tango-base",  # Repo name
-    "gitlab_version": "main",  # Version
-    "conf_py_path": "/docs/src/",  # Path in the checkout to the docs root
-}
+html_context = {}
 
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
-html_static_path = ['_static']
+# html_static_path = []
 
 # Add any extra paths that contain custom files (such as robots.txt or
 # .htaccess) here, relative to this directory. These files are copied
@@ -363,6 +346,8 @@ intersphinx_mapping = {
     ),
     "tango": ("https://pytango.readthedocs.io/en/v9.3.4/", None),
 }
+
+nitpicky = True
 
 nitpick_ignore = [
      # ska-control-model API docs don't document the root package,

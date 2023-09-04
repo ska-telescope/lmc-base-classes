@@ -2,7 +2,11 @@
 
 ## unreleased
 
+## 0.19.0
+
 - [MCCS-1636] Use ska-ser-sphinx-theme for documentation
+- [KAR-632] Unpinned numpy requirements. Bumped minimum Python version to 3.8
+- [KAR-587] Input queue updates
 
 ## 0.18.1
 

@@ -9,7 +9,7 @@
 
 name = """ska_tango_base"""
 
-version = "0.18.1"
+version = "0.19.0"
 
 version_info = version.split(".")
 

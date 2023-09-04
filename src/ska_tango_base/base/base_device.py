@@ -307,7 +307,7 @@ class SKABaseDevice(
     _logging_config_lock = threading.Lock()
     _logging_configured = False
 
-    def _init_logging(self: SKABaseDevice[ComponentManagerT]) -> None:
+    def _init_logging(self: SKABaseDevice[ComponentManagerT]) -> None:  # noqa: C901
         """Initialize the logging mechanism, using default properties."""
         # TODO: This comment stops black adding a blank line here,
         # causing flake8-docstrings D202 error.
@@ -363,18 +363,58 @@ class SKABaseDevice(
         self.logger.tango_logger = self.get_logger()  # type: ignore[attr-defined]
 
         # initialise using defaults in device properties
-        self._logging_level = None
+        self._logging_level: LoggingLevel | None = None
         self.set_logging_level(self.LoggingLevelDefault)
         self.set_logging_targets(self.LoggingTargetsDefault)
         self.logger.debug("Logger initialised")
 
         # monkey patch Tango Logging Service streams so they go to the Python
         # logger instead
-        self.debug_stream = self.logger.debug
-        self.info_stream = self.logger.info
-        self.warn_stream = self.logger.warning
-        self.error_stream = self.logger.error
-        self.fatal_stream = self.logger.critical
+
+        def _debug_patch(
+            *args: Any,
+            source: str | None = None,  # pylint: disable=unused-argument
+            **kwargs: Any,
+        ) -> None:
+            self.logger.debug(*args, **kwargs)
+
+        self.debug_stream = _debug_patch
+
+        def _info_patch(
+            *args: Any,
+            source: str | None = None,  # pylint: disable=unused-argument
+            **kwargs: Any,
+        ) -> None:
+            self.logger.info(*args, **kwargs)
+
+        self.info_stream = _info_patch
+
+        def _warn_patch(
+            *args: Any,
+            source: str | None = None,  # pylint: disable=unused-argument
+            **kwargs: Any,
+        ) -> None:
+            self.logger.warning(*args, **kwargs)
+
+        self.warn_stream = _warn_patch
+
+        def _error_patch(
+            *args: Any,
+            source: str | None = None,  # pylint: disable=unused-argument
+            **kwargs: Any,
+        ) -> None:
+            self.logger.error(*args, **kwargs)
+
+        self.error_stream = _error_patch
+
+        def _fatal_patch(
+            *args: Any,
+            source: str | None = None,  # pylint: disable=unused-argument
+            **kwargs: Any,
+        ) -> None:
+            self.logger.critical(*args, **kwargs)
+
+        self.fatal_stream = _fatal_patch
 
     # -----------------
     # Device Properties

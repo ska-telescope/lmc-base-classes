@@ -494,54 +494,34 @@ class SKABaseDevice(Device):
         self.logger.tango_logger = self.get_logger()
 
         # initialise using defaults in device properties
-        self._logging_level: LoggingLevel | None = None
+        self._logging_level = None
         self.write_loggingLevel(self.LoggingLevelDefault)
         self.write_loggingTargets(self.LoggingTargetsDefault)
         self.logger.debug("Logger initialised")
 
         # monkey patch Tango Logging Service streams so they go to the Python
         # logger instead
-        def _debug_patch(
-            *args: Any,
-            source: str | None = None,  # pylint: disable=unused-argument
-            **kwargs: Any,
-        ) -> None:
+        def _debug_patch(*args,source,**kwargs):
             self.logger.debug(*args, **kwargs)
 
         self.debug_stream = _debug_patch
 
-        def _info_patch(
-            *args: Any,
-            source: str | None = None,  # pylint: disable=unused-argument
-            **kwargs: Any,
-        ) -> None:
+        def _info_patch(*args,source,**kwargs):
             self.logger.info(*args, **kwargs)
 
         self.info_stream = _info_patch
 
-        def _warn_patch(
-            *args: Any,
-            source: str | None = None,  # pylint: disable=unused-argument
-            **kwargs: Any,
-        ) -> None:
+        def _warn_patch(*args,source,**kwargs):
             self.logger.warning(*args, **kwargs)
 
         self.warn_stream = _warn_patch
 
-        def _error_patch(
-            *args: Any,
-            source: str | None = None,  # pylint: disable=unused-argument
-            **kwargs: Any,
-        ) -> None:
+        def _error_patch(*args,source,**kwargs):
             self.logger.error(*args, **kwargs)
 
         self.error_stream = _error_patch
 
-        def _fatal_patch(
-            *args: Any,
-            source: str | None = None,  # pylint: disable=unused-argument
-            **kwargs: Any,
-        ) -> None:
+        def _fatal_patch(*args,source,**kwargs):
             self.logger.critical(*args, **kwargs)
 
         self.fatal_stream = _fatal_patch

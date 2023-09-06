@@ -76,8 +76,10 @@ include:
     file: 'gitlab-ci/includes/post_step.yml'
   # Publish Python packages
   # https://developer.skao.int/en/latest/tools/software-package-release-procedure.html#building-and-publishing-python-packages
-  - project: 'ska-telescope/templates-repository'
-    file: 'gitlab-ci/includes/build_wheel.yml'
+ - project: 'ska-telescope/templates-repository'
+    file: 'gitlab-ci/includes/python-build.gitlab-ci.yml'
+ - project: 'ska-telescope/templates-repository'
+    file: 'gitlab-ci/includes/python-publish.gitlab-ci.yml'
   # Publish OCI images
   # https://developer.skao.int/en/latest/tools/software-package-release-procedure.html#oci-image
   - project: 'ska-telescope/templates-repository'

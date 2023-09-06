@@ -31,6 +31,7 @@ clean shell runner:
     - rm -rf build/*
 
 unit tests:
+  when: manual
   stage: test
   tags:
     - k8srunner

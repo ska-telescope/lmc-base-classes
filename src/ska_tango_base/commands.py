@@ -72,29 +72,19 @@ class ResultCode(enum.IntEnum):
     """Python enumerated type for command return codes."""
 
     OK = 0
-    """
-    The command was executed successfully.
-    """
+    """The command was executed successfully."""
 
     STARTED = 1
-    """
-    The command has been accepted and will start immediately.
-    """
+    """The command has been accepted and will start immediately."""
 
     QUEUED = 2
-    """
-    The command has been accepted and will be executed at a future time
-    """
+    """The command has been accepted and will be executed at a future time."""
 
     FAILED = 3
-    """
-    The command could not be executed.
-    """
+    """The command could not be executed."""
 
     UNKNOWN = 4
-    """
-    The status of the command is not known.
-    """
+    """The status of the command is not known."""
 
 
 class BaseCommand:
@@ -215,9 +205,7 @@ class StateModelCommand(BaseCommand):
         :param argin: the argument passed to the Tango command, if
             present
         :type argin: ANY
-
         :return: result of call
-
         :raises CommandError: if the command is not allowed
         """
         if self._invoked_action is not None:
@@ -350,10 +338,9 @@ class ResponseCommand(BaseCommand):
         :param argin: the argument passed to the Tango command, if
             present
         :type argin: ANY
-
-        :return: A tuple containing a return code and a string
-            message indicating status. The message is for
-            information purpose only.
+        :return: A tuple containing a return code and a string message
+            indicating status. The message is for information purpose
+            only.
         :rtype: (ResultCode, str)
         """
         if argin is None:
@@ -418,7 +405,6 @@ class CompletionCommand(StateModelCommand):
         :param argin: the argument passed to the Tango command, if
             present
         :type argin: ANY
-
         :return: The result of the call.
         """
         result = super().__call__(argin)

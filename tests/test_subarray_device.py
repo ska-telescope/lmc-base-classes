@@ -453,7 +453,6 @@ class TestSKASubarray_commands:
 
         :param mock_op_state_model: a mock state model for testing
         :param logger: a logger for the component manager
-
         :return: the component manager under test
         """
         mock_capability_types = ["foo", "bah"]

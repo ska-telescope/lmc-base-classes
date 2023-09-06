@@ -39,7 +39,6 @@ def check_on(func):
         :param component: the component to check
         :param args: positional arguments to the wrapped function
         :param kwargs: keyword arguments to the wrapped function
-
         :return: whatever the wrapped function returns
         """
         if component.faulty:
@@ -90,9 +89,9 @@ class ReferenceCspObsComponentManager(
             Initialise a new instance.
 
             :param _power_mode: initial power mode of this component
-                (for testing only)
+                  (for testing only)
             :param _faulty: whether this component should initially
-                simulate a fault (for testing only)
+                  simulate a fault (for testing only)
             """
             self._configured = False
             self._configured_callback = None
@@ -207,7 +206,7 @@ class ReferenceCspObsComponentManager(
             called as required.
 
             :param configured: new value for whether the component is
-                configured or not
+                  configured or not
             :type configured: bool
             """
             if self._configured != configured:
@@ -228,7 +227,7 @@ class ReferenceCspObsComponentManager(
             called as required.
 
             :param scanning: new value for whether the component is
-                scanning or not
+                  scanning or not
             :type scanning: bool
             """
             if self._scanning != scanning:
@@ -249,7 +248,7 @@ class ReferenceCspObsComponentManager(
             called as required.
 
             :param obsfault: new value for whether the component is
-                obsfaulting or not
+                  obsfaulting or not
             :type obsfaulting: bool
             """
             if self._obsfault != obsfault:

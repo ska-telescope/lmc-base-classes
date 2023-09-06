@@ -6,7 +6,6 @@
 #
 # Distributed under the terms of the GPL license.
 # See LICENSE.txt for more info.
-
 """
 CspSubElementController.
 
@@ -226,8 +225,8 @@ class CspSubElementController(SKAController):
             Stateless hook for device initialisation.
 
             :return: A tuple containing a return code and a string
-                message indicating status. The message is for
-                information purpose only.
+                  message indicating status. The message is for
+                  information purpose only.
             :rtype: (ResultCode, str)
             """
             super().do()
@@ -425,21 +424,21 @@ class CspSubElementController(SKAController):
             """
             Initialise a new LoadFirmwareCommand instance.
 
-            :param target: the object that this base command acts upon. For
-                example, the device's component manager.
+            :param target: the object that this base command acts upon.
+                  For example, the device's component manager.
             :type target: object
             :param op_state_model: the op state model that this command
-                uses.
+                  uses.
             :type op_state_model: OpStateModel
             :param admin_mode_model: the admin model that this command
-                uses.
+                  uses.
             :type admin_mode_model: AdminModeModel
             :param args: other positional arguments
             :param kwargs: other keyword arguments
             :param logger: the logger to be used by this Command. If not
-                provided, then a default module logger will be used.
+                  provided, then a default module logger will be used.
             :type logger: a logger that implements the standard library
-                logger interface
+                  logger interface
             """
             self._admin_mode_model = admin_mode_model
             super().__init__(
@@ -451,10 +450,9 @@ class CspSubElementController(SKAController):
             Stateless hook for device LoadFirmware() command.
 
             :param argin: argument to command, currently unused
-
             :return: A tuple containing a return code and a string
-                message indicating status. The message is for
-                information purpose only.
+                  message indicating status. The message is for
+                  information purpose only.
             :rtype: (ResultCode, str)
             """
             message = "LoadFirmware command completed OK"
@@ -501,10 +499,9 @@ class CspSubElementController(SKAController):
             Stateless hook for device PowerOnDevices() command.
 
             :param argin: argument to command, currently unused
-
             :return: A tuple containing a return code and a string
-                message indicating status. The message is for
-                information purpose only.
+                  message indicating status. The message is for
+                  information purpose only.
             :rtype: (ResultCode, str)
             """
             message = "PowerOnDevices command completed OK"
@@ -546,10 +543,9 @@ class CspSubElementController(SKAController):
             Stateless hook for device PowerOffDevices() command.
 
             :param argin: argument to command, currently unused
-
             :return: A tuple containing a return code and a string
-                message indicating status. The message is for
-                information purpose only.
+                  message indicating status. The message is for
+                  information purpose only.
             :rtype: (ResultCode, str)
             """
             message = "PowerOffDevices command completed OK"
@@ -591,10 +587,9 @@ class CspSubElementController(SKAController):
             Stateless hook for device ReInitDevices() command.
 
             :param argin: argument to command, currently unused
-
             :return: A tuple containing a return code and a string
-                message indicating status. The message is for
-                information purpose only.
+                  message indicating status. The message is for
+                  information purpose only.
             :rtype: (ResultCode, str)
             """
             message = "ReInitDevices command completed OK"
@@ -689,10 +684,9 @@ class CspSubElementController(SKAController):
 
         :param argin: List of devices (FQDNs) to power-on.
         :type argin: 'DevVarStringArray'
-
-        :return: A tuple containing a return code and a string
-            message indicating status. The message is for
-            information purpose only.
+        :return: A tuple containing a return code and a string message
+            indicating status. The message is for information purpose
+            only.
         :rtype: (ResultCode, str)
         """
         command = self.get_command_object("PowerOnDevices")
@@ -724,10 +718,9 @@ class CspSubElementController(SKAController):
 
         :param argin: List of devices (FQDNs) to power-off.
         :type argin: 'DevVarStringArray'
-
-        :return: A tuple containing a return code and a string
-            message indicating status. The message is for
-            information purpose only.
+        :return: A tuple containing a return code and a string message
+            indicating status. The message is for information purpose
+            only.
         :rtype: (ResultCode, str)
         """
         command = self.get_command_object("PowerOffDevices")
@@ -791,7 +784,6 @@ def main(args=None, **kwargs):
 
     :param args: str
     :param kwargs: str
-
     :return: exit code
     """
     # PROTECTED REGION ID(CspSubElementController.main) ENABLED START #

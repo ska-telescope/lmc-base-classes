@@ -20,8 +20,10 @@ class SubarrayComponentManager(BaseComponentManager):
         """
         Initialise a new SubarrayComponentManager instance.
 
-        :param op_state_model: the op state model used by this component manager
-        :param obs_state_model: the obs state model used by this component manager
+        :param op_state_model: the op state model used by this component
+            manager
+        :param obs_state_model: the obs state model used by this
+            component manager
         """
         self.obs_state_model = obs_state_model
 

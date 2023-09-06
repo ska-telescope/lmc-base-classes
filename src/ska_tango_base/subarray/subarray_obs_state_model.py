@@ -130,8 +130,8 @@ class _SubarrayObsStateMachine(Machine):
 
         :param callback: A callback to be called when the state changes
         :type callback: callable
-        :param extra_kwargs: Additional keywords arguments to pass to super class
-            initialiser (useful for graphing)
+        :param extra_kwargs: Additional keywords arguments to pass to
+            super class initialiser (useful for graphing)
         """
         self._callback = callback
 

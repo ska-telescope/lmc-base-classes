@@ -168,8 +168,8 @@ class StateMachineTester:
 
         :param machine_under_test: the state machine under test
         :type machine_under_test: state machine object instance
-        :param target_state_kwargs: specification of the target state
-            of the machine under test
+        :param target_state_kwargs: specification of the target state of
+            the machine under test
         :type target_state_kwargs: Any
         """
         raise NotImplementedError()

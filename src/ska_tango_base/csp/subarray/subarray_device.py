@@ -5,7 +5,6 @@
 #
 # Distributed under the terms of the BSD3 license.
 # See LICENSE.txt for more info.
-
 """
 CspSubElementSubarray.
 
@@ -221,8 +220,8 @@ class CspSubElementSubarray(SKASubarray):
             Stateless hook for device initialisation.
 
             :return: A tuple containing a return code and a string
-                message indicating status. The message is for
-                information purpose only.
+                  message indicating status. The message is for
+                  information purpose only.
             :rtype: (ResultCode, str)
             """
             super().do()
@@ -469,10 +468,9 @@ class CspSubElementSubarray(SKASubarray):
 
             :param argin: The configuration
             :type argin: dict
-
             :return: A tuple containing a return code and a string
-                message indicating status. The message is for
-                information purpose only.
+                  message indicating status. The message is for
+                  information purpose only.
             :rtype: (ResultCode, str)
             """
             component_manager = self.target
@@ -483,9 +481,11 @@ class CspSubElementSubarray(SKASubarray):
             """
             Validate the configuration parameters against allowed values, as needed.
 
-            :param argin: The JSON formatted string with configuration for the device.
+            :param argin: The JSON formatted string with configuration
+                  for the device.
             :type argin: 'DevString'
-            :return: A tuple containing a return code and a string message.
+            :return: A tuple containing a return code and a string
+                  message.
             :rtype: (ResultCode, str)
             """
             try:
@@ -537,8 +537,8 @@ class CspSubElementSubarray(SKASubarray):
             Stateless hook for GoToIdle() command functionality.
 
             :return: A tuple containing a return code and a string
-                message indicating status. The message is for
-                information purpose only.
+                  message indicating status. The message is for
+                  information purpose only.
             :rtype: (ResultCode, str)
             """
             component_manager = self.target
@@ -560,10 +560,9 @@ class CspSubElementSubarray(SKASubarray):
 
         :param argin: JSON formatted string with the scan configuration.
         :type argin: 'DevString'
-
-        :return:
-            A tuple containing a return code and a string message indicating status.
-            The message is for information purpose only.
+        :return: A tuple containing a return code and a string message
+            indicating status. The message is for information purpose
+            only.
         :rtype: (ResultCode, str)
         """
         command = self.get_command_object("ConfigureScan")
@@ -591,10 +590,9 @@ class CspSubElementSubarray(SKASubarray):
         Redirect to ConfigureScan method. Configure a complete scan for the subarray.
 
         :param argin: JSON configuration string
-
-        :return:'DevVarLongStringArray'
-            A tuple containing a return code and a string message indicating status.
-            The message is for information purpose only.
+        :return: 'DevVarLongStringArray' A tuple containing a return
+            code and a string message indicating status. The message is
+            for information purpose only.
         """
         return self.ConfigureScan(argin)
         # PROTECTED REGION END #    //  CspSubElementSubarray.Configure
@@ -610,9 +608,9 @@ class CspSubElementSubarray(SKASubarray):
         """
         Transit the subarray from READY to IDLE obsState.
 
-        :return:'DevVarLongStringArray'
-            A tuple containing a return code and a string  message indicating status.
-            The message is for information purpose only.
+        :return: 'DevVarLongStringArray' A tuple containing a return
+            code and a string message indicating status. The message is
+            for information purpose only.
         """
         self._last_scan_configuration = ""
 
@@ -631,9 +629,9 @@ class CspSubElementSubarray(SKASubarray):
         """
         Transit the subarray from READY to IDLE obsState. Redirect to GoToIdle command.
 
-        :return:'DevVarLongStringArray'
-            A tuple containing a return code and a string  message indicating status.
-            The message is for information purpose only.
+        :return: 'DevVarLongStringArray' A tuple containing a return
+            code and a string message indicating status. The message is
+            for information purpose only.
         """
         return self.GoToIdle()
         # PROTECTED REGION END #    //  CspSubElementSubarray.End

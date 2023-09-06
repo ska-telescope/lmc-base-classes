@@ -46,8 +46,8 @@ class SKACapability(SKAObsDevice):
             Stateless hook for device initialisation.
 
             :return: A tuple containing a return code and a string
-                message indicating status. The message is for
-                information purpose only.
+                  message indicating status. The message is for
+                  information purpose only.
             :rtype: (ResultCode, str)
             """
             super().do()
@@ -152,7 +152,8 @@ class SKACapability(SKAObsDevice):
         """
         Read the number of instances of a capability in the subarray.
 
-        :return: The number of configured instances of a capability in a subarray
+        :return: The number of configured instances of a capability in a
+            subarray
         """
         return self._configured_instances
         # PROTECTED REGION END #    //  SKACapability.configuredInstances_read
@@ -180,8 +181,8 @@ class SKACapability(SKAObsDevice):
             Stateless hook for ConfigureInstances()) command functionality.
 
             :return: A tuple containing a return code and a string
-                message indicating status. The message is for
-                information purpose only.
+                  message indicating status. The message is for
+                  information purpose only.
             :rtype: (ResultCode, str)
             """
             device = self.target

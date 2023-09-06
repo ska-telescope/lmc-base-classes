@@ -198,10 +198,8 @@ class AdminModeModel:
             action is disallowed, or merely return False (optional,
             defaults to False)
         :type raise_if_disallowed: bool
-
         :raises StateModelError: if the action is unknown to the state
             machine
-
         :return: whether the action is allowed in the current state
         :rtype: bool
         """

@@ -45,8 +45,8 @@ class SKASubarray(SKAObsDevice):
             Stateless hook for device initialisation.
 
             :return: A tuple containing a return code and a string
-                message indicating status. The message is for
-                information purpose only.
+                  message indicating status. The message is for
+                  information purpose only.
             :rtype: (ResultCode, str)
             """
             super().do()
@@ -92,10 +92,9 @@ class SKASubarray(SKAObsDevice):
 
             :param argin: The resources to be assigned
             :type argin: list of str
-
             :return: A tuple containing a return code and a string
-                message indicating status. The message is for
-                information purpose only.
+                  message indicating status. The message is for
+                  information purpose only.
             :rtype: (ResultCode, str)
             """
             component_manager = self.target
@@ -139,10 +138,9 @@ class SKASubarray(SKAObsDevice):
 
             :param argin: The resources to be released
             :type argin: list of str
-
             :return: A tuple containing a return code and a string
-                message indicating status. The message is for
-                information purpose only.
+                  message indicating status. The message is for
+                  information purpose only.
             :rtype: (ResultCode, str)
             """
             component_manager = self.target
@@ -185,8 +183,8 @@ class SKASubarray(SKAObsDevice):
             Stateless hook for ReleaseAllResources() command functionality.
 
             :return: A tuple containing a return code and a string
-                message indicating status. The message is for
-                information purpose only.
+                  message indicating status. The message is for
+                  information purpose only.
             :rtype: (ResultCode, str)
             """
             component_manager = self.target
@@ -228,10 +226,9 @@ class SKASubarray(SKAObsDevice):
 
             :param argin: The configuration as JSON
             :type argin: str
-
             :return: A tuple containing a return code and a string
-                message indicating status. The message is for
-                information purpose only.
+                  message indicating status. The message is for
+                  information purpose only.
             :rtype: (ResultCode, str)
             """
             component_manager = self.target
@@ -273,10 +270,9 @@ class SKASubarray(SKAObsDevice):
 
             :param argin: Scan info
             :type argin: str
-
             :return: A tuple containing a return code and a string
-                message indicating status. The message is for
-                information purpose only.
+                  message indicating status. The message is for
+                  information purpose only.
             :rtype: (ResultCode, str)
             """
             component_manager = self.target
@@ -317,8 +313,8 @@ class SKASubarray(SKAObsDevice):
             Stateless hook for EndScan() command functionality.
 
             :return: A tuple containing a return code and a string
-                message indicating status. The message is for
-                information purpose only.
+                  message indicating status. The message is for
+                  information purpose only.
             :rtype: (ResultCode, str)
             """
             component_manager = self.target
@@ -359,8 +355,8 @@ class SKASubarray(SKAObsDevice):
             Stateless hook for End() command functionality.
 
             :return: A tuple containing a return code and a string
-                message indicating status. The message is for
-                information purpose only.
+                  message indicating status. The message is for
+                  information purpose only.
             :rtype: (ResultCode, str)
             """
             component_manager = self.target
@@ -401,8 +397,8 @@ class SKASubarray(SKAObsDevice):
             Stateless hook for Abort() command functionality.
 
             :return: A tuple containing a return code and a string
-                message indicating status. The message is for
-                information purpose only.
+                  message indicating status. The message is for
+                  information purpose only.
             :rtype: (ResultCode, str)
             """
             component_manager = self.target
@@ -443,8 +439,8 @@ class SKASubarray(SKAObsDevice):
             Stateless hook for ObsReset() command functionality.
 
             :return: A tuple containing a return code and a string
-                message indicating status. The message is for
-                information purpose only.
+                  message indicating status. The message is for
+                  information purpose only.
             :rtype: (ResultCode, str)
             """
             component_manager = self.target
@@ -485,8 +481,8 @@ class SKASubarray(SKAObsDevice):
             Execute the functionality of the Restart() command.
 
             :return: A tuple containing a return code and a string
-                message indicating status. The message is for
-                information purpose only.
+                  message indicating status. The message is for
+                  information purpose only.
             :rtype: (ResultCode, str)
             """
             component_manager = self.target
@@ -512,7 +508,7 @@ class SKASubarray(SKAObsDevice):
         """Set up the command objects."""
         super().init_command_objects()
 
-        for (command_name, command_class) in [
+        for command_name, command_class in [
             ("AssignResources", self.AssignResourcesCommand),
             ("ReleaseResources", self.ReleaseResourcesCommand),
             ("ReleaseAllResources", self.ReleaseAllResourcesCommand),
@@ -664,10 +660,9 @@ class SKASubarray(SKAObsDevice):
 
         :param argin: the resources to be assigned
         :type argin: list of str
-
-        :return: A tuple containing a return code and a string
-            message indicating status. The message is for
-            information purpose only.
+        :return: A tuple containing a return code and a string message
+            indicating status. The message is for information purpose
+            only.
         :rtype: (ResultCode, str)
         """
         command = self.get_command_object("AssignResources")
@@ -701,10 +696,9 @@ class SKASubarray(SKAObsDevice):
 
         :param argin: the resources to be released
         :type argin: list of str
-
-        :return: A tuple containing a return code and a string
-            message indicating status. The message is for
-            information purpose only.
+        :return: A tuple containing a return code and a string message
+            indicating status. The message is for information purpose
+            only.
         :rtype: (ResultCode, str)
         """
         command = self.get_command_object("ReleaseResources")
@@ -734,9 +728,9 @@ class SKASubarray(SKAObsDevice):
         To modify behaviour for this command, modify the do() method of
         the command class.
 
-        :return: A tuple containing a return code and a string
-            message indicating status. The message is for
-            information purpose only.
+        :return: A tuple containing a return code and a string message
+            indicating status. The message is for information purpose
+            only.
         :rtype: (ResultCode, str)
         """
         command = self.get_command_object("ReleaseAllResources")
@@ -769,10 +763,9 @@ class SKASubarray(SKAObsDevice):
 
         :param argin: configuration specification
         :type argin: string
-
-        :return: A tuple containing a return code and a string
-            message indicating status. The message is for
-            information purpose only.
+        :return: A tuple containing a return code and a string message
+            indicating status. The message is for information purpose
+            only.
         :rtype: (ResultCode, str)
         """
         command = self.get_command_object("Configure")
@@ -806,10 +799,9 @@ class SKASubarray(SKAObsDevice):
 
         :param argin: Information about the scan
         :type argin: Array of str
-
-        :return: A tuple containing a return code and a string
-            message indicating status. The message is for
-            information purpose only.
+        :return: A tuple containing a return code and a string message
+            indicating status. The message is for information purpose
+            only.
         :rtype: (ResultCode, str)
         """
         command = self.get_command_object("Scan")
@@ -839,9 +831,9 @@ class SKASubarray(SKAObsDevice):
         To modify behaviour for this command, modify the do() method of
         the command class.
 
-        :return: A tuple containing a return code and a string
-            message indicating status. The message is for
-            information purpose only.
+        :return: A tuple containing a return code and a string message
+            indicating status. The message is for information purpose
+            only.
         :rtype: (ResultCode, str)
         """
         command = self.get_command_object("EndScan")
@@ -871,9 +863,9 @@ class SKASubarray(SKAObsDevice):
         To modify behaviour for this command, modify the do() method of
         the command class.
 
-        :return: A tuple containing a return code and a string
-            message indicating status. The message is for
-            information purpose only.
+        :return: A tuple containing a return code and a string message
+            indicating status. The message is for information purpose
+            only.
         :rtype: (ResultCode, str)
         """
         command = self.get_command_object("End")
@@ -902,9 +894,9 @@ class SKASubarray(SKAObsDevice):
         To modify behaviour for this command, modify the do() method of
         the command class.
 
-        :return: A tuple containing a return code and a string
-            message indicating status. The message is for
-            information purpose only.
+        :return: A tuple containing a return code and a string message
+            indicating status. The message is for information purpose
+            only.
         :rtype: (ResultCode, str)
         """
         command = self.get_command_object("Abort")
@@ -933,9 +925,9 @@ class SKASubarray(SKAObsDevice):
         To modify behaviour for this command, modify the do() method of
         the command class.
 
-        :return: A tuple containing a return code and a string
-            message indicating status. The message is for
-            information purpose only.
+        :return: A tuple containing a return code and a string message
+            indicating status. The message is for information purpose
+            only.
         :rtype: (ResultCode, str)
         """
         command = self.get_command_object("ObsReset")
@@ -964,9 +956,9 @@ class SKASubarray(SKAObsDevice):
         To modify behaviour for this command, modify the do() method of
         the command class.
 
-        :return: A tuple containing a return code and a string
-            message indicating status. The message is for
-            information purpose only.
+        :return: A tuple containing a return code and a string message
+            indicating status. The message is for information purpose
+            only.
         :rtype: (ResultCode, str)
         """
         command = self.get_command_object("Restart")
@@ -984,7 +976,6 @@ def main(args=None, **kwargs):
 
     :param args: positional args to tango.server.run
     :param kwargs: named args to tango.server.run
-
     :return: exit code
     """
     return run((SKASubarray,), args=args, **kwargs)

@@ -88,18 +88,18 @@ class SKALogger(SKABaseDevice):
             """
             Initialise a new SetLoggingLevelCommand instance.
 
-            :param target: the object that this base command acts upon. For
-                example, the device's component manager.
+            :param target: the object that this base command acts upon.
+                  For example, the device's component manager.
             :type target: object
             :param state_model: the state model that this command uses
-                 to check that it is allowed to run, and that it drives
-                 with actions.
+                  to check that it is allowed to run, and that it drives
+                  with actions.
             :type state_model: SKABaseClassStateModel or a subclass of
-                same
+                  same
             :param logger: the logger to be used by this Command. If not
-                provided, then a default module logger will be used.
+                  provided, then a default module logger will be used.
             :type logger: a logger that implements the standard library
-                logger interface
+                  logger interface
             """
             super().__init__(target, state_model, logger=logger)
 
@@ -108,8 +108,8 @@ class SKALogger(SKABaseDevice):
             Stateless hook for SetLoggingLevel() command functionality.
 
             :return: A tuple containing a return code and a string
-                message indicating status. The message is for
-                information purpose only.
+                  message indicating status. The message is for
+                  information purpose only.
             :rtype: (ResultCode, str)
             """
             logging_levels = argin[0][:]

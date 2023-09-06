@@ -42,7 +42,6 @@ def check_communicating(func):
         :param component_manager: the component manager to check
         :param args: positional arguments to the wrapped function
         :param kwargs: keyword arguments to the wrapped function
-
         :return: whatever the wrapped function returns
         """
         if not component_manager.is_communicating:
@@ -101,9 +100,9 @@ class ReferenceBaseComponentManager(BaseComponentManager):
             Initialise a new instance.
 
             :param _power_mode: initial power mode of this component
-                (for testing only)
+                  (for testing only)
             :param _faulty: whether this component should initially
-                simulate a fault (for testing only)
+                  simulate a fault (for testing only)
             """
             self._power_mode = _power_mode
             self._power_callback = None
@@ -116,9 +115,9 @@ class ReferenceBaseComponentManager(BaseComponentManager):
             Set callbacks for the underlying component.
 
             :param power_mode_callback: a callback to call when the
-                power mode of the component changes
+                  power mode of the component changes
             :param fault_callback: a callback to call when the component
-                experiences a fault
+                  experiences a fault
             """
             self._power_callback = power_mode_callback
             self._fault_callback = fault_callback
@@ -232,7 +231,7 @@ class ReferenceBaseComponentManager(BaseComponentManager):
             called as required.
 
             :param fault: new value for whether the component is
-                faulting or not
+                  faulting or not
             :type faulting: bool
             """
             if self._faulty != faulty:

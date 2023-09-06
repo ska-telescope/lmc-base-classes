@@ -487,7 +487,8 @@ def validate_input_sizes(command_name, argin):
     """
     Check the validity of the input parameters passed to the specified command.
 
-    :param command_name: The name of the command which is to be executed.
+    :param command_name: The name of the command which is to be
+        executed.
     :type command_name: str
     :param argin: A tuple of two lists
     :type argin: tango.DevVarLongStringArray

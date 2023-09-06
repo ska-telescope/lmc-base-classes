@@ -45,7 +45,6 @@ def check_on(func):
         :param component: the component to check
         :param args: positional arguments to the wrapped function
         :param kwargs: keyword arguments to the wrapped function
-
         :return: whatever the wrapped function returns
         """
         if component.faulty:
@@ -79,7 +78,7 @@ class ReferenceSubarrayComponentManager(
             Initialise a new instance.
 
             :param callback: callback to call when the resource pool
-                goes from empty to non-empty or vice-versa
+                  goes from empty to non-empty or vice-versa
             """
             self._resources = set()
 
@@ -141,7 +140,7 @@ class ReferenceSubarrayComponentManager(
             effect a configuration.
 
             :return: whether this resource pool contains the specified
-                resources
+                  resources
             :rtype: bool
             """
             return resources in self._resources
@@ -180,11 +179,11 @@ class ReferenceSubarrayComponentManager(
             Initialise a new instance.
 
             :param capability_types: a list strings representing
-                capability types.
+                  capability types.
             :param _power_mode: initial power mode of this component
-                (for testing only)
+                  (for testing only)
             :param _faulty: whether this component should initially
-                simulate a fault (for testing only)
+                  simulate a fault (for testing only)
             """
             self._configured = False
 
@@ -218,12 +217,13 @@ class ReferenceSubarrayComponentManager(
             Set callbacks for the underlying component.
 
             :param configured_callback: a callback to call with a
-                boolean argument when whether the component is
-                configured changes
+                  boolean argument when whether the component is
+                  configured changes
             :param scanning_callback: a callback to call with a boolean
-                argument when whether the component is scanning changes
+                  argument when whether the component is scanning
+                  changes
             :param obsfault_callback: a callback to call when the
-                component experiences an obs faults
+                  component experiences an obs faults
             """
             self._configured_callback = configured_callback
             self._scanning_callback = scanning_callback
@@ -247,7 +247,7 @@ class ReferenceSubarrayComponentManager(
             Return the configured capabilities of this component.
 
             :return: list of strings indicating number of configured
-                instances of each capability type
+                  instances of each capability type
             :rtype: list of str
             """
             configured_capabilities = []
@@ -286,11 +286,10 @@ class ReferenceSubarrayComponentManager(
             Check the validity of the input parameter passed to the Configure command.
 
             :param capability_types: a list strings representing
-                capability types.
+                  capability types.
             :type capability_types: list
-
-            :raises CapabilityValidationError: If any of the capabilities
-                requested are not valid.
+            :raises CapabilityValidationError: If any of the
+                  capabilities requested are not valid.
             """
             invalid_capabilities = list(
                 set(capability_types) - set(self._configured_capabilities)
@@ -364,7 +363,7 @@ class ReferenceSubarrayComponentManager(
             called as required.
 
             :param configured: new value for whether the component is
-                configured or not
+                  configured or not
             :type configured: bool
             """
             if self._configured != configured:
@@ -385,7 +384,7 @@ class ReferenceSubarrayComponentManager(
             called as required.
 
             :param scanning: new value for whether the component is
-                scanning or not
+                  scanning or not
             :type scanning: bool
             """
             if self._scanning != scanning:
@@ -406,7 +405,7 @@ class ReferenceSubarrayComponentManager(
             called as required.
 
             :param obsfault: new value for whether the component is
-                obsfaulting or not
+                  obsfaulting or not
             :type obsfaulting: bool
             """
             if self._obsfault != obsfault:

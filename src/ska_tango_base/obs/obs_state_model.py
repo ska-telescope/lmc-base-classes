@@ -34,8 +34,8 @@ class ObsStateModel:
         """
         Initialise the model.
 
-        :param state_machine_factory: a callable that returns a
-            state machine for this model to use
+        :param state_machine_factory: a callable that returns a state
+            machine for this model to use
         :type state_machine_factory: callable
         :param logger: the logger to be used by this state model.
         :type logger: a logger that implements the standard library
@@ -86,15 +86,12 @@ class ObsStateModel:
 
         :param action: an action, as given in the transitions table
         :type action: str
-
         :param raise_if_disallowed: whether to raise an exception if the
             action is disallowed, or merely return False (optional,
             defaults to False)
         :type raise_if_disallowed: bool
-
         :raises StateModelError: if the action is unknown to the state
             machine
-
         :return: whether the action is allowed in the current state
         :rtype: bool
         """

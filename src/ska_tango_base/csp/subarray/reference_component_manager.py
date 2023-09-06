@@ -39,7 +39,6 @@ def check_on(func):
         :param component: the component to check
         :param args: positional arguments to the wrapped function
         :param kwargs: keyword arguments to the wrapped function
-
         :return: whatever the wrapped function returns
         """
         if component.faulty:
@@ -92,11 +91,11 @@ class ReferenceCspSubarrayComponentManager(
             Initialise a new instance.
 
             :param capability_types: a list strings representing
-                capability types.
+                  capability types.
             :param _power_mode: initial power mode of this component
-                (for testing only)
+                  (for testing only)
             :param _faulty: whether this component should initially
-                simulate a fault (for testing only)
+                  simulate a fault (for testing only)
             """
             self._config_id = ""
             self._scan_id = 0

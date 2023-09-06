@@ -4,7 +4,6 @@
 #
 #
 #
-
 """
 SKAController.
 
@@ -49,8 +48,8 @@ class SKAController(SKABaseDevice):
             Stateless hook for device initialisation.
 
             :return: A tuple containing a return code and a string
-                message indicating status. The message is for
-                information purpose only.
+                  message indicating status. The message is for
+                  information purpose only.
             :rtype: (ResultCode, str)
             """
             super().do()

@@ -4,7 +4,6 @@
 #
 #
 #
-
 """
 This module implements a generic base model and device for SKA.
 
@@ -407,8 +406,8 @@ class SKABaseDevice(Device):
             Stateless hook for device initialisation.
 
             :return: A tuple containing a return code and a string
-                message indicating status. The message is for
-                information purpose only.
+                  message indicating status. The message is for
+                  information purpose only.
             :rtype: (ResultCode, str)
             """
             device = self.target
@@ -501,27 +500,27 @@ class SKABaseDevice(Device):
 
         # monkey patch Tango Logging Service streams so they go to the Python
         # logger instead
-        def _debug_patch(*args,source: typing.Union[str, None],**kwargs):
+        def _debug_patch(*args, source: typing.Union[str, None], **kwargs):
             self.logger.debug(*args, **kwargs)
 
         self.debug_stream = _debug_patch
 
-        def _info_patch(*args,source: typing.Union[str, None],**kwargs):
+        def _info_patch(*args, source: typing.Union[str, None], **kwargs):
             self.logger.info(*args, **kwargs)
 
         self.info_stream = _info_patch
 
-        def _warn_patch(*args,source: typing.Union[str, None],**kwargs):
+        def _warn_patch(*args, source: typing.Union[str, None], **kwargs):
             self.logger.warning(*args, **kwargs)
 
         self.warn_stream = _warn_patch
 
-        def _error_patch(*args,source: typing.Union[str, None],**kwargs):
+        def _error_patch(*args, source: typing.Union[str, None], **kwargs):
             self.logger.error(*args, **kwargs)
 
         self.error_stream = _error_patch
 
-        def _fatal_patch(*args,source: typing.Union[str, None],**kwargs):
+        def _fatal_patch(*args, source: typing.Union[str, None], **kwargs):
             self.logger.critical(*args, **kwargs)
 
         self.fatal_stream = _fatal_patch
@@ -582,7 +581,6 @@ class SKABaseDevice(Device):
                                "elt/switch/B", "elt/pdu/rackB"],
                  "subgroups": []}
            ]} ]
-
     """
 
     LoggingLevelDefault = device_property(
@@ -601,8 +599,8 @@ class SKABaseDevice(Device):
     """
     Device property.
 
-    Default logging targets at device startup.
-    See the project readme for details.
+    Default logging targets at device startup. See the project readme
+    for details.
     """
 
     # ----------
@@ -812,7 +810,6 @@ class SKABaseDevice(Device):
         :param command_name: name of the command for which a command
             object (handler) is sought
         :type command_name: str
-
         :return: the registered command object (handler) for the command
         :rtype: Command instance
         """
@@ -886,7 +883,7 @@ class SKABaseDevice(Device):
         """
         Read the logging level of the device.
 
-        :return:  Logging level of the device.
+        :return: Logging level of the device.
         """
         return self._logging_level
         # PROTECTED REGION END #    //  SKABaseDevice.loggingLevel_read
@@ -899,7 +896,6 @@ class SKABaseDevice(Device):
         Both the Python logger and the Tango logger are updated.
 
         :param value: Logging level for logger
-
         :raises LoggingLevelError: for invalid value
         """
         try:
@@ -926,10 +922,10 @@ class SKABaseDevice(Device):
         """
         Read the additional logging targets of the device.
 
-        Note that this excludes the handlers provided by the ska_ser_logging
-        library defaults.
+        Note that this excludes the handlers provided by the
+        ska_ser_logging library defaults.
 
-        :return:  Logging level of the device.
+        :return: Logging level of the device.
         """
         return [str(handler.name) for handler in self.logger.handlers]
         # PROTECTED REGION END #    //  SKABaseDevice.loggingTargets_read
@@ -939,8 +935,8 @@ class SKABaseDevice(Device):
         """
         Set the additional logging targets for the device.
 
-        Note that this excludes the handlers provided by the ska_ser_logging
-        library defaults.
+        Note that this excludes the handlers provided by the
+        ska_ser_logging library defaults.
 
         :param value: Logging targets for logger
         """
@@ -1072,8 +1068,8 @@ class SKABaseDevice(Device):
             Stateless hook for device GetVersionInfo() command.
 
             :return: A tuple containing a return code and a string
-                message indicating status. The message is for
-                information purpose only.
+                  message indicating status. The message is for
+                  information purpose only.
             :rtype: (ResultCode, str)
             """
             device = self.target
@@ -1124,8 +1120,8 @@ class SKABaseDevice(Device):
             Stateless hook for device reset.
 
             :return: A tuple containing a return code and a string
-                message indicating status. The message is for
-                information purpose only.
+                  message indicating status. The message is for
+                  information purpose only.
             :rtype: (ResultCode, str)
             """
             self.target.reset()
@@ -1156,9 +1152,9 @@ class SKABaseDevice(Device):
         To modify behaviour for this command, modify the do() method of
         the command class.
 
-        :return: A tuple containing a return code and a string
-            message indicating status. The message is for
-            information purpose only.
+        :return: A tuple containing a return code and a string message
+            indicating status. The message is for information purpose
+            only.
         :rtype: (ResultCode, str)
         """
         command = self.get_command_object("Reset")
@@ -1191,8 +1187,8 @@ class SKABaseDevice(Device):
             Stateless hook for Standby() command functionality.
 
             :return: A tuple containing a return code and a string
-                message indicating status. The message is for
-                information purpose only.
+                  message indicating status. The message is for
+                  information purpose only.
             :rtype: (ResultCode, str)
             """
             self.target.standby()
@@ -1224,9 +1220,9 @@ class SKABaseDevice(Device):
         To modify behaviour for this command, modify the do() method of
         the command class.
 
-        :return: A tuple containing a return code and a string
-            message indicating status. The message is for
-            information purpose only.
+        :return: A tuple containing a return code and a string message
+            indicating status. The message is for information purpose
+            only.
         :rtype: (ResultCode, str)
         """
         command = self.get_command_object("Standby")
@@ -1259,8 +1255,8 @@ class SKABaseDevice(Device):
             Stateless hook for Off() command functionality.
 
             :return: A tuple containing a return code and a string
-                message indicating status. The message is for
-                information purpose only.
+                  message indicating status. The message is for
+                  information purpose only.
             :rtype: (ResultCode, str)
             """
             self.target.off()
@@ -1292,9 +1288,9 @@ class SKABaseDevice(Device):
         To modify behaviour for this command, modify the do() method of
         the command class.
 
-        :return: A tuple containing a return code and a string
-            message indicating status. The message is for
-            information purpose only.
+        :return: A tuple containing a return code and a string message
+            indicating status. The message is for information purpose
+            only.
         :rtype: (ResultCode, str)
         """
         command = self.get_command_object("Off")
@@ -1327,8 +1323,8 @@ class SKABaseDevice(Device):
             Stateless hook for On() command functionality.
 
             :return: A tuple containing a return code and a string
-                message indicating status. The message is for
-                information purpose only.
+                  message indicating status. The message is for
+                  information purpose only.
             :rtype: (ResultCode, str)
             """
             self.target.on()
@@ -1361,9 +1357,9 @@ class SKABaseDevice(Device):
         To modify behaviour for this command, modify the do() method of
         the command class.
 
-        :return: A tuple containing a return code and a string
-            message indicating status. The message is for
-            information purpose only.
+        :return: A tuple containing a return code and a string message
+            indicating status. The message is for information purpose
+            only.
         :rtype: (ResultCode, str)
         """
         command = self.get_command_object("On")

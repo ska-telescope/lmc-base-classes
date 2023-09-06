@@ -50,8 +50,8 @@ class TestSKAController(object):
         """
         Specification of the device under test.
 
-        The specification includes the device's properties and
-        memorized attributes.
+        The specification includes the device's properties and memorized
+        attributes.
 
         This implementation provides a concrete subclass of the device
         class under test, some properties, and a memorized value for

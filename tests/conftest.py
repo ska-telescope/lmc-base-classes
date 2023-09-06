@@ -101,7 +101,7 @@ def tango_change_event_helper(device_under_test):
             Return an instance that is subscribed to change events on a named attribute.
 
             :param attribute_name: name of the attribute for which
-                change events will be subscribed
+                  change events will be subscribed
             :type attribute_name: str
             :return: an event subscriber helper object
             :rtype: object
@@ -116,7 +116,7 @@ def tango_change_event_helper(device_under_test):
             named attribute.
 
             :param attribute_name: name of the attribute for which
-                change events will be subscribed
+                  change events will be subscribed
             :type attribute_name: str
             """
             self._value = None
@@ -158,7 +158,7 @@ def tango_change_event_helper(device_under_test):
             arrives in time.
 
             :return: the attribute value reported in next change event,
-                or None if there is no event
+                  or None if there is no event
             :rtype: same as attribute type
             """
             assert not self._errors, f"Some errors: {self._errors}"
@@ -188,7 +188,7 @@ def tango_change_event_helper(device_under_test):
             other events unconsumed.
 
             :param value: the value that the attribute is asserted to
-                have been changed to
+                  have been changed to
             :type value: same as the attribute type
             """
             assert self._next() == value
@@ -205,8 +205,8 @@ def tango_change_event_helper(device_under_test):
             the given values, but may leave subsequent events
             unconsumed.
 
-            :param values: sequence of values that the attribute
-                is asserted to have been changed to
+            :param values: sequence of values that the attribute is
+                  asserted to have been changed to
             :type values: list
             """
             for value in values:

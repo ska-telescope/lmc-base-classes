@@ -2,7 +2,6 @@
 #
 # This file is part of the CspSubElementObsDevice project
 #
-
 """
 CspSubElementObsDevice.
 
@@ -137,7 +136,7 @@ class CspSubElementObsDevice(SKAObsDevice):
         """Set up the command objects."""
         super().init_command_objects()
 
-        for (command_name, command_class) in [
+        for command_name, command_class in [
             ("ConfigureScan", self.ConfigureScanCommand),
             ("Scan", self.ScanCommand),
             ("EndScan", self.EndScanCommand),
@@ -163,8 +162,8 @@ class CspSubElementObsDevice(SKAObsDevice):
             Stateless hook for device initialisation.
 
             :return: A tuple containing a return code and a string
-                message indicating status. The message is for
-                information purpose only.
+                  message indicating status. The message is for
+                  information purpose only.
             :rtype: (ResultCode, str)
             """
             super().do()
@@ -301,10 +300,9 @@ class CspSubElementObsDevice(SKAObsDevice):
 
             :param argin: The configuration
             :type argin: dict
-
             :return: A tuple containing a return code and a string
-                message indicating status. The message is for
-                information purpose only.
+                  message indicating status. The message is for
+                  information purpose only.
             :rtype: (ResultCode, str)
             """
             component_manager = self.target
@@ -315,9 +313,11 @@ class CspSubElementObsDevice(SKAObsDevice):
             """
             Validate the configuration parameters against allowed values, as needed.
 
-            :param argin: The JSON formatted string with configuration for the device.
+            :param argin: The JSON formatted string with configuration
+                  for the device.
             :type argin: 'DevString'
-            :return: A tuple containing a return code and a string message.
+            :return: A tuple containing a return code and a string
+                  message.
             :rtype: (ResultCode, str)
             """
             try:
@@ -369,10 +369,9 @@ class CspSubElementObsDevice(SKAObsDevice):
 
             :param argin: The scan ID.
             :type argin: str
-
             :return: A tuple containing a return code and a string
-                message indicating status. The message is for
-                information purpose only.
+                  message indicating status. The message is for
+                  information purpose only.
             :rtype: (ResultCode, str)
             """
             component_manager = self.target
@@ -389,8 +388,8 @@ class CspSubElementObsDevice(SKAObsDevice):
             :param argin: the scan id
             :type argin: string
             :return: A tuple containing a return code and a string
-                message indicating status. The message is for
-                information purpose only.
+                  message indicating status. The message is for
+                  information purpose only.
             :rtype: (ResultCode, str)
             """
             if not argin.isdigit():
@@ -430,8 +429,8 @@ class CspSubElementObsDevice(SKAObsDevice):
             Stateless hook for EndScan() command functionality.
 
             :return: A tuple containing a return code and a string
-                message indicating status. The message is for
-                information purpose only.
+                  message indicating status. The message is for
+                  information purpose only.
             :rtype: (ResultCode, str)
             """
             component_manager = self.target
@@ -469,8 +468,8 @@ class CspSubElementObsDevice(SKAObsDevice):
             Stateless hook for GoToIdle() command functionality.
 
             :return: A tuple containing a return code and a string
-                message indicating status. The message is for
-                information purpose only.
+                  message indicating status. The message is for
+                  information purpose only.
             :rtype: (ResultCode, str)
             """
             component_manager = self.target
@@ -508,8 +507,8 @@ class CspSubElementObsDevice(SKAObsDevice):
             Stateless hook for ObsReset() command functionality.
 
             :return: A tuple containing a return code and a string
-                message indicating status. The message is for
-                information purpose only.
+                  message indicating status. The message is for
+                  information purpose only.
             :rtype: (ResultCode, str)
             """
             message = "ObsReset command completed OK"
@@ -547,8 +546,8 @@ class CspSubElementObsDevice(SKAObsDevice):
             Stateless hook for Abort() command functionality.
 
             :return: A tuple containing a return code and a string
-                message indicating status. The message is for
-                information purpose only.
+                  message indicating status. The message is for
+                  information purpose only.
             :rtype: (ResultCode, str)
             """
             return (ResultCode.OK, "Abort command completed OK")
@@ -568,9 +567,9 @@ class CspSubElementObsDevice(SKAObsDevice):
 
         :param argin: JSON formatted string with the scan configuration.
         :type argin: 'DevString'
-
-        :return: A tuple containing a return code and a string message indicating status.
-            The message is for information purpose only.
+        :return: A tuple containing a return code and a string message
+            indicating status. The message is for information purpose
+            only.
         :rtype: (ResultCode, str)
         """
         command = self.get_command_object("ConfigureScan")
@@ -599,9 +598,9 @@ class CspSubElementObsDevice(SKAObsDevice):
 
         :param argin: A string with the scan ID
         :type argin: 'DevString'
-
-        :return: A tuple containing a return code and a string message indicating status.
-            The message is for information purpose only.
+        :return: A tuple containing a return code and a string message
+            indicating status. The message is for information purpose
+            only.
         :rtype: (ResultCode, str)
         """
         command = self.get_command_object("Scan")
@@ -620,8 +619,9 @@ class CspSubElementObsDevice(SKAObsDevice):
         """
         End a running scan.
 
-        :return: A tuple containing a return code and a string message indicating status.
-            The message is for information purpose only.
+        :return: A tuple containing a return code and a string message
+            indicating status. The message is for information purpose
+            only.
         :rtype: (ResultCode, str)
         """
         command = self.get_command_object("EndScan")
@@ -640,8 +640,9 @@ class CspSubElementObsDevice(SKAObsDevice):
         """
         Transit the device from READY to IDLE obsState.
 
-        :return: A tuple containing a return code and a string  message indicating status.
-            The message is for information purpose only.
+        :return: A tuple containing a return code and a string message
+            indicating status. The message is for information purpose
+            only.
         :rtype: (ResultCode, str)
         """
         self._last_scan_configuration = ""
@@ -662,8 +663,9 @@ class CspSubElementObsDevice(SKAObsDevice):
         """
         Reset the observing device from a FAULT/ABORTED obsState to IDLE.
 
-        :return: A tuple containing a return code and a string message indicating status.
-            The message is for information purpose only.
+        :return: A tuple containing a return code and a string message
+            indicating status. The message is for information purpose
+            only.
         :rtype: (ResultCode, str)
         """
         command = self.get_command_object("ObsReset")
@@ -682,8 +684,9 @@ class CspSubElementObsDevice(SKAObsDevice):
         """
         Abort the current observing process and move the device to ABORTED obsState.
 
-        :return: A tuple containing a return code and a string message indicating status.
-            The message is for information purpose only.
+        :return: A tuple containing a return code and a string message
+            indicating status. The message is for information purpose
+            only.
         :rtype: (ResultCode, str)
         """
         command = self.get_command_object("Abort")

@@ -83,6 +83,6 @@ include:
   - project: 'ska-telescope/templates-repository'
     file: 'gitlab-ci/includes/build_push.yml'
 
-build and publish oci image for publication:
+build and publish oci image for development:
   image: $SKA_K8S_TOOLS_BUILD_DEPLOY
   when: manual

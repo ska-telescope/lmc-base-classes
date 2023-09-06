@@ -22,6 +22,7 @@ stages:
   - publish
   - pages
   - release
+  - scan
 
 clean shell runner:
   stage: .pre

@@ -15,7 +15,6 @@ cache:
 # It is also specified that only the master branch will be subject of this job.
 
 stages:
-  - lint
   - build
   - test
   - linting
@@ -32,13 +31,12 @@ clean shell runner:
     - rm -rf build/*
 
 unit tests:
-  when: manual
   stage: test
   tags:
     - k8srunner
   script:
-    - echo $(ls -d ./dist/*.whl | grep $CI_COMMIT_SHORT_SHA)
-    - python3 -m pip install --extra-index-url https://artefact.skao.int/repository/pypi-all/simple -U $(ls -d ./dist/*.whl | grep $CI_COMMIT_SHORT_SHA)
+    - echo $(ls -d ./dist/*.whl)
+    - python3 -m pip install --extra-index-url https://artefact.skao.int/repository/pypi-all/simple -U $(ls -d ./dist/*.whl)
     - make test
     - scripts/validate-metadata.sh
   artifacts:
@@ -50,8 +48,8 @@ linting:
   tags:
     - k8srunner
   script:
-    - echo $(ls -d ./dist/*.whl | grep $CI_COMMIT_SHORT_SHA)
-    - python3 -m pip install --extra-index-url https://artefact.skao.int/repository/pypi-all/simple -U $(ls -d ./dist/*.whl | grep $CI_COMMIT_SHORT_SHA)
+    - echo $(ls -d ./dist/*.whl)
+    - python3 -m pip install --extra-index-url https://artefact.skao.int/repository/pypi-all/simple -U $(ls -d ./dist/*.whl)
     - make lint
   artifacts:
     paths:
@@ -79,8 +77,16 @@ include:
   # Publish Python packages
   # https://developer.skao.int/en/latest/tools/software-package-release-procedure.html#building-and-publishing-python-packages
   - project: 'ska-telescope/templates-repository'
-    file: 'gitlab-ci/includes/python.gitlab-ci.yml'
+    file: 'gitlab-ci/includes/build_wheel.yml'
   # Publish OCI images
   # https://developer.skao.int/en/latest/tools/software-package-release-procedure.html#oci-image
   - project: 'ska-telescope/templates-repository'
     file: 'gitlab-ci/includes/build_push.yml'
+
+build and publish oci image for development:
+  image: $SKA_K8S_TOOLS_BUILD_DEPLOY
+  when: manual
+
+build and publish oci image for publication:
+  image: $SKA_K8S_TOOLS_BUILD_DEPLOY
+  when: manual

@@ -2,6 +2,9 @@ black
 isort
 pylint
 pylint-junit
+pytest
+pytest-cov
+pytest-json-report
 docformatter
 flake8
 flake8_formatter_junit_xml

@@ -125,11 +125,6 @@ Writing a component manager involves the following steps.
    must be implemented; for example the component manager's ``on()``
    method must be implemented to actually tell the component to turn on.
 
-   For methods which are long running, an additional method can be
-   implemented to check that the component is in the allowed state.
-   This sanity check should be used by the concurrency mechanism
-   to evaluate if it has the green light to execute the component control.
-
    Note that component *control* and component *monitoring* are
    decoupled from each other. So, for example, a component manager's
    ``on()`` method should not directly call the callback that tells the

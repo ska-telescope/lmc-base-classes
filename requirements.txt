@@ -1,5 +1,7 @@
 black
 isort
+pylint
+pylint-junit
 docformatter
 flake8
 flake8_formatter_junit_xml

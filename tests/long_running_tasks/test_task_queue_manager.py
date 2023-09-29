@@ -295,7 +295,6 @@ class TestQueueManagerTasks:
         num_of_workers = 3
 
         with patch.object(QueueManager, "_on_property_change") as call_back_func:
-
             qm = QueueManager(
                 max_queue_size=5,
                 num_workers=num_of_workers,

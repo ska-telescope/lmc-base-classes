@@ -495,7 +495,7 @@ class SKASubarray(SKAObsDevice):
         """Set up the command objects."""
         super().init_command_objects()
 
-        for (command_name, command_class) in [
+        for command_name, command_class in [
             ("AssignResources", self.AssignResourcesCommand),
             ("ReleaseResources", self.ReleaseResourcesCommand),
             ("ReleaseAllResources", self.ReleaseAllResourcesCommand),

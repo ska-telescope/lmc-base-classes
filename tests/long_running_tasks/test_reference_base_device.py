@@ -153,7 +153,7 @@ def test_callbacks():
             assert attribute_values[4][1] == "IN_PROGRESS"
 
             # longRunningCommandProgress
-            for (index, progress) in zip(range(5, 9), ["1", "25", "50", "74", "100"]):
+            for index, progress in zip(range(5, 9), ["1", "25", "50", "74", "100"]):
                 assert len(attribute_values[index]) == 2
                 assert attribute_values[index][0].endswith("TestProgressCommand")
                 assert attribute_values[index][1] == progress

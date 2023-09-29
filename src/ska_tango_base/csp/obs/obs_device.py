@@ -137,7 +137,7 @@ class CspSubElementObsDevice(SKAObsDevice):
         """Set up the command objects."""
         super().init_command_objects()
 
-        for (command_name, command_class) in [
+        for command_name, command_class in [
             ("ConfigureScan", self.ConfigureScanCommand),
             ("Scan", self.ScanCommand),
             ("EndScan", self.EndScanCommand),

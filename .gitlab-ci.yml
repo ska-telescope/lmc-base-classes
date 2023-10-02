@@ -56,21 +56,26 @@ include:
 # OCI Images
   # do a custom set of build and publish stages
   - project: 'ska-telescope/templates-repository'
+    ref: '11a039c06d00d687d56600eb5c95d946105bf3f6'
     file: 'gitlab-ci/includes/oci-image.gitlab-ci.yml'
 
   # Python packages build,lint, test and publish
   - project: 'ska-telescope/templates-repository'
+    ref: '11a039c06d00d687d56600eb5c95d946105bf3f6'
     file: 'gitlab-ci/includes/python.gitlab-ci.yml'
 
 # Docs pages
   - project: 'ska-telescope/templates-repository'
+    ref: '11a039c06d00d687d56600eb5c95d946105bf3f6'
     file: 'gitlab-ci/includes/docs-pages.gitlab-ci.yml'
 
 # .post step finalisers eg: badges
   - project: 'ska-telescope/templates-repository'
+    ref: '11a039c06d00d687d56600eb5c95d946105bf3f6'
     file: 'gitlab-ci/includes/finaliser.gitlab-ci.yml'
 
 # changelog release page
   - project: 'ska-telescope/templates-repository'
+    ref: '11a039c06d00d687d56600eb5c95d946105bf3f6'
     file: 'gitlab-ci/includes/release.gitlab-ci.yml'
 

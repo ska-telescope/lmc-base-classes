@@ -40,7 +40,6 @@ from .faults import GroupDefinitionsError, SKABaseError
 int_types = {
     tango.CmdArgType.DevUShort,
     tango.CmdArgType.DevLong,
-    tango.CmdArgType.DevInt,
     tango.CmdArgType.DevULong,
     tango.CmdArgType.DevULong64,
     tango.CmdArgType.DevLong64,
@@ -56,7 +55,6 @@ float_types = {
 tango_type_conversion = {
     tango.CmdArgType.DevUShort.real: "int",
     tango.CmdArgType.DevLong.real: "int",
-    tango.CmdArgType.DevInt.real: "int",
     tango.CmdArgType.DevULong.real: "int",
     tango.CmdArgType.DevULong64.real: "int",
     tango.CmdArgType.DevLong64.real: "int",

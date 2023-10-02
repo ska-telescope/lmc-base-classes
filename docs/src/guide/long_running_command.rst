@@ -212,10 +212,7 @@ Create the component manager in your Tango device
                 communication_state_callback=self._communication_state_changed,
                 component_state_callback=self._component_state_changed,
             )
-.. note:: `max_workers` defaults to 1 on the `TaskExecutorComponentManager` to ensure
-   that queued commands are executed sequentially. Anything more without accounting for
-   it risks your component ending in an indeterminate state on the already emergent
-   indeterministic property from using threads.
+.. note:: `max_workers` defaults to 1 to ensure that queued commands are executed sequentially.
 
 Init the command object
 ^^^^^^^^^^^^^^^^^^^^^^^

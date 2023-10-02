@@ -35,7 +35,6 @@ from ska_tango_base.base.task_queue_manager import TaskResult
 int_types = {
     tango._tango.CmdArgType.DevUShort,
     tango._tango.CmdArgType.DevLong,
-    tango._tango.CmdArgType.DevInt,
     tango._tango.CmdArgType.DevULong,
     tango._tango.CmdArgType.DevULong64,
     tango._tango.CmdArgType.DevLong64,
@@ -48,7 +47,6 @@ float_types = {tango._tango.CmdArgType.DevDouble, tango._tango.CmdArgType.DevFlo
 tango_type_conversion = {
     tango.CmdArgType.DevUShort.real: "int",
     tango.CmdArgType.DevLong.real: "int",
-    tango.CmdArgType.DevInt.real: "int",
     tango.CmdArgType.DevULong.real: "int",
     tango.CmdArgType.DevULong64.real: "int",
     tango.CmdArgType.DevLong64.real: "int",

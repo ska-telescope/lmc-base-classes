@@ -148,8 +148,8 @@ class TestSKASubarray:  # pylint: disable=too-many-public-methods
         change_event_callbacks["status"].assert_change_event(
             "The device is in OFF state."
         )
-        change_event_callbacks["longRunningCommandProgress"].assert_change_event(None)
-        change_event_callbacks["longRunningCommandStatus"].assert_change_event(None)
+        change_event_callbacks["longRunningCommandProgress"].assert_change_event(())
+        change_event_callbacks["longRunningCommandStatus"].assert_change_event(())
         change_event_callbacks["longRunningCommandResult"].assert_change_event(("", ""))
 
         [[result_code], [on_command_id]] = device_under_test.On()
@@ -386,8 +386,8 @@ class TestSKASubarray:  # pylint: disable=too-many-public-methods
         change_event_callbacks["status"].assert_change_event(
             "The device is in OFF state."
         )
-        change_event_callbacks["longRunningCommandProgress"].assert_change_event(None)
-        change_event_callbacks["longRunningCommandStatus"].assert_change_event(None)
+        change_event_callbacks["longRunningCommandProgress"].assert_change_event(())
+        change_event_callbacks["longRunningCommandStatus"].assert_change_event(())
         change_event_callbacks["longRunningCommandResult"].assert_change_event(("", ""))
 
         [[result_code], [on_command_id]] = device_under_test.On()
@@ -629,8 +629,8 @@ class TestSKASubarray:  # pylint: disable=too-many-public-methods
         change_event_callbacks["status"].assert_change_event(
             "The device is in OFF state."
         )
-        change_event_callbacks["longRunningCommandProgress"].assert_change_event(None)
-        change_event_callbacks["longRunningCommandStatus"].assert_change_event(None)
+        change_event_callbacks["longRunningCommandProgress"].assert_change_event(())
+        change_event_callbacks["longRunningCommandStatus"].assert_change_event(())
         change_event_callbacks["longRunningCommandResult"].assert_change_event(("", ""))
 
         [[result_code], [on_command_id]] = device_under_test.On()
@@ -935,8 +935,8 @@ class TestSKASubarray:  # pylint: disable=too-many-public-methods
         change_event_callbacks["status"].assert_change_event(
             "The device is in OFF state."
         )
-        change_event_callbacks["longRunningCommandProgress"].assert_change_event(None)
-        change_event_callbacks["longRunningCommandStatus"].assert_change_event(None)
+        change_event_callbacks["longRunningCommandProgress"].assert_change_event(())
+        change_event_callbacks["longRunningCommandStatus"].assert_change_event(())
         change_event_callbacks["longRunningCommandResult"].assert_change_event(("", ""))
 
         [[result_code], [on_command_id]] = device_under_test.On()
@@ -1132,8 +1132,8 @@ class TestSKASubarray:  # pylint: disable=too-many-public-methods
         change_event_callbacks["status"].assert_change_event(
             "The device is in OFF state."
         )
-        change_event_callbacks["longRunningCommandProgress"].assert_change_event(None)
-        change_event_callbacks["longRunningCommandStatus"].assert_change_event(None)
+        change_event_callbacks["longRunningCommandProgress"].assert_change_event(())
+        change_event_callbacks["longRunningCommandStatus"].assert_change_event(())
         change_event_callbacks["longRunningCommandResult"].assert_change_event(("", ""))
 
         [[result_code], [on_command_id]] = device_under_test.On()

@@ -974,8 +974,8 @@ class TestSKABaseDevice:  # pylint: disable=too-many-public-methods
         change_event_callbacks["status"].assert_change_event(
             "The device is in OFF state."
         )
-        change_event_callbacks["longRunningCommandProgress"].assert_change_event(None)
-        change_event_callbacks["longRunningCommandStatus"].assert_change_event(None)
+        change_event_callbacks["longRunningCommandProgress"].assert_change_event(())
+        change_event_callbacks["longRunningCommandStatus"].assert_change_event(())
         change_event_callbacks["longRunningCommandResult"].assert_change_event(("", ""))
 
         [[result_code], [command_id]] = device_under_test.On()
@@ -1048,8 +1048,8 @@ class TestSKABaseDevice:  # pylint: disable=too-many-public-methods
         change_event_callbacks["status"].assert_change_event(
             "The device is in OFF state."
         )
-        change_event_callbacks["longRunningCommandProgress"].assert_change_event(None)
-        change_event_callbacks["longRunningCommandStatus"].assert_change_event(None)
+        change_event_callbacks["longRunningCommandProgress"].assert_change_event(())
+        change_event_callbacks["longRunningCommandStatus"].assert_change_event(())
         change_event_callbacks["longRunningCommandResult"].assert_change_event(("", ""))
 
         [[result_code], [command_id]] = device_under_test.Standby()
@@ -1126,8 +1126,8 @@ class TestSKABaseDevice:  # pylint: disable=too-many-public-methods
         change_event_callbacks["status"].assert_change_event(
             "The device is in OFF state."
         )
-        change_event_callbacks["longRunningCommandProgress"].assert_change_event(None)
-        change_event_callbacks["longRunningCommandStatus"].assert_change_event(None)
+        change_event_callbacks["longRunningCommandProgress"].assert_change_event(())
+        change_event_callbacks["longRunningCommandStatus"].assert_change_event(())
         change_event_callbacks["longRunningCommandResult"].assert_change_event(("", ""))
 
         # Check what happens if we call Off() when the device is already OFF.
@@ -1207,7 +1207,7 @@ class TestSKABaseDevice:  # pylint: disable=too-many-public-methods
         device_under_test.loggingTargets = ("tango::logger",)
         assert device_under_test.loggingTargets == ("tango::logger",)
         device_under_test.loggingTargets = tuple()
-        assert device_under_test.loggingTargets is None
+        assert device_under_test.loggingTargets == ()
         with pytest.raises(DevFailed):
             device_under_test.loggingTargets = ("invalid::type",)
 

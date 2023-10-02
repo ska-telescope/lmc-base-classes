@@ -79,3 +79,14 @@ include:
     ref: '11a039c06d00d687d56600eb5c95d946105bf3f6'
     file: 'gitlab-ci/includes/release.gitlab-ci.yml'
 
+python-lint:
+  image: artefact.skao.int/ska-tango-images-pytango-builder:9.3.16
+
+python-test:
+  image: artefact.skao.int/ska-tango-images-pytango-builder:9.3.16
+
+python-build-for-publication-legacy:
+  image: artefact.skao.int/ska-cicd-k8s-tools-build-deploy:0.6.1
+
+python-publish-to-gitlab:
+  image: artefact.skao.int/ska-cicd-k8s-tools-build-deploy:0.6.1

@@ -1,7 +1,11 @@
-black
+black==21.10b0
+click==8.0.3
 docformatter
-flake8
-flake8_formatter_junit_xml
+flake8==4.0.1
+flake8_formatter_junit_xml==0.0.6
 flake8-black
 flake8-docstrings
 flake8-rst-docstrings
+isort==5.10.1
+pylint==2.11.1
+pylint-junit==0.3.2

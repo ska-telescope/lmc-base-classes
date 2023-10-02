@@ -80,10 +80,14 @@ include:
     file: 'gitlab-ci/includes/release.gitlab-ci.yml'
 
 python-lint:
-  image: artefact.skao.int/ska-tango-images-pytango-builder:9.3.16
+  image: registry.gitlab.com/ska-telescope/ska-tango-images/ska-tango-images-pytango-builder:ca4a9c87
+  before_script:
+    - '[ -f .make/python.mk ] || (echo "File python.mk not included in Makefile; exit 1")'
+    - 'make help | grep python-test'
+    - 'echo "python-test: installing tools"; time pip3 install -r requirements-lint.txt'
 
 python-test:
-  image: artefact.skao.int/ska-tango-images-pytango-builder:9.3.16
+  image: registry.gitlab.com/ska-telescope/ska-tango-images/ska-tango-images-pytango-builder:ca4a9c87
 
 python-build-for-publication-legacy:
   image: artefact.skao.int/ska-cicd-k8s-tools-build-deploy:0.6.1

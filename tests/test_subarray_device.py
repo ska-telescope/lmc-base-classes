@@ -293,7 +293,7 @@ class TestSKASubarray:
         result_callback.wait_for_lrc_id(release_tr.unique_id)
 
         obs_state_callback.assert_calls([ObsState.RESOURCING, ObsState.EMPTY])
-        assert device_under_test.assignedResources is None
+        assert device_under_test.assignedResources == ()
         # PROTECTED REGION END #    //  SKASubarray.test_ReleaseAllResources
 
     # PROTECTED REGION ID(SKASubarray.test_ReleaseResources_decorators) ENABLED START #
@@ -522,7 +522,7 @@ class TestSKASubarray:
         on_tr = device_under_test.On()
         result_callback.wait_for_lrc_id(on_tr.unique_id)
 
-        assert device_under_test.assignedResources is None
+        assert device_under_test.assignedResources == ()
         # PROTECTED REGION END #    //  SKASubarray.test_assignedResources
 
     # PROTECTED REGION ID(SKASubarray.test_configuredCapabilities_decorators) ENABLED START #

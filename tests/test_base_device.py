@@ -594,7 +594,7 @@ class TestSKABaseDevice(object):
 
             # test clearing all targets (note: PyTango returns None for empty spectrum attribute)
             device_under_test.loggingTargets = []
-            assert device_under_test.loggingTargets is None
+            assert device_under_test.loggingTargets == ()
 
             mocked_creator.reset_mock()
             with pytest.raises(DevFailed):

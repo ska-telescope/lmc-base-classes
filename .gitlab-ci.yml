@@ -32,10 +32,10 @@ docs-pages:
   image: artefact.skao.int/ska-cicd-k8s-tools-build-deploy:0.8.7
 
 python-lint:
-  image: registry.gitlab.com/ska-telescope/ska-tango-images/ska-tango-images-pytango-builder:ca4a9c87
+  image: registry.gitlab.com/ska-telescope/ska-tango-images/ska-tango-images-pytango-builder:aa87672e
 
 python-build-for-development:
-  image: registry.gitlab.com/ska-telescope/ska-tango-images/ska-tango-images-pytango-builder:ca4a9c87
+  image: registry.gitlab.com/ska-telescope/ska-tango-images/ska-tango-images-pytango-builder:aa87672e
 
 python-test:
-  image: registry.gitlab.com/ska-telescope/ska-tango-images/ska-tango-images-pytango-builder:ca4a9c87
+  image: registry.gitlab.com/ska-telescope/ska-tango-images/ska-tango-images-pytango-builder:aa87672e

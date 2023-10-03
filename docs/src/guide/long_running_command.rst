@@ -74,7 +74,7 @@ monitoring and reporting of result, status and progress of LRCs.
 |                               | running command by ID        |
 +-------------------------------+------------------------------+
 | AbortCommands                 | Abort the currently executing|
-|                               | LRCs and remove all enqueued |
+|                               | LRC and remove all enqueued  |
 |                               | LRCs                         |
 +-------------------------------+------------------------------+
 
@@ -87,6 +87,15 @@ The device has change events configured for all the LRC attributes which clients
 their requests. **The client has the responsibility of subscribing to events to receive changes on
 command status and results**.
 
+
+Input Queue
+-----------
+All LRCs are queued and executed in a background process. Each command is evaluated against the
+state of the component before executing the task. The `native approach`_ in the TANGO developer guide
+implements the check on the device when the command is triggered. On the other hand, the
+`TaskExecutorComponentManager` (the default queue manager and concurrency mechanism) implements the
+check only when it's dequeued. Methods implemented for component control should be supplied to the
+component manager along with an additional method to check whether the command is allowed before executing.
 
 UML Illustration
 ----------------
@@ -159,6 +168,11 @@ Add a method that should be executed in a background thread
             # Indicate that the task has completed
             task_callback(status=TaskStatus.COMPLETED, result="This slow task has completed")
 
+.. note:: This can be accompanied with another method (e.g. _is_very_slow_method_allowed)
+   which will be a check against the component to check if the command is allowed before
+   sending it over to be run in the background. The component manager receives the check as
+   `is_cmd_allowed` (example below).
+
 Add a method to submit the slow method
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -175,7 +189,9 @@ Add a method to submit the slow method
             :param task_callback: Update task state, defaults to None
             """
             task_status, response = self.submit_task(
-                self._a_very_slow_method, args=[], is_cmd_allowed=self._a_check, task_callback=task_callback
+                self._a_very_slow_method, args=[],
+                is_cmd_allowed=self._is_very_slow_method_allowed,
+                task_callback=task_callback
             )
             return task_status, response
 
@@ -196,6 +212,7 @@ Create the component manager in your Tango device
                 communication_state_callback=self._communication_state_changed,
                 component_state_callback=self._component_state_changed,
             )
+.. note:: `max_workers` defaults to 1 to ensure that queued commands are executed sequentially.
 
 Init the command object
 ^^^^^^^^^^^^^^^^^^^^^^^
@@ -244,3 +261,6 @@ Class diagram
 -------------
 
 .. uml:: lrc_class_diagram.uml
+
+
+.. _native approach: https://pytango.readthedocs.io/en/stable/server_api/server.html?highlight=allowed#tango.server.command

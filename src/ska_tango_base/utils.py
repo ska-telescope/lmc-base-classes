@@ -17,7 +17,6 @@ import time
 import traceback
 import uuid
 import warnings
-from builtins import str
 from contextlib import contextmanager
 from datetime import datetime
 from typing import Any, Callable, Generator, cast

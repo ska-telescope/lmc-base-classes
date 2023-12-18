@@ -2,6 +2,11 @@
 
 ## unreleased
 
+## 0.19.2
+
+- [LOW-614] remove DevInt, removed in cppTango/PyTango 9.5.0
+- [KAR-585] Improve docs to reflect input queue updates
+
 ## 0.19.1
 
 - [MCCS-1695] workaround for pytango 9.4.2 logging interface change

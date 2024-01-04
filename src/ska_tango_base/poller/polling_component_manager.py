@@ -114,8 +114,9 @@ class PollingComponentManager(
         :param exception: the exception that was raised by a recent poll
             attempt.
         """
+        self.logger.exception(f"Poll failed: {repr(exception)}")
         self._update_communication_state(CommunicationStatus.NOT_ESTABLISHED)
-        self.logger.error(f"Poll failed: {repr(exception)}")
+        self._update_component_state(power=PowerState.UNKNOWN)
 
     def poll_succeeded(
         self: PollingComponentManager[PollRequestT, PollResponseT],

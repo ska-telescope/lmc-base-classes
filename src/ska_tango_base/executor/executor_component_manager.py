@@ -23,15 +23,18 @@ class TaskExecutorComponentManager(BaseComponentManager):
         self: TaskExecutorComponentManager,
         *args: Any,
         max_workers: int | None = 1,
+        max_queue_size: int = 3,
         **kwargs: Any,
     ) -> None:
         """
         Initialise a new ComponentManager instance.
 
         :param args: additional positional arguments
-        :param max_workers: option maximum number of workers in the pool
+        :param max_workers: optional maximum number of workers in the pool
+        :param max_queue_size: optional maximum size of the input queue
         :param kwargs: additional keyword arguments
         """
+        self._max_queue_size = max_queue_size
         self._task_executor = TaskExecutor(max_workers)
         super().__init__(*args, **kwargs)
 
@@ -55,9 +58,13 @@ class TaskExecutorComponentManager(BaseComponentManager):
 
         :return: tuple of taskstatus & message
         """
-        return self._task_executor.submit(
-            func, args, kwargs, is_cmd_allowed, task_callback=task_callback
-        )
+        input_queue_size = self._task_executor.get_input_queue_size()
+        if input_queue_size < self._max_queue_size:
+            return self._task_executor.submit(
+                func, args, kwargs, is_cmd_allowed, task_callback=task_callback
+            )
+
+        return TaskStatus.REJECTED, f"Input queue supports a maximum of {self._max_queue_size} commands"
 
     def abort_commands(
         self: TaskExecutorComponentManager,

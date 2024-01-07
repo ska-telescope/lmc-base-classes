@@ -43,6 +43,14 @@ class TaskExecutor:
         self._abort_event = threading.Event()
         self._submit_lock = threading.Lock()
 
+    def get_input_queue_size(self: TaskExecutor) -> int:
+        """
+        Expose the number of queued items in the ThreadPoolExecutor.
+
+        :return: Number of commands in the input queue
+        """
+        return self._executor._work_queue.qsize()
+
     def submit(  # pylint: disable=too-many-arguments
         self: TaskExecutor,
         func: TaskFunctionType,

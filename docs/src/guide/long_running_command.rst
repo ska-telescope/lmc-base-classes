@@ -90,12 +90,14 @@ command status and results**.
 
 Input Queue
 -----------
-All LRCs are queued and executed in a background process. Each command is evaluated against the
-state of the component before executing the task. The `native approach`_ in the TANGO developer guide
-implements the check on the device when the command is triggered. On the other hand, the
-`TaskExecutorComponentManager` (the default queue manager and concurrency mechanism) implements the
-check only when it's dequeued. Methods implemented for component control should be supplied to the
-component manager along with an additional method to check whether the command is allowed before executing.
+The `TaskExecutorComponentManager` (the default queue manager and concurrency mechanism) implements a
+`ThreaPoolExecutor` which uses a `SimpleQueue` internally. The component manager exposes the queue size from
+the `ThreaPoolExecutor` to determine the number of commands the tango device can accept based on a configurable
+size limit. All LRCs are queued and executed in a background process. Each command is evaluated against the state
+of the component before executing the task. The `native approach`_ in the TANGO developer guide implements the
+check on the device when the command is triggered. On the other hand, the `TaskExecutorComponentManager` performs
+the check only when it's dequeued. Methods implemented for component control should be supplied to the component
+manager along with an additional method to check whether the command is allowed before executing.
 
 UML Illustration
 ----------------

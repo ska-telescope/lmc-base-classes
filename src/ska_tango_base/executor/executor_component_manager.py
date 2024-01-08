@@ -23,7 +23,7 @@ class TaskExecutorComponentManager(BaseComponentManager):
         self: TaskExecutorComponentManager,
         *args: Any,
         max_workers: int | None = 1,
-        max_queue_size: int = 3,
+        max_queue_size: int = 10,
         **kwargs: Any,
     ) -> None:
         """
@@ -64,7 +64,10 @@ class TaskExecutorComponentManager(BaseComponentManager):
                 func, args, kwargs, is_cmd_allowed, task_callback=task_callback
             )
 
-        return TaskStatus.REJECTED, f"Input queue supports a maximum of {self._max_queue_size} commands"
+        return (
+            TaskStatus.REJECTED,
+            f"Input queue supports a maximum of {self._max_queue_size} commands",
+        )
 
     def abort_commands(
         self: TaskExecutorComponentManager,

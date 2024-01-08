@@ -49,7 +49,7 @@ class TaskExecutor:
 
         :return: Number of commands in the input queue
         """
-        return self._executor._work_queue.qsize()
+        return self._executor._work_queue.qsize()  # pylint: disable=protected-access
 
     def submit(  # pylint: disable=too-many-arguments
         self: TaskExecutor,

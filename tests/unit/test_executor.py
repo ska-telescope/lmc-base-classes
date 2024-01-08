@@ -96,6 +96,12 @@ class TestTaskExecutor:
                 task_callback=callbacks[f"job_{i}"],
             )
 
+        # the workers will immediately pull off tasks to execute
+        # so check fo a non-empty queue (at least) since we expect
+        # one command to be left waiting while the three workers are busy
+        commands_in_queue = executor.get_input_queue_size()
+        assert commands_in_queue > 0
+
         for i in range(max_workers + 1):
             callbacks[f"job_{i}"].assert_call(status=TaskStatus.QUEUED)
 

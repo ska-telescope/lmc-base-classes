@@ -6,6 +6,7 @@
 
 - [LOW-614] remove DevInt, removed in cppTango/PyTango 9.5.0
 - [KAR-585] Improve docs to reflect input queue updates
+- [WOM-213] Limit input queue size for long running commands
 
 ## 0.19.1
 

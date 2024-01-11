@@ -57,6 +57,8 @@ from .op_state_model import OpStateModel
 
 DevVarLongStringArrayType = tuple[list[ResultCode], list[str]]
 
+# this is an arbitrary number, for any adaptation
+# update the size (with a motivation) as seen fit
 INPUT_QUEUE_SIZE_LIMIT = 10
 
 

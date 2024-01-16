@@ -63,7 +63,8 @@ class TaskExecutor:
 
         :return: (TaskStatus, message)
         """
-        with self._submit_lock:
+        # pylint: disable=consider-using-with
+        if self._submit_lock.acquire(blocking=True, timeout=0.3):
             try:
                 self._executor.submit(
                     self._run,
@@ -82,10 +83,23 @@ class TaskExecutor:
                 if task_callback is not None:
                     task_callback(status=TaskStatus.FAILED, exception=exception)
                 return TaskStatus.REJECTED, f"Unhandled exception: {str(exception)}"
-
+            self._submit_lock.release()
+        # pylint: enable=consider-using-with
+        else:
             if task_callback is not None:
-                task_callback(status=TaskStatus.QUEUED)
-            return TaskStatus.QUEUED, "Task queued"
+                task_callback(
+                    status=TaskStatus.FAILED,
+                    exception=Exception(
+                        "Failed to acquire the submit lock: " + f"{self._submit_lock}"
+                    ),
+                )
+            return (
+                TaskStatus.REJECTED,
+                f"Failed to acquire the submit lock: {self._submit_lock}",
+            )
+        if task_callback is not None:
+            task_callback(status=TaskStatus.QUEUED)
+        return TaskStatus.QUEUED, "Task queued"
 
     def abort(
         self: TaskExecutor, task_callback: TaskCallbackType | None = None

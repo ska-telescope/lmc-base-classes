@@ -1,5 +1,5 @@
 #
-# Project makefile for a SKA Tango Base project. 
+# Project makefile for a SKA Tango Base project.
 #
 # Distributed under the terms of the BSD 3-clause new license.
 # See LICENSE.txt for more info.

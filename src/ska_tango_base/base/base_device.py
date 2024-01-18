@@ -1639,7 +1639,7 @@ class SKABaseDevice(
         self._submit_tango_operation("set_status", status)
 
     def push_change_event(
-        self: SKABaseDevice[ComponentManagerT], name: str, value: Any = None
+        self: SKABaseDevice[ComponentManagerT], name: str, *args: Any
     ) -> None:
         """
         Push a device server change event.
@@ -1648,15 +1648,12 @@ class SKABaseDevice(
         actioned from a native python thread or a tango omni thread
 
         :param name: the event name
-        :param value: the event value
+        :param args: the arguments to pass to tango
         """
-        if name.lower() in ["state", "status"]:
-            self._submit_tango_operation("push_change_event", name)
-        else:
-            self._submit_tango_operation("push_change_event", name, value)
+        self._submit_tango_operation("push_change_event", name, *args)
 
     def push_archive_event(
-        self: SKABaseDevice[ComponentManagerT], name: str, value: Any = None
+        self: SKABaseDevice[ComponentManagerT], name: str, *args: Any
     ) -> None:
         """
         Push a device server archive event.
@@ -1665,12 +1662,9 @@ class SKABaseDevice(
         been actioned from a native python thread or a tango omnithread.
 
         :param name: the event name
-        :param value: the event value
+        :param args: the arguments to pass to tango
         """
-        if name.lower() in ["state", "status"]:
-            self._submit_tango_operation("push_archive_event", name)
-        else:
-            self._submit_tango_operation("push_archive_event", name, value)
+        self._submit_tango_operation("push_archive_event", name, *args)
 
     def add_attribute(
         self: SKABaseDevice[ComponentManagerT], *args: Any, **kwargs: Any

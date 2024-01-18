@@ -39,7 +39,7 @@ from ska_control_model import (
     TaskStatus,
     TestMode,
 )
-from tango import DebugIt, DevState, is_omni_thread
+from tango import DebugIt, DevState, Except, is_omni_thread
 from tango.server import Device, attribute, command, device_property
 
 from .. import release
@@ -1664,6 +1664,19 @@ class SKABaseDevice(
         :param name: the event name
         :param args: the arguments to pass to tango
         """
+        has_data_arg = len(args) > 0
+        is_state_or_status = name.lower() in ["state", "status"]
+
+        # Work around pytango#589.  Note this is only required for
+        if not is_state_or_status and not has_data_arg:
+            desc = (
+                "push_archive_event without a data parameter is only allowed"
+                + " for state and status attributes"
+            )
+            Except.throw_exception(
+                "PyDs_InvalidCall", desc, "SKABaseDevice.push_archive_event"
+            )
+
         self._submit_tango_operation("push_archive_event", name, *args)
 
     def add_attribute(

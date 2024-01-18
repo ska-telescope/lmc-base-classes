@@ -8,13 +8,13 @@ This is testing all the available overloads.
 from __future__ import annotations
 
 import logging
-from typing import Any, Sequence
+from typing import Any, Sequence, Tuple
 
 import pytest
 import tango
 from ska_control_model import ResultCode
 from ska_tango_testing.mock.tango import MockTangoEventCallbackGroup
-from tango import DevFailed, DevState
+from tango import AttrQuality, DevFailed, DevState
 from tango.server import attribute, command
 
 from ska_tango_base import SKABaseDevice
@@ -39,6 +39,7 @@ class SimpleDevice(SKABaseDevice[ComponentManagerT]):
         self._scalar = 0
         self._spectrum = [0, 0, 0]
         self._image = [[0, 0, 0], [0, 0, 0], [0, 0, 0]]
+        self._encoded = ("uint8_le", b"\x00\x00")
 
     class InitCommand(SKABaseDevice.InitCommand):
         """InitCommand for SimpleDevice."""
@@ -63,6 +64,9 @@ class SimpleDevice(SKABaseDevice[ComponentManagerT]):
             self._device.set_archive_event("spectrum", True, False)
             self._device.set_change_event("image", True, False)
             self._device.set_archive_event("image", True, False)
+            self._device.set_change_event("encoded", True, False)
+            self._device.set_archive_event("encoded", True, False)
+
             message = "SimpleDevice Init command completed OK"
             self.logger.info(message)
             self._completed()
@@ -99,6 +103,16 @@ class SimpleDevice(SKABaseDevice[ComponentManagerT]):
         :return: the image
         """
         return self._image
+
+    @attribute(  # type: ignore[misc]  # "Untyped decorator makes function untyped"
+        dtype=tango.DevEncoded
+    )
+    def encoded(self: SimpleDevice) -> Tuple[str, bytes]:
+        """Read the encoded attribute.
+
+        :return: the encoded data
+        """
+        return self._encoded
 
     def create_component_manager(self: SimpleDevice) -> ComponentManagerT:
         """Create the component manager.
@@ -164,6 +178,103 @@ class SimpleDevice(SKABaseDevice[ComponentManagerT]):
         # an exception
         getattr(self, push_event)("scalar")
 
+    @command(  # type: ignore[misc]  # "Untyped decorator makes function untyped"
+        dtype_in=str, dtype_out=None
+    )
+    def PushChangeEventDimx(self: SimpleDevice, event_type: str) -> None:
+        """Push an event to the spectrum attribute with `dim_x` set.
+
+        :param event_type: which event type to push, either "archive" or "change"
+        """
+        push_event = "push_" + event_type + "_event"
+
+        self._spectrum = [x + 1 for x in self._spectrum]
+        getattr(self, push_event)("spectrum", self._spectrum, 2)
+
+    @command(  # type: ignore[misc]  # "Untyped decorator makes function untyped"
+        dtype_in=str, dtype_out=None
+    )
+    def PushChangeEventDimy(self: SimpleDevice, event_type: str) -> None:
+        """Push an event to the image attribute with `dim_y` set.
+
+        :param event_type: which event type to push, either "archive" or "change"
+        """
+        push_event = "push_" + event_type + "_event"
+
+        image = [1, 1, 1, 1, 1, 1]
+        getattr(self, push_event)("image", image, 3, 2)
+
+    @command(  # type: ignore[misc]  # "Untyped decorator makes function untyped"
+        dtype_in=str, dtype_out=None
+    )
+    def PushChangeEventQuality(self: SimpleDevice, event_type: str) -> None:
+        """Push an event to the scalar attribute with a quality.
+
+        :param event_type: which event type to push, either "archive" or "change"
+        """
+        push_event = "push_" + event_type + "_event"
+
+        self._scalar += 1
+        getattr(self, push_event)("scalar", self._scalar, 0.0, AttrQuality.ATTR_INVALID)
+
+    @command(  # type: ignore[misc]  # "Untyped decorator makes function untyped"
+        dtype_in=str, dtype_out=None
+    )
+    def PushChangeEventEncoded(self: SimpleDevice, event_type: str) -> None:
+        """Push an event to the encoded attribute.
+
+        :param event_type: which event type to push, either "archive" or "change"
+        """
+        push_event = "push_" + event_type + "_event"
+
+        val = int.from_bytes(self._encoded[1], byteorder="little") + 1
+        self._encoded = ("uint8_le", val.to_bytes(2, byteorder="little"))
+        getattr(self, push_event)("encoded", self._encoded[0], self._encoded[1])
+
+    @command(  # type: ignore[misc]  # "Untyped decorator makes function untyped"
+        dtype_in=str, dtype_out=None
+    )
+    def PushChangeEventDimxQuality(self: SimpleDevice, event_type: str) -> None:
+        """Push an event to the spectrum attribute with a `dim_x` and quality.
+
+        :param event_type: which event type to push, either "archive" or "change"
+        """
+        push_event = "push_" + event_type + "_event"
+
+        self._spectrum = [x + 1 for x in self._spectrum]
+        getattr(self, push_event)(
+            "spectrum", self._spectrum, 0.0, AttrQuality.ATTR_INVALID, 2
+        )
+
+    @command(  # type: ignore[misc]  # "Untyped decorator makes function untyped"
+        dtype_in=str, dtype_out=None
+    )
+    def PushChangeEventDimyQuality(self: SimpleDevice, event_type: str) -> None:
+        """Push an event to the spectrum attribute with a `dim_y` and quality.
+
+        :param event_type: which event type to push, either "archive" or "change"
+        """
+        push_event = "push_" + event_type + "_event"
+
+        image = [1, 1, 1, 1, 1, 1]
+        getattr(self, push_event)("image", image, 0.0, AttrQuality.ATTR_INVALID, 3, 2)
+
+    @command(  # type: ignore[misc]  # "Untyped decorator makes function untyped"
+        dtype_in=str, dtype_out=None
+    )
+    def PushChangeEventEncodedQuality(self: SimpleDevice, event_type: str) -> None:
+        """Push an event to the encoded attribute.
+
+        :param event_type: which event type to push, either "archive" or "change"
+        """
+        push_event = "push_" + event_type + "_event"
+
+        val = int.from_bytes(self._encoded[1], byteorder="little") + 1
+        self._encoded = ("uint8_le", val.to_bytes(2, byteorder="little"))
+        getattr(self, push_event)(
+            "encoded", self._encoded[0], self._encoded[1], 0.0, AttrQuality.ATTR_INVALID
+        )
+
 
 @pytest.fixture(scope="module")
 def device_test_config() -> dict[str, Any]:
@@ -189,6 +300,7 @@ def make_change_event_callbacks() -> MockTangoEventCallbackGroup:
         "state",
         "spectrum",
         "image",
+        "encoded",
         assert_no_error=False,
     )
 
@@ -320,3 +432,187 @@ class TestPushEventBasic:
         change_event_callbacks["scalar"].assert_change_event(0)
         with pytest.raises(DevFailed):
             device_under_test.PushChangeEventNoValue(event_type)
+
+
+class TestPushEventAdvanced:
+    """Advanced SKABaseDevice.push_<x>_event tests."""
+
+    @pytest.mark.parametrize(
+        "event_type",
+        ["change", "archive"],
+    )
+    def test_push_event_dimx(
+        self: TestPushEventAdvanced,
+        device_under_test: tango.DeviceProxy,
+        change_event_callbacks: MockTangoEventCallbackGroup,
+        event_type: str,
+    ) -> None:
+        """Test that push_<x>_event can be called with dim_x set.
+
+        :param device_under_test: a proxy to the device under test
+        :param change_event_callbacks: dictionary of mock change event
+            callbacks with asynchrony support
+        :param event_type: which event type to push, either "archive" or "change"
+        """
+        subscribe_to_event_type(
+            device_under_test, change_event_callbacks, "spectrum", event_type
+        )
+        change_event_callbacks["spectrum"].assert_change_event([0, 0, 0])
+        device_under_test.PushChangeEventDimx(event_type)
+        change_event_callbacks["spectrum"].assert_change_event([1, 1])
+
+    @pytest.mark.parametrize(
+        "event_type",
+        ["change", "archive"],
+    )
+    def test_push_event_dimy(
+        self: TestPushEventAdvanced,
+        device_under_test: tango.DeviceProxy,
+        change_event_callbacks: MockTangoEventCallbackGroup,
+        event_type: str,
+    ) -> None:
+        """Test that push_<x>_event can be called with dim_y set.
+
+        :param device_under_test: a proxy to the device under test
+        :param change_event_callbacks: dictionary of mock change event
+            callbacks with asynchrony support
+        :param event_type: which event type to push, either "archive" or "change"
+        """
+        subscribe_to_event_type(
+            device_under_test, change_event_callbacks, "image", event_type
+        )
+        change_event_callbacks["image"].assert_change_event(
+            [[0, 0, 0], [0, 0, 0], [0, 0, 0]]
+        )
+        device_under_test.PushChangeEventDimy(event_type)
+        change_event_callbacks["image"].assert_change_event([[1, 1, 1], [1, 1, 1]])
+
+    @pytest.mark.parametrize(
+        "event_type",
+        ["change", "archive"],
+    )
+    def test_push_event_encoded(
+        self: TestPushEventAdvanced,
+        device_under_test: tango.DeviceProxy,
+        change_event_callbacks: MockTangoEventCallbackGroup,
+        event_type: str,
+    ) -> None:
+        """Test that push_<x>_event can be called with encoded data.
+
+        :param device_under_test: a proxy to the device under test
+        :param change_event_callbacks: dictionary of mock change event
+            callbacks with asynchrony support
+        :param event_type: which event type to push, either "archive" or "change"
+        """
+        subscribe_to_event_type(
+            device_under_test, change_event_callbacks, "encoded", event_type
+        )
+        change_event_callbacks["encoded"].assert_change_event(("uint8_le", b"\x00\x00"))
+        device_under_test.PushChangeEventEncoded(event_type)
+        change_event_callbacks["encoded"].assert_change_event(("uint8_le", b"\x01\x00"))
+
+    @pytest.mark.parametrize(
+        "event_type",
+        ["change", "archive"],
+    )
+    def test_push_event_quality(
+        self: TestPushEventAdvanced,
+        device_under_test: tango.DeviceProxy,
+        change_event_callbacks: MockTangoEventCallbackGroup,
+        event_type: str,
+    ) -> None:
+        """Test that push_<x>_event can be called with a quality provided.
+
+        :param device_under_test: a proxy to the device under test
+        :param change_event_callbacks: dictionary of mock change event
+            callbacks with asynchrony support
+        :param event_type: which event type to push, either "archive" or "change"
+        """
+        subscribe_to_event_type(
+            device_under_test, change_event_callbacks, "scalar", event_type
+        )
+        change_event_callbacks["scalar"].assert_change_event(0)
+        device_under_test.PushChangeEventQuality(event_type)
+        change_event_callbacks["scalar"].assert_against_call(
+            attribute_value=None, attribute_quality=AttrQuality.ATTR_INVALID
+        )
+
+    @pytest.mark.parametrize(
+        "event_type",
+        ["change", "archive"],
+    )
+    def test_push_event_dimx_quality(
+        self: TestPushEventAdvanced,
+        device_under_test: tango.DeviceProxy,
+        change_event_callbacks: MockTangoEventCallbackGroup,
+        event_type: str,
+    ) -> None:
+        """Test that push_<x>_event can set quality with the `dim_x` argument.
+
+        :param device_under_test: a proxy to the device under test
+        :param change_event_callbacks: dictionary of mock change event
+            callbacks with asynchrony support
+        :param event_type: which event type to push, either "archive" or "change"
+        """
+        subscribe_to_event_type(
+            device_under_test, change_event_callbacks, "spectrum", event_type
+        )
+        change_event_callbacks["spectrum"].assert_change_event([0, 0, 0])
+        device_under_test.PushChangeEventDimxQuality(event_type)
+        change_event_callbacks["spectrum"].assert_against_call(
+            attribute_value=None, attribute_quality=AttrQuality.ATTR_INVALID
+        )
+
+    @pytest.mark.parametrize(
+        "event_type",
+        ["change", "archive"],
+    )
+    def test_push_event_dimy_quality(
+        self: TestPushEventAdvanced,
+        device_under_test: tango.DeviceProxy,
+        change_event_callbacks: MockTangoEventCallbackGroup,
+        event_type: str,
+    ) -> None:
+        """Test that push_<x>_event can set quality with the `dim_y` argument.
+
+        :param device_under_test: a proxy to the device under test
+        :param change_event_callbacks: dictionary of mock change event
+            callbacks with asynchrony support
+        :param event_type: which event type to push, either "archive" or "change"
+        """
+        subscribe_to_event_type(
+            device_under_test, change_event_callbacks, "image", event_type
+        )
+        change_event_callbacks["image"].assert_change_event(
+            [[0, 0, 0], [0, 0, 0], [0, 0, 0]]
+        )
+        device_under_test.PushChangeEventDimyQuality(event_type)
+        change_event_callbacks["image"].assert_against_call(
+            attribute_value=None, attribute_quality=AttrQuality.ATTR_INVALID
+        )
+
+    @pytest.mark.parametrize(
+        "event_type",
+        ["change", "archive"],
+    )
+    def test_push_event_encoded_quality(
+        self: TestPushEventAdvanced,
+        device_under_test: tango.DeviceProxy,
+        change_event_callbacks: MockTangoEventCallbackGroup,
+        event_type: str,
+    ) -> None:
+        """Test that push_<x>_event can set quality with encoded data.
+
+        :param device_under_test: a proxy to the device under test
+        :param change_event_callbacks: dictionary of mock change event
+            callbacks with asynchrony support
+        :param event_type: which event type to push, either "archive" or "change"
+        """
+        subscribe_to_event_type(
+            device_under_test, change_event_callbacks, "encoded", event_type
+        )
+        change_event_callbacks["encoded"].assert_change_event(("uint8_le", b"\x00\x00"))
+        device_under_test.PushChangeEventEncodedQuality(event_type)
+        change_event_callbacks["encoded"].assert_against_call(
+            attribute_value=None, attribute_quality=AttrQuality.ATTR_INVALID
+        )

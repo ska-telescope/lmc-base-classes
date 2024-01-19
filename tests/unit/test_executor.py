@@ -96,6 +96,13 @@ class TestTaskExecutor:
                 task_callback=callbacks[f"job_{i}"],
             )
 
+        # The queue size should equal the calls to executor.submit (4 items)
+        # But since the 3 worker threads could dequeue commands before
+        # fetching the queue size, it is safer to check for a non-empty
+        # queue to have a stable test
+        commands_in_queue = executor.get_input_queue_size()
+        assert commands_in_queue > 0
+
         for i in range(max_workers + 1):
             callbacks[f"job_{i}"].assert_call(status=TaskStatus.QUEUED)
 

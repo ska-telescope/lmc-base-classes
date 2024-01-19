@@ -57,8 +57,9 @@ from .op_state_model import OpStateModel
 
 DevVarLongStringArrayType = tuple[list[ResultCode], list[str]]
 
-MAX_REPORTED_CONCURRENT_COMMANDS = 16
-MAX_REPORTED_QUEUED_COMMANDS = 64
+# this is an arbitrary number, for any adaptation
+# update the size (with a motivation) as seen fit
+INPUT_QUEUE_SIZE_LIMIT = 10
 
 
 _DEBUGGER_PORT = 5678
@@ -536,12 +537,10 @@ class SKABaseDevice(
     ) -> None:
         if commands_in_queue:
             command_ids, command_names = zip(*commands_in_queue)
-            self._command_ids_in_queue = [
-                str(command_id) for command_id in command_ids
-            ][:MAX_REPORTED_QUEUED_COMMANDS]
+            self._command_ids_in_queue = [str(command_id) for command_id in command_ids]
             self._commands_in_queue = [
                 str(command_name) for command_name in command_names
-            ][:MAX_REPORTED_QUEUED_COMMANDS]
+            ]
         else:
             self._command_ids_in_queue = []
             self._commands_in_queue = []
@@ -561,7 +560,7 @@ class SKABaseDevice(
         statuses = [(uid, status.name) for (uid, status) in command_statuses]
         self._command_statuses = [
             str(item) for item in itertools.chain.from_iterable(statuses)
-        ][: (MAX_REPORTED_CONCURRENT_COMMANDS * 2)]
+        ]
         self.push_change_event("longRunningCommandStatus", self._command_statuses)
         self.push_archive_event("longRunningCommandStatus", self._command_statuses)
 
@@ -571,7 +570,7 @@ class SKABaseDevice(
     ) -> None:
         self._command_progresses = [
             str(item) for item in itertools.chain.from_iterable(command_progresses)
-        ][: (MAX_REPORTED_CONCURRENT_COMMANDS * 2)]
+        ]
         self.push_change_event("longRunningCommandProgress", self._command_progresses)
         self.push_archive_event("longRunningCommandProgress", self._command_progresses)
 
@@ -1054,7 +1053,7 @@ class SKABaseDevice(
         self._test_mode = value
 
     @attribute(  # type: ignore[misc]  # "Untyped decorator makes function untyped"
-        dtype=("str",), max_dim_x=MAX_REPORTED_QUEUED_COMMANDS
+        dtype=("str",), max_dim_x=INPUT_QUEUE_SIZE_LIMIT
     )
     def longRunningCommandsInQueue(self: SKABaseDevice[ComponentManagerT]) -> list[str]:
         """
@@ -1068,7 +1067,7 @@ class SKABaseDevice(
         return self._commands_in_queue
 
     @attribute(  # type: ignore[misc]  # "Untyped decorator makes function untyped"
-        dtype=("str",), max_dim_x=MAX_REPORTED_QUEUED_COMMANDS
+        dtype=("str",), max_dim_x=INPUT_QUEUE_SIZE_LIMIT
     )
     def longRunningCommandIDsInQueue(
         self: SKABaseDevice[ComponentManagerT],
@@ -1084,7 +1083,7 @@ class SKABaseDevice(
         return self._command_ids_in_queue
 
     @attribute(  # type: ignore[misc]  # "Untyped decorator makes function untyped"
-        dtype=("str",), max_dim_x=MAX_REPORTED_CONCURRENT_COMMANDS * 2  # 2 per command
+        dtype=("str",), max_dim_x=INPUT_QUEUE_SIZE_LIMIT * 2  # 2 per command
     )
     def longRunningCommandStatus(self: SKABaseDevice[ComponentManagerT]) -> list[str]:
         """
@@ -1099,7 +1098,7 @@ class SKABaseDevice(
         return self._command_statuses
 
     @attribute(  # type: ignore[misc]  # "Untyped decorator makes function untyped"
-        dtype=("str",), max_dim_x=MAX_REPORTED_CONCURRENT_COMMANDS * 2  # 2 per command
+        dtype=("str",), max_dim_x=INPUT_QUEUE_SIZE_LIMIT * 2  # 2 per command
     )
     def longRunningCommandProgress(self: SKABaseDevice[ComponentManagerT]) -> list[str]:
         """

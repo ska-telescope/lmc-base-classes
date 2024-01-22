@@ -39,7 +39,7 @@ from ska_control_model import (
     TaskStatus,
     TestMode,
 )
-from tango import DebugIt, DevState, is_omni_thread
+from tango import DebugIt, DevState, Except, is_omni_thread
 from tango.server import Device, attribute, command, device_property
 
 from .. import release
@@ -1639,7 +1639,7 @@ class SKABaseDevice(
         self._submit_tango_operation("set_status", status)
 
     def push_change_event(
-        self: SKABaseDevice[ComponentManagerT], name: str, value: Any = None
+        self: SKABaseDevice[ComponentManagerT], name: str, *args: Any
     ) -> None:
         """
         Push a device server change event.
@@ -1647,16 +1647,146 @@ class SKABaseDevice(
         This is dependent on whether the push_change_event call has been
         actioned from a native python thread or a tango omni thread
 
-        :param name: the event name
-        :param value: the event value
+        This is an "overloaded" function which can be called with
+        multiple signatures supported.  These are dispatched based on
+        the types passed.
+
+        In the overloads below `Scalar` refers to any data type that can be
+        converted to a tango scalar. `Any` refers to
+        `Scalar | Sequence[Scalar] | Sequence[Sequence[Scalar]]`.
+
+        - push_change_event(self, name: str)
+
+            Push a device server change event for the "state" or "status".
+
+            Raises a tango.DevFailed if name is not "state" or "status".
+
+        - push_change_event(self, name: str, expection: DevFailed)
+
+            Push a device server change event for an attribute with
+            an exception.
+
+            exception: exception to send to client
+
+        - push_change_event(self, name: str, data: Any)
+
+            Push a device server change event for an attribute.
+
+            data: value to send to client
+
+        - push_change_event(self, name: str, data: Sequence[Scalar], dim_x: int)
+
+            Push a device server change event for a spectrum attribute with truncation.
+
+            A copy of `data` will be truncated before being sent to clients.
+
+            Requires `dim_x <= len(data)`.
+
+            data: value to send to client
+            dim_x: length to truncate value to
+
+        - push_change_event(
+            self, name: str, data: Sequence[Scalar], dim_x: int, dim_y: int)
+
+            Push a device server change event for a image attribute with reshaping.
+
+            A copy of `data` will be reshaped to `(dim_x, dim_y)` before being
+            sent to clients.
+
+            Note that `data` must be flat.
+
+            Requires `dim_x * dim_y <= len(data)`.
+
+            data: value to send to client
+            dim_x: x dimension to reshape to
+            dim_y: y dimension to reshape to
+
+        - push_change_event(self, name: str, str_data: str, data: bytes | str)
+
+            Push a device server change event for an encoded attribute.
+
+            str_data: encoding format for data
+            data: encoded data to send
+
+        - push_change_event(
+
+            self, name: str, data: Any, timestamp: float, quality: tango.AttrQuality)
+
+            Push a device server change event for an attribute with timestamp
+            and quality.
+
+            data: value to send
+            timestamp: unix timestamp
+            quality: quality of attribute
+
+        - push_change_event(
+            self,
+            name: str,
+            data: Sequence[Scalar],
+            timestamp: float,
+            quality: tango.AttrQuality,
+            dim_x: int)
+
+            Push a device server change event for a spectrum attribute with truncation,
+            timestamp and quality.
+
+            A copy of `data` will be truncated before being sent to clients.
+
+            Requires `dim_x <= len(data)`.
+
+            data: value to send
+            timestamp: unix timestamp
+            quality: quality of attribute
+            dim_x: length to truncate value to
+
+        - push_change_event(
+            self,
+            name: str,
+            data: Scalar,
+            timestamp: float,
+            quality: tango.AttrQuality,
+            dim_x: int,
+            dim_y: int)
+
+            Push a device server change event for a image attribute with reshaping,
+            timestampe and quality.
+
+            A copy of `data` will be reshaped to `(dim_x, dim_y)` before being
+            sent to clients.
+
+            Note that `data` must be flat.
+
+            Requires `dim_x * dim_y <= len(data)`.
+
+            data: value to send
+            timestamp: unix timestamp
+            quality: quality of attribute
+            dim_x: x dimension to reshape to
+            dim_y: y dimension to reshape to
+
+        - push_change_event(
+            self,
+            name: str,
+            str_data: str,
+            data: bytes | str,
+            timestamp: double,
+            quality: tango.AttrQuality)
+
+            Push a device server change event for a encoded attribute with timestamp
+            and quality.
+
+            str_data: encoding format for data
+            data: encoded data to send
+            timestamp: unix timestamp
+            quality: quality of attribute
+
+        :param name: the attribute name
+        :param args: the arguments to dispatch on
         """
-        if name.lower() in ["state", "status"]:
-            self._submit_tango_operation("push_change_event", name)
-        else:
-            self._submit_tango_operation("push_change_event", name, value)
+        self._submit_tango_operation("push_change_event", name, *args)
 
     def push_archive_event(
-        self: SKABaseDevice[ComponentManagerT], name: str, value: Any = None
+        self: SKABaseDevice[ComponentManagerT], name: str, *args: Any
     ) -> None:
         """
         Push a device server archive event.
@@ -1664,13 +1794,156 @@ class SKABaseDevice(
         This is dependent on whether the push_archive_event call has
         been actioned from a native python thread or a tango omnithread.
 
-        :param name: the event name
-        :param value: the event value
+        This is an "overloaded" function which can be called with
+        multiple signatures supported.  These are dispatched based on
+        the types passed.
+
+        In the overloads below `Scalar` refers to any data type that can be
+        converted to a tango scalar. `Any` refers to
+        `Scalar | Sequence[Scalar] | Sequence[Sequence[Scalar]]`.
+
+        - push_archive_event(self, name: str)
+
+            Push a device server archive event for the "state" or "status".
+
+            Raises a DevFailed if name is not "state" or "status".
+
+        - push_archive_event(self, name: str, expection: DevFailed)
+
+            Push a device server archive event for an attribute with
+            an exception.
+
+            exception: exception to send to client
+
+        - push_archive_event(self, name: str, data: Any)
+
+            Push a device server archive event for an attribute.
+
+            data: value to send to client
+
+        - push_archive_event(self, name: str, data: Sequence[Scalar], dim_x: int)
+
+            Push a device server archive event for a spectrum attribute with truncation.
+
+            A copy of `data` will be truncated before being sent to clients.
+
+            Requires `dim_x <= len(data)`.
+
+            data: value to send to client
+            dim_x: length to truncate value to
+
+        - push_archive_event(
+            self, name: str, data: Sequence[Scalar], dim_x: int, dim_y: int)
+
+            Push a device server archive event for a image attribute with reshaping.
+
+            A copy of `data` will be reshaped to `(dim_x, dim_y)` before being
+            sent to clients.
+
+            Note that `data` must be flat.
+
+            Requires `dim_x * dim_y <= len(data)`.
+
+            data: value to send to client
+            dim_x: x dimension to reshape to
+            dim_y: y dimension to reshape to
+
+        - push_archive_event(self, name: str, str_data: str, data: bytes | str)
+
+            Push a device server archive event for an encoded attribute.
+
+            str_data: encoding format for data
+            data: encoded data to send
+
+        - push_archive_event(
+
+            self, name: str, data: Any, timestamp: float, quality: tango.AttrQuality)
+
+            Push a device server archive event for an attribute with timestamp
+            and quality.
+
+            data: value to send
+            timestamp: unix timestamp
+            quality: quality of attribute
+
+        - push_archive_event(
+            self,
+            name: str,
+            data: Sequence[Scalar],
+            timestamp: float,
+            quality: tango.AttrQuality,
+            dim_x: int)
+
+            Push a device server archive event for a spectrum attribute with truncation,
+            timestamp and quality.
+
+            A copy of `data` will be truncated before being sent to clients.
+
+            Requires `dim_x <= len(data)`.
+
+            data: value to send
+            timestamp: unix timestamp
+            quality: quality of attribute
+            dim_x: length to truncate value to
+
+        - push_archive_event(
+            self,
+            name: str,
+            data: Scalar,
+            timestamp: float,
+            quality: tango.AttrQuality,
+            dim_x: int,
+            dim_y: int)
+
+            Push a device server archive event for a image attribute with reshaping,
+            timestampe and quality.
+
+            A copy of `data` will be reshaped to `(dim_x, dim_y)` before being
+            sent to clients.
+
+            Note that `data` must be flat.
+
+            Requires `dim_x * dim_y <= len(data)`.
+
+            data: value to send
+            timestamp: unix timestamp
+            quality: quality of attribute
+            dim_x: x dimension to reshape to
+            dim_y: y dimension to reshape to
+
+        - push_archive_event(
+            self,
+            name: str,
+            str_data: str,
+            data: bytes | str,
+            timestamp: double,
+            quality: tango.AttrQuality)
+
+            Push a device server archive event for a encoded attribute with timestamp
+            and quality.
+
+            str_data: encoding format for data
+            data: encoded data to send
+            timestamp: unix timestamp
+            quality: quality of attribute
+
+        :param name: the attribute name
+        :param args: the arguments to dispatch on
         """
-        if name.lower() in ["state", "status"]:
-            self._submit_tango_operation("push_archive_event", name)
-        else:
-            self._submit_tango_operation("push_archive_event", name, value)
+        has_data_arg = len(args) > 0
+        is_state_or_status = name.lower() in ["state", "status"]
+
+        # Work around pytango#589.  Note this is only required for
+        if not is_state_or_status and not has_data_arg:
+            desc = (
+                "push_archive_event without a data parameter is only allowed"
+                + " for state and status attributes"
+            )
+            Except.throw_exception(
+                "PyDs_InvalidCall", desc, "SKABaseDevice.push_archive_event"
+            )
+
+        self._submit_tango_operation("push_archive_event", name, *args)
 
     def add_attribute(
         self: SKABaseDevice[ComponentManagerT], *args: Any, **kwargs: Any

@@ -2,8 +2,10 @@
 
 ## unreleased
 
+## 0.19.3
+
 - [WOM-213] Limit input queue size for long running commands
-- [WOM-177] Fix push_change_event and push_archive_event do not expose official PyTango interface
+- [WOM-177] Fix push_change_event and push_archive_event to expose the official PyTango interface
 
 ## 0.19.2
 

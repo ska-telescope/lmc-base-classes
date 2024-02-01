@@ -57,6 +57,7 @@ class SKAObsDevice(SKABaseDevice[ComponentManagerT]):
         # (other than the super() call).
 
         self._obs_state: ObsState
+        self._commanded_obs_state: ObsState
         self._obs_mode: ObsMode
         self._config_progress: int
         self._config_delay_expected: int
@@ -86,6 +87,7 @@ class SKAObsDevice(SKABaseDevice[ComponentManagerT]):
             """
             for attribute_name in [
                 "obsState",
+                "commandedObsState",
                 "obsMode",
                 "configurationProgress",
                 "configurationDelayExpected",
@@ -94,6 +96,7 @@ class SKAObsDevice(SKABaseDevice[ComponentManagerT]):
                 self._device.set_archive_event(attribute_name, True)
 
             self._device._obs_state = ObsState.EMPTY
+            self._device._commanded_obs_state = ObsState.EMPTY
             self._device._obs_mode = ObsMode.IDLE
             self._device._config_progress = 0
             self._device._config_delay_expected = 0
@@ -136,6 +139,13 @@ class SKAObsDevice(SKABaseDevice[ComponentManagerT]):
         self.push_change_event("obsState", obs_state)
         self.push_archive_event("obsState", obs_state)
 
+    def _update_commanded_obs_state(
+        self: SKAObsDevice[ComponentManagerT], commanded_obs_state: ObsState
+    ) -> None:
+        self._commanded_obs_state = commanded_obs_state
+        self.push_change_event("commandedObsState", commanded_obs_state)
+        self.push_archive_event("commandedObsState", commanded_obs_state)
+
     # ----------
     # Attributes
     # ----------
@@ -150,6 +160,17 @@ class SKAObsDevice(SKABaseDevice[ComponentManagerT]):
         :return: the current obs_state value
         """
         return self._obs_state
+
+    @attribute(  # type: ignore[misc]  # "Untyped decorator makes function untyped"
+        dtype=ObsState
+    )
+    def commandedObsState(self: SKAObsDevice[ComponentManagerT]) -> ObsState:
+        """
+        Read the last commanded Observation State of the device.
+
+        :return: commanded Observation State string.
+        """
+        return self._commanded_obs_state
 
     @attribute(  # type: ignore[misc]  # "Untyped decorator makes function untyped"
         dtype=ObsMode

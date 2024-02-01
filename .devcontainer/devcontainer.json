@@ -9,31 +9,51 @@
             "settings": {
                 "terminal.integrated.profiles.linux": {
                     "bash": {
-                        "path": "/bin/bash"
+                        "path": "/bin/bash",
+                        "args": [
+                            "--login"
+                        ]
                     }
                 },
                 "terminal.integration.defaultProfile.linux": "bash",
+                "editor.formatOnSave": true,
+                "editor.codeActionsOnSave": {
+                    "source.organizeImports": true
+                },
                 "python.pythonPath": "/usr/bin/python3",
-                "python.linting.enabled": true,
-                "python.linting.pylintEnabled": true,
-                "python.linting.pylintPath": "/usr/local/bin/pylint",
+                "python.testing.pytestEnabled": true,
+                "pylint.path": [
+                    "/usr/local/bin/pylint"
+                ],
+                "[python]": {
+                    "editor.defaultFormatter": "ms-python.black-formatter"
+                },
+                "isort.args": [
+                    "--profile",
+                    "black"
+                ],
                 "coverage-gutters.manualCoverageFilePaths": [
-                    "/workspaces/ska-low-mccs/build/reports/code-coverage.xml"
+                    "/workspaces/ska-tango-base/build/reports/code-coverage.xml"
                 ],
                 "coverage-gutters.showLineCoverage": true
             },
             "extensions": [
+                "ms-python.pylint",
                 "ms-python.python",
+                "ms-python.black-formatter",
+                "ms-python.flake8",
+                "ms-python.isort",
+                "ms-python.mypy-type-checker",
+                "ryanluker.vscode-coverage-gutters",
                 "lextudio.restructuredtext",
                 "trond-snekvik.simple-rst",
-                "davidanson.vscode-markdownlint",
-                "ryanluker.vscode-coverage-gutters"
+                "tamasfe.even-better-toml"
             ]
         }
     },
-    "postCreateCommand": "sudo poetry config virtualenvs.create false && sudo poetry install",
+    "postCreateCommand": "sudo poetry config virtualenvs.create false && sudo poetry install && echo 'source /usr/share/bash-completion/completions/git' >> ~/.bashrc && sudo git config --system --add core.editor 'nano -b -r 72'",
     "remoteUser": "tango",
     "remoteEnv": {
-        "PATH": "/home/tango/.local/bin:${containerEnv:PATH}",
+        "PATH": "/home/tango/.local/bin:${containerEnv:PATH}"
     }
 }

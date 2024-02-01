@@ -708,6 +708,7 @@ class SKABaseDevice(
                 "longRunningCommandStatus",
                 "longRunningCommandProgress",
                 "longRunningCommandResult",
+                "commandedState",
             ]:
                 self.set_change_event(attribute_name, True)
                 self.set_archive_event(attribute_name, True)
@@ -756,6 +757,8 @@ class SKABaseDevice(
             logger=self.logger,
             callback=self._update_state,
         )
+        self._commanded_op_state: str
+        self._update_commanded_op_state(DevState.INIT)
         self.admin_mode_model = AdminModeModel(
             logger=self.logger, callback=self._update_admin_mode
         )
@@ -1153,6 +1156,15 @@ class SKABaseDevice(
         """
         return self._command_result
 
+    @attribute(dtype=str)  # type: ignore[misc]
+    def commandedState(self: SKABaseDevice[ComponentManagerT]) -> str:
+        """
+        Read the last commanded operating state of the device.
+
+        :return: commanded operating state string.
+        """
+        return self._commanded_op_state
+
     # --------
     # Commands
     # --------
@@ -1229,6 +1241,11 @@ class SKABaseDevice(
         """
         handler = self.get_command_object("Reset")
         result_code, unique_id = handler()
+        current_state = self.get_state()
+        if current_state == DevState.FAULT:
+            self._update_commanded_op_state(DevState.ON)
+        else:
+            self._update_commanded_op_state(current_state)
         return ([result_code], [unique_id])
 
     def is_Standby_allowed(self: SKABaseDevice[ComponentManagerT]) -> bool:
@@ -1265,6 +1282,7 @@ class SKABaseDevice(
 
         handler = self.get_command_object("Standby")
         result_code, unique_id = handler()
+        self._update_commanded_op_state(DevState.STANDBY)
         return ([result_code], [unique_id])
 
     def is_Off_allowed(self: SKABaseDevice[ComponentManagerT]) -> bool:
@@ -1302,7 +1320,7 @@ class SKABaseDevice(
 
         handler = self.get_command_object("Off")
         result_code, unique_id = handler()
-
+        self._update_commanded_op_state(DevState.OFF)
         return ([result_code], [unique_id])
 
     def is_On_allowed(self: SKABaseDevice[ComponentManagerT]) -> bool:
@@ -1339,6 +1357,7 @@ class SKABaseDevice(
 
         handler = self.get_command_object("On")
         result_code, unique_id = handler()
+        self._update_commanded_op_state(DevState.ON)
         return ([result_code], [unique_id])
 
     class AbortCommandsCommand(SlowCommand[tuple[ResultCode, str]]):
@@ -2011,6 +2030,13 @@ class SKABaseDevice(
             getattr(super(), command_name)(*args, **kwargs)
         else:
             self._omni_queue.put((command_name, args, kwargs))
+
+    def _update_commanded_op_state(
+        self: SKABaseDevice[ComponentManagerT], commanded_op_state: DevState
+    ) -> None:
+        self._commanded_op_state = commanded_op_state.name
+        self.push_change_event("commandedState", self._commanded_op_state)
+        self.push_archive_event("commandedState", self._commanded_op_state)
 
     @command(  # type: ignore[misc]  # "Untyped decorator makes function untyped"
         polling_period=5

@@ -105,6 +105,8 @@ def change_event_callbacks() -> MockTangoEventCallbackGroup:
         "longRunningCommandProgress",
         "longRunningCommandResult",
         "longRunningCommandStatus",
+        "commandedState",
+        "commandedObsState",
     )
 
 

@@ -899,6 +899,52 @@ class TestSKABaseDevice:  # pylint: disable=too-many-public-methods
         """
         assert device_under_test.state() == DevState.OFF
 
+    def test_commandedState(
+        self: TestSKABaseDevice,
+        device_under_test: tango.DeviceProxy,
+        change_event_callbacks: MockTangoEventCallbackGroup,
+    ) -> None:
+        """
+        Test for commandedState.
+
+        :param device_under_test: a proxy to the device under test
+        :param change_event_callbacks: dictionary of mock change event
+            callbacks with asynchrony support
+        """
+        assert device_under_test.commandedState == "INIT"
+        assert device_under_test.adminMode == AdminMode.ONLINE
+        assert device_under_test.state() == DevState.OFF
+
+        for attribute in [
+            "state",
+            "commandedState",
+        ]:
+            device_under_test.subscribe_event(
+                attribute,
+                tango.EventType.CHANGE_EVENT,
+                change_event_callbacks[attribute],
+            )
+        change_event_callbacks["commandedState"].assert_change_event("INIT")
+        change_event_callbacks["state"].assert_change_event(DevState.OFF)
+
+        device_under_test.On()
+        change_event_callbacks["commandedState"].assert_change_event("ON")
+        change_event_callbacks["state"].assert_change_event(DevState.ON)
+
+        device_under_test.Reset()
+        change_event_callbacks.assert_not_called()
+
+        device_under_test.Standby()
+        change_event_callbacks["commandedState"].assert_change_event("STANDBY")
+        change_event_callbacks["state"].assert_change_event(DevState.STANDBY)
+
+        device_under_test.Reset()
+        change_event_callbacks.assert_not_called()
+
+        device_under_test.Off()
+        change_event_callbacks["commandedState"].assert_change_event("OFF")
+        change_event_callbacks["state"].assert_change_event(DevState.OFF)
+
     def test_Status(
         self: TestSKABaseDevice, device_under_test: tango.DeviceProxy
     ) -> None:

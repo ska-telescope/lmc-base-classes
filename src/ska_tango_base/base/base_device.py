@@ -593,13 +593,13 @@ class SKABaseDevice(
         self.push_change_event("longRunningCommandStatus", self._command_statuses)
         self.push_archive_event("longRunningCommandStatus", self._command_statuses)
 
-        self._in_progress = ""
-        for i in range(0, len(self._command_statuses), 2):
-            if self._command_statuses[i + 1] == "IN_PROGRESS":
-                self._in_progress = self._command_statuses[i]
-
-        self.push_change_event("commandInProgress", self._in_progress)
-        self.push_archive_event("commandInProgress", self._in_progress)
+        self._command_in_progress = ""
+        for (uid, status) in command_statuses:
+            if status == TaskStatus.IN_PROGRESS:
+                self._command_in_progress = uid.split("_", 2)[2]
+            
+        self.push_change_event("longRunningCommandInProgress", self._command_in_progress)
+        self.push_archive_event("longRunningCommandInProgress", self._command_in_progress)
 
     def _update_commanded_state(
         self: SKABaseDevice[ComponentManagerT], command_name: str
@@ -715,7 +715,7 @@ class SKABaseDevice(
             self._command_ids_in_queue = []
             self._commands_in_queue = []
             self._command_statuses = []
-            self._in_progress = ""
+            self._command_in_progress = ""
             self._command_progresses = []
             self._command_result = ("", "")
 
@@ -737,7 +737,7 @@ class SKABaseDevice(
                 "longRunningCommandsInQueue",
                 "longRunningCommandIDsInQueue",
                 "longRunningCommandStatus",
-                "commandInProgress",
+                "longRunningCommandInProgress",
                 "longRunningCommandProgress",
                 "longRunningCommandResult",
             ]:
@@ -1156,13 +1156,13 @@ class SKABaseDevice(
     @attribute(  # type: ignore[misc]  # "Untyped decorator makes function untyped"
         dtype="str"
     )
-    def commandInProgress(self: SKABaseDevice[ComponentManagerT]) -> str:
+    def longRunningCommandInProgress(self: SKABaseDevice[ComponentManagerT]) -> str:
         """
         Read the currently running command that has status equal to IN_PROGRESS if any.
 
         :return: ID of command IN_PROGRESS or empty string.
         """
-        return self._in_progress
+        return self._command_in_progress
 
     @attribute(  # type: ignore[misc]  # "Untyped decorator makes function untyped"
         dtype="str"

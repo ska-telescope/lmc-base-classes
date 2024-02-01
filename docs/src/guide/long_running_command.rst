@@ -36,38 +36,38 @@ monitoring and reporting of result, status and progress of LRCs.
 
 **LRC Attributes**
 
-+-----------------------------+-------------------------------------------+----------------------+
-| Attribute                   | Example Value                             |  Description         |
-+=============================+===========================================+======================+
-| longRunningCommandsInQueue  | ('Standby', 'On', 'Off')                  | Keeps track of which |
-|                             |                                           | commands are on the  |
-|                             |                                           | queue                |
-+-----------------------------+-------------------------------------------+----------------------+
-| longRunningCommandIDsInQueue|('1636437568.0723004_235210334802782_On',  | Keeps track of IDs in|
-|                             |                                           | the queue            |
-|                             |1636437789.493874_116219429722764_Off)     |                      |
-+-----------------------------+-------------------------------------------+----------------------+
-| longRunningCommandStatus    | ('1636437568.0723004_235210334802782_On', | ID, status pair of   |
-|                             | 'IN_PROGRESS',                            | the currently        |
-|                             |                                           | executing commands   |
-|                             | '1636437789.493874_116219429722764_Off',  |                      |
-|                             | 'IN_PROGRESS')                            |                      |
-+-----------------------------+-------------------------------------------+----------------------+
-| commandInProgress           | '1636437568.0723004_235210334802782_On    | ID of command        |
-|                             |                                           | currently executing  |
-|                             |                                           | or an empty string   |
-|                             |                                           | if idle              |
-+-----------------------------+-------------------------------------------+----------------------+
-| longRunningCommandProgress  | ('1636437568.0723004_235210334802782_On', | ID, progress pair of |
-|                             | '12',                                     | the currently        |
-|                             |                                           | executing commands   |
-|                             | '1636437789.493874_116219429722764_Off',  |                      |
-|                             | '1')                                      |                      |
-+-----------------------------+-------------------------------------------+----------------------+
-| longRunningCommandResult    | ('1636438076.6105473_101143779281769_On', | ID, ResultCode,      |
-|                             | '0', 'OK')                                | result of the        |
-|                             |                                           | completed command    |
-+-----------------------------+-------------------------------------------+----------------------+
++-----------------------------+-------------------------------------------------+----------------------+
+| Attribute                   | Example Value                                   |  Description         |
++=============================+=================================================+======================+
+| longRunningCommandsInQueue  | ('StandbyCommand', 'OnCommand', 'OffCommand')   | Keeps track of which |
+|                             |                                                 | commands are on the  |
+|                             |                                                 | queue                |
++-----------------------------+-------------------------------------------------+----------------------+
+| longRunningCommandIDsInQueue|('1636437568.0723004_235210334802782_OnCommand', | Keeps track of IDs in|
+|                             |                                                 | the queue            |
+|                             |1636437789.493874_116219429722764_OffCommand)    |                      |
++-----------------------------+-------------------------------------------------+----------------------+
+| longRunningCommandStatus    | ('1636437568.0723004_235210334802782_OnCommand',| ID, status pair of   |
+|                             | 'IN_PROGRESS',                                  | the currently        |
+|                             |                                                 | executing commands   |
+|                             | '1636437789.493874_116219429722764_OffCommand', |                      |
+|                             | 'IN_PROGRESS')                                  |                      |
++-----------------------------+-------------------------------------------------+----------------------+
+| longRunningCommandInProgress| 'On'                                            | Name of command      |
+|                             |                                                 | currently executing  |
+|                             |                                                 | or an empty string   |
+|                             |                                                 | if idle              |
++-----------------------------+-------------------------------------------------+----------------------+
+| longRunningCommandProgress  | ('1636437568.0723004_235210334802782_OnCommand',| ID, progress pair of |
+|                             | '12',                                           | the currently        |
+|                             |                                                 | executing commands   |
+|                             | '1636437789.493874_116219429722764_OffCommand', |                      |
+|                             | '1')                                            |                      |
++-----------------------------+-------------------------------------------------+----------------------+
+| longRunningCommandResult    | ('1636438076.6105473_101143779281769_OnCommand',| ID, ResultCode,      |
+|                             | '0', 'OK')                                      | result of the        |
+|                             |                                                 | completed command    |
++-----------------------------+-------------------------------------------------+----------------------+
 
 
 **LRC Commands**

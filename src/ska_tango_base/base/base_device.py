@@ -594,12 +594,16 @@ class SKABaseDevice(
         self.push_archive_event("longRunningCommandStatus", self._command_statuses)
 
         self._command_in_progress = ""
-        for (uid, status) in command_statuses:
+        for uid, status in command_statuses:
             if status == TaskStatus.IN_PROGRESS:
                 self._command_in_progress = uid.split("_", 2)[2]
-            
-        self.push_change_event("longRunningCommandInProgress", self._command_in_progress)
-        self.push_archive_event("longRunningCommandInProgress", self._command_in_progress)
+
+        self.push_change_event(
+            "longRunningCommandInProgress", self._command_in_progress
+        )
+        self.push_archive_event(
+            "longRunningCommandInProgress", self._command_in_progress
+        )
 
     def _update_commanded_state(
         self: SKABaseDevice[ComponentManagerT], command_name: str

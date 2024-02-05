@@ -899,6 +899,7 @@ class TestSKABaseDevice:  # pylint: disable=too-many-public-methods
         """
         assert device_under_test.state() == DevState.OFF
 
+    # TODO: How to simulate FAULT state? Reset() after FAULT should go to ON.
     def test_commandedState(
         self: TestSKABaseDevice,
         device_under_test: tango.DeviceProxy,

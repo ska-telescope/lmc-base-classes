@@ -100,13 +100,13 @@ def change_event_callbacks() -> MockTangoEventCallbackGroup:
     return MockTangoEventCallbackGroup(
         "adminMode",
         "obsState",
+        "commandedObsState",
         "state",
+        "commandedState",
         "status",
         "longRunningCommandProgress",
         "longRunningCommandResult",
         "longRunningCommandStatus",
-        "commandedState",
-        "commandedObsState",
     )
 
 

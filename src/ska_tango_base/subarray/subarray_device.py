@@ -66,7 +66,7 @@ class SKASubarray(SKAObsDevice[ComponentManagerT]):
         # (other than the super() call).
         self._activation_time: float
         self.obs_state_model: ObsStateModel
-        self._obs_state_before_abort: ObsState | None = None
+        self._obs_state_before_fault_or_abort: ObsState | None = None
 
         super().__init__(*args, **kwargs)
 
@@ -479,6 +479,8 @@ class SKASubarray(SKAObsDevice[ComponentManagerT]):
         configured: bool | None = None,
         scanning: bool | None = None,
     ) -> None:
+        if fault:
+            self._obs_state_before_fault_or_abort = self._obs_state
         super()._component_state_changed(fault=fault, power=power)
 
         if resourced is not None:
@@ -890,7 +892,7 @@ class SKASubarray(SKAObsDevice[ComponentManagerT]):
 
         :return: A tuple containing a result code and the unique ID of the command
         """
-        self._obs_state_before_abort = self._obs_state
+        self._obs_state_before_fault_or_abort = self._obs_state
         handler = self.get_command_object("Abort")
         (result_code, message) = handler()
         self._update_commanded_obs_state(ObsState.ABORTED)
@@ -929,18 +931,13 @@ class SKASubarray(SKAObsDevice[ComponentManagerT]):
 
         :return: A tuple containing a result code and the unique ID of the command
         """
-        # TODO: Not an ideal implementation, need a callback?
-        obs_state_before_reset = self._obs_state
         handler = self.get_command_object("ObsReset")
         (result_code, message) = handler()
-        if obs_state_before_reset == ObsState.ABORTED:
-            if self._obs_state_before_abort == ObsState.RESOURCING:
-                self._update_commanded_obs_state(ObsState.EMPTY)
-            else:
-                self._update_commanded_obs_state(ObsState.IDLE)
+        if self._obs_state_before_fault_or_abort == ObsState.RESOURCING:
+            self._update_commanded_obs_state(ObsState.EMPTY)
         else:
-            # TODO: This will be incorrect if resetting after fault during RESOURCING
             self._update_commanded_obs_state(ObsState.IDLE)
+        self._obs_state_before_fault_or_abort = None
         return ([result_code], [message])
 
     def is_Restart_allowed(self: SKASubarray[ComponentManagerT]) -> bool:

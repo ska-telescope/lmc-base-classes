@@ -697,6 +697,7 @@ class SKABaseDevice(
 
             for attribute_name in [
                 "state",
+                "commandedState",
                 "status",
                 "adminMode",
                 "healthState",
@@ -708,7 +709,6 @@ class SKABaseDevice(
                 "longRunningCommandStatus",
                 "longRunningCommandProgress",
                 "longRunningCommandResult",
-                "commandedState",
             ]:
                 self.set_change_event(attribute_name, True)
                 self.set_archive_event(attribute_name, True)
@@ -1239,9 +1239,9 @@ class SKABaseDevice(
             message indicating status. The message is for
             information purpose only.
         """
+        current_state = self.get_state()
         handler = self.get_command_object("Reset")
         result_code, unique_id = handler()
-        current_state = self.get_state()
         if current_state == DevState.FAULT:
             self._update_commanded_op_state(DevState.ON)
         else:

@@ -15,7 +15,7 @@ from __future__ import annotations
 import logging
 from typing import Callable, Final, cast
 
-from ska_control_model import ResultCode, TaskStatus
+from ska_control_model import ResultCode
 from tango.server import command
 
 from ...base import CommandTracker
@@ -238,10 +238,8 @@ class ReferenceSkaSubarray(SKASubarray[ReferenceSubarrayComponentManager]):
     def SimulateObsFault(self: ReferenceSkaSubarray) -> None:
         """Simulate an observation fault state."""
         # pylint: disable=protected-access
+        self.component_manager.abort_commands()
         self.component_manager._component.simulate_obsfault()
-        for uid, status in self._command_tracker.command_statuses:
-            if status == TaskStatus.IN_PROGRESS:
-                self._command_tracker.update_command_info(uid, TaskStatus.FAILED)
 
 
 # ----------

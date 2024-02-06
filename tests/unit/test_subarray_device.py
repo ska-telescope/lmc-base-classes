@@ -1101,16 +1101,12 @@ class TestSKASubarray:  # pylint: disable=too-many-public-methods
             (on_command_id, "COMPLETED", assign_command_id, "IN_PROGRESS"),
         )
 
-        # TODO: The currently running commands' statuses are set to FAILED in this
-        # device command, otherwise the last command just keeps hanging as IN_PROGRESS?
         device_under_test.SimulateObsFault()
         change_event_callbacks.assert_change_event("obsState", ObsState.FAULT)
-        # device_under_test.SimulateFault()
-        # change_event_callbacks.assert_change_event("state", DevState.FAULT)
 
         change_event_callbacks.assert_change_event(
             "longRunningCommandStatus",
-            (on_command_id, "COMPLETED", assign_command_id, "FAILED"),
+            (on_command_id, "COMPLETED", assign_command_id, "ABORTED"),
         )
 
         # Reset from fault state
@@ -1124,7 +1120,7 @@ class TestSKASubarray:  # pylint: disable=too-many-public-methods
                 on_command_id,
                 "COMPLETED",
                 assign_command_id,
-                "FAILED",
+                "ABORTED",
                 reset_command_id,
                 "QUEUED",
             ),
@@ -1136,14 +1132,11 @@ class TestSKASubarray:  # pylint: disable=too-many-public-methods
                 on_command_id,
                 "COMPLETED",
                 assign_command_id,
-                "FAILED",
+                "ABORTED",
                 reset_command_id,
                 "IN_PROGRESS",
             ),
         )
-        # TODO: ObsReset() command is stuck. ObsStateModel raises 'component_resourced'
-        # not allowed after spontaneous 'component_obsfault' is performed with
-        # previous SimulateObsFault() command.
         for progress_point in FakeSubarrayComponent.PROGRESS_REPORTING_POINTS:
             change_event_callbacks.assert_change_event(
                 "longRunningCommandProgress", (reset_command_id, progress_point)
@@ -1161,7 +1154,7 @@ class TestSKASubarray:  # pylint: disable=too-many-public-methods
                 on_command_id,
                 "COMPLETED",
                 assign_command_id,
-                "FAILED",
+                "ABORTED",
                 reset_command_id,
                 "COMPLETED",
             ),

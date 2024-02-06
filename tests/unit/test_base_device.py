@@ -50,6 +50,7 @@ from ska_tango_base.faults import LoggingTargetError
 from ska_tango_base.testing.reference import (
     FakeBaseComponent,
     ReferenceBaseComponentManager,
+    ReferenceSkaBaseDevice,
 )
 
 
@@ -868,7 +869,7 @@ class TestSKABaseDevice:  # pylint: disable=too-many-public-methods
             configured
         """
         return {
-            "device": SKABaseDevice,
+            "device": ReferenceSkaBaseDevice,
             "component_manager_patch": lambda self: ReferenceBaseComponentManager(
                 self.logger,
                 self._communication_state_changed,
@@ -899,7 +900,6 @@ class TestSKABaseDevice:  # pylint: disable=too-many-public-methods
         """
         assert device_under_test.state() == DevState.OFF
 
-    # TODO: How to simulate FAULT state? Reset() after FAULT should go to ON.
     def test_commandedState(
         self: TestSKABaseDevice,
         device_under_test: tango.DeviceProxy,
@@ -931,13 +931,22 @@ class TestSKABaseDevice:  # pylint: disable=too-many-public-methods
         device_under_test.On()
         change_event_callbacks["commandedState"].assert_change_event("ON")
         change_event_callbacks["state"].assert_change_event(DevState.ON)
+        assert device_under_test.commandedState == device_under_test.state().name
 
         device_under_test.Reset()
         change_event_callbacks.assert_not_called()
 
+        device_under_test.SimulateFault()
+        change_event_callbacks["state"].assert_change_event(DevState.FAULT)
+
+        device_under_test.Reset()
+        change_event_callbacks["state"].assert_change_event(DevState.ON)
+        assert device_under_test.commandedState == device_under_test.state().name
+
         device_under_test.Standby()
         change_event_callbacks["commandedState"].assert_change_event("STANDBY")
         change_event_callbacks["state"].assert_change_event(DevState.STANDBY)
+        assert device_under_test.commandedState == device_under_test.state().name
 
         device_under_test.Reset()
         change_event_callbacks.assert_not_called()
@@ -945,6 +954,7 @@ class TestSKABaseDevice:  # pylint: disable=too-many-public-methods
         device_under_test.Off()
         change_event_callbacks["commandedState"].assert_change_event("OFF")
         change_event_callbacks["state"].assert_change_event(DevState.OFF)
+        assert device_under_test.commandedState == device_under_test.state().name
 
     def test_Status(
         self: TestSKABaseDevice, device_under_test: tango.DeviceProxy

@@ -1,4 +1,4 @@
-# pylint: disable=invalid-name, too-many-lines  # TODO: split this module
+# pylint: disable=invalid-name
 # -*- coding: utf-8 -*-
 #
 # This file is part of the SKA Tango Base project
@@ -475,14 +475,16 @@ class SKASubarray(SKAObsDevice[ComponentManagerT]):
         self: SKASubarray[ComponentManagerT],
         fault: bool | None = None,
         power: PowerState | None = None,
+        obsfault: bool | None = None,
         resourced: bool | None = None,
         configured: bool | None = None,
         scanning: bool | None = None,
     ) -> None:
-        if fault:
-            self._obs_state_before_fault_or_abort = self._obs_state
         super()._component_state_changed(fault=fault, power=power)
 
+        if obsfault:
+            self._obs_state_before_fault_or_abort = self._obs_state
+            self.obs_state_model.perform_action("component_obsfault")
         if resourced is not None:
             if resourced:
                 self.obs_state_model.perform_action("component_resourced")

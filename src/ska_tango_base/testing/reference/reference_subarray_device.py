@@ -9,16 +9,21 @@ A reference implementation of an SKA subarray device.
 
 It inherits from SKASubarray but provides schemas for some commands.
 """
+# pylint: disable=invalid-name
 from __future__ import annotations
 
 import logging
 from typing import Callable, Final, cast
 
-from ska_control_model import ResultCode
+from ska_control_model import ResultCode, TaskStatus
+from tango.server import command
 
 from ...base import CommandTracker
 from ...subarray.subarray_device import SKASubarray
-from .reference_subarray_component_manager import ReferenceSubarrayComponentManager
+from .reference_subarray_component_manager import (
+    FakeSubarrayComponent,
+    ReferenceSubarrayComponentManager,
+)
 
 DevVarLongStringArrayType = tuple[list[ResultCode], list[str]]
 
@@ -41,6 +46,7 @@ class ReferenceSkaSubarray(SKASubarray[ReferenceSubarrayComponentManager]):
             self.logger,
             self._communication_state_changed,
             self._component_state_changed,
+            _component=FakeSubarrayComponent(self.CapabilityTypes),
         )
 
     class AssignResourcesCommand(SKASubarray.AssignResourcesCommand):
@@ -221,6 +227,21 @@ class ReferenceSkaSubarray(SKASubarray[ReferenceSubarrayComponentManager]):
                 logger=logger,
                 schema=self.SCHEMA,
             )
+
+    @command()  # type: ignore[misc]
+    def SimulateFault(self: ReferenceSkaSubarray) -> None:
+        """Simulate a fault state."""
+        # pylint: disable=protected-access
+        self.component_manager._component.simulate_fault(True)
+
+    @command()  # type: ignore[misc]
+    def SimulateObsFault(self: ReferenceSkaSubarray) -> None:
+        """Simulate an observation fault state."""
+        # pylint: disable=protected-access
+        self.component_manager._component.simulate_obsfault()
+        for uid, status in self._command_tracker.command_statuses:
+            if status == TaskStatus.IN_PROGRESS:
+                self._command_tracker.update_command_info(uid, TaskStatus.FAILED)
 
 
 # ----------

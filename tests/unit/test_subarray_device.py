@@ -1056,6 +1056,119 @@ class TestSKASubarray:  # pylint: disable=too-many-public-methods
             "channels:0",
         ]
 
+    def test_fault_and_obsreset_from_resourcing(
+        self: TestSKASubarray,
+        device_under_test: tango.DeviceProxy,
+        change_event_callbacks: MockTangoEventCallbackGroup,
+    ) -> None:
+        """
+        Test for Reset.
+
+        :param device_under_test: a proxy to the device under test
+        :param change_event_callbacks: dictionary of mock change event
+            callbacks with asynchrony support
+        """
+        on_command_id = turn_on_device(device_under_test, change_event_callbacks)
+
+        # assignment of resources
+        for attribute in [
+            "obsState",
+            "commandedObsState",
+        ]:
+            device_under_test.subscribe_event(
+                attribute,
+                tango.EventType.CHANGE_EVENT,
+                change_event_callbacks[attribute],
+            )
+        change_event_callbacks.assert_change_event("obsState", ObsState.EMPTY)
+        change_event_callbacks.assert_change_event("commandedObsState", ObsState.EMPTY)
+
+        resources_to_assign = {"resources": ["BAND1"]}
+        [
+            [result_code],
+            [assign_command_id],
+        ] = device_under_test.AssignResources(json.dumps(resources_to_assign))
+        assert result_code == ResultCode.QUEUED
+
+        change_event_callbacks.assert_change_event("obsState", ObsState.RESOURCING)
+        change_event_callbacks.assert_change_event(
+            "longRunningCommandStatus",
+            (on_command_id, "COMPLETED", assign_command_id, "QUEUED"),
+        )
+        change_event_callbacks.assert_change_event("commandedObsState", ObsState.IDLE)
+        change_event_callbacks.assert_change_event(
+            "longRunningCommandStatus",
+            (on_command_id, "COMPLETED", assign_command_id, "IN_PROGRESS"),
+        )
+
+        # TODO: The currently running commands' statuses are set to FAILED in this
+        # device command, otherwise the last command just keeps hanging as IN_PROGRESS?
+        device_under_test.SimulateObsFault()
+        change_event_callbacks.assert_change_event("obsState", ObsState.FAULT)
+        # device_under_test.SimulateFault()
+        # change_event_callbacks.assert_change_event("state", DevState.FAULT)
+
+        change_event_callbacks.assert_change_event(
+            "longRunningCommandStatus",
+            (on_command_id, "COMPLETED", assign_command_id, "FAILED"),
+        )
+
+        # Reset from fault state
+        [[result_code], [reset_command_id]] = device_under_test.ObsReset()
+        assert result_code == ResultCode.QUEUED
+
+        change_event_callbacks.assert_change_event("obsState", ObsState.RESETTING)
+        change_event_callbacks.assert_change_event(
+            "longRunningCommandStatus",
+            (
+                on_command_id,
+                "COMPLETED",
+                assign_command_id,
+                "FAILED",
+                reset_command_id,
+                "QUEUED",
+            ),
+        )
+        change_event_callbacks.assert_change_event("commandedObsState", ObsState.EMPTY)
+        change_event_callbacks.assert_change_event(
+            "longRunningCommandStatus",
+            (
+                on_command_id,
+                "COMPLETED",
+                assign_command_id,
+                "FAILED",
+                reset_command_id,
+                "IN_PROGRESS",
+            ),
+        )
+        # TODO: ObsReset() command is stuck. ObsStateModel raises 'component_resourced'
+        # not allowed after spontaneous 'component_obsfault' is performed with
+        # previous SimulateObsFault() command.
+        for progress_point in FakeSubarrayComponent.PROGRESS_REPORTING_POINTS:
+            change_event_callbacks.assert_change_event(
+                "longRunningCommandProgress", (reset_command_id, progress_point)
+            )
+        change_event_callbacks.assert_change_event(
+            "longRunningCommandResult",
+            (
+                reset_command_id,
+                json.dumps([int(ResultCode.OK), "Obs reset completed OK"]),
+            ),
+        )
+        change_event_callbacks.assert_change_event(
+            "longRunningCommandStatus",
+            (
+                on_command_id,
+                "COMPLETED",
+                assign_command_id,
+                "FAILED",
+                reset_command_id,
+                "COMPLETED",
+            ),
+        )
+        change_event_callbacks.assert_change_event("obsState", ObsState.EMPTY)
+        assert device_under_test.obsState == device_under_test.commandedObsState
+
     def test_activationTime(
         self: TestSKASubarray, device_under_test: tango.DeviceProxy
     ) -> None:

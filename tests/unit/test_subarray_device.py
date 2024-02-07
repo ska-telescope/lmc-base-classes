@@ -170,6 +170,91 @@ def assign_resources_to_device(
     return assign_command_id
 
 
+def configure_device(
+    device_under_test: tango.DeviceProxy,
+    change_event_callbacks: MockTangoEventCallbackGroup,
+    on_command_id: Any,
+    assign_command_id: Any,
+    configuration_to_apply: dict[str, int],
+) -> Any:
+    """
+    Configure the device and clear the queue attributes.
+
+    :param device_under_test: a proxy to the device under test
+    :param change_event_callbacks: dictionary of mock change event
+        callbacks with asynchrony support
+    :param on_command_id: the previously executed On() command's unique ID
+    :param assign_command_id: the previously executed AssignResources() command's ID
+    :param configuration_to_apply: dict
+    :return: the executed Configure() command's unique ID
+    """
+    assert list(device_under_test.configuredCapabilities) == [
+        "blocks:0",
+        "channels:0",
+    ]
+
+    # Call command
+    [[result_code], [configure_command_id]] = device_under_test.Configure(
+        json.dumps(configuration_to_apply)
+    )
+    assert result_code == ResultCode.QUEUED
+
+    # Command is queued
+    change_event_callbacks.assert_change_event("obsState", ObsState.CONFIGURING)
+    change_event_callbacks.assert_change_event(
+        "longRunningCommandStatus",
+        (
+            on_command_id,
+            "COMPLETED",
+            assign_command_id,
+            "COMPLETED",
+            configure_command_id,
+            "QUEUED",
+        ),
+    )
+
+    # Command is started
+    change_event_callbacks.assert_change_event(
+        "longRunningCommandStatus",
+        (
+            on_command_id,
+            "COMPLETED",
+            assign_command_id,
+            "COMPLETED",
+            configure_command_id,
+            "IN_PROGRESS",
+        ),
+    )
+    change_event_callbacks.assert_change_event("commandedObsState", ObsState.READY)
+    for progress_point in FakeSubarrayComponent.PROGRESS_REPORTING_POINTS:
+        change_event_callbacks.assert_change_event(
+            "longRunningCommandProgress", (configure_command_id, progress_point)
+        )
+
+    # Command is completed
+    change_event_callbacks.assert_change_event(
+        "longRunningCommandResult",
+        (
+            configure_command_id,
+            json.dumps([int(ResultCode.OK), "Configure completed OK"]),
+        ),
+    )
+    change_event_callbacks.assert_change_event(
+        "longRunningCommandStatus",
+        (
+            on_command_id,
+            "COMPLETED",
+            assign_command_id,
+            "COMPLETED",
+            configure_command_id,
+            "COMPLETED",
+        ),
+    )
+    change_event_callbacks.assert_change_event("obsState", ObsState.READY)
+    assert device_under_test.obsState == device_under_test.commandedObsState
+    return configure_command_id
+
+
 class TestSKASubarray:  # pylint: disable=too-many-public-methods
     """Test cases for SKASubarray device."""
 
@@ -397,7 +482,6 @@ class TestSKASubarray:  # pylint: disable=too-many-public-methods
         assert device_under_test.obsState == device_under_test.commandedObsState
         assert not device_under_test.assignedResources
 
-    @pytest.mark.usefixtures("patch_debugger_to_start_on_ephemeral_port")
     def test_configure_and_end(
         self: TestSKASubarray,
         device_under_test: tango.DeviceProxy,
@@ -410,73 +494,17 @@ class TestSKASubarray:  # pylint: disable=too-many-public-methods
         :param change_event_callbacks: dictionary of mock change event
             callbacks with asynchrony support
         """
-        device_under_test.DebugDevice()
-
         on_command_id = turn_on_device(device_under_test, change_event_callbacks)
         assign_command_id = assign_resources_to_device(
             device_under_test, change_event_callbacks, on_command_id, ["BAND1"]
         )
-
-        assert list(device_under_test.configuredCapabilities) == [
-            "blocks:0",
-            "channels:0",
-        ]
-
-        configuration_to_apply = {"blocks": 1, "channels": 2}
-        [[result_code], [config_command_id]] = device_under_test.Configure(
-            json.dumps(configuration_to_apply)
+        configure_command_id = configure_device(
+            device_under_test,
+            change_event_callbacks,
+            on_command_id,
+            assign_command_id,
+            {"blocks": 1, "channels": 2},
         )
-        assert result_code == ResultCode.QUEUED
-
-        change_event_callbacks.assert_change_event("obsState", ObsState.CONFIGURING)
-        change_event_callbacks.assert_change_event(
-            "longRunningCommandStatus",
-            (
-                on_command_id,
-                "COMPLETED",
-                assign_command_id,
-                "COMPLETED",
-                config_command_id,
-                "QUEUED",
-            ),
-        )
-        change_event_callbacks.assert_change_event(
-            "longRunningCommandStatus",
-            (
-                on_command_id,
-                "COMPLETED",
-                assign_command_id,
-                "COMPLETED",
-                config_command_id,
-                "IN_PROGRESS",
-            ),
-        )
-        change_event_callbacks.assert_change_event("commandedObsState", ObsState.READY)
-
-        for progress_point in FakeSubarrayComponent.PROGRESS_REPORTING_POINTS:
-            change_event_callbacks.assert_change_event(
-                "longRunningCommandProgress", (config_command_id, progress_point)
-            )
-        change_event_callbacks.assert_change_event(
-            "longRunningCommandResult",
-            (
-                config_command_id,
-                json.dumps([int(ResultCode.OK), "Configure completed OK"]),
-            ),
-        )
-        change_event_callbacks.assert_change_event(
-            "longRunningCommandStatus",
-            (
-                on_command_id,
-                "COMPLETED",
-                assign_command_id,
-                "COMPLETED",
-                config_command_id,
-                "COMPLETED",
-            ),
-        )
-        change_event_callbacks.assert_change_event("obsState", ObsState.READY)
-        assert device_under_test.obsState == device_under_test.commandedObsState
 
         assert list(device_under_test.configuredCapabilities) == [
             "blocks:1",
@@ -494,7 +522,7 @@ class TestSKASubarray:  # pylint: disable=too-many-public-methods
                 "COMPLETED",
                 assign_command_id,
                 "COMPLETED",
-                config_command_id,
+                configure_command_id,
                 "COMPLETED",
                 end_command_id,
                 "QUEUED",
@@ -507,7 +535,7 @@ class TestSKASubarray:  # pylint: disable=too-many-public-methods
                 "COMPLETED",
                 assign_command_id,
                 "COMPLETED",
-                config_command_id,
+                configure_command_id,
                 "COMPLETED",
                 end_command_id,
                 "IN_PROGRESS",
@@ -535,7 +563,7 @@ class TestSKASubarray:  # pylint: disable=too-many-public-methods
                 "COMPLETED",
                 assign_command_id,
                 "COMPLETED",
-                config_command_id,
+                configure_command_id,
                 "COMPLETED",
                 end_command_id,
                 "COMPLETED",
@@ -563,68 +591,13 @@ class TestSKASubarray:  # pylint: disable=too-many-public-methods
         assign_command_id = assign_resources_to_device(
             device_under_test, change_event_callbacks, on_command_id, ["BAND1"]
         )
-
-        # configuration
-        assert list(device_under_test.configuredCapabilities) == [
-            "blocks:0",
-            "channels:0",
-        ]
-
-        configuration_to_apply = {"blocks": 2}
-        [[result_code], [config_command_id]] = device_under_test.Configure(
-            json.dumps(configuration_to_apply)
+        configure_command_id = configure_device(
+            device_under_test,
+            change_event_callbacks,
+            on_command_id,
+            assign_command_id,
+            {"blocks": 2},
         )
-        assert result_code == ResultCode.QUEUED
-
-        change_event_callbacks.assert_change_event("obsState", ObsState.CONFIGURING)
-        change_event_callbacks.assert_change_event(
-            "longRunningCommandStatus",
-            (
-                on_command_id,
-                "COMPLETED",
-                assign_command_id,
-                "COMPLETED",
-                config_command_id,
-                "QUEUED",
-            ),
-        )
-        change_event_callbacks.assert_change_event(
-            "longRunningCommandStatus",
-            (
-                on_command_id,
-                "COMPLETED",
-                assign_command_id,
-                "COMPLETED",
-                config_command_id,
-                "IN_PROGRESS",
-            ),
-        )
-        change_event_callbacks.assert_change_event("commandedObsState", ObsState.READY)
-
-        for progress_point in FakeSubarrayComponent.PROGRESS_REPORTING_POINTS:
-            change_event_callbacks.assert_change_event(
-                "longRunningCommandProgress", (config_command_id, progress_point)
-            )
-        change_event_callbacks.assert_change_event(
-            "longRunningCommandResult",
-            (
-                config_command_id,
-                json.dumps([int(ResultCode.OK), "Configure completed OK"]),
-            ),
-        )
-        change_event_callbacks.assert_change_event(
-            "longRunningCommandStatus",
-            (
-                on_command_id,
-                "COMPLETED",
-                assign_command_id,
-                "COMPLETED",
-                config_command_id,
-                "COMPLETED",
-            ),
-        )
-        change_event_callbacks.assert_change_event("obsState", ObsState.READY)
-        assert device_under_test.obsState == device_under_test.commandedObsState
 
         assert list(device_under_test.configuredCapabilities) == [
             "blocks:2",
@@ -644,7 +617,7 @@ class TestSKASubarray:  # pylint: disable=too-many-public-methods
                 "COMPLETED",
                 assign_command_id,
                 "COMPLETED",
-                config_command_id,
+                configure_command_id,
                 "COMPLETED",
                 scan_command_id,
                 "QUEUED",
@@ -657,7 +630,7 @@ class TestSKASubarray:  # pylint: disable=too-many-public-methods
                 "COMPLETED",
                 assign_command_id,
                 "COMPLETED",
-                config_command_id,
+                configure_command_id,
                 "COMPLETED",
                 scan_command_id,
                 "IN_PROGRESS",
@@ -684,7 +657,7 @@ class TestSKASubarray:  # pylint: disable=too-many-public-methods
                 "COMPLETED",
                 assign_command_id,
                 "COMPLETED",
-                config_command_id,
+                configure_command_id,
                 "COMPLETED",
                 scan_command_id,
                 "COMPLETED",
@@ -702,7 +675,7 @@ class TestSKASubarray:  # pylint: disable=too-many-public-methods
                 "COMPLETED",
                 assign_command_id,
                 "COMPLETED",
-                config_command_id,
+                configure_command_id,
                 "COMPLETED",
                 scan_command_id,
                 "COMPLETED",
@@ -717,7 +690,7 @@ class TestSKASubarray:  # pylint: disable=too-many-public-methods
                 "COMPLETED",
                 assign_command_id,
                 "COMPLETED",
-                config_command_id,
+                configure_command_id,
                 "COMPLETED",
                 scan_command_id,
                 "COMPLETED",
@@ -746,7 +719,7 @@ class TestSKASubarray:  # pylint: disable=too-many-public-methods
                 "COMPLETED",
                 assign_command_id,
                 "COMPLETED",
-                config_command_id,
+                configure_command_id,
                 "COMPLETED",
                 scan_command_id,
                 "COMPLETED",

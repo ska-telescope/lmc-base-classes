@@ -60,11 +60,17 @@ def turn_on_device(
     change_event_callbacks["longRunningCommandProgress"].assert_change_event(None)
     change_event_callbacks["longRunningCommandStatus"].assert_change_event(None)
     change_event_callbacks["longRunningCommandResult"].assert_change_event(("", ""))
+
+    # Call command
     [[result_code], [on_command_id]] = device_under_test.On()
     assert result_code == ResultCode.QUEUED
+
+    # Command is queued
     change_event_callbacks.assert_change_event(
         "longRunningCommandStatus", (on_command_id, "QUEUED")
     )
+
+    # Command is started
     change_event_callbacks.assert_change_event(
         "longRunningCommandStatus", (on_command_id, "IN_PROGRESS")
     )
@@ -72,6 +78,8 @@ def turn_on_device(
         change_event_callbacks.assert_change_event(
             "longRunningCommandProgress", (on_command_id, progress_point)
         )
+
+    # Command is completed
     change_event_callbacks.assert_change_event("state", tango.DevState.ON)
     change_event_callbacks.assert_change_event("status", "The device is in ON state.")
     assert device_under_test.state() == tango.DevState.ON
@@ -117,26 +125,34 @@ def assign_resources_to_device(
         )
     change_event_callbacks.assert_change_event("obsState", ObsState.EMPTY)
     change_event_callbacks.assert_change_event("commandedObsState", ObsState.EMPTY)
+
+    # Call command
     resources_to_assign = {"resources": resources_list}
     [
         [result_code],
         [assign_command_id],
     ] = device_under_test.AssignResources(json.dumps(resources_to_assign))
     assert result_code == ResultCode.QUEUED
+
+    # Command is queued
     change_event_callbacks.assert_change_event("obsState", ObsState.RESOURCING)
     change_event_callbacks.assert_change_event(
         "longRunningCommandStatus",
         (on_command_id, "COMPLETED", assign_command_id, "QUEUED"),
     )
-    change_event_callbacks.assert_change_event("commandedObsState", ObsState.IDLE)
+
+    # Command is started
     change_event_callbacks.assert_change_event(
         "longRunningCommandStatus",
         (on_command_id, "COMPLETED", assign_command_id, "IN_PROGRESS"),
     )
+    change_event_callbacks.assert_change_event("commandedObsState", ObsState.IDLE)
     for progress_point in FakeSubarrayComponent.PROGRESS_REPORTING_POINTS:
         change_event_callbacks.assert_change_event(
             "longRunningCommandProgress", (assign_command_id, progress_point)
         )
+
+    # Command is completed
     change_event_callbacks.assert_change_event(
         "longRunningCommandResult",
         (
@@ -336,7 +352,6 @@ class TestSKASubarray:  # pylint: disable=too-many-public-methods
                 "QUEUED",
             ),
         )
-        change_event_callbacks.assert_change_event("commandedObsState", ObsState.EMPTY)
         change_event_callbacks.assert_change_event(
             "longRunningCommandStatus",
             (
@@ -350,6 +365,8 @@ class TestSKASubarray:  # pylint: disable=too-many-public-methods
                 "IN_PROGRESS",
             ),
         )
+        change_event_callbacks.assert_change_event("commandedObsState", ObsState.EMPTY)
+
         for progress_point in FakeSubarrayComponent.PROGRESS_REPORTING_POINTS:
             change_event_callbacks.assert_change_event(
                 "longRunningCommandProgress", (releaseall_command_id, progress_point)
@@ -380,6 +397,7 @@ class TestSKASubarray:  # pylint: disable=too-many-public-methods
         assert device_under_test.obsState == device_under_test.commandedObsState
         assert not device_under_test.assignedResources
 
+    @pytest.mark.usefixtures("patch_debugger_to_start_on_ephemeral_port")
     def test_configure_and_end(
         self: TestSKASubarray,
         device_under_test: tango.DeviceProxy,
@@ -392,6 +410,8 @@ class TestSKASubarray:  # pylint: disable=too-many-public-methods
         :param change_event_callbacks: dictionary of mock change event
             callbacks with asynchrony support
         """
+        device_under_test.DebugDevice()
+
         on_command_id = turn_on_device(device_under_test, change_event_callbacks)
         assign_command_id = assign_resources_to_device(
             device_under_test, change_event_callbacks, on_command_id, ["BAND1"]
@@ -420,7 +440,6 @@ class TestSKASubarray:  # pylint: disable=too-many-public-methods
                 "QUEUED",
             ),
         )
-        change_event_callbacks.assert_change_event("commandedObsState", ObsState.READY)
         change_event_callbacks.assert_change_event(
             "longRunningCommandStatus",
             (
@@ -432,6 +451,8 @@ class TestSKASubarray:  # pylint: disable=too-many-public-methods
                 "IN_PROGRESS",
             ),
         )
+        change_event_callbacks.assert_change_event("commandedObsState", ObsState.READY)
+
         for progress_point in FakeSubarrayComponent.PROGRESS_REPORTING_POINTS:
             change_event_callbacks.assert_change_event(
                 "longRunningCommandProgress", (config_command_id, progress_point)
@@ -479,7 +500,6 @@ class TestSKASubarray:  # pylint: disable=too-many-public-methods
                 "QUEUED",
             ),
         )
-        change_event_callbacks.assert_change_event("commandedObsState", ObsState.IDLE)
         change_event_callbacks.assert_change_event(
             "longRunningCommandStatus",
             (
@@ -493,6 +513,7 @@ class TestSKASubarray:  # pylint: disable=too-many-public-methods
                 "IN_PROGRESS",
             ),
         )
+        change_event_callbacks.assert_change_event("commandedObsState", ObsState.IDLE)
 
         for progress_point in FakeSubarrayComponent.PROGRESS_REPORTING_POINTS:
             change_event_callbacks.assert_change_event(
@@ -567,7 +588,6 @@ class TestSKASubarray:  # pylint: disable=too-many-public-methods
                 "QUEUED",
             ),
         )
-        change_event_callbacks.assert_change_event("commandedObsState", ObsState.READY)
         change_event_callbacks.assert_change_event(
             "longRunningCommandStatus",
             (
@@ -579,6 +599,8 @@ class TestSKASubarray:  # pylint: disable=too-many-public-methods
                 "IN_PROGRESS",
             ),
         )
+        change_event_callbacks.assert_change_event("commandedObsState", ObsState.READY)
+
         for progress_point in FakeSubarrayComponent.PROGRESS_REPORTING_POINTS:
             change_event_callbacks.assert_change_event(
                 "longRunningCommandProgress", (config_command_id, progress_point)
@@ -772,11 +794,11 @@ class TestSKASubarray:  # pylint: disable=too-many-public-methods
             "longRunningCommandStatus",
             (on_command_id, "COMPLETED", assign_command_id, "QUEUED"),
         )
-        change_event_callbacks.assert_change_event("commandedObsState", ObsState.IDLE)
         change_event_callbacks.assert_change_event(
             "longRunningCommandStatus",
             (on_command_id, "COMPLETED", assign_command_id, "IN_PROGRESS"),
         )
+        change_event_callbacks.assert_change_event("commandedObsState", ObsState.IDLE)
 
         [[result_code], [abort_command_id]] = device_under_test.Abort()
         assert result_code == ResultCode.STARTED
@@ -841,7 +863,6 @@ class TestSKASubarray:  # pylint: disable=too-many-public-methods
                 "QUEUED",
             ),
         )
-        change_event_callbacks.assert_change_event("commandedObsState", ObsState.EMPTY)
         change_event_callbacks.assert_change_event(
             "longRunningCommandStatus",
             (
@@ -855,6 +876,8 @@ class TestSKASubarray:  # pylint: disable=too-many-public-methods
                 "IN_PROGRESS",
             ),
         )
+        change_event_callbacks.assert_change_event("commandedObsState", ObsState.EMPTY)
+
         for progress_point in FakeSubarrayComponent.PROGRESS_REPORTING_POINTS:
             change_event_callbacks.assert_change_event(
                 "longRunningCommandProgress", (reset_command_id, progress_point)
@@ -923,7 +946,6 @@ class TestSKASubarray:  # pylint: disable=too-many-public-methods
                 "QUEUED",
             ),
         )
-        change_event_callbacks.assert_change_event("commandedObsState", ObsState.READY)
         change_event_callbacks.assert_change_event(
             "longRunningCommandStatus",
             (
@@ -935,6 +957,8 @@ class TestSKASubarray:  # pylint: disable=too-many-public-methods
                 "IN_PROGRESS",
             ),
         )
+        change_event_callbacks.assert_change_event("commandedObsState", ObsState.READY)
+
         [[result_code], [abort_command_id]] = device_under_test.Abort()
         assert result_code == ResultCode.STARTED
 
@@ -1006,7 +1030,6 @@ class TestSKASubarray:  # pylint: disable=too-many-public-methods
                 "QUEUED",
             ),
         )
-        change_event_callbacks.assert_change_event("commandedObsState", ObsState.IDLE)
         change_event_callbacks.assert_change_event(
             "longRunningCommandStatus",
             (
@@ -1022,6 +1045,8 @@ class TestSKASubarray:  # pylint: disable=too-many-public-methods
                 "IN_PROGRESS",
             ),
         )
+        change_event_callbacks.assert_change_event("commandedObsState", ObsState.IDLE)
+
         for progress_point in FakeSubarrayComponent.PROGRESS_REPORTING_POINTS:
             change_event_callbacks.assert_change_event(
                 "longRunningCommandProgress", (reset_command_id, progress_point)
@@ -1095,11 +1120,11 @@ class TestSKASubarray:  # pylint: disable=too-many-public-methods
             "longRunningCommandStatus",
             (on_command_id, "COMPLETED", assign_command_id, "QUEUED"),
         )
-        change_event_callbacks.assert_change_event("commandedObsState", ObsState.IDLE)
         change_event_callbacks.assert_change_event(
             "longRunningCommandStatus",
             (on_command_id, "COMPLETED", assign_command_id, "IN_PROGRESS"),
         )
+        change_event_callbacks.assert_change_event("commandedObsState", ObsState.IDLE)
 
         device_under_test.SimulateObsFault()
         change_event_callbacks.assert_change_event("obsState", ObsState.FAULT)
@@ -1125,7 +1150,6 @@ class TestSKASubarray:  # pylint: disable=too-many-public-methods
                 "QUEUED",
             ),
         )
-        change_event_callbacks.assert_change_event("commandedObsState", ObsState.EMPTY)
         change_event_callbacks.assert_change_event(
             "longRunningCommandStatus",
             (
@@ -1137,6 +1161,8 @@ class TestSKASubarray:  # pylint: disable=too-many-public-methods
                 "IN_PROGRESS",
             ),
         )
+        change_event_callbacks.assert_change_event("commandedObsState", ObsState.EMPTY)
+
         for progress_point in FakeSubarrayComponent.PROGRESS_REPORTING_POINTS:
             change_event_callbacks.assert_change_event(
                 "longRunningCommandProgress", (reset_command_id, progress_point)

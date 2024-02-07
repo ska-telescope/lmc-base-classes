@@ -1,4 +1,4 @@
-# pylint: disable=invalid-name
+# pylint: disable=invalid-name, too-many-lines
 # -*- coding: utf-8 -*-
 #
 # This file is part of the SKA Tango Base project
@@ -418,6 +418,21 @@ class SKASubarray(SKAObsDevice[ComponentManagerT]):
                 logger=logger,
             )
 
+    # Dictionary of SKASubarray commands:
+    # Key: command, value (tuple): class, state model hook, expected stable obs state
+    SUBARRAY_COMMANDS = {
+        "AssignResources": (AssignResourcesCommand, "assign", ObsState.IDLE),
+        "ReleaseResources": (ReleaseResourcesCommand, "release", ObsState.IDLE),
+        "ReleaseAllResources": (ReleaseAllResourcesCommand, "release", ObsState.EMPTY),
+        "Configure": (ConfigureCommand, "configure", ObsState.READY),
+        "Scan": (ScanCommand, None, ObsState.READY),
+        "EndScan": (EndScanCommand, None, ObsState.READY),
+        "End": (EndCommand, None, ObsState.IDLE),
+        "Abort": (AbortCommand, "abort", ObsState.ABORTED),
+        "ObsReset": (ObsResetCommand, "obsreset", ObsState.RESETTING),
+        "Restart": (RestartCommand, "restart", ObsState.EMPTY),
+    }
+
     def create_component_manager(
         self: SKASubarray[ComponentManagerT],
     ) -> ComponentManagerT:
@@ -443,18 +458,9 @@ class SKASubarray(SKAObsDevice[ComponentManagerT]):
             action = "invoked" if running else "completed"
             self.obs_state_model.perform_action(f"{hook}_{action}")
 
-        for command_name, command_class, state_model_hook in [
-            ("AssignResources", self.AssignResourcesCommand, "assign"),
-            ("ReleaseResources", self.ReleaseResourcesCommand, "release"),
-            ("ReleaseAllResources", self.ReleaseAllResourcesCommand, "release"),
-            ("Configure", self.ConfigureCommand, "configure"),
-            ("Scan", self.ScanCommand, None),
-            ("EndScan", self.EndScanCommand, None),
-            ("End", self.EndCommand, None),
-            ("Abort", self.AbortCommand, "abort"),
-            ("ObsReset", self.ObsResetCommand, "obsreset"),
-            ("Restart", self.RestartCommand, "restart"),
-        ]:
+        for command_name, tup in self.SUBARRAY_COMMANDS.items():
+            command_class = tup[0]
+            state_model_hook = tup[1]
             callback = (
                 None
                 if state_model_hook is None
@@ -469,6 +475,26 @@ class SKASubarray(SKAObsDevice[ComponentManagerT]):
                     logger=None,
                 ),
             )
+
+    def _update_command_statuses(
+        self: SKASubarray[ComponentManagerT],
+        command_statuses: list[tuple[str, TaskStatus]],
+    ) -> None:
+        super()._update_command_statuses(command_statuses)
+
+        # Update commandedObsState after a SKASubarray command's status is 'IN_PROGRESS'
+        uid, status = command_statuses[-1]
+        command_name = uid.split("_", 2)[2]
+        if command_name in self.SUBARRAY_COMMANDS and status == TaskStatus.IN_PROGRESS:
+            expected_obs_state = self.SUBARRAY_COMMANDS[command_name][2]
+            if command_name == "ObsReset":
+                expected_obs_state = (
+                    ObsState.EMPTY
+                    if self._obs_state_before_fault_or_abort == ObsState.RESOURCING
+                    else ObsState.IDLE
+                )
+                self._obs_state_before_fault_or_abort = None
+            self._update_commanded_obs_state(expected_obs_state)
 
     # pylint: disable-next=too-many-arguments
     def _component_state_changed(
@@ -605,7 +631,6 @@ class SKASubarray(SKAObsDevice[ComponentManagerT]):
         """
         handler = self.get_command_object("AssignResources")
         (result_code, message) = handler(argin)
-        self._update_commanded_obs_state(ObsState.IDLE)
         return ([result_code], [message])
 
     def is_ReleaseResources_allowed(self: SKASubarray[ComponentManagerT]) -> bool:
@@ -648,7 +673,6 @@ class SKASubarray(SKAObsDevice[ComponentManagerT]):
         """
         handler = self.get_command_object("ReleaseResources")
         (result_code, message) = handler(argin)
-        self._update_commanded_obs_state(ObsState.IDLE)
         return ([result_code], [message])
 
     def is_ReleaseAllResources_allowed(self: SKASubarray[ComponentManagerT]) -> bool:
@@ -689,7 +713,6 @@ class SKASubarray(SKAObsDevice[ComponentManagerT]):
         """
         handler = self.get_command_object("ReleaseAllResources")
         (result_code, message) = handler()
-        self._update_commanded_obs_state(ObsState.EMPTY)
         return ([result_code], [message])
 
     def is_Configure_allowed(self: SKASubarray[ComponentManagerT]) -> bool:
@@ -733,7 +756,6 @@ class SKASubarray(SKAObsDevice[ComponentManagerT]):
         """
         handler = self.get_command_object("Configure")
         (result_code, message) = handler(argin)
-        self._update_commanded_obs_state(ObsState.READY)
         return ([result_code], [message])
 
     def is_Scan_allowed(self: SKASubarray[ComponentManagerT]) -> bool:
@@ -776,7 +798,6 @@ class SKASubarray(SKAObsDevice[ComponentManagerT]):
         """
         handler = self.get_command_object("Scan")
         (result_code, message) = handler(argin)
-        self._update_commanded_obs_state(ObsState.READY)
         return ([result_code], [message])
 
     def is_EndScan_allowed(self: SKASubarray[ComponentManagerT]) -> bool:
@@ -814,7 +835,6 @@ class SKASubarray(SKAObsDevice[ComponentManagerT]):
         """
         handler = self.get_command_object("EndScan")
         (result_code, message) = handler()
-        self._update_commanded_obs_state(ObsState.READY)
         return ([result_code], [message])
 
     def is_End_allowed(self: SKASubarray[ComponentManagerT]) -> bool:
@@ -851,7 +871,6 @@ class SKASubarray(SKAObsDevice[ComponentManagerT]):
         """
         handler = self.get_command_object("End")
         (result_code, message) = handler()
-        self._update_commanded_obs_state(ObsState.IDLE)
         return ([result_code], [message])
 
     def is_Abort_allowed(self: SKASubarray[ComponentManagerT]) -> bool:
@@ -897,7 +916,6 @@ class SKASubarray(SKAObsDevice[ComponentManagerT]):
         self._obs_state_before_fault_or_abort = self._obs_state
         handler = self.get_command_object("Abort")
         (result_code, message) = handler()
-        self._update_commanded_obs_state(ObsState.ABORTED)
         return ([result_code], [message])
 
     def is_ObsReset_allowed(self: SKASubarray[ComponentManagerT]) -> bool:
@@ -935,11 +953,6 @@ class SKASubarray(SKAObsDevice[ComponentManagerT]):
         """
         handler = self.get_command_object("ObsReset")
         (result_code, message) = handler()
-        if self._obs_state_before_fault_or_abort == ObsState.RESOURCING:
-            self._update_commanded_obs_state(ObsState.EMPTY)
-        else:
-            self._update_commanded_obs_state(ObsState.IDLE)
-        self._obs_state_before_fault_or_abort = None
         return ([result_code], [message])
 
     def is_Restart_allowed(self: SKASubarray[ComponentManagerT]) -> bool:
@@ -977,7 +990,6 @@ class SKASubarray(SKAObsDevice[ComponentManagerT]):
         """
         handler = self.get_command_object("Restart")
         (result_code, message) = handler()
-        self._update_commanded_obs_state(ObsState.EMPTY)
         return ([result_code], [message])
 
 

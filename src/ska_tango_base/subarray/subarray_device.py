@@ -429,7 +429,7 @@ class SKASubarray(SKAObsDevice[ComponentManagerT]):
         "EndScan": (EndScanCommand, None, ObsState.READY),
         "End": (EndCommand, None, ObsState.IDLE),
         "Abort": (AbortCommand, "abort", ObsState.ABORTED),
-        "ObsReset": (ObsResetCommand, "obsreset", ObsState.RESETTING),
+        "ObsReset": (ObsResetCommand, "obsreset", ObsState.IDLE),
         "Restart": (RestartCommand, "restart", ObsState.EMPTY),
     }
 
@@ -487,12 +487,10 @@ class SKASubarray(SKAObsDevice[ComponentManagerT]):
         command_name = uid.split("_", 2)[2]
         if command_name in self.SUBARRAY_COMMANDS and status == TaskStatus.IN_PROGRESS:
             expected_obs_state = self.SUBARRAY_COMMANDS[command_name][2]
+            # Handle special case if any resourcing command was interrupted
             if command_name == "ObsReset":
-                expected_obs_state = (
-                    ObsState.EMPTY
-                    if self._obs_state_before_fault_or_abort == ObsState.RESOURCING
-                    else ObsState.IDLE
-                )
+                if self._obs_state_before_fault_or_abort == ObsState.RESOURCING:
+                    expected_obs_state = ObsState.EMPTY
                 self._obs_state_before_fault_or_abort = None
             self._update_commanded_obs_state(expected_obs_state)
 

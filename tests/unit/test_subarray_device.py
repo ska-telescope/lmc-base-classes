@@ -101,6 +101,7 @@ def assign_resources_to_device(
     change_event_callbacks: MockTangoEventCallbackGroup,
     on_command_id: Any,
     resources_list: list[str],
+    return_before_completed: bool = False,
 ) -> Any:
     """
     Assign resources to the device and clear the queue attributes.
@@ -110,6 +111,7 @@ def assign_resources_to_device(
         callbacks with asynchrony support
     :param on_command_id: the previously executed On() command's unique ID
     :param resources_list: list of resources to assign
+    :param return_before_completed: return while command is in progress
     :return: the executed AssignResources() command's unique ID
     """
     assert device_under_test.commandedObsState == ObsState.EMPTY
@@ -147,6 +149,8 @@ def assign_resources_to_device(
         (on_command_id, "COMPLETED", assign_command_id, "IN_PROGRESS"),
     )
     change_event_callbacks.assert_change_event("commandedObsState", ObsState.IDLE)
+    if return_before_completed:
+        return assign_command_id
     for progress_point in FakeSubarrayComponent.PROGRESS_REPORTING_POINTS:
         change_event_callbacks.assert_change_event(
             "longRunningCommandProgress", (assign_command_id, progress_point)
@@ -170,12 +174,13 @@ def assign_resources_to_device(
     return assign_command_id
 
 
-def configure_device(
+def configure_device(  # pylint: disable=too-many-arguments
     device_under_test: tango.DeviceProxy,
     change_event_callbacks: MockTangoEventCallbackGroup,
     on_command_id: Any,
     assign_command_id: Any,
     configuration_to_apply: dict[str, int],
+    return_before_completed: bool = False,
 ) -> Any:
     """
     Configure the device and clear the queue attributes.
@@ -186,6 +191,7 @@ def configure_device(
     :param on_command_id: the previously executed On() command's unique ID
     :param assign_command_id: the previously executed AssignResources() command's ID
     :param configuration_to_apply: dict
+    :param return_before_completed: return while command is in progress
     :return: the executed Configure() command's unique ID
     """
     assert list(device_under_test.configuredCapabilities) == [
@@ -226,6 +232,8 @@ def configure_device(
         ),
     )
     change_event_callbacks.assert_change_event("commandedObsState", ObsState.READY)
+    if return_before_completed:
+        return configure_command_id
     for progress_point in FakeSubarrayComponent.PROGRESS_REPORTING_POINTS:
         change_event_callbacks.assert_change_event(
             "longRunningCommandProgress", (configure_command_id, progress_point)
@@ -741,38 +749,11 @@ class TestSKASubarray:  # pylint: disable=too-many-public-methods
             callbacks with asynchrony support
         """
         on_command_id = turn_on_device(device_under_test, change_event_callbacks)
-
-        # assignment of resources
-        for attribute in [
-            "obsState",
-            "commandedObsState",
-        ]:
-            device_under_test.subscribe_event(
-                attribute,
-                tango.EventType.CHANGE_EVENT,
-                change_event_callbacks[attribute],
-            )
-        change_event_callbacks.assert_change_event("obsState", ObsState.EMPTY)
-        change_event_callbacks.assert_change_event("commandedObsState", ObsState.EMPTY)
-
-        resources_to_assign = {"resources": ["BAND1"]}
-        [
-            [result_code],
-            [assign_command_id],
-        ] = device_under_test.AssignResources(json.dumps(resources_to_assign))
-        assert result_code == ResultCode.QUEUED
-
-        change_event_callbacks.assert_change_event("obsState", ObsState.RESOURCING)
-        change_event_callbacks.assert_change_event(
-            "longRunningCommandStatus",
-            (on_command_id, "COMPLETED", assign_command_id, "QUEUED"),
+        assign_command_id = assign_resources_to_device(
+            device_under_test, change_event_callbacks, on_command_id, ["BAND1"], True
         )
-        change_event_callbacks.assert_change_event(
-            "longRunningCommandStatus",
-            (on_command_id, "COMPLETED", assign_command_id, "IN_PROGRESS"),
-        )
-        change_event_callbacks.assert_change_event("commandedObsState", ObsState.IDLE)
 
+        # Abort assign command
         [[result_code], [abort_command_id]] = device_under_test.Abort()
         assert result_code == ResultCode.STARTED
 
@@ -894,44 +875,16 @@ class TestSKASubarray:  # pylint: disable=too-many-public-methods
         assign_command_id = assign_resources_to_device(
             device_under_test, change_event_callbacks, on_command_id, ["BAND1"]
         )
-
-        # Start configuring but then abort
-        assert list(device_under_test.configuredCapabilities) == [
-            "blocks:0",
-            "channels:0",
-        ]
-
-        configuration_to_apply = {"blocks": 2}
-        [[result_code], [configure_command_id]] = device_under_test.Configure(
-            json.dumps(configuration_to_apply)
+        configure_command_id = configure_device(
+            device_under_test,
+            change_event_callbacks,
+            on_command_id,
+            assign_command_id,
+            {"blocks": 2},
+            True,
         )
-        assert result_code == ResultCode.QUEUED
 
-        change_event_callbacks.assert_change_event("obsState", ObsState.CONFIGURING)
-        change_event_callbacks.assert_change_event(
-            "longRunningCommandStatus",
-            (
-                on_command_id,
-                "COMPLETED",
-                assign_command_id,
-                "COMPLETED",
-                configure_command_id,
-                "QUEUED",
-            ),
-        )
-        change_event_callbacks.assert_change_event(
-            "longRunningCommandStatus",
-            (
-                on_command_id,
-                "COMPLETED",
-                assign_command_id,
-                "COMPLETED",
-                configure_command_id,
-                "IN_PROGRESS",
-            ),
-        )
-        change_event_callbacks.assert_change_event("commandedObsState", ObsState.READY)
-
+        # Abort configure command
         [[result_code], [abort_command_id]] = device_under_test.Abort()
         assert result_code == ResultCode.STARTED
 
@@ -1067,38 +1020,11 @@ class TestSKASubarray:  # pylint: disable=too-many-public-methods
             callbacks with asynchrony support
         """
         on_command_id = turn_on_device(device_under_test, change_event_callbacks)
-
-        # assignment of resources
-        for attribute in [
-            "obsState",
-            "commandedObsState",
-        ]:
-            device_under_test.subscribe_event(
-                attribute,
-                tango.EventType.CHANGE_EVENT,
-                change_event_callbacks[attribute],
-            )
-        change_event_callbacks.assert_change_event("obsState", ObsState.EMPTY)
-        change_event_callbacks.assert_change_event("commandedObsState", ObsState.EMPTY)
-
-        resources_to_assign = {"resources": ["BAND1"]}
-        [
-            [result_code],
-            [assign_command_id],
-        ] = device_under_test.AssignResources(json.dumps(resources_to_assign))
-        assert result_code == ResultCode.QUEUED
-
-        change_event_callbacks.assert_change_event("obsState", ObsState.RESOURCING)
-        change_event_callbacks.assert_change_event(
-            "longRunningCommandStatus",
-            (on_command_id, "COMPLETED", assign_command_id, "QUEUED"),
+        assign_command_id = assign_resources_to_device(
+            device_under_test, change_event_callbacks, on_command_id, ["BAND1"], True
         )
-        change_event_callbacks.assert_change_event(
-            "longRunningCommandStatus",
-            (on_command_id, "COMPLETED", assign_command_id, "IN_PROGRESS"),
-        )
-        change_event_callbacks.assert_change_event("commandedObsState", ObsState.IDLE)
 
+        # Simulate observation fault
         device_under_test.SimulateObsFault()
         change_event_callbacks.assert_change_event("obsState", ObsState.FAULT)
 

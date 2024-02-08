@@ -1175,6 +1175,10 @@ class SKABaseDevice(
         """
         Read the last commanded operating state of the device.
 
+        Initial string is "INIT". Only other strings it can change to is "OFF",
+        "STANDBY" or "ON, following the start of the Off(), Standby(), On() or Reset()
+        long running commands.
+
         :return: commanded operating state string.
         """
         return self._commanded_op_state

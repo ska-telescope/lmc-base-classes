@@ -157,7 +157,7 @@ class SKAObsDevice(SKABaseDevice[ComponentManagerT]):
         """
         Read the Observation State of the device.
 
-        :return: the current obs_state value
+        :return: the current ObsState enum value
         """
         return self._obs_state
 
@@ -166,9 +166,13 @@ class SKAObsDevice(SKABaseDevice[ComponentManagerT]):
     )
     def commandedObsState(self: SKAObsDevice[ComponentManagerT]) -> ObsState:
         """
-        Read the last commanded Observation State of the device.
+        Read the last commanded stable Observation State of the device.
 
-        :return: commanded Observation State string.
+        Initial value is EMPTY. The only stable (nontransitional) state values it can
+        change to is EMPTY, IDLE, READY or ABORTED following the start of any of the
+        SKASubarray device's long running commands.
+
+        :return: the commanded ObsState enum value.
         """
         return self._commanded_obs_state
 

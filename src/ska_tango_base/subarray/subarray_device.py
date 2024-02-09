@@ -476,6 +476,25 @@ class SKASubarray(SKAObsDevice[ComponentManagerT]):
                 ),
             )
 
+    def _update_obs_state(
+        self: SKASubarray[ComponentManagerT], obs_state: ObsState
+    ) -> None:
+        super()._update_obs_state(obs_state)
+        if (
+            obs_state
+            in [
+                ObsState.FAULT,
+                ObsState.EMPTY,
+                ObsState.IDLE,
+                ObsState.READY,
+                ObsState.ABORTED,
+            ]
+            and obs_state != self._commanded_obs_state
+        ):
+            self.logger.warning(
+                f"Expected {self._commanded_obs_state}, but currently in {obs_state}!"
+            )
+
     def _update_command_statuses(
         self: SKASubarray[ComponentManagerT],
         command_statuses: list[tuple[str, TaskStatus]],

@@ -1007,7 +1007,7 @@ class TestSKASubarray:  # pylint: disable=too-many-public-methods
             "channels:0",
         ]
 
-    def test_fault_and_obsreset_from_resourcing(
+    def test_fault_obsreset_abort_from_resourcing(
         self: TestSKASubarray,
         device_under_test: tango.DeviceProxy,
         change_event_callbacks: MockTangoEventCallbackGroup,
@@ -1033,7 +1033,7 @@ class TestSKASubarray:  # pylint: disable=too-many-public-methods
             (on_command_id, "COMPLETED", assign_command_id, "ABORTED"),
         )
 
-        # Reset from fault state
+        # Reset from fault state then abort reset
         [[result_code], [reset_command_id]] = device_under_test.ObsReset()
         assert result_code == ResultCode.QUEUED
 
@@ -1062,14 +1062,100 @@ class TestSKASubarray:  # pylint: disable=too-many-public-methods
         )
         change_event_callbacks.assert_change_event("commandedObsState", ObsState.EMPTY)
 
+        [[result_code], [abort_command_id]] = device_under_test.Abort()
+        assert result_code == ResultCode.STARTED
+
+        change_event_callbacks.assert_change_event("obsState", ObsState.ABORTING)
+        change_event_callbacks.assert_change_event(
+            "longRunningCommandStatus",
+            (
+                on_command_id,
+                "COMPLETED",
+                assign_command_id,
+                "ABORTED",
+                reset_command_id,
+                "IN_PROGRESS",
+                abort_command_id,
+                "IN_PROGRESS",
+            ),
+        )
+        change_event_callbacks.assert_change_event(
+            "commandedObsState", ObsState.ABORTED
+        )
+        change_event_callbacks.assert_change_event(
+            "longRunningCommandStatus",
+            (
+                on_command_id,
+                "COMPLETED",
+                assign_command_id,
+                "ABORTED",
+                reset_command_id,
+                "IN_PROGRESS",
+                abort_command_id,
+                "COMPLETED",
+            ),
+        )
+        change_event_callbacks.assert_change_event("obsState", ObsState.ABORTED)
+        change_event_callbacks.assert_change_event(
+            "longRunningCommandStatus",
+            (
+                on_command_id,
+                "COMPLETED",
+                assign_command_id,
+                "ABORTED",
+                reset_command_id,
+                "ABORTED",
+                abort_command_id,
+                "COMPLETED",
+            ),
+        )
+        assert device_under_test.obsState == device_under_test.commandedObsState
+
+        # Reset again from abort
+        [[result_code], [reset_2nd_command_id]] = device_under_test.ObsReset()
+        assert result_code == ResultCode.QUEUED
+
+        change_event_callbacks.assert_change_event("obsState", ObsState.RESETTING)
+        change_event_callbacks.assert_change_event(
+            "longRunningCommandStatus",
+            (
+                on_command_id,
+                "COMPLETED",
+                assign_command_id,
+                "ABORTED",
+                reset_command_id,
+                "ABORTED",
+                abort_command_id,
+                "COMPLETED",
+                reset_2nd_command_id,
+                "QUEUED",
+            ),
+        )
+        change_event_callbacks.assert_change_event(
+            "longRunningCommandStatus",
+            (
+                on_command_id,
+                "COMPLETED",
+                assign_command_id,
+                "ABORTED",
+                reset_command_id,
+                "ABORTED",
+                abort_command_id,
+                "COMPLETED",
+                reset_2nd_command_id,
+                "IN_PROGRESS",
+            ),
+        )
+        change_event_callbacks.assert_change_event("commandedObsState", ObsState.EMPTY)
+
         for progress_point in FakeSubarrayComponent.PROGRESS_REPORTING_POINTS:
             change_event_callbacks.assert_change_event(
-                "longRunningCommandProgress", (reset_command_id, progress_point)
+                "longRunningCommandProgress", (reset_2nd_command_id, progress_point)
             )
         change_event_callbacks.assert_change_event(
             "longRunningCommandResult",
             (
-                reset_command_id,
+                reset_2nd_command_id,
                 json.dumps([int(ResultCode.OK), "Obs reset completed OK"]),
             ),
         )
@@ -1081,6 +1167,10 @@ class TestSKASubarray:  # pylint: disable=too-many-public-methods
                 assign_command_id,
                 "ABORTED",
                 reset_command_id,
+                "ABORTED",
+                abort_command_id,
+                "COMPLETED",
+                reset_2nd_command_id,
                 "COMPLETED",
             ),
         )

@@ -66,7 +66,7 @@ class SKASubarray(SKAObsDevice[ComponentManagerT]):
         # (other than the super() call).
         self._activation_time: float
         self.obs_state_model: ObsStateModel
-        self._obs_state_before_fault_or_abort: ObsState | None = None
+        self._obs_state_before_fault_or_abort: ObsState
 
         super().__init__(*args, **kwargs)
 
@@ -488,10 +488,11 @@ class SKASubarray(SKAObsDevice[ComponentManagerT]):
         if command_name in self.SUBARRAY_COMMANDS and status == TaskStatus.IN_PROGRESS:
             expected_obs_state = self.SUBARRAY_COMMANDS[command_name][2]
             # Handle special case if any resourcing command was interrupted
-            if command_name == "ObsReset":
-                if self._obs_state_before_fault_or_abort == ObsState.RESOURCING:
-                    expected_obs_state = ObsState.EMPTY
-                self._obs_state_before_fault_or_abort = None
+            if (
+                command_name == "ObsReset"
+                and self._obs_state_before_fault_or_abort == ObsState.RESOURCING
+            ):
+                expected_obs_state = ObsState.EMPTY
             self._update_commanded_obs_state(expected_obs_state)
 
     # pylint: disable-next=too-many-arguments
@@ -911,7 +912,8 @@ class SKASubarray(SKAObsDevice[ComponentManagerT]):
 
         :return: A tuple containing a result code and the unique ID of the command
         """
-        self._obs_state_before_fault_or_abort = self._obs_state
+        if self._obs_state != ObsState.RESETTING:
+            self._obs_state_before_fault_or_abort = self._obs_state
         handler = self.get_command_object("Abort")
         (result_code, message) = handler()
         return ([result_code], [message])

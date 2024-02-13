@@ -355,7 +355,7 @@ class TestSKASubarray:  # pylint: disable=too-many-public-methods
         change_event_callbacks: MockTangoEventCallbackGroup,
     ) -> None:
         """
-        Test for AssignResources.
+        Test for AssignResources, ReleaseResources and ReleaseAllResources.
 
         :param device_under_test: a proxy to the device under test
         :param change_event_callbacks: dictionary of mock change event
@@ -496,7 +496,7 @@ class TestSKASubarray:  # pylint: disable=too-many-public-methods
         change_event_callbacks: MockTangoEventCallbackGroup,
     ) -> None:
         """
-        Test for Configure.
+        Test for Configure and End.
 
         :param device_under_test: a proxy to the device under test
         :param change_event_callbacks: dictionary of mock change event
@@ -589,7 +589,7 @@ class TestSKASubarray:  # pylint: disable=too-many-public-methods
         change_event_callbacks: MockTangoEventCallbackGroup,
     ) -> None:
         """
-        Test for Scan.
+        Test for Scan and EndScan.
 
         :param device_under_test: a proxy to the device under test
         :param change_event_callbacks: dictionary of mock change event
@@ -742,7 +742,7 @@ class TestSKASubarray:  # pylint: disable=too-many-public-methods
         change_event_callbacks: MockTangoEventCallbackGroup,
     ) -> None:
         """
-        Test for Reset.
+        Test for Abort and Reset from AssignResources from EMPTY state.
 
         :param device_under_test: a proxy to the device under test
         :param change_event_callbacks: dictionary of mock change event
@@ -865,7 +865,7 @@ class TestSKASubarray:  # pylint: disable=too-many-public-methods
         change_event_callbacks: MockTangoEventCallbackGroup,
     ) -> None:
         """
-        Test for Reset.
+        Test for Abort and Reset from Configure.
 
         :param device_under_test: a proxy to the device under test
         :param change_event_callbacks: dictionary of mock change event
@@ -1013,7 +1013,7 @@ class TestSKASubarray:  # pylint: disable=too-many-public-methods
         change_event_callbacks: MockTangoEventCallbackGroup,
     ) -> None:
         """
-        Test for Reset.
+        Test for Reset after fault of AssignResources.
 
         :param device_under_test: a proxy to the device under test
         :param change_event_callbacks: dictionary of mock change event
@@ -1175,6 +1175,171 @@ class TestSKASubarray:  # pylint: disable=too-many-public-methods
             ),
         )
         change_event_callbacks.assert_change_event("obsState", ObsState.EMPTY)
+        assert device_under_test.obsState == device_under_test.commandedObsState
+
+    def test_obsreset_from_resourcing_after_idle(
+        self: TestSKASubarray,
+        device_under_test: tango.DeviceProxy,
+        change_event_callbacks: MockTangoEventCallbackGroup,
+    ) -> None:
+        """
+        Test for Abort and Reset from AssignResources from IDLE state.
+
+        :param device_under_test: a proxy to the device under test
+        :param change_event_callbacks: dictionary of mock change event
+            callbacks with asynchrony support
+        """
+        on_command_id = turn_on_device(device_under_test, change_event_callbacks)
+        assign_command_id = assign_resources_to_device(
+            device_under_test, change_event_callbacks, on_command_id, ["BAND1"]
+        )
+
+        # Assign more resources
+        [result_code], [assign_2nd_command_id] = device_under_test.AssignResources(
+            json.dumps({"resources": ["BAND2"]})
+        )
+        assert result_code == ResultCode.QUEUED
+
+        change_event_callbacks.assert_change_event("obsState", ObsState.RESOURCING)
+        change_event_callbacks.assert_change_event(
+            "longRunningCommandStatus",
+            (
+                on_command_id,
+                "COMPLETED",
+                assign_command_id,
+                "COMPLETED",
+                assign_2nd_command_id,
+                "QUEUED",
+            ),
+        )
+        change_event_callbacks.assert_change_event(
+            "longRunningCommandStatus",
+            (
+                on_command_id,
+                "COMPLETED",
+                assign_command_id,
+                "COMPLETED",
+                assign_2nd_command_id,
+                "IN_PROGRESS",
+            ),
+        )
+
+        # Abort 2nd assign command
+        [[result_code], [abort_command_id]] = device_under_test.Abort()
+        assert result_code == ResultCode.STARTED
+
+        change_event_callbacks.assert_change_event("obsState", ObsState.ABORTING)
+        change_event_callbacks.assert_change_event(
+            "longRunningCommandStatus",
+            (
+                on_command_id,
+                "COMPLETED",
+                assign_command_id,
+                "COMPLETED",
+                assign_2nd_command_id,
+                "IN_PROGRESS",
+                abort_command_id,
+                "IN_PROGRESS",
+            ),
+        )
+        change_event_callbacks.assert_change_event(
+            "commandedObsState", ObsState.ABORTED
+        )
+        change_event_callbacks.assert_change_event(
+            "longRunningCommandStatus",
+            (
+                on_command_id,
+                "COMPLETED",
+                assign_command_id,
+                "COMPLETED",
+                assign_2nd_command_id,
+                "IN_PROGRESS",
+                abort_command_id,
+                "COMPLETED",
+            ),
+        )
+        change_event_callbacks.assert_change_event("obsState", ObsState.ABORTED)
+        change_event_callbacks.assert_change_event(
+            "longRunningCommandStatus",
+            (
+                on_command_id,
+                "COMPLETED",
+                assign_command_id,
+                "COMPLETED",
+                assign_2nd_command_id,
+                "ABORTED",
+                abort_command_id,
+                "COMPLETED",
+            ),
+        )
+        assert device_under_test.obsState == device_under_test.commandedObsState
+
+        change_event_callbacks.assert_not_called()
+
+        # Reset from aborted state to idle state
+        [[result_code], [reset_command_id]] = device_under_test.ObsReset()
+        assert result_code == ResultCode.QUEUED
+
+        change_event_callbacks.assert_change_event("obsState", ObsState.RESETTING)
+        change_event_callbacks.assert_change_event(
+            "longRunningCommandStatus",
+            (
+                on_command_id,
+                "COMPLETED",
+                assign_command_id,
+                "COMPLETED",
+                assign_2nd_command_id,
+                "ABORTED",
+                abort_command_id,
+                "COMPLETED",
+                reset_command_id,
+                "QUEUED",
+            ),
+        )
+        change_event_callbacks.assert_change_event(
+            "longRunningCommandStatus",
+            (
+                on_command_id,
+                "COMPLETED",
+                assign_command_id,
+                "COMPLETED",
+                assign_2nd_command_id,
+                "ABORTED",
+                abort_command_id,
+                "COMPLETED",
+                reset_command_id,
+                "IN_PROGRESS",
+            ),
+        )
+        change_event_callbacks.assert_change_event("commandedObsState", ObsState.IDLE)
+
+        for progress_point in FakeSubarrayComponent.PROGRESS_REPORTING_POINTS:
+            change_event_callbacks.assert_change_event(
+                "longRunningCommandProgress", (reset_command_id, progress_point)
+            )
+        change_event_callbacks.assert_change_event(
+            "longRunningCommandResult",
+            (
+                reset_command_id,
+                json.dumps([int(ResultCode.OK), "Obs reset completed OK"]),
+            ),
+        )
+        change_event_callbacks.assert_change_event(
+            "longRunningCommandStatus",
+            (
+                on_command_id,
+                "COMPLETED",
+                assign_command_id,
+                "COMPLETED",
+                assign_2nd_command_id,
+                "ABORTED",
+                abort_command_id,
+                "COMPLETED",
+                reset_command_id,
+                "COMPLETED",
+            ),
+        )
+        change_event_callbacks.assert_change_event("obsState", ObsState.IDLE)
         assert device_under_test.obsState == device_under_test.commandedObsState
 
     def test_activationTime(

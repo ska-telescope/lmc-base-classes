@@ -57,7 +57,7 @@ class SKAObsDevice(SKABaseDevice[ComponentManagerT]):
         # (other than the super() call).
 
         self._obs_state: ObsState
-        self._commanded_obs_state: ObsState = ObsState.EMPTY
+        self._commanded_obs_state: ObsState
         self._obs_mode: ObsMode
         self._config_progress: int
         self._config_delay_expected: int

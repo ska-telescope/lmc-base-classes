@@ -87,7 +87,7 @@ Reset and GetVersionInfo.
 
 These attributes indicate the expected stable operating or observation state after the last long running command that has started is completed.
 
-The *commandedState* string initialises to "INIT". Only other strings it can change to is "OFF",
+The *commandedState* string initialises to "None". Only other strings it can change to is "OFF",
 "STANDBY" or "ON", following the start of the Off, Standby, On or Reset long running commands.
 The following table shows the *commandedState* given current device state and command being executed: 
 

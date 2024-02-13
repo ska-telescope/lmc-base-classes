@@ -925,7 +925,7 @@ class TestSKABaseDevice:  # pylint: disable=too-many-public-methods
                 change_event_callbacks[attribute],
             )
         change_event_callbacks["state"].assert_change_event(DevState.OFF)
-        change_event_callbacks["commandedState"].assert_change_event("INIT")
+        change_event_callbacks["commandedState"].assert_change_event("None")
         change_event_callbacks["longRunningCommandStatus"].assert_change_event(None)
 
         # ON command

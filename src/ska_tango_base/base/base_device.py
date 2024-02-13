@@ -772,7 +772,7 @@ class SKABaseDevice(
             callback=self._update_state,
         )
         self._commanded_op_state: str
-        self._update_commanded_op_state("INIT")
+        self._update_commanded_op_state("None")
         self.admin_mode_model = AdminModeModel(
             logger=self.logger, callback=self._update_admin_mode
         )
@@ -1175,8 +1175,8 @@ class SKABaseDevice(
         """
         Read the last commanded operating state of the device.
 
-        Initial string is "INIT". Only other strings it can change to is "OFF",
-        "STANDBY" or "ON, following the start of the Off(), Standby(), On() or Reset()
+        Initial string is "None". Only other strings it can change to is "OFF",
+        "STANDBY" or "ON", following the start of the Off(), Standby(), On() or Reset()
         long running commands.
 
         :return: commanded operating state string.

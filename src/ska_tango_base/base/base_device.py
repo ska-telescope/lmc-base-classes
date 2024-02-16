@@ -1098,7 +1098,7 @@ class SKABaseDevice(
         return self._command_statuses
 
     @attribute(  # type: ignore[misc]  # "Untyped decorator makes function untyped"
-        dtype=("str",), max_dim_x=INPUT_QUEUE_SIZE_LIMIT * 2  # 2 per command
+        dtype=("str",), max_dim_x=2  # Only one command can execute at once
     )
     def longRunningCommandProgress(self: SKABaseDevice[ComponentManagerT]) -> list[str]:
         """

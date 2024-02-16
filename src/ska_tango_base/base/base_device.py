@@ -57,9 +57,32 @@ from .op_state_model import OpStateModel
 
 DevVarLongStringArrayType = tuple[list[ResultCode], list[str]]
 
-# this is an arbitrary number, for any adaptation
-# update the size (with a motivation) as seen fit
-INPUT_QUEUE_SIZE_LIMIT = 10
+# The maximum number of commands that the LRC attributes support
+# being queued at once.
+#
+# TODO: SKABaseDevice should create the LRC attributes using the actual
+# maximum number of queued tasks that the component manager supports
+MAX_QUEUED_COMMANDS = 64
+
+# The maximum number of commands the LRC attributes support being reported
+# about at once.
+#
+# This number is a bit of a fudge.
+#
+# We need space for at least as many commands as we can have in the queue
+# and an executing command and potentially an abort command.  That gets us to
+# `MAX_QUEUED_COMMANDS + 2`.
+#
+# However, when a command is finished (i.e one of COMPLETED, ABORTED, REJECTED, FAILED)
+# it hangs around with the LRC attributes for `CommandTracker._removal_time`
+# seconds, so we need a buffer.
+#
+# We choose a buffer of `MAX_QUEUED_COMMANDS` to be able to handle the situation
+# where a client fills the queue with commands that all get rejected because the
+# command isn't allowed then queues up the correct command straight after.
+#
+# TODO: Be smarter about how to handle this.
+MAX_REPORTED_COMMANDS = 2 * MAX_QUEUED_COMMANDS + 2
 
 
 _DEBUGGER_PORT = 5678
@@ -1053,7 +1076,7 @@ class SKABaseDevice(
         self._test_mode = value
 
     @attribute(  # type: ignore[misc]  # "Untyped decorator makes function untyped"
-        dtype=("str",), max_dim_x=INPUT_QUEUE_SIZE_LIMIT
+        dtype=("str",), max_dim_x=MAX_QUEUED_COMMANDS
     )
     def longRunningCommandsInQueue(self: SKABaseDevice[ComponentManagerT]) -> list[str]:
         """
@@ -1067,7 +1090,7 @@ class SKABaseDevice(
         return self._commands_in_queue
 
     @attribute(  # type: ignore[misc]  # "Untyped decorator makes function untyped"
-        dtype=("str",), max_dim_x=INPUT_QUEUE_SIZE_LIMIT
+        dtype=("str",), max_dim_x=MAX_QUEUED_COMMANDS
     )
     def longRunningCommandIDsInQueue(
         self: SKABaseDevice[ComponentManagerT],
@@ -1083,7 +1106,7 @@ class SKABaseDevice(
         return self._command_ids_in_queue
 
     @attribute(  # type: ignore[misc]  # "Untyped decorator makes function untyped"
-        dtype=("str",), max_dim_x=INPUT_QUEUE_SIZE_LIMIT * 2  # 2 per command
+        dtype=("str",), max_dim_x=MAX_REPORTED_COMMANDS * 2  # 2 per command
     )
     def longRunningCommandStatus(self: SKABaseDevice[ComponentManagerT]) -> list[str]:
         """
@@ -1098,7 +1121,7 @@ class SKABaseDevice(
         return self._command_statuses
 
     @attribute(  # type: ignore[misc]  # "Untyped decorator makes function untyped"
-        dtype=("str",), max_dim_x=INPUT_QUEUE_SIZE_LIMIT * 2  # 2 per command
+        dtype=("str",), max_dim_x=2  # Only one command can execute at once
     )
     def longRunningCommandProgress(self: SKABaseDevice[ComponentManagerT]) -> list[str]:
         """

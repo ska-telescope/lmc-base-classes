@@ -12,6 +12,7 @@ from typing import Any, Callable
 from ska_control_model import TaskStatus
 
 from ..base import BaseComponentManager, TaskCallbackType
+from ..utils import deprecate_kwarg
 from .executor import TaskExecutor, TaskFunctionType
 
 
@@ -19,6 +20,7 @@ from .executor import TaskExecutor, TaskFunctionType
 class TaskExecutorComponentManager(BaseComponentManager):
     """A component manager with support for asynchronous tasking."""
 
+    @deprecate_kwarg("max_workers", "It will be fixed at 1 in a future release.")
     def __init__(
         self: TaskExecutorComponentManager,
         *args: Any,

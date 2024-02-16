@@ -124,7 +124,6 @@ Create a component manager
         def __init__(
             self,
             *args,
-            max_workers: int | None = None,
             logger: logging.Logger = None,
             **kwargs,
         ):
@@ -132,7 +131,7 @@ Create a component manager
             
             # Set up your class
 
-            super().__init__(*args, max_workers=max_workers, logger=logger, **kwargs)
+            super().__init__(*args, logger=logger, **kwargs)
 
 Add a method that should be executed in a background thread
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -209,12 +208,10 @@ Create the component manager in your Tango device
         def create_component_manager(self):
             """Create a component manager."""
             return SampleComponentManager(
-                max_workers=2,
                 logger=self.logger,
                 communication_state_callback=self._communication_state_changed,
                 component_state_callback=self._component_state_changed,
             )
-.. note:: `max_workers` defaults to 1 to ensure that queued commands are executed sequentially.
 
 Init the command object
 ^^^^^^^^^^^^^^^^^^^^^^^

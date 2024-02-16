@@ -665,3 +665,37 @@ def generate_command_id(command_name: str) -> str:
     :return: a unique command ID string
     """
     return f"{time.time()}_{uuid.uuid4().fields[-1]}_{command_name}"
+
+
+# TODO: Use typing.ParamSpec once our minimum python version is 3.10
+FuncT = Callable[..., Any]
+
+
+def deprecate_kwarg(name: str, detail: str | None = None) -> Callable[[FuncT], FuncT]:
+    """Deprecate a keyword argument.
+
+    If the decorated function is passed the keyword argument a
+    DeprecationWarning is emitted.
+
+    :param name: name of keyword argument
+    :param detail: sentence to add to the warning
+    :return: decorator
+    """
+
+    def decorator(func: FuncT) -> FuncT:
+        @functools.wraps(func)
+        def wrapped(*args: Any, **kwargs: Any) -> Any:
+            if name in kwargs:
+                message = f'Deprecated kwarg "{name}" passed to {func.__name__}.'
+                if detail is not None:
+                    message += f" {detail}"
+
+                warnings.warn(
+                    message,
+                    DeprecationWarning,
+                )
+            return func(*args, **kwargs)
+
+        return wrapped
+
+    return decorator

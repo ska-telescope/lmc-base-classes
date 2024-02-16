@@ -7,6 +7,7 @@
 """Tests of the ska_tango_base.executor module."""
 from __future__ import annotations
 
+import warnings
 from threading import Event, Lock
 from time import sleep
 
@@ -15,7 +16,7 @@ from ska_control_model import TaskStatus
 from ska_tango_testing.mock import MockCallableGroup
 
 from ska_tango_base.base import TaskCallbackType
-from ska_tango_base.executor import TaskExecutor
+from ska_tango_base.executor import TaskExecutor, TaskExecutorComponentManager
 
 
 class TestTaskExecutor:
@@ -243,3 +244,21 @@ class TestTaskExecutor:
         callbacks.assert_call(
             "job_0", status=TaskStatus.FAILED, exception=exception_to_raise
         )
+
+
+def test_max_workers_deprecated() -> None:
+    """Test that a deprecation warning is emitted when max_workers is passed."""
+    with warnings.catch_warnings(record=True) as capture:
+        warnings.simplefilter("always")
+        TaskExecutorComponentManager(logger=None, max_workers=2)
+
+        assert len(capture) == 1
+        assert issubclass(capture[0].category, DeprecationWarning)
+        assert "Deprecated" in str(capture[0].message)
+        assert "max_workers" in str(capture[0].message)
+
+    with warnings.catch_warnings(record=True) as capture:
+        warnings.simplefilter("always")
+        TaskExecutorComponentManager(logger=None)
+
+        assert len(capture) == 0

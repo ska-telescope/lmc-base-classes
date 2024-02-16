@@ -2,6 +2,8 @@
 
 ## unreleased
 
+- [WOM-265] Deprecate max_workers for TaskExecutorComponentManager
+
 ## 0.19.3
 
 - [WOM-213] Limit input queue size for long running commands

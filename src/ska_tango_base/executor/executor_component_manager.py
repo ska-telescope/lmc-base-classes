@@ -25,7 +25,7 @@ class TaskExecutorComponentManager(BaseComponentManager):
         self: TaskExecutorComponentManager,
         *args: Any,
         max_workers: int | None = 1,
-        max_queue_size: int = 10,
+        max_queue_size: int = 32,
         **kwargs: Any,
     ) -> None:
         """

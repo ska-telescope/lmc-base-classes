@@ -31,6 +31,11 @@ class TaskExecutorComponentManager(BaseComponentManager):
         """
         Initialise a new ComponentManager instance.
 
+        ..warning::
+            If `max_queue_size` exceeds `base.base_device.MAX_QUEUED_COMMANDS` then
+            some queued tasks may not have status information reported by the
+            LRC attributes.
+
         :param args: additional positional arguments
         :param max_workers: optional maximum number of workers in the pool
         :param max_queue_size: optional maximum size of the input queue

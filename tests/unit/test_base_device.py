@@ -575,6 +575,7 @@ class TestCommandTracker:
             "queue": mocker.Mock(),
             "status": mocker.Mock(),
             "progress": mocker.Mock(),
+            "command": mocker.Mock(),
             "result": mocker.Mock(),
             "exception": mocker.Mock(),
         }
@@ -607,6 +608,7 @@ class TestCommandTracker:
             queue_changed_callback=callbacks["queue"],
             status_changed_callback=callbacks["status"],
             progress_changed_callback=callbacks["progress"],
+            command_changed_callback=callbacks["command"],
             result_callback=callbacks["result"],
             exception_callback=callbacks["exception"],
             removal_time=removal_time,
@@ -634,6 +636,7 @@ class TestCommandTracker:
         callbacks["queue"].assert_not_called()
         callbacks["status"].assert_not_called()
         callbacks["progress"].assert_not_called()
+        callbacks["command"].assert_not_called()
         callbacks["result"].assert_not_called()
         callbacks["exception"].assert_not_called()
 
@@ -654,6 +657,7 @@ class TestCommandTracker:
         callbacks["queue"].reset_mock()
         callbacks["status"].assert_not_called()
         callbacks["progress"].assert_not_called()
+        callbacks["command"].assert_not_called()
         callbacks["result"].assert_not_called()
         callbacks["exception"].assert_not_called()
 
@@ -676,6 +680,8 @@ class TestCommandTracker:
         )
         callbacks["status"].reset_mock()
         callbacks["progress"].assert_not_called()
+        callbacks["command"].assert_called_once_with("first_command")
+        callbacks["command"].reset_mock()
         callbacks["result"].assert_not_called()
         callbacks["exception"].assert_not_called()
 
@@ -701,6 +707,7 @@ class TestCommandTracker:
         callbacks["queue"].reset_mock()
         callbacks["status"].assert_not_called()
         callbacks["progress"].assert_not_called()
+        callbacks["command"].assert_not_called()
         callbacks["result"].assert_not_called()
         callbacks["exception"].assert_not_called()
 
@@ -721,6 +728,7 @@ class TestCommandTracker:
         callbacks["status"].assert_not_called()
         callbacks["progress"].assert_called_once_with([(first_command_id, 50)])
         callbacks["progress"].reset_mock()
+        callbacks["command"].assert_not_called()
         callbacks["result"].assert_not_called()
         callbacks["exception"].assert_not_called()
 
@@ -742,6 +750,7 @@ class TestCommandTracker:
         callbacks["status"].assert_not_called()
         callbacks["progress"].assert_not_called()
         callbacks["progress"].reset_mock()
+        callbacks["command"].assert_not_called()
         callbacks["result"].assert_called_once_with(
             first_command_id, (ResultCode.OK, "a message string")
         )
@@ -781,6 +790,7 @@ class TestCommandTracker:
         )
         callbacks["status"].reset_mock()
         callbacks["progress"].assert_not_called()
+        callbacks["command"].assert_not_called()
         callbacks["result"].assert_not_called()
         callbacks["exception"].assert_not_called()
 
@@ -808,6 +818,8 @@ class TestCommandTracker:
         )
         callbacks["status"].reset_mock()
         callbacks["progress"].assert_not_called()
+        callbacks["command"].assert_called_once_with("second_command")
+        callbacks["command"].reset_mock()
         callbacks["result"].assert_not_called()
         callbacks["exception"].assert_not_called()
 
@@ -842,6 +854,7 @@ class TestCommandTracker:
         )
         callbacks["status"].reset_mock()
         callbacks["progress"].assert_not_called()
+        callbacks["command"].assert_not_called()
         callbacks["result"].assert_not_called()
         callbacks["exception"].assert_called_once_with(
             second_command_id, exception_to_raise

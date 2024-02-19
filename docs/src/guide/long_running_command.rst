@@ -89,10 +89,12 @@ These attributes indicate the expected stable operating or observation state aft
 
 The *commandedState* string initialises to "None". Only other strings it can change to is "OFF",
 "STANDBY" or "ON", following the start of the Off, Standby, On or Reset long running commands.
-The following table shows the *commandedState* given current device state and command being executed: 
+The following table shows the *commandedState* given current device state and issued command in progress: 
 
 +-------------+-------+-------------+-------------+-------------+
-| DevState    | Off   | Standby     | On          | Reset       |
+| state       | *commandedState* for issued command             |
++             +-------+-------------+-------------+-------------+
+| (DevState)  | Off   | Standby     | On          | Reset       |
 +=============+=======+=============+=============+=============+
 | **UNKNOWN** | OFF   | STANDBY     | ON          |             |
 +-------------+-------+-------------+-------------+-------------+
@@ -107,9 +109,11 @@ The following table shows the *commandedState* given current device state and co
 
 The *commandedObsState* initial value is ObsState.EMPTY. The only stable (nontransitional) state values it can
 change to is EMPTY, IDLE, READY or ABORTED following the start of any of the SKASubarray device's long running commands.
-The following table shows the *commandedObsState* given current *obsState* and command being executed: 
+The following table shows the *commandedObsState* given current *obsState* and issued command in progress: 
 
 +-----------------+-----------------+------------------+---------------------+-----------+-------+---------+------+---------+---------------+---------+
+|                 | *commandedObsState* for issued command                                                                                            |
++                 +-----------------+------------------+---------------------+-----------+-------+---------+------+---------+---------------+---------+
 | obsState        | AssignResources | ReleaseResources | ReleaseAllResources | Configure | Scan  | EndScan | End  | Abort   | ObsReset      | Restart |
 +=================+=================+==================+=====================+===========+=======+=========+======+=========+===============+=========+
 | **EMPTY**       | IDLE            |                  |                     |           |       |         |      |         |               |         |

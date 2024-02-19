@@ -68,6 +68,31 @@ class SKASubarray(SKAObsDevice[ComponentManagerT]):
         self._activation_time: float
         self.obs_state_model: ObsStateModel
 
+        # Dictionary of SKASubarray command info tuples:
+        CommandInfo = namedtuple(
+            "CommandInfo", ["command_class", "state_model_hook", "expected_obs_state"]
+        )
+        self._SUBARRAY_COMMANDS = {
+            "AssignResources": CommandInfo(
+                self.AssignResourcesCommand, "assign", ObsState.IDLE
+            ),
+            "ReleaseResources": CommandInfo(
+                self.ReleaseResourcesCommand, "release", ObsState.IDLE
+            ),
+            "ReleaseAllResources": CommandInfo(
+                self.ReleaseAllResourcesCommand, "release", ObsState.EMPTY
+            ),
+            "Configure": CommandInfo(
+                self.ConfigureCommand, "configure", ObsState.READY
+            ),
+            "Scan": CommandInfo(self.ScanCommand, None, ObsState.READY),
+            "EndScan": CommandInfo(self.EndScanCommand, None, ObsState.READY),
+            "End": CommandInfo(self.EndCommand, None, ObsState.IDLE),
+            "Abort": CommandInfo(self.AbortCommand, "abort", ObsState.ABORTED),
+            "ObsReset": CommandInfo(self.ObsResetCommand, "obsreset", ObsState.IDLE),
+            "Restart": CommandInfo(self.RestartCommand, "restart", ObsState.EMPTY),
+        }
+
         super().__init__(*args, **kwargs)
 
     class InitCommand(SKAObsDevice.InitCommand):
@@ -418,25 +443,6 @@ class SKASubarray(SKAObsDevice[ComponentManagerT]):
                 logger=logger,
             )
 
-    # Dictionary of SKASubarray command tuples:
-    Command = namedtuple(
-        "Command", ["command_class", "state_model_hook", "expected_obs_state"]
-    )
-    SUBARRAY_COMMANDS = {
-        "AssignResources": Command(AssignResourcesCommand, "assign", ObsState.IDLE),
-        "ReleaseResources": Command(ReleaseResourcesCommand, "release", ObsState.IDLE),
-        "ReleaseAllResources": Command(
-            ReleaseAllResourcesCommand, "release", ObsState.EMPTY
-        ),
-        "Configure": Command(ConfigureCommand, "configure", ObsState.READY),
-        "Scan": Command(ScanCommand, None, ObsState.READY),
-        "EndScan": Command(EndScanCommand, None, ObsState.READY),
-        "End": Command(EndCommand, None, ObsState.IDLE),
-        "Abort": Command(AbortCommand, "abort", ObsState.ABORTED),
-        "ObsReset": Command(ObsResetCommand, "obsreset", ObsState.IDLE),
-        "Restart": Command(RestartCommand, "restart", ObsState.EMPTY),
-    }
-
     def create_component_manager(
         self: SKASubarray[ComponentManagerT],
     ) -> ComponentManagerT:
@@ -462,7 +468,7 @@ class SKASubarray(SKAObsDevice[ComponentManagerT]):
             action = "invoked" if running else "completed"
             self.obs_state_model.perform_action(f"{hook}_{action}")
 
-        for command_name, command_tuple in self.SUBARRAY_COMMANDS.items():
+        for command_name, command_tuple in self._SUBARRAY_COMMANDS.items():
             command_class = command_tuple.command_class
             state_model_hook = command_tuple.state_model_hook
             callback = (
@@ -480,17 +486,16 @@ class SKASubarray(SKAObsDevice[ComponentManagerT]):
                 ),
             )
 
-    def _update_command_statuses(  # pylint: disable=protected-access
-        self: SKASubarray[ComponentManagerT],
-        command_statuses: list[tuple[str, TaskStatus]],
+    def _update_commanded_state(  # pylint: disable=protected-access
+        self: SKASubarray[ComponentManagerT], command_name: str
     ) -> None:
-        super()._update_command_statuses(command_statuses)
+        super()._update_commanded_state(command_name)
 
         # Update commandedObsState after a SKASubarray command's status is 'IN_PROGRESS'
-        uid, status = command_statuses[-1]
-        command_name = uid.split("_", 2)[2]
-        if command_name in self.SUBARRAY_COMMANDS and status == TaskStatus.IN_PROGRESS:
-            expected_obs_state = self.SUBARRAY_COMMANDS[command_name].expected_obs_state
+        if command_name in self._SUBARRAY_COMMANDS:
+            expected_obs_state = self._SUBARRAY_COMMANDS[
+                command_name
+            ].expected_obs_state
             # Handle special case if any resourcing command was interrupted
             if (
                 command_name == "ObsReset"

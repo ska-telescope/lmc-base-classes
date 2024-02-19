@@ -46,7 +46,6 @@ class ReferenceSkaSubarray(SKASubarray[ReferenceSubarrayComponentManager]):
             self.logger,
             self._communication_state_changed,
             self._component_state_changed,
-            _component=FakeSubarrayComponent(self.CapabilityTypes),
         )
 
     class AssignResourcesCommand(SKASubarray.AssignResourcesCommand):

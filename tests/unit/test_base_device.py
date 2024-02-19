@@ -924,6 +924,7 @@ class TestSKABaseDevice:  # pylint: disable=too-many-public-methods
         :param change_event_callbacks: dictionary of mock change event
             callbacks with asynchrony support
         """
+        device_under_test.SetCommandTrackerRemovalTime(0.01)
         assert device_under_test.adminMode == AdminMode.ONLINE
         assert device_under_test.state() == DevState.OFF
 
@@ -960,117 +961,69 @@ class TestSKABaseDevice:  # pylint: disable=too-many-public-methods
         # Simulate fault
         device_under_test.SimulateFault()
         change_event_callbacks["state"].assert_change_event(DevState.FAULT)
-        with pytest.raises(DevFailed):
-            assert device_under_test.On()[0] == "Command not allowed"
-            assert device_under_test.Standby()[0] == "Command not allowed"
-            assert device_under_test.Off()[0] == "Command not allowed"
-            assert device_under_test.commandedState == "ON"
+        with pytest.raises(
+            DevFailed,
+            match="Command On not allowed when the device is in FAULT state",
+        ):
+            device_under_test.On()
+        with pytest.raises(
+            DevFailed,
+            match="Command Standby not allowed when the device is in FAULT state",
+        ):
+            device_under_test.Standby()
+        assert device_under_test.commandedState == "ON"
 
         # RESET command
         [[result_code], [reset_command_id]] = device_under_test.Reset()
         assert result_code == ResultCode.QUEUED
         change_event_callbacks.assert_change_event(
-            "longRunningCommandStatus",
-            (on_command_id, "COMPLETED", reset_command_id, "QUEUED"),
+            "longRunningCommandStatus", (reset_command_id, "QUEUED")
         )
         change_event_callbacks.assert_change_event(
-            "longRunningCommandStatus",
-            (on_command_id, "COMPLETED", reset_command_id, "IN_PROGRESS"),
+            "longRunningCommandStatus", (reset_command_id, "IN_PROGRESS")
         )
         change_event_callbacks["state"].assert_change_event(DevState.ON)
         assert device_under_test.commandedState == device_under_test.state().name
         change_event_callbacks.assert_change_event(
-            "longRunningCommandStatus",
-            (on_command_id, "COMPLETED", reset_command_id, "COMPLETED"),
+            "longRunningCommandStatus", (reset_command_id, "COMPLETED")
         )
 
         # STANDBY command
         [[result_code], [standby_command_id]] = device_under_test.Standby()
         assert result_code == ResultCode.QUEUED
         change_event_callbacks.assert_change_event(
-            "longRunningCommandStatus",
-            (
-                on_command_id,
-                "COMPLETED",
-                reset_command_id,
-                "COMPLETED",
-                standby_command_id,
-                "QUEUED",
-            ),
+            "longRunningCommandStatus", (standby_command_id, "QUEUED")
         )
         change_event_callbacks.assert_change_event(
-            "longRunningCommandStatus",
-            (
-                on_command_id,
-                "COMPLETED",
-                reset_command_id,
-                "COMPLETED",
-                standby_command_id,
-                "IN_PROGRESS",
-            ),
+            "longRunningCommandStatus", (standby_command_id, "IN_PROGRESS")
         )
         change_event_callbacks["commandedState"].assert_change_event("STANDBY")
         change_event_callbacks["state"].assert_change_event(DevState.STANDBY)
         assert device_under_test.commandedState == device_under_test.state().name
         change_event_callbacks.assert_change_event(
-            "longRunningCommandStatus",
-            (
-                on_command_id,
-                "COMPLETED",
-                reset_command_id,
-                "COMPLETED",
-                standby_command_id,
-                "COMPLETED",
-            ),
+            "longRunningCommandStatus", (standby_command_id, "COMPLETED")
         )
 
         # OFF command
         [[result_code], [off_command_id]] = device_under_test.Off()
         assert result_code == ResultCode.QUEUED
         change_event_callbacks.assert_change_event(
-            "longRunningCommandStatus",
-            (
-                on_command_id,
-                "COMPLETED",
-                reset_command_id,
-                "COMPLETED",
-                standby_command_id,
-                "COMPLETED",
-                off_command_id,
-                "QUEUED",
-            ),
+            "longRunningCommandStatus", (off_command_id, "QUEUED")
         )
         change_event_callbacks.assert_change_event(
-            "longRunningCommandStatus",
-            (
-                on_command_id,
-                "COMPLETED",
-                reset_command_id,
-                "COMPLETED",
-                standby_command_id,
-                "COMPLETED",
-                off_command_id,
-                "IN_PROGRESS",
-            ),
+            "longRunningCommandStatus", (off_command_id, "IN_PROGRESS")
         )
         change_event_callbacks["commandedState"].assert_change_event("OFF")
         change_event_callbacks["state"].assert_change_event(DevState.OFF)
         assert device_under_test.commandedState == device_under_test.state().name
         change_event_callbacks.assert_change_event(
-            "longRunningCommandStatus",
-            (
-                on_command_id,
-                "COMPLETED",
-                reset_command_id,
-                "COMPLETED",
-                standby_command_id,
-                "COMPLETED",
-                off_command_id,
-                "COMPLETED",
-            ),
+            "longRunningCommandStatus", (off_command_id, "COMPLETED")
         )
-        with pytest.raises(DevFailed):
-            assert device_under_test.Reset()[0] == "Command not allowed"
+        with pytest.raises(
+            DevFailed,
+            match="Command Reset not allowed when the device is in OFF state",
+        ):
+            device_under_test.Reset()
 
     def test_Status(
         self: TestSKABaseDevice, device_under_test: tango.DeviceProxy

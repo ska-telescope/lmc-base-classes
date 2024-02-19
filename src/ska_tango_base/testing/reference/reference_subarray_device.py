@@ -20,10 +20,7 @@ from tango.server import command
 
 from ...base import CommandTracker
 from ...subarray.subarray_device import SKASubarray
-from .reference_subarray_component_manager import (
-    FakeSubarrayComponent,
-    ReferenceSubarrayComponentManager,
-)
+from .reference_subarray_component_manager import ReferenceSubarrayComponentManager
 
 DevVarLongStringArrayType = tuple[list[ResultCode], list[str]]
 
@@ -239,6 +236,20 @@ class ReferenceSkaSubarray(SKASubarray[ReferenceSubarrayComponentManager]):
         # pylint: disable=protected-access
         self.component_manager.abort_commands()
         self.component_manager._component.simulate_obsfault()
+
+    @command(dtype_in=float)  # type: ignore[misc]
+    def SetCommandTrackerRemovalTime(
+        self: ReferenceSkaSubarray, seconds: float
+    ) -> None:
+        """Set the CommandTracker's removal time.
+
+        Setting the command removal time lower than the default 10s simplifies tests'
+        assertions of some LRC attributes.
+
+        :param seconds: of removal timer.
+        """
+        # pylint: disable=protected-access
+        self._command_tracker._removal_time = seconds
 
 
 # ----------

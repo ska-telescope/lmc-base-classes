@@ -924,7 +924,7 @@ class TestSKABaseDevice:  # pylint: disable=too-many-public-methods
         :param change_event_callbacks: dictionary of mock change event
             callbacks with asynchrony support
         """
-        device_under_test.SetCommandTrackerRemovalTime(0.01)
+        device_under_test.SetCommandTrackerRemovalTime(0)
         assert device_under_test.adminMode == AdminMode.ONLINE
         assert device_under_test.state() == DevState.OFF
 

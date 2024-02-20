@@ -1020,8 +1020,8 @@ class SKABaseDevice(
         elif value == AdminMode.OFFLINE:
             self.admin_mode_model.perform_action("to_offline")
             self.component_manager.stop_communicating()
-        elif value == AdminMode.MAINTENANCE:
-            self.admin_mode_model.perform_action("to_maintenance")
+        elif value == AdminMode.ENGINEERING:
+            self.admin_mode_model.perform_action("to_engineering")
             self.component_manager.start_communicating()
         elif value == AdminMode.ONLINE:
             self.admin_mode_model.perform_action("to_online")

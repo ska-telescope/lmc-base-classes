@@ -1388,9 +1388,9 @@ class TestSKABaseDevice:  # pylint: disable=too-many-public-methods
         )
         assert device_under_test.state() == DevState.DISABLE
 
-        device_under_test.adminMode = AdminMode.MAINTENANCE
-        change_event_callbacks.assert_change_event("adminMode", AdminMode.MAINTENANCE)
-        assert device_under_test.adminMode == AdminMode.MAINTENANCE
+        device_under_test.adminMode = AdminMode.ENGINEERING
+        change_event_callbacks.assert_change_event("adminMode", AdminMode.ENGINEERING)
+        assert device_under_test.adminMode == AdminMode.ENGINEERING
 
         change_event_callbacks.assert_change_event("state", DevState.UNKNOWN)
         change_event_callbacks.assert_change_event(

@@ -9,12 +9,14 @@ A reference implementation of an SKA subarray device.
 
 It inherits from SKASubarray but provides schemas for some commands.
 """
+# pylint: disable=invalid-name
 from __future__ import annotations
 
 import logging
 from typing import Callable, Final, cast
 
 from ska_control_model import ResultCode
+from tango.server import command
 
 from ...base import CommandTracker
 from ...subarray.subarray_device import SKASubarray
@@ -221,6 +223,33 @@ class ReferenceSkaSubarray(SKASubarray[ReferenceSubarrayComponentManager]):
                 logger=logger,
                 schema=self.SCHEMA,
             )
+
+    @command()  # type: ignore[misc]
+    def SimulateFault(self: ReferenceSkaSubarray) -> None:
+        """Simulate a fault state."""
+        # pylint: disable=protected-access
+        self.component_manager._component.simulate_fault(True)
+
+    @command()  # type: ignore[misc]
+    def SimulateObsFault(self: ReferenceSkaSubarray) -> None:
+        """Simulate an observation fault state."""
+        # pylint: disable=protected-access
+        self.component_manager.abort_commands()
+        self.component_manager._component.simulate_obsfault()
+
+    @command(dtype_in=float)  # type: ignore[misc]
+    def SetCommandTrackerRemovalTime(
+        self: ReferenceSkaSubarray, seconds: float
+    ) -> None:
+        """Set the CommandTracker's removal time.
+
+        Setting the command removal time lower than the default 10s simplifies tests'
+        assertions of some LRC attributes.
+
+        :param seconds: of removal timer.
+        """
+        # pylint: disable=protected-access
+        self._command_tracker._removal_time = seconds
 
 
 # ----------

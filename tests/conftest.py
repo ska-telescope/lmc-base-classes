@@ -1,4 +1,5 @@
 """This module defines elements of the pytest test harness shared by all tests."""
+
 from __future__ import annotations
 
 import logging
@@ -11,6 +12,8 @@ import tango
 from ska_tango_testing.mock import MockCallableGroup
 from ska_tango_testing.mock.tango import MockTangoEventCallbackGroup
 from tango.test_context import DeviceTestContext, MultiDeviceTestContext, get_host_ip
+
+import ska_tango_base.base.base_device
 
 
 @pytest.fixture(scope="class")
@@ -100,7 +103,9 @@ def change_event_callbacks() -> MockTangoEventCallbackGroup:
     return MockTangoEventCallbackGroup(
         "adminMode",
         "obsState",
+        "commandedObsState",
         "state",
+        "commandedState",
         "status",
         "longRunningCommandProgress",
         "longRunningCommandResult",
@@ -162,3 +167,17 @@ def fixture_multi_device_tango_context(
         devices_to_test, host=host, port=port, process=True
     ) as context:
         yield context
+
+
+@pytest.fixture()
+def patch_debugger_to_start_on_ephemeral_port() -> None:
+    """
+    Patch the debugger so that it starts on an ephemeral port.
+
+    This is necessary because of intermittent debugger test failures: if
+    the previous test has used the debugger port, then when the test
+    tries to bind to that port, it may find that the OS has not made it
+    available for use yet.
+    """
+    # pylint: disable-next=protected-access
+    ska_tango_base.base.base_device._DEBUGGER_PORT = 0

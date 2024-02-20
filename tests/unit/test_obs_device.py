@@ -131,6 +131,28 @@ class TestSKAObsDevice:
         )
         change_event_callbacks.assert_change_event("obsState", ObsState.EMPTY)
 
+    def test_commandedObsState(
+        self: TestSKAObsDevice,
+        device_under_test: tango.DeviceProxy,
+        change_event_callbacks: MockTangoEventCallbackGroup,
+    ) -> None:
+        """
+        Test for commandedObsState.
+
+        :param device_under_test: a proxy to the device under test
+        :param change_event_callbacks: dictionary of mock change event
+            callbacks with asynchrony support
+        """
+        assert device_under_test.commandedObsState == ObsState.EMPTY
+
+        # Check that events are working by subscribing and checking for that
+        device_under_test.subscribe_event(
+            "commandedObsState",
+            tango.EventType.CHANGE_EVENT,
+            change_event_callbacks["commandedObsState"],
+        )
+        change_event_callbacks.assert_change_event("commandedObsState", ObsState.EMPTY)
+
     def test_obsMode(
         self: TestSKAObsDevice, device_under_test: tango.DeviceProxy
     ) -> None:

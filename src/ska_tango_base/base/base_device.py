@@ -106,6 +106,7 @@ class CommandTracker:  # pylint: disable=too-many-instance-attributes
         queue_changed_callback: Callable[[list[tuple[str, str]]], None],
         status_changed_callback: Callable[[list[tuple[str, TaskStatus]]], None],
         progress_changed_callback: Callable[[list[tuple[str, int]]], None],
+        command_changed_callback: Callable[[str], None],
         result_callback: Callable[[str, tuple[ResultCode, str]], None],
         exception_callback: Callable[[str, Exception], None] | None = None,
         removal_time: float = 10.0,
@@ -116,6 +117,7 @@ class CommandTracker:  # pylint: disable=too-many-instance-attributes
         :param queue_changed_callback: called when the queue changes
         :param status_changed_callback: called when the status changes
         :param progress_changed_callback: called when the progress changes
+        :param command_changed_callback: called when a command has started
         :param result_callback: called when command finishes
         :param exception_callback: called in the event of an exception
         :param removal_time: timer
@@ -124,6 +126,7 @@ class CommandTracker:  # pylint: disable=too-many-instance-attributes
         self._queue_changed_callback = queue_changed_callback
         self._status_changed_callback = status_changed_callback
         self._progress_changed_callback = progress_changed_callback
+        self._command_changed_callback = command_changed_callback
         self._result_callback = result_callback
         self._most_recent_result: tuple[
             str, tuple[ResultCode, str] | None
@@ -196,6 +199,9 @@ class CommandTracker:  # pylint: disable=too-many-instance-attributes
                 self._commands[command_id]["status"] = status
                 self._status_changed_callback(self.command_statuses)
 
+                if status == TaskStatus.IN_PROGRESS:
+                    command_name = command_id.split("_", 2)[2]
+                    self._command_changed_callback(command_name)
                 if status == TaskStatus.COMPLETED:
                     completed_callback = self._commands[command_id][
                         "completed_callback"
@@ -587,6 +593,21 @@ class SKABaseDevice(
         self.push_change_event("longRunningCommandStatus", self._command_statuses)
         self.push_archive_event("longRunningCommandStatus", self._command_statuses)
 
+    def _update_commanded_state(
+        self: SKABaseDevice[ComponentManagerT], command_name: str
+    ) -> None:
+        # Update commandedState after a SKABaseDevice command's status is 'IN_PROGRESS'
+        if command_name in ["Off", "Standby", "On", "Reset"]:
+            self._commanded_state = command_name.upper()
+            if command_name == "Reset":
+                current_state = self.get_state()
+                if current_state == DevState.FAULT:
+                    self._commanded_state = "ON"
+                else:
+                    self._commanded_state = current_state.name
+            self.push_change_event("commandedState", self._commanded_state)
+            self.push_archive_event("commandedState", self._commanded_state)
+
     def _update_command_progresses(
         self: SKABaseDevice[ComponentManagerT],
         command_progresses: list[tuple[str, int]],
@@ -682,7 +703,7 @@ class SKABaseDevice(
             self._control_mode = ControlMode.REMOTE
             self._simulation_mode = SimulationMode.FALSE
             self._test_mode = TestMode.NONE
-
+            self._commanded_state = "None"
             self._command_ids_in_queue = []
             self._commands_in_queue = []
             self._command_statuses = []
@@ -697,6 +718,7 @@ class SKABaseDevice(
 
             for attribute_name in [
                 "state",
+                "commandedState",
                 "status",
                 "adminMode",
                 "healthState",
@@ -749,6 +771,7 @@ class SKABaseDevice(
             queue_changed_callback=self._update_commands_in_queue,
             status_changed_callback=self._update_command_statuses,
             progress_changed_callback=self._update_command_progresses,
+            command_changed_callback=self._update_commanded_state,
             result_callback=self._update_command_result,
             exception_callback=self._update_command_exception,
         )
@@ -1153,6 +1176,19 @@ class SKABaseDevice(
         """
         return self._command_result
 
+    @attribute(dtype=str)  # type: ignore[misc]
+    def commandedState(self: SKABaseDevice[ComponentManagerT]) -> str:
+        """
+        Read the last commanded operating state of the device.
+
+        Initial string is "None". Only other strings it can change to is "OFF",
+        "STANDBY" or "ON", following the start of the Off(), Standby(), On() or Reset()
+        long running commands.
+
+        :return: commanded operating state string.
+        """
+        return self._commanded_state
+
     # --------
     # Commands
     # --------
@@ -1302,7 +1338,6 @@ class SKABaseDevice(
 
         handler = self.get_command_object("Off")
         result_code, unique_id = handler()
-
         return ([result_code], [unique_id])
 
     def is_On_allowed(self: SKABaseDevice[ComponentManagerT]) -> bool:

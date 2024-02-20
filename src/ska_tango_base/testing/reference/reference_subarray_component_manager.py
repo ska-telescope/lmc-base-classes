@@ -44,7 +44,7 @@ class FakeSubarrayComponent(FakeBaseComponent):
     `scan`, `end_scan`, `end`, `abort`, `obsreset` and `restart`
     methods. For testing purposes, it can also be told to
     simulate a spontaneous obs_state change via simulate_power_state` and
-    `simulate_fault` methods.
+    `simulate_obsfault` methods.
 
     When one of these command method is invoked, the component simulates
     communications latency by sleeping for a short time. It then
@@ -411,13 +411,9 @@ class FakeSubarrayComponent(FakeBaseComponent):
         self._update_state(scanning=False)
 
     @check_on
-    def simulate_obsfault(self: FakeSubarrayComponent, obsfault: bool) -> None:
-        """
-        Tell the component to simulate an obsfault.
-
-        :param obsfault: fault indicator
-        """
-        self._update_state(obsfault=obsfault)
+    def simulate_obsfault(self: FakeSubarrayComponent) -> None:
+        """Tell the component to simulate an obsfault."""
+        self._update_state(obsfault=True)
 
     @check_on
     def obsreset(

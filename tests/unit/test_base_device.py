@@ -36,7 +36,6 @@ from ska_control_model import (
 from ska_tango_testing.mock.tango import MockTangoEventCallbackGroup
 from tango import DevFailed, DevState
 
-import ska_tango_base.base.base_device
 from ska_tango_base import SKABaseDevice
 from ska_tango_base.base import CommandTracker
 from ska_tango_base.base.base_device import _DEBUGGER_PORT
@@ -50,6 +49,7 @@ from ska_tango_base.faults import LoggingTargetError
 from ska_tango_base.testing.reference import (
     FakeBaseComponent,
     ReferenceBaseComponentManager,
+    ReferenceSkaBaseDevice,
 )
 
 
@@ -575,6 +575,7 @@ class TestCommandTracker:
             "queue": mocker.Mock(),
             "status": mocker.Mock(),
             "progress": mocker.Mock(),
+            "command": mocker.Mock(),
             "result": mocker.Mock(),
             "exception": mocker.Mock(),
         }
@@ -607,6 +608,7 @@ class TestCommandTracker:
             queue_changed_callback=callbacks["queue"],
             status_changed_callback=callbacks["status"],
             progress_changed_callback=callbacks["progress"],
+            command_changed_callback=callbacks["command"],
             result_callback=callbacks["result"],
             exception_callback=callbacks["exception"],
             removal_time=removal_time,
@@ -634,6 +636,7 @@ class TestCommandTracker:
         callbacks["queue"].assert_not_called()
         callbacks["status"].assert_not_called()
         callbacks["progress"].assert_not_called()
+        callbacks["command"].assert_not_called()
         callbacks["result"].assert_not_called()
         callbacks["exception"].assert_not_called()
 
@@ -654,6 +657,7 @@ class TestCommandTracker:
         callbacks["queue"].reset_mock()
         callbacks["status"].assert_not_called()
         callbacks["progress"].assert_not_called()
+        callbacks["command"].assert_not_called()
         callbacks["result"].assert_not_called()
         callbacks["exception"].assert_not_called()
 
@@ -676,6 +680,8 @@ class TestCommandTracker:
         )
         callbacks["status"].reset_mock()
         callbacks["progress"].assert_not_called()
+        callbacks["command"].assert_called_once_with("first_command")
+        callbacks["command"].reset_mock()
         callbacks["result"].assert_not_called()
         callbacks["exception"].assert_not_called()
 
@@ -701,6 +707,7 @@ class TestCommandTracker:
         callbacks["queue"].reset_mock()
         callbacks["status"].assert_not_called()
         callbacks["progress"].assert_not_called()
+        callbacks["command"].assert_not_called()
         callbacks["result"].assert_not_called()
         callbacks["exception"].assert_not_called()
 
@@ -721,6 +728,7 @@ class TestCommandTracker:
         callbacks["status"].assert_not_called()
         callbacks["progress"].assert_called_once_with([(first_command_id, 50)])
         callbacks["progress"].reset_mock()
+        callbacks["command"].assert_not_called()
         callbacks["result"].assert_not_called()
         callbacks["exception"].assert_not_called()
 
@@ -742,6 +750,7 @@ class TestCommandTracker:
         callbacks["status"].assert_not_called()
         callbacks["progress"].assert_not_called()
         callbacks["progress"].reset_mock()
+        callbacks["command"].assert_not_called()
         callbacks["result"].assert_called_once_with(
             first_command_id, (ResultCode.OK, "a message string")
         )
@@ -781,6 +790,7 @@ class TestCommandTracker:
         )
         callbacks["status"].reset_mock()
         callbacks["progress"].assert_not_called()
+        callbacks["command"].assert_not_called()
         callbacks["result"].assert_not_called()
         callbacks["exception"].assert_not_called()
 
@@ -808,6 +818,8 @@ class TestCommandTracker:
         )
         callbacks["status"].reset_mock()
         callbacks["progress"].assert_not_called()
+        callbacks["command"].assert_called_once_with("second_command")
+        callbacks["command"].reset_mock()
         callbacks["result"].assert_not_called()
         callbacks["exception"].assert_not_called()
 
@@ -842,6 +854,7 @@ class TestCommandTracker:
         )
         callbacks["status"].reset_mock()
         callbacks["progress"].assert_not_called()
+        callbacks["command"].assert_not_called()
         callbacks["result"].assert_not_called()
         callbacks["exception"].assert_called_once_with(
             second_command_id, exception_to_raise
@@ -868,7 +881,7 @@ class TestSKABaseDevice:  # pylint: disable=too-many-public-methods
             configured
         """
         return {
-            "device": SKABaseDevice,
+            "device": ReferenceSkaBaseDevice,
             "component_manager_patch": lambda self: ReferenceBaseComponentManager(
                 self.logger,
                 self._communication_state_changed,
@@ -898,6 +911,119 @@ class TestSKABaseDevice:  # pylint: disable=too-many-public-methods
         :param device_under_test: a proxy to the device under test
         """
         assert device_under_test.state() == DevState.OFF
+
+    def test_commandedState(
+        self: TestSKABaseDevice,
+        device_under_test: tango.DeviceProxy,
+        change_event_callbacks: MockTangoEventCallbackGroup,
+    ) -> None:
+        """
+        Test for commandedState.
+
+        :param device_under_test: a proxy to the device under test
+        :param change_event_callbacks: dictionary of mock change event
+            callbacks with asynchrony support
+        """
+        device_under_test.SetCommandTrackerRemovalTime(0)
+        assert device_under_test.adminMode == AdminMode.ONLINE
+        assert device_under_test.state() == DevState.OFF
+
+        for attribute in [
+            "state",
+            "commandedState",
+            "longRunningCommandStatus",
+        ]:
+            device_under_test.subscribe_event(
+                attribute,
+                tango.EventType.CHANGE_EVENT,
+                change_event_callbacks[attribute],
+            )
+        change_event_callbacks["state"].assert_change_event(DevState.OFF)
+        change_event_callbacks["commandedState"].assert_change_event("None")
+        change_event_callbacks["longRunningCommandStatus"].assert_change_event(None)
+
+        # ON command
+        [[result_code], [on_command_id]] = device_under_test.On()
+        assert result_code == ResultCode.QUEUED
+        change_event_callbacks.assert_change_event(
+            "longRunningCommandStatus", (on_command_id, "QUEUED")
+        )
+        change_event_callbacks.assert_change_event(
+            "longRunningCommandStatus", (on_command_id, "IN_PROGRESS")
+        )
+        change_event_callbacks["commandedState"].assert_change_event("ON")
+        change_event_callbacks["state"].assert_change_event(DevState.ON)
+        assert device_under_test.commandedState == device_under_test.state().name
+        change_event_callbacks.assert_change_event(
+            "longRunningCommandStatus", (on_command_id, "COMPLETED")
+        )
+
+        # Simulate fault
+        device_under_test.SimulateFault()
+        change_event_callbacks["state"].assert_change_event(DevState.FAULT)
+        with pytest.raises(
+            DevFailed,
+            match="Command On not allowed when the device is in FAULT state",
+        ):
+            device_under_test.On()
+        with pytest.raises(
+            DevFailed,
+            match="Command Standby not allowed when the device is in FAULT state",
+        ):
+            device_under_test.Standby()
+        assert device_under_test.commandedState == "ON"
+
+        # RESET command
+        [[result_code], [reset_command_id]] = device_under_test.Reset()
+        assert result_code == ResultCode.QUEUED
+        change_event_callbacks.assert_change_event(
+            "longRunningCommandStatus", (reset_command_id, "QUEUED")
+        )
+        change_event_callbacks.assert_change_event(
+            "longRunningCommandStatus", (reset_command_id, "IN_PROGRESS")
+        )
+        change_event_callbacks["state"].assert_change_event(DevState.ON)
+        assert device_under_test.commandedState == device_under_test.state().name
+        change_event_callbacks.assert_change_event(
+            "longRunningCommandStatus", (reset_command_id, "COMPLETED")
+        )
+
+        # STANDBY command
+        [[result_code], [standby_command_id]] = device_under_test.Standby()
+        assert result_code == ResultCode.QUEUED
+        change_event_callbacks.assert_change_event(
+            "longRunningCommandStatus", (standby_command_id, "QUEUED")
+        )
+        change_event_callbacks.assert_change_event(
+            "longRunningCommandStatus", (standby_command_id, "IN_PROGRESS")
+        )
+        change_event_callbacks["commandedState"].assert_change_event("STANDBY")
+        change_event_callbacks["state"].assert_change_event(DevState.STANDBY)
+        assert device_under_test.commandedState == device_under_test.state().name
+        change_event_callbacks.assert_change_event(
+            "longRunningCommandStatus", (standby_command_id, "COMPLETED")
+        )
+
+        # OFF command
+        [[result_code], [off_command_id]] = device_under_test.Off()
+        assert result_code == ResultCode.QUEUED
+        change_event_callbacks.assert_change_event(
+            "longRunningCommandStatus", (off_command_id, "QUEUED")
+        )
+        change_event_callbacks.assert_change_event(
+            "longRunningCommandStatus", (off_command_id, "IN_PROGRESS")
+        )
+        change_event_callbacks["commandedState"].assert_change_event("OFF")
+        change_event_callbacks["state"].assert_change_event(DevState.OFF)
+        assert device_under_test.commandedState == device_under_test.state().name
+        change_event_callbacks.assert_change_event(
+            "longRunningCommandStatus", (off_command_id, "COMPLETED")
+        )
+        with pytest.raises(
+            DevFailed,
+            match="Command Reset not allowed when the device is in OFF state",
+        ):
+            device_under_test.Reset()
 
     def test_Status(
         self: TestSKABaseDevice, device_under_test: tango.DeviceProxy
@@ -1389,17 +1515,3 @@ class TestSKABaseDevice:  # pylint: disable=too-many-public-methods
         change_event_callbacks.assert_change_event("state", DevState.ON)
 
         assert device_under_test.state() == DevState.ON
-
-
-@pytest.fixture()
-def patch_debugger_to_start_on_ephemeral_port() -> None:
-    """
-    Patch the debugger so that it starts on an ephemeral port.
-
-    This is necessary because of intermittent debugger test failures: if
-    the previous test has used the debugger port, then when the test
-    tries to bind to that port, it may find that the OS has not made it
-    available for use yet.
-    """
-    # pylint: disable-next=protected-access
-    ska_tango_base.base.base_device._DEBUGGER_PORT = 0

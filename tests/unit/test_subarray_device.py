@@ -799,12 +799,12 @@ class TestSKASubarray:  # pylint: disable=too-many-public-methods
         assert device_under_test.state() == tango.DevState.DISABLE
         assert device_under_test.adminMode == AdminMode.OFFLINE
 
-        device_under_test.adminMode = AdminMode.MAINTENANCE
-        change_event_callbacks.assert_change_event("adminMode", AdminMode.MAINTENANCE)
+        device_under_test.adminMode = AdminMode.ENGINEERING
+        change_event_callbacks.assert_change_event("adminMode", AdminMode.ENGINEERING)
         change_event_callbacks.assert_change_event("state", tango.DevState.UNKNOWN)
         change_event_callbacks.assert_change_event("state", tango.DevState.OFF)
         assert device_under_test.state() == tango.DevState.OFF
-        assert device_under_test.adminMode == AdminMode.MAINTENANCE
+        assert device_under_test.adminMode == AdminMode.ENGINEERING
 
     def test_buildState(
         self: TestSKASubarray, device_under_test: tango.DeviceProxy

@@ -106,7 +106,6 @@ class CommandTracker:  # pylint: disable=too-many-instance-attributes
         queue_changed_callback: Callable[[list[tuple[str, str]]], None],
         status_changed_callback: Callable[[list[tuple[str, TaskStatus]]], None],
         progress_changed_callback: Callable[[list[tuple[str, int]]], None],
-        command_changed_callback: Callable[[str], None],
         result_callback: Callable[[str, tuple[ResultCode, str]], None],
         exception_callback: Callable[[str, Exception], None] | None = None,
         removal_time: float = 10.0,
@@ -117,7 +116,6 @@ class CommandTracker:  # pylint: disable=too-many-instance-attributes
         :param queue_changed_callback: called when the queue changes
         :param status_changed_callback: called when the status changes
         :param progress_changed_callback: called when the progress changes
-        :param command_changed_callback: called when a command has started
         :param result_callback: called when command finishes
         :param exception_callback: called in the event of an exception
         :param removal_time: timer
@@ -126,11 +124,10 @@ class CommandTracker:  # pylint: disable=too-many-instance-attributes
         self._queue_changed_callback = queue_changed_callback
         self._status_changed_callback = status_changed_callback
         self._progress_changed_callback = progress_changed_callback
-        self._command_changed_callback = command_changed_callback
         self._result_callback = result_callback
-        self._most_recent_result: tuple[str, tuple[ResultCode, str] | None] | None = (
-            None
-        )
+        self._most_recent_result: tuple[
+            str, tuple[ResultCode, str] | None
+        ] | None = None
         self._exception_callback = exception_callback
         self._most_recent_exception: tuple[str, Exception] | None = None
         self._commands: dict[str, _CommandData] = {}
@@ -199,9 +196,6 @@ class CommandTracker:  # pylint: disable=too-many-instance-attributes
                 self._commands[command_id]["status"] = status
                 self._status_changed_callback(self.command_statuses)
 
-                if status == TaskStatus.IN_PROGRESS:
-                    command_name = command_id.split("_", 2)[2]
-                    self._command_changed_callback(command_name)
                 if status == TaskStatus.COMPLETED:
                     completed_callback = self._commands[command_id][
                         "completed_callback"
@@ -593,11 +587,26 @@ class SKABaseDevice(
         self.push_change_event("longRunningCommandStatus", self._command_statuses)
         self.push_archive_event("longRunningCommandStatus", self._command_statuses)
 
-        self._command_in_progress = ""
-        for uid, status in command_statuses:
-            if status == TaskStatus.IN_PROGRESS:
-                self._command_in_progress = uid.split("_", 2)[2]
+        # Check last command in list as only one can execute at a time
+        uid, status = command_statuses[-1]
+        command_name = uid.split("_", 2)[2]
+        if status == TaskStatus.IN_PROGRESS:
+            self._update_command_in_progress(command_name, True)
+            self._update_commanded_state(command_name)
+        elif status in [
+            TaskStatus.ABORTED,
+            TaskStatus.COMPLETED,
+            TaskStatus.FAILED,
+        ]:
+            self._update_command_in_progress(command_name, False)
 
+    def _update_command_in_progress(
+        self: SKABaseDevice[ComponentManagerT], command_name: str, in_progress: bool
+    ) -> None:
+        if "Abort" in command_name:
+            self._command_in_progress[1] = command_name if in_progress else ""
+        else:
+            self._command_in_progress[0] = command_name if in_progress else ""
         self.push_change_event(
             "longRunningCommandInProgress", self._command_in_progress
         )
@@ -700,9 +709,9 @@ class SKABaseDevice(
         try:
             super().init_device()
 
-            self._omni_queue: queue.SimpleQueue[tuple[str, Any, Any]] = (
-                queue.SimpleQueue()
-            )
+            self._omni_queue: queue.SimpleQueue[
+                tuple[str, Any, Any]
+            ] = queue.SimpleQueue()
 
             # this can be removed when cppTango issue #935 is implemented
             self._init_active = True
@@ -719,7 +728,7 @@ class SKABaseDevice(
             self._command_ids_in_queue = []
             self._commands_in_queue = []
             self._command_statuses = []
-            self._command_in_progress = ""
+            self._command_in_progress = ["", ""]
             self._command_progresses = []
             self._command_result = ("", "")
 
@@ -785,7 +794,6 @@ class SKABaseDevice(
             queue_changed_callback=self._update_commands_in_queue,
             status_changed_callback=self._update_command_statuses,
             progress_changed_callback=self._update_command_progresses,
-            command_changed_callback=self._update_commanded_state,
             result_callback=self._update_command_result,
             exception_callback=self._update_command_exception,
         )
@@ -920,7 +928,6 @@ class SKABaseDevice(
     # ----------
     # Attributes
     # ----------
-
     @attribute(  # type: ignore[misc]  # "Untyped decorator makes function untyped"
         dtype="str"
     )
@@ -1158,26 +1165,17 @@ class SKABaseDevice(
         return self._command_statuses
 
     @attribute(  # type: ignore[misc]  # "Untyped decorator makes function untyped"
-        dtype="str"
+        dtype=("str",), max_dim_x=2
     )
-    def longRunningCommandInProgress(self: SKABaseDevice[ComponentManagerT]) -> str:
+    def longRunningCommandInProgress(
+        self: SKABaseDevice[ComponentManagerT],
+    ) -> list[str]:
         """
-        Read the currently running command that has status equal to IN_PROGRESS if any.
+        Read the name of the currently executing long running command(s).
 
-        :return: ID of command IN_PROGRESS or empty string.
+        :return: name of command and possible abort in progress or empty string(s).
         """
         return self._command_in_progress
-
-    @attribute(  # type: ignore[misc]  # "Untyped decorator makes function untyped"
-        dtype="str"
-    )
-    def commandInProgress(self: SKABaseDevice[ComponentManagerT]) -> str:
-        """
-        Read the currently running command that has status equal to IN_PROGRESS if any.
-
-        :return: ID of command IN_PROGRESS or empty string.
-        """
-        return self._in_progress
 
     @attribute(  # type: ignore[misc]  # "Untyped decorator makes function untyped"
         dtype=("str",), max_dim_x=2  # Only one command can execute at once

@@ -289,6 +289,16 @@ def abort_subarray_command(
         callbacks with asynchrony support
     :param command_id: of command in progress to abort
     """
+    event_id = device_under_test.subscribe_event(
+        "longRunningCommandInProgress",
+        tango.EventType.CHANGE_EVENT,
+        change_event_callbacks["longRunningCommandInProgress"],
+    )
+    command_name = command_id.split("_", 2)[2]
+    change_event_callbacks.assert_change_event(
+        "longRunningCommandInProgress", (command_name, "")
+    )
+
     [[result_code], [abort_command_id]] = device_under_test.Abort()
     assert result_code == ResultCode.STARTED
     change_event_callbacks.assert_change_event("obsState", ObsState.ABORTING)
@@ -296,17 +306,23 @@ def abort_subarray_command(
         "longRunningCommandStatus",
         (command_id, "IN_PROGRESS", abort_command_id, "IN_PROGRESS"),
     )
+    abort_name = abort_command_id.split("_", 2)[2]
+    change_event_callbacks.assert_change_event(
+        "longRunningCommandInProgress", (command_name, abort_name)
+    )
     change_event_callbacks.assert_change_event("commandedObsState", ObsState.ABORTED)
     change_event_callbacks.assert_change_event(
         "longRunningCommandStatus",
         (command_id, "IN_PROGRESS", abort_command_id, "COMPLETED"),
     )
+    change_event_callbacks.assert_change_event("longRunningCommandInProgress", ("", ""))
     change_event_callbacks.assert_change_event("obsState", ObsState.ABORTED)
     change_event_callbacks.assert_change_event(
         "longRunningCommandStatus", (command_id, "ABORTED")
     )
     assert device_under_test.obsState == device_under_test.commandedObsState
     change_event_callbacks.assert_not_called()
+    device_under_test.unsubscribe_event(event_id)
 
 
 class TestSKASubarray:  # pylint: disable=too-many-public-methods

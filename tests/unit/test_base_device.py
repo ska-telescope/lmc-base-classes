@@ -575,7 +575,6 @@ class TestCommandTracker:
             "queue": mocker.Mock(),
             "status": mocker.Mock(),
             "progress": mocker.Mock(),
-            "command": mocker.Mock(),
             "result": mocker.Mock(),
             "exception": mocker.Mock(),
         }
@@ -608,7 +607,6 @@ class TestCommandTracker:
             queue_changed_callback=callbacks["queue"],
             status_changed_callback=callbacks["status"],
             progress_changed_callback=callbacks["progress"],
-            command_changed_callback=callbacks["command"],
             result_callback=callbacks["result"],
             exception_callback=callbacks["exception"],
             removal_time=removal_time,
@@ -636,7 +634,6 @@ class TestCommandTracker:
         callbacks["queue"].assert_not_called()
         callbacks["status"].assert_not_called()
         callbacks["progress"].assert_not_called()
-        callbacks["command"].assert_not_called()
         callbacks["result"].assert_not_called()
         callbacks["exception"].assert_not_called()
 
@@ -657,7 +654,6 @@ class TestCommandTracker:
         callbacks["queue"].reset_mock()
         callbacks["status"].assert_not_called()
         callbacks["progress"].assert_not_called()
-        callbacks["command"].assert_not_called()
         callbacks["result"].assert_not_called()
         callbacks["exception"].assert_not_called()
 
@@ -680,8 +676,6 @@ class TestCommandTracker:
         )
         callbacks["status"].reset_mock()
         callbacks["progress"].assert_not_called()
-        callbacks["command"].assert_called_once_with("first_command")
-        callbacks["command"].reset_mock()
         callbacks["result"].assert_not_called()
         callbacks["exception"].assert_not_called()
 
@@ -707,7 +701,6 @@ class TestCommandTracker:
         callbacks["queue"].reset_mock()
         callbacks["status"].assert_not_called()
         callbacks["progress"].assert_not_called()
-        callbacks["command"].assert_not_called()
         callbacks["result"].assert_not_called()
         callbacks["exception"].assert_not_called()
 
@@ -728,7 +721,6 @@ class TestCommandTracker:
         callbacks["status"].assert_not_called()
         callbacks["progress"].assert_called_once_with([(first_command_id, 50)])
         callbacks["progress"].reset_mock()
-        callbacks["command"].assert_not_called()
         callbacks["result"].assert_not_called()
         callbacks["exception"].assert_not_called()
 
@@ -750,7 +742,6 @@ class TestCommandTracker:
         callbacks["status"].assert_not_called()
         callbacks["progress"].assert_not_called()
         callbacks["progress"].reset_mock()
-        callbacks["command"].assert_not_called()
         callbacks["result"].assert_called_once_with(
             first_command_id, (ResultCode.OK, "a message string")
         )
@@ -790,7 +781,6 @@ class TestCommandTracker:
         )
         callbacks["status"].reset_mock()
         callbacks["progress"].assert_not_called()
-        callbacks["command"].assert_not_called()
         callbacks["result"].assert_not_called()
         callbacks["exception"].assert_not_called()
 
@@ -818,8 +808,6 @@ class TestCommandTracker:
         )
         callbacks["status"].reset_mock()
         callbacks["progress"].assert_not_called()
-        callbacks["command"].assert_called_once_with("second_command")
-        callbacks["command"].reset_mock()
         callbacks["result"].assert_not_called()
         callbacks["exception"].assert_not_called()
 
@@ -854,7 +842,6 @@ class TestCommandTracker:
         )
         callbacks["status"].reset_mock()
         callbacks["progress"].assert_not_called()
-        callbacks["command"].assert_not_called()
         callbacks["result"].assert_not_called()
         callbacks["exception"].assert_called_once_with(
             second_command_id, exception_to_raise
@@ -1103,7 +1090,9 @@ class TestSKABaseDevice:  # pylint: disable=too-many-public-methods
         )
         change_event_callbacks["longRunningCommandProgress"].assert_change_event(None)
         change_event_callbacks["longRunningCommandStatus"].assert_change_event(None)
-        change_event_callbacks["longRunningCommandInProgress"].assert_change_event("")
+        change_event_callbacks["longRunningCommandInProgress"].assert_change_event(
+            ("", "")
+        )
         change_event_callbacks["longRunningCommandResult"].assert_change_event(("", ""))
 
         [[result_code], [command_id]] = device_under_test.On()
@@ -1111,13 +1100,14 @@ class TestSKABaseDevice:  # pylint: disable=too-many-public-methods
         change_event_callbacks.assert_change_event(
             "longRunningCommandStatus", (command_id, "QUEUED")
         )
-        change_event_callbacks.assert_change_event("longRunningCommandInProgress", "")
         change_event_callbacks.assert_change_event(
             "longRunningCommandStatus", (command_id, "IN_PROGRESS")
         )
+        on_command = command_id.split("_", 2)[2]
         change_event_callbacks.assert_change_event(
-            "longRunningCommandInProgress", command_id.split("_", 2)[2]
+            "longRunningCommandInProgress", (on_command, "")
         )
+
         for progress_point in FakeBaseComponent.PROGRESS_REPORTING_POINTS:
             change_event_callbacks.assert_change_event(
                 "longRunningCommandProgress", (command_id, progress_point)
@@ -1141,7 +1131,9 @@ class TestSKABaseDevice:  # pylint: disable=too-many-public-methods
         change_event_callbacks.assert_change_event(
             "longRunningCommandStatus", (command_id, "COMPLETED")
         )
-        change_event_callbacks.assert_change_event("longRunningCommandInProgress", "")
+        change_event_callbacks.assert_change_event(
+            "longRunningCommandInProgress", ("", "")
+        )
 
         # Check what happens if we call On() when the device is already ON.
         [[result_code], [message]] = device_under_test.On()
@@ -1184,7 +1176,9 @@ class TestSKABaseDevice:  # pylint: disable=too-many-public-methods
         )
         change_event_callbacks["longRunningCommandProgress"].assert_change_event(None)
         change_event_callbacks["longRunningCommandStatus"].assert_change_event(None)
-        change_event_callbacks["longRunningCommandInProgress"].assert_change_event("")
+        change_event_callbacks["longRunningCommandInProgress"].assert_change_event(
+            ("", "")
+        )
         change_event_callbacks["longRunningCommandResult"].assert_change_event(("", ""))
 
         [[result_code], [command_id]] = device_under_test.Standby()
@@ -1193,13 +1187,14 @@ class TestSKABaseDevice:  # pylint: disable=too-many-public-methods
         change_event_callbacks.assert_change_event(
             "longRunningCommandStatus", (command_id, "QUEUED")
         )
-        change_event_callbacks.assert_change_event("longRunningCommandInProgress", "")
         change_event_callbacks.assert_change_event(
             "longRunningCommandStatus", (command_id, "IN_PROGRESS")
         )
+        on_command = command_id.split("_", 2)[2]
         change_event_callbacks.assert_change_event(
-            "longRunningCommandInProgress", command_id.split("_", 2)[2]
+            "longRunningCommandInProgress", (on_command, "")
         )
+
         for progress_point in FakeBaseComponent.PROGRESS_REPORTING_POINTS:
             change_event_callbacks.assert_change_event(
                 "longRunningCommandProgress", (command_id, progress_point)
@@ -1222,7 +1217,9 @@ class TestSKABaseDevice:  # pylint: disable=too-many-public-methods
         change_event_callbacks.assert_change_event(
             "longRunningCommandStatus", (command_id, "COMPLETED")
         )
-        change_event_callbacks.assert_change_event("longRunningCommandInProgress", "")
+        change_event_callbacks.assert_change_event(
+            "longRunningCommandInProgress", ("", "")
+        )
 
         assert (
             device_under_test.CheckLongRunningCommandStatus(command_id) == "COMPLETED"
@@ -1269,7 +1266,9 @@ class TestSKABaseDevice:  # pylint: disable=too-many-public-methods
         )
         change_event_callbacks["longRunningCommandProgress"].assert_change_event(None)
         change_event_callbacks["longRunningCommandStatus"].assert_change_event(None)
-        change_event_callbacks["longRunningCommandInProgress"].assert_change_event("")
+        change_event_callbacks["longRunningCommandInProgress"].assert_change_event(
+            ("", "")
+        )
         change_event_callbacks["longRunningCommandResult"].assert_change_event(("", ""))
 
         # Check what happens if we call Off() when the device is already OFF.

@@ -721,11 +721,10 @@ class SKABaseDevice(
     def _update_command_in_progress(
         self: SKABaseDevice[ComponentManagerT], command_name: str, in_progress: bool
     ) -> None:
+        # TODO: Not ideal, as any child class could implement a very specific command
+        # containing the word 'Abort'
         if "Abort" in command_name:
-            if in_progress:
-                self._command_in_progress[1] = command_name
-            else:
-                self._command_in_progress = ["", ""]
+            self._command_in_progress[1] = command_name if in_progress else ""
         else:
             self._command_in_progress[0] = command_name if in_progress else ""
         self.push_change_event(

@@ -587,18 +587,25 @@ class SKABaseDevice(
         self.push_change_event("longRunningCommandStatus", self._command_statuses)
         self.push_archive_event("longRunningCommandStatus", self._command_statuses)
 
-        # Check last command in list as only one can execute at a time
-        uid, status = command_statuses[-1]
-        command_name = uid.split("_", 2)[2]
-        if status == TaskStatus.IN_PROGRESS:
-            self._update_command_in_progress(command_name, True)
-            self._update_commanded_state(command_name)
-        elif status in [
-            TaskStatus.ABORTED,
-            TaskStatus.COMPLETED,
-            TaskStatus.FAILED,
-        ]:
-            self._update_command_in_progress(command_name, False)
+        # Check for commands starting and ending execution
+        for uid, status in command_statuses:
+            command_name = uid.split("_", 2)[2]
+            if (
+                status == TaskStatus.IN_PROGRESS
+                and command_name not in self._command_in_progress
+            ):
+                self._update_command_in_progress(command_name, True)
+                self._update_commanded_state(command_name)
+            elif (
+                status
+                in [
+                    TaskStatus.ABORTED,
+                    TaskStatus.COMPLETED,
+                    TaskStatus.FAILED,
+                ]
+                and command_name in self._command_in_progress
+            ):
+                self._update_command_in_progress(command_name, False)
 
     def _update_command_in_progress(
         self: SKABaseDevice[ComponentManagerT], command_name: str, in_progress: bool

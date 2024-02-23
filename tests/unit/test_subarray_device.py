@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import json
 import re
+import time
 from typing import Any
 
 import pytest
@@ -289,6 +290,8 @@ def abort_subarray_command(
         callbacks with asynchrony support
     :param command_id: of command in progress to abort
     """
+    delay = 0.1
+    device_under_test.SetCommandTrackerRemovalTime(delay)
     event_id = device_under_test.subscribe_event(
         "longRunningCommandInProgress",
         tango.EventType.CHANGE_EVENT,
@@ -318,11 +321,14 @@ def abort_subarray_command(
     change_event_callbacks.assert_change_event("longRunningCommandInProgress", ("", ""))
     change_event_callbacks.assert_change_event("obsState", ObsState.ABORTED)
     change_event_callbacks.assert_change_event(
-        "longRunningCommandStatus", (command_id, "ABORTED")
+        "longRunningCommandStatus",
+        (command_id, "ABORTED", abort_command_id, "COMPLETED"),
     )
     assert device_under_test.obsState == device_under_test.commandedObsState
     change_event_callbacks.assert_not_called()
     device_under_test.unsubscribe_event(event_id)
+    device_under_test.SetCommandTrackerRemovalTime(0)
+    time.sleep(delay)
 
 
 class TestSKASubarray:  # pylint: disable=too-many-public-methods

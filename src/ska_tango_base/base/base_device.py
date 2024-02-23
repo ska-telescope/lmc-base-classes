@@ -516,6 +516,117 @@ class SKABaseDevice(
     for details.
     """
 
+    # -----------
+    # Init device
+    # -----------
+    def init_device(self: SKABaseDevice[ComponentManagerT]) -> None:
+        """
+        Initialise the tango device after startup.
+
+        Subclasses that have no need to override the default
+        implementation of state management may leave ``init_device()``
+        alone.  Override the ``do()`` method on the nested class
+        ``InitCommand`` instead.
+        """
+        try:
+            super().init_device()
+
+            self._omni_queue: queue.SimpleQueue[
+                tuple[str, Any, Any]
+            ] = queue.SimpleQueue()
+
+            # this can be removed when cppTango issue #935 is implemented
+            self._init_active = True
+            self.poll_command("ExecutePendingOperations", 5)
+
+            self._init_logging()
+
+            self._admin_mode = AdminMode.OFFLINE
+            self._health_state = HealthState.UNKNOWN
+            self._control_mode = ControlMode.REMOTE
+            self._simulation_mode = SimulationMode.FALSE
+            self._test_mode = TestMode.NONE
+            self._commanded_state = "None"
+            self._command_ids_in_queue: list[str] = []
+            self._commands_in_queue: list[str] = []
+            self._command_statuses: list[str] = []
+            self._command_in_progress: list[str] = ["", ""]
+            self._command_progresses: list[str] = []
+            self._command_result: tuple[str, str] = ("", "")
+
+            self._build_state = (
+                f"{release.name}, {release.version}, {release.description}"
+            )
+            self._version_id = release.version
+            self._methods_patched_for_debugger = False
+
+            for attribute_name in [
+                "state",
+                "commandedState",
+                "status",
+                "adminMode",
+                "healthState",
+                "controlMode",
+                "simulationMode",
+                "testMode",
+                "longRunningCommandsInQueue",
+                "longRunningCommandIDsInQueue",
+                "longRunningCommandStatus",
+                "longRunningCommandInProgress",
+                "longRunningCommandProgress",
+                "longRunningCommandResult",
+            ]:
+                self.set_change_event(attribute_name, True)
+                self.set_archive_event(attribute_name, True)
+
+            try:
+                # create Tango Groups dict, according to property
+                self.logger.debug(f"Groups definitions: {self.GroupDefinitions}")
+                self.groups = get_groups_from_json(self.GroupDefinitions)
+                self.logger.info(f"Groups loaded: {sorted(self.groups.keys())}")
+            except GroupDefinitionsError:
+                self.logger.debug(f"No Groups loaded for device: {self.get_name()}")
+
+            self._init_state_model()
+
+            self.component_manager = self.create_component_manager()
+            self.op_state_model.perform_action("init_invoked")
+            self.InitCommand(
+                self,
+                logger=self.logger,
+            )()
+
+            self.init_command_objects()
+        except Exception as exc:  # pylint: disable=broad-except
+            # Deliberately catching all exceptions here, because an uncaught
+            # exception would take our execution thread down.
+            if hasattr(self, "logger"):
+                self.logger.exception("init_device() failed.")
+            else:
+                traceback.print_exc()
+                print(f"ERROR: init_device failed, and no logger: {exc}.")
+            self._update_state(
+                DevState.FAULT,
+                "The device is in FAULT state - init_device failed.",
+            )
+
+    def _init_state_model(self: SKABaseDevice[ComponentManagerT]) -> None:
+        """Initialise the state model for the device."""
+        self._command_tracker = CommandTracker(
+            queue_changed_callback=self._update_commands_in_queue,
+            status_changed_callback=self._update_command_statuses,
+            progress_changed_callback=self._update_command_progresses,
+            result_callback=self._update_command_result,
+            exception_callback=self._update_command_exception,
+        )
+        self.op_state_model = OpStateModel(
+            logger=self.logger,
+            callback=self._update_state,
+        )
+        self.admin_mode_model = AdminModeModel(
+            logger=self.logger, callback=self._update_admin_mode
+        )
+
     # ---------
     # Callbacks
     # ---------
@@ -611,7 +722,10 @@ class SKABaseDevice(
         self: SKABaseDevice[ComponentManagerT], command_name: str, in_progress: bool
     ) -> None:
         if "Abort" in command_name:
-            self._command_in_progress[1] = command_name if in_progress else ""
+            if in_progress:
+                self._command_in_progress[1] = command_name
+            else:
+                self._command_in_progress = ["", ""]
         else:
             self._command_in_progress[0] = command_name if in_progress else ""
         self.push_change_event(
@@ -704,114 +818,6 @@ class SKABaseDevice(
     # ---------------
     # General methods
     # ---------------
-    def init_device(self: SKABaseDevice[ComponentManagerT]) -> None:
-        """
-        Initialise the tango device after startup.
-
-        Subclasses that have no need to override the default
-        implementation of state management may leave ``init_device()``
-        alone.  Override the ``do()`` method on the nested class
-        ``InitCommand`` instead.
-        """
-        try:
-            super().init_device()
-
-            self._omni_queue: queue.SimpleQueue[
-                tuple[str, Any, Any]
-            ] = queue.SimpleQueue()
-
-            # this can be removed when cppTango issue #935 is implemented
-            self._init_active = True
-            self.poll_command("ExecutePendingOperations", 5)
-
-            self._init_logging()
-
-            self._admin_mode = AdminMode.OFFLINE
-            self._health_state = HealthState.UNKNOWN
-            self._control_mode = ControlMode.REMOTE
-            self._simulation_mode = SimulationMode.FALSE
-            self._test_mode = TestMode.NONE
-            self._commanded_state = "None"
-            self._command_ids_in_queue = []
-            self._commands_in_queue = []
-            self._command_statuses = []
-            self._command_in_progress = ["", ""]
-            self._command_progresses = []
-            self._command_result = ("", "")
-
-            self._build_state = (
-                f"{release.name}, {release.version}, {release.description}"
-            )
-            self._version_id = release.version
-            self._methods_patched_for_debugger = False
-
-            for attribute_name in [
-                "state",
-                "commandedState",
-                "status",
-                "adminMode",
-                "healthState",
-                "controlMode",
-                "simulationMode",
-                "testMode",
-                "longRunningCommandsInQueue",
-                "longRunningCommandIDsInQueue",
-                "longRunningCommandStatus",
-                "longRunningCommandInProgress",
-                "longRunningCommandProgress",
-                "longRunningCommandResult",
-            ]:
-                self.set_change_event(attribute_name, True)
-                self.set_archive_event(attribute_name, True)
-
-            try:
-                # create Tango Groups dict, according to property
-                self.logger.debug(f"Groups definitions: {self.GroupDefinitions}")
-                self.groups = get_groups_from_json(self.GroupDefinitions)
-                self.logger.info(f"Groups loaded: {sorted(self.groups.keys())}")
-            except GroupDefinitionsError:
-                self.logger.debug(f"No Groups loaded for device: {self.get_name()}")
-
-            self._init_state_model()
-
-            self.component_manager = self.create_component_manager()
-            self.op_state_model.perform_action("init_invoked")
-            self.InitCommand(
-                self,
-                logger=self.logger,
-            )()
-
-            self.init_command_objects()
-        except Exception as exc:  # pylint: disable=broad-except
-            # Deliberately catching all exceptions here, because an uncaught
-            # exception would take our execution thread down.
-            if hasattr(self, "logger"):
-                self.logger.exception("init_device() failed.")
-            else:
-                traceback.print_exc()
-                print(f"ERROR: init_device failed, and no logger: {exc}.")
-            self._update_state(
-                DevState.FAULT,
-                "The device is in FAULT state - init_device failed.",
-            )
-
-    def _init_state_model(self: SKABaseDevice[ComponentManagerT]) -> None:
-        """Initialise the state model for the device."""
-        self._command_tracker = CommandTracker(
-            queue_changed_callback=self._update_commands_in_queue,
-            status_changed_callback=self._update_command_statuses,
-            progress_changed_callback=self._update_command_progresses,
-            result_callback=self._update_command_result,
-            exception_callback=self._update_command_exception,
-        )
-        self.op_state_model = OpStateModel(
-            logger=self.logger,
-            callback=self._update_state,
-        )
-        self.admin_mode_model = AdminModeModel(
-            logger=self.logger, callback=self._update_admin_mode
-        )
-
     def set_logging_level(
         self: SKABaseDevice[ComponentManagerT], value: LoggingLevel
     ) -> None:

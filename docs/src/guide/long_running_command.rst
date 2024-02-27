@@ -53,6 +53,12 @@ monitoring and reporting of result, status and progress of LRCs.
 |                             | '1636437789.493874_116219429722764_Off',  |                      |
 |                             | 'IN_PROGRESS')                            |                      |
 +-----------------------------+-------------------------------------------+----------------------+
+| longRunningCommandInProgress| ('On', '')                                | Name of command      |
+|                             |                                           | currently executing  |
+|                             | ('Configure', 'Abort')                    | and optional abort,  |
+|                             |                                           | or an empty string   |
+|                             | ('', '')                                  | if idle              |
++-----------------------------+-------------------------------------------+----------------------+
 | longRunningCommandProgress  | ('1636437568.0723004_235210334802782_On', | ID, progress pair of |
 |                             | '12',                                     | the currently        |
 |                             |                                           | executing commands   |

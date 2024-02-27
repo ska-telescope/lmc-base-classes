@@ -5,6 +5,7 @@
 - [WOM-265] Deprecate max_workers for TaskExecutorComponentManager
 - [WOM-266] Revert LRC attribute size to 64 queued commands
 - [WOM-211] Add commandedState and commandedObsState attributes
+- [WOM-212] Add longRunningCommandInProgress attribute
 
 ## 0.19.3
 

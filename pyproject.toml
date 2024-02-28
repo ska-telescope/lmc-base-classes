@@ -7,9 +7,8 @@ license = "BSD 3-Clause"
 documentation = "https://developer.skatelescope.org/projects/ska-tango-base"
 
 [[tool.poetry.source]]
-name = "ska-nexus"
-url = "https://artefact.skao.int/repository/pypi-internal/simple/"
-priority = "supplemental"
+name = 'ska-nexus'
+url = 'https://artefact.skao.int/repository/pypi-internal/simple'
 
 [tool.poetry.dependencies]
 python = "^3.10"

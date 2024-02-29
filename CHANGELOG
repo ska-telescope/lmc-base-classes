@@ -2,6 +2,11 @@
 
 ## unreleased
 
+## 0.20.1
+
+- WOM-273: Pin poetry version in readthedocs.yml
+- WOM-274: Mark tests where Abort is used as xfail
+
 ## 0.20.0
 
 - [WOM-265]: Deprecate max_workers for TaskExecutorComponentManager

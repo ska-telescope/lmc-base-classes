@@ -10,7 +10,7 @@ documentation = "https://developer.skatelescope.org/projects/ska-tango-base"
 [[tool.poetry.source]]
 name = "ska-nexus"
 url = "https://artefact.skao.int/repository/pypi-internal/simple"
-# priority = "explicit"
+priority = "explicit"
 
 [tool.poetry.dependencies]
 python = ">=3.10,<3.11" # ska-ser-logging requires Python >=3.10,<3.11
@@ -21,10 +21,10 @@ numpy = [
     # { version = ">=1.26.0", python = ">=3.12" },
 ]
 pytango = "^9.4.2"
-ska-ser-logging = "^0.4.2"
 transitions = "^0.9.0"
-ska-control-model = "^0.3.4"
 jsonschema = "^4.17.3"
+ska-ser-logging = {version = "^0.4.2", source = "ska-nexus"}
+ska-control-model = {version = "^0.3.4", source = "ska-nexus"}
 
 [tool.poetry.group.dev.dependencies]
 pytango = "9.5.0"
@@ -46,20 +46,20 @@ pytest-cov = "^4.0.0"
 pytest-json-report = "^1.5.0"
 pytest-mock = "^3.10.0"
 pytest-forked = "^1.6.0"
-ska-tango-testing = "^0.6.1"
 toml = "^0.10.2"
 pytest-pydocstyle = "^2.3.2"
 pytest-pycodestyle = "^2.3.1"
 types-jsonschema = "^4.17.0.7"
+ska-tango-testing = {version = "^0.6.1", source = "ska-nexus"}
 
 [tool.poetry.group.docs.dependencies]
 Sphinx = "^7.2.6"
 sphinx-autodoc-typehints = "^2.0.0"
-ska-ser-sphinx-theme = "^0.1.2"
 jsonschema = "^4.18.3"
-ska-control-model = "^0.3.4"
 sphinxcontrib-plantuml = "^0.29"
 transitions = "^0.9.0"
+ska-ser-sphinx-theme = {version = "^0.1.2", source = "ska-nexus"}
+ska-control-model = {version = "^0.3.4", source = "ska-nexus"}
 
 [build-system]
 requires = ["poetry-core==1.8.1"]

@@ -327,7 +327,7 @@ class BaseComponentManager:
         raise NotImplementedError("BaseComponentManager is abstract.")
 
     @check_communicating
-    def on(  # pylint: disable=invalid-name
+    def on(
         self: BaseComponentManager, task_callback: TaskCallbackType | None = None
     ) -> tuple[TaskStatus, str]:
         """

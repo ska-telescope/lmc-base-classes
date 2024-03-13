@@ -49,3 +49,5 @@ unit-tests.xml
 
 # Miscellaneous
 .DS_Store
+
+/resources/git-hooks

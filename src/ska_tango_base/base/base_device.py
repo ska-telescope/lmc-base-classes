@@ -125,9 +125,9 @@ class CommandTracker:  # pylint: disable=too-many-instance-attributes
         self._status_changed_callback = status_changed_callback
         self._progress_changed_callback = progress_changed_callback
         self._result_callback = result_callback
-        self._most_recent_result: tuple[
-            str, tuple[ResultCode, str] | None
-        ] | None = None
+        self._most_recent_result: tuple[str, tuple[ResultCode, str] | None] | None = (
+            None
+        )
         self._exception_callback = exception_callback
         self._most_recent_exception: tuple[str, Exception] | None = None
         self._commands: dict[str, _CommandData] = {}
@@ -531,9 +531,9 @@ class SKABaseDevice(
         try:
             super().init_device()
 
-            self._omni_queue: queue.SimpleQueue[
-                tuple[str, Any, Any]
-            ] = queue.SimpleQueue()
+            self._omni_queue: queue.SimpleQueue[tuple[str, Any, Any]] = (
+                queue.SimpleQueue()
+            )
 
             # this can be removed when cppTango issue #935 is implemented
             self._init_active = True

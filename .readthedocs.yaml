@@ -14,7 +14,7 @@ build:
     python: "3.10"
   jobs:
     post_create_environment:
-      - pip install poetry
+      - pip install poetry==1.8.2
       - poetry config virtualenvs.create false
     post_install:
       - poetry install --no-root --only docs

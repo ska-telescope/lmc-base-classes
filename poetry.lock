@@ -1021,7 +1021,11 @@ files = [
 [package.dependencies]
 astroid = ">=3.1.0,<=3.2.0-dev0"
 colorama = {version = ">=0.4.5", markers = "sys_platform == \"win32\""}
-dill = {version = ">=0.2", markers = "python_version < \"3.11\""}
+dill = [
+    {version = ">=0.2", markers = "python_version < \"3.11\""},
+    {version = ">=0.3.6", markers = "python_version >= \"3.11\" and python_version < \"3.12\""},
+    {version = ">=0.3.7", markers = "python_version >= \"3.12\""},
+]
 isort = ">=4.2.5,<5.13.0 || >5.13.0,<6"
 mccabe = ">=0.6,<0.8"
 platformdirs = ">=2.2.0"
@@ -1439,14 +1443,17 @@ reference = "ska-nexus"
 
 [[package]]
 name = "ska-ser-logging"
-version = "0.4.2"
+version = "0.4.1+0a677a67"
 description = "Square Kilometre Array logging configuration library"
 optional = false
-python-versions = ">=3.10,<3.11"
+python-versions = ">=3.5"
 files = [
-    {file = "ska_ser_logging-0.4.2-py3-none-any.whl", hash = "sha256:86c66cbbe0ccc5b35e13704ce3e3121ef4fa2c0f35423635b77ffce80da70578"},
-    {file = "ska_ser_logging-0.4.2.tar.gz", hash = "sha256:3626b5f04ff32e547100bc771549544a8efda3730ff7b96c9b3e05e1d16adc16"},
+    {file = "ska_ser_logging-0.4.1+0a677a67-py3-none-any.whl", hash = "sha256:8b2bf14e9981966c22503b6b6477b6386dec1def1f71295579f0686d55b83841"},
+    {file = "ska_ser_logging-0.4.1+0a677a67.tar.gz", hash = "sha256:558622000db39668d3a35b6986af9d70dac36635826636ef2c07f816a149a06d"},
 ]
+
+[package.extras]
+dev = ["black", "isort", "prospector[with-pyroma]"]
 
 [package.source]
 type = "legacy"
@@ -1795,5 +1802,5 @@ zstd = ["zstandard (>=0.18.0)"]
 
 [metadata]
 lock-version = "2.0"
-python-versions = ">=3.10,<3.11"
-content-hash = "190eadb0c725a2262e8f0e0050837eaea56c30f1ec18156b9b4b4c2e64170b13"
+python-versions = ">=3.10,<4.0"
+content-hash = "f07648afb200194bc9880f6630b6006383f96f6dbe76d41afad6fed5b44c8751"

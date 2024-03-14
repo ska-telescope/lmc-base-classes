@@ -25,7 +25,7 @@ numpy = [
     { version = ">=1.26.0", python = ">=3.12" },
 ]
 pytango = "^9.4.2"
-ska-ser-logging = "0.4.1" # TODO: ska-ser-logging 0.4.2 is fixed to python 3.10
+ska-ser-logging = "^0.4.3"
 transitions = "^0.9.0"
 ska-control-model = "^0.3.4"
 jsonschema = "^4.17.3"

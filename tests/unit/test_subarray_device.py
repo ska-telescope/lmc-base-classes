@@ -25,7 +25,8 @@ from ska_control_model import (
     SimulationMode,
     TestMode,
 )
-from ska_tango_testing.mock.placeholders import Anything
+
+# from ska_tango_testing.mock.placeholders import Anything
 from ska_tango_testing.mock.tango import MockTangoEventCallbackGroup
 from tango import DevState
 
@@ -338,16 +339,23 @@ def abort_subarray_command(
 
     # Would expect (command_id, "ABORTED", abort_command_id, "IN_PROGRESS"),
     # but we get (command_id, "IN_PROGRESS", abort_command_id, "COMPLETED")
-    change_event_callbacks.assert_change_event("longRunningCommandStatus", Anything)
+    # change_event_callbacks.assert_change_event("longRunningCommandStatus", Anything)
+    change_event_callbacks.assert_change_event(
+        "longRunningCommandStatus",
+        (command_id, "ABORTED", abort_command_id, "IN_PROGRESS"),
+    )
     # Behaving inconsistent when running the test locally vs CI/CD pipeline.
     # Would expect ("", "abort_name"), but value is ("", "") when running locally.
-    change_event_callbacks.assert_change_event("longRunningCommandInProgress", Anything)
-    change_event_callbacks.assert_change_event("obsState", ObsState.ABORTED)
+    change_event_callbacks.assert_change_event(
+        "longRunningCommandInProgress", ("", "Abort")
+    )
     change_event_callbacks.assert_change_event(
         "longRunningCommandStatus",
         (command_id, "ABORTED", abort_command_id, "COMPLETED"),
     )
-    # change_event_callbacks.assert_change_event("longRunningCommandInProgress", "", "")
+    change_event_callbacks.assert_change_event("longRunningCommandInProgress", ("", ""))
+    change_event_callbacks.assert_change_event("obsState", ObsState.ABORTED)
+
     assert device_under_test.obsState == device_under_test.commandedObsState
     change_event_callbacks.assert_not_called()
     device_under_test.unsubscribe_event(event_id)
@@ -668,7 +676,7 @@ class TestSKASubarray:  # pylint: disable=too-many-public-methods
             "longRunningCommandStatus", (endscan_command_id, "COMPLETED")
         )
 
-    @pytest.mark.xfail(reason="Seldom fails after Abort because of timing issue")
+    # @pytest.mark.xfail(reason="Seldom fails after Abort because of timing issue")
     def test_abort_and_obsreset_from_resourcing(
         self: TestSKASubarray,
         device_under_test: tango.DeviceProxy,

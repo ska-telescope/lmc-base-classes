@@ -2,7 +2,7 @@
 name = "ska-tango-base"
 version = "0.20.1"
 description = "SKA Tango base classes"
-authors = ["SKAO", "SARAO", "CSIRO", "INAF", "UKRI STFC"]
+authors = ["SKAO"]
 license = "BSD-3-Clause"
 readme = "README.md"
 documentation = "https://developer.skatelescope.org/projects/ska-tango-base"
@@ -16,7 +16,7 @@ priority = "primary"
 name = "PyPi"
 
 [tool.poetry.dependencies]
-python = ">=3.10,<4.0"
+python = "^3.10"
 debugpy = "^1.6.2"
 # See https://pytango.readthedocs.io/en/stable/version-policy.html#pytango-version-policy
 numpy = [

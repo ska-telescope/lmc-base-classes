@@ -280,7 +280,6 @@ latex_documents = [
         "index",
         "SKA_TangoBase.tex",
         "SKA Tango Base Documentation",
-        "NCRA India",
         "manual",
     ),
 ]
@@ -310,9 +309,7 @@ latex_documents = [
 
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
-man_pages = [
-    ("index", "ska_tango_base", "SKA Tango Base Documentation", ["NCRA India"], 1)
-]
+man_pages = [("index", "ska_tango_base", "SKA Tango Base Documentation", 1)]
 
 # If true, show URL addresses after external links.
 # man_show_urls = False
@@ -328,7 +325,6 @@ texinfo_documents = [
         "index",
         "SKA_TangoBase",
         "SKA Tango Base Documentation",
-        "NCRA India",
         "SKA_TangoBase",
         "One line description of project.",
         "Miscellaneous",

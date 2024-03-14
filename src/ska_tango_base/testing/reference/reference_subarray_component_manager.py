@@ -244,6 +244,7 @@ class FakeSubarrayComponent(FakeBaseComponent):
         )
 
         done_event.wait()
+
     @check_on
     def release(
         self: FakeSubarrayComponent,

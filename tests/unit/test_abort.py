@@ -1,4 +1,5 @@
 """Contain the tests for the SKASubarray Abort command."""
+
 from __future__ import annotations
 
 import itertools

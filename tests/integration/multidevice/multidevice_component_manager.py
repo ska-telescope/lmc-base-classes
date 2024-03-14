@@ -1,4 +1,5 @@
 """Component Manager for Multi Device."""
+
 from __future__ import annotations
 
 import logging

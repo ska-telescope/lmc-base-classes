@@ -269,7 +269,6 @@ class _BaseCommand(Generic[CommandReturnT]):
         """
         return self.do(*args, **kwargs)
 
-    # pylint: disable-next=invalid-name
     def do(
         self: _BaseCommand[CommandReturnT], *args: Any, **kwargs: Any
     ) -> CommandReturnT:

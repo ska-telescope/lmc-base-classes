@@ -1,4 +1,5 @@
 """Test various Tango devices with long running commmands working together."""
+
 from typing import Any
 
 import pytest
@@ -192,7 +193,7 @@ def test_progress(
         tango.EventType.CHANGE_EVENT,
         change_event_callbacks["longRunningCommandProgress"],
     )
-    change_event_callbacks.assert_change_event("longRunningCommandProgress", None)
+    change_event_callbacks.assert_change_event("longRunningCommandProgress", ())
 
     # Progress
     result_code, command_id = device_under_test.TestProgress(0.3)
@@ -228,7 +229,7 @@ def test_device_allows_commands_to_be_queued(
         tango.EventType.CHANGE_EVENT,
         change_event_callbacks["longRunningCommandStatus"],
     )
-    change_event_callbacks.assert_change_event("longRunningCommandStatus", None)
+    change_event_callbacks.assert_change_event("longRunningCommandStatus", ())
 
     # Command triggers: Transpose > Invert > Invert
     # The device will queue all these commands and

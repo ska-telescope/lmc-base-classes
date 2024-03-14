@@ -927,7 +927,7 @@ class TestSKABaseDevice:  # pylint: disable=too-many-public-methods
             )
         change_event_callbacks["state"].assert_change_event(DevState.OFF)
         change_event_callbacks["commandedState"].assert_change_event("None")
-        change_event_callbacks["longRunningCommandStatus"].assert_change_event(None)
+        change_event_callbacks["longRunningCommandStatus"].assert_change_event(())
 
         # ON command
         [[result_code], [on_command_id]] = device_under_test.On()
@@ -1088,8 +1088,8 @@ class TestSKABaseDevice:  # pylint: disable=too-many-public-methods
         change_event_callbacks["status"].assert_change_event(
             "The device is in OFF state."
         )
-        change_event_callbacks["longRunningCommandProgress"].assert_change_event(None)
-        change_event_callbacks["longRunningCommandStatus"].assert_change_event(None)
+        change_event_callbacks["longRunningCommandProgress"].assert_change_event(())
+        change_event_callbacks["longRunningCommandStatus"].assert_change_event(())
         change_event_callbacks["longRunningCommandInProgress"].assert_change_event(
             ("", "")
         )
@@ -1174,8 +1174,8 @@ class TestSKABaseDevice:  # pylint: disable=too-many-public-methods
         change_event_callbacks["status"].assert_change_event(
             "The device is in OFF state."
         )
-        change_event_callbacks["longRunningCommandProgress"].assert_change_event(None)
-        change_event_callbacks["longRunningCommandStatus"].assert_change_event(None)
+        change_event_callbacks["longRunningCommandProgress"].assert_change_event(())
+        change_event_callbacks["longRunningCommandStatus"].assert_change_event(())
         change_event_callbacks["longRunningCommandInProgress"].assert_change_event(
             ("", "")
         )
@@ -1264,8 +1264,8 @@ class TestSKABaseDevice:  # pylint: disable=too-many-public-methods
         change_event_callbacks["status"].assert_change_event(
             "The device is in OFF state."
         )
-        change_event_callbacks["longRunningCommandProgress"].assert_change_event(None)
-        change_event_callbacks["longRunningCommandStatus"].assert_change_event(None)
+        change_event_callbacks["longRunningCommandProgress"].assert_change_event(())
+        change_event_callbacks["longRunningCommandStatus"].assert_change_event(())
         change_event_callbacks["longRunningCommandInProgress"].assert_change_event(
             ("", "")
         )
@@ -1348,7 +1348,7 @@ class TestSKABaseDevice:  # pylint: disable=too-many-public-methods
         device_under_test.loggingTargets = ("tango::logger",)
         assert device_under_test.loggingTargets == ("tango::logger",)
         device_under_test.loggingTargets = tuple()
-        assert device_under_test.loggingTargets is None
+        assert device_under_test.loggingTargets == ()
         with pytest.raises(DevFailed):
             device_under_test.loggingTargets = ("invalid::type",)
 

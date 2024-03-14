@@ -723,10 +723,12 @@ class SKABaseDevice(
     ) -> None:
         # TODO: Not ideal, as any child class could implement a very specific command
         # containing the word 'Abort'
+
+        [cmd, abort] = self._command_in_progress
         if "Abort" in command_name:
-            self._command_in_progress[1] = command_name if in_progress else ""
+            self._command_in_progress = [cmd, command_name if in_progress else ""]
         else:
-            self._command_in_progress[0] = command_name if in_progress else ""
+            self._command_in_progress = [command_name if in_progress else "", abort]
         self.push_change_event(
             "longRunningCommandInProgress", self._command_in_progress
         )

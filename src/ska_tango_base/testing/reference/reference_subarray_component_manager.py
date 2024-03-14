@@ -10,7 +10,7 @@ from __future__ import annotations
 
 import logging
 import threading
-from typing import Any, Callable
+from typing import Any, Callable, cast
 
 from ska_control_model import PowerState, ResultCode, TaskStatus
 
@@ -216,13 +216,34 @@ class FakeSubarrayComponent(FakeBaseComponent):
             self._resource_pool.assign(resources)
             result = (ResultCode.OK, "Resource assignment completed OK")
 
+        done_event = threading.Event()
+
+        def wrapped_callback(status: TaskStatus | None = None, **kwargs: Any) -> None:
+            """Notify this thread when the task has completed.
+
+            :param status: Task status
+            :param kwargs: other arguments
+            """
+            if status is not None and status in [
+                TaskStatus.COMPLETED,
+                TaskStatus.ABORTED,
+                TaskStatus.FAILED,
+                TaskStatus.REJECTED,
+            ]:
+                done_event.set()
+
+            task_callback(status=status, **kwargs)
+
         self._simulate_task_execution(
-            task_callback,
+            cast(
+                TaskCallbackType, wrapped_callback
+            ),  # TODO: Work out the correct type for wrapped_callback
             task_abort_event,
             result,
             resourced=bool(len(self._resource_pool)),
         )
 
+        done_event.wait()
     @check_on
     def release(
         self: FakeSubarrayComponent,

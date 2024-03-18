@@ -8,9 +8,10 @@
 """This module models component management for SKA subarray devices."""
 from __future__ import annotations
 
+import functools
 import logging
 import threading
-from typing import Any, Callable, cast
+from typing import Any, Callable
 
 from ska_control_model import PowerState, ResultCode, TaskStatus
 
@@ -25,6 +26,40 @@ from .reference_base_component_manager import (
     FakeBaseComponent,
     GenericBaseComponentManager,
 )
+
+
+def _wait_until_done(command: Callable[..., None]) -> Callable[..., None]:
+    @functools.wraps(command)
+    def wrapper(*args: Any, **kwargs: Any) -> None:
+        task_callback: TaskCallbackType | None = kwargs.get("task_callback")
+        if task_callback is not None:
+            done_event = threading.Event()
+
+            def decorate_task_callback(
+                task_callback: TaskCallbackType,
+            ) -> Callable[..., TaskCallbackType]:
+                def wrap_task_callback(
+                    status: TaskStatus | None = None,
+                    **kwargs: Any,
+                ) -> Any:
+                    if status is not None and status in [
+                        TaskStatus.COMPLETED,
+                        TaskStatus.ABORTED,
+                        TaskStatus.FAILED,
+                        TaskStatus.REJECTED,
+                    ]:
+                        done_event.set()
+                    return task_callback(status=status, **kwargs)
+
+                return wrap_task_callback
+
+            kwargs["task_callback"] = decorate_task_callback(task_callback)
+            command(*args, **kwargs)
+            done_event.wait()
+        else:
+            command(*args, **kwargs)
+
+    return wrapper
 
 
 class FakeSubarrayComponent(FakeBaseComponent):
@@ -192,6 +227,7 @@ class FakeSubarrayComponent(FakeBaseComponent):
         return sorted(configured_capabilities)
 
     @check_on
+    @_wait_until_done
     def assign(
         self: FakeSubarrayComponent,
         resources: set[str],
@@ -216,35 +252,15 @@ class FakeSubarrayComponent(FakeBaseComponent):
             self._resource_pool.assign(resources)
             result = (ResultCode.OK, "Resource assignment completed OK")
 
-        done_event = threading.Event()
-
-        def wrapped_callback(status: TaskStatus | None = None, **kwargs: Any) -> None:
-            """Notify this thread when the task has completed.
-
-            :param status: Task status
-            :param kwargs: other arguments
-            """
-            if status is not None and status in [
-                TaskStatus.COMPLETED,
-                TaskStatus.ABORTED,
-                TaskStatus.FAILED,
-                TaskStatus.REJECTED,
-            ]:
-                done_event.set()
-
-            task_callback(status=status, **kwargs)
-
         self._simulate_task_execution(
-            cast(
-                TaskCallbackType, wrapped_callback
-            ),  # TODO: Work out the correct type for wrapped_callback
+            task_callback,
             task_abort_event,
             result,
             resourced=bool(len(self._resource_pool)),
         )
 
-        done_event.wait()
     @check_on
+    @_wait_until_done
     def release(
         self: FakeSubarrayComponent,
         resources: set[str],
@@ -277,6 +293,7 @@ class FakeSubarrayComponent(FakeBaseComponent):
         )
 
     @check_on
+    @_wait_until_done
     def release_all(
         self: FakeSubarrayComponent,
         task_callback: TaskCallbackType,
@@ -304,6 +321,7 @@ class FakeSubarrayComponent(FakeBaseComponent):
         )
 
     @check_on
+    @_wait_until_done
     def configure(
         self: FakeSubarrayComponent,
         blocks: int | None,
@@ -347,6 +365,7 @@ class FakeSubarrayComponent(FakeBaseComponent):
         )
 
     @check_on
+    @_wait_until_done
     def deconfigure(
         self: FakeSubarrayComponent,
         task_callback: TaskCallbackType,
@@ -375,6 +394,7 @@ class FakeSubarrayComponent(FakeBaseComponent):
         )
 
     @check_on
+    @_wait_until_done
     def scan(
         self: FakeSubarrayComponent,
         scan_id: str,
@@ -402,6 +422,7 @@ class FakeSubarrayComponent(FakeBaseComponent):
         )
 
     @check_on
+    @_wait_until_done
     def end_scan(
         self: FakeSubarrayComponent,
         task_callback: TaskCallbackType,
@@ -437,6 +458,7 @@ class FakeSubarrayComponent(FakeBaseComponent):
         self._update_state(obsfault=True)
 
     @check_on
+    @_wait_until_done
     def obsreset(
         self: FakeSubarrayComponent,
         task_callback: TaskCallbackType,
@@ -462,6 +484,7 @@ class FakeSubarrayComponent(FakeBaseComponent):
         )
 
     @check_on
+    @_wait_until_done
     def restart(
         self: FakeSubarrayComponent,
         task_callback: TaskCallbackType,

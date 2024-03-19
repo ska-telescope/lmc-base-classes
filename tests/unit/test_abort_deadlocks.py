@@ -1,4 +1,5 @@
-"""Contain the tests for the SKASubarray Abort command."""
+"""Contain the tests for deadlocks with the SKASubarray Abort command."""
+
 from __future__ import annotations
 
 import itertools
@@ -163,11 +164,12 @@ def device_test_config() -> dict[str, Any]:
     }
 
 
-def test_abort_deadlock(
+def test_abort_in_omnithread(
     device_under_test: tango.DeviceProxy,
     change_event_callbacks: MockTangoEventCallbackGroup,
 ) -> None:
-    """Shows for a deadlock when aborting.
+    """
+    Test for a deadlock when aborting with tango.EnsureOmniThread().
 
     :param device_under_test: proxy to device we are testing
     :param change_event_callbacks: callback dictionary
@@ -189,11 +191,12 @@ def test_abort_deadlock(
     device_under_test.abort()
 
 
-def test_abort_no_deadlock(
+def test_abort_not_omnithread(
     device_under_test: tango.DeviceProxy,
     change_event_callbacks: MockTangoEventCallbackGroup,
 ) -> None:
-    """Shows that the is no deadlock .
+    """
+    Test for a deadlock when aborting with normal thread.
 
     :param device_under_test: proxy to device we are testing
     :param change_event_callbacks: callback dictionary

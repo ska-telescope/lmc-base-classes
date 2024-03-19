@@ -211,6 +211,18 @@ class CommandTracker:  # pylint: disable=too-many-instance-attributes
                     self._commands[command_id]["progress"] = None
                     self._schedule_removal(command_id)
 
+    def is_locked(self: CommandTracker) -> bool:
+        """
+        Return if CommandTracker lock is acquired.
+
+        :return: if CommandTracker lock is acquired.
+        """
+        # pylint: disable=consider-using-with
+        if self.__lock.acquire(blocking=False):
+            self.__lock.release()
+            return False
+        return True
+
     @property
     def commands_in_queue(self: CommandTracker) -> list[tuple[str, str]]:
         """
@@ -560,6 +572,8 @@ class SKABaseDevice(
             self._version_id = release.version
             self._methods_patched_for_debugger = False
 
+            self._init_state_model()
+
             for attribute_name in [
                 "state",
                 "commandedState",
@@ -586,8 +600,6 @@ class SKABaseDevice(
                 self.logger.info(f"Groups loaded: {sorted(self.groups.keys())}")
             except GroupDefinitionsError:
                 self.logger.debug(f"No Groups loaded for device: {self.get_name()}")
-
-            self._init_state_model()
 
             self.component_manager = self.create_component_manager()
             self.op_state_model.perform_action("init_invoked")
@@ -2090,7 +2102,11 @@ class SKABaseDevice(
         *args: Any,
         **kwargs: Any,
     ) -> None:
-        if is_omni_thread() and self._omni_queue.empty():
+        if (
+            is_omni_thread()
+            and self._omni_queue.empty()
+            and not self._command_tracker.is_locked()
+        ):
             getattr(super(), command_name)(*args, **kwargs)
         else:
             self._omni_queue.put((command_name, args, kwargs))

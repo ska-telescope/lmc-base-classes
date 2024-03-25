@@ -91,6 +91,25 @@ _DEBUGGER_PORT = 5678
 __all__ = ["SKABaseDevice", "main", "CommandTracker"]
 
 
+class _ThreadContextManager:
+    def __init__(self) -> None:
+        self._thread: threading.Thread | None = None
+
+    def __enter__(self) -> None:
+        self._thread = threading.current_thread()
+
+    def __exit__(self, *args: Any) -> None:
+        self._thread = None
+
+    def get_thread(self) -> threading.Thread | None:
+        """
+        Get the current thread in this context.
+
+        :return: the current thread or None if context not used.
+        """
+        return self._thread
+
+
 class _CommandData(TypedDict):
     name: str
     status: TaskStatus
@@ -121,6 +140,7 @@ class CommandTracker:  # pylint: disable=too-many-instance-attributes
         :param removal_time: timer
         """
         self.__lock = threading.RLock()
+        self.__thread_with_lock = _ThreadContextManager()
         self._queue_changed_callback = queue_changed_callback
         self._status_changed_callback = status_changed_callback
         self._progress_changed_callback = progress_changed_callback
@@ -181,7 +201,7 @@ class CommandTracker:  # pylint: disable=too-many-instance-attributes
         :param result: the result of the completed asynchronous task
         :param exception: any exception caught in the running task
         """
-        with self.__lock:
+        with self.__lock, self.__thread_with_lock:
             if exception is not None:
                 self._most_recent_exception = (command_id, exception)
                 if self._exception_callback is not None:
@@ -210,6 +230,14 @@ class CommandTracker:  # pylint: disable=too-many-instance-attributes
                 ]:
                     self._commands[command_id]["progress"] = None
                     self._schedule_removal(command_id)
+
+    def update_command_info_locked_current_thread(self: CommandTracker) -> bool:
+        """
+        Has CommandTracker locked the current thread for updating the LRC attributes.
+
+        :return: if current thread is locked.
+        """
+        return self.__thread_with_lock.get_thread() == threading.current_thread()
 
     @property
     def commands_in_queue(self: CommandTracker) -> list[tuple[str, str]]:
@@ -560,6 +588,8 @@ class SKABaseDevice(
             self._version_id = release.version
             self._methods_patched_for_debugger = False
 
+            self._init_state_model()
+
             for attribute_name in [
                 "state",
                 "commandedState",
@@ -586,8 +616,6 @@ class SKABaseDevice(
                 self.logger.info(f"Groups loaded: {sorted(self.groups.keys())}")
             except GroupDefinitionsError:
                 self.logger.debug(f"No Groups loaded for device: {self.get_name()}")
-
-            self._init_state_model()
 
             self.component_manager = self.create_component_manager()
             self.op_state_model.perform_action("init_invoked")
@@ -2090,7 +2118,11 @@ class SKABaseDevice(
         *args: Any,
         **kwargs: Any,
     ) -> None:
-        if is_omni_thread() and self._omni_queue.empty():
+        if (
+            is_omni_thread()
+            and self._omni_queue.empty()
+            and not self._command_tracker.update_command_info_locked_current_thread()
+        ):
             getattr(super(), command_name)(*args, **kwargs)
         else:
             self._omni_queue.put((command_name, args, kwargs))

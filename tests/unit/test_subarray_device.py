@@ -25,27 +25,10 @@ from ska_control_model import (
     SimulationMode,
     TestMode,
 )
-
-# from ska_tango_testing.mock.placeholders import Anything
 from ska_tango_testing.mock.tango import MockTangoEventCallbackGroup
 from tango import DevState
 
 from ska_tango_base.testing.reference import FakeSubarrayComponent, ReferenceSkaSubarray
-
-
-# pylint: disable=protected-access
-def print_change_event_queue(
-    change_event_callbacks: MockTangoEventCallbackGroup, attr_name: str
-) -> None:
-    """
-    Print the change event callback queue of the given attribute for debugging.
-
-    :param change_event_callbacks: dictionary of mock change event callbacks
-    :param attr_name: attribute name to inspect
-    """
-    print(f"{attr_name} change event queue:")
-    for node in change_event_callbacks[attr_name]._callable._consumer_view._iterable:
-        print(node.payload["attribute_value"])
 
 
 def turn_on_device(

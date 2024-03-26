@@ -182,3 +182,25 @@ def patch_debugger_to_start_on_ephemeral_port() -> None:
     """
     # pylint: disable-next=protected-access
     ska_tango_base.base.base_device._DEBUGGER_PORT = 0
+
+
+# pylint: disable=too-few-public-methods
+class Helpers:
+    """Test helper functions."""
+
+    @staticmethod
+    def print_change_event_queue(
+        change_event_callback_group: MockTangoEventCallbackGroup, attr_name: str
+    ) -> None:
+        """
+        Print the change event callback queue of the given attribute for debugging.
+
+        :param change_event_callback_group: dictionary of mock change event callbacks
+        :param attr_name: attribute name to inspect
+        """
+        print(f"{attr_name} change event queue:")
+        # pylint: disable=protected-access
+        for node in change_event_callback_group[
+            attr_name
+        ]._callable._consumer_view._iterable:
+            print(node.payload["attribute_value"])

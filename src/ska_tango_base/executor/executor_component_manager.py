@@ -12,7 +12,6 @@ from typing import Any, Callable
 from ska_control_model import TaskStatus
 
 from ..base import BaseComponentManager, TaskCallbackType
-from ..utils import deprecate_kwarg
 from .executor import TaskExecutor, TaskFunctionType
 
 
@@ -20,11 +19,9 @@ from .executor import TaskExecutor, TaskFunctionType
 class TaskExecutorComponentManager(BaseComponentManager):
     """A component manager with support for asynchronous tasking."""
 
-    @deprecate_kwarg("max_workers", "It will be fixed at 1 in a future release.")
     def __init__(
         self: TaskExecutorComponentManager,
         *args: Any,
-        max_workers: int | None = 1,
         max_queue_size: int = 32,
         **kwargs: Any,
     ) -> None:
@@ -37,12 +34,11 @@ class TaskExecutorComponentManager(BaseComponentManager):
             LRC attributes.
 
         :param args: additional positional arguments
-        :param max_workers: optional maximum number of workers in the pool
         :param max_queue_size: optional maximum size of the input queue
         :param kwargs: additional keyword arguments
         """
         self._max_queue_size = max_queue_size
-        self._task_executor = TaskExecutor(max_workers)
+        self._task_executor = TaskExecutor()
         super().__init__(*args, **kwargs)
 
     def submit_task(  # pylint: disable=too-many-arguments

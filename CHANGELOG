@@ -2,6 +2,8 @@
 
 ## unreleased
 
+- WOM-320: Do not directly call Tango operations while holding the CommandTracker lock
+
 ## 0.19.1
 
 - [MCCS-1695] workaround for pytango 9.4.2 logging interface change

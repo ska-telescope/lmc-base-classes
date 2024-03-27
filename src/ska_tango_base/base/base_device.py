@@ -207,11 +207,11 @@ class CommandTracker:  # pylint: disable=too-many-instance-attributes
                     self._commands[command_id]["progress"] = None
                     self._schedule_removal(command_id)
 
-    def update_command_info_locked_current_thread(self: CommandTracker) -> bool:
+    def has_current_thread_locked(self: CommandTracker) -> bool:
         """
         Has CommandTracker locked the current thread for updating the LRC attributes.
 
-        :return: if current thread is locked.
+        :return: if current thread is locked by CommandTracker.
         """
         return self.__thread_with_lock.get_thread() == threading.current_thread()
 
@@ -1854,7 +1854,7 @@ class SKABaseDevice(
         if (
             is_omni_thread()
             and self._omni_queue.empty()
-            and not self._command_tracker.update_command_info_locked_current_thread()
+            and not self._command_tracker.has_current_thread_locked()
         ):
             getattr(super(), command_name)(*args, **kwargs)
         else:

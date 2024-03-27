@@ -65,14 +65,14 @@ ska-control-model = "^0.3.4"
 sphinxcontrib-plantuml = "^0.29"
 transitions = "^0.9.0"
 
-[build-system]
-requires = ["poetry-core>=1.8.0"]
-build-backend = "poetry.core.masonry.api"
-
 [tool.pytest.ini_options]
 testpaths = "tests"
 addopts = "--verbose"
 
 [tool.coverage.run]
 data_file = ".coverage/.coverage"
-omit = ["__init__.py", "_version.py", "release.py"]
+omit = ["__init__.py", "release.py"]
+
+[build-system]
+requires = ["poetry-core>=1.8.0"]
+build-backend = "poetry.core.masonry.api"

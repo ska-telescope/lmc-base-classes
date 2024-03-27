@@ -152,7 +152,6 @@ class TestTaskExecutor:
         executor.abort(task_callback=callbacks["abort"])
         callbacks["abort"].assert_call(status=TaskStatus.IN_PROGRESS)
 
-        # TODO: Abort can finish before this job is submitted, causing this test to fail
         executor.submit(_claim_lock, [locks[2]], task_callback=callbacks["job_2"])
         callbacks["job_2"].assert_call(status=TaskStatus.REJECTED)
 

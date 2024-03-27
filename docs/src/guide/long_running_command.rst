@@ -66,7 +66,7 @@ monitoring and reporting of result, status and progress of LRCs.
 |                             | '1')                                      |                      |
 +-----------------------------+-------------------------------------------+----------------------+
 | longRunningCommandResult    | ('1636438076.6105473_101143779281769_On', | ID, ResultCode,      |
-|                             | '0', 'OK')                                | result of the        |
+|                             | ('0', 'OK'))                              | result of the        |
 |                             |                                           | completed command    |
 +-----------------------------+-------------------------------------------+----------------------+
 

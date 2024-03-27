@@ -27,19 +27,9 @@ TaskFunctionType = Callable[..., None]
 class TaskExecutor:
     """An asynchronous executor of tasks."""
 
-    def __init__(self: TaskExecutor, max_workers: int | None = 1) -> None:
-        """
-        Initialise a new instance.
-
-        :param max_workers: the maximum number of worker threads
-            This is meant to be kept at the default value to allow
-            the sequential execution of LRC except for special cases
-        """
-        self._max_workers = max_workers
-
-        self._executor = concurrent.futures.ThreadPoolExecutor(
-            max_workers=max_workers,
-        )
+    def __init__(self: TaskExecutor) -> None:
+        """Initialise a new instance."""
+        self._executor = concurrent.futures.ThreadPoolExecutor(max_workers=1)
         self._abort_event = threading.Event()
         self._submit_lock = threading.Lock()
 
@@ -114,21 +104,17 @@ class TaskExecutor:
             task_callback(status=TaskStatus.IN_PROGRESS)
         self._abort_event.set()
 
-        def _shutdown_and_relaunch(max_workers: int) -> None:
+        def _shutdown_and_relaunch() -> None:
             self._executor.shutdown(wait=True)
 
             # Create a new Event rather than just clearing the old one, in case a
             # running thread is yet to check.
             self._abort_event = threading.Event()
-            self._executor = concurrent.futures.ThreadPoolExecutor(
-                max_workers=max_workers
-            )
+            self._executor = concurrent.futures.ThreadPoolExecutor(max_workers=1)
             if task_callback is not None:
                 task_callback(status=TaskStatus.COMPLETED)
 
-        threading.Thread(
-            target=_shutdown_and_relaunch, args=(self._max_workers,)
-        ).start()
+        threading.Thread(target=_shutdown_and_relaunch).start()
         return TaskStatus.IN_PROGRESS, "Aborting tasks"
 
     def _run(  # pylint: disable=too-many-arguments

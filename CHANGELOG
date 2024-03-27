@@ -2,6 +2,11 @@
 
 ## unreleased
 
+- WOM-299: Update to pytango ^9.4.2 for build and 9.5.0 for development
+- WOM-311: Update CODEOWNERS
+- WOM-319: Fix timing issue with LRCInProgress and Abort
+- WOM-250: Remove max_workers from TaskExecutor
+
 ## 0.20.1
 
 - WOM-273: Pin poetry version in readthedocs.yml

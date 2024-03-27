@@ -22,6 +22,7 @@ from datetime import datetime
 from typing import Any, Callable, Generator, cast
 
 import tango
+from ska_tango_testing.mock.tango import MockTangoEventCallbackGroup
 from tango import (
     AttrQuality,
     AttrWriteType,
@@ -698,3 +699,20 @@ def deprecate_kwarg(name: str, detail: str | None = None) -> Callable[[FuncT], F
         return wrapped
 
     return decorator
+
+
+def print_change_event_queue(
+    change_event_callback_group: MockTangoEventCallbackGroup, attr_name: str
+) -> None:
+    """
+    Print the change event callback queue of the given attribute for debugging.
+
+    :param change_event_callback_group: dictionary of mock change event callbacks
+    :param attr_name: attribute name to inspect
+    """
+    print(f"{attr_name} change event queue:")
+    # pylint: disable=protected-access
+    for node in change_event_callback_group[
+        attr_name
+    ]._callable._consumer_view._iterable:
+        print(node.payload["attribute_value"])

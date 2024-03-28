@@ -206,7 +206,7 @@ class FakeBaseComponent:
             "Standby", PowerState.STANDBY, task_callback, task_abort_event
         )
 
-    def on(  # pylint: disable=invalid-name
+    def on(
         self: FakeBaseComponent,
         task_callback: TaskCallbackType,
         task_abort_event: threading.Event,

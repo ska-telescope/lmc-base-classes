@@ -2,6 +2,34 @@
 
 ## unreleased
 
+- WOM-299: Update to pytango ^9.4.2 for build and 9.5.0 for development
+- WOM-311: Update CODEOWNERS
+- WOM-319: Fix timing issue with LRCInProgress and Abort
+- WOM-250: Remove max_workers from TaskExecutor
+
+## 0.20.1
+
+- WOM-273: Pin poetry version in readthedocs.yml
+- WOM-274: Mark tests where Abort is used as xfail
+
+## 0.20.0
+
+- [WOM-265]: Deprecate max_workers for TaskExecutorComponentManager
+- [WOM-266]: Revert LRC attribute size to 64 queued commands
+- [WOM-211]: Add commandedState and commandedObsState attributes
+- [MCCS-1993]: Update to use latest version of ska-control-model
+- [WOM-212]: Add longRunningCommandInProgress attribute
+
+## 0.19.3
+
+- [WOM-213] Limit input queue size for long running commands
+- [WOM-177] Fix push_change_event and push_archive_event to expose the official PyTango interface
+
+## 0.19.2
+
+- [LOW-614] remove DevInt, removed in cppTango/PyTango 9.5.0
+- [KAR-585] Improve docs to reflect input queue updates
+
 ## 0.19.1
 
 - [MCCS-1695] workaround for pytango 9.4.2 logging interface change

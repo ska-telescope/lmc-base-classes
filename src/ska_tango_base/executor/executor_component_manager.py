@@ -22,17 +22,23 @@ class TaskExecutorComponentManager(BaseComponentManager):
     def __init__(
         self: TaskExecutorComponentManager,
         *args: Any,
-        max_workers: int | None = 1,
+        max_queue_size: int = 32,
         **kwargs: Any,
     ) -> None:
         """
         Initialise a new ComponentManager instance.
 
+        ..warning::
+            If `max_queue_size` exceeds `base.base_device.MAX_QUEUED_COMMANDS` then
+            some queued tasks may not have status information reported by the
+            LRC attributes.
+
         :param args: additional positional arguments
-        :param max_workers: option maximum number of workers in the pool
+        :param max_queue_size: optional maximum size of the input queue
         :param kwargs: additional keyword arguments
         """
-        self._task_executor = TaskExecutor(max_workers)
+        self._max_queue_size = max_queue_size
+        self._task_executor = TaskExecutor()
         super().__init__(*args, **kwargs)
 
     def submit_task(  # pylint: disable=too-many-arguments
@@ -55,8 +61,15 @@ class TaskExecutorComponentManager(BaseComponentManager):
 
         :return: tuple of taskstatus & message
         """
-        return self._task_executor.submit(
-            func, args, kwargs, is_cmd_allowed, task_callback=task_callback
+        input_queue_size = self._task_executor.get_input_queue_size()
+        if input_queue_size < self._max_queue_size:
+            return self._task_executor.submit(
+                func, args, kwargs, is_cmd_allowed, task_callback=task_callback
+            )
+
+        return (
+            TaskStatus.REJECTED,
+            f"Input queue supports a maximum of {self._max_queue_size} commands",
         )
 
     def abort_commands(

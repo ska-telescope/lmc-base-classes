@@ -131,7 +131,7 @@
       <properties description="The admin mode reported for this device. It may interpret the current device condition &#xA;and condition of all managed devices to set this. Most possibly an aggregate attribute." label="" unit="" standardUnit="" displayUnit="" format="" maxValue="" minValue="" maxAlarm="" minAlarm="" maxWarning="" minWarning="" deltaTime="" deltaValue=""/>
       <enumLabels>ONLINE</enumLabels>
       <enumLabels>OFFLINE</enumLabels>
-      <enumLabels>MAINTENANCE</enumLabels>
+      <enumLabels>ENGINEERING</enumLabels>
       <enumLabels>NOT_FITTED</enumLabels>
       <enumLabels>RESERVED</enumLabels>
     </attributes>

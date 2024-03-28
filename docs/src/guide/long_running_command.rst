@@ -36,33 +36,39 @@ monitoring and reporting of result, status and progress of LRCs.
 
 **LRC Attributes**
 
-+-----------------------------+-------------------------------------------------+----------------------+
-| Attribute                   | Example Value                                   |  Description         |
-+=============================+=================================================+======================+
-| longRunningCommandsInQueue  | ('StandbyCommand', 'OnCommand', 'OffCommand')   | Keeps track of which |
-|                             |                                                 | commands are on the  |
-|                             |                                                 | queue                |
-+-----------------------------+-------------------------------------------------+----------------------+
-| longRunningCommandIDsInQueue|('1636437568.0723004_235210334802782_OnCommand', | Keeps track of IDs in|
-|                             |                                                 | the queue            |
-|                             |1636437789.493874_116219429722764_OffCommand)    |                      |
-+-----------------------------+-------------------------------------------------+----------------------+
-| longRunningCommandStatus    | ('1636437568.0723004_235210334802782_OnCommand',| ID, status pair of   |
-|                             | 'IN_PROGRESS',                                  | the currently        |
-|                             |                                                 | executing commands   |
-|                             | '1636437789.493874_116219429722764_OffCommand', |                      |
-|                             | 'IN_PROGRESS')                                  |                      |
-+-----------------------------+-------------------------------------------------+----------------------+
-| longRunningCommandProgress  | ('1636437568.0723004_235210334802782_OnCommand',| ID, progress pair of |
-|                             | '12',                                           | the currently        |
-|                             |                                                 | executing commands   |
-|                             | '1636437789.493874_116219429722764_OffCommand', |                      |
-|                             | '1')                                            |                      |
-+-----------------------------+-------------------------------------------------+----------------------+
-| longRunningCommandResult    | ('1636438076.6105473_101143779281769_OnCommand',| ID, ResultCode,      |
-|                             | '0', 'OK')                                      | result of the        |
-|                             |                                                 | completed command    |
-+-----------------------------+-------------------------------------------------+----------------------+
++-----------------------------+-------------------------------------------+----------------------+
+| Attribute                   | Example Value                             |  Description         |
++=============================+===========================================+======================+
+| longRunningCommandsInQueue  | ('Standby', 'On', 'Off')                  | Keeps track of which |
+|                             |                                           | commands are on the  |
+|                             |                                           | queue                |
++-----------------------------+-------------------------------------------+----------------------+
+| longRunningCommandIDsInQueue|('1636437568.0723004_235210334802782_On',  | Keeps track of IDs in|
+|                             |                                           | the queue            |
+|                             |1636437789.493874_116219429722764_Off)     |                      |
++-----------------------------+-------------------------------------------+----------------------+
+| longRunningCommandStatus    | ('1636437568.0723004_235210334802782_On', | ID, status pair of   |
+|                             | 'IN_PROGRESS',                            | the currently        |
+|                             |                                           | executing commands   |
+|                             | '1636437789.493874_116219429722764_Off',  |                      |
+|                             | 'IN_PROGRESS')                            |                      |
++-----------------------------+-------------------------------------------+----------------------+
+| longRunningCommandInProgress| ('On', '')                                | Name of command      |
+|                             |                                           | currently executing  |
+|                             | ('Configure', 'Abort')                    | and optional abort,  |
+|                             |                                           | or an empty string   |
+|                             | ('', '')                                  | if idle              |
++-----------------------------+-------------------------------------------+----------------------+
+| longRunningCommandProgress  | ('1636437568.0723004_235210334802782_On', | ID, progress pair of |
+|                             | '12',                                     | the currently        |
+|                             |                                           | executing commands   |
+|                             | '1636437789.493874_116219429722764_Off',  |                      |
+|                             | '1')                                      |                      |
++-----------------------------+-------------------------------------------+----------------------+
+| longRunningCommandResult    | ('1636438076.6105473_101143779281769_On', | ID, ResultCode,      |
+|                             | ('0', 'OK'))                              | result of the        |
+|                             |                                           | completed command    |
++-----------------------------+-------------------------------------------+----------------------+
 
 
 **LRC Commands**
@@ -80,8 +86,60 @@ monitoring and reporting of result, status and progress of LRCs.
 
 In addition to the set of commands in the table above, a number of candidate SKA
 commands in the base device previously implemented as blocking commands have been
-converted to execute as long running commands (asynchronously), viz: Standby, On, Off,
+converted to execute as long running commands (asynchronously), namely: Standby, On, Off,
 Reset and GetVersionInfo.
+
+**commandedState and commandedObsState attributes**
+
+These attributes indicate the expected stable operating or observation state after the last long running command that has started is completed.
+
+The *commandedState* string initialises to "None". Only other strings it can change to is "OFF",
+"STANDBY" or "ON", following the start of the Off, Standby, On or Reset long running commands.
+The following table shows the *commandedState* given current device state and issued command in progress: 
+
++-------------+-------+-------------+-------------+-------------+
+| state       | *commandedState* for issued command             |
++             +-------+-------------+-------------+-------------+
+| (DevState)  | Off   | Standby     | On          | Reset       |
++=============+=======+=============+=============+=============+
+| **UNKNOWN** | OFF   | STANDBY     | ON          |             |
++-------------+-------+-------------+-------------+-------------+
+| **OFF**     | OFF   | STANDBY     | ON          |             |
++-------------+-------+-------------+-------------+-------------+
+| **STANDBY** | OFF   | STANDBY     | ON          | STANDBY     |
++-------------+-------+-------------+-------------+-------------+
+| **ON**      | OFF   | STANDBY     | ON          | ON          |
++-------------+-------+-------------+-------------+-------------+
+| **FAULT**   | OFF   |             |             | ON          |
++-------------+-------+-------------+-------------+-------------+
+
+The *commandedObsState* initial value is ObsState.EMPTY. The only stable (nontransitional) state values it can
+change to is EMPTY, IDLE, READY or ABORTED following the start of any of the SKASubarray device's long running commands.
+The following table shows the *commandedObsState* given current *obsState* and issued command in progress: 
+
++-----------------+-----------------+------------------+---------------------+-----------+-------+---------+------+---------+---------------+---------+
+|                 | *commandedObsState* for issued command                                                                                            |
++                 +-----------------+------------------+---------------------+-----------+-------+---------+------+---------+---------------+---------+
+| obsState        | AssignResources | ReleaseResources | ReleaseAllResources | Configure | Scan  | EndScan | End  | Abort   | ObsReset      | Restart |
++=================+=================+==================+=====================+===========+=======+=========+======+=========+===============+=========+
+| **EMPTY**       | IDLE            |                  |                     |           |       |         |      |         |               |         |
++-----------------+-----------------+------------------+---------------------+-----------+-------+---------+------+---------+---------------+---------+
+| **RESOURCING**  |                 |                  |                     |           |       |         |      | ABORTED |               |         |
++-----------------+-----------------+------------------+---------------------+-----------+-------+---------+------+---------+---------------+---------+
+| **IDLE**        | IDLE            | IDLE             | EMPTY               | READY     |       |         |      | ABORTED |               |         |
++-----------------+-----------------+------------------+---------------------+-----------+-------+---------+------+---------+---------------+---------+
+| **CONFIGURING** |                 |                  |                     |           |       |         |      | ABORTED |               |         |
++-----------------+-----------------+------------------+---------------------+-----------+-------+---------+------+---------+---------------+---------+
+| **READY**       |                 |                  |                     |           | READY |         | IDLE | ABORTED |               |         |
++-----------------+-----------------+------------------+---------------------+-----------+-------+---------+------+---------+---------------+---------+
+| **SCANNING**    |                 |                  |                     |           |       | READY   |      | ABORTED |               |         |
++-----------------+-----------------+------------------+---------------------+-----------+-------+---------+------+---------+---------------+---------+
+| **ABORTED**     |                 |                  |                     |           |       |         |      |         | IDLE or EMPTY | EMPTY   |
++-----------------+-----------------+------------------+---------------------+-----------+-------+---------+------+---------+---------------+---------+
+| **RESETTING**   |                 |                  |                     |           |       |         |      | ABORTED |               |         |
++-----------------+-----------------+------------------+---------------------+-----------+-------+---------+------+---------+---------------+---------+
+| **FAULT**       |                 |                  |                     |           |       |         |      |         | IDLE or EMPTY | EMPTY   |
++-----------------+-----------------+------------------+---------------------+-----------+-------+---------+------+---------+---------------+---------+
 
 The device has change events configured for all the LRC attributes which clients can use to track
 their requests. **The client has the responsibility of subscribing to events to receive changes on
@@ -90,12 +148,14 @@ command status and results**.
 
 Input Queue
 -----------
-All LRCs are queued and executed in a background process. Each command is evaluated against the
-state of the component before executing the task. The `native approach`_ in the TANGO developer guide
-implements the check on the device when the command is triggered. On the other hand, the
-`TaskExecutorComponentManager` (the default queue manager and concurrency mechanism) implements the
-check only when it's dequeued. Methods implemented for component control should be supplied to the
-component manager along with an additional method to check whether the command is allowed before executing.
+The `TaskExecutorComponentManager` (the default queue manager and concurrency mechanism) implements a
+`ThreadPoolExecutor` which uses a `SimpleQueue` internally. The component manager exposes the queue size from
+the `ThreadPoolExecutor` to determine the number of commands the tango device can accept based on a configurable
+size limit. All LRCs are queued and executed in a background process. Each command is evaluated against the state
+of the component before executing the task. The `native approach`_ in the TANGO developer guide implements the
+check on the device when the command is triggered. On the other hand, the `TaskExecutorComponentManager` performs
+the check only when it's dequeued. Methods implemented for component control should be supplied to the component
+manager along with an additional method to check whether the command is allowed before executing.
 
 UML Illustration
 ----------------
@@ -122,7 +182,6 @@ Create a component manager
         def __init__(
             self,
             *args,
-            max_workers: int | None = None,
             logger: logging.Logger = None,
             **kwargs,
         ):
@@ -130,7 +189,7 @@ Create a component manager
             
             # Set up your class
 
-            super().__init__(*args, max_workers=max_workers, logger=logger, **kwargs)
+            super().__init__(*args, logger=logger, **kwargs)
 
 Add a method that should be executed in a background thread
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -207,12 +266,10 @@ Create the component manager in your Tango device
         def create_component_manager(self):
             """Create a component manager."""
             return SampleComponentManager(
-                max_workers=2,
                 logger=self.logger,
                 communication_state_callback=self._communication_state_changed,
                 component_state_callback=self._component_state_changed,
             )
-.. note:: `max_workers` defaults to 1 to ensure that queued commands are executed sequentially.
 
 Init the command object
 ^^^^^^^^^^^^^^^^^^^^^^^

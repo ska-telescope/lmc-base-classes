@@ -8,6 +8,7 @@
 """This module models component management for SKA subarray devices."""
 from __future__ import annotations
 
+import functools
 import logging
 import threading
 from typing import Any, Callable
@@ -27,6 +28,40 @@ from .reference_base_component_manager import (
 )
 
 
+def _wait_until_done(command: Callable[..., None]) -> Callable[..., None]:
+    @functools.wraps(command)
+    def wrapper(*args: Any, **kwargs: Any) -> None:
+        task_callback: TaskCallbackType | None = kwargs.get("task_callback")
+        if task_callback is not None:
+            done_event = threading.Event()
+
+            def decorate_task_callback(
+                task_callback: TaskCallbackType,
+            ) -> Callable[..., TaskCallbackType]:
+                def wrap_task_callback(
+                    status: TaskStatus | None = None,
+                    **kwargs: Any,
+                ) -> Any:
+                    if status is not None and status in [
+                        TaskStatus.COMPLETED,
+                        TaskStatus.ABORTED,
+                        TaskStatus.FAILED,
+                        TaskStatus.REJECTED,
+                    ]:
+                        done_event.set()
+                    return task_callback(status=status, **kwargs)
+
+                return wrap_task_callback
+
+            kwargs["task_callback"] = decorate_task_callback(task_callback)
+            command(*args, **kwargs)
+            done_event.wait()
+        else:
+            command(*args, **kwargs)
+
+    return wrapper
+
+
 class FakeSubarrayComponent(FakeBaseComponent):
     """
     A fake component for the component manager to work with.
@@ -44,7 +79,7 @@ class FakeSubarrayComponent(FakeBaseComponent):
     `scan`, `end_scan`, `end`, `abort`, `obsreset` and `restart`
     methods. For testing purposes, it can also be told to
     simulate a spontaneous obs_state change via simulate_power_state` and
-    `simulate_fault` methods.
+    `simulate_obsfault` methods.
 
     When one of these command method is invoked, the component simulates
     communications latency by sleeping for a short time. It then
@@ -192,6 +227,7 @@ class FakeSubarrayComponent(FakeBaseComponent):
         return sorted(configured_capabilities)
 
     @check_on
+    @_wait_until_done
     def assign(
         self: FakeSubarrayComponent,
         resources: set[str],
@@ -224,6 +260,7 @@ class FakeSubarrayComponent(FakeBaseComponent):
         )
 
     @check_on
+    @_wait_until_done
     def release(
         self: FakeSubarrayComponent,
         resources: set[str],
@@ -256,6 +293,7 @@ class FakeSubarrayComponent(FakeBaseComponent):
         )
 
     @check_on
+    @_wait_until_done
     def release_all(
         self: FakeSubarrayComponent,
         task_callback: TaskCallbackType,
@@ -283,6 +321,7 @@ class FakeSubarrayComponent(FakeBaseComponent):
         )
 
     @check_on
+    @_wait_until_done
     def configure(
         self: FakeSubarrayComponent,
         blocks: int | None,
@@ -326,6 +365,7 @@ class FakeSubarrayComponent(FakeBaseComponent):
         )
 
     @check_on
+    @_wait_until_done
     def deconfigure(
         self: FakeSubarrayComponent,
         task_callback: TaskCallbackType,
@@ -354,6 +394,7 @@ class FakeSubarrayComponent(FakeBaseComponent):
         )
 
     @check_on
+    @_wait_until_done
     def scan(
         self: FakeSubarrayComponent,
         scan_id: str,
@@ -381,6 +422,7 @@ class FakeSubarrayComponent(FakeBaseComponent):
         )
 
     @check_on
+    @_wait_until_done
     def end_scan(
         self: FakeSubarrayComponent,
         task_callback: TaskCallbackType,
@@ -411,15 +453,12 @@ class FakeSubarrayComponent(FakeBaseComponent):
         self._update_state(scanning=False)
 
     @check_on
-    def simulate_obsfault(self: FakeSubarrayComponent, obsfault: bool) -> None:
-        """
-        Tell the component to simulate an obsfault.
-
-        :param obsfault: fault indicator
-        """
-        self._update_state(obsfault=obsfault)
+    def simulate_obsfault(self: FakeSubarrayComponent) -> None:
+        """Tell the component to simulate an obsfault."""
+        self._update_state(obsfault=True)
 
     @check_on
+    @_wait_until_done
     def obsreset(
         self: FakeSubarrayComponent,
         task_callback: TaskCallbackType,
@@ -445,6 +484,7 @@ class FakeSubarrayComponent(FakeBaseComponent):
         )
 
     @check_on
+    @_wait_until_done
     def restart(
         self: FakeSubarrayComponent,
         task_callback: TaskCallbackType,

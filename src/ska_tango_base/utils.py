@@ -22,6 +22,7 @@ from datetime import datetime
 from typing import Any, Callable, Generator, cast
 
 import tango
+from ska_tango_testing.mock.tango import MockTangoEventCallbackGroup
 from tango import (
     AttrQuality,
     AttrWriteType,
@@ -80,7 +81,6 @@ tango_type_conversion = {
 # tango.CmdArgType.DevVarStateArray         tango.CmdArgType.name
 # tango.CmdArgType.DevFloat                 tango.CmdArgType.DevUShort
 # tango.CmdArgType.DevVarStringArray        tango.CmdArgType.names
-# tango.CmdArgType.DevInt                   tango.CmdArgType.DevVarBooleanArray
 # tango.CmdArgType.DevVarULong64Array       tango.CmdArgType.numerator
 # tango.CmdArgType.DevLong                  tango.CmdArgType.DevVarCharArray
 # tango.CmdArgType.DevVarULongArray         tango.CmdArgType.real
@@ -665,3 +665,54 @@ def generate_command_id(command_name: str) -> str:
     :return: a unique command ID string
     """
     return f"{time.time()}_{uuid.uuid4().fields[-1]}_{command_name}"
+
+
+# TODO: Use typing.ParamSpec once our minimum python version is 3.10
+FuncT = Callable[..., Any]
+
+
+def deprecate_kwarg(name: str, detail: str | None = None) -> Callable[[FuncT], FuncT]:
+    """Deprecate a keyword argument.
+
+    If the decorated function is passed the keyword argument a
+    DeprecationWarning is emitted.
+
+    :param name: name of keyword argument
+    :param detail: sentence to add to the warning
+    :return: decorator
+    """
+
+    def decorator(func: FuncT) -> FuncT:
+        @functools.wraps(func)
+        def wrapped(*args: Any, **kwargs: Any) -> Any:
+            if name in kwargs:
+                message = f'Deprecated kwarg "{name}" passed to {func.__name__}.'
+                if detail is not None:
+                    message += f" {detail}"
+
+                warnings.warn(
+                    message,
+                    DeprecationWarning,
+                )
+            return func(*args, **kwargs)
+
+        return wrapped
+
+    return decorator
+
+
+def print_change_event_queue(
+    change_event_callback_group: MockTangoEventCallbackGroup, attr_name: str
+) -> None:
+    """
+    Print the change event callback queue of the given attribute for debugging.
+
+    :param change_event_callback_group: dictionary of mock change event callbacks
+    :param attr_name: attribute name to inspect
+    """
+    print(f"{attr_name} change event queue:")
+    # pylint: disable=protected-access
+    for node in change_event_callback_group[
+        attr_name
+    ]._callable._consumer_view._iterable:
+        print(node.payload["attribute_value"])

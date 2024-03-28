@@ -1,4 +1,4 @@
-# pylint: disable=invalid-name
+# pylint: disable=invalid-name, too-many-lines
 # -*- coding: utf-8 -*-
 #
 # This file is part of the SKA Tango Base project
@@ -17,6 +17,7 @@ from __future__ import annotations
 
 import functools
 import logging
+from collections import namedtuple
 from typing import Any, Callable, TypeVar, cast
 
 from ska_control_model import (
@@ -66,6 +67,31 @@ class SKASubarray(SKAObsDevice[ComponentManagerT]):
         # (other than the super() call).
         self._activation_time: float
         self.obs_state_model: ObsStateModel
+
+        # Dictionary of SKASubarray command info tuples:
+        CommandInfo = namedtuple(
+            "CommandInfo", ["command_class", "state_model_hook", "expected_obs_state"]
+        )
+        self._SUBARRAY_COMMANDS = {
+            "AssignResources": CommandInfo(
+                self.AssignResourcesCommand, "assign", ObsState.IDLE
+            ),
+            "ReleaseResources": CommandInfo(
+                self.ReleaseResourcesCommand, "release", ObsState.IDLE
+            ),
+            "ReleaseAllResources": CommandInfo(
+                self.ReleaseAllResourcesCommand, "release", ObsState.EMPTY
+            ),
+            "Configure": CommandInfo(
+                self.ConfigureCommand, "configure", ObsState.READY
+            ),
+            "Scan": CommandInfo(self.ScanCommand, None, ObsState.READY),
+            "EndScan": CommandInfo(self.EndScanCommand, None, ObsState.READY),
+            "End": CommandInfo(self.EndCommand, None, ObsState.IDLE),
+            "Abort": CommandInfo(self.AbortCommand, "abort", ObsState.ABORTED),
+            "ObsReset": CommandInfo(self.ObsResetCommand, "obsreset", ObsState.IDLE),
+            "Restart": CommandInfo(self.RestartCommand, "restart", ObsState.EMPTY),
+        }
 
         super().__init__(*args, **kwargs)
 
@@ -442,18 +468,9 @@ class SKASubarray(SKAObsDevice[ComponentManagerT]):
             action = "invoked" if running else "completed"
             self.obs_state_model.perform_action(f"{hook}_{action}")
 
-        for command_name, command_class, state_model_hook in [
-            ("AssignResources", self.AssignResourcesCommand, "assign"),
-            ("ReleaseResources", self.ReleaseResourcesCommand, "release"),
-            ("ReleaseAllResources", self.ReleaseAllResourcesCommand, "release"),
-            ("Configure", self.ConfigureCommand, "configure"),
-            ("Scan", self.ScanCommand, None),
-            ("EndScan", self.EndScanCommand, None),
-            ("End", self.EndCommand, None),
-            ("Abort", self.AbortCommand, "abort"),
-            ("ObsReset", self.ObsResetCommand, "obsreset"),
-            ("Restart", self.RestartCommand, "restart"),
-        ]:
+        for command_name, command_tuple in self._SUBARRAY_COMMANDS.items():
+            command_class = command_tuple.command_class
+            state_model_hook = command_tuple.state_model_hook
             callback = (
                 None
                 if state_model_hook is None
@@ -469,17 +486,38 @@ class SKASubarray(SKAObsDevice[ComponentManagerT]):
                 ),
             )
 
+    def _update_commanded_state(  # pylint: disable=protected-access
+        self: SKASubarray[ComponentManagerT], command_name: str
+    ) -> None:
+        super()._update_commanded_state(command_name)
+
+        # Update commandedObsState after a SKASubarray command's status is 'IN_PROGRESS'
+        if command_name in self._SUBARRAY_COMMANDS:
+            expected_obs_state = self._SUBARRAY_COMMANDS[
+                command_name
+            ].expected_obs_state
+            # Handle special case if any resourcing command was interrupted
+            if (
+                command_name == "ObsReset"
+                and self.obs_state_model._obs_state_machine.state == "RESETTING_EMPTY"
+            ):
+                expected_obs_state = ObsState.EMPTY
+            self._update_commanded_obs_state(expected_obs_state)
+
     # pylint: disable-next=too-many-arguments
     def _component_state_changed(
         self: SKASubarray[ComponentManagerT],
         fault: bool | None = None,
         power: PowerState | None = None,
+        obsfault: bool | None = None,
         resourced: bool | None = None,
         configured: bool | None = None,
         scanning: bool | None = None,
     ) -> None:
         super()._component_state_changed(fault=fault, power=power)
 
+        if obsfault:
+            self.obs_state_model.perform_action("component_obsfault")
         if resourced is not None:
             if resourced:
                 self.obs_state_model.perform_action("component_resourced")

@@ -10,6 +10,7 @@ __all__ = (
     "FakeSubarrayComponent",
     "ReferenceBaseComponentManager",
     "ReferenceSubarrayComponentManager",
+    "ReferenceSkaBaseDevice",
     "ReferenceSkaSubarray",
 )
 
@@ -17,6 +18,7 @@ from .reference_base_component_manager import (
     FakeBaseComponent,
     ReferenceBaseComponentManager,
 )
+from .reference_base_device import ReferenceSkaBaseDevice
 from .reference_subarray_component_manager import (
     FakeSubarrayComponent,
     ReferenceSubarrayComponentManager,

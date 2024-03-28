@@ -8,7 +8,6 @@
 from __future__ import annotations
 
 from threading import Event, Lock
-from time import sleep
 
 import pytest
 from ska_control_model import TaskStatus
@@ -22,49 +21,34 @@ class TestTaskExecutor:
     """Tests of the TaskExecutor class."""
 
     @pytest.fixture()
-    def max_workers(self: TestTaskExecutor) -> int:
-        """
-        Return the maximum number of worker threads.
-
-        :return: the maximum number of worker threads
-        """
-        return 3
-
-    @pytest.fixture()
-    def executor(self: TestTaskExecutor, max_workers: int) -> TaskExecutor:
+    def executor(self: TestTaskExecutor) -> TaskExecutor:
         """
         Return the TaskExecutor under test.
 
-        :param max_workers: maximum number of worker threads.
-
         :return: a TaskExecutor
         """
-        return TaskExecutor(max_workers)
+        return TaskExecutor()
 
     @pytest.fixture()
-    def callbacks(self: TestTaskExecutor, max_workers: int) -> MockCallableGroup:
+    def callbacks(self: TestTaskExecutor) -> MockCallableGroup:
         """
         Return a dictionary of callbacks with asynchrony support.
 
-        :param max_workers: maximum number of worker threads.
-
         :return: a collections.defaultdict that returns callbacks by name.
         """
-        job_callbacks = [f"job_{i}" for i in range(max_workers + 2)]
+        job_callbacks = [f"job_{i}" for i in range(3)]
         return MockCallableGroup(*job_callbacks, "abort")
 
+    # pylint: disable=consider-using-with
     def test_task_execution(
         self: TestTaskExecutor,
         executor: TaskExecutor,
-        max_workers: int,
         callbacks: MockCallableGroup,
     ) -> None:
         """
         Test that we can execute tasks.
 
         :param executor: the task executor under test
-        :param max_workers: the maximum number of worker threads in the
-            task executor
         :param callbacks: a dictionary of mocks, passed as callbacks to
             the command tracker under test
         """
@@ -84,40 +68,37 @@ class TestTaskExecutor:
             if task_callback is not None:
                 task_callback(status=TaskStatus.COMPLETED)
 
-        locks = [Lock() for _ in range(max_workers + 1)]
+        locks = [Lock(), Lock()]
+        locks[0].acquire()
+        locks[1].acquire()
 
-        for i in range(max_workers + 1):
-            locks[i].acquire()
+        executor.submit(_claim_lock, args=[locks[0]], task_callback=callbacks["job_0"])
+        executor.submit(_claim_lock, args=[locks[1]], task_callback=callbacks["job_1"])
 
-        for i in range(max_workers + 1):
-            executor.submit(
-                _claim_lock,
-                args=[locks[i]],
-                task_callback=callbacks[f"job_{i}"],
-            )
+        # The queue size should equal the calls to executor.submit
+        # But since the worker thread could dequeue commands before
+        # fetching the queue size, it is safer to check for a non-empty
+        # queue to have a stable test
+        commands_in_queue = executor.get_input_queue_size()
+        assert commands_in_queue > 0
 
-        for i in range(max_workers + 1):
-            callbacks[f"job_{i}"].assert_call(status=TaskStatus.QUEUED)
+        callbacks["job_0"].assert_call(status=TaskStatus.QUEUED)
+        callbacks["job_1"].assert_call(status=TaskStatus.QUEUED)
 
-        for i in range(max_workers):
-            callbacks[f"job_{i}"].assert_call(status=TaskStatus.IN_PROGRESS)
-        callbacks[f"job_{max_workers}"].assert_not_called()
+        callbacks["job_0"].assert_call(status=TaskStatus.IN_PROGRESS)
+        callbacks["job_1"].assert_not_called()
 
         locks[0].release()
-
         callbacks["job_0"].assert_call(status=TaskStatus.COMPLETED)
-        callbacks[f"job_{max_workers}"].assert_call(status=TaskStatus.IN_PROGRESS)
+        callbacks["job_1"].assert_call(status=TaskStatus.IN_PROGRESS)
 
-        for i in range(1, max_workers + 1):
-            locks[i].release()
+        locks[1].release()
+        callbacks["job_1"].assert_call(status=TaskStatus.COMPLETED)
 
-        for i in range(1, max_workers + 1):
-            callbacks[f"job_{i}"].assert_call(status=TaskStatus.COMPLETED)
-
+    # pylint: disable=consider-using-with
     def test_abort(
         self: TestTaskExecutor,
         executor: TaskExecutor,
-        max_workers: int,
         callbacks: MockCallableGroup,
     ) -> None:
         """
@@ -136,8 +117,6 @@ class TestTaskExecutor:
           and tasks can once again be submitted.
 
         :param executor: the task executor under test
-        :param max_workers: the maximum number of worker threads in the
-            task executor
         :param callbacks: a dictionary of mocks, passed as callbacks to
             the command tracker under test
         """
@@ -157,55 +136,37 @@ class TestTaskExecutor:
             if task_callback is not None:
                 task_callback(status=TaskStatus.COMPLETED)
 
-        locks = [Lock() for _ in range(max_workers + 2)]
+        locks = [Lock(), Lock(), Lock()]
+        locks[0].acquire()
+        locks[1].acquire()
+        locks[2].acquire()
 
-        for i in range(max_workers + 2):
-            locks[i].acquire()
+        executor.submit(_claim_lock, args=[locks[0]], task_callback=callbacks["job_0"])
+        executor.submit(_claim_lock, args=[locks[1]], task_callback=callbacks["job_1"])
 
-        for i in range(max_workers + 1):
-            executor.submit(
-                _claim_lock,
-                args=[locks[i]],
-                task_callback=callbacks[f"job_{i}"],
-            )
-
-        for i in range(max_workers + 1):
-            callbacks[f"job_{i}"].assert_call(status=TaskStatus.QUEUED)
-
-        for i in range(max_workers):
-            callbacks[f"job_{i}"].assert_call(status=TaskStatus.IN_PROGRESS)
-        callbacks[f"job_{max_workers}"].assert_not_called()
+        callbacks["job_0"].assert_call(status=TaskStatus.QUEUED)
+        callbacks["job_1"].assert_call(status=TaskStatus.QUEUED)
+        callbacks["job_0"].assert_call(status=TaskStatus.IN_PROGRESS)
+        callbacks["job_1"].assert_not_called()
 
         executor.abort(task_callback=callbacks["abort"])
         callbacks["abort"].assert_call(status=TaskStatus.IN_PROGRESS)
 
-        executor.submit(
-            _claim_lock,
-            args=[locks[max_workers + 1]],
-            task_callback=callbacks[f"job_{max_workers + 1}"],
-        )
-        callbacks[f"job_{max_workers + 1}"].assert_call(status=TaskStatus.REJECTED)
+        executor.submit(_claim_lock, [locks[2]], task_callback=callbacks["job_2"])
+        callbacks["job_2"].assert_call(status=TaskStatus.REJECTED)
 
-        for i in range(max_workers + 1):
-            locks[i].release()
+        locks[0].release()
+        locks[1].release()
+        callbacks["job_0"].assert_call(status=TaskStatus.ABORTED)
+        callbacks["job_1"].assert_call(status=TaskStatus.ABORTED)
+        callbacks["abort"].assert_call(status=TaskStatus.COMPLETED)
 
-        for i in range(max_workers):
-            callbacks[f"job_{i}"].assert_call(status=TaskStatus.ABORTED)
-        callbacks[f"job_{max_workers}"].assert_call(status=TaskStatus.ABORTED)
+        executor.submit(_claim_lock, args=[locks[2]], task_callback=callbacks["job_2"])
+        callbacks["job_2"].assert_call(status=TaskStatus.QUEUED)
+        callbacks["job_2"].assert_call(status=TaskStatus.IN_PROGRESS)
 
-        sleep(0.1)  # TODO: Abort command needs to signal completion too
-
-        executor.submit(
-            _claim_lock,
-            args=[locks[max_workers + 1]],
-            task_callback=callbacks[f"job_{max_workers + 1}"],
-        )
-        callbacks[f"job_{max_workers + 1}"].assert_call(status=TaskStatus.QUEUED)
-        callbacks[f"job_{max_workers + 1}"].assert_call(status=TaskStatus.IN_PROGRESS)
-
-        locks[max_workers + 1].release()
-
-        callbacks[f"job_{max_workers + 1}"].assert_call(status=TaskStatus.COMPLETED)
+        locks[2].release()
+        callbacks["job_2"].assert_call(status=TaskStatus.COMPLETED)
 
     def test_exception(
         self: TestTaskExecutor,

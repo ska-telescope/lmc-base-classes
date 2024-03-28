@@ -1,64 +1,78 @@
 [tool.poetry]
 name = "ska-tango-base"
-version = "0.19.1"
+version = "0.20.1"
 description = "SKA Tango base classes"
-authors = ["SKA India and SARAO and CSIRO and INAF and STFC"]
-license = "BSD 3-Clause"
+authors = ["SKAO"]
+license = "BSD-3-Clause"
+readme = "README.md"
 documentation = "https://developer.skatelescope.org/projects/ska-tango-base"
 
 [[tool.poetry.source]]
-name = 'ska-nexus'
-url = 'https://artefact.skao.int/repository/pypi-internal/simple'
+name = "ska-nexus"
+url = "https://artefact.skao.int/repository/pypi-internal/simple"
+priority = "primary"
+
+[[tool.poetry.source]]
+name = "PyPi"
 
 [tool.poetry.dependencies]
-python = "^3.9.0"
+python = "^3.10"
 debugpy = "^1.6.2"
+# See https://pytango.readthedocs.io/en/stable/version-policy.html#pytango-version-policy
 numpy = [
-    {version = ">=1.21.0", python = ">=3.7,<3.10"},
-    {version = ">=1.21.6", python = "3.10"},
-    {version = ">=1.23.2", python = "3.11"}
+    { version = ">=1.21.6", python = "3.10" },
+    { version = ">=1.23.2", python = "3.11" },
+    { version = ">=1.26.0", python = ">=3.12" },
 ]
-pytango = "9.5.0rc3"
-ska-ser-logging = "^0.4.1"
+pytango = "^9.4.2"
+ska-ser-logging = "^0.4.3"
 transitions = "^0.9.0"
-ska-control-model = "^0.3.1"
+ska-control-model = "^0.3.4"
 jsonschema = "^4.17.3"
 
 [tool.poetry.group.dev.dependencies]
-pytango = "9.5.0rc3"
-black = "^23.3.0"
+pytango = "9.5.0"
+black = "^24.2.0"
 darglint = "^1.8.1"
-flake8 = "^6.0.0"
+flake8 = "^7.0.0"
 flake8-formatter-junit-xml = "^0.0.6"
 flake8-builtins = "^2.1.0"
 flake8-docstrings = "^1.7.0"
 flake8-use-fstring = "^1.4"
 flake8-rst-docstrings = "^0.3.0"
-mypy = "^1.4.1"
+mypy = "^1.9.0"
 pep8-naming = "^0.13.3"
-pylint = "^2.17.2"
+pylint = "^3.1.0"
 pylint-junit = "^0.3.2"
-pytest = "^7.3.1"
-pytest-bdd = "^6.1.1"
+pytest = "^8.1.1"
+pytest-bdd = "^7.1.1"
 pytest-cov = "^4.0.0"
 pytest-json-report = "^1.5.0"
 pytest-mock = "^3.10.0"
 pytest-forked = "^1.6.0"
-ska-tango-testing = "^0.5.3"
+ska-tango-testing = "^0.6.1"
 toml = "^0.10.2"
 pytest-pydocstyle = "^2.3.2"
 pytest-pycodestyle = "^2.3.1"
 types-jsonschema = "^4.17.0.7"
 
 [tool.poetry.group.docs.dependencies]
-Sphinx = "^5.2"
-sphinx-autodoc-typehints = "^1.19"
-ska-ser-sphinx-theme = "^0.1.1"
+Sphinx = "^7.2.6"
+sphinx-autodoc-typehints = "^2.0.0"
+ska-ser-sphinx-theme = "^0.1.2"
 jsonschema = "^4.18.3"
-ska-control-model = "^0.3.1"
-sphinxcontrib-plantuml = "^0.25"
+ska-control-model = "^0.3.4"
+sphinxcontrib-plantuml = "^0.29"
 transitions = "^0.9.0"
 
+[tool.pytest.ini_options]
+testpaths = "tests"
+addopts = "--verbose"
+
+[tool.coverage.run]
+data_file = ".coverage/.coverage"
+omit = ["__init__.py", "release.py"]
+
 [build-system]
-requires = ["poetry-core>=1.0.0"]
+requires = ["poetry-core>=1.8.0"]
 build-backend = "poetry.core.masonry.api"

@@ -39,7 +39,7 @@ from ska_control_model import (
     TaskStatus,
     TestMode,
 )
-from tango import DebugIt, DevState, is_omni_thread
+from tango import DebugIt, DevState, Except, is_omni_thread
 from tango.server import Device, attribute, command, device_property
 
 from .. import release
@@ -57,8 +57,32 @@ from .op_state_model import OpStateModel
 
 DevVarLongStringArrayType = tuple[list[ResultCode], list[str]]
 
-MAX_REPORTED_CONCURRENT_COMMANDS = 16
-MAX_REPORTED_QUEUED_COMMANDS = 64
+# The maximum number of commands that the LRC attributes support
+# being queued at once.
+#
+# TODO: SKABaseDevice should create the LRC attributes using the actual
+# maximum number of queued tasks that the component manager supports
+MAX_QUEUED_COMMANDS = 64
+
+# The maximum number of commands the LRC attributes support being reported
+# about at once.
+#
+# This number is a bit of a fudge.
+#
+# We need space for at least as many commands as we can have in the queue
+# and an executing command and potentially an abort command.  That gets us to
+# `MAX_QUEUED_COMMANDS + 2`.
+#
+# However, when a command is finished (i.e one of COMPLETED, ABORTED, REJECTED, FAILED)
+# it hangs around with the LRC attributes for `CommandTracker._removal_time`
+# seconds, so we need a buffer.
+#
+# We choose a buffer of `MAX_QUEUED_COMMANDS` to be able to handle the situation
+# where a client fills the queue with commands that all get rejected because the
+# command isn't allowed then queues up the correct command straight after.
+#
+# TODO: Be smarter about how to handle this.
+MAX_REPORTED_COMMANDS = 2 * MAX_QUEUED_COMMANDS + 2
 
 
 _DEBUGGER_PORT = 5678
@@ -101,9 +125,9 @@ class CommandTracker:  # pylint: disable=too-many-instance-attributes
         self._status_changed_callback = status_changed_callback
         self._progress_changed_callback = progress_changed_callback
         self._result_callback = result_callback
-        self._most_recent_result: tuple[
-            str, tuple[ResultCode, str] | None
-        ] | None = None
+        self._most_recent_result: tuple[str, tuple[ResultCode, str] | None] | None = (
+            None
+        )
         self._exception_callback = exception_callback
         self._most_recent_exception: tuple[str, Exception] | None = None
         self._commands: dict[str, _CommandData] = {}
@@ -492,6 +516,117 @@ class SKABaseDevice(
     for details.
     """
 
+    # -----------
+    # Init device
+    # -----------
+    def init_device(self: SKABaseDevice[ComponentManagerT]) -> None:
+        """
+        Initialise the tango device after startup.
+
+        Subclasses that have no need to override the default
+        implementation of state management may leave ``init_device()``
+        alone.  Override the ``do()`` method on the nested class
+        ``InitCommand`` instead.
+        """
+        try:
+            super().init_device()
+
+            self._omni_queue: queue.SimpleQueue[tuple[str, Any, Any]] = (
+                queue.SimpleQueue()
+            )
+
+            # this can be removed when cppTango issue #935 is implemented
+            self._init_active = True
+            self.poll_command("ExecutePendingOperations", 5)
+
+            self._init_logging()
+
+            self._admin_mode = AdminMode.OFFLINE
+            self._health_state = HealthState.UNKNOWN
+            self._control_mode = ControlMode.REMOTE
+            self._simulation_mode = SimulationMode.FALSE
+            self._test_mode = TestMode.NONE
+            self._commanded_state = "None"
+            self._command_ids_in_queue: list[str] = []
+            self._commands_in_queue: list[str] = []
+            self._command_statuses: list[str] = []
+            self._command_in_progress: list[str] = ["", ""]
+            self._command_progresses: list[str] = []
+            self._command_result: tuple[str, str] = ("", "")
+
+            self._build_state = (
+                f"{release.name}, {release.version}, {release.description}"
+            )
+            self._version_id = release.version
+            self._methods_patched_for_debugger = False
+
+            for attribute_name in [
+                "state",
+                "commandedState",
+                "status",
+                "adminMode",
+                "healthState",
+                "controlMode",
+                "simulationMode",
+                "testMode",
+                "longRunningCommandsInQueue",
+                "longRunningCommandIDsInQueue",
+                "longRunningCommandStatus",
+                "longRunningCommandInProgress",
+                "longRunningCommandProgress",
+                "longRunningCommandResult",
+            ]:
+                self.set_change_event(attribute_name, True)
+                self.set_archive_event(attribute_name, True)
+
+            try:
+                # create Tango Groups dict, according to property
+                self.logger.debug(f"Groups definitions: {self.GroupDefinitions}")
+                self.groups = get_groups_from_json(self.GroupDefinitions)
+                self.logger.info(f"Groups loaded: {sorted(self.groups.keys())}")
+            except GroupDefinitionsError:
+                self.logger.debug(f"No Groups loaded for device: {self.get_name()}")
+
+            self._init_state_model()
+
+            self.component_manager = self.create_component_manager()
+            self.op_state_model.perform_action("init_invoked")
+            self.InitCommand(
+                self,
+                logger=self.logger,
+            )()
+
+            self.init_command_objects()
+        except Exception as exc:  # pylint: disable=broad-except
+            # Deliberately catching all exceptions here, because an uncaught
+            # exception would take our execution thread down.
+            if hasattr(self, "logger"):
+                self.logger.exception("init_device() failed.")
+            else:
+                traceback.print_exc()
+                print(f"ERROR: init_device failed, and no logger: {exc}.")
+            self._update_state(
+                DevState.FAULT,
+                "The device is in FAULT state - init_device failed.",
+            )
+
+    def _init_state_model(self: SKABaseDevice[ComponentManagerT]) -> None:
+        """Initialise the state model for the device."""
+        self._command_tracker = CommandTracker(
+            queue_changed_callback=self._update_commands_in_queue,
+            status_changed_callback=self._update_command_statuses,
+            progress_changed_callback=self._update_command_progresses,
+            result_callback=self._update_command_result,
+            exception_callback=self._update_command_exception,
+        )
+        self.op_state_model = OpStateModel(
+            logger=self.logger,
+            callback=self._update_state,
+        )
+        self.admin_mode_model = AdminModeModel(
+            logger=self.logger, callback=self._update_admin_mode
+        )
+
     # ---------
     # Callbacks
     # ---------
@@ -536,12 +671,10 @@ class SKABaseDevice(
     ) -> None:
         if commands_in_queue:
             command_ids, command_names = zip(*commands_in_queue)
-            self._command_ids_in_queue = [
-                str(command_id) for command_id in command_ids
-            ][:MAX_REPORTED_QUEUED_COMMANDS]
+            self._command_ids_in_queue = [str(command_id) for command_id in command_ids]
             self._commands_in_queue = [
                 str(command_name) for command_name in command_names
-            ][:MAX_REPORTED_QUEUED_COMMANDS]
+            ]
         else:
             self._command_ids_in_queue = []
             self._commands_in_queue = []
@@ -561,9 +694,62 @@ class SKABaseDevice(
         statuses = [(uid, status.name) for (uid, status) in command_statuses]
         self._command_statuses = [
             str(item) for item in itertools.chain.from_iterable(statuses)
-        ][: (MAX_REPORTED_CONCURRENT_COMMANDS * 2)]
+        ]
         self.push_change_event("longRunningCommandStatus", self._command_statuses)
         self.push_archive_event("longRunningCommandStatus", self._command_statuses)
+
+        # Check for commands starting and ending execution
+        for uid, status in command_statuses:
+            command_name = uid.split("_", 2)[2]
+            if (
+                status == TaskStatus.IN_PROGRESS
+                and command_name not in self._command_in_progress
+            ):
+                self._update_command_in_progress(command_name, True)
+                self._update_commanded_state(command_name)
+            elif (
+                status
+                in [
+                    TaskStatus.ABORTED,
+                    TaskStatus.COMPLETED,
+                    TaskStatus.FAILED,
+                ]
+                and command_name in self._command_in_progress
+            ):
+                self._update_command_in_progress(command_name, False)
+
+    def _update_command_in_progress(
+        self: SKABaseDevice[ComponentManagerT], command_name: str, in_progress: bool
+    ) -> None:
+        # TODO: Not ideal, as any child class could implement a very specific command
+        # containing the word 'Abort'
+
+        [cmd, abort] = self._command_in_progress
+        if "Abort" in command_name:
+            self._command_in_progress = [cmd, command_name if in_progress else ""]
+        else:
+            self._command_in_progress = [command_name if in_progress else "", abort]
+        self.push_change_event(
+            "longRunningCommandInProgress", self._command_in_progress
+        )
+        self.push_archive_event(
+            "longRunningCommandInProgress", self._command_in_progress
+        )
+
+    def _update_commanded_state(
+        self: SKABaseDevice[ComponentManagerT], command_name: str
+    ) -> None:
+        # Update commandedState after a SKABaseDevice command's status is 'IN_PROGRESS'
+        if command_name in ["Off", "Standby", "On", "Reset"]:
+            self._commanded_state = command_name.upper()
+            if command_name == "Reset":
+                current_state = self.get_state()
+                if current_state == DevState.FAULT:
+                    self._commanded_state = "ON"
+                else:
+                    self._commanded_state = current_state.name
+            self.push_change_event("commandedState", self._commanded_state)
+            self.push_archive_event("commandedState", self._commanded_state)
 
     def _update_command_progresses(
         self: SKABaseDevice[ComponentManagerT],
@@ -571,7 +757,7 @@ class SKABaseDevice(
     ) -> None:
         self._command_progresses = [
             str(item) for item in itertools.chain.from_iterable(command_progresses)
-        ][: (MAX_REPORTED_CONCURRENT_COMMANDS * 2)]
+        ]
         self.push_change_event("longRunningCommandProgress", self._command_progresses)
         self.push_archive_event("longRunningCommandProgress", self._command_progresses)
 
@@ -633,111 +819,6 @@ class SKABaseDevice(
     # ---------------
     # General methods
     # ---------------
-    def init_device(self: SKABaseDevice[ComponentManagerT]) -> None:
-        """
-        Initialise the tango device after startup.
-
-        Subclasses that have no need to override the default
-        implementation of state management may leave ``init_device()``
-        alone.  Override the ``do()`` method on the nested class
-        ``InitCommand`` instead.
-        """
-        try:
-            super().init_device()
-
-            self._omni_queue: queue.SimpleQueue[
-                tuple[str, Any, Any]
-            ] = queue.SimpleQueue()
-
-            # this can be removed when cppTango issue #935 is implemented
-            self._init_active = True
-            self.poll_command("ExecutePendingOperations", 5)
-
-            self._init_logging()
-
-            self._admin_mode = AdminMode.OFFLINE
-            self._health_state = HealthState.UNKNOWN
-            self._control_mode = ControlMode.REMOTE
-            self._simulation_mode = SimulationMode.FALSE
-            self._test_mode = TestMode.NONE
-
-            self._command_ids_in_queue = []
-            self._commands_in_queue = []
-            self._command_statuses = []
-            self._command_progresses = []
-            self._command_result = ("", "")
-
-            self._build_state = (
-                f"{release.name}, {release.version}, {release.description}"
-            )
-            self._version_id = release.version
-            self._methods_patched_for_debugger = False
-
-            for attribute_name in [
-                "state",
-                "status",
-                "adminMode",
-                "healthState",
-                "controlMode",
-                "simulationMode",
-                "testMode",
-                "longRunningCommandsInQueue",
-                "longRunningCommandIDsInQueue",
-                "longRunningCommandStatus",
-                "longRunningCommandProgress",
-                "longRunningCommandResult",
-            ]:
-                self.set_change_event(attribute_name, True)
-                self.set_archive_event(attribute_name, True)
-
-            try:
-                # create Tango Groups dict, according to property
-                self.logger.debug(f"Groups definitions: {self.GroupDefinitions}")
-                self.groups = get_groups_from_json(self.GroupDefinitions)
-                self.logger.info(f"Groups loaded: {sorted(self.groups.keys())}")
-            except GroupDefinitionsError:
-                self.logger.debug(f"No Groups loaded for device: {self.get_name()}")
-
-            self._init_state_model()
-
-            self.component_manager = self.create_component_manager()
-            self.op_state_model.perform_action("init_invoked")
-            self.InitCommand(
-                self,
-                logger=self.logger,
-            )()
-
-            self.init_command_objects()
-        except Exception as exc:  # pylint: disable=broad-except
-            # Deliberately catching all exceptions here, because an uncaught
-            # exception would take our execution thread down.
-            if hasattr(self, "logger"):
-                self.logger.exception("init_device() failed.")
-            else:
-                traceback.print_exc()
-                print(f"ERROR: init_device failed, and no logger: {exc}.")
-            self._update_state(
-                DevState.FAULT,
-                "The device is in FAULT state - init_device failed.",
-            )
-
-    def _init_state_model(self: SKABaseDevice[ComponentManagerT]) -> None:
-        """Initialise the state model for the device."""
-        self._command_tracker = CommandTracker(
-            queue_changed_callback=self._update_commands_in_queue,
-            status_changed_callback=self._update_command_statuses,
-            progress_changed_callback=self._update_command_progresses,
-            result_callback=self._update_command_result,
-            exception_callback=self._update_command_exception,
-        )
-        self.op_state_model = OpStateModel(
-            logger=self.logger,
-            callback=self._update_state,
-        )
-        self.admin_mode_model = AdminModeModel(
-            logger=self.logger, callback=self._update_admin_mode
-        )
-
     def set_logging_level(
         self: SKABaseDevice[ComponentManagerT], value: LoggingLevel
     ) -> None:
@@ -861,7 +942,6 @@ class SKABaseDevice(
     # ----------
     # Attributes
     # ----------
-
     @attribute(  # type: ignore[misc]  # "Untyped decorator makes function untyped"
         dtype="str"
     )
@@ -975,8 +1055,8 @@ class SKABaseDevice(
         elif value == AdminMode.OFFLINE:
             self.admin_mode_model.perform_action("to_offline")
             self.component_manager.stop_communicating()
-        elif value == AdminMode.MAINTENANCE:
-            self.admin_mode_model.perform_action("to_maintenance")
+        elif value == AdminMode.ENGINEERING:
+            self.admin_mode_model.perform_action("to_engineering")
             self.component_manager.start_communicating()
         elif value == AdminMode.ONLINE:
             self.admin_mode_model.perform_action("to_online")
@@ -1054,7 +1134,7 @@ class SKABaseDevice(
         self._test_mode = value
 
     @attribute(  # type: ignore[misc]  # "Untyped decorator makes function untyped"
-        dtype=("str",), max_dim_x=MAX_REPORTED_QUEUED_COMMANDS
+        dtype=("str",), max_dim_x=MAX_QUEUED_COMMANDS
     )
     def longRunningCommandsInQueue(self: SKABaseDevice[ComponentManagerT]) -> list[str]:
         """
@@ -1068,7 +1148,7 @@ class SKABaseDevice(
         return self._commands_in_queue
 
     @attribute(  # type: ignore[misc]  # "Untyped decorator makes function untyped"
-        dtype=("str",), max_dim_x=MAX_REPORTED_QUEUED_COMMANDS
+        dtype=("str",), max_dim_x=MAX_QUEUED_COMMANDS
     )
     def longRunningCommandIDsInQueue(
         self: SKABaseDevice[ComponentManagerT],
@@ -1084,7 +1164,7 @@ class SKABaseDevice(
         return self._command_ids_in_queue
 
     @attribute(  # type: ignore[misc]  # "Untyped decorator makes function untyped"
-        dtype=("str",), max_dim_x=MAX_REPORTED_CONCURRENT_COMMANDS * 2  # 2 per command
+        dtype=("str",), max_dim_x=MAX_REPORTED_COMMANDS * 2  # 2 per command
     )
     def longRunningCommandStatus(self: SKABaseDevice[ComponentManagerT]) -> list[str]:
         """
@@ -1099,7 +1179,20 @@ class SKABaseDevice(
         return self._command_statuses
 
     @attribute(  # type: ignore[misc]  # "Untyped decorator makes function untyped"
-        dtype=("str",), max_dim_x=MAX_REPORTED_CONCURRENT_COMMANDS * 2  # 2 per command
+        dtype=("str",), max_dim_x=2
+    )
+    def longRunningCommandInProgress(
+        self: SKABaseDevice[ComponentManagerT],
+    ) -> list[str]:
+        """
+        Read the name of the currently executing long running command(s).
+
+        :return: name of command and possible abort in progress or empty string(s).
+        """
+        return self._command_in_progress
+
+    @attribute(  # type: ignore[misc]  # "Untyped decorator makes function untyped"
+        dtype=("str",), max_dim_x=2  # Only one command can execute at once
     )
     def longRunningCommandProgress(self: SKABaseDevice[ComponentManagerT]) -> list[str]:
         """
@@ -1130,6 +1223,19 @@ class SKABaseDevice(
         :return: ID, result.
         """
         return self._command_result
+
+    @attribute(dtype=str)  # type: ignore[misc]
+    def commandedState(self: SKABaseDevice[ComponentManagerT]) -> str:
+        """
+        Read the last commanded operating state of the device.
+
+        Initial string is "None". Only other strings it can change to is "OFF",
+        "STANDBY" or "ON", following the start of the Off(), Standby(), On() or Reset()
+        long running commands.
+
+        :return: commanded operating state string.
+        """
+        return self._commanded_state
 
     # --------
     # Commands
@@ -1280,7 +1386,6 @@ class SKABaseDevice(
 
         handler = self.get_command_object("Off")
         result_code, unique_id = handler()
-
         return ([result_code], [unique_id])
 
     def is_On_allowed(self: SKABaseDevice[ComponentManagerT]) -> bool:
@@ -1640,7 +1745,7 @@ class SKABaseDevice(
         self._submit_tango_operation("set_status", status)
 
     def push_change_event(
-        self: SKABaseDevice[ComponentManagerT], name: str, value: Any = None
+        self: SKABaseDevice[ComponentManagerT], name: str, *args: Any
     ) -> None:
         """
         Push a device server change event.
@@ -1648,16 +1753,146 @@ class SKABaseDevice(
         This is dependent on whether the push_change_event call has been
         actioned from a native python thread or a tango omni thread
 
-        :param name: the event name
-        :param value: the event value
+        This is an "overloaded" function which can be called with
+        multiple signatures supported.  These are dispatched based on
+        the types passed.
+
+        In the overloads below `Scalar` refers to any data type that can be
+        converted to a tango scalar. `Any` refers to
+        `Scalar | Sequence[Scalar] | Sequence[Sequence[Scalar]]`.
+
+        - push_change_event(self, name: str)
+
+            Push a device server change event for the "state" or "status".
+
+            Raises a tango.DevFailed if name is not "state" or "status".
+
+        - push_change_event(self, name: str, expection: DevFailed)
+
+            Push a device server change event for an attribute with
+            an exception.
+
+            exception: exception to send to client
+
+        - push_change_event(self, name: str, data: Any)
+
+            Push a device server change event for an attribute.
+
+            data: value to send to client
+
+        - push_change_event(self, name: str, data: Sequence[Scalar], dim_x: int)
+
+            Push a device server change event for a spectrum attribute with truncation.
+
+            A copy of `data` will be truncated before being sent to clients.
+
+            Requires `dim_x <= len(data)`.
+
+            data: value to send to client
+            dim_x: length to truncate value to
+
+        - push_change_event(
+            self, name: str, data: Sequence[Scalar], dim_x: int, dim_y: int)
+
+            Push a device server change event for a image attribute with reshaping.
+
+            A copy of `data` will be reshaped to `(dim_x, dim_y)` before being
+            sent to clients.
+
+            Note that `data` must be flat.
+
+            Requires `dim_x * dim_y <= len(data)`.
+
+            data: value to send to client
+            dim_x: x dimension to reshape to
+            dim_y: y dimension to reshape to
+
+        - push_change_event(self, name: str, str_data: str, data: bytes | str)
+
+            Push a device server change event for an encoded attribute.
+
+            str_data: encoding format for data
+            data: encoded data to send
+
+        - push_change_event(
+
+            self, name: str, data: Any, timestamp: float, quality: tango.AttrQuality)
+
+            Push a device server change event for an attribute with timestamp
+            and quality.
+
+            data: value to send
+            timestamp: unix timestamp
+            quality: quality of attribute
+
+        - push_change_event(
+            self,
+            name: str,
+            data: Sequence[Scalar],
+            timestamp: float,
+            quality: tango.AttrQuality,
+            dim_x: int)
+
+            Push a device server change event for a spectrum attribute with truncation,
+            timestamp and quality.
+
+            A copy of `data` will be truncated before being sent to clients.
+
+            Requires `dim_x <= len(data)`.
+
+            data: value to send
+            timestamp: unix timestamp
+            quality: quality of attribute
+            dim_x: length to truncate value to
+
+        - push_change_event(
+            self,
+            name: str,
+            data: Scalar,
+            timestamp: float,
+            quality: tango.AttrQuality,
+            dim_x: int,
+            dim_y: int)
+
+            Push a device server change event for a image attribute with reshaping,
+            timestampe and quality.
+
+            A copy of `data` will be reshaped to `(dim_x, dim_y)` before being
+            sent to clients.
+
+            Note that `data` must be flat.
+
+            Requires `dim_x * dim_y <= len(data)`.
+
+            data: value to send
+            timestamp: unix timestamp
+            quality: quality of attribute
+            dim_x: x dimension to reshape to
+            dim_y: y dimension to reshape to
+
+        - push_change_event(
+            self,
+            name: str,
+            str_data: str,
+            data: bytes | str,
+            timestamp: double,
+            quality: tango.AttrQuality)
+
+            Push a device server change event for a encoded attribute with timestamp
+            and quality.
+
+            str_data: encoding format for data
+            data: encoded data to send
+            timestamp: unix timestamp
+            quality: quality of attribute
+
+        :param name: the attribute name
+        :param args: the arguments to dispatch on
         """
-        if name.lower() in ["state", "status"]:
-            self._submit_tango_operation("push_change_event", name)
-        else:
-            self._submit_tango_operation("push_change_event", name, value)
+        self._submit_tango_operation("push_change_event", name, *args)
 
     def push_archive_event(
-        self: SKABaseDevice[ComponentManagerT], name: str, value: Any = None
+        self: SKABaseDevice[ComponentManagerT], name: str, *args: Any
     ) -> None:
         """
         Push a device server archive event.
@@ -1665,13 +1900,156 @@ class SKABaseDevice(
         This is dependent on whether the push_archive_event call has
         been actioned from a native python thread or a tango omnithread.
 
-        :param name: the event name
-        :param value: the event value
+        This is an "overloaded" function which can be called with
+        multiple signatures supported.  These are dispatched based on
+        the types passed.
+
+        In the overloads below `Scalar` refers to any data type that can be
+        converted to a tango scalar. `Any` refers to
+        `Scalar | Sequence[Scalar] | Sequence[Sequence[Scalar]]`.
+
+        - push_archive_event(self, name: str)
+
+            Push a device server archive event for the "state" or "status".
+
+            Raises a DevFailed if name is not "state" or "status".
+
+        - push_archive_event(self, name: str, expection: DevFailed)
+
+            Push a device server archive event for an attribute with
+            an exception.
+
+            exception: exception to send to client
+
+        - push_archive_event(self, name: str, data: Any)
+
+            Push a device server archive event for an attribute.
+
+            data: value to send to client
+
+        - push_archive_event(self, name: str, data: Sequence[Scalar], dim_x: int)
+
+            Push a device server archive event for a spectrum attribute with truncation.
+
+            A copy of `data` will be truncated before being sent to clients.
+
+            Requires `dim_x <= len(data)`.
+
+            data: value to send to client
+            dim_x: length to truncate value to
+
+        - push_archive_event(
+            self, name: str, data: Sequence[Scalar], dim_x: int, dim_y: int)
+
+            Push a device server archive event for a image attribute with reshaping.
+
+            A copy of `data` will be reshaped to `(dim_x, dim_y)` before being
+            sent to clients.
+
+            Note that `data` must be flat.
+
+            Requires `dim_x * dim_y <= len(data)`.
+
+            data: value to send to client
+            dim_x: x dimension to reshape to
+            dim_y: y dimension to reshape to
+
+        - push_archive_event(self, name: str, str_data: str, data: bytes | str)
+
+            Push a device server archive event for an encoded attribute.
+
+            str_data: encoding format for data
+            data: encoded data to send
+
+        - push_archive_event(
+
+            self, name: str, data: Any, timestamp: float, quality: tango.AttrQuality)
+
+            Push a device server archive event for an attribute with timestamp
+            and quality.
+
+            data: value to send
+            timestamp: unix timestamp
+            quality: quality of attribute
+
+        - push_archive_event(
+            self,
+            name: str,
+            data: Sequence[Scalar],
+            timestamp: float,
+            quality: tango.AttrQuality,
+            dim_x: int)
+
+            Push a device server archive event for a spectrum attribute with truncation,
+            timestamp and quality.
+
+            A copy of `data` will be truncated before being sent to clients.
+
+            Requires `dim_x <= len(data)`.
+
+            data: value to send
+            timestamp: unix timestamp
+            quality: quality of attribute
+            dim_x: length to truncate value to
+
+        - push_archive_event(
+            self,
+            name: str,
+            data: Scalar,
+            timestamp: float,
+            quality: tango.AttrQuality,
+            dim_x: int,
+            dim_y: int)
+
+            Push a device server archive event for a image attribute with reshaping,
+            timestampe and quality.
+
+            A copy of `data` will be reshaped to `(dim_x, dim_y)` before being
+            sent to clients.
+
+            Note that `data` must be flat.
+
+            Requires `dim_x * dim_y <= len(data)`.
+
+            data: value to send
+            timestamp: unix timestamp
+            quality: quality of attribute
+            dim_x: x dimension to reshape to
+            dim_y: y dimension to reshape to
+
+        - push_archive_event(
+            self,
+            name: str,
+            str_data: str,
+            data: bytes | str,
+            timestamp: double,
+            quality: tango.AttrQuality)
+
+            Push a device server archive event for a encoded attribute with timestamp
+            and quality.
+
+            str_data: encoding format for data
+            data: encoded data to send
+            timestamp: unix timestamp
+            quality: quality of attribute
+
+        :param name: the attribute name
+        :param args: the arguments to dispatch on
         """
-        if name.lower() in ["state", "status"]:
-            self._submit_tango_operation("push_archive_event", name)
-        else:
-            self._submit_tango_operation("push_archive_event", name, value)
+        has_data_arg = len(args) > 0
+        is_state_or_status = name.lower() in ["state", "status"]
+
+        # Work around pytango#589.  Note this is only required for
+        if not is_state_or_status and not has_data_arg:
+            desc = (
+                "push_archive_event without a data parameter is only allowed"
+                + " for state and status attributes"
+            )
+            Except.throw_exception(
+                "PyDs_InvalidCall", desc, "SKABaseDevice.push_archive_event"
+            )
+
+        self._submit_tango_operation("push_archive_event", name, *args)
 
     def add_attribute(
         self: SKABaseDevice[ComponentManagerT], *args: Any, **kwargs: Any

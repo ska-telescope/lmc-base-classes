@@ -693,7 +693,7 @@ class TestSubarrayComponentManager:
         component_manager.configure(None, **mock_configuration)
         callbacks.assert_call("component_state", configured=True)
 
-        component.simulate_obsfault(True)
+        component.simulate_obsfault()
         callbacks.assert_call("component_state", obsfault=True)
 
         component_manager.obsreset(None)
@@ -705,7 +705,7 @@ class TestSubarrayComponentManager:
         component_manager.scan(None, **mock_scan_args)
         callbacks.assert_call("component_state", scanning=True)
 
-        component.simulate_obsfault(True)
+        component.simulate_obsfault()
         callbacks.assert_call("component_state", obsfault=True)
 
         component_manager.obsreset(None)
@@ -752,7 +752,7 @@ class TestSubarrayComponentManager:
         component_manager.configure(None, **mock_configuration)
         callbacks.assert_call("component_state", configured=True)
 
-        component.simulate_obsfault(True)
+        component.simulate_obsfault()
         callbacks.assert_call("component_state", obsfault=True)
 
         component_manager.restart(None)
@@ -772,7 +772,7 @@ class TestSubarrayComponentManager:
         component_manager.scan(None, **mock_scan_args)
         callbacks.assert_call("component_state", scanning=True)
 
-        component.simulate_obsfault(True)
+        component.simulate_obsfault()
         callbacks.assert_call("component_state", obsfault=True)
 
         component_manager.restart(None)

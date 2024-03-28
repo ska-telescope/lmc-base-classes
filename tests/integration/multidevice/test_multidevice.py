@@ -1,4 +1,5 @@
 """Test various Tango devices with long running commmands working together."""
+
 from typing import Any
 
 import pytest

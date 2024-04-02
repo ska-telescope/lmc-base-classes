@@ -87,7 +87,8 @@ class RacingComponentManager(TaskExecutorComponentManager, SubarrayComponentMana
                 if task_callback is not None:
                     task_callback(progress=i)
 
-                time.sleep(0.001)
+                if in_omnithread is False:
+                    time.sleep(0.001)
 
             if task_callback is not None:
                 task_callback(status=TaskStatus.COMPLETED)

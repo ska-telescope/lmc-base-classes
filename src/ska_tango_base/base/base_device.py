@@ -2114,7 +2114,7 @@ class SKABaseDevice(
             self.poll_command("ExecutePendingOperations", poll_time * 1000)
         start_time = time.time()
         while not self._omni_queue.empty():
-            if not self._init_active and (time.time() - start_time) > (poll_time / 3):
+            if not self._init_active and (time.time() - start_time) > (poll_time / 2):
                 break
             (command_name, args, kwargs) = self._omni_queue.get_nowait()
             getattr(super(), command_name)(*args, **kwargs)

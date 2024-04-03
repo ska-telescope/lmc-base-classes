@@ -5,7 +5,6 @@ from __future__ import annotations
 import itertools
 import logging
 import threading
-import time
 from typing import Any
 
 import pytest
@@ -78,20 +77,14 @@ class RacingComponentManager(TaskExecutorComponentManager, SubarrayComponentMana
             if task_callback is not None:
                 task_callback(status=TaskStatus.IN_PROGRESS)
 
-            for i in range(4096):
+            while True:
                 if task_abort_event.is_set():
                     if task_callback is not None:
                         task_callback(status=TaskStatus.ABORTED)
                     return
 
                 if task_callback is not None:
-                    task_callback(progress=i)
-
-                if in_omnithread is False:
-                    time.sleep(0.001)
-
-            if task_callback is not None:
-                task_callback(status=TaskStatus.COMPLETED)
+                    task_callback(progress=0)
 
         if in_omnithread:
             with tango.EnsureOmniThread():

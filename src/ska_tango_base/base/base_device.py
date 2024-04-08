@@ -20,7 +20,6 @@ import logging
 import logging.handlers
 import queue
 import threading
-import time
 import traceback
 from functools import partial
 from types import FunctionType, MethodType
@@ -1873,14 +1872,10 @@ class SKABaseDevice(
         pass.
         """
         # TODO: this can be removed when cppTango issue #935 is implemented
-        poll_time = 0.1
         if self._init_active:
             self._init_active = False
-            self.poll_command("ExecutePendingOperations", poll_time * 1000)
-        start_time = time.time()
+            self.poll_command("ExecutePendingOperations", 100)
         while not self._omni_queue.empty():
-            if not self._init_active and (time.time() - start_time) > (poll_time / 2):
-                break
             (command_name, args, kwargs) = self._omni_queue.get_nowait()
             getattr(super(), command_name)(*args, **kwargs)
 

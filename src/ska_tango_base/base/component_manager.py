@@ -159,6 +159,7 @@ class TaskCallbackType(Protocol):  # pylint: disable=too-few-public-methods
         """
 
 
+# pylint: disable=too-many-instance-attributes
 class BaseComponentManager:
     """
     An abstract base class for a component manager for SKA Tango devices.
@@ -201,6 +202,45 @@ class BaseComponentManager:
         self._component_state_lock = threading.Lock()
         self._component_state = dict(state)
         self._component_state_callback = component_state_callback
+
+        self._max_queued_tasks = 0
+        self._max_executing_tasks = 1
+
+    @property
+    def max_queued_tasks(self) -> int:
+        """
+        Get the task queue size.
+
+        :return: The task queue size
+        """
+        return self._max_queued_tasks
+
+    @max_queued_tasks.setter
+    def max_queued_tasks(self, size: int) -> None:
+        """
+        Set the task queue size.
+
+        :param: size: the new queue size
+        """
+        self._max_queued_tasks = size
+
+    @property
+    def max_executing_tasks(self) -> int:
+        """
+        Get the max number of tasks that can be executing at once.
+
+        :return: max number of simultaneously executing tasks.
+        """
+        return self._max_executing_tasks
+
+    @max_executing_tasks.setter
+    def max_executing_tasks(self, maximum: int) -> None:
+        """
+        Set the max number of tasks that can be executing at once.
+
+        :param: maximum: the max number of simultaneously executing tasks.
+        """
+        self._max_executing_tasks = maximum
 
     def start_communicating(self: BaseComponentManager) -> None:
         """

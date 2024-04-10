@@ -37,9 +37,9 @@ class TaskExecutorComponentManager(BaseComponentManager):
         :param max_queue_size: optional maximum size of the input queue
         :param kwargs: additional keyword arguments
         """
-        self._max_queue_size = max_queue_size
         self._task_executor = TaskExecutor()
         super().__init__(*args, **kwargs)
+        self.max_queued_tasks = max_queue_size
 
     def submit_task(  # pylint: disable=too-many-arguments
         self: TaskExecutorComponentManager,
@@ -62,14 +62,14 @@ class TaskExecutorComponentManager(BaseComponentManager):
         :return: tuple of taskstatus & message
         """
         input_queue_size = self._task_executor.get_input_queue_size()
-        if input_queue_size < self._max_queue_size:
+        if input_queue_size < self.max_queued_tasks:
             return self._task_executor.submit(
                 func, args, kwargs, is_cmd_allowed, task_callback=task_callback
             )
 
         return (
             TaskStatus.REJECTED,
-            f"Input queue supports a maximum of {self._max_queue_size} commands",
+            f"Input queue supports a maximum of {self.max_queued_tasks} commands",
         )
 
     def abort_commands(

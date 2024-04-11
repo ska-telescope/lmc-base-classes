@@ -3,7 +3,6 @@ disable=
     duplicate-code,
     fixme,
     logging-fstring-interpolation,
-    function-redefined,
 
 enable=
     useless-suppression,

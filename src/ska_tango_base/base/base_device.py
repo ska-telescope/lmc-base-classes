@@ -550,11 +550,9 @@ class SKABaseDevice(
             self._control_mode = ControlMode.REMOTE
             self._simulation_mode = SimulationMode.FALSE
             self._test_mode = TestMode.NONE
-            self._commanded_state = "None"
             self._command_ids_in_queue: list[str] = []
             self._commands_in_queue: list[str] = []
             self._command_statuses: list[str] = []
-            self._command_in_progress: list[str] = ["", ""]
             self._command_progresses: list[str] = []
             self._command_result: tuple[str, str] = ("", "")
 
@@ -568,7 +566,6 @@ class SKABaseDevice(
 
             for attribute_name in [
                 "state",
-                "commandedState",
                 "status",
                 "adminMode",
                 "healthState",
@@ -578,7 +575,6 @@ class SKABaseDevice(
                 "longRunningCommandsInQueue",
                 "longRunningCommandIDsInQueue",
                 "longRunningCommandStatus",
-                "longRunningCommandInProgress",
                 "longRunningCommandProgress",
                 "longRunningCommandResult",
             ]:

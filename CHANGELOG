@@ -1,6 +1,9 @@
 # Version History
 
-## unreleased
+## 0.20.2
+
+- WOM-319: Fix timing issue with LRCInProgress and Abort
+- WOM-320: Do not directly call Tango operations while holding the CommandTracker lock
 
 ## 0.20.1
 

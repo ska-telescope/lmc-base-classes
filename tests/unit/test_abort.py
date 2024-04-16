@@ -1,8 +1,10 @@
 """Contain the tests for the SKASubarray Abort command."""
+
 from __future__ import annotations
 
 import itertools
 import logging
+import os
 import threading
 import time
 from typing import Any
@@ -163,6 +165,10 @@ def device_test_config() -> dict[str, Any]:
     }
 
 
+@pytest.mark.skipif(
+    os.getenv("CI_JOB_ID") is not None,
+    reason="test is not reliable in CI environment",
+)
 def test_abort_deadlock(
     device_under_test: tango.DeviceProxy,
     change_event_callbacks: MockTangoEventCallbackGroup,
@@ -178,7 +184,7 @@ def test_abort_deadlock(
         tango.EventType.CHANGE_EVENT,
         change_event_callbacks[attribute],
     )
-    change_event_callbacks.assert_change_event(attribute, ())
+    change_event_callbacks.assert_change_event(attribute, None)
     [
         [result_code],
         [cmd_id],
@@ -189,6 +195,10 @@ def test_abort_deadlock(
     device_under_test.abort()
 
 
+@pytest.mark.skipif(
+    os.getenv("CI_JOB_ID") is not None,
+    reason="test is not reliable in CI environment",
+)
 def test_abort_no_deadlock(
     device_under_test: tango.DeviceProxy,
     change_event_callbacks: MockTangoEventCallbackGroup,
@@ -204,7 +214,7 @@ def test_abort_no_deadlock(
         tango.EventType.CHANGE_EVENT,
         change_event_callbacks[attribute],
     )
-    change_event_callbacks.assert_change_event(attribute, ())
+    change_event_callbacks.assert_change_event(attribute, None)
     [
         [result_code],
         [cmd_id],

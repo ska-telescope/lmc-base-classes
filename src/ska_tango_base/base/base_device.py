@@ -57,34 +57,6 @@ from .op_state_model import OpStateModel
 
 DevVarLongStringArrayType = tuple[list[ResultCode], list[str]]
 
-# The maximum number of commands that the LRC attributes support
-# being queued at once.
-#
-# TODO: SKABaseDevice should create the LRC attributes using the actual
-# maximum number of queued tasks that the component manager supports
-MAX_QUEUED_COMMANDS = 64
-
-# The maximum number of commands the LRC attributes support being reported
-# about at once.
-#
-# This number is a bit of a fudge.
-#
-# We need space for at least as many commands as we can have in the queue
-# and an executing command and potentially an abort command.  That gets us to
-# `MAX_QUEUED_COMMANDS + 2`.
-#
-# However, when a command is finished (i.e one of COMPLETED, ABORTED, REJECTED, FAILED)
-# it hangs around with the LRC attributes for `CommandTracker._removal_time`
-# seconds, so we need a buffer.
-#
-# We choose a buffer of `MAX_QUEUED_COMMANDS` to be able to handle the situation
-# where a client fills the queue with commands that all get rejected because the
-# command isn't allowed then queues up the correct command straight after.
-#
-# TODO: Be smarter about how to handle this.
-MAX_REPORTED_COMMANDS = 2 * MAX_QUEUED_COMMANDS + 2
-
-
 _DEBUGGER_PORT = 5678
 
 
@@ -590,6 +562,9 @@ class SKABaseDevice(
 
             self._init_state_model()
 
+            self.component_manager = self.create_component_manager()
+            self._create_lrc_attributes()
+
             for attribute_name in [
                 "state",
                 "commandedState",
@@ -617,7 +592,6 @@ class SKABaseDevice(
             except GroupDefinitionsError:
                 self.logger.debug(f"No Groups loaded for device: {self.get_name()}")
 
-            self.component_manager = self.create_component_manager()
             self.op_state_model.perform_action("init_invoked")
             self.InitCommand(
                 self,
@@ -637,6 +611,53 @@ class SKABaseDevice(
                 DevState.FAULT,
                 "The device is in FAULT state - init_device failed.",
             )
+
+    def _create_lrc_attributes(self: SKABaseDevice[ComponentManagerT]) -> None:
+        """Create attributes for the long running commands."""
+        # Ensure max_dim_x is always set to at least 1
+        max_dim_x = max(1, self.component_manager.max_queued_tasks)
+        self._create_attribute(
+            "longRunningCommandsInQueue",
+            max_dim_x,
+            self.longRunningCommandsInQueue,
+        )
+
+        self._create_attribute(
+            "longRunningCommandIDsInQueue",
+            max_dim_x,
+            self.longRunningCommandIDsInQueue,
+        )
+
+        # For the status queue We need space for at least as many commands as we can
+        # have in the queue and an executing command and potentially an abort command.
+        # That gets us to `ComponentManager.max_queued_tasks` + 2. However, when a
+        # command is finished (i.e one of COMPLETED, ABORTED, REJECTED, FAILED) it
+        # hangs around with the LRC attributes `CommandTracker._removal_time` seconds,
+        # so we need a buffer.
+        # We choose a buffer of `ComponentManager.max_queued_tasks` to be able to
+        # handle the situation where a client fills the queue with commands that all
+        # get rejected because the command isn't allowed then queues up the correct
+        # command straight after
+        status_queue_size = self.component_manager.max_queued_tasks * 2 + 2
+        self._create_attribute(
+            "longRunningCommandStatus",
+            status_queue_size * 2,  # 2 per command
+            self.longRunningCommandStatus,
+        )
+
+    def _create_attribute(
+        self: SKABaseDevice[ComponentManagerT],
+        name: str,
+        max_dim_x: int,
+        fget: Callable[[Any], None],
+    ) -> None:
+        attr = attribute(
+            name=name,
+            dtype=(str,),
+            max_dim_x=max_dim_x,
+            fget=fget,
+        )
+        self.add_attribute(attr)
 
     def _init_state_model(self: SKABaseDevice[ComponentManagerT]) -> None:
         """Initialise the state model for the device."""
@@ -1161,40 +1182,39 @@ class SKABaseDevice(
         """
         self._test_mode = value
 
-    @attribute(  # type: ignore[misc]  # "Untyped decorator makes function untyped"
-        dtype=("str",), max_dim_x=MAX_QUEUED_COMMANDS
-    )
-    def longRunningCommandsInQueue(self: SKABaseDevice[ComponentManagerT]) -> list[str]:
+    # The following LRC attributes are instantiated in init_device() to make use of the
+    # max_queued_tasks property for max_dim_x
+
+    def longRunningCommandsInQueue(
+        self: SKABaseDevice[ComponentManagerT], attr: attribute
+    ) -> None:
         """
         Read the long running commands in the queue.
 
          Keep track of which commands are in the queue.
          Pop off from front as they complete.
 
-        :return: tasks in the queue
+        :param attr: Tango attribute being read
         """
-        return self._commands_in_queue
+        attr.set_value(self._commands_in_queue)
 
-    @attribute(  # type: ignore[misc]  # "Untyped decorator makes function untyped"
-        dtype=("str",), max_dim_x=MAX_QUEUED_COMMANDS
-    )
     def longRunningCommandIDsInQueue(
-        self: SKABaseDevice[ComponentManagerT],
-    ) -> list[str]:
+        self: SKABaseDevice[ComponentManagerT], attr: attribute
+    ) -> None:
         """
         Read the IDs of the long running commands in the queue.
 
         Every client that executes a command will receive a command ID as response.
         Keep track of IDs in the queue. Pop off from front as they complete.
 
-        :return: unique ids for the enqueued commands
+        :param attr: Tango attribute being read
         """
-        return self._command_ids_in_queue
+        attr.set_value(self._command_ids_in_queue)
 
-    @attribute(  # type: ignore[misc]  # "Untyped decorator makes function untyped"
-        dtype=("str",), max_dim_x=MAX_REPORTED_COMMANDS * 2  # 2 per command
-    )
-    def longRunningCommandStatus(self: SKABaseDevice[ComponentManagerT]) -> list[str]:
+    def longRunningCommandStatus(
+        self: SKABaseDevice[ComponentManagerT],
+        attr: attribute,
+    ) -> None:
         """
         Read the status of the currently executing long running commands.
 
@@ -1202,9 +1222,9 @@ class SKABaseDevice(
         Clients can subscribe to on_change event and wait for the
         ID they are interested in.
 
-        :return: ID, status pairs of the currently executing commands
+        :param attr: Tango attribute being read
         """
-        return self._command_statuses
+        attr.set_value(self._command_statuses)
 
     @attribute(  # type: ignore[misc]  # "Untyped decorator makes function untyped"
         dtype=("str",), max_dim_x=2

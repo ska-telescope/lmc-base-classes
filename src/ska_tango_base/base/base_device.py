@@ -615,16 +615,16 @@ class SKABaseDevice(
     def _create_lrc_attributes(self: SKABaseDevice[ComponentManagerT]) -> None:
         """Create attributes for the long running commands."""
         # Ensure max_dim_x is always set to at least 1
-        max_dim_x = max(1, self.component_manager.max_queued_tasks)
+        max_queued_tasks = max(1, self.component_manager.max_queued_tasks)
         self._create_attribute(
             "longRunningCommandsInQueue",
-            max_dim_x,
+            max_queued_tasks,
             self.longRunningCommandsInQueue,
         )
 
         self._create_attribute(
             "longRunningCommandIDsInQueue",
-            max_dim_x,
+            max_queued_tasks,
             self.longRunningCommandIDsInQueue,
         )
 
@@ -643,6 +643,18 @@ class SKABaseDevice(
             "longRunningCommandStatus",
             status_queue_size * 2,  # 2 per command
             self.longRunningCommandStatus,
+        )
+
+        self._create_attribute(
+            "longRunningCommandInProgress",
+            self.component_manager.max_executing_tasks,
+            self.longRunningCommandInProgress,
+        )
+
+        self._create_attribute(
+            "longRunningCommandProgress",
+            self.component_manager.max_executing_tasks,
+            self.longRunningCommandProgress,
         )
 
     def _create_attribute(
@@ -1226,33 +1238,31 @@ class SKABaseDevice(
         """
         attr.set_value(self._command_statuses)
 
-    @attribute(  # type: ignore[misc]  # "Untyped decorator makes function untyped"
-        dtype=("str",), max_dim_x=2
-    )
     def longRunningCommandInProgress(
         self: SKABaseDevice[ComponentManagerT],
-    ) -> list[str]:
+        attr: attribute,
+    ) -> None:
         """
-        Read the name of the currently executing long running command(s).
+        Read the name(s) of the currently executing long running command(s).
 
-        :return: name of command and possible abort in progress or empty string(s).
+        Name(s) of command and possible abort in progress or empty string(s).
+        :param attr: Tango attribute being read
         """
-        return self._command_in_progress
+        attr.set_value(self._command_in_progress)
 
-    @attribute(  # type: ignore[misc]  # "Untyped decorator makes function untyped"
-        dtype=("str",), max_dim_x=2  # Only one command can execute at once
-    )
-    def longRunningCommandProgress(self: SKABaseDevice[ComponentManagerT]) -> list[str]:
+    def longRunningCommandProgress(
+        self: SKABaseDevice[ComponentManagerT], attr: attribute
+    ) -> None:
         """
-        Read the progress of the currently executing long running command.
+        Read the progress of the currently executing long running command(s).
 
-        ID, progress of the currently executing command.
+        ID, progress of the currently executing command(s).
         Clients can subscribe to on_change event and wait
         for the ID they are interested in.
 
-        :return: ID, progress of the currently executing command.
+        :param attr: Tango attribute being read
         """
-        return self._command_progresses
+        attr.set_value(self._command_progresses)
 
     @attribute(  # type: ignore[misc]  # "Untyped decorator makes function untyped"
         dtype=("str",),

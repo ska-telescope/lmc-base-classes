@@ -46,6 +46,7 @@ class MultiDeviceComponentManager(TaskExecutorComponentManager):
             )
 
         super().__init__(logger, *args, matrix_operation="", **kwargs)
+        self.max_executing_tasks = 2
 
     def _non_aborting_lrc(
         self: MultiDeviceComponentManager,

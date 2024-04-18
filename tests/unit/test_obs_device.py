@@ -13,7 +13,6 @@ from typing import Any
 
 import pytest
 import tango
-from pytest_mock import MockFixture
 from ska_control_model import (
     AdminMode,
     ControlMode,
@@ -28,7 +27,51 @@ from tango import DevState
 from tango.test_context import MultiDeviceTestContext
 
 from ska_tango_base import SKABaseDevice, SKAObsDevice
+from ska_tango_base.obs import ObsDeviceComponentManager
 from ska_tango_base.testing.reference import ReferenceBaseComponentManager
+
+
+# pylint: disable=abstract-method
+class SimpleComponentManager(ObsDeviceComponentManager):
+    """Simple Component Manager for test purposes.
+
+    We need this so that the component manager exposes the
+    Long Running Command properties from the base class.
+    """
+
+
+class SimpleSKAObsDevice(SKAObsDevice[ObsDeviceComponentManager]):
+    """Simple concrete class for test purposes."""
+
+    def create_component_manager(
+        self: SKAObsDevice[ObsDeviceComponentManager],
+    ) -> ObsDeviceComponentManager:
+        """Create and return the component manager for this device.
+
+        :returns: a reference component manager.
+        """
+        return SimpleComponentManager(
+            self.logger,
+            self._communication_state_changed,
+            self._component_state_changed,
+        )
+
+
+class SimpleSKABaseDevice(SKABaseDevice[SimpleComponentManager]):
+    """Simple concrete class for test purposes."""
+
+    def create_component_manager(
+        self: SKABaseDevice[SimpleComponentManager],
+    ) -> SimpleComponentManager:
+        """Create and return the component manager for this device.
+
+        :returns: a reference component manager.
+        """
+        return SimpleComponentManager(
+            self.logger,
+            self._communication_state_changed,
+            self._component_state_changed,
+        )
 
 
 class TestSKAObsDevice:
@@ -260,22 +303,13 @@ class TestSKAObsDevice:
 
 
 @pytest.mark.forked
-def test_multiple_devices_in_same_process(mocker: MockFixture) -> None:
-    """
-    Test that we can run this device with other devices in a single process.
-
-    :param mocker: pytest fixture that wraps :py:mod:`unittest.mock`.
-    """
-    # Patch abstract method/s; it doesn't matter what we patch them with, so long as
-    # they don't raise NotImplementedError.
-    mocker.patch.object(SKAObsDevice, "create_component_manager")
-    mocker.patch.object(SKABaseDevice, "create_component_manager")
-
+def test_multiple_devices_in_same_process() -> None:
+    """Test that we can run this device with other devices in a single process."""
     # The order here is important - base class last, so that we can
     # test that the subclass isn't breaking anything.
     devices_info = (
-        {"class": SKAObsDevice, "devices": [{"name": "test/obs/1"}]},
-        {"class": SKABaseDevice, "devices": [{"name": "test/base/1"}]},
+        {"class": SimpleSKAObsDevice, "devices": [{"name": "test/obs/1"}]},
+        {"class": SimpleSKABaseDevice, "devices": [{"name": "test/base/1"}]},
     )
 
     with MultiDeviceTestContext(devices_info, process=False) as context:

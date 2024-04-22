@@ -239,8 +239,12 @@ class BaseComponentManager:
         Set the max number of tasks that can be executing at once.
 
         :param: maximum: the max number of simultaneously executing tasks.
+        :raises ValueError: if maximum < 1
         """
-        self._max_executing_tasks = maximum
+        if maximum >= 1:
+            self._max_executing_tasks = maximum
+        else:
+            raise ValueError("max_executing_tasks property must be greater than 1.")
 
     def start_communicating(self: BaseComponentManager) -> None:
         """

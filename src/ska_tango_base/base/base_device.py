@@ -559,6 +559,7 @@ class SKABaseDevice(
             )
             self._version_id = release.version
             self._methods_patched_for_debugger = False
+            self._status_queue_size = 0
 
             self._init_state_model()
 
@@ -637,11 +638,12 @@ class SKABaseDevice(
         # We choose a buffer of `ComponentManager.max_queued_tasks` to be able to
         # handle the situation where a client fills the queue with commands that all
         # get rejected because the command isn't allowed then queues up the correct
-        # command straight after
-        status_queue_size = self.component_manager.max_queued_tasks * 2 + 2
+        # command straight after. NB: update_command_statuses will prune the oldest
+        # command statuses from the queue if there are too many for the buffer.
+        self._status_queue_size = self.component_manager.max_queued_tasks * 2 + 2
         self._create_attribute(
             "longRunningCommandStatus",
-            status_queue_size * 2,  # 2 per command
+            self._status_queue_size * 2,  # 2 per command
             self.longRunningCommandStatus,
         )
 
@@ -753,6 +755,29 @@ class SKABaseDevice(
         command_statuses: list[tuple[str, TaskStatus]],
     ) -> None:
         statuses = [(uid, status.name) for (uid, status) in command_statuses]
+        if len(statuses) > self._status_queue_size:
+            # We have too many lingering completed/failed tasks so prune some from
+            # the list, taking the oldest first. Use the first part of the uid
+            # (the timestamp from when the command was submitted) to determine
+            # which are the oldest.
+            number_to_remove = len(statuses) - self._status_queue_size
+            prune_candidates = [
+                (uid, status)
+                for (uid, status) in sorted(
+                    statuses, key=lambda item: item[0].split(sep="_")[0], reverse=True
+                )
+                if status
+                in [
+                    TaskStatus.ABORTED.name,
+                    TaskStatus.COMPLETED.name,
+                    TaskStatus.REJECTED.name,
+                    TaskStatus.FAILED.name,
+                ]
+            ]
+            for item in prune_candidates[0:number_to_remove]:
+                self.logger.warning(f"Status queue too big: removing item {item[0]}")
+                statuses.remove(item)
+
         self._command_statuses = [
             str(item) for item in itertools.chain.from_iterable(statuses)
         ]

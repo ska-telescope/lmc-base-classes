@@ -764,7 +764,7 @@ class SKABaseDevice(
             prune_candidates = [
                 (uid, status)
                 for (uid, status) in sorted(
-                    statuses, key=lambda item: item[0].split(sep="_")[0], reverse=True
+                    statuses, key=lambda item: item[0].split(sep="_")[0]
                 )
                 if status
                 in [

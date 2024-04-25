@@ -564,6 +564,7 @@ class SKABaseDevice(
             self._init_state_model()
 
             self.component_manager = self.create_component_manager()
+            self._logged_status_removals: list[str] = []
             self._create_lrc_attributes()
 
             for attribute_name in [
@@ -616,18 +617,7 @@ class SKABaseDevice(
     def _create_lrc_attributes(self: SKABaseDevice[ComponentManagerT]) -> None:
         """Create attributes for the long running commands."""
         # Ensure max_dim_x is always set to at least 1
-        max_queued_tasks = max(1, self.component_manager.max_queued_tasks)
-        self._create_attribute(
-            "longRunningCommandsInQueue",
-            max_queued_tasks,
-            self.longRunningCommandsInQueue,
-        )
-
-        self._create_attribute(
-            "longRunningCommandIDsInQueue",
-            max_queued_tasks,
-            self.longRunningCommandIDsInQueue,
-        )
+        # max_queued_tasks = max(1, self.component_manager.max_queued_tasks)
 
         # For the status queue We need space for at least as many commands as we can
         # have in the queue and an executing command and potentially an abort command.
@@ -648,6 +638,18 @@ class SKABaseDevice(
         )
 
         self._create_attribute(
+            "longRunningCommandsInQueue",
+            self._status_queue_size,  # TODO: decide contents of this attr
+            self.longRunningCommandsInQueue,
+        )
+
+        self._create_attribute(
+            "longRunningCommandIDsInQueue",
+            self._status_queue_size,  # TODO: decide contents of this attr
+            self.longRunningCommandIDsInQueue,
+        )
+
+        self._create_attribute(
             "longRunningCommandInProgress",
             self.component_manager.max_executing_tasks,
             self.longRunningCommandInProgress,
@@ -655,7 +657,8 @@ class SKABaseDevice(
 
         self._create_attribute(
             "longRunningCommandProgress",
-            self.component_manager.max_executing_tasks,
+            self._status_queue_size,
+            # TODO: Why does this need to be bigger than max_executing_tasks?
             self.longRunningCommandProgress,
         )
 
@@ -775,7 +778,13 @@ class SKABaseDevice(
                 ]
             ]
             for item in prune_candidates[0:number_to_remove]:
-                self.logger.warning(f"Status queue too big: removing item {item[0]}")
+                if item[0] not in self._logged_status_removals:
+                    # This gets called many times so we
+                    # keep track of which ones we have logged
+                    self._logged_status_removals.append(item[0])
+                    self.logger.warning(
+                        f"Status queue too big: removing item {item[0]}"
+                    )
                 statuses.remove(item)
 
         self._command_statuses = [

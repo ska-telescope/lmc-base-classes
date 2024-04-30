@@ -639,13 +639,13 @@ class SKABaseDevice(
 
         self._create_attribute(
             "longRunningCommandsInQueue",
-            self._status_queue_size,  # TODO: decide contents of this attr
+            self._status_queue_size,
             self.longRunningCommandsInQueue,
         )
 
         self._create_attribute(
             "longRunningCommandIDsInQueue",
-            self._status_queue_size,  # TODO: decide contents of this attr
+            self._status_queue_size,
             self.longRunningCommandIDsInQueue,
         )
 
@@ -658,7 +658,6 @@ class SKABaseDevice(
         self._create_attribute(
             "longRunningCommandProgress",
             self._status_queue_size,
-            # TODO: Why does this need to be bigger than max_executing_tasks?
             self.longRunningCommandProgress,
         )
 

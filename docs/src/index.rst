@@ -12,6 +12,7 @@ Welcome to SKA Tango Base documentation!
   :maxdepth: 1
 
   Developer Guide<guide/index>
+  Migration Guide<migration/index>
   API<api/index>
 
 

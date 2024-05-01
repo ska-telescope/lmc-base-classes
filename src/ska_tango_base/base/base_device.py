@@ -571,6 +571,7 @@ class SKABaseDevice(
             self._command_ids_in_queue: list[str] = []
             self._commands_in_queue: list[str] = []
             self._command_statuses: list[str] = []
+            self._pruned_command_statuses: list[str] = []
             self._command_in_progress: list[str] = ["", ""]
             self._command_progresses: list[str] = []
             self._command_result: tuple[str, str] = ("", "")
@@ -712,6 +713,50 @@ class SKABaseDevice(
             logger=self.logger, callback=self._update_admin_mode
         )
 
+    def _prune_completed_commands(
+        self: SKABaseDevice[ComponentManagerT], command_list: list[tuple[str, str]]
+    ) -> list[tuple[str, str]]:
+        """
+        Prune a command list of any lingering completed tasks.
+
+        :param command_list: list of (cmd_id, <info>) tuples of commands to prune
+        :return: the pruned list with the oldest completed commands removed
+        """
+        if len(command_list) <= self._status_queue_size:
+            # Nothing to do
+            return command_list
+
+        # Determine which commands have completed by looking at the
+        # current command statuses
+        completed_commands = []
+        for index in range(0, len(self._command_statuses) - 1, 2):
+            if self._command_statuses[index + 1] in [
+                TaskStatus.ABORTED.name,
+                TaskStatus.COMPLETED.name,
+                TaskStatus.REJECTED.name,
+                TaskStatus.FAILED.name,
+            ]:
+                completed_commands.append(self._command_statuses[index])
+
+        # Create a pruned list by removing the oldest completed commands
+        number_to_remove = len(command_list) - self._status_queue_size
+        pruned_list = command_list
+        prune_candidates = [
+            (uid, info)
+            for (uid, info) in sorted(
+                command_list, key=lambda item: item[0].split(sep="_")[0]
+            )
+            if uid in completed_commands
+        ]
+        for item in prune_candidates[0:number_to_remove]:
+            # This gets called many times so we
+            # keep track of which ones we have already logged
+            if self._command_tracker.evict_command(item[0]):
+                self.logger.warning(f"Status queue too big: removing item {item[0]}")
+            pruned_list.remove(item)
+
+        return pruned_list
+
     # ---------
     # Callbacks
     # ---------
@@ -755,7 +800,9 @@ class SKABaseDevice(
         self: SKABaseDevice[ComponentManagerT], commands_in_queue: list[tuple[str, str]]
     ) -> None:
         if commands_in_queue:
-            command_ids, command_names = zip(*commands_in_queue)
+            command_ids, command_names = zip(
+                *self._prune_completed_commands(commands_in_queue)
+            )
             self._command_ids_in_queue = [str(command_id) for command_id in command_ids]
             self._commands_in_queue = [
                 str(command_name) for command_name in command_names
@@ -777,39 +824,24 @@ class SKABaseDevice(
         command_statuses: list[tuple[str, TaskStatus]],
     ) -> None:
         statuses = [(uid, status.name) for (uid, status) in command_statuses]
-        if len(statuses) > self._status_queue_size:
-            # We have too many lingering completed/failed tasks so prune some from
-            # the list, taking the oldest first. Use the first part of the uid
-            # (the timestamp from when the command was submitted) to determine
-            # which are the oldest.
-            number_to_remove = len(statuses) - self._status_queue_size
-            prune_candidates = [
-                (uid, status)
-                for (uid, status) in sorted(
-                    statuses, key=lambda item: item[0].split(sep="_")[0]
-                )
-                if status
-                in [
-                    TaskStatus.ABORTED.name,
-                    TaskStatus.COMPLETED.name,
-                    TaskStatus.REJECTED.name,
-                    TaskStatus.FAILED.name,
-                ]
-            ]
-            for item in prune_candidates[0:number_to_remove]:
-                # This gets called many times so we
-                # keep track of which ones we have already logged
-                if self._command_tracker.evict_command(item[0]):
-                    self.logger.warning(
-                        f"Status queue too big: removing item {item[0]}"
-                    )
-                statuses.remove(item)
 
+        # We want to store the complete list for future reference
+        # but generate a pruned list to report on the Tango attribute
         self._command_statuses = [
             str(item) for item in itertools.chain.from_iterable(statuses)
         ]
-        self.push_change_event("longRunningCommandStatus", self._command_statuses)
-        self.push_archive_event("longRunningCommandStatus", self._command_statuses)
+        self._pruned_command_statuses = [
+            str(item)
+            for item in itertools.chain.from_iterable(
+                self._prune_completed_commands(statuses)
+            )
+        ]
+        self.push_change_event(
+            "longRunningCommandStatus", self._pruned_command_statuses
+        )
+        self.push_archive_event(
+            "longRunningCommandStatus", self._pruned_command_statuses
+        )
 
         # Check for commands starting and ending execution
         for uid, status in command_statuses:
@@ -1282,13 +1314,13 @@ class SKABaseDevice(
         """
         Read the status of the currently executing long running commands.
 
-        ID, status pair of the currently executing command.
+        ID, status pairs of the currently executing commands.
         Clients can subscribe to on_change event and wait for the
         ID they are interested in.
 
         :param attr: Tango attribute being read
         """
-        attr.set_value(self._command_statuses)
+        attr.set_value(self._pruned_command_statuses)
 
     def longRunningCommandInProgress(
         self: SKABaseDevice[ComponentManagerT],

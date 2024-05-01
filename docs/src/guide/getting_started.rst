@@ -12,7 +12,7 @@ installed from the SKAO repository:
 
 .. code-block:: shell-session
 
-   me@local:~$ python3 -m pip install --extra-index-url https://artefact.skao.int/repository/pypi/simple ska-tango-base
+   me@local:~$ python3 -m pip --require-virtualenv install --extra-index-url https://artefact.skao.int/repository/pypi-all/simple ska-tango-base
 
 Basic steps
 -----------

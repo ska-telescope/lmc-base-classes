@@ -125,6 +125,10 @@ class CommandTracker:  # pylint: disable=too-many-instance-attributes
         self._commands: dict[str, _CommandData] = {}
         self._removal_time = removal_time
 
+        # Keep track of the command IDs which have been evicted from the list
+        # being reported by the LRC attributes because we have run out of space
+        self._evicted_commands: list[str] = []
+
     def new_command(
         self: CommandTracker,
         command_name: str,
@@ -152,6 +156,8 @@ class CommandTracker:  # pylint: disable=too-many-instance-attributes
     def _schedule_removal(self: CommandTracker, command_id: str) -> None:
         def remove(command_id: str) -> None:
             del self._commands[command_id]
+            if command_id in self._evicted_commands:
+                self._evicted_commands.remove(command_id)
             self._queue_changed_callback(self.commands_in_queue)
 
         threading.Timer(self._removal_time, remove, (command_id,)).start()
@@ -289,6 +295,21 @@ class CommandTracker:  # pylint: disable=too-many-instance-attributes
         if command_id in self._commands:
             return self._commands[command_id]["status"]
         return TaskStatus.NOT_FOUND
+
+    def evict_command(self: CommandTracker, command_id: str) -> bool:
+        """
+        Add to the list of commands not to be reported by the LRC attributes.
+
+        This is used to ensure we don't overflow the attribute bounds when
+        there are too many finished commands lingering for the removal_period.
+
+        :param command_id: the unique command id
+        :return: True if the command was not already evicted.
+        """
+        if command_id not in self._evicted_commands:
+            self._evicted_commands.append(command_id)
+            return True
+        return False
 
 
 ComponentManagerT = TypeVar("ComponentManagerT", bound=BaseComponentManager)
@@ -564,7 +585,6 @@ class SKABaseDevice(
             self._init_state_model()
 
             self.component_manager = self.create_component_manager()
-            self._logged_status_removals: list[str] = []
             self._create_lrc_attributes()
 
             for attribute_name in [
@@ -777,10 +797,9 @@ class SKABaseDevice(
                 ]
             ]
             for item in prune_candidates[0:number_to_remove]:
-                if item[0] not in self._logged_status_removals:
-                    # This gets called many times so we
-                    # keep track of which ones we have logged
-                    self._logged_status_removals.append(item[0])
+                # This gets called many times so we
+                # keep track of which ones we have already logged
+                if self._command_tracker.evict_command(item[0]):
                     self.logger.warning(
                         f"Status queue too big: removing item {item[0]}"
                     )

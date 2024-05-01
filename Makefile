@@ -33,9 +33,11 @@ include .make/docs.mk
 
 DOCS_SPHINXOPTS=-W --keep-going
 
+ifdef CI_JOB_TOKEN
 docs-pre-build:
 	poetry config virtualenvs.create false
 	poetry install --no-root --only docs
+endif
 
 .PHONY: docs-pre-build
 

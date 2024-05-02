@@ -22,6 +22,7 @@ Welcome to SKA Tango Base documentation!
   :caption: Concepts
 
   concepts/component-managers
+  concepts/long-running-commands
   TO BE MOVED<guide/long-running-command>
 
 .. toctree::

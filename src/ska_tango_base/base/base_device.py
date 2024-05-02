@@ -572,7 +572,7 @@ class SKABaseDevice(
             self._commands_in_queue: list[str] = []
             self._command_statuses: list[str] = []
             self._pruned_command_statuses: list[str] = []
-            self._command_in_progress: list[str] = ["", ""]
+            self._commands_in_progress: list[str] = []
             self._command_progresses: list[str] = []
             self._command_result: tuple[str, str] = ("", "")
 
@@ -848,7 +848,7 @@ class SKABaseDevice(
             command_name = uid.split("_", 2)[2]
             if (
                 status == TaskStatus.IN_PROGRESS
-                and command_name not in self._command_in_progress
+                and command_name not in self._commands_in_progress
             ):
                 self._update_command_in_progress(command_name, True)
                 self._update_commanded_state(command_name)
@@ -859,26 +859,22 @@ class SKABaseDevice(
                     TaskStatus.COMPLETED,
                     TaskStatus.FAILED,
                 ]
-                and command_name in self._command_in_progress
+                and command_name in self._commands_in_progress
             ):
                 self._update_command_in_progress(command_name, False)
 
     def _update_command_in_progress(
         self: SKABaseDevice[ComponentManagerT], command_name: str, in_progress: bool
     ) -> None:
-        # TODO: Not ideal, as any child class could implement a very specific command
-        # containing the word 'Abort'
-
-        [cmd, abort] = self._command_in_progress
-        if "Abort" in command_name:
-            self._command_in_progress = [cmd, command_name if in_progress else ""]
-        else:
-            self._command_in_progress = [command_name if in_progress else "", abort]
+        if in_progress:
+            self._commands_in_progress.append(command_name)
+        if not in_progress and command_name in self._commands_in_progress:
+            self._commands_in_progress.remove(command_name)
         self.push_change_event(
-            "longRunningCommandInProgress", self._command_in_progress
+            "longRunningCommandInProgress", self._commands_in_progress
         )
         self.push_archive_event(
-            "longRunningCommandInProgress", self._command_in_progress
+            "longRunningCommandInProgress", self._commands_in_progress
         )
 
     def _update_commanded_state(
@@ -1332,7 +1328,7 @@ class SKABaseDevice(
         Name(s) of command and possible abort in progress or empty string(s).
         :param attr: Tango attribute being read
         """
-        attr.set_value(self._command_in_progress)
+        attr.set_value(self._commands_in_progress)
 
     def longRunningCommandProgress(
         self: SKABaseDevice[ComponentManagerT], attr: attribute

@@ -214,7 +214,6 @@ class FakeBaseComponent:
             power=power_state,
         )
 
-    @check_communicating
     @wait_until_done
     def off(
         self: FakeBaseComponent,
@@ -233,7 +232,6 @@ class FakeBaseComponent:
             "Off", PowerState.OFF, task_callback, task_abort_event
         )
 
-    @check_communicating
     @wait_until_done
     def standby(
         self: FakeBaseComponent,
@@ -252,7 +250,6 @@ class FakeBaseComponent:
             "Standby", PowerState.STANDBY, task_callback, task_abort_event
         )
 
-    @check_communicating
     @wait_until_done
     def on(
         self: FakeBaseComponent,

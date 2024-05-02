@@ -1090,9 +1090,7 @@ class TestSKABaseDevice:  # pylint: disable=too-many-public-methods
         )
         change_event_callbacks["longRunningCommandProgress"].assert_change_event(())
         change_event_callbacks["longRunningCommandStatus"].assert_change_event(())
-        change_event_callbacks["longRunningCommandInProgress"].assert_change_event(
-            ("", "")
-        )
+        change_event_callbacks["longRunningCommandInProgress"].assert_change_event(())
         change_event_callbacks["longRunningCommandResult"].assert_change_event(("", ""))
 
         [[result_code], [command_id]] = device_under_test.On()
@@ -1105,7 +1103,7 @@ class TestSKABaseDevice:  # pylint: disable=too-many-public-methods
         )
         on_command = command_id.split("_", 2)[2]
         change_event_callbacks.assert_change_event(
-            "longRunningCommandInProgress", (on_command, "")
+            "longRunningCommandInProgress", (on_command,)
         )
 
         for progress_point in FakeBaseComponent.PROGRESS_REPORTING_POINTS:
@@ -1131,9 +1129,7 @@ class TestSKABaseDevice:  # pylint: disable=too-many-public-methods
         change_event_callbacks.assert_change_event(
             "longRunningCommandStatus", (command_id, "COMPLETED")
         )
-        change_event_callbacks.assert_change_event(
-            "longRunningCommandInProgress", ("", "")
-        )
+        change_event_callbacks.assert_change_event("longRunningCommandInProgress", ())
 
         # Check what happens if we call On() when the device is already ON.
         [[result_code], [message]] = device_under_test.On()
@@ -1176,9 +1172,7 @@ class TestSKABaseDevice:  # pylint: disable=too-many-public-methods
         )
         change_event_callbacks["longRunningCommandProgress"].assert_change_event(())
         change_event_callbacks["longRunningCommandStatus"].assert_change_event(())
-        change_event_callbacks["longRunningCommandInProgress"].assert_change_event(
-            ("", "")
-        )
+        change_event_callbacks["longRunningCommandInProgress"].assert_change_event(())
         change_event_callbacks["longRunningCommandResult"].assert_change_event(("", ""))
 
         [[result_code], [command_id]] = device_under_test.Standby()
@@ -1192,7 +1186,7 @@ class TestSKABaseDevice:  # pylint: disable=too-many-public-methods
         )
         on_command = command_id.split("_", 2)[2]
         change_event_callbacks.assert_change_event(
-            "longRunningCommandInProgress", (on_command, "")
+            "longRunningCommandInProgress", (on_command,)
         )
 
         for progress_point in FakeBaseComponent.PROGRESS_REPORTING_POINTS:
@@ -1217,9 +1211,7 @@ class TestSKABaseDevice:  # pylint: disable=too-many-public-methods
         change_event_callbacks.assert_change_event(
             "longRunningCommandStatus", (command_id, "COMPLETED")
         )
-        change_event_callbacks.assert_change_event(
-            "longRunningCommandInProgress", ("", "")
-        )
+        change_event_callbacks.assert_change_event("longRunningCommandInProgress", ())
 
         assert (
             device_under_test.CheckLongRunningCommandStatus(command_id) == "COMPLETED"
@@ -1266,9 +1258,7 @@ class TestSKABaseDevice:  # pylint: disable=too-many-public-methods
         )
         change_event_callbacks["longRunningCommandProgress"].assert_change_event(())
         change_event_callbacks["longRunningCommandStatus"].assert_change_event(())
-        change_event_callbacks["longRunningCommandInProgress"].assert_change_event(
-            ("", "")
-        )
+        change_event_callbacks["longRunningCommandInProgress"].assert_change_event(())
         change_event_callbacks["longRunningCommandResult"].assert_change_event(("", ""))
 
         # Check what happens if we call Off() when the device is already OFF.

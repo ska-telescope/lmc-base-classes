@@ -2,6 +2,10 @@
 Moving to v1.0
 ==============
 
+Below are all the breaking changes for the ska-tango-base 1.0.0 release.  They
+are ordered by how likely they are to require intervention when updating to
+ska-tango-base 1.0.0.
+
 .. contents:: Contents
    :depth: 2
    :local:
@@ -126,6 +130,53 @@ required see XXX.
 
 .. TODO Write How-to about component managers with multiple queues
 
+New BaseComponentManager properties describing LRC capabilities
+---------------------------------------------------------------
+
+ska-tango-base 1.0.0 has introduced two new read-only properties to the
+:class:`~ska_tango_base.base.component_manager.BaseComponentManager`,
+:attr:`~ska_tango_base.base.component_manager.BaseComponentManager.max_executing_tasks`
+and
+:attr:`~ska_tango_base.base.component_manager.BaseComponentManager.max_queued_tasks`.
+These properties describe how many tasks a component manager can be
+simultaneously set to
+:obj:`TaskStatus.IN_PROGRESS <ska_control_model.TaskStatus.IN_PROGRESS>`
+or
+:obj:`TaskStatus.QUEUED <ska_control_model.TaskStatus.QUEUED>`
+respectively.
+:class:`~ska_tango_base.base.component_manager.BaseComponentManager` provides a
+default implementation for these properties (hard-coded to the minimums,
+:code:`max_executing_tasks=1` and :code:`max_queued_tasks=0`) and the intention is that
+derived classes override these properties so that the
+:class:`~ska_tango_base.base.base_device.SKABaseDevice` can construct the LRC
+attributes with appropriate maximum bounds.
+
+:class:`~ska_tango_base.subarray.component_manager.SubarrayComponentManager`
+overrides ``max_executing_tasks`` to 2 as the Abort command must be executed
+simultaneously with other commands.
+:class:`~ska_tango_base.executor.executor_component_manager.TaskExecutorComponentManager`
+overrides ``max_queued_tasks`` to reflect the size of its queue.
+
+If your component manager inherits from either
+:class:`~ska_tango_base.subarray.component_manager.SubarrayComponentManager`
+or
+:class:`~ska_tango_base.executor.executor_component_manager.TaskExecutorComponentManager`
+(or both) you do not have to do anything unless your component manager can
+execute more than 2 tasks at the same time or has an additional queue over the
+queue provided by the ``TaskExecutorComponentManager``.
+
+If your component manager does not inherit from these, you may have to override
+one or both of the properties to correctly reflect how many tasks can be 
+:obj:`TaskStatus.IN_PROGRESS <ska_control_model.TaskStatus.IN_PROGRESS>`
+or
+:obj:`TaskStatus.QUEUED <ska_control_model.TaskStatus.QUEUED>`
+simultaneously.
+
+If your component manager does not correctly report this information, warnings
+will be generated if the LRC attribute maximum size is exceeded for any LRC
+attribute and clients may not receive information about your tasks.
+
+
 Changes to LRC results provided by default by ska-tango-base
 ------------------------------------------------------------
 
@@ -188,3 +239,21 @@ command.
 This change might require clients to be updated which were expecting the initial
 status for a command to be :obj:`TaskStatus.QUEUED
 <ska_control_model.TaskStatus.QUEUED>`.
+
+Changes to longRunningCommandInProgress
+---------------------------------------
+
+Prior to ska-tango-base 1.0.0, the
+:attr:`~ska_tango_base.base.base_device.SKABaseDevice.longRunningCommandInProgress`
+attribute would always contain two elements.  For example, when there were no
+commands in progress it would contain :code:`["", ""]`.
+
+To align the behaviour with the other LRC attributes for
+ska-tango-base 1.0.0, the
+:attr:`~ska_tango_base.base.base_device.SKABaseDevice.longRunningCommandInProgress`
+attribute will contain as many elements as there are LRCs in progress.  So, for
+example, if there are no LRCs in progress the attribute will contain
+an empty list (:code:`[]`).
+
+If your client was relying on the previous behaviour of always containing two
+elements then it will need updating.

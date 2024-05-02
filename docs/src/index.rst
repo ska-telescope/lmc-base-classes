@@ -16,6 +16,7 @@ Welcome to SKA Tango Base documentation!
   :caption: How-To Guides
 
   how-to/getting-started
+  how-to/add-an-lrc
 
 .. toctree::
   :maxdepth: 1
@@ -23,12 +24,13 @@ Welcome to SKA Tango Base documentation!
 
   concepts/component-managers
   concepts/long-running-commands
-  TO BE MOVED<guide/long-running-command>
 
 .. toctree::
   :maxdepth: 1
   :caption: Reference
 
+  reference/lrc-client-server-protocol
+  reference/commanded-state-attributes
   api/index
 
 .. toctree::

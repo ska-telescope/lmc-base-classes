@@ -13,6 +13,7 @@ package.
 """
 from __future__ import annotations
 
+import functools
 import logging
 import threading
 from time import sleep
@@ -26,6 +27,47 @@ from ...base import (
     check_communicating,
 )
 from ...executor import TaskExecutorComponentManager
+
+
+def wait_until_done(command: Callable[..., None]) -> Callable[..., None]:
+    """
+    Wait until done before calling the function.
+
+    :param: command: Callable function
+    :return: Wrapped Callable function
+    """
+
+    @functools.wraps(command)
+    def wrapper(*args: Any, **kwargs: Any) -> None:
+        task_callback: TaskCallbackType | None = kwargs.get("task_callback")
+        if task_callback is not None:
+            done_event = threading.Event()
+
+            def decorate_task_callback(
+                task_callback: TaskCallbackType,
+            ) -> Callable[..., TaskCallbackType]:
+                def wrap_task_callback(
+                    status: TaskStatus | None = None,
+                    **kwargs: Any,
+                ) -> Any:
+                    if status is not None and status in [
+                        TaskStatus.COMPLETED,
+                        TaskStatus.ABORTED,
+                        TaskStatus.FAILED,
+                        TaskStatus.REJECTED,
+                    ]:
+                        done_event.set()
+                    return task_callback(status=status, **kwargs)
+
+                return wrap_task_callback
+
+            kwargs["task_callback"] = decorate_task_callback(task_callback)
+            command(*args, **kwargs)
+            done_event.wait()
+        else:
+            command(*args, **kwargs)
+
+    return wrapper
 
 
 class FakeBaseComponent:
@@ -172,6 +214,8 @@ class FakeBaseComponent:
             power=power_state,
         )
 
+    @check_communicating
+    @wait_until_done
     def off(
         self: FakeBaseComponent,
         task_callback: TaskCallbackType,
@@ -189,6 +233,8 @@ class FakeBaseComponent:
             "Off", PowerState.OFF, task_callback, task_abort_event
         )
 
+    @check_communicating
+    @wait_until_done
     def standby(
         self: FakeBaseComponent,
         task_callback: TaskCallbackType,
@@ -206,6 +252,8 @@ class FakeBaseComponent:
             "Standby", PowerState.STANDBY, task_callback, task_abort_event
         )
 
+    @check_communicating
+    @wait_until_done
     def on(
         self: FakeBaseComponent,
         task_callback: TaskCallbackType,

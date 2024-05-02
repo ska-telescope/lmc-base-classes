@@ -678,7 +678,7 @@ class SKABaseDevice(
 
         self._create_attribute(
             "longRunningCommandProgress",
-            self._status_queue_size,
+            self.component_manager.max_executing_tasks,
             self.longRunningCommandProgress,
         )
 

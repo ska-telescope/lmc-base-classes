@@ -40,7 +40,7 @@ component. It is *highly recommended* to implement and thoroughly test
 your component manager *before* embedding it in a Tango device.
 
 For more information on components and component managers, see
-:doc:`component_managers`.
+:doc:`../concepts/component-managers`.
 
 Writing a component manager involves the following steps.
 
@@ -98,7 +98,7 @@ Writing a component manager involves the following steps.
      requests, then the component manager would need to initiate
      polling of the component.
 
-4. **Implement component monitoring.** Whenever your component changes
+3. **Implement component monitoring.** Whenever your component changes
    its state, your component manager needs to become reliably aware of
    that change within a reasonable timeframe, so that it can pass this
    on to the Tango device.
@@ -121,7 +121,7 @@ Writing a component manager involves the following steps.
    2. Implement monitoring so that this mechanism is triggered whenever
       a change in component temperature is detected.
 
-5. **Implement component control.** Methods to control the component
+4. **Implement component control.** Methods to control the component
    must be implemented; for example the component manager's ``on()``
    method must be implemented to actually tell the component to turn on.
 

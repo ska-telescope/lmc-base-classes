@@ -1,12 +1,14 @@
-# Version History
+# Changelog
 
 ## unreleased
 
 - WOM-300: Add migration guide
 - WOM-299: Update to pytango ^9.4.2 for build and 9.5.0 for development
-- WOM-311: Update CODEOWNERS
-- WOM-319: Fix timing issue with LRCInProgress and Abort
 - WOM-250,345: Remove max_workers from TaskExecutorComponentManager
+
+## 0.20.2
+
+- WOM-319: Fix timing issue with LRCInProgress and Abort
 - WOM-320: Do not directly call Tango operations while holding the CommandTracker lock
 
 ## 0.20.1

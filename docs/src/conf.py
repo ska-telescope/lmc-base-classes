@@ -95,6 +95,7 @@ extensions = [
     "sphinx.ext.inheritance_diagram",
     "sphinx.ext.viewcode",
     "sphinxcontrib.plantuml",
+    "recommonmark",
 ]
 autoclass_content = "class"
 plantuml_syntax_error_image = True
@@ -104,7 +105,7 @@ plantuml_syntax_error_image = True
 # templates_path = []
 
 # The suffix of source filenames.
-source_suffix = ".rst"
+source_suffix = [".rst", ".md"]
 
 # The encoding of source files.
 # source_encoding = 'utf-8-sig'

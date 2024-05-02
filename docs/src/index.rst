@@ -7,14 +7,35 @@ Welcome to SKA Tango Base documentation!
 
 .. automodule:: ska_tango_base
 
+.. toctree::
+  :maxdepth: 1
+  :caption: Tutorials
 
 .. toctree::
   :maxdepth: 1
+  :caption: How-To Guides
 
-  Developer Guide<guide/index>
-  Migration Guide<migration/index>
-  API<api/index>
+  how-to/getting-started
 
+.. toctree::
+  :maxdepth: 1
+  :caption: Concepts
+
+  concepts/component-managers
+  TO BE MOVED<guide/long-running-command>
+
+.. toctree::
+  :maxdepth: 1
+  :caption: Reference
+
+  api/index
+
+.. toctree::
+  :maxdepth: 1
+  :caption: Releases
+
+  releases/changelog
+  migration/index
 
 Indices and tables
 ==================

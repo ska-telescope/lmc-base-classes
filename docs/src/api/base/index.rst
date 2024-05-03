@@ -7,8 +7,8 @@ Base subpackage
 
 .. toctree::
 
-  Admin Mode Model<admin_mode_model>
-  Op State Model<op_state_model>
+  Admin Mode Model<admin-mode-model>
+  Op State Model<op-state-model>
   Logging<logging>
-  Base Component Manager<component_manager>
-  Base Device<base_device>
+  Base Component Manager<component-manager>
+  Base Device<base-device>

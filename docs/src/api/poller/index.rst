@@ -8,4 +8,4 @@ Poller subpackage
 .. toctree::
 
   Poller<poller>
-  Polling Component Manager<polling_component_manager>
+  Polling Component Manager<polling-component-manager>

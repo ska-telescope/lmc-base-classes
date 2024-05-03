@@ -140,6 +140,8 @@ dequeued and is executed (provided it is allowed).
    current state, which might be different to the state the device was in when
    the task was enqueued.
 
+.. _lrc-concept-tasks:
+
 Long Running Command tasks
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 

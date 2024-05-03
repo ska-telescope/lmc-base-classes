@@ -850,7 +850,7 @@ class SKABaseDevice(
                 status == TaskStatus.IN_PROGRESS
                 and command_name not in self._commands_in_progress
             ):
-                self._update_command_in_progress(command_name, True)
+                self._update_commands_in_progress(command_name, True)
                 self._update_commanded_state(command_name)
             elif (
                 status
@@ -861,15 +861,19 @@ class SKABaseDevice(
                 ]
                 and command_name in self._commands_in_progress
             ):
-                self._update_command_in_progress(command_name, False)
+                self._update_commands_in_progress(command_name, False)
 
-    def _update_command_in_progress(
+    def _update_commands_in_progress(
         self: SKABaseDevice[ComponentManagerT], command_name: str, in_progress: bool
     ) -> None:
+        # Pass a reference to a new object for the push events, as this callback can be
+        # called multiple times before the event is pushed in the tango omni thread.
+        commands_in_progress = self._commands_in_progress.copy()
         if in_progress:
-            self._commands_in_progress.append(command_name)
-        if not in_progress and command_name in self._commands_in_progress:
-            self._commands_in_progress.remove(command_name)
+            commands_in_progress.append(command_name)
+        elif command_name in commands_in_progress:
+            commands_in_progress.remove(command_name)
+        self._commands_in_progress = commands_in_progress
         self.push_change_event(
             "longRunningCommandInProgress", self._commands_in_progress
         )

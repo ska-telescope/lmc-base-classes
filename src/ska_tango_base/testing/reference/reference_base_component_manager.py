@@ -20,6 +20,7 @@ from time import sleep
 from typing import Any, Callable, Generic, TypeVar, cast
 
 from ska_control_model import CommunicationStatus, PowerState, ResultCode, TaskStatus
+from ska_tango_testing.mock import MockCallableGroup
 
 from ...base import (
     CommunicationStatusCallbackType,
@@ -31,16 +32,23 @@ from ...executor import TaskExecutorComponentManager
 
 def wait_until_done(command: Callable[..., None]) -> Callable[..., None]:
     """
-    Wait until done before calling the function.
+    Wait until the command is done before the device may continue with other tasks.
 
-    :param: command: Callable function
-    :return: Wrapped Callable function
+    The waited on threading event is set when the callback is called with command status
+    equal to COMPLETED, ABORTED, FAILED or REJECTED. This is only done if the command
+    has been passed a real task callback, and not a mock callback or no callback at all.
+
+    :param command: Command method.
+    :return: Wrapped command method.
     """
 
     @functools.wraps(command)
     def wrapper(*args: Any, **kwargs: Any) -> None:
-        task_callback: TaskCallbackType | None = kwargs.get("task_callback")
-        if task_callback is not None:
+        task_callback = kwargs.get("task_callback")
+        if task_callback is not None and not isinstance(
+            task_callback,
+            MockCallableGroup._Callable,  # pylint: disable=protected-access
+        ):
             done_event = threading.Event()
 
             def decorate_task_callback(

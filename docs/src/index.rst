@@ -25,6 +25,7 @@ Welcome to SKA Tango Base documentation!
 
   concepts/component-managers
   concepts/long-running-commands
+  concepts/failure-guidelines
 
 .. toctree::
   :maxdepth: 1

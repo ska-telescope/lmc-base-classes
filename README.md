@@ -50,23 +50,6 @@ The requirements for testing are:
 2. Navigate to the root directory of the repository from terminal
 3. Run ``python3 -m pip install . --extra-index-url https://artefact.skao.int/repository/pypi-internal/simple``
 
-### Testing
-
-The project can be tested locally by invoking ``make CI_JOB_ID=some_id test`` command. This invokes a chain of commands from the makefile which builds the project's python package, creates a docker image with the project, instantiates separate container for each of the base class and runs unit test cases of each class. Additionally, code analysis is also done and code coverage report is prepared. After testing is done, the containers are taken down.
-
-### Usage
-
-The base classes are installed as a Python package in the system. The intended usage of the base classes is to inherit the class according to the requirement. The class needs to be imported in the module. e.g.
-
-```python
-from ska.base import SKABaseDevice
-
-class DishLeafNode(SKABaseDevice):
-.
-.
-.
-```
-
 ### Development
 
 #### PyCharm

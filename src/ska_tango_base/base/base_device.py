@@ -654,7 +654,7 @@ class SKABaseDevice(
         # `update_commands_in_queue` will prune the oldest commands from the list if
         # we reach the limit.
         self._status_queue_size = (
-            min(self.component_manager.max_queued_tasks, 1) * 2
+            max(self.component_manager.max_queued_tasks, 1) * 2
             + self.component_manager.max_executing_tasks
             + 1
         )

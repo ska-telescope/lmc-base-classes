@@ -643,7 +643,7 @@ class SKABaseDevice(
         # commands as we can have in the queue, plus the maximum number of
         # simultaneously executing tasks, plus potentially an abort command.
         # That gets us to `ComponentManager.max_queued_tasks` +
-        # `ComponentManager.max_executing_tasks`.
+        # `ComponentManager.max_executing_tasks` + 1.
         # However, when a command is finished (i.e one of COMPLETED, ABORTED,
         # REJECTED, FAILED) it hangs around with the LRC attributes
         # `CommandTracker._removal_time` seconds, so we need a buffer.

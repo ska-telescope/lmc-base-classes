@@ -36,11 +36,11 @@ Welcome to SKA Tango Base documentation!
   api/index
 
 .. toctree::
-  :maxdepth: 1
+  :titlesonly:
   :caption: Releases
 
+  releases/migrating-to-1.0
   releases/changelog
-  migration/index
 
 Indices and tables
 ==================

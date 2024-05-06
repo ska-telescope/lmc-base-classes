@@ -1,5 +1,5 @@
 ============================================
-Long Running Command Client/Server Interface
+Long Running Command client/server interface
 ============================================
 
 This page describes the protocol built on top of Tango used by ska-tango-base to
@@ -24,7 +24,7 @@ depending on the value of the ResultCode as follows:
   Queue).  The second return value contains a reason string.
 
 
-Monitoring Progress of Long Running Commands
+Monitoring progress of Long Running Commands
 --------------------------------------------
 
 Once a client has initiated an LRC as described above the following LRC
@@ -77,7 +77,7 @@ command status and results**.
 In addition to the above attributes, the following commands are provided for
 interacting with Long Running Commands.
 
-**LRC Commands**
+**LRC commands**
 
 +-------------------------------+------------------------------+
 | Command                       | Description                  |
@@ -90,11 +90,11 @@ interacting with Long Running Commands.
 |                               | LRCs                         |
 +-------------------------------+------------------------------+
 
-UML Illustration
+UML illustration
 ----------------
 
-Multiple Clients Invoke Multiple Long Running Commands
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Multiple clients invoke multiple Long Running Commands:
+
 .. uml:: lrc-scenario.uml
 
 Class diagram

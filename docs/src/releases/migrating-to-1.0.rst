@@ -1,6 +1,6 @@
-==============
-Moving to v1.0
-==============
+================
+Migrating to 1.0
+================
 
 This migration guide lists all the breaking changes introduced by ska-tango-base
 release 1.0.0.   Depending on the Tango Device implementation, some of the

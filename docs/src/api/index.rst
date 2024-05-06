@@ -32,5 +32,4 @@ API
   Commands<commands>
   Control Model<control-model>
   Faults<faults>
-  Release<release>
   Utils<utils>

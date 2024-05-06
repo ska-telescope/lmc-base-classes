@@ -1,5 +1,5 @@
 ===============================================
-commandedState and commandedObsState Attributes
+commandedState and commandedObsState attributes
 ===============================================
 
 In order to provide information about the state of a Tango device the

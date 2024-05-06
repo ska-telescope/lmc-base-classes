@@ -637,21 +637,27 @@ class SKABaseDevice(
 
     def _create_lrc_attributes(self: SKABaseDevice[ComponentManagerT]) -> None:
         """Create attributes for the long running commands."""
-        # Ensure max_dim_x is always set to at least 1
-        # max_queued_tasks = max(1, self.component_manager.max_queued_tasks)
-
-        # For the status queue We need space for at least as many commands as we can
-        # have in the queue and an executing command and potentially an abort command.
-        # That gets us to `ComponentManager.max_queued_tasks` + 2. However, when a
-        # command is finished (i.e one of COMPLETED, ABORTED, REJECTED, FAILED) it
-        # hangs around with the LRC attributes `CommandTracker._removal_time` seconds,
-        # so we need a buffer.
+        # For the attributes which report both queued and executing commands
+        # (longRunningCommandStatus, longRunningCommandsInQueue and
+        # longRunningCommandIDsInQueue), we need space for at least as many
+        # commands as we can have in the queue, plus the maximum number of
+        # simultaneously executing tasks, plus potentially an abort command.
+        # That gets us to `ComponentManager.max_queued_tasks` +
+        # `ComponentManager.max_executing_tasks`.
+        # However, when a command is finished (i.e one of COMPLETED, ABORTED,
+        # REJECTED, FAILED) it hangs around with the LRC attributes
+        # `CommandTracker._removal_time` seconds, so we need a buffer.
         # We choose a buffer of `ComponentManager.max_queued_tasks` to be able to
         # handle the situation where a client fills the queue with commands that all
         # get rejected because the command isn't allowed then queues up the correct
-        # command straight after. NB: update_command_statuses will prune the oldest
-        # command statuses from the queue if there are too many for the buffer.
-        self._status_queue_size = self.component_manager.max_queued_tasks * 2 + 2
+        # command straight after. NB: `update_command_statuses` and
+        # `update_commands_in_queue` will prune the oldest commands from the list if
+        # we reach the limit.
+        self._status_queue_size = (
+            min(self.component_manager.max_queued_tasks, 1) * 2
+            + self.component_manager.max_executing_tasks
+            + 1
+        )
         self._create_attribute(
             "longRunningCommandStatus",
             self._status_queue_size * 2,  # 2 per command

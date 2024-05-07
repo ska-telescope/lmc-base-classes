@@ -226,14 +226,18 @@ LRCs are transitioned to TaskStatus.STAGING initially
 This :obj:`TaskStatus.STAGING <ska_control_model.TaskStatus.STAGING>` status
 corresponds to the state the command is in while the device decides whether to
 enqueue or reject the command. :obj:`~ska_control_model.TaskStatus.STAGING` has
-always been a member of :class:`~ska_control_model.TaskStatus` and appears in
-the LRC documentation, however, prior to the ska-tango-base release 1.0.0 it was
-never actually used.
+always been used internally by ska-tango-base and appears in the LRC
+documentation, however, prior to the ska-tango-base release 1.0.0 a task would
+never have its status published as :obj:`TaskStatus.STAGING
+<ska_control_model.TaskStatus.STAGING>`. Typically, the first status a client
+would see the for a task is :obj:`TaskStatus.QUEUED
+<ska_control_model.TaskStatus.QUEUED>`.
 
-For ska-tango-base 1.0.0 its use has been added so that the command is "in the
-system" as early as possible - improving the visibility of the command if, for
-example, the device gets stuck while deciding whether to enqueue or reject the
-command.
+For ska-tango-base 1.0.0 the :obj:`TaskStatus.STAGING
+<ska_control_model.TaskStatus.STAGING>` status is published like all others so
+that the command is "in the system" as early as possible - improving the
+visibility of the command if, for example, the device gets stuck while deciding
+whether to enqueue or reject the command.
 
 This change might require clients to be updated which were expecting the initial
 status for a command to be :obj:`TaskStatus.QUEUED

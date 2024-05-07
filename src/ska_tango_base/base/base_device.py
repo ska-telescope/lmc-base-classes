@@ -642,9 +642,8 @@ class SKABaseDevice(
         # (longRunningCommandStatus, longRunningCommandsInQueue and
         # longRunningCommandIDsInQueue), we need space for at least as many
         # commands as we can have in the queue, plus the maximum number of
-        # simultaneously executing tasks, plus potentially an abort command.
-        # That gets us to `ComponentManager.max_queued_tasks` +
-        # `ComponentManager.max_executing_tasks` + 1.
+        # simultaneously executing tasks. That gets us to
+        # `ComponentManager.max_queued_tasks` + `ComponentManager.max_executing_tasks`.
         # However, when a command is finished (i.e one of COMPLETED, ABORTED,
         # REJECTED, FAILED) it hangs around with the LRC attributes
         # `CommandTracker._removal_time` seconds, so we need a buffer.
@@ -657,7 +656,6 @@ class SKABaseDevice(
         self._status_queue_size = (
             max(self.component_manager.max_queued_tasks, 1) * 2
             + self.component_manager.max_executing_tasks
-            + 1
         )
         self._create_attribute(
             "longRunningCommandStatus",

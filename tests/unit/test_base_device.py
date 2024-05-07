@@ -1335,11 +1335,11 @@ class TestSKABaseDevice:  # pylint: disable=too-many-public-methods
             command_ids.append(cmd_id[0])
 
         # max_queued_tasks = 32 and max_executing_tasks = 2,
-        # so the attribute bounds are 32*2 + 2 + 1 = 67
-        # Since we have submitted 74 commands, the first seven
+        # so the attribute bounds are 32*2 + 2 = 66
+        # Since we have submitted 74 commands, the first eight
         # completed commands should have been removed
-        expected_removed_items = command_ids[:7]
-        expected_present_items = command_ids[7:]
+        expected_removed_items = command_ids[:8]
+        expected_present_items = command_ids[8:]
         status_attribute = device_under_test.read_attribute("longRunningCommandStatus")
 
         for cmd_id in expected_removed_items:

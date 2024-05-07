@@ -572,7 +572,6 @@ class SKABaseDevice(
             self._command_ids_in_queue: list[str] = []
             self._commands_in_queue: list[str] = []
             self._command_statuses: list[str] = []
-            self._pruned_command_statuses: list[str] = []
             self._commands_in_progress: list[str] = []
             self._command_progresses: list[str] = []
             self._command_result: tuple[str, str] = ("", "")
@@ -733,15 +732,17 @@ class SKABaseDevice(
 
         # Determine which commands have completed by looking at the
         # current command statuses
-        completed_commands = []
-        for index in range(0, len(self._command_statuses) - 1, 2):
-            if self._command_statuses[index + 1] in [
+        completed_commands = [
+            uid
+            for (uid, status) in self._command_tracker.command_statuses
+            if status.name
+            in [
                 TaskStatus.ABORTED.name,
                 TaskStatus.COMPLETED.name,
                 TaskStatus.REJECTED.name,
                 TaskStatus.FAILED.name,
-            ]:
-                completed_commands.append(self._command_statuses[index])
+            ]
+        ]
 
         # Create a pruned list by removing the oldest completed commands
         number_to_remove = len(command_list) - self._status_queue_size
@@ -830,23 +831,14 @@ class SKABaseDevice(
     ) -> None:
         statuses = [(uid, status.name) for (uid, status) in command_statuses]
 
-        # We want to store the complete list for future reference
-        # but generate a pruned list to report on the Tango attribute
         self._command_statuses = [
-            str(item) for item in itertools.chain.from_iterable(statuses)
-        ]
-        self._pruned_command_statuses = [
             str(item)
             for item in itertools.chain.from_iterable(
                 self._prune_completed_commands(statuses)
             )
         ]
-        self.push_change_event(
-            "longRunningCommandStatus", self._pruned_command_statuses
-        )
-        self.push_archive_event(
-            "longRunningCommandStatus", self._pruned_command_statuses
-        )
+        self.push_change_event("longRunningCommandStatus", self._command_statuses)
+        self.push_archive_event("longRunningCommandStatus", self._command_statuses)
 
         # Check for commands starting and ending execution
         for uid, status in command_statuses:
@@ -1325,7 +1317,7 @@ class SKABaseDevice(
 
         :param attr: Tango attribute being read
         """
-        attr.set_value(self._pruned_command_statuses)
+        attr.set_value(self._command_statuses)
 
     def longRunningCommandInProgress(
         self: SKABaseDevice[ComponentManagerT],

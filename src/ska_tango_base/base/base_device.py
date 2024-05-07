@@ -682,7 +682,8 @@ class SKABaseDevice(
 
         self._create_attribute(
             "longRunningCommandProgress",
-            self.component_manager.max_executing_tasks,
+            self.component_manager.max_executing_tasks
+            * 2,  # cmd name and progress for each command
             self.longRunningCommandProgress,
         )
 

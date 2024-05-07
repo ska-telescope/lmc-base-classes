@@ -127,7 +127,8 @@ class CommandTracker:  # pylint: disable=too-many-instance-attributes
 
         # Keep track of the command IDs which have been evicted from the list
         # being reported by the LRC attributes because we have run out of space
-        self._evicted_commands: list[str] = []
+        # so that we only log each one once
+        self._evicted_commands_logged: list[str] = []
 
     def new_command(
         self: CommandTracker,
@@ -156,8 +157,8 @@ class CommandTracker:  # pylint: disable=too-many-instance-attributes
     def _schedule_removal(self: CommandTracker, command_id: str) -> None:
         def remove(command_id: str) -> None:
             del self._commands[command_id]
-            if command_id in self._evicted_commands:
-                self._evicted_commands.remove(command_id)
+            if command_id in self._evicted_commands_logged:
+                self._evicted_commands_logged.remove(command_id)
             self._queue_changed_callback(self.commands_in_queue)
 
         threading.Timer(self._removal_time, remove, (command_id,)).start()
@@ -306,8 +307,8 @@ class CommandTracker:  # pylint: disable=too-many-instance-attributes
         :param command_id: the unique command id
         :return: True if the command was not already evicted.
         """
-        if command_id not in self._evicted_commands:
-            self._evicted_commands.append(command_id)
+        if command_id not in self._evicted_commands_logged:
+            self._evicted_commands_logged.append(command_id)
             return True
         return False
 

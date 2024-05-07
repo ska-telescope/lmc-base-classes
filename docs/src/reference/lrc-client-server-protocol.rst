@@ -41,12 +41,25 @@ command.
 | Attribute                   | Example Value                             |  Description         |
 +=============================+===========================================+======================+
 | longRunningCommandsInQueue  | ('Standby', 'On', 'Off')                  | Keeps track of which |
-|                             |                                           | commands are on the  |
-|                             |                                           | queue                |
+|                             |                                           | commands are known.  |
+|                             |                                           | Note the name is     |
+|                             |                                           | misleading as it     |
+|                             |                                           | includes LRC         |
+|                             |                                           | IN_PROGRESS and LRC  |
+|                             |                                           | that are             |
+|                             |                                           | COMPLETED/ABORTED/   |
+|                             |                                           | REJECTED/FAILED      |
 +-----------------------------+-------------------------------------------+----------------------+
 | longRunningCommandIDsInQueue|('1636437568.0723004_235210334802782_On',  | Keeps track of IDs in|
-|                             |                                           | the queue            |
-|                             |'1636437789.493874_116219429722764_Off')   |                      |
+|                             |'1636437789.493874_116219429722764_Off')   | that have been       |
+|                             |                                           | allocated.           |
+|                             |                                           | Note the name is     |
+|                             |                                           | misleading as it     |
+|                             |                                           | includes LRC         |
+|                             |                                           | IN_PROGRESS and LRC  |
+|                             |                                           | that are             |
+|                             |                                           | COMPLETED/ABORTED/   |
+|                             |                                           | REJECTED/FAILED      |
 +-----------------------------+-------------------------------------------+----------------------+
 | longRunningCommandStatus    | ('1636437568.0723004_235210334802782_On', | ID, status pair of   |
 |                             | 'IN_PROGRESS',                            | the currently        |

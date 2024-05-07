@@ -577,4 +577,4 @@ class ReferenceBaseComponentManager(GenericBaseComponentManager[FakeBaseComponen
             *args,
             **kwargs,
         )
-        self.max_executing_tasks = 2
+        self.max_executing_tasks = 1

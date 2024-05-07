@@ -1,3 +1,5 @@
+.. _lrc-task-guidelines:
+
 =======================================
 How to implement a long running command
 =======================================

@@ -130,11 +130,6 @@ method.  For example::
          super().__init__(...)
          self._task_executor = TaskExecutor(max_workers=max_workers)
 
-For guidance on how to execute multiple LRCs at once with the careful thought
-required see XXX.
-
-.. TODO Write How-to about component managers with multiple queues
-
 New BaseComponentManager properties describing LRC capabilities
 ---------------------------------------------------------------
 
@@ -188,14 +183,13 @@ Changes to LRC results provided by default by ska-tango-base
 In ska-tango-base 1.0.0, the Long Running Commands always provide the result of
 type :code:`(ResultCode, str)` when they transition an LRC to a finished status.
 
-The new guidelines (XXX) for how to use the LRC attributes prescribe that an LRC
-shall report the outcome (success or failure) by providing a ResultCode.  The
-originator of the command (a client) shall subscribe to the attribute
-``longRunningCommandResult`` to be notified when the execution of the command
-ends, and to receive the :class:`~ska_control_model.ResultCode` (i.e. to be
-notified regarding the outcome, success or failure).
-
-.. TODO Link to these guidelines
+The new guidelines (see :ref:`lrc-task-guidelines`) for how to use the LRC
+attributes prescribe that an LRC shall report the outcome (success or failure)
+by providing a ResultCode.  The originator of the command (a client) shall
+subscribe to the attribute ``longRunningCommandResult`` to be notified when the
+execution of the command ends, and to receive the
+:class:`~ska_control_model.ResultCode` (i.e. to be notified regarding the
+outcome, success or failure).
 
 Prior to ska-tango-base 1.0.0, the base classes themselves did not always follow
 this guideline.  In the earlier versions of the ska-tango-base, in some cases

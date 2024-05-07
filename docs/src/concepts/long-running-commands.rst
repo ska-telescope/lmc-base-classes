@@ -64,15 +64,14 @@ An LRC is defined as an asynchronous command which is fulfilled by some
 asynchronous task executed by the Tango device server.
 
 The LRC is initiated by a Tango command which returns a command ID.  The client
-subscribes to LRC attributes which provide information about the asynchronous
-task fulfilling their command, using the command ID to determine if the
-information relates to _their_ task.  Once the task has finished there will be
-an associated ``result`` which the client will be notified of via the LRC
-attributes, see XXX.
+subscribes to LRC attributes which provide information about the various
+asynchronous tasks fulfilling LRCs.  The client uses the command ID to determine
+which the information in the LRC attributes relates to the task fulfilling
+*their* LRC.  Once the task has finished there will be an associated ``result``
+which the client will be notified of via the LRC attributes, see
+:ref:`lrc-client-server-protocol`.
 
-.. TODO Replace XXX with link to "Client/Server LRC protocol" page
-
-With this defintion, coordinating asynchronous operations with LRCs is very
+With this definition, coordinating asynchronous operations with LRCs is very
 similar to how asynchronous operations are coordinated in a traditional control
 system, as described above.  The key differences are the following:
 

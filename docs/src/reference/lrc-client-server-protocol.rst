@@ -1,3 +1,5 @@
+.. _lrc-client-server-protocol:
+
 ============================================
 Long Running Command client/server interface
 ============================================

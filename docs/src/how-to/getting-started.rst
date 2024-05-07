@@ -100,7 +100,7 @@ Writing a component manager involves the following steps.
 
 3. **Implement component monitoring.** Whenever your component changes
    its state, your component manager needs to become reliably aware of
-   that change within a reasonable timeframe, so that it can pass this
+   that change within a reasonable time frame, so that it can pass this
    on to the Tango device.
    
    The abstract component managers provided already contain some helper

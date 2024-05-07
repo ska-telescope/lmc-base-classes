@@ -66,12 +66,12 @@ progress via the `task_callback`.
 Before your task method returns it must update the task status to be either
 :obj:`TaskStatus.COMPLETED <ska_control_model.TaskStatus.COMPLETED>` or
 :obj:`TaskStatus.ABORTED <ska_control_model.TaskStatus.ABORTED>` as
-appropriate and provide a task result via the `task_callback`.
+appropriate, and provide a task result via the `task_callback`.
 
-If your task method raises an exception the task executor will treat this as an
+If your task method raises an exception, the task executor will treat this as an
 abnormal failure (i.e. a bug) and set the task status to
 :obj:`TaskStatus.FAILED <ska_control_model.TaskStatus.FAILED>` and provide a
-result :code:`(ResultCode.FAILED, <message>)`.  To report normal failure set the
+result :code:`(ResultCode.FAILED, <message>)`.  To report a normal failure, set the
 task status to :obj:`TaskStatus.COMPLETED <ska_control_model.TaskStatus.COMPLETED>`
 and use the task result to communicate the failure.
 
@@ -114,7 +114,7 @@ See :ref:`lrc-concept-tasks` for details about the task status state machine.
 
 .. admonition:: Guidelines for task methods
 
-    **task progress**
+    **Task progress**
 
     There is no mechanism for a client to be notified of the maximum value that
     the task progress can take, so it is recommended that this maximum be
@@ -122,19 +122,18 @@ See :ref:`lrc-concept-tasks` for details about the task status state machine.
     completed.  How to interpret the task progress should be well documented for
     clients invoking the LRC.
 
-    **task result**
+    **Task result**
 
-    So that clients only have to monitor the task result it is recommended to
-    always include a :class:`~ska_control_model.ResultCode` to indicate if the
-    task has completed successfully or not.  Ideally, this
+    It is recommended to always include a :class:`~ska_control_model.ResultCode` to 
+    indicate to clients if the task has completed successfully or not. Ideally, this
     :class:`~ska_control_model.ResultCode` should be accessed with
-    :code:`result[0]` to fit in with task results provided by ska-tango-base and
-    a client should know the type of :code:`result[1]` based on the value of
+    :code:`result[0]` to fit in with task results provided by ska-tango-base.
+    A client should know the type of :code:`result[1]` based on the value of
     :code:`result[0]`.
 
-    If your task can complete "partially successfully" consider using multiple
+    If your task can complete "partially successfully", consider using multiple
     :class:`~ska_control_model.ResultCode`'s to provide more details.  For
-    example, if your task coordinates multiple subordinate devices you might
+    example, if your task coordinates multiple subordinate devices, you might
     provide a result such as the following:
 
     .. code-block:: py
@@ -176,7 +175,7 @@ allowed.
 
    Notably, the is-allowed method might return :code:`False` when the task is
    enqueued, but by the time the task has been dequeued it returns :code:`True`
-   because other LRC have been completed in the mean time.
+   because other LRCs have been completed in the mean time.
 
 Add a method to submit the slow method
 --------------------------------------
@@ -186,10 +185,10 @@ If you are not using
 you will have to use your concurrency mechanism of choice to schedule the task
 method.
 
-If you're LRC implements one of the standard commands defined by either
+If your LRC implements one of the standard commands defined by either
 :class:`~ska_tango_base.base.base_device.SKABaseDevice` or
-:class:`~ska_tango_base.subarray.subarray_device.SKASubarray` the name of this
-method must be what the standard command is expecting.  For example the ``ON``
+:class:`~ska_tango_base.subarray.subarray_device.SKASubarray`, the name of this
+method must be what the standard command is expecting.  For example the ``On``
 command is expecting a method called ``on``.
 
 .. code-block:: py
@@ -215,9 +214,9 @@ command is expecting a method called ``on``.
 Initialise the command object
 -----------------------------
 
-If you're LRC implements one of the standard commands defined by either
+If your LRC implements one of the standard commands defined by either
 :class:`~ska_tango_base.base.base_device.SKABaseDevice` or
-:class:`~ska_tango_base.subarray.subarray_device.SKASubarray` you do not have to
+:class:`~ska_tango_base.subarray.subarray_device.SKASubarray`, you do not have to
 reinitialise the command object.
 
 .. code-block:: py
@@ -245,9 +244,9 @@ reinitialise the command object.
 Create the Tango Command to initiate the LRC
 --------------------------------------------
 
-Similarly, if you're LRC implements one of the standard commands defined by either
+Similarly, if your LRC implements one of the standard commands defined by either
 :class:`~ska_tango_base.base.base_device.SKABaseDevice` or
-:class:`~ska_tango_base.subarray.subarray_device.SKASubarray` you will not have
+:class:`~ska_tango_base.subarray.subarray_device.SKASubarray`, you will not have
 to create the Tango command.
 
 .. code-block:: py

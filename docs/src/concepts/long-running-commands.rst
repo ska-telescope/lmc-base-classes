@@ -14,19 +14,19 @@ A typical Tango device in any control system will at times have to monitor and
 control operations which take a long time.  For example,
 
 * moving motors to a given position
-* bring a piece of equipment to the required temperature
+* bringing a piece of equipment to the required temperature
 * performing an intensive calculation
-* commanding for a set of subordinate Tango devices to undertaken their own
+* commanding a set of subordinate Tango devices to undertake their own
   "slow operations"
 
-All these operations take an incredibly long time from the perspective of a CPU
-and a client requesting the Tango device to do this operations does not want to
-wait around for them to complete.  Instead they want to start the operations of
-asynchronously and get on with other activities only to be notified later when
-the operation has completed.
+All these operations take an incredibly long time from the perspective of a CPU,
+and a client requesting the Tango device to perform these tasks does not want
+to wait around for them to complete.  Instead they want to start an operation
+asynchronously, get on with other activities and be notified later when the
+task has completed.
 
 The traditional way this is handled within a Tango control system is as
-follows,
+follows:
 
 #. The client will invoke a Tango command which begins the operation.  This
    command returns almost immediately.
@@ -37,7 +37,7 @@ follows,
 
 The attributes the client subscribes to are ad-hoc in the sense that which
 attributes to use depend on the operation the client wishes to do.
-Additionally, a typical traditional Tango device software won't "know about" the
+Additionally, a typical traditional Tango device won't "know about" the
 operation, it simply updates the attributes as a result of its normal monitoring
 duties.  For example, suppose we wanted to cool some apparatus to a given
 temperature, the sequence of events for a traditional Tango control system might
@@ -66,7 +66,7 @@ asynchronous task executed by the Tango device server.
 The LRC is initiated by a Tango command which returns a command ID.  The client
 subscribes to LRC attributes which provide information about the various
 asynchronous tasks fulfilling LRCs.  The client uses the command ID to determine
-which the information in the LRC attributes relates to the task fulfilling
+which information in the LRC attributes relates to the task fulfilling
 *their* LRC.  Once the task has finished there will be an associated ``result``
 which the client will be notified of via the LRC attributes, see
 :ref:`lrc-client-server-protocol`.
@@ -87,7 +87,7 @@ system, as described above.  The key differences are the following:
 .. warning::
 
     There is a potential point of confusion here with regards to the word
-    command.  Each Long Running Command is initiated by a Tango command of the
+    'command'.  Each Long Running Command is initiated by a Tango command of the
     same name.  This Tango command is in some sense *part* of the LRC.  In this
     document we will not use the word command on its own, instead prefering LRC
     and Tango command to distinguish between the two.
@@ -103,8 +103,8 @@ look like the following:
 #. The client subscribes to the ``longRunningCommandResult`` attribute to be
    notified when their command has finished.
 #. The task running inside the Tango device decides it has finished and informs
-   the client by providing a ``result``.  The client inspects the ``result`` to
-   determine if the LRC succeeded or failed.
+   the client by setting the value of this attribute to the ``result``.  The
+   client inspects the ``result`` to determine if the LRC succeeded or failed.
 
 The LRC Input Queue
 ^^^^^^^^^^^^^^^^^^^
@@ -113,12 +113,12 @@ In addition to providing a standardised interface to asynchronous operations,
 the idea of a LRC command introduces objects in software which correspond to
 these asynchronous operations.  ``ska-tango-base`` takes advantage of this by
 introducing an LRC input queue. This allows an operator to queue up a sequence
-of asynchronous operations without having to sit an monitor the Tango device.
+of asynchronous operations without having to sit and monitor the Tango device.
 
 Typically, when a Tango device receives an LRC it enqueues a task to the input
 queue. When that task gets to the front the queue, it is dequeued, the device
-checks if the task is allowed the current state of the device (determined via an
-"is_allowed callback") and if all is fine, it begins executing the task.
+checks if the task is allowed given the current state of the device (determined
+via an "is_allowed callback") and if all is fine, it begins executing the task.
 
 Once the task has completed, successfully or otherwise, the next task is
 dequeued and is executed (provided it is allowed).
@@ -132,12 +132,12 @@ dequeued and is executed (provided it is allowed).
 .. warning::
 
    Like all Tango commands, the Tango command that initiates an LRC also has an
-   "is_allowed callback".  This "native" Tango is_allowed callback is
+   ``is_allowed`` callback.  This "native" Tango ``is_allowed`` callback is
    determining whether the task can be enqueued, this is different from the
-   LRC is_allowed callback that is called after the task is dequeued.  The LRC
-   is_allowed callback determines if the task can be executed based on the
-   current state, which might be different to the state the device was in when
-   the task was enqueued.
+   LRC ``is_allowed`` callback that is called after the task is dequeued.  The
+   LRC ``is_allowed`` callback determines if the task can be executed based on
+   the current state, which might be different to the state the device was in
+   when the task was enqueued.
 
 .. _lrc-concept-tasks:
 
@@ -151,7 +151,7 @@ is doing is monitoring the hardware and updating clients with information about
 the tasks progress.
 
 Regardless of what the task physically is, it has an associated
-:class:`~ska_control_model.TaskStatus` which must follow the following state
+:class:`~ska_control_model.TaskStatus` which must adhere to the following state
 machine:
 
 .. uml:: lrc-task-status.uml
@@ -159,7 +159,7 @@ machine:
 For each task there is a corresponding ``task_callback`` which must be called to
 update the :class:`~ska_control_model.TaskStatus` of the task.  This
 ``task_callback`` will update the LRC attributes with information about the status
-of the task and associate it with appropriate command ID.
+of the task and associate it with the appropriate command ID.
 
 In addition to its ``status``, each task has additional data associated with it:
 
@@ -176,5 +176,5 @@ In addition to its ``status``, each task has additional data associated with it:
   percentage, although a task is free to use any values as appropriate.
 
 Just as with the ``status``, the ``task_callback`` must be called to update the
-task's ``result`` and ``progress``.  The ``task_callback`` broadcast this data
+task's ``result`` and ``progress``.  The ``task_callback`` broadcasts this data
 via the LRC attributes, associating it with the appropriate command ID.

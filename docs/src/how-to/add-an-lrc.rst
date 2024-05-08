@@ -10,7 +10,8 @@ Decide on a concurrency mechanism
 You will first need to decide how your long running command is going to be
 fulfilled asynchronously.  A reasonable default choice is to use the
 :class:`~ska_tango_base.executor.executor_component_manager.TaskExecutorComponentManager`
-class provided by ska-tango-base.  This is the choice we will make for the rest
+class included in ska-tango-base which provides a mechanism for queuing and 
+executing asynchronous tasks. This is the choice we will make for the rest
 of this guide.
 
 It is possible to implement long running commands using a different
@@ -63,7 +64,9 @@ Add a task method to fulfil the long running command
 At the start of your task method you must update the task status to be
 :obj:`TaskStatus.IN_PROGRESS <ska_control_model.TaskStatus.IN_PROGRESS>` via the
 `task_callback`.  During the execution of your task you may update the task
-progress via the `task_callback`.
+progress via the `task_callback`, and you should periodically check
+the `task_abort_event` to see if the client has requested to abort
+the task.
 
 Before your task method returns it must update the task status to be either
 :obj:`TaskStatus.COMPLETED <ska_control_model.TaskStatus.COMPLETED>` or
@@ -173,11 +176,11 @@ allowed.
    Do not confuse this is-allowed method with the Tango :code:`is_cmd_allowed`
    callback.  This is-allowed method returns :code:`True` if the task can be
    executed at the point it is dequeued.  The Tango :code:`is_cmd_allowed`
-   callback returns True if the task can be enqueued in the first place.
+   callback returns :code:`True` if the task can be enqueued in the first place.
 
    Notably, the is-allowed method might return :code:`False` when the task is
    enqueued, but by the time the task has been dequeued it returns :code:`True`
-   because other LRCs have been completed in the mean time.
+   because other LRCs have been completed in the meantime.
 
 Add a method to submit the slow method
 --------------------------------------

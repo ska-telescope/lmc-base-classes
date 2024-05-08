@@ -2,11 +2,17 @@
 How to invoke a long running command
 ====================================
 
-To initiate the LRC you need to call the corresponding Tango command, and to be
-notified when the LRC finished you must subscribe to
-``CHANGE_EVENT``'s from  the ``longRunningCommandResult``
-attribute.
+To initiate the LRC you need to call the corresponding Tango command which
+returns a result code indicating whether the command was accepted, and a
+unique command id (if the command was not rejected). This command id should be
+stored and used to keep track of the LRC's progress and eventual result. To be
+notified when the LRC finishes you must subscribe to ``CHANGE_EVENT``'s from
+the ``longRunningCommandResult`` attribute, and use this command id to determine
+if the event corresponds to your command.
 
+If the LRC implements progress reporting, you can also optionally subscribe to
+the ``longRunningCommandProgress`` attribute to receive progress updates,
+filtering by command id in the same way.
 For example, to invoke the ``On`` LRC using a :class:`tango.DeviceProxy`
 and wait for the result, you would do the following:
 
@@ -38,6 +44,8 @@ and wait for the result, you would do the following:
         def callback(event):
             if not event.err:
                 id = event.attr_value.value[0]
+                # Compare the command id in the callback with the unique id
+                # returned to us when we invoked the LRC
                 if id == command_id:
                     for r in json.loads(event.attr_value.value[1]):
                         result.append(r)

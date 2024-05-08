@@ -299,7 +299,7 @@ def abort_subarray_command(
     )
     command_name = command_id.split("_", 2)[2]
     change_event_callbacks.assert_change_event(
-        "longRunningCommandInProgress", (command_name, "")
+        "longRunningCommandInProgress", (command_name,)
     )
 
     [[result_code], [abort_command_id]] = device_under_test.Abort()
@@ -319,13 +319,13 @@ def abort_subarray_command(
         (command_id, "ABORTED", abort_command_id, "IN_PROGRESS"),
     )
     change_event_callbacks.assert_change_event(
-        "longRunningCommandInProgress", ("", abort_name)
+        "longRunningCommandInProgress", (abort_name,)
     )
     change_event_callbacks.assert_change_event(
         "longRunningCommandStatus",
         (command_id, "ABORTED", abort_command_id, "COMPLETED"),
     )
-    change_event_callbacks.assert_change_event("longRunningCommandInProgress", ("", ""))
+    change_event_callbacks.assert_change_event("longRunningCommandInProgress", ())
     change_event_callbacks.assert_change_event("obsState", ObsState.ABORTED)
 
     assert device_under_test.obsState == device_under_test.commandedObsState

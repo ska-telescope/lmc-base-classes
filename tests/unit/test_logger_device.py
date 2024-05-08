@@ -24,9 +24,35 @@ from ska_control_model import (
 from tango import DevState
 from tango.test_context import MultiDeviceTestContext
 
-from ska_tango_base.logger_device import SKALogger
+from ska_tango_base.logger_device import LoggerComponentManager, SKALogger
 from ska_tango_base.subarray import SKASubarray
 from ska_tango_base.testing.reference import ReferenceBaseComponentManager
+
+
+# pylint: disable=abstract-method
+class SimpleSKALoggerComponentManager(LoggerComponentManager):
+    """Logger Component Manager for test purposes.
+
+    We need this so that the component manager exposes the
+    Long Running Command properties from the base class.
+    """
+
+
+class SimpleSKALogger(SKALogger[LoggerComponentManager]):
+    """Simple concrete class for test purposes."""
+
+    def create_component_manager(
+        self: SKALogger[LoggerComponentManager],
+    ) -> LoggerComponentManager:
+        """Create and return the component manager for this device.
+
+        :returns: a reference logger component manager.
+        """
+        return SimpleSKALoggerComponentManager(
+            self.logger,
+            self._communication_state_changed,
+            self._component_state_changed,
+        )
 
 
 class TestSKALogger:
@@ -194,7 +220,7 @@ def test_SetLoggingLevel() -> None:
     logging_target = "logger/target/1"
     logger_device = "logger/device/1"
     devices_info = (
-        {"class": SKALogger, "devices": [{"name": logger_device}]},
+        {"class": SimpleSKALogger, "devices": [{"name": logger_device}]},
         {"class": SKASubarray, "devices": [{"name": logging_target}]},
     )
 

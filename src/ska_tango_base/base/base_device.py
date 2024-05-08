@@ -57,34 +57,6 @@ from .op_state_model import OpStateModel
 
 DevVarLongStringArrayType = tuple[list[ResultCode], list[str]]
 
-# The maximum number of commands that the LRC attributes support
-# being queued at once.
-#
-# TODO: SKABaseDevice should create the LRC attributes using the actual
-# maximum number of queued tasks that the component manager supports
-MAX_QUEUED_COMMANDS = 64
-
-# The maximum number of commands the LRC attributes support being reported
-# about at once.
-#
-# This number is a bit of a fudge.
-#
-# We need space for at least as many commands as we can have in the queue
-# and an executing command and potentially an abort command.  That gets us to
-# `MAX_QUEUED_COMMANDS + 2`.
-#
-# However, when a command is finished (i.e one of COMPLETED, ABORTED, REJECTED, FAILED)
-# it hangs around with the LRC attributes for `CommandTracker._removal_time`
-# seconds, so we need a buffer.
-#
-# We choose a buffer of `MAX_QUEUED_COMMANDS` to be able to handle the situation
-# where a client fills the queue with commands that all get rejected because the
-# command isn't allowed then queues up the correct command straight after.
-#
-# TODO: Be smarter about how to handle this.
-MAX_REPORTED_COMMANDS = 2 * MAX_QUEUED_COMMANDS + 2
-
-
 _DEBUGGER_PORT = 5678
 
 
@@ -153,6 +125,11 @@ class CommandTracker:  # pylint: disable=too-many-instance-attributes
         self._commands: dict[str, _CommandData] = {}
         self._removal_time = removal_time
 
+        # Keep track of the command IDs which have been evicted from the list
+        # being reported by the LRC attributes because we have run out of space
+        # so that we only log each one once
+        self._evicted_commands_logged: list[str] = []
+
     def new_command(
         self: CommandTracker,
         command_name: str,
@@ -180,6 +157,8 @@ class CommandTracker:  # pylint: disable=too-many-instance-attributes
     def _schedule_removal(self: CommandTracker, command_id: str) -> None:
         def remove(command_id: str) -> None:
             del self._commands[command_id]
+            if command_id in self._evicted_commands_logged:
+                self._evicted_commands_logged.remove(command_id)
             self._queue_changed_callback(self.commands_in_queue)
 
         threading.Timer(self._removal_time, remove, (command_id,)).start()
@@ -317,6 +296,21 @@ class CommandTracker:  # pylint: disable=too-many-instance-attributes
         if command_id in self._commands:
             return self._commands[command_id]["status"]
         return TaskStatus.NOT_FOUND
+
+    def evict_command(self: CommandTracker, command_id: str) -> bool:
+        """
+        Add to the list of commands not to be reported by the LRC attributes.
+
+        This is used to ensure we don't overflow the attribute bounds when
+        there are too many finished commands lingering for the removal_period.
+
+        :param command_id: the unique command id
+        :return: True if the command was not already evicted.
+        """
+        if command_id not in self._evicted_commands_logged:
+            self._evicted_commands_logged.append(command_id)
+            return True
+        return False
 
 
 ComponentManagerT = TypeVar("ComponentManagerT", bound=BaseComponentManager)
@@ -578,7 +572,7 @@ class SKABaseDevice(
             self._command_ids_in_queue: list[str] = []
             self._commands_in_queue: list[str] = []
             self._command_statuses: list[str] = []
-            self._command_in_progress: list[str] = ["", ""]
+            self._commands_in_progress: list[str] = []
             self._command_progresses: list[str] = []
             self._command_result: tuple[str, str] = ("", "")
 
@@ -587,8 +581,12 @@ class SKABaseDevice(
             )
             self._version_id = release.version
             self._methods_patched_for_debugger = False
+            self._status_queue_size = 0
 
             self._init_state_model()
+
+            self.component_manager = self.create_component_manager()
+            self._create_lrc_attributes()
 
             for attribute_name in [
                 "state",
@@ -617,7 +615,6 @@ class SKABaseDevice(
             except GroupDefinitionsError:
                 self.logger.debug(f"No Groups loaded for device: {self.get_name()}")
 
-            self.component_manager = self.create_component_manager()
             self.op_state_model.perform_action("init_invoked")
             self.InitCommand(
                 self,
@@ -638,6 +635,72 @@ class SKABaseDevice(
                 "The device is in FAULT state - init_device failed.",
             )
 
+    def _create_lrc_attributes(self: SKABaseDevice[ComponentManagerT]) -> None:
+        """Create attributes for the long running commands."""
+        # For the attributes which report both queued and executing commands
+        # (longRunningCommandStatus, longRunningCommandsInQueue and
+        # longRunningCommandIDsInQueue), we need space for at least as many
+        # commands as we can have in the queue, plus the maximum number of
+        # simultaneously executing tasks. That gets us to
+        # `ComponentManager.max_queued_tasks` + `ComponentManager.max_executing_tasks`.
+        # However, when a command is finished (i.e one of COMPLETED, ABORTED,
+        # REJECTED, FAILED) it hangs around with the LRC attributes
+        # `CommandTracker._removal_time` seconds, so we need a buffer.
+        # We choose a buffer of `ComponentManager.max_queued_tasks` to be able to
+        # handle the situation where a client fills the queue with commands that all
+        # get rejected because the command isn't allowed then queues up the correct
+        # command straight after. NB: `update_command_statuses` and
+        # `update_commands_in_queue` will prune the oldest commands from the list if
+        # we reach the limit.
+        self._status_queue_size = (
+            max(self.component_manager.max_queued_tasks, 1) * 2
+            + self.component_manager.max_executing_tasks
+        )
+        self._create_attribute(
+            "longRunningCommandStatus",
+            self._status_queue_size * 2,  # 2 per command
+            self.longRunningCommandStatus,
+        )
+
+        self._create_attribute(
+            "longRunningCommandsInQueue",
+            self._status_queue_size,
+            self.longRunningCommandsInQueue,
+        )
+
+        self._create_attribute(
+            "longRunningCommandIDsInQueue",
+            self._status_queue_size,
+            self.longRunningCommandIDsInQueue,
+        )
+
+        self._create_attribute(
+            "longRunningCommandInProgress",
+            self.component_manager.max_executing_tasks,
+            self.longRunningCommandInProgress,
+        )
+
+        self._create_attribute(
+            "longRunningCommandProgress",
+            self.component_manager.max_executing_tasks
+            * 2,  # cmd name and progress for each command
+            self.longRunningCommandProgress,
+        )
+
+    def _create_attribute(
+        self: SKABaseDevice[ComponentManagerT],
+        name: str,
+        max_dim_x: int,
+        fget: Callable[[Any], None],
+    ) -> None:
+        attr = attribute(
+            name=name,
+            dtype=(str,),
+            max_dim_x=max_dim_x,
+            fget=fget,
+        )
+        self.add_attribute(attr)
+
     def _init_state_model(self: SKABaseDevice[ComponentManagerT]) -> None:
         """Initialise the state model for the device."""
         self._command_tracker = CommandTracker(
@@ -654,6 +717,52 @@ class SKABaseDevice(
         self.admin_mode_model = AdminModeModel(
             logger=self.logger, callback=self._update_admin_mode
         )
+
+    def _prune_completed_commands(
+        self: SKABaseDevice[ComponentManagerT], command_list: list[tuple[str, str]]
+    ) -> list[tuple[str, str]]:
+        """
+        Prune a command list of any lingering completed tasks.
+
+        :param command_list: list of (cmd_id, <info>) tuples of commands to prune
+        :return: the pruned list with the oldest completed commands removed
+        """
+        if len(command_list) <= self._status_queue_size:
+            # Nothing to do
+            return command_list
+
+        # Determine which commands have completed by looking at the
+        # current command statuses
+        completed_commands = [
+            uid
+            for (uid, status) in self._command_tracker.command_statuses
+            if status.name
+            in [
+                TaskStatus.ABORTED.name,
+                TaskStatus.COMPLETED.name,
+                TaskStatus.REJECTED.name,
+                TaskStatus.FAILED.name,
+            ]
+        ]
+
+        # Create a pruned list by removing the oldest completed commands
+        number_to_remove = len(command_list) - self._status_queue_size
+        pruned_list = command_list
+        prune_candidates = [
+            (uid, info)
+            for (uid, info) in sorted(
+                command_list, key=lambda item: item[0].split(sep="_")[0]
+            )
+            if uid in completed_commands
+        ]
+        for item in prune_candidates[0:number_to_remove]:
+            # This gets called many times so we
+            # keep track of which ones we have already logged
+            if self._command_tracker.evict_command(item[0]):
+                self.logger.warning(f"Status queue too big: removing item {item[0]}")
+            pruned_list.remove(item)
+
+        return pruned_list
 
     # ---------
     # Callbacks
@@ -698,7 +807,9 @@ class SKABaseDevice(
         self: SKABaseDevice[ComponentManagerT], commands_in_queue: list[tuple[str, str]]
     ) -> None:
         if commands_in_queue:
-            command_ids, command_names = zip(*commands_in_queue)
+            command_ids, command_names = zip(
+                *self._prune_completed_commands(commands_in_queue)
+            )
             self._command_ids_in_queue = [str(command_id) for command_id in command_ids]
             self._commands_in_queue = [
                 str(command_name) for command_name in command_names
@@ -720,8 +831,12 @@ class SKABaseDevice(
         command_statuses: list[tuple[str, TaskStatus]],
     ) -> None:
         statuses = [(uid, status.name) for (uid, status) in command_statuses]
+
         self._command_statuses = [
-            str(item) for item in itertools.chain.from_iterable(statuses)
+            str(item)
+            for item in itertools.chain.from_iterable(
+                self._prune_completed_commands(statuses)
+            )
         ]
         self.push_change_event("longRunningCommandStatus", self._command_statuses)
         self.push_archive_event("longRunningCommandStatus", self._command_statuses)
@@ -731,9 +846,9 @@ class SKABaseDevice(
             command_name = uid.split("_", 2)[2]
             if (
                 status == TaskStatus.IN_PROGRESS
-                and command_name not in self._command_in_progress
+                and command_name not in self._commands_in_progress
             ):
-                self._update_command_in_progress(command_name, True)
+                self._update_commands_in_progress(command_name, True)
                 self._update_commanded_state(command_name)
             elif (
                 status
@@ -742,26 +857,26 @@ class SKABaseDevice(
                     TaskStatus.COMPLETED,
                     TaskStatus.FAILED,
                 ]
-                and command_name in self._command_in_progress
+                and command_name in self._commands_in_progress
             ):
-                self._update_command_in_progress(command_name, False)
+                self._update_commands_in_progress(command_name, False)
 
-    def _update_command_in_progress(
+    def _update_commands_in_progress(
         self: SKABaseDevice[ComponentManagerT], command_name: str, in_progress: bool
     ) -> None:
-        # TODO: Not ideal, as any child class could implement a very specific command
-        # containing the word 'Abort'
-
-        [cmd, abort] = self._command_in_progress
-        if "Abort" in command_name:
-            self._command_in_progress = [cmd, command_name if in_progress else ""]
-        else:
-            self._command_in_progress = [command_name if in_progress else "", abort]
+        # Pass a reference to a new object for the push events, as this callback can be
+        # called multiple times before the event is pushed in the tango omni thread.
+        commands_in_progress = self._commands_in_progress.copy()
+        if in_progress:
+            commands_in_progress.append(command_name)
+        elif command_name in commands_in_progress:
+            commands_in_progress.remove(command_name)
+        self._commands_in_progress = commands_in_progress
         self.push_change_event(
-            "longRunningCommandInProgress", self._command_in_progress
+            "longRunningCommandInProgress", self._commands_in_progress
         )
         self.push_archive_event(
-            "longRunningCommandInProgress", self._command_in_progress
+            "longRunningCommandInProgress", self._commands_in_progress
         )
 
     def _update_commanded_state(
@@ -1161,78 +1276,75 @@ class SKABaseDevice(
         """
         self._test_mode = value
 
-    @attribute(  # type: ignore[misc]  # "Untyped decorator makes function untyped"
-        dtype=("str",), max_dim_x=MAX_QUEUED_COMMANDS
-    )
-    def longRunningCommandsInQueue(self: SKABaseDevice[ComponentManagerT]) -> list[str]:
+    # The following LRC attributes are instantiated in init_device() to make use of the
+    # max_queued_tasks property for max_dim_x
+
+    def longRunningCommandsInQueue(
+        self: SKABaseDevice[ComponentManagerT], attr: attribute
+    ) -> None:
         """
         Read the long running commands in the queue.
 
          Keep track of which commands are in the queue.
          Pop off from front as they complete.
 
-        :return: tasks in the queue
+        :param attr: Tango attribute being read
         """
-        return self._commands_in_queue
+        attr.set_value(self._commands_in_queue)
 
-    @attribute(  # type: ignore[misc]  # "Untyped decorator makes function untyped"
-        dtype=("str",), max_dim_x=MAX_QUEUED_COMMANDS
-    )
     def longRunningCommandIDsInQueue(
-        self: SKABaseDevice[ComponentManagerT],
-    ) -> list[str]:
+        self: SKABaseDevice[ComponentManagerT], attr: attribute
+    ) -> None:
         """
         Read the IDs of the long running commands in the queue.
 
         Every client that executes a command will receive a command ID as response.
         Keep track of IDs in the queue. Pop off from front as they complete.
 
-        :return: unique ids for the enqueued commands
+        :param attr: Tango attribute being read
         """
-        return self._command_ids_in_queue
+        attr.set_value(self._command_ids_in_queue)
 
-    @attribute(  # type: ignore[misc]  # "Untyped decorator makes function untyped"
-        dtype=("str",), max_dim_x=MAX_REPORTED_COMMANDS * 2  # 2 per command
-    )
-    def longRunningCommandStatus(self: SKABaseDevice[ComponentManagerT]) -> list[str]:
+    def longRunningCommandStatus(
+        self: SKABaseDevice[ComponentManagerT],
+        attr: attribute,
+    ) -> None:
         """
         Read the status of the currently executing long running commands.
 
-        ID, status pair of the currently executing command.
+        ID, status pairs of the currently executing commands.
         Clients can subscribe to on_change event and wait for the
         ID they are interested in.
 
-        :return: ID, status pairs of the currently executing commands
+        :param attr: Tango attribute being read
         """
-        return self._command_statuses
+        attr.set_value(self._command_statuses)
 
-    @attribute(  # type: ignore[misc]  # "Untyped decorator makes function untyped"
-        dtype=("str",), max_dim_x=2
-    )
     def longRunningCommandInProgress(
         self: SKABaseDevice[ComponentManagerT],
-    ) -> list[str]:
+        attr: attribute,
+    ) -> None:
         """
-        Read the name of the currently executing long running command(s).
+        Read the name(s) of the currently executing long running command(s).
 
-        :return: name of command and possible abort in progress or empty string(s).
+        Name(s) of command and possible abort in progress or empty string(s).
+        :param attr: Tango attribute being read
         """
-        return self._command_in_progress
+        attr.set_value(self._commands_in_progress)
 
-    @attribute(  # type: ignore[misc]  # "Untyped decorator makes function untyped"
-        dtype=("str",), max_dim_x=2  # Only one command can execute at once
-    )
-    def longRunningCommandProgress(self: SKABaseDevice[ComponentManagerT]) -> list[str]:
+    def longRunningCommandProgress(
+        self: SKABaseDevice[ComponentManagerT], attr: attribute
+    ) -> None:
         """
-        Read the progress of the currently executing long running command.
+        Read the progress of the currently executing long running command(s).
 
-        ID, progress of the currently executing command.
+        ID, progress of the currently executing command(s).
         Clients can subscribe to on_change event and wait
         for the ID they are interested in.
 
-        :return: ID, progress of the currently executing command.
+        :param attr: Tango attribute being read
         """
-        return self._command_progresses
+        attr.set_value(self._command_progresses)
 
     @attribute(  # type: ignore[misc]  # "Untyped decorator makes function untyped"
         dtype=("str",),

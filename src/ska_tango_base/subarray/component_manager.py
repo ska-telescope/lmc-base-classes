@@ -29,6 +29,20 @@ class SubarrayComponentManager(ObsDeviceComponentManager):
     * Monitoring its component, e.g. detect that a scan has completed
     """
 
+    def __init__(
+        self: SubarrayComponentManager,
+        *args: Any,
+        **kwargs: Any,
+    ) -> None:
+        """
+        Initialise a new ComponentManager instance.
+
+        :param args: additional positional arguments
+        :param kwargs: additional keyword arguments
+        """
+        super().__init__(*args, **kwargs)
+        self.max_executing_tasks = 2
+
     def assign(
         self: SubarrayComponentManager,
         task_callback: TaskCallbackType | None,

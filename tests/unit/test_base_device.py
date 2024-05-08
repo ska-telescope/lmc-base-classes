@@ -1090,9 +1090,7 @@ class TestSKABaseDevice:  # pylint: disable=too-many-public-methods
         )
         change_event_callbacks["longRunningCommandProgress"].assert_change_event(())
         change_event_callbacks["longRunningCommandStatus"].assert_change_event(())
-        change_event_callbacks["longRunningCommandInProgress"].assert_change_event(
-            ("", "")
-        )
+        change_event_callbacks["longRunningCommandInProgress"].assert_change_event(())
         change_event_callbacks["longRunningCommandResult"].assert_change_event(("", ""))
 
         [[result_code], [command_id]] = device_under_test.On()
@@ -1105,7 +1103,7 @@ class TestSKABaseDevice:  # pylint: disable=too-many-public-methods
         )
         on_command = command_id.split("_", 2)[2]
         change_event_callbacks.assert_change_event(
-            "longRunningCommandInProgress", (on_command, "")
+            "longRunningCommandInProgress", (on_command,)
         )
 
         for progress_point in FakeBaseComponent.PROGRESS_REPORTING_POINTS:
@@ -1131,9 +1129,7 @@ class TestSKABaseDevice:  # pylint: disable=too-many-public-methods
         change_event_callbacks.assert_change_event(
             "longRunningCommandStatus", (command_id, "COMPLETED")
         )
-        change_event_callbacks.assert_change_event(
-            "longRunningCommandInProgress", ("", "")
-        )
+        change_event_callbacks.assert_change_event("longRunningCommandInProgress", ())
 
         # Check what happens if we call On() when the device is already ON.
         [[result_code], [message]] = device_under_test.On()
@@ -1176,9 +1172,7 @@ class TestSKABaseDevice:  # pylint: disable=too-many-public-methods
         )
         change_event_callbacks["longRunningCommandProgress"].assert_change_event(())
         change_event_callbacks["longRunningCommandStatus"].assert_change_event(())
-        change_event_callbacks["longRunningCommandInProgress"].assert_change_event(
-            ("", "")
-        )
+        change_event_callbacks["longRunningCommandInProgress"].assert_change_event(())
         change_event_callbacks["longRunningCommandResult"].assert_change_event(("", ""))
 
         [[result_code], [command_id]] = device_under_test.Standby()
@@ -1192,7 +1186,7 @@ class TestSKABaseDevice:  # pylint: disable=too-many-public-methods
         )
         on_command = command_id.split("_", 2)[2]
         change_event_callbacks.assert_change_event(
-            "longRunningCommandInProgress", (on_command, "")
+            "longRunningCommandInProgress", (on_command,)
         )
 
         for progress_point in FakeBaseComponent.PROGRESS_REPORTING_POINTS:
@@ -1217,9 +1211,7 @@ class TestSKABaseDevice:  # pylint: disable=too-many-public-methods
         change_event_callbacks.assert_change_event(
             "longRunningCommandStatus", (command_id, "COMPLETED")
         )
-        change_event_callbacks.assert_change_event(
-            "longRunningCommandInProgress", ("", "")
-        )
+        change_event_callbacks.assert_change_event("longRunningCommandInProgress", ())
 
         assert (
             device_under_test.CheckLongRunningCommandStatus(command_id) == "COMPLETED"
@@ -1266,9 +1258,7 @@ class TestSKABaseDevice:  # pylint: disable=too-many-public-methods
         )
         change_event_callbacks["longRunningCommandProgress"].assert_change_event(())
         change_event_callbacks["longRunningCommandStatus"].assert_change_event(())
-        change_event_callbacks["longRunningCommandInProgress"].assert_change_event(
-            ("", "")
-        )
+        change_event_callbacks["longRunningCommandInProgress"].assert_change_event(())
         change_event_callbacks["longRunningCommandResult"].assert_change_event(("", ""))
 
         # Check what happens if we call Off() when the device is already OFF.
@@ -1277,6 +1267,85 @@ class TestSKABaseDevice:  # pylint: disable=too-many-public-methods
         assert message == "Device is already in OFF state."
 
         change_event_callbacks.assert_not_called()
+
+    def test_lrcStatusQueue(
+        self: TestSKABaseDevice,
+        device_under_test: tango.DeviceProxy,
+        change_event_callbacks: MockTangoEventCallbackGroup,
+    ) -> None:
+        """
+        Test the LRC status queue is pruned when there are too many commands to report.
+
+        :param device_under_test: a proxy to the device under test
+        :param change_event_callbacks: dictionary of mock change event
+            callbacks with asynchrony support
+        """
+        # Set the removal time long enough to cover the execution time of the test
+        device_under_test.SetCommandTrackerRemovalTime(1000)
+        max_queued_tasks = 32  # Set in TaskExecutorComponentManager
+        assert device_under_test.state() == DevState.OFF
+
+        device_under_test.subscribe_event(
+            "longRunningCommandResult",
+            tango.EventType.CHANGE_EVENT,
+            change_event_callbacks["longRunningCommandResult"],
+        )
+
+        # Queue enough commands to fill the buffer
+        command_ids = []
+        for _ in range(max_queued_tasks):
+            result_code, cmd_id = device_under_test.STANDBY()
+            assert ResultCode(int(result_code)) == ResultCode.QUEUED
+            command_ids.append(cmd_id[0])
+
+        # Wait for them all to complete and queue another batch:
+        for cmd_id in command_ids:
+            change_event_callbacks.assert_change_event(
+                "longRunningCommandResult",
+                (
+                    cmd_id,
+                    json.dumps([int(ResultCode.OK), "Standby command completed OK"]),
+                ),
+                lookahead=max_queued_tasks,
+                consume_nonmatches=True,
+            )
+        for _ in range(max_queued_tasks):
+            result_code, cmd_id = device_under_test.ON()
+            assert ResultCode(int(result_code)) == ResultCode.QUEUED
+            command_ids.append(cmd_id[0])
+
+        # Verify all commands reported in the Status attribute at this stage
+        status_attribute = device_under_test.read_attribute("longRunningCommandStatus")
+        for cmd_id in command_ids:
+            assert cmd_id in status_attribute.value
+
+        # Queue another ten to push the number over the array bounds
+        for cmd_id in command_ids[32:42]:
+            change_event_callbacks.assert_change_event(
+                "longRunningCommandResult",
+                (
+                    cmd_id,
+                    json.dumps([int(ResultCode.OK), "On command completed OK"]),
+                ),
+                lookahead=max_queued_tasks,
+            )
+        for _ in range(10):
+            result_code, cmd_id = device_under_test.OFF()
+            assert ResultCode(int(result_code)) == ResultCode.QUEUED
+            command_ids.append(cmd_id[0])
+
+        # max_queued_tasks = 32 and max_executing_tasks = 1,
+        # so the attribute bounds are 32*2 + 1 = 65
+        # Since we have submitted 74 commands, the first nine
+        # completed commands should have been removed
+        expected_removed_items = command_ids[:9]
+        expected_present_items = command_ids[9:]
+        status_attribute = device_under_test.read_attribute("longRunningCommandStatus")
+
+        for cmd_id in expected_removed_items:
+            assert cmd_id not in status_attribute.value
+        for cmd_id in expected_present_items:
+            assert cmd_id in status_attribute.value
 
     def test_buildState(
         self: TestSKABaseDevice, device_under_test: tango.DeviceProxy

@@ -192,9 +192,15 @@ method.
 
 If your LRC implements one of the standard commands defined by either
 :class:`~ska_tango_base.base.base_device.SKABaseDevice` or
-:class:`~ska_tango_base.subarray.subarray_device.SKASubarray`, the name of this
-method must be what the standard command is expecting.  For example the ``On``
-command is expecting a method called ``on``.
+:class:`~ska_tango_base.subarray.subarray_device.SKASubarray` (``On``,
+``AssignedResources``, etc.), then this method should override the corresponding
+method of your component manager base class.
+
+For example, :class:`~ska_tango_base.base.base_device.SKABaseDevice` defines the
+``On`` command which calls the ``on`` method of your component manager.  Your
+slow method here must override the unimplemented :meth:`BaseComponentManager.on
+<ska_tango_base.base.component_manager.BaseComponentManager.on>` method if you
+are implementing the ``On`` command.
 
 .. code-block:: py
 
@@ -216,13 +222,22 @@ command is expecting a method called ``on``.
             return task_status, response
 
 
-Initialise the command object
------------------------------
+Initialise and register the command object
+------------------------------------------
+
+When you are implementing an LRC specific to your device, as we are doing for
+this example, then you need to register a command object in your override of
+:meth:`~ska_tango_base.base.base_device.SKABaseDevice.init_command_objects`.
+This command object must be a subclass of
+:class:`~ska_tango_base.commands.SubmittedSlowCommand` for an LRC that is
+submitted to the input queue.
 
 If your LRC implements one of the standard commands defined by either
 :class:`~ska_tango_base.base.base_device.SKABaseDevice` or
-:class:`~ska_tango_base.subarray.subarray_device.SKASubarray`, you do not have to
-reinitialise the command object.
+:class:`~ska_tango_base.subarray.subarray_device.SKASubarray`, the base classes
+have already created the command object for you.   You do not have to
+re-register the command object unless you wish to override the default command
+object.
 
 .. code-block:: py
 
@@ -251,8 +266,9 @@ Create the Tango Command to initiate the LRC
 
 Similarly, if your LRC implements one of the standard commands defined by either
 :class:`~ska_tango_base.base.base_device.SKABaseDevice` or
-:class:`~ska_tango_base.subarray.subarray_device.SKASubarray`, you will not have
-to create the Tango command.
+:class:`~ska_tango_base.subarray.subarray_device.SKASubarray`, you are not
+required to create a Tango command as the base classes will have done this for
+you.
 
 .. code-block:: py
 

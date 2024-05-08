@@ -88,9 +88,11 @@ system, as described above.  The key differences are the following:
 
     There is a potential point of confusion here with regards to the word
     'command'.  Each Long Running Command is initiated by a Tango command of the
-    same name.  This Tango command is in some sense *part* of the LRC.  In this
-    document we will not use the word command on its own, instead prefering LRC
-    and Tango command to distinguish between the two.
+    same name.  This `Tango command
+    <https://pytango.readthedocs.io/en/latest/api/server_api/server.html#tango.server.command>`
+    is in some sense *part* of the LRC.  In this document we will not use the
+    word command on its own, instead prefering LRC and Tango command to
+    distinguish between the two.
 
 As an example, consider again the example of cooling some apparatus as we looked at
 for a traditional Tango control system.  When using LRC's the sequence might

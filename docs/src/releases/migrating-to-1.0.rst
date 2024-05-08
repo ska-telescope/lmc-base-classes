@@ -134,31 +134,31 @@ New BaseComponentManager properties describing LRC capabilities
 ---------------------------------------------------------------
 
 ska-tango-base 1.0.0 has introduced two new read-only properties to the
-:class:`~ska_tango_base.base.component_manager.BaseComponentManager`,
-:attr:`~ska_tango_base.base.component_manager.BaseComponentManager.max_executing_tasks`
+:class:`~ska_tango_base.base.base_component_manager.BaseComponentManager`,
+:attr:`~ska_tango_base.base.base_component_manager.BaseComponentManager.max_executing_tasks`
 and
-:attr:`~ska_tango_base.base.component_manager.BaseComponentManager.max_queued_tasks`.
+:attr:`~ska_tango_base.base.base_component_manager.BaseComponentManager.max_queued_tasks`.
 These properties describe how many tasks a component manager can be
 simultaneously set to
 :obj:`TaskStatus.IN_PROGRESS <ska_control_model.TaskStatus.IN_PROGRESS>`
 or
 :obj:`TaskStatus.QUEUED <ska_control_model.TaskStatus.QUEUED>`
 respectively.
-:class:`~ska_tango_base.base.component_manager.BaseComponentManager` provides a
+:class:`~ska_tango_base.base.base_component_manager.BaseComponentManager` provides a
 default implementation for these properties (hard-coded to the minimums,
 :code:`max_executing_tasks=1` and :code:`max_queued_tasks=0`) and the intention is that
 derived classes override these properties so that the
 :class:`~ska_tango_base.base.base_device.SKABaseDevice` can construct the LRC
 attributes with appropriate maximum bounds.
 
-:class:`~ska_tango_base.subarray.component_manager.SubarrayComponentManager`
+:class:`~ska_tango_base.subarray.subarray_component_manager.SubarrayComponentManager`
 overrides ``max_executing_tasks`` to 2 as the Abort command must be executed
 simultaneously with other commands.
 :class:`~ska_tango_base.executor.executor_component_manager.TaskExecutorComponentManager`
 overrides ``max_queued_tasks`` to reflect the size of its queue.
 
 If your component manager inherits from either
-:class:`~ska_tango_base.subarray.component_manager.SubarrayComponentManager`
+:class:`~ska_tango_base.subarray.subarray_component_manager.SubarrayComponentManager`
 or
 :class:`~ska_tango_base.executor.executor_component_manager.TaskExecutorComponentManager`
 (or both) you do not have to do anything unless your component manager can

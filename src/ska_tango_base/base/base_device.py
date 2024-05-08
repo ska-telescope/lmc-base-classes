@@ -47,7 +47,7 @@ from ..commands import DeviceInitCommand, FastCommand, SlowCommand, SubmittedSlo
 from ..faults import GroupDefinitionsError, LoggingLevelError
 from ..utils import generate_command_id, get_groups_from_json
 from .admin_mode_model import AdminModeModel
-from .component_manager import BaseComponentManager
+from .base_component_manager import BaseComponentManager
 from .logging import (
     _LMC_TO_PYTHON_LOGGING_LEVEL,
     _LMC_TO_TANGO_LOGGING_LEVEL,

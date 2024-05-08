@@ -12,5 +12,5 @@ __all__ = (
 )
 
 # Note: order of imports is important - start with lowest in the hierarchy
-from .component_manager import SubarrayComponentManager
+from .subarray_component_manager import SubarrayComponentManager
 from .subarray_device import SKASubarray

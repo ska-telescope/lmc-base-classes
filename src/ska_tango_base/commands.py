@@ -48,7 +48,7 @@ from ska_control_model import ResultCode, TaskStatus
 from tango.server import Device
 from typing_extensions import Protocol
 
-from .base.component_manager import BaseComponentManager
+from .base.base_component_manager import BaseComponentManager
 
 __all__ = [
     "ResultCode",

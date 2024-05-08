@@ -362,7 +362,7 @@ nitpick_ignore = [
     ("py:class", "CommunicationStatus"),
     ("py:class", "PowerState"),
     # TODO: Can't figure this one out
-    ("py:class", "ska_tango_base.base.component_manager.Wrapped"),
+    ("py:class", "ska_tango_base.base.base_component_manager.Wrapped"),
     # These ones look like sphinx bugs
     ("py:class", "method"),
     ("py:class", "tango.server.command"),

@@ -209,7 +209,7 @@ class BaseComponentManager:
 
         :return: The task queue size
         """
-        return 1
+        return 0
 
     @property
     def max_executing_tasks(self) -> int:

@@ -471,7 +471,7 @@ class TestLoggingUtils:
             spec=tango.Logger
         )
 
-        # TODO Why do we need the tango_logger argument?
+        # The arguments of this method must match LoggingUtils.create_logging_handler
         def null_creator(
             target: str, tango_logger: tango.Logger  # pylint: disable=unused-argument
         ) -> logging.NullHandler:

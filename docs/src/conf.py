@@ -384,4 +384,5 @@ nitpick_ignore = [
         "ska_tango_base.testing.reference.reference_base_component_manager.ComponentT",
     ),
     ("py:class", "ska_tango_testing.mock.tango.MockTangoEventCallbackGroup"),
+    ("py:class", "P"),
 ]

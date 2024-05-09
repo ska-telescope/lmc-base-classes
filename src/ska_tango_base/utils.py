@@ -19,7 +19,7 @@ import uuid
 import warnings
 from contextlib import contextmanager
 from datetime import datetime
-from typing import Any, Callable, Generator, cast
+from typing import Any, Callable, Generator, ParamSpec, TypeVar, cast
 
 import tango
 from ska_tango_testing.mock.tango import MockTangoEventCallbackGroup
@@ -471,7 +471,7 @@ def get_groups_from_json(json_definitions: list[str]) -> dict[str, Any]:
         "<group name 2>": <tango.Group>, ...}. Will be an empty dict if
         no groups were specified.
 
-    :raises GroupDefinitionsError:  # noqa DAR401,DAR402
+    :raises GroupDefinitionsError:
         arising from GroupDefinitionsError
         - If error parsing JSON string.
         - If missing keys in the JSON definition.
@@ -480,7 +480,7 @@ def get_groups_from_json(json_definitions: list[str]) -> dict[str, Any]:
         - If a group has multiple parent groups.
         - If a device is included multiple time in a hierarchy.
         E.g. g1:[a,b] g2:[a,c] g3:[g1,g2]
-    """
+    """  # noqa DAR401,DAR402 darglint issue #181
     try:
         # Parse and validate user's definitions
         groups = {}
@@ -496,7 +496,6 @@ def get_groups_from_json(json_definitions: list[str]) -> dict[str, Any]:
     except Exception as exc:
         # the exc_info is included for detailed traceback
         ska_error = SKABaseError(exc)
-        # TODO added noqa in docstring due to darglint issue #181
         raise GroupDefinitionsError(ska_error).with_traceback(sys.exc_info()[2])
 
 
@@ -667,11 +666,15 @@ def generate_command_id(command_name: str) -> str:
     return f"{time.time()}_{uuid.uuid4().fields[-1]}_{command_name}"
 
 
-# TODO: Use typing.ParamSpec once our minimum python version is 3.10
-FuncT = Callable[..., Any]
+P = ParamSpec("P")
+"""Parameter specification variable."""
+T = TypeVar("T")
+"""Type variable."""
 
 
-def deprecate_kwarg(name: str, detail: str | None = None) -> Callable[[FuncT], FuncT]:
+def deprecate_kwarg(
+    name: str, detail: str | None = None
+) -> Callable[[Callable[P, T]], Callable[P, T]]:
     """Deprecate a keyword argument.
 
     If the decorated function is passed the keyword argument a
@@ -682,9 +685,9 @@ def deprecate_kwarg(name: str, detail: str | None = None) -> Callable[[FuncT], F
     :return: decorator
     """
 
-    def decorator(func: FuncT) -> FuncT:
+    def decorator(func: Callable[P, T]) -> Callable[P, T]:
         @functools.wraps(func)
-        def wrapped(*args: Any, **kwargs: Any) -> Any:
+        def wrapped(*args: P.args, **kwargs: P.kwargs) -> Any:
             if name in kwargs:
                 message = f'Deprecated kwarg "{name}" passed to {func.__name__}.'
                 if detail is not None:

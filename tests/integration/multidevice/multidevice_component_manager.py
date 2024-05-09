@@ -16,8 +16,6 @@ from ska_tango_base.executor import TaskExecutorComponentManager
 from .utils import LongRunningDeviceInterface
 
 
-# TODO: Is it really okay that this method doesn't implement
-# start_communicating() and stop_communicating()?
 # pylint: disable-next=abstract-method
 class MultiDeviceComponentManager(TaskExecutorComponentManager):
     """Component Manager for Multi Device."""
@@ -373,7 +371,7 @@ class MultiDeviceComponentManager(TaskExecutorComponentManager):
         task_abort_event: Event,  # pylint: disable=unused-argument
     ) -> None:
         """
-        Simulate matrix inverstion.
+        Simulate matrix inversion.
 
         :param task_callback: Update state, defaults to None
         :param task_abort_event: Check for abort, defaults to None

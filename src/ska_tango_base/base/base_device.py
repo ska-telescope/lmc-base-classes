@@ -354,9 +354,7 @@ class SKABaseDevice(
     _logging_configured = False
 
     def _init_logging(self: SKABaseDevice[ComponentManagerT]) -> None:  # noqa: C901
-        """Initialize the logging mechanism, using default properties."""
-        # TODO: This comment stops black adding a blank line here,
-        # causing flake8-docstrings D202 error.
+        """Initialize the logging mechanism, using default properties."""  # noqa:D202
 
         # pylint: disable-next=too-few-public-methods
         class EnsureTagsFilter(logging.Filter):

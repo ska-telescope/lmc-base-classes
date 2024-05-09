@@ -182,25 +182,22 @@ allowed.
    enqueued, but by the time the task has been dequeued it returns :code:`True`
    because other LRCs have been completed in the meantime.
 
-Add a method to submit the slow method
---------------------------------------
+Implement the command to submit the asynchronous task for execution
+-------------------------------------------------------------------
 
-If you are not using
-:class:`~ska_tango_base.executor.executor_component_manager.TaskExecutorComponentManager`
-you will have to use your concurrency mechanism of choice to schedule the task
-method.
-
-If your LRC implements one of the standard commands defined by either
-:class:`~ska_tango_base.base.base_device.SKABaseDevice` or
-:class:`~ska_tango_base.subarray.subarray_device.SKASubarray` (``On``,
+The next step is to implement the Tango command itself, by writing a method which
+submits the asynchronous task for execution. If your LRC implements one of the
+standard commands defined by either :class:`~ska_tango_base.base.base_device.SKABaseDevice`
+or :class:`~ska_tango_base.subarray.subarray_device.SKASubarray` (``On``,
 ``AssignedResources``, etc.), then this method should override the corresponding
-method of your component manager base class.
+method of your component manager base class. For example, if you are implementing
+the ``On`` command, you should override the unimplemented :meth:`BaseComponentManager.on
+<ska_tango_base.base.component_manager.BaseComponentManager.on>` method.
 
-For example, :class:`~ska_tango_base.base.base_device.SKABaseDevice` defines the
-``On`` command which calls the ``on`` method of your component manager.  Your
-slow method here must override the unimplemented :meth:`BaseComponentManager.on
-<ska_tango_base.base.component_manager.BaseComponentManager.on>` method if you
-are implementing the ``On`` command.
+If you are inheriting from :class:`~ska_tango_base.executor.executor_component_manager.TaskExecutorComponentManager`,
+you can use the :meth:`TaskExecutorComponentManager.submit_task <ska_tango_base.executor.executor_component_manager.TaskExecutorComponentManager.submit_task>`
+method to submit a task for execution, as illustrated below. If not, you will need to
+supply your own concurrency mechanism to schedule the task.
 
 .. code-block:: py
 

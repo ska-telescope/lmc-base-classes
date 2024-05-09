@@ -44,7 +44,15 @@ class MultiDeviceComponentManager(TaskExecutorComponentManager):
             )
 
         super().__init__(logger, *args, matrix_operation="", **kwargs)
-        self.max_executing_tasks = 2
+
+    @property
+    def max_executing_tasks(self) -> int:
+        """
+        Get the max number of tasks that can be executing at once.
+
+        :return: max number of simultaneously executing tasks.
+        """
+        return 2
 
     def _non_aborting_lrc(
         self: MultiDeviceComponentManager,

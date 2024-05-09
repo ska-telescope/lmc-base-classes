@@ -634,7 +634,12 @@ class SKABaseDevice(
             )
 
     def _create_lrc_attributes(self: SKABaseDevice[ComponentManagerT]) -> None:
-        """Create attributes for the long running commands."""
+        """
+        Create attributes for the long running commands.
+
+        :raises AssertionError: if max_queued_tasks or max_executing_tasks is not
+            equal to or greater than 1.
+        """
         # For the attributes which report both queued and executing commands
         # (longRunningCommandStatus, longRunningCommandsInQueue and
         # longRunningCommandIDsInQueue), we need space for at least as many
@@ -650,8 +655,14 @@ class SKABaseDevice(
         # command straight after. NB: `update_command_statuses` and
         # `update_commands_in_queue` will prune the oldest commands from the list if
         # we reach the limit.
+        assert (
+            self.component_manager.max_queued_tasks >= 1
+        ), "max_queued_tasks property must be equal to or greater than 1."
+        assert (
+            self.component_manager.max_executing_tasks >= 1
+        ), "max_executing_tasks property must be equal to or greater than 1."
         self._status_queue_size = (
-            max(self.component_manager.max_queued_tasks, 1) * 2
+            self.component_manager.max_queued_tasks * 2
             + self.component_manager.max_executing_tasks
         )
         self._create_attribute(
@@ -1275,7 +1286,7 @@ class SKABaseDevice(
         self._test_mode = value
 
     # The following LRC attributes are instantiated in init_device() to make use of the
-    # max_queued_tasks property for max_dim_x
+    # max_queued_tasks and max_executing_tasks properties to compute their max_dim_x
 
     def longRunningCommandsInQueue(
         self: SKABaseDevice[ComponentManagerT], attr: attribute

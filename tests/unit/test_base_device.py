@@ -17,7 +17,7 @@ import re
 import socket
 import time
 import unittest
-from typing import Any, cast
+from typing import Any, Callable, cast
 from unittest import mock
 
 import pytest
@@ -51,6 +51,8 @@ from ska_tango_base.testing.reference import (
     ReferenceBaseComponentManager,
     ReferenceSkaBaseDevice,
 )
+
+CallableAnyNone = Callable[[Any], None]
 
 
 class TestTangoLoggingServiceHandler:
@@ -908,11 +910,11 @@ class TestSKABaseDevice:  # pylint: disable=too-many-public-methods
         """
         assert device_under_test.state() == DevState.OFF
 
-    # TODO pylint: disable=too-many-statements
     def test_commandedState(
         self: TestSKABaseDevice,
         device_under_test: tango.DeviceProxy,
         change_event_callbacks: MockTangoEventCallbackGroup,
+        assert_lrcstatus_change_event_staging_queued_in_progress: CallableAnyNone,
     ) -> None:
         """
         Test for commandedState.
@@ -920,6 +922,8 @@ class TestSKABaseDevice:  # pylint: disable=too-many-public-methods
         :param device_under_test: a proxy to the device under test
         :param change_event_callbacks: dictionary of mock change event
             callbacks with asynchrony support
+        :param assert_lrcstatus_change_event_staging_queued_in_progress:
+            helper function to assert multiple longRunningCommandStatus change events.
         """
         device_under_test.SetCommandTrackerRemovalTime(0)
         assert device_under_test.adminMode == AdminMode.ONLINE
@@ -942,15 +946,7 @@ class TestSKABaseDevice:  # pylint: disable=too-many-public-methods
         # ON command
         [[result_code], [on_command_id]] = device_under_test.On()
         assert result_code == ResultCode.QUEUED
-        change_event_callbacks.assert_change_event(
-            "longRunningCommandStatus", (on_command_id, "STAGING")
-        )
-        change_event_callbacks.assert_change_event(
-            "longRunningCommandStatus", (on_command_id, "QUEUED")
-        )
-        change_event_callbacks.assert_change_event(
-            "longRunningCommandStatus", (on_command_id, "IN_PROGRESS")
-        )
+        assert_lrcstatus_change_event_staging_queued_in_progress(on_command_id)
         change_event_callbacks["commandedState"].assert_change_event("ON")
         change_event_callbacks["state"].assert_change_event(DevState.ON)
         assert device_under_test.commandedState == device_under_test.state().name
@@ -976,15 +972,7 @@ class TestSKABaseDevice:  # pylint: disable=too-many-public-methods
         # RESET command
         [[result_code], [reset_command_id]] = device_under_test.Reset()
         assert result_code == ResultCode.QUEUED
-        change_event_callbacks.assert_change_event(
-            "longRunningCommandStatus", (reset_command_id, "STAGING")
-        )
-        change_event_callbacks.assert_change_event(
-            "longRunningCommandStatus", (reset_command_id, "QUEUED")
-        )
-        change_event_callbacks.assert_change_event(
-            "longRunningCommandStatus", (reset_command_id, "IN_PROGRESS")
-        )
+        assert_lrcstatus_change_event_staging_queued_in_progress(reset_command_id)
         change_event_callbacks["state"].assert_change_event(DevState.ON)
         assert device_under_test.commandedState == device_under_test.state().name
         change_event_callbacks.assert_change_event(
@@ -994,15 +982,7 @@ class TestSKABaseDevice:  # pylint: disable=too-many-public-methods
         # STANDBY command
         [[result_code], [standby_command_id]] = device_under_test.Standby()
         assert result_code == ResultCode.QUEUED
-        change_event_callbacks.assert_change_event(
-            "longRunningCommandStatus", (standby_command_id, "STAGING")
-        )
-        change_event_callbacks.assert_change_event(
-            "longRunningCommandStatus", (standby_command_id, "QUEUED")
-        )
-        change_event_callbacks.assert_change_event(
-            "longRunningCommandStatus", (standby_command_id, "IN_PROGRESS")
-        )
+        assert_lrcstatus_change_event_staging_queued_in_progress(standby_command_id)
         change_event_callbacks["commandedState"].assert_change_event("STANDBY")
         change_event_callbacks["state"].assert_change_event(DevState.STANDBY)
         assert device_under_test.commandedState == device_under_test.state().name
@@ -1013,15 +993,7 @@ class TestSKABaseDevice:  # pylint: disable=too-many-public-methods
         # OFF command
         [[result_code], [off_command_id]] = device_under_test.Off()
         assert result_code == ResultCode.QUEUED
-        change_event_callbacks.assert_change_event(
-            "longRunningCommandStatus", (off_command_id, "STAGING")
-        )
-        change_event_callbacks.assert_change_event(
-            "longRunningCommandStatus", (off_command_id, "QUEUED")
-        )
-        change_event_callbacks.assert_change_event(
-            "longRunningCommandStatus", (off_command_id, "IN_PROGRESS")
-        )
+        assert_lrcstatus_change_event_staging_queued_in_progress(off_command_id)
         change_event_callbacks["commandedState"].assert_change_event("OFF")
         change_event_callbacks["state"].assert_change_event(DevState.OFF)
         assert device_under_test.commandedState == device_under_test.state().name
@@ -1082,13 +1054,16 @@ class TestSKABaseDevice:  # pylint: disable=too-many-public-methods
         self: TestSKABaseDevice,
         device_under_test: tango.DeviceProxy,
         change_event_callbacks: MockTangoEventCallbackGroup,
+        assert_lrcstatus_change_event_staging_queued_in_progress: CallableAnyNone,
     ) -> None:
         """
         Test for On command.
 
         :param device_under_test: a proxy to the device under test
         :param change_event_callbacks: dictionary of mock change event
-            callbacks with asynchrony support
+            callbacks with asynchrony support.
+        :param assert_lrcstatus_change_event_staging_queued_in_progress:
+            helper function to assert multiple longRunningCommandStatus change events.
         """
         assert device_under_test.state() == DevState.OFF
 
@@ -1117,15 +1092,7 @@ class TestSKABaseDevice:  # pylint: disable=too-many-public-methods
 
         [[result_code], [command_id]] = device_under_test.On()
         assert result_code == ResultCode.QUEUED
-        change_event_callbacks.assert_change_event(
-            "longRunningCommandStatus", (command_id, "STAGING")
-        )
-        change_event_callbacks.assert_change_event(
-            "longRunningCommandStatus", (command_id, "QUEUED")
-        )
-        change_event_callbacks.assert_change_event(
-            "longRunningCommandStatus", (command_id, "IN_PROGRESS")
-        )
+        assert_lrcstatus_change_event_staging_queued_in_progress(command_id)
         on_command = command_id.split("_", 2)[2]
         change_event_callbacks.assert_change_event(
             "longRunningCommandInProgress", (on_command,)
@@ -1167,13 +1134,16 @@ class TestSKABaseDevice:  # pylint: disable=too-many-public-methods
         self: TestSKABaseDevice,
         device_under_test: tango.DeviceProxy,
         change_event_callbacks: MockTangoEventCallbackGroup,
+        assert_lrcstatus_change_event_staging_queued_in_progress: CallableAnyNone,
     ) -> None:
         """
         Test for Standby command.
 
         :param device_under_test: a proxy to the device under test
         :param change_event_callbacks: dictionary of mock change event
-            callbacks with asynchrony support
+            callbacks with asynchrony support.
+        :param assert_lrcstatus_change_event_staging_queued_in_progress:
+            helper function to assert multiple longRunningCommandStatus change events.
         """
         assert device_under_test.state() == DevState.OFF
 
@@ -1202,15 +1172,7 @@ class TestSKABaseDevice:  # pylint: disable=too-many-public-methods
 
         [[result_code], [command_id]] = device_under_test.Standby()
         assert result_code == ResultCode.QUEUED
-        change_event_callbacks.assert_change_event(
-            "longRunningCommandStatus", (command_id, "STAGING")
-        )
-        change_event_callbacks.assert_change_event(
-            "longRunningCommandStatus", (command_id, "QUEUED")
-        )
-        change_event_callbacks.assert_change_event(
-            "longRunningCommandStatus", (command_id, "IN_PROGRESS")
-        )
+        assert_lrcstatus_change_event_staging_queued_in_progress(command_id)
         on_command = command_id.split("_", 2)[2]
         change_event_callbacks.assert_change_event(
             "longRunningCommandInProgress", (on_command,)

@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import logging
 import socket
-from typing import Any, Generator, cast
+from typing import Any, Callable, Generator, cast
 
 import pytest
 import pytest_mock
@@ -92,8 +92,8 @@ def callbacks() -> MockCallableGroup:
     )
 
 
-@pytest.fixture()
-def change_event_callbacks() -> MockTangoEventCallbackGroup:
+@pytest.fixture(name="change_event_callbacks")
+def change_event_callbacks_fixture() -> MockTangoEventCallbackGroup:
     """
     Return a dictionary of Tango device change event callbacks with asynchrony support.
 
@@ -112,6 +112,27 @@ def change_event_callbacks() -> MockTangoEventCallbackGroup:
         "longRunningCommandStatus",
         "longRunningCommandInProgress",
     )
+
+
+@pytest.fixture()
+def assert_lrcstatus_change_event_staging_queued_in_progress(
+    change_event_callbacks: MockTangoEventCallbackGroup,
+) -> Callable[[Any], None]:
+    """
+    Assert the longRunningCommandStatus attribute change event multiple times.
+
+    :param change_event_callbacks: dictionary of mock change event
+        callbacks with asynchrony support
+    :return: Callable helper function
+    """
+
+    def inner_helper(command: Any) -> None:
+        for status in ["STAGING", "QUEUED", "IN_PROGRESS"]:
+            change_event_callbacks.assert_change_event(
+                "longRunningCommandStatus", (command, status)
+            )
+
+    return inner_helper
 
 
 @pytest.fixture()

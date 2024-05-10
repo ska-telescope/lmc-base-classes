@@ -152,6 +152,7 @@ class CommandTracker:  # pylint: disable=too-many-instance-attributes
             "completed_callback": completed_callback,
         }
         self._queue_changed_callback(self.commands_in_queue)
+        self._status_changed_callback(self.command_statuses)
         return command_id
 
     def _schedule_removal(self: CommandTracker, command_id: str) -> None:

@@ -253,7 +253,8 @@ def test_device_allows_commands_to_be_queued(
         invert_id2,
         "REJECTED",
     )
-    event_count = 6
+    # STAGING -> QUEUED -> COMPLETED/REJECTED
+    event_count = 3 + 3 + 3
     for _ in range(event_count):
         next_event = change_event_callbacks.assert_against_call(
             "longRunningCommandStatus"

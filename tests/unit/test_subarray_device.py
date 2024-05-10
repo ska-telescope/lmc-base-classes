@@ -70,7 +70,10 @@ def turn_on_device(
     [[result_code], [on_command_id]] = device_under_test.On()
     assert result_code == ResultCode.QUEUED
 
-    # Command is queued
+    # Command is staged and then queued
+    change_event_callbacks.assert_change_event(
+        "longRunningCommandStatus", (on_command_id, "STAGING")
+    )
     change_event_callbacks.assert_change_event(
         "longRunningCommandStatus", (on_command_id, "QUEUED")
     )
@@ -123,12 +126,14 @@ def assign_resources_to_empty_subarray(
         [assign_command_id],
     ] = device_under_test.AssignResources(json.dumps(resources_to_assign))
     assert result_code == ResultCode.QUEUED
-
-    # Command is queued
     change_event_callbacks.assert_change_event("obsState", ObsState.RESOURCING)
+
+    # Command is staged and then queued
     change_event_callbacks.assert_change_event(
-        "longRunningCommandStatus",
-        (assign_command_id, "QUEUED"),
+        "longRunningCommandStatus", (assign_command_id, "STAGING")
+    )
+    change_event_callbacks.assert_change_event(
+        "longRunningCommandStatus", (assign_command_id, "QUEUED")
     )
 
     # Command is started
@@ -188,9 +193,12 @@ def configure_subarray(
         json.dumps(configuration_to_apply)
     )
     assert result_code == ResultCode.QUEUED
-
-    # Command is queued
     change_event_callbacks.assert_change_event("obsState", ObsState.CONFIGURING)
+
+    # Command is staged and then queued
+    change_event_callbacks.assert_change_event(
+        "longRunningCommandStatus", (configure_command_id, "STAGING")
+    )
     change_event_callbacks.assert_change_event(
         "longRunningCommandStatus", (configure_command_id, "QUEUED")
     )
@@ -242,9 +250,12 @@ def reset_subarray(
     # Call command
     [[result_code], [reset_command_id]] = device_under_test.ObsReset()
     assert result_code == ResultCode.QUEUED
-
-    # Command is queued
     change_event_callbacks.assert_change_event("obsState", ObsState.RESETTING)
+
+    # Command is staged and then queued
+    change_event_callbacks.assert_change_event(
+        "longRunningCommandStatus", (reset_command_id, "STAGING")
+    )
     change_event_callbacks.assert_change_event(
         "longRunningCommandStatus", (reset_command_id, "QUEUED")
     )
@@ -305,6 +316,10 @@ def abort_subarray_command(
     [[result_code], [abort_command_id]] = device_under_test.Abort()
     assert result_code == ResultCode.STARTED
     change_event_callbacks.assert_change_event("obsState", ObsState.ABORTING)
+    change_event_callbacks.assert_change_event(
+        "longRunningCommandStatus",
+        (command_id, "IN_PROGRESS", abort_command_id, "STAGING"),
+    )
     change_event_callbacks.assert_change_event(
         "longRunningCommandStatus",
         (command_id, "IN_PROGRESS", abort_command_id, "IN_PROGRESS"),
@@ -448,6 +463,9 @@ class TestSKASubarray:  # pylint: disable=too-many-public-methods
 
         change_event_callbacks.assert_change_event("obsState", ObsState.RESOURCING)
         change_event_callbacks.assert_change_event(
+            "longRunningCommandStatus", (release_command_id, "STAGING")
+        )
+        change_event_callbacks.assert_change_event(
             "longRunningCommandStatus", (release_command_id, "QUEUED")
         )
         change_event_callbacks.assert_change_event(
@@ -480,6 +498,9 @@ class TestSKASubarray:  # pylint: disable=too-many-public-methods
         assert result_code == ResultCode.QUEUED
 
         change_event_callbacks.assert_change_event("obsState", ObsState.RESOURCING)
+        change_event_callbacks.assert_change_event(
+            "longRunningCommandStatus", (releaseall_command_id, "STAGING")
+        )
         change_event_callbacks.assert_change_event(
             "longRunningCommandStatus", (releaseall_command_id, "QUEUED")
         )
@@ -537,6 +558,9 @@ class TestSKASubarray:  # pylint: disable=too-many-public-methods
         [[result_code], [end_command_id]] = device_under_test.End()
         assert result_code == ResultCode.QUEUED
 
+        change_event_callbacks.assert_change_event(
+            "longRunningCommandStatus", (end_command_id, "STAGING")
+        )
         change_event_callbacks.assert_change_event(
             "longRunningCommandStatus", (end_command_id, "QUEUED")
         )
@@ -597,6 +621,9 @@ class TestSKASubarray:  # pylint: disable=too-many-public-methods
         assert result_code == ResultCode.QUEUED
 
         change_event_callbacks.assert_change_event(
+            "longRunningCommandStatus", (scan_command_id, "STAGING")
+        )
+        change_event_callbacks.assert_change_event(
             "longRunningCommandStatus", (scan_command_id, "QUEUED")
         )
         change_event_callbacks.assert_change_event(
@@ -624,6 +651,9 @@ class TestSKASubarray:  # pylint: disable=too-many-public-methods
         [[result_code], [endscan_command_id]] = device_under_test.EndScan()
         assert result_code == ResultCode.QUEUED
 
+        change_event_callbacks.assert_change_event(
+            "longRunningCommandStatus", (endscan_command_id, "STAGING")
+        )
         change_event_callbacks.assert_change_event(
             "longRunningCommandStatus", (endscan_command_id, "QUEUED")
         )
@@ -766,6 +796,10 @@ class TestSKASubarray:  # pylint: disable=too-many-public-methods
         assert result_code == ResultCode.QUEUED
 
         change_event_callbacks.assert_change_event("obsState", ObsState.RESOURCING)
+
+        change_event_callbacks.assert_change_event(
+            "longRunningCommandStatus", (assign_command_id, "STAGING")
+        )
         change_event_callbacks.assert_change_event(
             "longRunningCommandStatus", (assign_command_id, "QUEUED")
         )

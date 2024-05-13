@@ -7,5 +7,5 @@ Subarray
 
 .. toctree::
 
-  Subarray Component Manager<component_manager>
-  Subarray Device<subarray_device>
+  Subarray Component Manager<component-manager>
+  Subarray Device<subarray-device>

@@ -7,5 +7,5 @@ Obs subpackage
 
 .. toctree::
 
-  Obs State Model<obs_state_model>
-  Obs Device<obs_device>
+  Obs State Model<obs-state-model>
+  Obs Device<obs-device>

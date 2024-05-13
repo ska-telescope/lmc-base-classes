@@ -95,6 +95,7 @@ extensions = [
     "sphinx.ext.inheritance_diagram",
     "sphinx.ext.viewcode",
     "sphinxcontrib.plantuml",
+    "recommonmark",
 ]
 autoclass_content = "class"
 plantuml_syntax_error_image = True
@@ -104,7 +105,7 @@ plantuml_syntax_error_image = True
 # templates_path = []
 
 # The suffix of source filenames.
-source_suffix = ".rst"
+source_suffix = [".rst", ".md"]
 
 # The encoding of source files.
 # source_encoding = 'utf-8-sig'
@@ -147,7 +148,7 @@ release = release_info["version"]
 
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
-exclude_patterns = []
+exclude_patterns = ["orphans/*"]
 
 # The reST default role (used for this markup: `text`) to use for all
 # documents.

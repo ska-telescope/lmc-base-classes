@@ -7,6 +7,6 @@ Reference Testing Devices
 
 .. toctree::
 
-  Reference Base Component Manager<reference_base_component_manager>
-  Reference Subarray Component Manager<reference_subarray_component_manager>
-  Reference Subarray Device<reference_subarray_device>
+  Reference Base Component Manager<reference-base-component-manager>
+  Reference Subarray Component Manager<reference-subarray-component-manager>
+  Reference Subarray Device<reference-subarray-device>

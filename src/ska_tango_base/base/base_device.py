@@ -1285,8 +1285,9 @@ class SKABaseDevice(
         """
         Read the long running commands in the queue.
 
-         Keep track of which commands are in the queue.
-         Pop off from front as they complete.
+         Keep track of which commands are that are currently known about.
+         Entries are removed `self._command_tracker._removal_time` seconds
+         after they have finished.
 
         :param attr: Tango attribute being read
         """
@@ -1299,7 +1300,9 @@ class SKABaseDevice(
         Read the IDs of the long running commands in the queue.
 
         Every client that executes a command will receive a command ID as response.
-        Keep track of IDs in the queue. Pop off from front as they complete.
+        Keep track of IDs currently allocated.
+        Entries are removed `self._command_tracker._removal_time` seconds
+        after they have finished.
 
         :param attr: Tango attribute being read
         """

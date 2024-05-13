@@ -1,10 +1,13 @@
-==============
-Moving to v1.0
-==============
+================
+Migrating to 1.0
+================
 
-Below are all the breaking changes for the ska-tango-base 1.0.0 release.  They
-are ordered by how likely they are to require intervention when updating to
-ska-tango-base 1.0.0.
+This migration guide lists all the breaking changes introduced by ska-tango-base
+release 1.0.0.   Depending on the Tango Device implementation, some of the
+changes may require developers’ intervention, i.e. may require updates in the
+custom developed code.  In this guide the changes are ordered according to the
+likelihood that a developer intervention is required, starting with the change
+most likely to require developer intervention.
 
 .. contents:: Contents
    :depth: 2
@@ -34,7 +37,7 @@ two reasons:
 
 * The Tango event system does not work in between Kubernetes namespaces for
   PyTango versions before 9.4.2.
-* The 9.3.x releases of PyTango are more difficult to work with because the
+* The PyTango releases 9.3.x are more difficult to work with because the
   Tango collaboration do not provide wheels for them.
 
 Although ska-tango-base 1.0.0 supports PyTango 9.4.2 it is recommended to update
@@ -46,10 +49,9 @@ packages.  See the remainder of this document and the `PyTango migration guide
 <https://pytango.readthedocs.io/en/latest/versions/migration/index.html>`_
 for help updating.
 
-If you find that a lot of changes are required, you might want to do the upgrade
-incrementally. Below is a plan to migrate a package from an "old" ska-tango-base
-release (pre 0.19.2) and PyTango 9.3.x to ska-tango-base 1.0.0 and PyTango
-9.5.1.
+If a lot of changes are required, the upgrade may be performed incrementally.
+Below is a plan to migrate a package from an "old" ska-tango-base release (pre
+0.19.2) and PyTango 9.3.x to ska-tango-base 1.0.0 and PyTango 9.5.1.
 
 #. Update ska-tango-base to 0.20.2 -- this version supports PyTango 9.5.1 and
    provides deprecation warnings for the changes in ska-tango-base 1.0.0.
@@ -62,16 +64,19 @@ release (pre 0.19.2) and PyTango 9.3.x to ska-tango-base 1.0.0 and PyTango
 AdminMode.MAINTENANCE has been removed
 --------------------------------------
 
-In the ska-control-model 0.3.4 release :obj:`!AdminMode.MAINTENANCE` was renamed
-to :obj:`AdminMode.ENGINEERING <ska_control_model.AdminMode.ENGINEERING>` and
-the :code:`"to_maintenance"` action for the
-:class:`~ska_control_model.AdminModeModel` was renamed to `"to_engineering"`.
-This was to avoid confusion with the DISH MAINTENANCE mode, see SP-3868 for
-details. For the ska-control-model 0.3.4 release :obj:`!AdminMode.MAINTENANCE`
-and `"to_maintenance"` action remained for backwards compatibility and generated
-a deprecation warning.
+In the ska-control-model release 0.3.4 introduced the following changes:
 
-With the ska-control-model 1.0.0 release :obj:`!AdminMode.MAINTENANCE` has been
+- Replaced :obj:`!AdminMode.MAINTENANCE` with  :obj:`AdminMode.ENGINEERING <ska_control_model.AdminMode.ENGINEERING>`.
+- Replaced the :class:`~ska_control_model.AdminModeModel` action :code:`"to_maintenance"`  with :code:`"to_engineering"`.
+
+These changes were introduced to avoid confusion with the DISH MAINTENANCE mode
+(see SP-3868 for details).
+
+To maintain backwards compatibility, ska-control-model 0.3.4 allowed for the use
+of the old names :obj:`!AdminMode.MAINTENANCE` and :code:`"to_maintenance"`,
+generating deprecation warnings on use.
+
+With the ska-control-model release 1.0.0 :obj:`!AdminMode.MAINTENANCE` has been
 removed as has the :code:`"to_maintenance"` action.  This might require changes
 when updating to ska-control-model 1.0.0.
 
@@ -86,8 +91,8 @@ for example::
    mode2 = AdminMode(mode_str)
 
 In this example, :code:`mode_str` would need to be updated to
-:code:`"ENGINEERING"`.  The deprecation warnings provided by the 0.20.0 release
-can help you track down these cases.
+:code:`"ENGINEERING"`.  The deprecation warnings provided by ska-control-model
+0.3.4 can help you track down these cases.
 
 It is unlikely that your package is referencing the :code:`"to_maintenance"`
 action of the :class:`ska_control_model.AdminModeModel`, but if it is you will
@@ -95,11 +100,11 @@ need to use :code:`"to_engineering"` instead.
 
 max_workers has been removed from the TaskExecutorComponentManager initialiser
 ------------------------------------------------------------------------------
-
-The default Long Running Commands perform state transitions which cannot be
-executed simultaneously.   Setting :obj:`!max_workers` to anything other than 1
-results in multiple state transitions being attempted simultaneously without
-careful consideration by the component manager developer.
+Setting max_workers to a value greater then 1 results in multiple LRCs being
+executed simultaneously, which may give unpredictable results.  In the case
+where simultaneous execution of two or more LRCs is needed,  careful
+consideration is required by the component manager developer to avoid multiple
+LRCs being executed simultaneously which perform state and/or mode transition(s).
 
 Having the :obj:`!max_workers` parameter for the
 :class:`~ska_tango_base.executor.executor_component_manager.TaskExecutorComponentManager`
@@ -108,8 +113,8 @@ However, this is not the case so for ska-tango-base 1.0.0.  The parameter has
 been removed in favour of mechanisms for supporting multiple executing LRCs which
 nudge the developer into addressing the issues that come with this.
 
-In the ska-tango-base 0.20.0 release this parameter was deprecated.  For
-the ska-tango-base 1.0.0 release it has been removed.
+In ska-tango-base 0.20.0 this parameter was deprecated.  For
+ska-tango-base 1.0.0 it has been removed.
 
 If you are setting :obj:`!max_workers` to 1, you can safely remove the argument
 without issue.
@@ -124,11 +129,6 @@ method.  For example::
       def __init__(self, max_workers, ...):
          super().__init__(...)
          self._task_executor = TaskExecutor(max_workers=max_workers)
-
-For guidance on how to execute multiple LRCs at once with the careful thought
-required see XXX.
-
-.. TODO Write How-to about component managers with multiple queues
 
 New BaseComponentManager properties describing LRC capabilities
 ---------------------------------------------------------------
@@ -180,23 +180,23 @@ attribute and clients may not receive information about your tasks.
 Changes to LRC results provided by default by ska-tango-base
 ------------------------------------------------------------
 
-The new guidelines (XXX) for how to use the LRC attributes suggest that when a
-LRC has finished (successfully or otherwise) it should always have a result and
-that result should contain a :class:`~ska_control_model.ResultCode` to
-indicate the success or failure of the LRC.  This is to allow clients to only
-subscribe to the
-:attr:`~ska_tango_base.base.base_device.SKABaseDevice.longRunningCommandResult`
-attribute and to know when their command has finished, and if it did so
-successfully.
+In ska-tango-base 1.0.0, the Long Running Commands always provide the result of
+type :code:`(ResultCode, str)` when they transition an LRC to a finished status.
 
-.. TODO Link to these guidelines
+The new guidelines (see :ref:`lrc-task-guidelines`) for how to use the LRC
+attributes prescribe that an LRC shall report the outcome (success or failure)
+by providing a ResultCode.  The originator of the command (a client) shall
+subscribe to the attribute ``longRunningCommandResult`` to be notified when the
+execution of the command ends, and to receive the
+:class:`~ska_control_model.ResultCode` (i.e. to be notified regarding the
+outcome, success or failure).
 
 Prior to ska-tango-base 1.0.0, the base classes themselves did not always follow
-these guidelines.  There would be some situations where the ska-tango-base would
-transition an LRC to a finished status and either not provide a result for the
-LRC, or the result would just contain a message string.  For ska-tango-base
-1.0.0, the base classes will always provide a result of type :code:`(ResultCode,
-str)` when they transition an LRC to a finished status.
+this guideline.  In the earlier versions of the ska-tango-base, in some cases
+the result code does not get updated when the command ends, or a message string
+is provided, but not the result code.  In ska-tango-base 1.0.0, all the LRCs
+always provide a result of type :code:`(ResultCode, str)` when they transition
+to a finished status.
 
 .. note::
 
@@ -206,8 +206,7 @@ str)` when they transition an LRC to a finished status.
    provided that it is JSON encodable, although it is recommended to include a
    :class:`~ska_control_model.ResultCode`.
 
-Specifically, for the ska-tango-base 1.0.0 release the following changes have
-been made:
+Specifically, for ska-tango-base 1.0.0 the following changes have been made:
 
 - When the command is aborted after being dequeued its result will be set to
   :code:`(ResultCode.ABORTED, <message>)` instead of :code:`<message>`.
@@ -227,14 +226,18 @@ LRCs are transitioned to TaskStatus.STAGING initially
 This :obj:`TaskStatus.STAGING <ska_control_model.TaskStatus.STAGING>` status
 corresponds to the state the command is in while the device decides whether to
 enqueue or reject the command. :obj:`~ska_control_model.TaskStatus.STAGING` has
-always been a member of :class:`~ska_control_model.TaskStatus` and appears in
-the LRC documentation, however, prior to the ska-tango-base 1.0.0 release it was
-never actually used.
+always been used internally by ska-tango-base and appears in the LRC
+documentation, however, prior to the ska-tango-base release 1.0.0 a task would
+never have its status published as :obj:`TaskStatus.STAGING
+<ska_control_model.TaskStatus.STAGING>`. Typically, the first status a client
+would see the for a task is :obj:`TaskStatus.QUEUED
+<ska_control_model.TaskStatus.QUEUED>`.
 
-For ska-tango-base 1.0.0 its use has been added so that the command is "in the
-system" as early as possible - improving the visibility of the command if, for
-example, the device gets stuck while deciding whether to enqueue or reject the
-command.
+For ska-tango-base 1.0.0 the :obj:`TaskStatus.STAGING
+<ska_control_model.TaskStatus.STAGING>` status is published like all others so
+that the command is "in the system" as early as possible - improving the
+visibility of the command if, for example, the device gets stuck while deciding
+whether to enqueue or reject the command.
 
 This change might require clients to be updated which were expecting the initial
 status for a command to be :obj:`TaskStatus.QUEUED

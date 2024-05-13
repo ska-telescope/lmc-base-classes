@@ -8,4 +8,4 @@ Executor subpackage
 .. toctree::
 
   Executor<executor>
-  Executor Component Manager<executor_component_manager>
+  Executor Component Manager<executor-component-manager>

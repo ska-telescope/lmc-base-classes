@@ -361,3 +361,74 @@ class TestReferenceBaseComponentManager:
 
         component_manager.reset()
         callbacks.assert_call("component_state", fault=False)
+
+    def test_abort_commands(
+        self: TestReferenceBaseComponentManager,
+        component_manager: ReferenceBaseComponentManager,
+        callbacks: MockCallableGroup,
+    ) -> None:
+        """
+        Test abort commands.
+
+        :param component_manager: the component manager under test
+        :param callbacks: a dictionary of mocks, passed as callbacks to
+            the command tracker under test
+        """
+        assert component_manager.communication_state == CommunicationStatus.DISABLED
+        callbacks.assert_not_called()
+
+        component_manager.start_communicating()
+        callbacks.assert_call(
+            "communication_state", CommunicationStatus.NOT_ESTABLISHED
+        )
+        callbacks.assert_call("communication_state", CommunicationStatus.ESTABLISHED)
+        assert (
+            component_manager.communication_state
+            == CommunicationStatus.ESTABLISHED  # type: ignore[comparison-overlap]
+        )
+        callbacks.assert_call("component_state", power=PowerState.OFF)
+
+        component_manager.standby(callbacks["standby_task"])
+        callbacks.assert_call("standby_task", status=TaskStatus.QUEUED)
+        callbacks.assert_call("standby_task", status=TaskStatus.IN_PROGRESS)
+
+        component_manager.off(callbacks["off_task"])
+        callbacks.assert_call("off_task", status=TaskStatus.QUEUED)
+
+        component_manager.abort_commands(callbacks["abort_task"])
+        callbacks.assert_call("abort_task", status=TaskStatus.IN_PROGRESS)
+
+    def test_queue_full(
+        self: TestReferenceBaseComponentManager,
+        component_manager: ReferenceBaseComponentManager,
+        callbacks: MockCallableGroup,
+    ) -> None:
+        """
+        Test abort commands.
+
+        :param component_manager: the component manager under test
+        :param callbacks: a dictionary of mocks, passed as callbacks to
+            the command tracker under test
+        """
+        assert component_manager.communication_state == CommunicationStatus.DISABLED
+        callbacks.assert_not_called()
+
+        component_manager.start_communicating()
+        callbacks.assert_call(
+            "communication_state", CommunicationStatus.NOT_ESTABLISHED
+        )
+        callbacks.assert_call("communication_state", CommunicationStatus.ESTABLISHED)
+        assert (
+            component_manager.communication_state
+            == CommunicationStatus.ESTABLISHED  # type: ignore[comparison-overlap]
+        )
+        callbacks.assert_call("component_state", power=PowerState.OFF)
+
+        status, message = component_manager.standby(callbacks["standby_task"])
+        while status is not TaskStatus.REJECTED:
+            status, message = component_manager.standby(callbacks["standby_task"])
+        assert status is TaskStatus.REJECTED
+        assert (
+            message == "Input queue supports a maximum of "
+            f"{component_manager.max_queued_tasks} commands"
+        )

@@ -86,17 +86,23 @@ class TaskExecutor:
                 if task_callback is not None:
                     task_callback(
                         status=TaskStatus.REJECTED,
-                        result=(ResultCode.REJECTED, "Tango command has been rejected"),
+                        result=(ResultCode.REJECTED, "Queue is being aborted"),
                     )
-                return TaskStatus.REJECTED, "Queue is aborting"
+                return TaskStatus.REJECTED, "Queue is being aborted"
             except Exception as exc:  # pylint: disable=broad-except
                 if task_callback is not None:
                     task_callback(
                         status=TaskStatus.FAILED,
-                        result=(ResultCode.FAILED, str(exc)),
+                        result=(
+                            ResultCode.FAILED,
+                            f"Unhandled exception submitting task: {str(exc)}",
+                        ),
                         exception=exc,
                     )
-                return TaskStatus.REJECTED, f"Unhandled exception: {str(exc)}"
+                return (
+                    TaskStatus.FAILED,
+                    f"Unhandled exception submitting task: {str(exc)}",
+                )
 
             if task_callback is not None:
                 task_callback(status=TaskStatus.QUEUED)
@@ -188,6 +194,9 @@ class TaskExecutor:
                 if task_callback is not None:
                     task_callback(
                         status=TaskStatus.FAILED,
-                        result=(ResultCode.FAILED, str(exc)),
+                        result=(
+                            ResultCode.FAILED,
+                            f"Unhandled exception during execution: {str(exc)}",
+                        ),
                         exception=exc,
                     )

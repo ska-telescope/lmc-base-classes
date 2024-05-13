@@ -89,6 +89,7 @@ def callbacks() -> MockCallableGroup:
         "component_state",
         "off_task",
         "standby_task",
+        "abort_task",
     )
 
 

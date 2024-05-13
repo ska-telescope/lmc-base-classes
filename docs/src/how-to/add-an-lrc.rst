@@ -47,7 +47,7 @@ if you want to use this concurrency mechanism.
 
    If your device is a subarray device and must implement the default Subarray
    commands, you can inherit from both
-   :class:`~ska_tango_base.subarray.component_manager.SubarrayComponentManager`
+   :class:`~ska_tango_base.subarray.subarray_component_manager.SubarrayComponentManager`
    and
    :class:`~ska_tango_base.executor.executor_component_manager.TaskExecutorComponentManager`.
    For example:
@@ -192,7 +192,7 @@ or :class:`~ska_tango_base.subarray.subarray_device.SKASubarray` (``On``,
 ``AssignedResources``, etc.), then this method should override the corresponding
 method of your component manager base class. For example, if you are implementing
 the ``On`` command, you should override the unimplemented :meth:`BaseComponentManager.on
-<ska_tango_base.base.component_manager.BaseComponentManager.on>` method.
+<ska_tango_base.base.base_component_manager.BaseComponentManager.on>` method.
 
 If you are inheriting from :class:`~ska_tango_base.executor.executor_component_manager.TaskExecutorComponentManager`,
 you can use the :meth:`TaskExecutorComponentManager.submit_task <ska_tango_base.executor.executor_component_manager.TaskExecutorComponentManager.submit_task>`

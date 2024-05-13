@@ -16,7 +16,7 @@ from ska_tango_testing.mock.tango import MockTangoEventCallbackGroup
 
 from ska_tango_base.base import TaskCallbackType
 from ska_tango_base.executor import TaskExecutorComponentManager
-from ska_tango_base.subarray.component_manager import SubarrayComponentManager
+from ska_tango_base.subarray.subarray_component_manager import SubarrayComponentManager
 from ska_tango_base.subarray.subarray_device import SKASubarray
 
 

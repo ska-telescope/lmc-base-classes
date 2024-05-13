@@ -48,7 +48,7 @@ from ska_control_model import ResultCode, TaskStatus
 from tango.server import Device
 from typing_extensions import Protocol
 
-from .base.component_manager import BaseComponentManager
+from .base.base_component_manager import BaseComponentManager
 
 __all__ = [
     "ResultCode",
@@ -123,10 +123,6 @@ class ArgumentValidator:  # pylint: disable=too-few-public-methods
         return (args, kwargs)
 
 
-# TODO: Make this a TypedDict
-SchemaDictType = dict[str, Any]
-
-
 class JsonValidator(ArgumentValidator):  # pylint: disable=too-few-public-methods
     """
     An argument validator for JSON commands.
@@ -137,7 +133,7 @@ class JsonValidator(ArgumentValidator):  # pylint: disable=too-few-public-method
     JSON schema.
     """
 
-    DEFAULT_SCHEMA: SchemaDictType = {
+    DEFAULT_SCHEMA: dict[str, Any] = {
         "$schema": "https://json-schema.org/draft/2020-12/schema",
         "$id": "https://example.com/product.schema.json",
         "title": "Default schema",
@@ -148,7 +144,7 @@ class JsonValidator(ArgumentValidator):  # pylint: disable=too-few-public-method
     def __init__(
         self: JsonValidator,
         command_name: str,
-        schema: SchemaDictType | None,
+        schema: dict[str, Any] | None,
         logger: logging.Logger | None = None,
     ) -> None:
         """

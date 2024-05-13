@@ -56,8 +56,8 @@ Writing a component manager involves the following steps.
      component manager on ``SubarrayComponentManager``.
 
    .. inheritance-diagram::
-      ska_tango_base.base.component_manager
-      ska_tango_base.subarray.component_manager
+      ska_tango_base
+      ska_tango_base.subarray.subarray_component_manager
       :parts: 1
   
 

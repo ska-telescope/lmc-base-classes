@@ -371,7 +371,6 @@ class LoggingUtils:
         for target in targets:
             if target in added_targets:
                 handler = LoggingUtils.create_logging_handler(
-                    # TODO investigate this type: ignore.
                     target,
                     logger.tango_logger,  # type: ignore[attr-defined]
                 )

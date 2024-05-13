@@ -29,12 +29,21 @@ class TaskExecutorComponentManager(BaseComponentManager):
         Initialise a new ComponentManager instance.
 
         :param args: additional positional arguments
-        :param max_queue_size: optional maximum size of the input queue
+        :param max_queue_size: optional maximum size of the tasks input queue
         :param kwargs: additional keyword arguments
         """
         self._task_executor = TaskExecutor()
         super().__init__(*args, **kwargs)
-        self.max_queued_tasks = max_queue_size
+        self._max_queued_tasks = max_queue_size
+
+    @property
+    def max_queued_tasks(self) -> int:
+        """
+        Get the task queue size.
+
+        :return: The task queue size
+        """
+        return self._max_queued_tasks
 
     def submit_task(  # pylint: disable=too-many-arguments
         self: TaskExecutorComponentManager,
@@ -54,7 +63,7 @@ class TaskExecutorComponentManager(BaseComponentManager):
         :param task_callback: callback to be called whenever the status
             of the task changes.
 
-        :return: tuple of taskstatus & message
+        :return: tuple of TaskStatus & message
         """
         input_queue_size = self._task_executor.get_input_queue_size()
         if input_queue_size < self.max_queued_tasks:
@@ -77,7 +86,7 @@ class TaskExecutorComponentManager(BaseComponentManager):
         :param task_callback: callback to be called whenever the status
             of this abort task changes.
 
-        :return: tuple of taskstatus & message
+        :return: tuple of TaskStatus & message
         """
         if task_callback:
             task_callback(status=TaskStatus.IN_PROGRESS)

@@ -34,7 +34,7 @@ from ..base import CommandTracker
 from ..commands import JsonValidator, SlowCommand, SubmittedSlowCommand
 from ..faults import StateModelError
 from ..obs import SKAObsDevice
-from .component_manager import SubarrayComponentManager
+from .subarray_component_manager import SubarrayComponentManager
 
 DevVarLongStringArrayType = tuple[list[ResultCode], list[str]]
 

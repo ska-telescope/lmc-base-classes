@@ -2,5 +2,5 @@
 Base Component Manager
 ======================
 
-.. automodule:: ska_tango_base.base.component_manager
+.. automodule:: ska_tango_base.base.base_component_manager
    :members:

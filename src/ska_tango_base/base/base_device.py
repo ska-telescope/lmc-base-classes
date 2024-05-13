@@ -47,7 +47,7 @@ from ..commands import DeviceInitCommand, FastCommand, SlowCommand, SubmittedSlo
 from ..faults import GroupDefinitionsError, LoggingLevelError
 from ..utils import generate_command_id, get_groups_from_json
 from .admin_mode_model import AdminModeModel
-from .component_manager import BaseComponentManager
+from .base_component_manager import BaseComponentManager
 from .logging import (
     _LMC_TO_PYTHON_LOGGING_LEVEL,
     _LMC_TO_TANGO_LOGGING_LEVEL,
@@ -58,7 +58,7 @@ from .op_state_model import OpStateModel
 DevVarLongStringArrayType = tuple[list[ResultCode], list[str]]
 
 _DEBUGGER_PORT = 5678
-
+_MINIMUM_STATUS_QUEUE_SIZE = 32
 
 __all__ = ["SKABaseDevice", "main", "CommandTracker"]
 
@@ -354,9 +354,7 @@ class SKABaseDevice(
     _logging_configured = False
 
     def _init_logging(self: SKABaseDevice[ComponentManagerT]) -> None:  # noqa: C901
-        """Initialize the logging mechanism, using default properties."""
-        # TODO: This comment stops black adding a blank line here,
-        # causing flake8-docstrings D202 error.
+        """Initialize the logging mechanism, using default properties."""  # noqa:D202
 
         # pylint: disable-next=too-few-public-methods
         class EnsureTagsFilter(logging.Filter):
@@ -636,7 +634,12 @@ class SKABaseDevice(
             )
 
     def _create_lrc_attributes(self: SKABaseDevice[ComponentManagerT]) -> None:
-        """Create attributes for the long running commands."""
+        """
+        Create attributes for the long running commands.
+
+        :raises AssertionError: if max_queued_tasks or max_executing_tasks is not
+            equal to or greater than 0 or 1 respectively.
+        """
         # For the attributes which report both queued and executing commands
         # (longRunningCommandStatus, longRunningCommandsInQueue and
         # longRunningCommandIDsInQueue), we need space for at least as many
@@ -649,37 +652,42 @@ class SKABaseDevice(
         # We choose a buffer of `ComponentManager.max_queued_tasks` to be able to
         # handle the situation where a client fills the queue with commands that all
         # get rejected because the command isn't allowed then queues up the correct
-        # command straight after. NB: `update_command_statuses` and
-        # `update_commands_in_queue` will prune the oldest commands from the list if
-        # we reach the limit.
-        self._status_queue_size = (
-            max(self.component_manager.max_queued_tasks, 1) * 2
-            + self.component_manager.max_executing_tasks
+        # command straight after. We also have a minimum of _MINIMUM_STATUS_QUEUE_SIZE
+        # for when max_queued_tasks=0, i.e. a device that doesn't allow queuing tasks,
+        # because finished tasks will still hang around.
+        # NB: `update_command_statuses` and `update_commands_in_queue` will prune the
+        # oldest commands from the list if we reach the limit.
+        assert (
+            self.component_manager.max_queued_tasks >= 0
+        ), "max_queued_tasks property must be equal to or greater than 0."
+        assert (
+            self.component_manager.max_executing_tasks >= 1
+        ), "max_executing_tasks property must be equal to or greater than 1."
+        self._status_queue_size = max(
+            self.component_manager.max_queued_tasks * 2
+            + self.component_manager.max_executing_tasks,
+            _MINIMUM_STATUS_QUEUE_SIZE,
         )
         self._create_attribute(
             "longRunningCommandStatus",
             self._status_queue_size * 2,  # 2 per command
             self.longRunningCommandStatus,
         )
-
         self._create_attribute(
             "longRunningCommandsInQueue",
             self._status_queue_size,
             self.longRunningCommandsInQueue,
         )
-
         self._create_attribute(
             "longRunningCommandIDsInQueue",
             self._status_queue_size,
             self.longRunningCommandIDsInQueue,
         )
-
         self._create_attribute(
             "longRunningCommandInProgress",
             self.component_manager.max_executing_tasks,
             self.longRunningCommandInProgress,
         )
-
         self._create_attribute(
             "longRunningCommandProgress",
             self.component_manager.max_executing_tasks
@@ -1277,7 +1285,7 @@ class SKABaseDevice(
         self._test_mode = value
 
     # The following LRC attributes are instantiated in init_device() to make use of the
-    # max_queued_tasks property for max_dim_x
+    # max_queued_tasks and max_executing_tasks properties to compute their max_dim_x
 
     def longRunningCommandsInQueue(
         self: SKABaseDevice[ComponentManagerT], attr: attribute

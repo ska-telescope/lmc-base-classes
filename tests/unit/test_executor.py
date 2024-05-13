@@ -11,7 +11,7 @@ from threading import Event, Lock
 from time import sleep
 
 import pytest
-from ska_control_model import TaskStatus
+from ska_control_model import ResultCode, TaskStatus
 from ska_tango_testing.mock import MockCallableGroup
 
 from ska_tango_base.base import TaskCallbackType
@@ -159,7 +159,10 @@ class TestTaskExecutor:
                 task_callback(status=TaskStatus.IN_PROGRESS)
             with lock:
                 if task_abort_event.is_set() and task_callback is not None:
-                    task_callback(status=TaskStatus.ABORTED)
+                    task_callback(
+                        status=TaskStatus.ABORTED,
+                        result=(ResultCode.ABORTED, "Command has been aborted"),
+                    )
                     return
             if task_callback is not None:
                 task_callback(status=TaskStatus.COMPLETED)
@@ -191,14 +194,23 @@ class TestTaskExecutor:
             args=[locks[max_workers + 1]],
             task_callback=callbacks[f"job_{max_workers + 1}"],
         )
-        callbacks[f"job_{max_workers + 1}"].assert_call(status=TaskStatus.REJECTED)
+        callbacks[f"job_{max_workers + 1}"].assert_call(
+            status=TaskStatus.REJECTED,
+            result=(ResultCode.REJECTED, "Tango command has been rejected"),
+        )
 
         for i in range(max_workers + 1):
             locks[i].release()
 
         for i in range(max_workers):
-            callbacks[f"job_{i}"].assert_call(status=TaskStatus.ABORTED)
-        callbacks[f"job_{max_workers}"].assert_call(status=TaskStatus.ABORTED)
+            callbacks[f"job_{i}"].assert_call(
+                status=TaskStatus.ABORTED,
+                result=(ResultCode.ABORTED, "Command has been aborted"),
+            )
+        callbacks[f"job_{max_workers}"].assert_call(
+            status=TaskStatus.ABORTED,
+            result=(ResultCode.ABORTED, "Command has been aborted"),
+        )
 
         sleep(0.1)  # TODO: Abort command needs to signal completion too
 
@@ -241,5 +253,8 @@ class TestTaskExecutor:
         callbacks.assert_call("job_0", status=TaskStatus.QUEUED)
         callbacks.assert_call("job_0", status=TaskStatus.IN_PROGRESS)
         callbacks.assert_call(
-            "job_0", status=TaskStatus.FAILED, exception=exception_to_raise
+            "job_0",
+            status=TaskStatus.FAILED,
+            result=(ResultCode.FAILED, str(exception_to_raise)),
+            exception=exception_to_raise,
         )

@@ -11,7 +11,7 @@ import concurrent.futures
 import threading
 from typing import Any, Callable
 
-from ska_control_model import TaskStatus
+from ska_control_model import ResultCode, TaskStatus
 
 from ..base import TaskCallbackType
 
@@ -84,12 +84,19 @@ class TaskExecutor:
                 )
             except RuntimeError:
                 if task_callback is not None:
-                    task_callback(status=TaskStatus.REJECTED)
+                    task_callback(
+                        status=TaskStatus.REJECTED,
+                        result=(ResultCode.REJECTED, "Tango command has been rejected"),
+                    )
                 return TaskStatus.REJECTED, "Queue is aborting"
-            except Exception as exception:  # pylint: disable=broad-except
+            except Exception as exc:  # pylint: disable=broad-except
                 if task_callback is not None:
-                    task_callback(status=TaskStatus.FAILED, exception=exception)
-                return TaskStatus.REJECTED, f"Unhandled exception: {str(exception)}"
+                    task_callback(
+                        status=TaskStatus.FAILED,
+                        result=(ResultCode.FAILED, str(exc)),
+                        exception=exc,
+                    )
+                return TaskStatus.REJECTED, f"Unhandled exception: {str(exc)}"
 
             if task_callback is not None:
                 task_callback(status=TaskStatus.QUEUED)
@@ -124,7 +131,10 @@ class TaskExecutor:
                 max_workers=max_workers
             )
             if task_callback is not None:
-                task_callback(status=TaskStatus.COMPLETED)
+                task_callback(
+                    status=TaskStatus.COMPLETED,
+                    result=(ResultCode.OK, "Abort completed OK"),
+                )
 
         threading.Thread(
             target=_shutdown_and_relaunch, args=(self._max_workers,)
@@ -148,10 +158,16 @@ class TaskExecutor:
 
         if abort_event.is_set():
             if task_callback is not None:
-                task_callback(status=TaskStatus.ABORTED)
-        elif is_cmd_allowed is not None and not is_cmd_allowed():
+                task_callback(
+                    status=TaskStatus.ABORTED,
+                    result=(ResultCode.ABORTED, "Command has been aborted"),
+                )
+        elif is_cmd_allowed is not None and is_cmd_allowed() is False:
             if task_callback is not None:
-                task_callback(status=TaskStatus.REJECTED, result="Command not allowed")
+                task_callback(
+                    status=TaskStatus.REJECTED,
+                    result=(ResultCode.NOT_ALLOWED, "Command is not allowed"),
+                )
         else:
             # Don't set the task to IN_PROGRESS yet, in case func is itself implemented
             # asynchronously. We leave it to func to set the task to IN_PROGRESS, and
@@ -170,4 +186,8 @@ class TaskExecutor:
                 # uncaught exception will take down the thread without giving
                 # us any useful diagnostics.
                 if task_callback is not None:
-                    task_callback(status=TaskStatus.FAILED, exception=exc)
+                    task_callback(
+                        status=TaskStatus.FAILED,
+                        result=(ResultCode.FAILED, str(exc)),
+                        exception=exc,
+                    )

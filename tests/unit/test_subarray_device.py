@@ -393,6 +393,14 @@ class TestSKASubarray:  # pylint: disable=too-many-public-methods
             change_event_callbacks.assert_change_event(
                 "longRunningCommandInProgress", (abort_name,)
             )
+            # Abort is completed
+            change_event_callbacks.assert_change_event(
+                "longRunningCommandResult",
+                (
+                    abort_command_id,
+                    json.dumps([int(ResultCode.OK), "Abort completed OK"]),
+                ),
+            )
             change_event_callbacks.assert_change_event(
                 "longRunningCommandStatus",
                 (command_id, "ABORTED", abort_command_id, "COMPLETED"),

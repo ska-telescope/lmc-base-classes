@@ -387,6 +387,13 @@ class TestSKASubarray:  # pylint: disable=too-many-public-methods
                 "commandedObsState", ObsState.ABORTED
             )
             change_event_callbacks.assert_change_event(
+                "longRunningCommandResult",
+                (
+                    command_id,
+                    json.dumps([int(ResultCode.ABORTED), "Command has been aborted"]),
+                ),
+            )
+            change_event_callbacks.assert_change_event(
                 "longRunningCommandStatus",
                 (command_id, "ABORTED", abort_command_id, "IN_PROGRESS"),
             )
@@ -736,6 +743,13 @@ class TestSKASubarray:  # pylint: disable=too-many-public-methods
         # Simulate observation fault
         device_under_test.SimulateObsFault()
         change_event_callbacks.assert_change_event("obsState", ObsState.FAULT)
+        change_event_callbacks.assert_change_event(
+            "longRunningCommandResult",
+            (
+                assign_command_id,
+                json.dumps([int(ResultCode.ABORTED), "Command has been aborted"]),
+            ),
+        )
         change_event_callbacks.assert_change_event(
             "longRunningCommandStatus", (assign_command_id, "ABORTED")
         )

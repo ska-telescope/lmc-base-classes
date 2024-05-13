@@ -72,7 +72,7 @@ addopts = "--verbose"
 
 [tool.coverage.run]
 data_file = ".coverage/.coverage"
-omit = ["__init__.py", "release.py"]
+omit = ["__init__.py", "release.py", "control_mode.py"]
 
 [build-system]
 requires = ["poetry-core>=1.8.0"]

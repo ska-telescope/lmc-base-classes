@@ -181,7 +181,10 @@ class FakeBaseComponent:
             _call_task_callback(status=TaskStatus.IN_PROGRESS)
 
             if task_abort_event.is_set():
-                _call_task_callback(status=TaskStatus.ABORTED)
+                _call_task_callback(
+                    status=TaskStatus.ABORTED,
+                    result=(ResultCode.ABORTED, "Command has been aborted"),
+                )
                 return
 
             sleep_time = self._time_to_complete / (
@@ -191,7 +194,10 @@ class FakeBaseComponent:
                 sleep(sleep_time)
 
                 if task_abort_event.is_set():
-                    _call_task_callback(status=TaskStatus.ABORTED)
+                    _call_task_callback(
+                        status=TaskStatus.ABORTED,
+                        result=(ResultCode.ABORTED, "Command has been aborted"),
+                    )
                     return
 
                 _call_task_callback(progress=progress_point)
@@ -201,7 +207,10 @@ class FakeBaseComponent:
             sleep(sleep_time)
 
             if task_abort_event.is_set():
-                _call_task_callback(status=TaskStatus.ABORTED)
+                _call_task_callback(
+                    status=TaskStatus.ABORTED,
+                    result=(ResultCode.ABORTED, "Command has been aborted"),
+                )
                 return
 
             _call_task_callback(status=TaskStatus.COMPLETED, result=result)

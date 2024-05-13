@@ -121,8 +121,7 @@ def assert_lrcstatus_change_event_staging_queued_in_progress(
     """
     Assert the longRunningCommandStatus attribute change event multiple times.
 
-    :param change_event_callbacks: dictionary of mock change event
-        callbacks with asynchrony support
+    :param change_event_callbacks: dictionary of mock change event callbacks
     :return: Callable helper function
     """
 
@@ -131,6 +130,28 @@ def assert_lrcstatus_change_event_staging_queued_in_progress(
             change_event_callbacks.assert_change_event(
                 "longRunningCommandStatus", (command, status)
             )
+
+    return inner_helper
+
+
+@pytest.fixture()
+def print_change_event_queue(
+    change_event_callbacks: MockTangoEventCallbackGroup,
+) -> Callable[[Any], None]:
+    """
+    Print the change event callback queue of the given attribute for debugging.
+
+    :param change_event_callbacks: dictionary of mock change event callbacks
+    :return: Callable helper function
+    """
+
+    def inner_helper(attr_name: str) -> None:
+        print(f"{attr_name} change event queue:")
+        # pylint: disable=protected-access
+        for node in change_event_callbacks[
+            attr_name
+        ]._callable._consumer_view._iterable:
+            print(node.payload["attribute_value"])
 
     return inner_helper
 

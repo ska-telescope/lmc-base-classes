@@ -1,4 +1,4 @@
-# pylint: disable=invalid-name, too-many-arguments
+# pylint: disable=invalid-name, too-many-arguments, too-many-lines
 # -*- coding: utf-8 -*-
 #
 # This file is part of the SKA Tango Base project
@@ -26,7 +26,7 @@ from ska_control_model import (
     TestMode,
 )
 from ska_tango_testing.mock.tango import MockTangoEventCallbackGroup
-from tango import DevState
+from tango import DevFailed, DevState
 
 from ska_tango_base.testing.reference import FakeSubarrayComponent, ReferenceSkaSubarray
 
@@ -958,3 +958,74 @@ class TestSKASubarray:  # pylint: disable=too-many-public-methods
         """
         version_id_pattern = re.compile(r"[0-9]+.[0-9]+.[0-9]+")
         assert (re.match(version_id_pattern, device_under_test.versionId)) is not None
+
+    def test_is_cmd_allowed_exceptions(
+        self: TestSKASubarray,
+        device_under_test: tango.DeviceProxy,
+    ) -> None:
+        """
+        Test the 'is_cmd_allowed' methods' raised exception messages.
+
+        :param device_under_test: a proxy to the device under test
+        """
+        with pytest.raises(DevFailed) as exc:
+            device_under_test.Configure(json.dumps({"blocks": 2}))
+        assert (
+            "ska_tango_base.faults.StateModelError: Configure command "
+            "not permitted in observation state EMPTY" in str(exc.value)
+        )
+        with pytest.raises(DevFailed) as exc:
+            device_under_test.Scan(json.dumps({"scan_id": "scan_1"}))
+        assert (
+            "ska_tango_base.faults.StateModelError: Scan command "
+            "not permitted in observation state EMPTY" in str(exc.value)
+        )
+        with pytest.raises(DevFailed) as exc:
+            device_under_test.EndScan()
+        assert (
+            "ska_tango_base.faults.StateModelError: EndScan command "
+            "not permitted in observation state EMPTY" in str(exc.value)
+        )
+        with pytest.raises(DevFailed) as exc:
+            device_under_test.End()
+        assert (
+            "ska_tango_base.faults.StateModelError: End command "
+            "not permitted in observation state EMPTY" in str(exc.value)
+        )
+        with pytest.raises(DevFailed) as exc:
+            device_under_test.Abort()
+        assert (
+            "ska_tango_base.faults.StateModelError: Abort command "
+            "not permitted in observation state EMPTY" in str(exc.value)
+        )
+        with pytest.raises(DevFailed) as exc:
+            device_under_test.ObsReset()
+        assert (
+            "ska_tango_base.faults.StateModelError: ObsReset command "
+            "not permitted in observation state EMPTY" in str(exc.value)
+        )
+        with pytest.raises(DevFailed) as exc:
+            device_under_test.Restart()
+        assert (
+            "ska_tango_base.faults.StateModelError: Restart command "
+            "not permitted in observation state EMPTY" in str(exc.value)
+        )
+        device_under_test.AssignResources(json.dumps({"resources": ["BAND1"]}))
+        with pytest.raises(DevFailed) as exc:
+            device_under_test.AssignResources(json.dumps({"resources": ["BAND2"]}))
+        assert (
+            "ska_tango_base.faults.StateModelError: AssignResources command "
+            "not permitted in observation state RESOURCING" in str(exc.value)
+        )
+        with pytest.raises(DevFailed) as exc:
+            device_under_test.ReleaseResources(json.dumps({"resources": ["BAND1"]}))
+        assert (
+            "ska_tango_base.faults.StateModelError: ReleaseResources command "
+            "not permitted in observation state RESOURCING" in str(exc.value)
+        )
+        with pytest.raises(DevFailed) as exc:
+            device_under_test.ReleaseAllResources()
+        assert (
+            "ska_tango_base.faults.StateModelError: ReleaseAllResources command "
+            "not permitted in observation state RESOURCING" in str(exc.value)
+        )

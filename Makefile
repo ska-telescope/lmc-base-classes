@@ -13,7 +13,6 @@ PROJECT = ska-tango-base
 #####################
 include .make/python.mk
 
-IMAGE_FOR_DIAGRAMS = artefact.skao.int/ska-tango-images-pytango-builder:9.3.28
 PYTHON_LINE_LENGTH = 88
 PYTHON_VARS_AFTER_PYTEST = --forked
 

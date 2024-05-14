@@ -247,13 +247,13 @@ class TestTaskExecutor:
             exception=exception_to_raise,
         )
 
-    def test_is_cmd_allowed(
+    def test_is_cmd_allowed_false(
         self: TestTaskExecutor,
         executor: TaskExecutor,
         callbacks: MockCallableGroup,
     ) -> None:
         """
-        Test that the executor handles an uncaught exception correctly.
+        Test the executor callback if the 'is_cmd_allowed' method returns False.
 
         :param executor: the task executor under test
         :param callbacks: a dictionary of mocks, passed as callbacks to
@@ -273,4 +273,37 @@ class TestTaskExecutor:
             "job_0",
             status=TaskStatus.REJECTED,
             result=(ResultCode.NOT_ALLOWED, "Command is not allowed"),
+        )
+
+    def test_is_cmd_allowed_exception(
+        self: TestTaskExecutor,
+        executor: TaskExecutor,
+        callbacks: MockCallableGroup,
+    ) -> None:
+        """
+        Test the executor callback if the 'is_cmd_allowed' method raises an Exception.
+
+        :param executor: the task executor under test
+        :param callbacks: a dictionary of mocks, passed as callbacks to
+            the command tracker under test
+        """
+        exception_to_raise = ValueError("Exception under test")
+
+        def _is_cmd_allowed() -> bool:
+            raise exception_to_raise
+
+        executor.submit(
+            self._claim_lock,
+            is_cmd_allowed=_is_cmd_allowed,
+            task_callback=callbacks["job_0"],
+        )
+        callbacks.assert_call("job_0", status=TaskStatus.QUEUED)
+        callbacks.assert_call(
+            "job_0",
+            status=TaskStatus.REJECTED,
+            result=(
+                ResultCode.REJECTED,
+                f"Exception from 'is_cmd_allowed' method: {str(exception_to_raise)}",
+            ),
+            exception=exception_to_raise,
         )

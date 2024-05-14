@@ -404,7 +404,7 @@ class TestReferenceBaseComponentManager:
         callbacks: MockCallableGroup,
     ) -> None:
         """
-        Test abort commands.
+        Test the command result returned if the queue is full.
 
         :param component_manager: the component manager under test
         :param callbacks: a dictionary of mocks, passed as callbacks to

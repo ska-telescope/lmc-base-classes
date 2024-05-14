@@ -502,4 +502,8 @@ class SubmittedSlowCommand(SlowCommand[tuple[ResultCode, str]]):
             return ResultCode.QUEUED, command_id
         if status == TaskStatus.REJECTED:
             return ResultCode.REJECTED, message
-        return ResultCode.FAILED, message
+        return (
+            ResultCode.FAILED,
+            f"Expected QUEUED or REJECTED task status, but {status.name} was returned "
+            f"by command method with message: {message}",
+        )

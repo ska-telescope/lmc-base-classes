@@ -16,7 +16,7 @@ API
 
 .. toctree::
   :caption: Other devices
-  :maxdepth: 2
+  :maxdepth: 1
 
   Alarm Handler device<alarm-handler-device>
   Capability device<capability-device>
@@ -27,7 +27,7 @@ API
 
 .. toctree::
   :caption: Other modules
-  :maxdepth: 2
+  :maxdepth: 1
 
   Commands<commands>
   Control Model<control-model>

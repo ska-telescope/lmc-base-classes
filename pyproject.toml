@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "ska-tango-base"
-version = "0.20.1"
+version = "1.0.0"
 description = "SKA Tango base classes"
 authors = ["SKAO"]
 license = "BSD-3-Clause"

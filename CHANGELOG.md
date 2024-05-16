@@ -1,6 +1,6 @@
 # Changelog
 
-## unreleased
+## 1.0.0
 
 - Breaking changes:
   - WOM-299: Update to pytango ^9.4.2 for build and 9.5.0 for development.

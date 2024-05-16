@@ -928,7 +928,8 @@ class SKABaseDevice(
         command_exception: Exception,
     ) -> None:
         self.logger.error(
-            f"Command '{command_id}' raised exception {command_exception}"
+            f"Command '{command_id}' raised exception {command_exception}",
+            exc_info=command_exception,
         )
         self._command_result = (command_id, str(command_exception))
         self.push_change_event("longRunningCommandResult", self._command_result)

@@ -1898,6 +1898,7 @@ class SKABaseDevice(
     def push_change_event(
         self: SKABaseDevice[ComponentManagerT], name: str, *args: Any
     ) -> None:
+        # pylint: disable=line-too-long
         """
         Push a device server change event.
 
@@ -1942,8 +1943,7 @@ class SKABaseDevice(
             data: value to send to client
             dim_x: length to truncate value to
 
-        - push_change_event(
-            self, name: str, data: Sequence[Scalar], dim_x: int, dim_y: int)
+        - push_change_event(self, name: str, data: Sequence[Scalar], dim_x: int, dim_y: int)
 
             Push a device server change event for a image attribute with reshaping.
 
@@ -1965,9 +1965,7 @@ class SKABaseDevice(
             str_data: encoding format for data
             data: encoded data to send
 
-        - push_change_event(
-
-            self, name: str, data: Any, timestamp: float, quality: tango.AttrQuality)
+        - push_change_event(self, name: str, data: Any, timestamp: float, quality: tango.AttrQuality)
 
             Push a device server change event for an attribute with timestamp
             and quality.
@@ -1976,13 +1974,7 @@ class SKABaseDevice(
             timestamp: unix timestamp
             quality: quality of attribute
 
-        - push_change_event(
-            self,
-            name: str,
-            data: Sequence[Scalar],
-            timestamp: float,
-            quality: tango.AttrQuality,
-            dim_x: int)
+        - push_change_event(self, name: str, data: Sequence[Scalar], timestamp: float, quality: tango.AttrQuality, dim_x: int)
 
             Push a device server change event for a spectrum attribute with truncation,
             timestamp and quality.
@@ -1996,14 +1988,7 @@ class SKABaseDevice(
             quality: quality of attribute
             dim_x: length to truncate value to
 
-        - push_change_event(
-            self,
-            name: str,
-            data: Scalar,
-            timestamp: float,
-            quality: tango.AttrQuality,
-            dim_x: int,
-            dim_y: int)
+        - push_change_event(self, name: str, data: Scalar, timestamp: float, quality: tango.AttrQuality, dim_x: int, dim_y: int)
 
             Push a device server change event for a image attribute with reshaping,
             timestampe and quality.
@@ -2021,13 +2006,7 @@ class SKABaseDevice(
             dim_x: x dimension to reshape to
             dim_y: y dimension to reshape to
 
-        - push_change_event(
-            self,
-            name: str,
-            str_data: str,
-            data: bytes | str,
-            timestamp: double,
-            quality: tango.AttrQuality)
+        - push_change_event(self, name: str, str_data: str, data: bytes | str, timestamp: double, quality: tango.AttrQuality)
 
             Push a device server change event for a encoded attribute with timestamp
             and quality.
@@ -2039,12 +2018,13 @@ class SKABaseDevice(
 
         :param name: the attribute name
         :param args: the arguments to dispatch on
-        """
+        """  # noqa: E501
         self._submit_tango_operation("push_change_event", name, *args)
 
     def push_archive_event(
         self: SKABaseDevice[ComponentManagerT], name: str, *args: Any
     ) -> None:
+        # pylint: disable=line-too-long
         """
         Push a device server archive event.
 
@@ -2089,8 +2069,7 @@ class SKABaseDevice(
             data: value to send to client
             dim_x: length to truncate value to
 
-        - push_archive_event(
-            self, name: str, data: Sequence[Scalar], dim_x: int, dim_y: int)
+        - push_archive_event(self, name: str, data: Sequence[Scalar], dim_x: int, dim_y: int)
 
             Push a device server archive event for a image attribute with reshaping.
 
@@ -2112,9 +2091,7 @@ class SKABaseDevice(
             str_data: encoding format for data
             data: encoded data to send
 
-        - push_archive_event(
-
-            self, name: str, data: Any, timestamp: float, quality: tango.AttrQuality)
+        - push_archive_event(self, name: str, data: Any, timestamp: float, quality: tango.AttrQuality)
 
             Push a device server archive event for an attribute with timestamp
             and quality.
@@ -2123,13 +2100,7 @@ class SKABaseDevice(
             timestamp: unix timestamp
             quality: quality of attribute
 
-        - push_archive_event(
-            self,
-            name: str,
-            data: Sequence[Scalar],
-            timestamp: float,
-            quality: tango.AttrQuality,
-            dim_x: int)
+        - push_archive_event(self, name: str, data: Sequence[Scalar], timestamp: float, quality: tango.AttrQuality, dim_x: int)
 
             Push a device server archive event for a spectrum attribute with truncation,
             timestamp and quality.
@@ -2143,14 +2114,7 @@ class SKABaseDevice(
             quality: quality of attribute
             dim_x: length to truncate value to
 
-        - push_archive_event(
-            self,
-            name: str,
-            data: Scalar,
-            timestamp: float,
-            quality: tango.AttrQuality,
-            dim_x: int,
-            dim_y: int)
+        - push_archive_event(self, name: str, data: Scalar, timestamp: float, quality: tango.AttrQuality, dim_x: int, dim_y: int)
 
             Push a device server archive event for a image attribute with reshaping,
             timestampe and quality.
@@ -2168,13 +2132,7 @@ class SKABaseDevice(
             dim_x: x dimension to reshape to
             dim_y: y dimension to reshape to
 
-        - push_archive_event(
-            self,
-            name: str,
-            str_data: str,
-            data: bytes | str,
-            timestamp: double,
-            quality: tango.AttrQuality)
+        - push_archive_event(self, name: str, str_data: str, data: bytes | str, timestamp: double, quality: tango.AttrQuality)
 
             Push a device server archive event for a encoded attribute with timestamp
             and quality.
@@ -2186,7 +2144,7 @@ class SKABaseDevice(
 
         :param name: the attribute name
         :param args: the arguments to dispatch on
-        """
+        """  # noqa: E501
         has_data_arg = len(args) > 0
         is_state_or_status = name.lower() in ["state", "status"]
 

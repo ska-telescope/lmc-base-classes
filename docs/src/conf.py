@@ -11,9 +11,31 @@
 #
 # All configuration values have a default; values that are commented out
 # serve to show the default.
+#
+# pylint: disable=all
 
 import os
 import sys
+
+
+# Strip the @tango.DebugIt decorator from any class methods,
+# as it removes the function signature which causes Sphinx to ignore the them.
+def setup(app):  # type: ignore
+    app.setup_extension("sphinx.ext.autodoc")
+
+    def strip_decorator(func):  # type: ignore
+        return func
+
+    import tango
+
+    original_decorator = tango.DebugIt
+
+    # Monkey patch the original decorator
+    def patched_decorator(*args, **kwargs):  # type: ignore
+        return strip_decorator(original_decorator(*args, **kwargs))  # type: ignore
+
+    tango.DebugIt = patched_decorator
+
 
 # This is an elaborate hack to insert write property into _all_
 # mock decorators. It is needed for getting @command to build
@@ -81,7 +103,7 @@ sys.path.insert(0, os.path.abspath("../../src"))
 # -- General configuration ------------------------------------------------
 
 # If your documentation needs a minimal Sphinx version, state it here.
-needs_sphinx = "3.5"
+needs_sphinx = "7.0"
 
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
@@ -122,7 +144,7 @@ project = "SKA Tango Base"
 #
 
 
-def get_release_info():
+def get_release_info():  # type: ignore
     release_filename = os.path.join("..", "..", "src", "ska_tango_base", "release.py")
     exec(open(release_filename).read())
     return locals()
@@ -356,17 +378,20 @@ intersphinx_mapping = {
 nitpicky = True
 
 nitpick_ignore = [
-    # ska-control-model API docs don't document the root package,
-    # and there's still two inexplicable sphinx cross-ref issues:
+    # ska-control-model API docs don't document the root package
     ("py:mod", "ska_control_model"),
-    ("py:class", "CommunicationStatus"),
-    ("py:class", "PowerState"),
     # TODO: Can't figure this one out
     ("py:class", "ska_tango_base.base.base_component_manager.Wrapped"),
     # These ones look like sphinx bugs
     ("py:class", "method"),
     ("py:class", "tango.server.command"),
-    ("py:class", "Event"),
+    ("py:class", "tango.Logger"),
+    ("py:class", "socket.SocketKind"),
+    # These can't be found after stripping the tango.DebugIt decorator
+    ("py:class", "tango._tango.Logger"),
+    ("py:class", "tango._tango.DevState"),
+    ("py:class", "tango._tango.DbDevInfo"),
+    ("py:class", "tango._tango.DeviceProxy"),
     # Version of sphinx in use here doesn't support type variables
     ("py:class", "ska_tango_base.poller.poller.PollRequestT"),
     ("py:class", "ska_tango_base.poller.poller.PollResponseT"),

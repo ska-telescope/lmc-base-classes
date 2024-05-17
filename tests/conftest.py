@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import logging
 import socket
-from typing import Any, Callable, Generator, cast
+from typing import Any, Generator, cast
 
 import pytest
 import pytest_mock
@@ -116,48 +116,6 @@ def change_event_callbacks_fixture() -> MockTangoEventCallbackGroup:
 
 
 @pytest.fixture()
-def assert_lrcstatus_change_event_staging_queued_in_progress(
-    change_event_callbacks: MockTangoEventCallbackGroup,
-) -> Callable[[Any], None]:
-    """
-    Assert the longRunningCommandStatus attribute change event multiple times.
-
-    :param change_event_callbacks: dictionary of mock change event callbacks
-    :return: Callable helper function
-    """
-
-    def inner_helper(command: Any) -> None:
-        for status in ["STAGING", "QUEUED", "IN_PROGRESS"]:
-            change_event_callbacks.assert_change_event(
-                "longRunningCommandStatus", (command, status)
-            )
-
-    return inner_helper
-
-
-@pytest.fixture()
-def print_change_event_queue(
-    change_event_callbacks: MockTangoEventCallbackGroup,
-) -> Callable[[Any], None]:
-    """
-    Print the change event callback queue of the given attribute for debugging.
-
-    :param change_event_callbacks: dictionary of mock change event callbacks
-    :return: Callable helper function
-    """
-
-    def inner_helper(attr_name: str) -> None:
-        print(f"{attr_name} change event queue:")
-        # pylint: disable=protected-access
-        for node in change_event_callbacks[
-            attr_name
-        ]._callable._consumer_view._iterable:
-            print(node.payload["attribute_value"])
-
-    return inner_helper
-
-
-@pytest.fixture()
 def logger() -> logging.Logger:
     """
     Return a default logger for tests.
@@ -225,3 +183,40 @@ def patch_debugger_to_start_on_ephemeral_port() -> None:
     """
     # pylint: disable-next=protected-access
     ska_tango_base.base.base_device._DEBUGGER_PORT = 0
+
+
+class Helpers:
+    """Static helper functions for tests."""
+
+    @staticmethod
+    def assert_lrcstatus_change_event_staging_queued_in_progress(
+        change_event_callbacks: MockTangoEventCallbackGroup, command: Any
+    ) -> None:
+        """
+        Assert the longRunningCommandStatus attribute change event multiple times.
+
+        :param change_event_callbacks: dictionary of mock change event callbacks
+        :param command: name/id of command to assert change events
+        """
+        for status in ["STAGING", "QUEUED", "IN_PROGRESS"]:
+            change_event_callbacks.assert_change_event(
+                "longRunningCommandStatus", (command, status)
+            )
+
+    @staticmethod
+    def print_change_event_queue(
+        change_event_callbacks: MockTangoEventCallbackGroup,
+        attr_name: str,
+    ) -> None:
+        """
+        Print the change event callback queue of the given attribute for debugging.
+
+        :param change_event_callbacks: dictionary of mock change event callbacks
+        :param attr_name: attribute in the change event callback group to print
+        """
+        print(f"{attr_name} change event queue:")
+        # pylint: disable=protected-access
+        for node in change_event_callbacks[
+            attr_name
+        ]._callable._consumer_view._iterable:
+            print(node.payload["attribute_value"])

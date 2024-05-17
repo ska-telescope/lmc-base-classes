@@ -29,6 +29,7 @@ from ska_tango_testing.mock.tango import MockTangoEventCallbackGroup
 from tango import DevFailed, DevState
 
 from ska_tango_base.testing.reference import FakeSubarrayComponent, ReferenceSkaSubarray
+from tests.conftest import Helpers
 
 CallableAnyNone = Callable[[Any], None]
 
@@ -79,18 +80,16 @@ class TestSKASubarray:  # pylint: disable=too-many-public-methods
         self: TestSKASubarray,
         device_under_test: tango.DeviceProxy,
         change_event_callbacks: MockTangoEventCallbackGroup,
-        assert_lrcstatus_change_event_staging_queued_in_progress: CallableAnyNone,
     ) -> Callable[[], None]:
         """
         Turn on the device and clear the queue attributes.
 
         :param device_under_test: a proxy to the device under test
         :param change_event_callbacks: dictionary of mock change event callbacks
-        :param assert_lrcstatus_change_event_staging_queued_in_progress: helper function
         :return: Callable helper function
         """
 
-        def inner_helper() -> None:
+        def _turn_on_device() -> None:
             device_under_test.SetCommandTrackerRemovalTime(0)
             assert device_under_test.state() == DevState.OFF
             for attribute in [
@@ -123,7 +122,9 @@ class TestSKASubarray:  # pylint: disable=too-many-public-methods
             # Call command
             [[result_code], [on_command_id]] = device_under_test.On()
             assert result_code == ResultCode.QUEUED
-            assert_lrcstatus_change_event_staging_queued_in_progress(on_command_id)
+            Helpers.assert_lrcstatus_change_event_staging_queued_in_progress(
+                change_event_callbacks, on_command_id
+            )
             for progress_point in FakeSubarrayComponent.PROGRESS_REPORTING_POINTS:
                 change_event_callbacks.assert_change_event(
                     "longRunningCommandProgress", (on_command_id, progress_point)
@@ -145,25 +146,23 @@ class TestSKASubarray:  # pylint: disable=too-many-public-methods
                 "longRunningCommandStatus", (on_command_id, "COMPLETED")
             )
 
-        return inner_helper
+        return _turn_on_device
 
     @pytest.fixture()
     def assign_resources_to_empty_subarray(
         self: TestSKASubarray,
         device_under_test: tango.DeviceProxy,
         change_event_callbacks: MockTangoEventCallbackGroup,
-        assert_lrcstatus_change_event_staging_queued_in_progress: CallableAnyNone,
     ) -> Callable[[list[str], bool], Any]:
         """
         Assign resources to the device and clear the queue attributes.
 
         :param device_under_test: a proxy to the device under test
         :param change_event_callbacks: dictionary of mock change event callbacks
-        :param assert_lrcstatus_change_event_staging_queued_in_progress: helper function
         :return: Callable helper function
         """
 
-        def inner_helper(
+        def _assign_resources_to_empty_subarray(
             resources_list: list[str], return_before_completed: bool
         ) -> Any:
             """
@@ -181,7 +180,9 @@ class TestSKASubarray:  # pylint: disable=too-many-public-methods
             ] = device_under_test.AssignResources(json.dumps(resources_to_assign))
             assert result_code == ResultCode.QUEUED
             change_event_callbacks.assert_change_event("obsState", ObsState.RESOURCING)
-            assert_lrcstatus_change_event_staging_queued_in_progress(assign_command_id)
+            Helpers.assert_lrcstatus_change_event_staging_queued_in_progress(
+                change_event_callbacks, assign_command_id
+            )
             change_event_callbacks.assert_change_event(
                 "commandedObsState", ObsState.IDLE
             )
@@ -213,25 +214,23 @@ class TestSKASubarray:  # pylint: disable=too-many-public-methods
             )
             return assign_command_id
 
-        return inner_helper
+        return _assign_resources_to_empty_subarray
 
     @pytest.fixture()
     def configure_subarray(
         self: TestSKASubarray,
         device_under_test: tango.DeviceProxy,
         change_event_callbacks: MockTangoEventCallbackGroup,
-        assert_lrcstatus_change_event_staging_queued_in_progress: CallableAnyNone,
     ) -> Callable[[dict[str, int], bool], Any]:
         """
         Configure the device and clear the queue attributes.
 
         :param device_under_test: a proxy to the device under test
         :param change_event_callbacks: dictionary of mock change event callbacks
-        :param assert_lrcstatus_change_event_staging_queued_in_progress: helper function
         :return: Callable helper function
         """
 
-        def inner_helper(
+        def _configure_subarray(
             configuration_to_apply: dict[str, int], return_before_completed: bool
         ) -> Any:
             """
@@ -251,8 +250,8 @@ class TestSKASubarray:  # pylint: disable=too-many-public-methods
             )
             assert result_code == ResultCode.QUEUED
             change_event_callbacks.assert_change_event("obsState", ObsState.CONFIGURING)
-            assert_lrcstatus_change_event_staging_queued_in_progress(
-                configure_command_id
+            Helpers.assert_lrcstatus_change_event_staging_queued_in_progress(
+                change_event_callbacks, configure_command_id
             )
             change_event_callbacks.assert_change_event(
                 "commandedObsState", ObsState.READY
@@ -278,25 +277,23 @@ class TestSKASubarray:  # pylint: disable=too-many-public-methods
             assert device_under_test.obsState == device_under_test.commandedObsState
             return configure_command_id
 
-        return inner_helper
+        return _configure_subarray
 
     @pytest.fixture()
     def reset_subarray(
         self: TestSKASubarray,
         device_under_test: tango.DeviceProxy,
         change_event_callbacks: MockTangoEventCallbackGroup,
-        assert_lrcstatus_change_event_staging_queued_in_progress: CallableAnyNone,
     ) -> Callable[[ObsState, bool], Any]:
         """
         Reset the device and clear the queue attributes.
 
         :param device_under_test: a proxy to the device under test
         :param change_event_callbacks: dictionary of mock change event callbacks
-        :param assert_lrcstatus_change_event_staging_queued_in_progress: helper function
         :return: Callable helper function
         """
 
-        def inner_helper(
+        def _reset_subarray(
             expected_obs_state: ObsState, return_before_completed: bool
         ) -> Any:
             """
@@ -310,7 +307,9 @@ class TestSKASubarray:  # pylint: disable=too-many-public-methods
             [[result_code], [reset_command_id]] = device_under_test.ObsReset()
             assert result_code == ResultCode.QUEUED
             change_event_callbacks.assert_change_event("obsState", ObsState.RESETTING)
-            assert_lrcstatus_change_event_staging_queued_in_progress(reset_command_id)
+            Helpers.assert_lrcstatus_change_event_staging_queued_in_progress(
+                change_event_callbacks, reset_command_id
+            )
             change_event_callbacks.assert_change_event(
                 "commandedObsState", expected_obs_state
             )
@@ -335,7 +334,7 @@ class TestSKASubarray:  # pylint: disable=too-many-public-methods
             assert device_under_test.obsState == device_under_test.commandedObsState
             return reset_command_id
 
-        return inner_helper
+        return _reset_subarray
 
     @pytest.fixture()
     def abort_subarray_command(
@@ -351,7 +350,7 @@ class TestSKASubarray:  # pylint: disable=too-many-public-methods
         :return: Callable helper function
         """
 
-        def inner_helper(command_id: str) -> None:
+        def _abort_subarray_command(command_id: str) -> None:
             """
             Abort the given command in progress and clear the queue attributes.
 
@@ -422,7 +421,7 @@ class TestSKASubarray:  # pylint: disable=too-many-public-methods
             device_under_test.SetCommandTrackerRemovalTime(0)
             time.sleep(delay)
 
-        return inner_helper
+        return _abort_subarray_command
 
     @pytest.mark.skip(reason="Not implemented")
     def test_properties(
@@ -475,7 +474,6 @@ class TestSKASubarray:  # pylint: disable=too-many-public-methods
         change_event_callbacks: MockTangoEventCallbackGroup,
         turn_on_device: Callable[[], None],
         assign_resources_to_empty_subarray: Callable[[list[str], bool], Any],
-        assert_lrcstatus_change_event_staging_queued_in_progress: CallableAnyNone,
     ) -> None:
         """
         Test for AssignResources, ReleaseResources and ReleaseAllResources.
@@ -484,7 +482,6 @@ class TestSKASubarray:  # pylint: disable=too-many-public-methods
         :param change_event_callbacks: dictionary of mock change event callbacks
         :param turn_on_device: helper function
         :param assign_resources_to_empty_subarray: helper function
-        :param assert_lrcstatus_change_event_staging_queued_in_progress: helper function
         """
         turn_on_device()
         assign_resources_to_empty_subarray(["BAND1", "BAND2"], False)
@@ -497,7 +494,9 @@ class TestSKASubarray:  # pylint: disable=too-many-public-methods
         assert result_code == ResultCode.QUEUED
 
         change_event_callbacks.assert_change_event("obsState", ObsState.RESOURCING)
-        assert_lrcstatus_change_event_staging_queued_in_progress(release_command_id)
+        Helpers.assert_lrcstatus_change_event_staging_queued_in_progress(
+            change_event_callbacks, release_command_id
+        )
         for progress_point in FakeSubarrayComponent.PROGRESS_REPORTING_POINTS:
             change_event_callbacks.assert_change_event(
                 "longRunningCommandProgress", (release_command_id, progress_point)
@@ -523,7 +522,9 @@ class TestSKASubarray:  # pylint: disable=too-many-public-methods
         assert result_code == ResultCode.QUEUED
 
         change_event_callbacks.assert_change_event("obsState", ObsState.RESOURCING)
-        assert_lrcstatus_change_event_staging_queued_in_progress(releaseall_command_id)
+        Helpers.assert_lrcstatus_change_event_staging_queued_in_progress(
+            change_event_callbacks, releaseall_command_id
+        )
         change_event_callbacks.assert_change_event("commandedObsState", ObsState.EMPTY)
         for progress_point in FakeSubarrayComponent.PROGRESS_REPORTING_POINTS:
             change_event_callbacks.assert_change_event(
@@ -550,7 +551,6 @@ class TestSKASubarray:  # pylint: disable=too-many-public-methods
         turn_on_device: Callable[[], None],
         assign_resources_to_empty_subarray: Callable[[list[str], bool], Any],
         configure_subarray: Callable[[dict[str, int], bool], Any],
-        assert_lrcstatus_change_event_staging_queued_in_progress: CallableAnyNone,
     ) -> None:
         """
         Test for Configure and End.
@@ -560,7 +560,6 @@ class TestSKASubarray:  # pylint: disable=too-many-public-methods
         :param turn_on_device: helper function
         :param assign_resources_to_empty_subarray: helper function
         :param configure_subarray: helper function
-        :param assert_lrcstatus_change_event_staging_queued_in_progress: helper function
         """
         turn_on_device()
         assign_resources_to_empty_subarray(["BAND1"], False)
@@ -572,7 +571,9 @@ class TestSKASubarray:  # pylint: disable=too-many-public-methods
         # test deconfigure
         [[result_code], [end_command_id]] = device_under_test.End()
         assert result_code == ResultCode.QUEUED
-        assert_lrcstatus_change_event_staging_queued_in_progress(end_command_id)
+        Helpers.assert_lrcstatus_change_event_staging_queued_in_progress(
+            change_event_callbacks, end_command_id
+        )
         change_event_callbacks.assert_change_event("commandedObsState", ObsState.IDLE)
 
         for progress_point in FakeSubarrayComponent.PROGRESS_REPORTING_POINTS:
@@ -603,7 +604,6 @@ class TestSKASubarray:  # pylint: disable=too-many-public-methods
         turn_on_device: Callable[[], None],
         assign_resources_to_empty_subarray: Callable[[list[str], bool], Any],
         configure_subarray: Callable[[dict[str, int], bool], Any],
-        assert_lrcstatus_change_event_staging_queued_in_progress: CallableAnyNone,
     ) -> None:
         """
         Test for Scan and EndScan.
@@ -613,7 +613,6 @@ class TestSKASubarray:  # pylint: disable=too-many-public-methods
         :param turn_on_device: helper function
         :param assign_resources_to_empty_subarray: helper function
         :param configure_subarray: helper function
-        :param assert_lrcstatus_change_event_staging_queued_in_progress: helper function
         """
         turn_on_device()
         assign_resources_to_empty_subarray(["BAND1"], False)
@@ -627,7 +626,9 @@ class TestSKASubarray:  # pylint: disable=too-many-public-methods
             json.dumps(dummy_scan_arg)
         )
         assert result_code == ResultCode.QUEUED
-        assert_lrcstatus_change_event_staging_queued_in_progress(scan_command_id)
+        Helpers.assert_lrcstatus_change_event_staging_queued_in_progress(
+            change_event_callbacks, scan_command_id
+        )
         for progress_point in FakeSubarrayComponent.PROGRESS_REPORTING_POINTS:
             change_event_callbacks.assert_change_event(
                 "longRunningCommandProgress", (scan_command_id, progress_point)
@@ -648,7 +649,9 @@ class TestSKASubarray:  # pylint: disable=too-many-public-methods
         # test end scan
         [[result_code], [endscan_command_id]] = device_under_test.EndScan()
         assert result_code == ResultCode.QUEUED
-        assert_lrcstatus_change_event_staging_queued_in_progress(endscan_command_id)
+        Helpers.assert_lrcstatus_change_event_staging_queued_in_progress(
+            change_event_callbacks, endscan_command_id
+        )
         for progress_point in FakeSubarrayComponent.PROGRESS_REPORTING_POINTS:
             change_event_callbacks.assert_change_event(
                 "longRunningCommandProgress", (endscan_command_id, progress_point)
@@ -767,7 +770,6 @@ class TestSKASubarray:  # pylint: disable=too-many-public-methods
         assign_resources_to_empty_subarray: Callable[[list[str], bool], Any],
         abort_subarray_command: Callable[[str], None],
         reset_subarray: Callable[[ObsState, bool], Any],
-        assert_lrcstatus_change_event_staging_queued_in_progress: CallableAnyNone,
     ) -> None:
         """
         Test for Abort and Reset from AssignResources from IDLE state.
@@ -778,7 +780,6 @@ class TestSKASubarray:  # pylint: disable=too-many-public-methods
         :param assign_resources_to_empty_subarray: helper function
         :param abort_subarray_command: helper function
         :param reset_subarray: helper function
-        :param assert_lrcstatus_change_event_staging_queued_in_progress: helper function
         """
         turn_on_device()
         assign_resources_to_empty_subarray(["BAND1"], False)
@@ -788,7 +789,9 @@ class TestSKASubarray:  # pylint: disable=too-many-public-methods
         )
         assert result_code == ResultCode.QUEUED
         change_event_callbacks.assert_change_event("obsState", ObsState.RESOURCING)
-        assert_lrcstatus_change_event_staging_queued_in_progress(assign_command_id)
+        Helpers.assert_lrcstatus_change_event_staging_queued_in_progress(
+            change_event_callbacks, assign_command_id
+        )
         # Abort 2nd assign command
         abort_subarray_command(assign_command_id)
         # Reset from aborted state to idle state

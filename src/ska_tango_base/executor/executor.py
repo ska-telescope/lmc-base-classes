@@ -170,7 +170,7 @@ class TaskExecutor:
 
         if is_cmd_allowed is not None:
             try:
-                if is_cmd_allowed() is False:
+                if not is_cmd_allowed():
                     self._call_task_callback(
                         task_callback,
                         status=TaskStatus.REJECTED,

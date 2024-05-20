@@ -111,6 +111,8 @@ command should accept the LRC command and the task should report the normal
 failure with a :class:`~ska_control_model.ResultCode` as described in the next
 subsection.
 
+.. _reporting-task-failure:
+
 Reporting a failure from the task
 ---------------------------------
 
@@ -126,12 +128,12 @@ is normal, the status of the task itself should be :obj:`TaskStatus.COMPLETED
 <ska_control_model.TaskStatus.COMPLETED>`, otherwise it should be
 :obj:`TaskStatus.FAILED <ska_control_model.TaskStatus.FAILED>`.
 
-In the case of an abnormal failure, if there is an associated ``Exception``, it
-should be logged before the task is completed. The ``task_callback`` provides an
-exception convenience argument which logs the ``Exception``, :code:`ex`, that
-is passed in and sets the task's associated result to the tuple
-:code:`(ResultCode.FAILED, str(ex))`. If you want a different result, 
-there is no requirement to use the ``task_callback`` with the exception
-argument. However, it is still recommended to always log the exception for
+In the case of an abnormal failure, if there is an associated ``Exception``, it should 
+be logged before the task is completed. The ``task_callback`` provides an exception 
+convenience argument which logs the ``Exception`` that is passed in and sets the task's 
+associated result by default to the tuple ``(ResultCode.FAILED, str(exception))``. If 
+you want a different result, the default can be overridden by using the result argument 
+together with the exception argument. There is no requirement to use the ``task_callback`` 
+with the exception argument, but it's still recommended to always log the exception for 
 abnormal failures, even if supplying a different result.
 

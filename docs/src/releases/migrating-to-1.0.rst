@@ -206,19 +206,27 @@ to a finished status.
    provided that it is JSON encodable, although it is recommended to include a
    :class:`~ska_control_model.ResultCode`.
 
-Specifically, for ska-tango-base 1.0.0 the following changes have been made:
+Specifically, for ska-tango-base 1.0.0 the following changes have been made to the 
+:class:`~ska_tango_base.executor.executor.TaskExecutor`:
 
-- When the command is aborted after being dequeued its result will be set to
-  :code:`(ResultCode.ABORTED, <message>)` instead of :code:`<message>`.
-- When the command is rejected after being dequeued because it is not allowed,
-  the result will be :code:`(ResultCode.NOT_ALLOWED, <message>)` instead of
-  :code:`<message>`.
-- When a task raises an exception, the result of the command will be
-  :code:`(ResultCode.FAILED, <message>)` instead of :code:`<message>`.
+- When a command is aborted with the :func:`~ska_tango_base.base.base_device.SKABaseDevice.AbortCommands`
+  or :func:`~ska_tango_base.subarray.subarray_device.SKASubarray.Abort` command, 
+  its result will be set to ``(ResultCode.ABORTED, "Command has been aborted")``.
+- When a command is rejected because the queue is busy aborting, its result will be set 
+  to ``(ResultCode.REJECTED, "Queue is being aborted")``.
+- When a command is rejected after being queued because it is not allowed, its result 
+  will be set to ``(ResultCode.NOT_ALLOWED, "Command is not allowed")`` instead of ``"Command not allowed"``.
+- When a command is rejected because its ``is_cmd_allowed`` method raised an exception, 
+  its result will be set to ``(ResultCode.REJECTED, f"Exception from 'is_cmd_allowed' method: {str(exc)}")``
+- When a command raises an exception during execution, its result will be set to
+  ``(ResultCode.FAILED, f"Unhandled exception during execution: {str(exception)}")`` 
+  instead of ``str(exception)``.
 
-.. TODO WOM-343 should update the above list for any other situations they find
+These changes might require clients to change how they match command results.
 
-This changes might require clients to change how they match these results.
+In addition to the above, the behaviour of the exception callback was also changed.
+See the :ref:`reporting-task-failure` guideline.
+
 
 LRCs are transitioned to TaskStatus.STAGING initially
 -----------------------------------------------------

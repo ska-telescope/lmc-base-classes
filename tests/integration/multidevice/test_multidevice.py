@@ -1,5 +1,6 @@
 """Test various Tango devices with long running commmands working together."""
 
+import json
 from typing import Any
 
 import pytest
@@ -173,7 +174,7 @@ def test_exception(
     next_result = change_event_callbacks.assert_against_call("longRunningCommandResult")
     command_id, message = next_result["attribute_value"]
     assert command_id.endswith("LongRunningException")
-    assert message == "Something went wrong"
+    assert "Something went wrong" in message
 
 
 @pytest.mark.forked
@@ -253,10 +254,15 @@ def test_device_allows_commands_to_be_queued(
         invert_id2,
         "REJECTED",
     )
-    event_count = 6
+    # STAGING -> QUEUED -> COMPLETED/REJECTED
+    event_count = 3 + 3 + 3
     for _ in range(event_count):
         next_event = change_event_callbacks.assert_against_call(
             "longRunningCommandStatus"
         )
     status = next_event["attribute_value"]
     assert status == status_event
+    assert device_under_test.longRunningCommandResult == (
+        invert_id2,
+        json.dumps([int(ResultCode.NOT_ALLOWED), "Command is not allowed"]),
+    )

@@ -1,4 +1,4 @@
-# pylint: disable=invalid-name
+# pylint: disable=invalid-name, too-many-arguments, too-many-lines
 # -*- coding: utf-8 -*-
 #
 # This file is part of the SKA Tango Base project
@@ -11,7 +11,7 @@ from __future__ import annotations
 import json
 import re
 import time
-from typing import Any
+from typing import Any, Callable
 
 import pytest
 import tango
@@ -26,313 +26,12 @@ from ska_control_model import (
     TestMode,
 )
 from ska_tango_testing.mock.tango import MockTangoEventCallbackGroup
-from tango import DevState
+from tango import DevFailed, DevState
 
 from ska_tango_base.testing.reference import FakeSubarrayComponent, ReferenceSkaSubarray
+from tests.conftest import Helpers
 
-
-def turn_on_device(
-    device_under_test: tango.DeviceProxy,
-    change_event_callbacks: MockTangoEventCallbackGroup,
-) -> None:
-    """
-    Turn on the device and clear the queue attributes.
-
-    :param device_under_test: a proxy to the device under test
-    :param change_event_callbacks: dictionary of mock change event
-        callbacks with asynchrony support
-    """
-    device_under_test.SetCommandTrackerRemovalTime(0)
-    assert device_under_test.state() == DevState.OFF
-    for attribute in [
-        "state",
-        "status",
-        "longRunningCommandProgress",
-        "longRunningCommandStatus",
-        "longRunningCommandResult",
-        "obsState",
-        "commandedObsState",
-    ]:
-        device_under_test.subscribe_event(
-            attribute,
-            tango.EventType.CHANGE_EVENT,
-            change_event_callbacks[attribute],
-        )
-    change_event_callbacks.assert_change_event("state", tango.DevState.OFF)
-    change_event_callbacks.assert_change_event("status", "The device is in OFF state.")
-    change_event_callbacks.assert_change_event("longRunningCommandProgress", ())
-    change_event_callbacks.assert_change_event("longRunningCommandStatus", ())
-    change_event_callbacks.assert_change_event("longRunningCommandResult", ("", ""))
-    change_event_callbacks.assert_change_event("obsState", ObsState.EMPTY)
-    change_event_callbacks.assert_change_event("commandedObsState", ObsState.EMPTY)
-
-    # Call command
-    [[result_code], [on_command_id]] = device_under_test.On()
-    assert result_code == ResultCode.QUEUED
-
-    # Command is queued
-    change_event_callbacks.assert_change_event(
-        "longRunningCommandStatus", (on_command_id, "QUEUED")
-    )
-
-    # Command is started
-    change_event_callbacks.assert_change_event(
-        "longRunningCommandStatus", (on_command_id, "IN_PROGRESS")
-    )
-    for progress_point in FakeSubarrayComponent.PROGRESS_REPORTING_POINTS:
-        change_event_callbacks.assert_change_event(
-            "longRunningCommandProgress", (on_command_id, progress_point)
-        )
-
-    # Command is completed
-    change_event_callbacks.assert_change_event("state", tango.DevState.ON)
-    change_event_callbacks.assert_change_event("status", "The device is in ON state.")
-    assert device_under_test.state() == tango.DevState.ON
-    change_event_callbacks.assert_change_event(
-        "longRunningCommandResult",
-        (
-            on_command_id,
-            json.dumps([int(ResultCode.OK), "On command completed OK"]),
-        ),
-    )
-    change_event_callbacks.assert_change_event(
-        "longRunningCommandStatus", (on_command_id, "COMPLETED")
-    )
-
-
-def assign_resources_to_empty_subarray(
-    device_under_test: tango.DeviceProxy,
-    change_event_callbacks: MockTangoEventCallbackGroup,
-    resources_list: list[str],
-    return_before_completed: bool = False,
-) -> Any:
-    """
-    Assign resources to the device and clear the queue attributes.
-
-    :param device_under_test: a proxy to the device under test
-    :param change_event_callbacks: dictionary of mock change event
-        callbacks with asynchrony support
-    :param resources_list: list of resources to assign
-    :param return_before_completed: return while command is in progress
-    :return: the executed AssignResources() command's unique ID
-    """
-    # Call command
-    resources_to_assign = {"resources": resources_list}
-    [
-        [result_code],
-        [assign_command_id],
-    ] = device_under_test.AssignResources(json.dumps(resources_to_assign))
-    assert result_code == ResultCode.QUEUED
-
-    # Command is queued
-    change_event_callbacks.assert_change_event("obsState", ObsState.RESOURCING)
-    change_event_callbacks.assert_change_event(
-        "longRunningCommandStatus",
-        (assign_command_id, "QUEUED"),
-    )
-
-    # Command is started
-    change_event_callbacks.assert_change_event(
-        "longRunningCommandStatus",
-        (assign_command_id, "IN_PROGRESS"),
-    )
-    change_event_callbacks.assert_change_event("commandedObsState", ObsState.IDLE)
-    if return_before_completed:
-        return assign_command_id
-    for progress_point in FakeSubarrayComponent.PROGRESS_REPORTING_POINTS:
-        change_event_callbacks.assert_change_event(
-            "longRunningCommandProgress", (assign_command_id, progress_point)
-        )
-
-    # Command is completed
-    change_event_callbacks.assert_change_event(
-        "longRunningCommandResult",
-        (
-            assign_command_id,
-            json.dumps([int(ResultCode.OK), "Resource assignment completed OK"]),
-        ),
-    )
-    change_event_callbacks.assert_change_event(
-        "longRunningCommandStatus",
-        (assign_command_id, "COMPLETED"),
-    )
-    change_event_callbacks.assert_change_event("obsState", ObsState.IDLE)
-    assert device_under_test.obsState == device_under_test.commandedObsState
-    assert list(device_under_test.assignedResources) == resources_to_assign["resources"]
-    return assign_command_id
-
-
-def configure_subarray(
-    device_under_test: tango.DeviceProxy,
-    change_event_callbacks: MockTangoEventCallbackGroup,
-    configuration_to_apply: dict[str, int],
-    return_before_completed: bool = False,
-) -> Any:
-    """
-    Configure the device and clear the queue attributes.
-
-    :param device_under_test: a proxy to the device under test
-    :param change_event_callbacks: dictionary of mock change event
-        callbacks with asynchrony support
-    :param configuration_to_apply: dict
-    :param return_before_completed: return while command is in progress
-    :return: the executed Configure() command's unique ID
-    """
-    assert list(device_under_test.configuredCapabilities) == [
-        "blocks:0",
-        "channels:0",
-    ]
-
-    # Call command
-    [[result_code], [configure_command_id]] = device_under_test.Configure(
-        json.dumps(configuration_to_apply)
-    )
-    assert result_code == ResultCode.QUEUED
-
-    # Command is queued
-    change_event_callbacks.assert_change_event("obsState", ObsState.CONFIGURING)
-    change_event_callbacks.assert_change_event(
-        "longRunningCommandStatus", (configure_command_id, "QUEUED")
-    )
-
-    # Command is started
-    change_event_callbacks.assert_change_event(
-        "longRunningCommandStatus", (configure_command_id, "IN_PROGRESS")
-    )
-    change_event_callbacks.assert_change_event("commandedObsState", ObsState.READY)
-    if return_before_completed:
-        return configure_command_id
-    for progress_point in FakeSubarrayComponent.PROGRESS_REPORTING_POINTS:
-        change_event_callbacks.assert_change_event(
-            "longRunningCommandProgress", (configure_command_id, progress_point)
-        )
-
-    # Command is completed
-    change_event_callbacks.assert_change_event(
-        "longRunningCommandResult",
-        (
-            configure_command_id,
-            json.dumps([int(ResultCode.OK), "Configure completed OK"]),
-        ),
-    )
-    change_event_callbacks.assert_change_event(
-        "longRunningCommandStatus", (configure_command_id, "COMPLETED")
-    )
-    change_event_callbacks.assert_change_event("obsState", ObsState.READY)
-    assert device_under_test.obsState == device_under_test.commandedObsState
-    return configure_command_id
-
-
-def reset_subarray(
-    device_under_test: tango.DeviceProxy,
-    change_event_callbacks: MockTangoEventCallbackGroup,
-    expected_obs_state: ObsState = ObsState.IDLE,
-    return_before_completed: bool = False,
-) -> Any:
-    """
-    Reset the device and clear the queue attributes.
-
-    :param device_under_test: a proxy to the device under test
-    :param change_event_callbacks: dictionary of mock change event
-        callbacks with asynchrony support
-    :param expected_obs_state: the expected obsState after ObsReset completed
-    :param return_before_completed: return while command is in progress
-    :return: the executed ObsReset() command's unique ID
-    """
-    # Call command
-    [[result_code], [reset_command_id]] = device_under_test.ObsReset()
-    assert result_code == ResultCode.QUEUED
-
-    # Command is queued
-    change_event_callbacks.assert_change_event("obsState", ObsState.RESETTING)
-    change_event_callbacks.assert_change_event(
-        "longRunningCommandStatus", (reset_command_id, "QUEUED")
-    )
-
-    # Command is started
-    change_event_callbacks.assert_change_event(
-        "longRunningCommandStatus", (reset_command_id, "IN_PROGRESS")
-    )
-    change_event_callbacks.assert_change_event("commandedObsState", expected_obs_state)
-    if return_before_completed:
-        return reset_command_id
-    for progress_point in FakeSubarrayComponent.PROGRESS_REPORTING_POINTS:
-        change_event_callbacks.assert_change_event(
-            "longRunningCommandProgress", (reset_command_id, progress_point)
-        )
-
-    # Command is completed
-    change_event_callbacks.assert_change_event(
-        "longRunningCommandResult",
-        (
-            reset_command_id,
-            json.dumps([int(ResultCode.OK), "Obs reset completed OK"]),
-        ),
-    )
-    change_event_callbacks.assert_change_event(
-        "longRunningCommandStatus", (reset_command_id, "COMPLETED")
-    )
-    change_event_callbacks.assert_change_event("obsState", expected_obs_state)
-    assert device_under_test.obsState == device_under_test.commandedObsState
-    return reset_command_id
-
-
-def abort_subarray_command(
-    device_under_test: tango.DeviceProxy,
-    change_event_callbacks: MockTangoEventCallbackGroup,
-    command_id: str,
-) -> None:
-    """
-    Abort the given command in progress and clear the queue attributes.
-
-    :param device_under_test: a proxy to the device under test
-    :param change_event_callbacks: dictionary of mock change event
-        callbacks with asynchrony support
-    :param command_id: of command in progress to abort
-    """
-    delay = 0.2
-    device_under_test.SetCommandTrackerRemovalTime(delay)
-    event_id = device_under_test.subscribe_event(
-        "longRunningCommandInProgress",
-        tango.EventType.CHANGE_EVENT,
-        change_event_callbacks["longRunningCommandInProgress"],
-    )
-    command_name = command_id.split("_", 2)[2]
-    change_event_callbacks.assert_change_event(
-        "longRunningCommandInProgress", (command_name,)
-    )
-
-    [[result_code], [abort_command_id]] = device_under_test.Abort()
-    assert result_code == ResultCode.STARTED
-    change_event_callbacks.assert_change_event("obsState", ObsState.ABORTING)
-    change_event_callbacks.assert_change_event(
-        "longRunningCommandStatus",
-        (command_id, "IN_PROGRESS", abort_command_id, "IN_PROGRESS"),
-    )
-    abort_name = abort_command_id.split("_", 2)[2]
-    change_event_callbacks.assert_change_event(
-        "longRunningCommandInProgress", (command_name, abort_name)
-    )
-    change_event_callbacks.assert_change_event("commandedObsState", ObsState.ABORTED)
-    change_event_callbacks.assert_change_event(
-        "longRunningCommandStatus",
-        (command_id, "ABORTED", abort_command_id, "IN_PROGRESS"),
-    )
-    change_event_callbacks.assert_change_event(
-        "longRunningCommandInProgress", (abort_name,)
-    )
-    change_event_callbacks.assert_change_event(
-        "longRunningCommandStatus",
-        (command_id, "ABORTED", abort_command_id, "COMPLETED"),
-    )
-    change_event_callbacks.assert_change_event("longRunningCommandInProgress", ())
-    change_event_callbacks.assert_change_event("obsState", ObsState.ABORTED)
-
-    assert device_under_test.obsState == device_under_test.commandedObsState
-    change_event_callbacks.assert_not_called()
-    device_under_test.unsubscribe_event(event_id)
-    device_under_test.SetCommandTrackerRemovalTime(0)
-    time.sleep(delay)
+CallableAnyNone = Callable[[Any], None]
 
 
 class TestSKASubarray:  # pylint: disable=too-many-public-methods
@@ -375,6 +74,354 @@ class TestSKASubarray:  # pylint: disable=too-many-public-methods
             "properties": device_properties,
             "memorized": {"adminMode": str(AdminMode.ONLINE.value)},
         }
+
+    @pytest.fixture()
+    def turn_on_device(
+        self: TestSKASubarray,
+        device_under_test: tango.DeviceProxy,
+        change_event_callbacks: MockTangoEventCallbackGroup,
+    ) -> Callable[[], None]:
+        """
+        Turn on the device and clear the queue attributes.
+
+        :param device_under_test: a proxy to the device under test
+        :param change_event_callbacks: dictionary of mock change event callbacks
+        :return: Callable helper function
+        """
+
+        def _turn_on_device() -> None:
+            device_under_test.SetCommandTrackerRemovalTime(0)
+            assert device_under_test.state() == DevState.OFF
+            for attribute in [
+                "state",
+                "status",
+                "longRunningCommandProgress",
+                "longRunningCommandStatus",
+                "longRunningCommandResult",
+                "obsState",
+                "commandedObsState",
+            ]:
+                device_under_test.subscribe_event(
+                    attribute,
+                    tango.EventType.CHANGE_EVENT,
+                    change_event_callbacks[attribute],
+                )
+            change_event_callbacks.assert_change_event("state", tango.DevState.OFF)
+            change_event_callbacks.assert_change_event(
+                "status", "The device is in OFF state."
+            )
+            change_event_callbacks.assert_change_event("longRunningCommandProgress", ())
+            change_event_callbacks.assert_change_event("longRunningCommandStatus", ())
+            change_event_callbacks.assert_change_event(
+                "longRunningCommandResult", ("", "")
+            )
+            change_event_callbacks.assert_change_event("obsState", ObsState.EMPTY)
+            change_event_callbacks.assert_change_event(
+                "commandedObsState", ObsState.EMPTY
+            )
+            # Call command
+            [[result_code], [on_command_id]] = device_under_test.On()
+            assert result_code == ResultCode.QUEUED
+            Helpers.assert_lrcstatus_change_event_staging_queued_in_progress(
+                change_event_callbacks, on_command_id
+            )
+            for progress_point in FakeSubarrayComponent.PROGRESS_REPORTING_POINTS:
+                change_event_callbacks.assert_change_event(
+                    "longRunningCommandProgress", (on_command_id, progress_point)
+                )
+            # Command is completed
+            change_event_callbacks.assert_change_event("state", tango.DevState.ON)
+            change_event_callbacks.assert_change_event(
+                "status", "The device is in ON state."
+            )
+            assert device_under_test.state() == tango.DevState.ON
+            change_event_callbacks.assert_change_event(
+                "longRunningCommandResult",
+                (
+                    on_command_id,
+                    json.dumps([int(ResultCode.OK), "On command completed OK"]),
+                ),
+            )
+            change_event_callbacks.assert_change_event(
+                "longRunningCommandStatus", (on_command_id, "COMPLETED")
+            )
+
+        return _turn_on_device
+
+    @pytest.fixture()
+    def assign_resources_to_empty_subarray(
+        self: TestSKASubarray,
+        device_under_test: tango.DeviceProxy,
+        change_event_callbacks: MockTangoEventCallbackGroup,
+    ) -> Callable[[list[str], bool], Any]:
+        """
+        Assign resources to the device and clear the queue attributes.
+
+        :param device_under_test: a proxy to the device under test
+        :param change_event_callbacks: dictionary of mock change event callbacks
+        :return: Callable helper function
+        """
+
+        def _assign_resources_to_empty_subarray(
+            resources_list: list[str], return_before_completed: bool
+        ) -> Any:
+            """
+            Assign resources to the device and clear the queue attributes.
+
+            :param resources_list: list of resources to assign
+            :param return_before_completed: return while command is in progress
+            :return: the executed AssignResources() command's unique ID
+            """
+            # Call command
+            resources_to_assign = {"resources": resources_list}
+            [
+                [result_code],
+                [assign_command_id],
+            ] = device_under_test.AssignResources(json.dumps(resources_to_assign))
+            assert result_code == ResultCode.QUEUED
+            change_event_callbacks.assert_change_event("obsState", ObsState.RESOURCING)
+            Helpers.assert_lrcstatus_change_event_staging_queued_in_progress(
+                change_event_callbacks, assign_command_id
+            )
+            change_event_callbacks.assert_change_event(
+                "commandedObsState", ObsState.IDLE
+            )
+            if return_before_completed:
+                return assign_command_id
+            for progress_point in FakeSubarrayComponent.PROGRESS_REPORTING_POINTS:
+                change_event_callbacks.assert_change_event(
+                    "longRunningCommandProgress", (assign_command_id, progress_point)
+                )
+            # Command is completed
+            change_event_callbacks.assert_change_event(
+                "longRunningCommandResult",
+                (
+                    assign_command_id,
+                    json.dumps(
+                        [int(ResultCode.OK), "Resource assignment completed OK"]
+                    ),
+                ),
+            )
+            change_event_callbacks.assert_change_event(
+                "longRunningCommandStatus",
+                (assign_command_id, "COMPLETED"),
+            )
+            change_event_callbacks.assert_change_event("obsState", ObsState.IDLE)
+            assert device_under_test.obsState == device_under_test.commandedObsState
+            assert (
+                list(device_under_test.assignedResources)
+                == resources_to_assign["resources"]
+            )
+            return assign_command_id
+
+        return _assign_resources_to_empty_subarray
+
+    @pytest.fixture()
+    def configure_subarray(
+        self: TestSKASubarray,
+        device_under_test: tango.DeviceProxy,
+        change_event_callbacks: MockTangoEventCallbackGroup,
+    ) -> Callable[[dict[str, int], bool], Any]:
+        """
+        Configure the device and clear the queue attributes.
+
+        :param device_under_test: a proxy to the device under test
+        :param change_event_callbacks: dictionary of mock change event callbacks
+        :return: Callable helper function
+        """
+
+        def _configure_subarray(
+            configuration_to_apply: dict[str, int], return_before_completed: bool
+        ) -> Any:
+            """
+            Configure the device and clear the queue attributes.
+
+            :param configuration_to_apply: dict
+            :param return_before_completed: return while command is in progress
+            :return: the executed Configure() command's unique ID
+            """
+            assert list(device_under_test.configuredCapabilities) == [
+                "blocks:0",
+                "channels:0",
+            ]
+            # Call command
+            [[result_code], [configure_command_id]] = device_under_test.Configure(
+                json.dumps(configuration_to_apply)
+            )
+            assert result_code == ResultCode.QUEUED
+            change_event_callbacks.assert_change_event("obsState", ObsState.CONFIGURING)
+            Helpers.assert_lrcstatus_change_event_staging_queued_in_progress(
+                change_event_callbacks, configure_command_id
+            )
+            change_event_callbacks.assert_change_event(
+                "commandedObsState", ObsState.READY
+            )
+            if return_before_completed:
+                return configure_command_id
+            for progress_point in FakeSubarrayComponent.PROGRESS_REPORTING_POINTS:
+                change_event_callbacks.assert_change_event(
+                    "longRunningCommandProgress", (configure_command_id, progress_point)
+                )
+            # Command is completed
+            change_event_callbacks.assert_change_event(
+                "longRunningCommandResult",
+                (
+                    configure_command_id,
+                    json.dumps([int(ResultCode.OK), "Configure completed OK"]),
+                ),
+            )
+            change_event_callbacks.assert_change_event(
+                "longRunningCommandStatus", (configure_command_id, "COMPLETED")
+            )
+            change_event_callbacks.assert_change_event("obsState", ObsState.READY)
+            assert device_under_test.obsState == device_under_test.commandedObsState
+            return configure_command_id
+
+        return _configure_subarray
+
+    @pytest.fixture()
+    def reset_subarray(
+        self: TestSKASubarray,
+        device_under_test: tango.DeviceProxy,
+        change_event_callbacks: MockTangoEventCallbackGroup,
+    ) -> Callable[[ObsState, bool], Any]:
+        """
+        Reset the device and clear the queue attributes.
+
+        :param device_under_test: a proxy to the device under test
+        :param change_event_callbacks: dictionary of mock change event callbacks
+        :return: Callable helper function
+        """
+
+        def _reset_subarray(
+            expected_obs_state: ObsState, return_before_completed: bool
+        ) -> Any:
+            """
+            Reset the device and clear the queue attributes.
+
+            :param expected_obs_state: the expected obsState after ObsReset completed
+            :param return_before_completed: return while command is in progress
+            :return: the executed ObsReset() command's unique ID
+            """
+            # Call command
+            [[result_code], [reset_command_id]] = device_under_test.ObsReset()
+            assert result_code == ResultCode.QUEUED
+            change_event_callbacks.assert_change_event("obsState", ObsState.RESETTING)
+            Helpers.assert_lrcstatus_change_event_staging_queued_in_progress(
+                change_event_callbacks, reset_command_id
+            )
+            change_event_callbacks.assert_change_event(
+                "commandedObsState", expected_obs_state
+            )
+            if return_before_completed:
+                return reset_command_id
+            for progress_point in FakeSubarrayComponent.PROGRESS_REPORTING_POINTS:
+                change_event_callbacks.assert_change_event(
+                    "longRunningCommandProgress", (reset_command_id, progress_point)
+                )
+            # Command is completed
+            change_event_callbacks.assert_change_event(
+                "longRunningCommandResult",
+                (
+                    reset_command_id,
+                    json.dumps([int(ResultCode.OK), "Obs reset completed OK"]),
+                ),
+            )
+            change_event_callbacks.assert_change_event(
+                "longRunningCommandStatus", (reset_command_id, "COMPLETED")
+            )
+            change_event_callbacks.assert_change_event("obsState", expected_obs_state)
+            assert device_under_test.obsState == device_under_test.commandedObsState
+            return reset_command_id
+
+        return _reset_subarray
+
+    @pytest.fixture()
+    def abort_subarray_command(
+        self: TestSKASubarray,
+        device_under_test: tango.DeviceProxy,
+        change_event_callbacks: MockTangoEventCallbackGroup,
+    ) -> Callable[[str], None]:
+        """
+        Abort the given command in progress and clear the queue attributes.
+
+        :param device_under_test: a proxy to the device under test
+        :param change_event_callbacks: dictionary of mock change event callbacks
+        :return: Callable helper function
+        """
+
+        def _abort_subarray_command(command_id: str) -> None:
+            """
+            Abort the given command in progress and clear the queue attributes.
+
+            :param command_id: of command in progress to abort
+            """
+            delay = 0.2
+            device_under_test.SetCommandTrackerRemovalTime(delay)
+            event_id = device_under_test.subscribe_event(
+                "longRunningCommandInProgress",
+                tango.EventType.CHANGE_EVENT,
+                change_event_callbacks["longRunningCommandInProgress"],
+            )
+            command_name = command_id.split("_", 2)[2]
+            change_event_callbacks.assert_change_event(
+                "longRunningCommandInProgress", (command_name,)
+            )
+            [[result_code], [abort_command_id]] = device_under_test.Abort()
+            assert result_code == ResultCode.STARTED
+            change_event_callbacks.assert_change_event("obsState", ObsState.ABORTING)
+            change_event_callbacks.assert_change_event(
+                "longRunningCommandStatus",
+                (command_id, "IN_PROGRESS", abort_command_id, "STAGING"),
+            )
+            change_event_callbacks.assert_change_event(
+                "longRunningCommandStatus",
+                (command_id, "IN_PROGRESS", abort_command_id, "IN_PROGRESS"),
+            )
+            abort_name = abort_command_id.split("_", 2)[2]
+            change_event_callbacks.assert_change_event(
+                "longRunningCommandInProgress", (command_name, abort_name)
+            )
+            change_event_callbacks.assert_change_event(
+                "commandedObsState", ObsState.ABORTED
+            )
+            change_event_callbacks.assert_change_event(
+                "longRunningCommandResult",
+                (
+                    command_id,
+                    json.dumps([int(ResultCode.ABORTED), "Command has been aborted"]),
+                ),
+            )
+            change_event_callbacks.assert_change_event(
+                "longRunningCommandStatus",
+                (command_id, "ABORTED", abort_command_id, "IN_PROGRESS"),
+            )
+            change_event_callbacks.assert_change_event(
+                "longRunningCommandInProgress", (abort_name,)
+            )
+            # Abort is completed
+            change_event_callbacks.assert_change_event(
+                "longRunningCommandResult",
+                (
+                    abort_command_id,
+                    json.dumps([int(ResultCode.OK), "Abort completed OK"]),
+                ),
+            )
+            change_event_callbacks.assert_change_event(
+                "longRunningCommandStatus",
+                (command_id, "ABORTED", abort_command_id, "COMPLETED"),
+            )
+            change_event_callbacks.assert_change_event(
+                "longRunningCommandInProgress", ()
+            )
+            change_event_callbacks.assert_change_event("obsState", ObsState.ABORTED)
+            assert device_under_test.obsState == device_under_test.commandedObsState
+            change_event_callbacks.assert_not_called()
+            device_under_test.unsubscribe_event(event_id)
+            device_under_test.SetCommandTrackerRemovalTime(0)
+            time.sleep(delay)
+
+        return _abort_subarray_command
 
     @pytest.mark.skip(reason="Not implemented")
     def test_properties(
@@ -425,19 +472,19 @@ class TestSKASubarray:  # pylint: disable=too-many-public-methods
         self: TestSKASubarray,
         device_under_test: tango.DeviceProxy,
         change_event_callbacks: MockTangoEventCallbackGroup,
+        turn_on_device: Callable[[], None],
+        assign_resources_to_empty_subarray: Callable[[list[str], bool], Any],
     ) -> None:
         """
         Test for AssignResources, ReleaseResources and ReleaseAllResources.
 
         :param device_under_test: a proxy to the device under test
-        :param change_event_callbacks: dictionary of mock change event
-            callbacks with asynchrony support
+        :param change_event_callbacks: dictionary of mock change event callbacks
+        :param turn_on_device: helper function
+        :param assign_resources_to_empty_subarray: helper function
         """
-        turn_on_device(device_under_test, change_event_callbacks)
-        assign_resources_to_empty_subarray(
-            device_under_test, change_event_callbacks, ["BAND1", "BAND2"]
-        )
-
+        turn_on_device()
+        assign_resources_to_empty_subarray(["BAND1", "BAND2"], False)
         # Test partial release of resources
         resources_to_release = {"resources": ["BAND1"]}
         [
@@ -447,11 +494,8 @@ class TestSKASubarray:  # pylint: disable=too-many-public-methods
         assert result_code == ResultCode.QUEUED
 
         change_event_callbacks.assert_change_event("obsState", ObsState.RESOURCING)
-        change_event_callbacks.assert_change_event(
-            "longRunningCommandStatus", (release_command_id, "QUEUED")
-        )
-        change_event_callbacks.assert_change_event(
-            "longRunningCommandStatus", (release_command_id, "IN_PROGRESS")
+        Helpers.assert_lrcstatus_change_event_staging_queued_in_progress(
+            change_event_callbacks, release_command_id
         )
         for progress_point in FakeSubarrayComponent.PROGRESS_REPORTING_POINTS:
             change_event_callbacks.assert_change_event(
@@ -468,10 +512,8 @@ class TestSKASubarray:  # pylint: disable=too-many-public-methods
             "longRunningCommandStatus", (release_command_id, "COMPLETED")
         )
         change_event_callbacks.assert_change_event("obsState", ObsState.IDLE)
-
         assert list(device_under_test.assignedResources) == ["BAND2"]
         assert device_under_test.obsState == ObsState.IDLE
-
         # Test release all
         [
             [result_code],
@@ -480,19 +522,14 @@ class TestSKASubarray:  # pylint: disable=too-many-public-methods
         assert result_code == ResultCode.QUEUED
 
         change_event_callbacks.assert_change_event("obsState", ObsState.RESOURCING)
-        change_event_callbacks.assert_change_event(
-            "longRunningCommandStatus", (releaseall_command_id, "QUEUED")
-        )
-        change_event_callbacks.assert_change_event(
-            "longRunningCommandStatus", (releaseall_command_id, "IN_PROGRESS")
+        Helpers.assert_lrcstatus_change_event_staging_queued_in_progress(
+            change_event_callbacks, releaseall_command_id
         )
         change_event_callbacks.assert_change_event("commandedObsState", ObsState.EMPTY)
-
         for progress_point in FakeSubarrayComponent.PROGRESS_REPORTING_POINTS:
             change_event_callbacks.assert_change_event(
                 "longRunningCommandProgress", (releaseall_command_id, progress_point)
             )
-
         change_event_callbacks.assert_change_event(
             "longRunningCommandResult",
             (
@@ -504,7 +541,6 @@ class TestSKASubarray:  # pylint: disable=too-many-public-methods
             "longRunningCommandStatus", (releaseall_command_id, "COMPLETED")
         )
         change_event_callbacks.assert_change_event("obsState", ObsState.EMPTY)
-
         assert device_under_test.obsState == device_under_test.commandedObsState
         assert not device_under_test.assignedResources
 
@@ -512,36 +548,31 @@ class TestSKASubarray:  # pylint: disable=too-many-public-methods
         self: TestSKASubarray,
         device_under_test: tango.DeviceProxy,
         change_event_callbacks: MockTangoEventCallbackGroup,
+        turn_on_device: Callable[[], None],
+        assign_resources_to_empty_subarray: Callable[[list[str], bool], Any],
+        configure_subarray: Callable[[dict[str, int], bool], Any],
     ) -> None:
         """
         Test for Configure and End.
 
         :param device_under_test: a proxy to the device under test
-        :param change_event_callbacks: dictionary of mock change event
-            callbacks with asynchrony support
+        :param change_event_callbacks: dictionary of mock change event callbacks.
+        :param turn_on_device: helper function
+        :param assign_resources_to_empty_subarray: helper function
+        :param configure_subarray: helper function
         """
-        turn_on_device(device_under_test, change_event_callbacks)
-        assign_resources_to_empty_subarray(
-            device_under_test, change_event_callbacks, ["BAND1"]
-        )
-        configure_subarray(
-            device_under_test, change_event_callbacks, {"blocks": 1, "channels": 2}
-        )
-
+        turn_on_device()
+        assign_resources_to_empty_subarray(["BAND1"], False)
+        configure_subarray({"blocks": 1, "channels": 2}, False)
         assert list(device_under_test.configuredCapabilities) == [
             "blocks:1",
             "channels:2",
         ]
-
         # test deconfigure
         [[result_code], [end_command_id]] = device_under_test.End()
         assert result_code == ResultCode.QUEUED
-
-        change_event_callbacks.assert_change_event(
-            "longRunningCommandStatus", (end_command_id, "QUEUED")
-        )
-        change_event_callbacks.assert_change_event(
-            "longRunningCommandStatus", (end_command_id, "IN_PROGRESS")
+        Helpers.assert_lrcstatus_change_event_staging_queued_in_progress(
+            change_event_callbacks, end_command_id
         )
         change_event_callbacks.assert_change_event("commandedObsState", ObsState.IDLE)
 
@@ -561,7 +592,6 @@ class TestSKASubarray:  # pylint: disable=too-many-public-methods
         change_event_callbacks.assert_change_event(
             "longRunningCommandStatus", (end_command_id, "COMPLETED")
         )
-
         assert list(device_under_test.configuredCapabilities) == [
             "blocks:0",
             "channels:0",
@@ -571,36 +601,33 @@ class TestSKASubarray:  # pylint: disable=too-many-public-methods
         self: TestSKASubarray,
         device_under_test: tango.DeviceProxy,
         change_event_callbacks: MockTangoEventCallbackGroup,
+        turn_on_device: Callable[[], None],
+        assign_resources_to_empty_subarray: Callable[[list[str], bool], Any],
+        configure_subarray: Callable[[dict[str, int], bool], Any],
     ) -> None:
         """
         Test for Scan and EndScan.
 
         :param device_under_test: a proxy to the device under test
-        :param change_event_callbacks: dictionary of mock change event
-            callbacks with asynchrony support
+        :param change_event_callbacks: dictionary of mock change event callbacks.
+        :param turn_on_device: helper function
+        :param assign_resources_to_empty_subarray: helper function
+        :param configure_subarray: helper function
         """
-        turn_on_device(device_under_test, change_event_callbacks)
-        assign_resources_to_empty_subarray(
-            device_under_test, change_event_callbacks, ["BAND1"]
-        )
-        configure_subarray(device_under_test, change_event_callbacks, {"blocks": 2})
-
+        turn_on_device()
+        assign_resources_to_empty_subarray(["BAND1"], False)
+        configure_subarray({"blocks": 2}, False)
         assert list(device_under_test.configuredCapabilities) == [
             "blocks:2",
             "channels:0",
         ]
-
         dummy_scan_arg = {"scan_id": "scan_25"}
         [[result_code], [scan_command_id]] = device_under_test.Scan(
             json.dumps(dummy_scan_arg)
         )
         assert result_code == ResultCode.QUEUED
-
-        change_event_callbacks.assert_change_event(
-            "longRunningCommandStatus", (scan_command_id, "QUEUED")
-        )
-        change_event_callbacks.assert_change_event(
-            "longRunningCommandStatus", (scan_command_id, "IN_PROGRESS")
+        Helpers.assert_lrcstatus_change_event_staging_queued_in_progress(
+            change_event_callbacks, scan_command_id
         )
         for progress_point in FakeSubarrayComponent.PROGRESS_REPORTING_POINTS:
             change_event_callbacks.assert_change_event(
@@ -619,18 +646,12 @@ class TestSKASubarray:  # pylint: disable=too-many-public-methods
         change_event_callbacks.assert_change_event(
             "longRunningCommandStatus", (scan_command_id, "COMPLETED")
         )
-
         # test end scan
         [[result_code], [endscan_command_id]] = device_under_test.EndScan()
         assert result_code == ResultCode.QUEUED
-
-        change_event_callbacks.assert_change_event(
-            "longRunningCommandStatus", (endscan_command_id, "QUEUED")
+        Helpers.assert_lrcstatus_change_event_staging_queued_in_progress(
+            change_event_callbacks, endscan_command_id
         )
-        change_event_callbacks.assert_change_event(
-            "longRunningCommandStatus", (endscan_command_id, "IN_PROGRESS")
-        )
-
         for progress_point in FakeSubarrayComponent.PROGRESS_REPORTING_POINTS:
             change_event_callbacks.assert_change_event(
                 "longRunningCommandProgress", (endscan_command_id, progress_point)
@@ -650,57 +671,52 @@ class TestSKASubarray:  # pylint: disable=too-many-public-methods
 
     def test_abort_and_obsreset_from_resourcing(
         self: TestSKASubarray,
-        device_under_test: tango.DeviceProxy,
-        change_event_callbacks: MockTangoEventCallbackGroup,
+        turn_on_device: Callable[[], None],
+        assign_resources_to_empty_subarray: Callable[[list[str], bool], Any],
+        abort_subarray_command: Callable[[str], None],
+        reset_subarray: Callable[[ObsState, bool], Any],
     ) -> None:
         """
         Test for Abort and Reset from AssignResources from EMPTY state.
 
-        :param device_under_test: a proxy to the device under test
-        :param change_event_callbacks: dictionary of mock change event
-            callbacks with asynchrony support
+        :param turn_on_device: helper function
+        :param assign_resources_to_empty_subarray: helper function
+        :param abort_subarray_command: helper function
+        :param reset_subarray: helper function
         """
-        turn_on_device(device_under_test, change_event_callbacks)
-        assign_command_id = assign_resources_to_empty_subarray(
-            device_under_test, change_event_callbacks, ["BAND1"], True
-        )
-
+        turn_on_device()
+        assign_command_id = assign_resources_to_empty_subarray(["BAND1"], True)
         # Abort assign command
-        abort_subarray_command(
-            device_under_test, change_event_callbacks, assign_command_id
-        )
-
+        abort_subarray_command(assign_command_id)
         # Reset from aborted state to empty
-        reset_subarray(device_under_test, change_event_callbacks, ObsState.EMPTY)
+        reset_subarray(ObsState.EMPTY, False)
 
     def test_abort_and_obsreset_from_configuring(
         self: TestSKASubarray,
         device_under_test: tango.DeviceProxy,
-        change_event_callbacks: MockTangoEventCallbackGroup,
+        turn_on_device: Callable[[], None],
+        assign_resources_to_empty_subarray: Callable[[list[str], bool], Any],
+        configure_subarray: Callable[[dict[str, int], bool], Any],
+        abort_subarray_command: Callable[[str], None],
+        reset_subarray: Callable[[ObsState, bool], Any],
     ) -> None:
         """
         Test for Abort and Reset from Configure.
 
         :param device_under_test: a proxy to the device under test
-        :param change_event_callbacks: dictionary of mock change event
-            callbacks with asynchrony support
+        :param turn_on_device: helper function
+        :param assign_resources_to_empty_subarray: helper function
+        :param configure_subarray: helper function
+        :param abort_subarray_command: helper function
+        :param reset_subarray: helper function
         """
-        turn_on_device(device_under_test, change_event_callbacks)
-        assign_resources_to_empty_subarray(
-            device_under_test, change_event_callbacks, ["BAND1"]
-        )
-        configure_command_id = configure_subarray(
-            device_under_test, change_event_callbacks, {"blocks": 2}, True
-        )
-
+        turn_on_device()
+        assign_resources_to_empty_subarray(["BAND1"], False)
+        configure_command_id = configure_subarray({"blocks": 2}, True)
         # Abort configure command
-        abort_subarray_command(
-            device_under_test, change_event_callbacks, configure_command_id
-        )
-
+        abort_subarray_command(configure_command_id)
         # Reset from aborted state to idle
-        reset_subarray(device_under_test, change_event_callbacks)
-
+        reset_subarray(ObsState.IDLE, False)
         assert list(device_under_test.configuredCapabilities) == [
             "blocks:0",
             "channels:0",
@@ -710,76 +726,76 @@ class TestSKASubarray:  # pylint: disable=too-many-public-methods
         self: TestSKASubarray,
         device_under_test: tango.DeviceProxy,
         change_event_callbacks: MockTangoEventCallbackGroup,
+        turn_on_device: Callable[[], None],
+        assign_resources_to_empty_subarray: Callable[[list[str], bool], Any],
+        abort_subarray_command: Callable[[str], None],
+        reset_subarray: Callable[[ObsState, bool], Any],
     ) -> None:
         """
         Test for Reset after fault of AssignResources.
 
         :param device_under_test: a proxy to the device under test
-        :param change_event_callbacks: dictionary of mock change event
-            callbacks with asynchrony support
+        :param change_event_callbacks: dictionary of mock change event callbacks.
+        :param turn_on_device: helper function
+        :param assign_resources_to_empty_subarray: helper function
+        :param abort_subarray_command: helper function
+        :param reset_subarray: helper function
         """
-        turn_on_device(device_under_test, change_event_callbacks)
-        assign_command_id = assign_resources_to_empty_subarray(
-            device_under_test, change_event_callbacks, ["BAND1"], True
-        )
-
+        turn_on_device()
+        assign_command_id = assign_resources_to_empty_subarray(["BAND1"], True)
         # Simulate observation fault
         device_under_test.SimulateObsFault()
         change_event_callbacks.assert_change_event("obsState", ObsState.FAULT)
-
+        change_event_callbacks.assert_change_event(
+            "longRunningCommandResult",
+            (
+                assign_command_id,
+                json.dumps([int(ResultCode.ABORTED), "Command has been aborted"]),
+            ),
+        )
         change_event_callbacks.assert_change_event(
             "longRunningCommandStatus", (assign_command_id, "ABORTED")
         )
-
         # Reset from fault state then abort reset
-        reset_command_id = reset_subarray(
-            device_under_test, change_event_callbacks, ObsState.EMPTY, True
-        )
-        abort_subarray_command(
-            device_under_test, change_event_callbacks, reset_command_id
-        )
-
+        reset_command_id = reset_subarray(ObsState.EMPTY, True)
+        abort_subarray_command(reset_command_id)
         # Reset again from abort to empty state
-        reset_subarray(device_under_test, change_event_callbacks, ObsState.EMPTY)
+        reset_subarray(ObsState.EMPTY, False)
 
     def test_obsreset_from_resourcing_after_idle(
         self: TestSKASubarray,
         device_under_test: tango.DeviceProxy,
         change_event_callbacks: MockTangoEventCallbackGroup,
+        turn_on_device: Callable[[], None],
+        assign_resources_to_empty_subarray: Callable[[list[str], bool], Any],
+        abort_subarray_command: Callable[[str], None],
+        reset_subarray: Callable[[ObsState, bool], Any],
     ) -> None:
         """
         Test for Abort and Reset from AssignResources from IDLE state.
 
         :param device_under_test: a proxy to the device under test
-        :param change_event_callbacks: dictionary of mock change event
-            callbacks with asynchrony support
+        :param change_event_callbacks: dictionary of mock change event callbacks.
+        :param turn_on_device: helper function
+        :param assign_resources_to_empty_subarray: helper function
+        :param abort_subarray_command: helper function
+        :param reset_subarray: helper function
         """
-        turn_on_device(device_under_test, change_event_callbacks)
-        assign_resources_to_empty_subarray(
-            device_under_test, change_event_callbacks, ["BAND1"]
-        )
-
+        turn_on_device()
+        assign_resources_to_empty_subarray(["BAND1"], False)
         # Assign more resources
         [result_code], [assign_command_id] = device_under_test.AssignResources(
             json.dumps({"resources": ["BAND2"]})
         )
         assert result_code == ResultCode.QUEUED
-
         change_event_callbacks.assert_change_event("obsState", ObsState.RESOURCING)
-        change_event_callbacks.assert_change_event(
-            "longRunningCommandStatus", (assign_command_id, "QUEUED")
+        Helpers.assert_lrcstatus_change_event_staging_queued_in_progress(
+            change_event_callbacks, assign_command_id
         )
-        change_event_callbacks.assert_change_event(
-            "longRunningCommandStatus", (assign_command_id, "IN_PROGRESS")
-        )
-
         # Abort 2nd assign command
-        abort_subarray_command(
-            device_under_test, change_event_callbacks, assign_command_id
-        )
-
+        abort_subarray_command(assign_command_id)
         # Reset from aborted state to idle state
-        reset_subarray(device_under_test, change_event_callbacks, ObsState.IDLE)
+        reset_subarray(ObsState.IDLE, False)
 
     def test_activationTime(
         self: TestSKASubarray, device_under_test: tango.DeviceProxy
@@ -800,8 +816,7 @@ class TestSKASubarray:  # pylint: disable=too-many-public-methods
         Test for adminMode.
 
         :param device_under_test: a proxy to the device under test
-        :param change_event_callbacks: dictionary of mock change event
-            callbacks with asynchrony support
+        :param change_event_callbacks: dictionary of mock change event callbacks
         """
         assert device_under_test.state() == DevState.OFF
         assert device_under_test.adminMode == AdminMode.ONLINE
@@ -946,3 +961,74 @@ class TestSKASubarray:  # pylint: disable=too-many-public-methods
         """
         version_id_pattern = re.compile(r"[0-9]+.[0-9]+.[0-9]+")
         assert (re.match(version_id_pattern, device_under_test.versionId)) is not None
+
+    def test_is_cmd_allowed_exceptions(
+        self: TestSKASubarray,
+        device_under_test: tango.DeviceProxy,
+    ) -> None:
+        """
+        Test the 'is_cmd_allowed' methods' raised exception messages.
+
+        :param device_under_test: a proxy to the device under test
+        """
+        with pytest.raises(DevFailed) as exc:
+            device_under_test.Configure(json.dumps({"blocks": 2}))
+        assert (
+            "ska_tango_base.faults.StateModelError: Configure command "
+            "not permitted in observation state EMPTY" in str(exc.value)
+        )
+        with pytest.raises(DevFailed) as exc:
+            device_under_test.Scan(json.dumps({"scan_id": "scan_1"}))
+        assert (
+            "ska_tango_base.faults.StateModelError: Scan command "
+            "not permitted in observation state EMPTY" in str(exc.value)
+        )
+        with pytest.raises(DevFailed) as exc:
+            device_under_test.EndScan()
+        assert (
+            "ska_tango_base.faults.StateModelError: EndScan command "
+            "not permitted in observation state EMPTY" in str(exc.value)
+        )
+        with pytest.raises(DevFailed) as exc:
+            device_under_test.End()
+        assert (
+            "ska_tango_base.faults.StateModelError: End command "
+            "not permitted in observation state EMPTY" in str(exc.value)
+        )
+        with pytest.raises(DevFailed) as exc:
+            device_under_test.Abort()
+        assert (
+            "ska_tango_base.faults.StateModelError: Abort command "
+            "not permitted in observation state EMPTY" in str(exc.value)
+        )
+        with pytest.raises(DevFailed) as exc:
+            device_under_test.ObsReset()
+        assert (
+            "ska_tango_base.faults.StateModelError: ObsReset command "
+            "not permitted in observation state EMPTY" in str(exc.value)
+        )
+        with pytest.raises(DevFailed) as exc:
+            device_under_test.Restart()
+        assert (
+            "ska_tango_base.faults.StateModelError: Restart command "
+            "not permitted in observation state EMPTY" in str(exc.value)
+        )
+        device_under_test.AssignResources(json.dumps({"resources": ["BAND1"]}))
+        with pytest.raises(DevFailed) as exc:
+            device_under_test.AssignResources(json.dumps({"resources": ["BAND2"]}))
+        assert (
+            "ska_tango_base.faults.StateModelError: AssignResources command "
+            "not permitted in observation state RESOURCING" in str(exc.value)
+        )
+        with pytest.raises(DevFailed) as exc:
+            device_under_test.ReleaseResources(json.dumps({"resources": ["BAND1"]}))
+        assert (
+            "ska_tango_base.faults.StateModelError: ReleaseResources command "
+            "not permitted in observation state RESOURCING" in str(exc.value)
+        )
+        with pytest.raises(DevFailed) as exc:
+            device_under_test.ReleaseAllResources()
+        assert (
+            "ska_tango_base.faults.StateModelError: ReleaseAllResources command "
+            "not permitted in observation state RESOURCING" in str(exc.value)
+        )

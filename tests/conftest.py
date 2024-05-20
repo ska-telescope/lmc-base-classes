@@ -89,11 +89,12 @@ def callbacks() -> MockCallableGroup:
         "component_state",
         "off_task",
         "standby_task",
+        "abort_task",
     )
 
 
-@pytest.fixture()
-def change_event_callbacks() -> MockTangoEventCallbackGroup:
+@pytest.fixture(name="change_event_callbacks")
+def change_event_callbacks_fixture() -> MockTangoEventCallbackGroup:
     """
     Return a dictionary of Tango device change event callbacks with asynchrony support.
 
@@ -182,3 +183,40 @@ def patch_debugger_to_start_on_ephemeral_port() -> None:
     """
     # pylint: disable-next=protected-access
     ska_tango_base.base.base_device._DEBUGGER_PORT = 0
+
+
+class Helpers:
+    """Static helper functions for tests."""
+
+    @staticmethod
+    def assert_lrcstatus_change_event_staging_queued_in_progress(
+        change_event_callbacks: MockTangoEventCallbackGroup, command: Any
+    ) -> None:
+        """
+        Assert the longRunningCommandStatus attribute change event multiple times.
+
+        :param change_event_callbacks: dictionary of mock change event callbacks
+        :param command: name/id of command to assert change events
+        """
+        for status in ["STAGING", "QUEUED", "IN_PROGRESS"]:
+            change_event_callbacks.assert_change_event(
+                "longRunningCommandStatus", (command, status)
+            )
+
+    @staticmethod
+    def print_change_event_queue(
+        change_event_callbacks: MockTangoEventCallbackGroup,
+        attr_name: str,
+    ) -> None:
+        """
+        Print the change event callback queue of the given attribute for debugging.
+
+        :param change_event_callbacks: dictionary of mock change event callbacks
+        :param attr_name: attribute in the change event callback group to print
+        """
+        print(f"{attr_name} change event queue:")
+        # pylint: disable=protected-access
+        for node in change_event_callbacks[
+            attr_name
+        ]._callable._consumer_view._iterable:
+            print(node.payload["attribute_value"])

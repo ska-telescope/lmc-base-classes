@@ -17,7 +17,7 @@ import re
 import socket
 import time
 import unittest
-from typing import Any, cast
+from typing import Any, Callable, cast
 from unittest import mock
 
 import pytest
@@ -51,6 +51,9 @@ from ska_tango_base.testing.reference import (
     ReferenceBaseComponentManager,
     ReferenceSkaBaseDevice,
 )
+from tests.conftest import Helpers
+
+CallableAnyNone = Callable[[Any], None]
 
 
 class TestTangoLoggingServiceHandler:
@@ -612,8 +615,8 @@ class TestCommandTracker:
             removal_time=removal_time,
         )
 
-    # TODO: pylint is right that this test is way too long.
-    def test_command_tracker(  # pylint: disable=too-many-statements
+    # TODO pylint: disable=too-many-statements
+    def test_command_tracker(
         self: TestCommandTracker,
         command_tracker: CommandTracker,
         removal_time: float,
@@ -651,8 +654,11 @@ class TestCommandTracker:
         callbacks["queue"].assert_called_once_with(
             [(first_command_id, "first_command")]
         )
+        callbacks["status"].assert_called_once_with(
+            [(first_command_id, TaskStatus.STAGING)]
+        )
         callbacks["queue"].reset_mock()
-        callbacks["status"].assert_not_called()
+        callbacks["status"].reset_mock()
         callbacks["progress"].assert_not_called()
         callbacks["result"].assert_not_called()
         callbacks["exception"].assert_not_called()
@@ -698,8 +704,14 @@ class TestCommandTracker:
                 (second_command_id, "second_command"),
             ]
         )
+        callbacks["status"].assert_called_once_with(
+            [
+                (first_command_id, TaskStatus.IN_PROGRESS),
+                (second_command_id, TaskStatus.STAGING),
+            ]
+        )
         callbacks["queue"].reset_mock()
-        callbacks["status"].assert_not_called()
+        callbacks["status"].reset_mock()
         callbacks["progress"].assert_not_called()
         callbacks["result"].assert_not_called()
         callbacks["exception"].assert_not_called()
@@ -826,8 +838,8 @@ class TestCommandTracker:
         ]
         assert command_tracker.command_progresses == []
         assert command_tracker.command_result == (
-            first_command_id,
-            (ResultCode.OK, "a message string"),
+            second_command_id,
+            (ResultCode.FAILED, str(exception_to_raise)),
         )
         assert command_tracker.command_exception == (
             second_command_id,
@@ -842,7 +854,9 @@ class TestCommandTracker:
         )
         callbacks["status"].reset_mock()
         callbacks["progress"].assert_not_called()
-        callbacks["result"].assert_not_called()
+        callbacks["result"].assert_called_once_with(
+            second_command_id, (ResultCode.FAILED, str(exception_to_raise))
+        )
         callbacks["exception"].assert_called_once_with(
             second_command_id, exception_to_raise
         )
@@ -932,11 +946,8 @@ class TestSKABaseDevice:  # pylint: disable=too-many-public-methods
         # ON command
         [[result_code], [on_command_id]] = device_under_test.On()
         assert result_code == ResultCode.QUEUED
-        change_event_callbacks.assert_change_event(
-            "longRunningCommandStatus", (on_command_id, "QUEUED")
-        )
-        change_event_callbacks.assert_change_event(
-            "longRunningCommandStatus", (on_command_id, "IN_PROGRESS")
+        Helpers.assert_lrcstatus_change_event_staging_queued_in_progress(
+            change_event_callbacks, on_command_id
         )
         change_event_callbacks["commandedState"].assert_change_event("ON")
         change_event_callbacks["state"].assert_change_event(DevState.ON)
@@ -963,11 +974,8 @@ class TestSKABaseDevice:  # pylint: disable=too-many-public-methods
         # RESET command
         [[result_code], [reset_command_id]] = device_under_test.Reset()
         assert result_code == ResultCode.QUEUED
-        change_event_callbacks.assert_change_event(
-            "longRunningCommandStatus", (reset_command_id, "QUEUED")
-        )
-        change_event_callbacks.assert_change_event(
-            "longRunningCommandStatus", (reset_command_id, "IN_PROGRESS")
+        Helpers.assert_lrcstatus_change_event_staging_queued_in_progress(
+            change_event_callbacks, reset_command_id
         )
         change_event_callbacks["state"].assert_change_event(DevState.ON)
         assert device_under_test.commandedState == device_under_test.state().name
@@ -978,11 +986,8 @@ class TestSKABaseDevice:  # pylint: disable=too-many-public-methods
         # STANDBY command
         [[result_code], [standby_command_id]] = device_under_test.Standby()
         assert result_code == ResultCode.QUEUED
-        change_event_callbacks.assert_change_event(
-            "longRunningCommandStatus", (standby_command_id, "QUEUED")
-        )
-        change_event_callbacks.assert_change_event(
-            "longRunningCommandStatus", (standby_command_id, "IN_PROGRESS")
+        Helpers.assert_lrcstatus_change_event_staging_queued_in_progress(
+            change_event_callbacks, standby_command_id
         )
         change_event_callbacks["commandedState"].assert_change_event("STANDBY")
         change_event_callbacks["state"].assert_change_event(DevState.STANDBY)
@@ -994,11 +999,8 @@ class TestSKABaseDevice:  # pylint: disable=too-many-public-methods
         # OFF command
         [[result_code], [off_command_id]] = device_under_test.Off()
         assert result_code == ResultCode.QUEUED
-        change_event_callbacks.assert_change_event(
-            "longRunningCommandStatus", (off_command_id, "QUEUED")
-        )
-        change_event_callbacks.assert_change_event(
-            "longRunningCommandStatus", (off_command_id, "IN_PROGRESS")
+        Helpers.assert_lrcstatus_change_event_staging_queued_in_progress(
+            change_event_callbacks, off_command_id
         )
         change_event_callbacks["commandedState"].assert_change_event("OFF")
         change_event_callbacks["state"].assert_change_event(DevState.OFF)
@@ -1066,7 +1068,7 @@ class TestSKABaseDevice:  # pylint: disable=too-many-public-methods
 
         :param device_under_test: a proxy to the device under test
         :param change_event_callbacks: dictionary of mock change event
-            callbacks with asynchrony support
+            callbacks with asynchrony support.
         """
         assert device_under_test.state() == DevState.OFF
 
@@ -1095,11 +1097,8 @@ class TestSKABaseDevice:  # pylint: disable=too-many-public-methods
 
         [[result_code], [command_id]] = device_under_test.On()
         assert result_code == ResultCode.QUEUED
-        change_event_callbacks.assert_change_event(
-            "longRunningCommandStatus", (command_id, "QUEUED")
-        )
-        change_event_callbacks.assert_change_event(
-            "longRunningCommandStatus", (command_id, "IN_PROGRESS")
+        Helpers.assert_lrcstatus_change_event_staging_queued_in_progress(
+            change_event_callbacks, command_id
         )
         on_command = command_id.split("_", 2)[2]
         change_event_callbacks.assert_change_event(
@@ -1148,7 +1147,7 @@ class TestSKABaseDevice:  # pylint: disable=too-many-public-methods
 
         :param device_under_test: a proxy to the device under test
         :param change_event_callbacks: dictionary of mock change event
-            callbacks with asynchrony support
+            callbacks with asynchrony support.
         """
         assert device_under_test.state() == DevState.OFF
 
@@ -1177,12 +1176,8 @@ class TestSKABaseDevice:  # pylint: disable=too-many-public-methods
 
         [[result_code], [command_id]] = device_under_test.Standby()
         assert result_code == ResultCode.QUEUED
-
-        change_event_callbacks.assert_change_event(
-            "longRunningCommandStatus", (command_id, "QUEUED")
-        )
-        change_event_callbacks.assert_change_event(
-            "longRunningCommandStatus", (command_id, "IN_PROGRESS")
+        Helpers.assert_lrcstatus_change_event_staging_queued_in_progress(
+            change_event_callbacks, command_id
         )
         on_command = command_id.split("_", 2)[2]
         change_event_callbacks.assert_change_event(
@@ -1267,6 +1262,89 @@ class TestSKABaseDevice:  # pylint: disable=too-many-public-methods
         assert message == "Device is already in OFF state."
 
         change_event_callbacks.assert_not_called()
+
+    def test_command_exception(
+        self: TestSKABaseDevice,
+        device_under_test: tango.DeviceProxy,
+        change_event_callbacks: MockTangoEventCallbackGroup,
+    ) -> None:
+        """
+        Test for when a command encounters an Exception.
+
+        :param device_under_test: a proxy to the device under test
+        :param change_event_callbacks: dictionary of mock change event
+            callbacks with asynchrony support
+        """
+        for attribute in [
+            "longRunningCommandStatus",
+            "longRunningCommandResult",
+        ]:
+            device_under_test.subscribe_event(
+                attribute,
+                tango.EventType.CHANGE_EVENT,
+                change_event_callbacks[attribute],
+            )
+        change_event_callbacks["longRunningCommandStatus"].assert_change_event(())
+        change_event_callbacks["longRunningCommandResult"].assert_change_event(("", ""))
+
+        # Queue On() followed by two commands that both raise exceptions
+        command_ids = []
+        for cmd in ("On", "SimulateCommandError", "SimulateIsCmdAllowedError"):
+            [[result_code], [cmd_id]] = device_under_test.command_inout(cmd)
+            command_ids.append(cmd_id)
+            assert result_code == ResultCode.QUEUED
+        # pylint: disable=unbalanced-tuple-unpacking
+        on_command_id, command_error_id, command_allowed_error_id = command_ids
+
+        # Each command goes STAGING to QUEUED, then On() goes IN_PROGRESS to COMPLETED,
+        # and the other two commands go to FAILED/REJECTED.
+        # We just assert the final results and statuses.
+        for _ in range(7):
+            change_event_callbacks.assert_against_call("longRunningCommandStatus")
+        change_event_callbacks.assert_change_event(
+            "longRunningCommandResult",
+            (
+                on_command_id,
+                json.dumps([int(ResultCode.OK), "On command completed OK"]),
+            ),
+        )
+        change_event_callbacks.assert_against_call("longRunningCommandStatus")
+        change_event_callbacks.assert_change_event(
+            "longRunningCommandResult",
+            (
+                command_error_id,
+                json.dumps(
+                    [
+                        int(ResultCode.FAILED),
+                        "Unhandled exception during execution: "
+                        "Command encountered unexpected error",
+                    ]
+                ),
+            ),
+        )
+        change_event_callbacks.assert_against_call("longRunningCommandStatus")
+        assert device_under_test.longRunningCommandResult == (
+            command_allowed_error_id,
+            json.dumps(
+                [
+                    int(ResultCode.REJECTED),
+                    "Exception from 'is_cmd_allowed' method: "
+                    "'is_cmd_allowed' method encountered unexpected error",
+                ]
+            ),
+        )
+        change_event_callbacks.assert_against_call("longRunningCommandResult")
+        change_event_callbacks.assert_change_event(
+            "longRunningCommandStatus",
+            (
+                on_command_id,
+                "COMPLETED",
+                command_error_id,
+                "FAILED",
+                command_allowed_error_id,
+                "REJECTED",
+            ),
+        )
 
     def test_lrcStatusQueue(
         self: TestSKABaseDevice,

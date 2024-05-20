@@ -11,7 +11,7 @@ from threading import Event, Lock
 from time import sleep
 
 import pytest
-from ska_control_model import TaskStatus
+from ska_control_model import ResultCode, TaskStatus
 from ska_tango_testing.mock import MockCallableGroup
 
 from ska_tango_base.base import TaskCallbackType
@@ -53,6 +53,25 @@ class TestTaskExecutor:
         job_callbacks = [f"job_{i}" for i in range(max_workers + 2)]
         return MockCallableGroup(*job_callbacks, "abort")
 
+    def _claim_lock(
+        self: TestTaskExecutor,
+        lock: Lock,
+        *,
+        task_callback: TaskCallbackType | None,
+        task_abort_event: Event,
+    ) -> None:
+        if task_callback is not None:
+            task_callback(status=TaskStatus.IN_PROGRESS)
+        with lock:
+            if task_abort_event.is_set() and task_callback is not None:
+                task_callback(
+                    status=TaskStatus.ABORTED,
+                    result=(ResultCode.ABORTED, "Command has been aborted"),
+                )
+                return
+        if task_callback is not None:
+            task_callback(status=TaskStatus.COMPLETED)
+
     def test_task_execution(
         self: TestTaskExecutor,
         executor: TaskExecutor,
@@ -68,22 +87,6 @@ class TestTaskExecutor:
         :param callbacks: a dictionary of mocks, passed as callbacks to
             the command tracker under test
         """
-
-        def _claim_lock(
-            lock: Lock,
-            *,
-            task_callback: TaskCallbackType | None,
-            task_abort_event: Event,
-        ) -> None:
-            if task_callback is not None:
-                task_callback(status=TaskStatus.IN_PROGRESS)
-            with lock:
-                if task_abort_event.is_set() and task_callback is not None:
-                    task_callback(status=TaskStatus.ABORTED)
-                    return
-            if task_callback is not None:
-                task_callback(status=TaskStatus.COMPLETED)
-
         locks = [Lock() for _ in range(max_workers + 1)]
 
         for i in range(max_workers + 1):
@@ -91,7 +94,7 @@ class TestTaskExecutor:
 
         for i in range(max_workers + 1):
             executor.submit(
-                _claim_lock,
+                self._claim_lock,
                 args=[locks[i]],
                 task_callback=callbacks[f"job_{i}"],
             )
@@ -148,22 +151,6 @@ class TestTaskExecutor:
         :param callbacks: a dictionary of mocks, passed as callbacks to
             the command tracker under test
         """
-
-        def _claim_lock(
-            lock: Lock,
-            *,
-            task_callback: TaskCallbackType,
-            task_abort_event: Event,
-        ) -> None:
-            if task_callback is not None:
-                task_callback(status=TaskStatus.IN_PROGRESS)
-            with lock:
-                if task_abort_event.is_set() and task_callback is not None:
-                    task_callback(status=TaskStatus.ABORTED)
-                    return
-            if task_callback is not None:
-                task_callback(status=TaskStatus.COMPLETED)
-
         locks = [Lock() for _ in range(max_workers + 2)]
 
         for i in range(max_workers + 2):
@@ -171,7 +158,7 @@ class TestTaskExecutor:
 
         for i in range(max_workers + 1):
             executor.submit(
-                _claim_lock,
+                self._claim_lock,
                 args=[locks[i]],
                 task_callback=callbacks[f"job_{i}"],
             )
@@ -186,24 +173,34 @@ class TestTaskExecutor:
         executor.abort(task_callback=callbacks["abort"])
         callbacks["abort"].assert_call(status=TaskStatus.IN_PROGRESS)
 
-        executor.submit(
-            _claim_lock,
+        status, message = executor.submit(
+            self._claim_lock,
             args=[locks[max_workers + 1]],
             task_callback=callbacks[f"job_{max_workers + 1}"],
         )
-        callbacks[f"job_{max_workers + 1}"].assert_call(status=TaskStatus.REJECTED)
+        assert status is TaskStatus.REJECTED and message == "Queue is being aborted"
+        callbacks[f"job_{max_workers + 1}"].assert_call(
+            status=TaskStatus.REJECTED,
+            result=(ResultCode.REJECTED, "Queue is being aborted"),
+        )
 
         for i in range(max_workers + 1):
             locks[i].release()
 
         for i in range(max_workers):
-            callbacks[f"job_{i}"].assert_call(status=TaskStatus.ABORTED)
-        callbacks[f"job_{max_workers}"].assert_call(status=TaskStatus.ABORTED)
+            callbacks[f"job_{i}"].assert_call(
+                status=TaskStatus.ABORTED,
+                result=(ResultCode.ABORTED, "Command has been aborted"),
+            )
+        callbacks[f"job_{max_workers}"].assert_call(
+            status=TaskStatus.ABORTED,
+            result=(ResultCode.ABORTED, "Command has been aborted"),
+        )
 
         sleep(0.1)  # TODO: Abort command needs to signal completion too
 
         executor.submit(
-            _claim_lock,
+            self._claim_lock,
             args=[locks[max_workers + 1]],
             task_callback=callbacks[f"job_{max_workers + 1}"],
         )
@@ -241,5 +238,72 @@ class TestTaskExecutor:
         callbacks.assert_call("job_0", status=TaskStatus.QUEUED)
         callbacks.assert_call("job_0", status=TaskStatus.IN_PROGRESS)
         callbacks.assert_call(
-            "job_0", status=TaskStatus.FAILED, exception=exception_to_raise
+            "job_0",
+            status=TaskStatus.FAILED,
+            result=(
+                ResultCode.FAILED,
+                f"Unhandled exception during execution: {str(exception_to_raise)}",
+            ),
+            exception=exception_to_raise,
+        )
+
+    def test_is_cmd_allowed_false(
+        self: TestTaskExecutor,
+        executor: TaskExecutor,
+        callbacks: MockCallableGroup,
+    ) -> None:
+        """
+        Test the executor callback if the 'is_cmd_allowed' method returns False.
+
+        :param executor: the task executor under test
+        :param callbacks: a dictionary of mocks, passed as callbacks to
+            the command tracker under test
+        """
+
+        def _is_cmd_allowed() -> bool:
+            return False
+
+        executor.submit(
+            self._claim_lock,
+            is_cmd_allowed=_is_cmd_allowed,
+            task_callback=callbacks["job_0"],
+        )
+        callbacks.assert_call("job_0", status=TaskStatus.QUEUED)
+        callbacks.assert_call(
+            "job_0",
+            status=TaskStatus.REJECTED,
+            result=(ResultCode.NOT_ALLOWED, "Command is not allowed"),
+        )
+
+    def test_is_cmd_allowed_exception(
+        self: TestTaskExecutor,
+        executor: TaskExecutor,
+        callbacks: MockCallableGroup,
+    ) -> None:
+        """
+        Test the executor callback if the 'is_cmd_allowed' method raises an Exception.
+
+        :param executor: the task executor under test
+        :param callbacks: a dictionary of mocks, passed as callbacks to
+            the command tracker under test
+        """
+        exception_to_raise = ValueError("Exception under test")
+
+        def _is_cmd_allowed() -> bool:
+            raise exception_to_raise
+
+        executor.submit(
+            self._claim_lock,
+            is_cmd_allowed=_is_cmd_allowed,
+            task_callback=callbacks["job_0"],
+        )
+        callbacks.assert_call("job_0", status=TaskStatus.QUEUED)
+        callbacks.assert_call(
+            "job_0",
+            status=TaskStatus.REJECTED,
+            result=(
+                ResultCode.REJECTED,
+                f"Exception from 'is_cmd_allowed' method: {str(exception_to_raise)}",
+            ),
+            exception=exception_to_raise,
         )

@@ -502,5 +502,8 @@ class SubmittedSlowCommand(SlowCommand[tuple[ResultCode, str]]):
             return ResultCode.QUEUED, command_id
         if status == TaskStatus.REJECTED:
             return ResultCode.REJECTED, message
-        # TODO: Drew, can this happen or just remove the second if????
-        return ResultCode.FAILED, "Command failed"
+        return (
+            ResultCode.FAILED,
+            f"Expected QUEUED or REJECTED task status, but {status.name} was returned "
+            f"by command method with message: {message}",
+        )

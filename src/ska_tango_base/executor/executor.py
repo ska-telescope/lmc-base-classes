@@ -11,7 +11,7 @@ import concurrent.futures
 import threading
 from typing import Any, Callable
 
-from ska_control_model import TaskStatus
+from ska_control_model import ResultCode, TaskStatus
 
 from ..base import TaskCallbackType
 
@@ -83,16 +83,28 @@ class TaskExecutor:
                     self._abort_event,
                 )
             except RuntimeError:
-                if task_callback is not None:
-                    task_callback(status=TaskStatus.REJECTED)
-                return TaskStatus.REJECTED, "Queue is aborting"
-            except Exception as exception:  # pylint: disable=broad-except
-                if task_callback is not None:
-                    task_callback(status=TaskStatus.FAILED, exception=exception)
-                return TaskStatus.REJECTED, f"Unhandled exception: {str(exception)}"
+                self._call_task_callback(
+                    task_callback,
+                    status=TaskStatus.REJECTED,
+                    result=(ResultCode.REJECTED, "Queue is being aborted"),
+                )
+                return TaskStatus.REJECTED, "Queue is being aborted"
+            except Exception as exc:  # pylint: disable=broad-except
+                self._call_task_callback(
+                    task_callback,
+                    status=TaskStatus.FAILED,
+                    result=(
+                        ResultCode.FAILED,
+                        f"Unhandled exception submitting task: {str(exc)}",
+                    ),
+                    exception=exc,
+                )
+                return (
+                    TaskStatus.FAILED,
+                    f"Unhandled exception submitting task: {str(exc)}",
+                )
 
-            if task_callback is not None:
-                task_callback(status=TaskStatus.QUEUED)
+            self._call_task_callback(task_callback, status=TaskStatus.QUEUED)
             return TaskStatus.QUEUED, "Task queued"
 
     def abort(
@@ -110,8 +122,7 @@ class TaskExecutor:
 
         :return: tuple of task status & message
         """
-        if task_callback is not None:
-            task_callback(status=TaskStatus.IN_PROGRESS)
+        self._call_task_callback(task_callback, status=TaskStatus.IN_PROGRESS)
         self._abort_event.set()
 
         def _shutdown_and_relaunch(max_workers: int) -> None:
@@ -123,8 +134,11 @@ class TaskExecutor:
             self._executor = concurrent.futures.ThreadPoolExecutor(
                 max_workers=max_workers
             )
-            if task_callback is not None:
-                task_callback(status=TaskStatus.COMPLETED)
+            self._call_task_callback(
+                task_callback,
+                status=TaskStatus.COMPLETED,
+                result=(ResultCode.OK, "Abort completed OK"),
+            )
 
         threading.Thread(
             target=_shutdown_and_relaunch, args=(self._max_workers,)
@@ -147,27 +161,68 @@ class TaskExecutor:
             pass
 
         if abort_event.is_set():
-            if task_callback is not None:
-                task_callback(status=TaskStatus.ABORTED)
-        elif is_cmd_allowed is not None and not is_cmd_allowed():
-            if task_callback is not None:
-                task_callback(status=TaskStatus.REJECTED, result="Command not allowed")
-        else:
-            # Don't set the task to IN_PROGRESS yet, in case func is itself implemented
-            # asynchronously. We leave it to func to set the task to IN_PROGRESS, and
-            # eventually to set it to COMPLETE
+            self._call_task_callback(
+                task_callback,
+                status=TaskStatus.ABORTED,
+                result=(ResultCode.ABORTED, "Command has been aborted"),
+            )
+            return
+
+        if is_cmd_allowed is not None:
             try:
-                args = args or []
-                kwargs = kwargs or {}
-                func(
-                    *args,
-                    task_callback=task_callback,
-                    task_abort_event=abort_event,
-                    **kwargs,
-                )
+                if not is_cmd_allowed():
+                    self._call_task_callback(
+                        task_callback,
+                        status=TaskStatus.REJECTED,
+                        result=(ResultCode.NOT_ALLOWED, "Command is not allowed"),
+                    )
+                    return
             except Exception as exc:  # pylint: disable=broad-except
                 # Catching all exceptions because we're on a thread. Any
                 # uncaught exception will take down the thread without giving
                 # us any useful diagnostics.
-                if task_callback is not None:
-                    task_callback(status=TaskStatus.FAILED, exception=exc)
+                self._call_task_callback(
+                    task_callback,
+                    status=TaskStatus.REJECTED,
+                    result=(
+                        ResultCode.REJECTED,
+                        f"Exception from 'is_cmd_allowed' method: {str(exc)}",
+                    ),
+                    exception=exc,
+                )
+                return
+
+        # Don't set the task to IN_PROGRESS yet, in case func is itself implemented
+        # asynchronously. We leave it to func to set the task to IN_PROGRESS, and
+        # eventually to set it to COMPLETE
+        try:
+            args = args or []
+            kwargs = kwargs or {}
+            func(
+                *args,
+                task_callback=task_callback,
+                task_abort_event=abort_event,
+                **kwargs,
+            )
+        except Exception as exc:  # pylint: disable=broad-except
+            # Catching all exceptions because we're on a thread. Any
+            # uncaught exception will take down the thread without giving
+            # us any useful diagnostics.
+            self._call_task_callback(
+                task_callback,
+                status=TaskStatus.FAILED,
+                result=(
+                    ResultCode.FAILED,
+                    f"Unhandled exception during execution: {str(exc)}",
+                ),
+                exception=exc,
+            )
+
+    # This method is for linter to not complain about too many nested ifs
+    def _call_task_callback(
+        self: TaskExecutor,
+        task_callback: TaskCallbackType | None,
+        **kwargs: Any,
+    ) -> None:
+        if task_callback is not None:
+            task_callback(**kwargs)

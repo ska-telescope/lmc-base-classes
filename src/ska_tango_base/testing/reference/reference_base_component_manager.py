@@ -28,6 +28,7 @@ from ...base import (
     check_communicating,
 )
 from ...executor import TaskExecutorComponentManager
+from ...faults import CommandError
 
 
 def wait_until_done(command: Callable[..., None]) -> Callable[..., None]:
@@ -316,6 +317,41 @@ class FakeBaseComponent:
             fault=False,
         )
 
+    def simulate_command_error(
+        self: FakeBaseComponent,
+        task_callback: TaskCallbackType,
+        task_abort_event: threading.Event,
+    ) -> None:
+        """
+        Simulate a command that raises a CommandError during execution.
+
+        :param task_callback: a callback to be called whenever the
+            status of this task changes.
+        :param task_abort_event: a threading.Event that can be checked
+            for whether this task has been aborted.
+        :raises CommandError: simulating an invalid argument.
+        """
+        raise CommandError("Command encountered unexpected error")
+
+    def simulate_is_cmd_allowed_error(
+        self: FakeBaseComponent,
+        task_callback: TaskCallbackType,
+        task_abort_event: threading.Event,
+    ) -> None:
+        """
+        Simulate a command with a is_cmd_allowed method that raises an Exception.
+
+        :param task_callback: a callback to be called whenever the
+            status of this task changes.
+        :param task_abort_event: a threading.Event that can be checked
+            for whether this task has been aborted.
+        """
+        self._simulate_task_execution(
+            task_callback,
+            task_abort_event,
+            (ResultCode.OK, "SimulateIsCmdAllowedError command completed OK"),
+        )
+
     def simulate_fault(self: FakeBaseComponent, fault_state: bool) -> None:
         """
         Tell the component to simulate (or stop simulating) a fault.
@@ -548,6 +584,53 @@ class GenericBaseComponentManager(TaskExecutorComponentManager, Generic[Componen
         :return: TaskStatus and message
         """
         return self.submit_task(self._component.reset, task_callback=task_callback)
+
+    @check_communicating
+    def simulate_command_error(
+        self: GenericBaseComponentManager[ComponentT],
+        task_callback: TaskCallbackType | None = None,
+    ) -> tuple[TaskStatus, str]:
+        """
+        Simulate a command that raises a CommandError during execution.
+
+        :param task_callback: a callback to be called whenever the
+            status of this task changes.
+        :return: TaskStatus and message
+        """
+        return self.submit_task(
+            self._component.simulate_command_error, task_callback=task_callback
+        )
+
+    @check_communicating
+    def simulate_is_cmd_allowed_error(
+        self: GenericBaseComponentManager[ComponentT],
+        task_callback: TaskCallbackType | None = None,
+    ) -> tuple[TaskStatus, str]:
+        """
+        Simulate a command with a is_cmd_allowed method that raises an Exception.
+
+        :param task_callback: a callback to be called whenever the
+            status of this task changes.
+        :return: TaskStatus and message
+        """
+        return self.submit_task(
+            self._component.simulate_is_cmd_allowed_error,
+            is_cmd_allowed=self._is_simulate_is_cmd_allowed_error_allowed,
+            task_callback=task_callback,
+        )
+
+    def _is_simulate_is_cmd_allowed_error_allowed(
+        self: GenericBaseComponentManager[ComponentT],
+    ) -> bool:
+        """
+        Return whether the `SimulateIsCmdAllowedError` command may be called.
+
+        :return: whether the command may be called.
+        :raises ValueError: to simulate an exception occuring in this method.
+        """
+        if self.power_state == PowerState.ON:
+            raise ValueError("'is_cmd_allowed' method encountered unexpected error")
+        return False
 
 
 class ReferenceBaseComponentManager(GenericBaseComponentManager[FakeBaseComponent]):

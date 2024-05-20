@@ -19,6 +19,7 @@ import json
 import logging
 import logging.handlers
 import queue
+import sys
 import threading
 import traceback
 from functools import partial
@@ -186,6 +187,9 @@ class CommandTracker:  # pylint: disable=too-many-instance-attributes
                 self._most_recent_exception = (command_id, exception)
                 if self._exception_callback is not None:
                     self._exception_callback(command_id, exception)
+                # Set a default result for an exception if one is not provided
+                if result is None:
+                    result = (ResultCode.FAILED, str(exception))
             if result is not None:
                 self._most_recent_result = (command_id, result)
                 self._result_callback(command_id, result)
@@ -717,7 +721,7 @@ class SKABaseDevice(
             status_changed_callback=self._update_command_statuses,
             progress_changed_callback=self._update_command_progresses,
             result_callback=self._update_command_result,
-            exception_callback=self._update_command_exception,
+            exception_callback=self._log_command_exception,
         )
         self.op_state_model = OpStateModel(
             logger=self.logger,
@@ -922,18 +926,25 @@ class SKABaseDevice(
         self.push_change_event("longRunningCommandResult", self._command_result)
         self.push_archive_event("longRunningCommandResult", self._command_result)
 
-    def _update_command_exception(
+    def _log_command_exception(
         self: SKABaseDevice[ComponentManagerT],
         command_id: str,
         command_exception: Exception,
     ) -> None:
-        self.logger.error(
-            f"Command '{command_id}' raised exception {command_exception}",
-            exc_info=command_exception,
-        )
-        self._command_result = (command_id, str(command_exception))
-        self.push_change_event("longRunningCommandResult", self._command_result)
-        self.push_archive_event("longRunningCommandResult", self._command_result)
+        if isinstance(command_exception, Exception):
+            exc_info = command_exception
+            message = (
+                f"Command '{command_id}' raised exception with args "
+                f"'{command_exception}'"
+            )
+        else:
+            self.logger.warning(
+                f"command_exception is not an Exception. Found {command_exception!r}."
+            )
+            # Add exc_info if we are in an "except:" block
+            exc_info = sys.exc_info() != (None, None, None)
+            message = f"Command '{command_id}' failed: {command_exception}"
+        self.logger.error(message, exc_info=exc_info, stack_info=True)
 
     def _communication_state_changed(
         self: SKABaseDevice[ComponentManagerT], communication_state: CommunicationStatus

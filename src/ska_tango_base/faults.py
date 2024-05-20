@@ -37,6 +37,6 @@ class ComponentError(Exception):
     """Component cannot perform as requested."""
 
 
-# This should really be named 'ComponentFaultError'
+# TODO: This should really be named 'ComponentFaultError'
 class ComponentFault(ComponentError):  # noqa: N818
     """Component is in FAULT state and cannot perform as requested."""

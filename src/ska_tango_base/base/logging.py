@@ -85,6 +85,7 @@ _LMC_TO_PYTHON_LOGGING_LEVEL = {
 }
 
 
+# flake8: noqa: A005 - A module is shadowing a Python builtin module
 class TangoLoggingServiceHandler(logging.Handler):
     """Handler that emit logs via Tango device's logger to TLS."""
 

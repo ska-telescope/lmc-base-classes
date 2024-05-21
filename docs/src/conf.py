@@ -383,9 +383,8 @@ nitpick_ignore = [
     # TODO: Can't figure this one out
     ("py:class", "ska_tango_base.base.base_component_manager.Wrapped"),
     # These ones look like sphinx bugs
-    ("py:class", "method"),
+    ("py:class", "types.MethodType"),
     ("py:class", "tango.server.command"),
-    ("py:class", "tango.Logger"),
     ("py:class", "socket.SocketKind"),
     # These can't be found after stripping the tango.DebugIt decorator
     ("py:class", "tango._tango.Logger"),

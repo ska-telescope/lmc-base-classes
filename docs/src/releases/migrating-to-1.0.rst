@@ -41,9 +41,11 @@ two reasons:
   Tango collaboration do not provide wheels for them.
 
 Although ska-tango-base 1.0.0 supports PyTango 9.4.2 it is recommended to update
-to the latest PyTango 9.5.1.
+to the latest PyTango 9.5.0. Refer to the `PyTango version information at SKAO 
+<https://confluence.skatelescope.org/x/lbuIE>`_ confluence page for up-to-date info 
+regarding known issues with PyTango releases which might affect SKAO projects.
 
-It is possible to update both ska-tango-base to 1.0.0 and PyTango to 9.5.1
+It is possible to update both ska-tango-base to 1.0.0 and PyTango to 9.5.0
 simultaneously, and it is expected that this will be straight forward for most
 packages.  See the remainder of this document and the `PyTango migration guide
 <https://pytango.readthedocs.io/en/latest/versions/migration/index.html>`_
@@ -51,11 +53,11 @@ for help updating.
 
 If a lot of changes are required, the upgrade may be performed incrementally.
 Below is a plan to migrate a package from an "old" ska-tango-base release (pre
-0.19.2) and PyTango 9.3.x to ska-tango-base 1.0.0 and PyTango 9.5.1.
+0.19.2) and PyTango 9.3.x to ska-tango-base 1.0.0 and PyTango 9.5.0.
 
-#. Update ska-tango-base to 0.20.2 -- this version supports PyTango 9.5.1 and
+#. Update ska-tango-base to 0.20.2 -- this version supports PyTango 9.5.0 and
    provides deprecation warnings for the changes in ska-tango-base 1.0.0.
-#. Update PyTango to 9.5.1 -- see the `PyTango migration guide
+#. Update PyTango to 9.5.0 -- see the `PyTango migration guide
    <https://pytango.readthedocs.io/en/latest/versions/migration/index.html>`_ for
    help doing this.
 #. Update ska-tango-base to 1.0.0 -- see the remainder of this document for help

@@ -2,79 +2,92 @@
 
 ## unreleased
 
-- WOM-300: Add migration guide
-- WOM-299: Update to pytango ^9.4.2 for build and 9.5.0 for development
-- WOM-250,345: Remove max_workers from TaskExecutorComponentManager
+- Breaking changes:
+  - WOM-299: Update to pytango ^9.4.2 for build and 9.5.0 for development.
+  - Update to ska-control-model 1.0.0 (REL-1292) - this removes `adminMode.MAINTENANCE`.
+  - WOM-250, WOM-345: Remove `max_workers` from `TaskExecutorComponentManager`.
+  - WOM-343: Update TaskExecutor to follow TaskStatus state machine.
+    - Long Running Commands are transitioned to `TaskStatus.STAGING` initially.
+    - When in a final status, all tasks have a result of the form `(ResultCode, message)`.
+- Other changes to the Long Running Command and related attributes:
+  - WOM-302: Set correct LRC attribute spectrum limits.
+    - If there are too many items to report for `longRunningCommandStatus`, `longRunningCommandsInQueue` and `longRunningCommandIDsInQueue`, the oldest completed commands are now pruned from the list and a warning is logged.
+    - `longRunningCommandInProgress` now supports reporting multiple commands in progress. If there are no commands in progress, this attribute now returns an empty list instead of `["", ""]`.
+  - WOM-342: Made `max_queued_tasks` and `max_executing_tasks` read only attributes that have hard-coded values for the different base classes.
+- Documentation: (WOM-300, WOM-357, WOM-358)
+  - Restructured and revised all the documentation, split into how-to, explanation and reference. 
+  - Added [1.0.0 migration guide](https://developer.skao.int/projects/ska-tango-base/en/latest/releases/migrating-to-1.0.html) explaining all the breaking changes listed above in more detail.
+  - Fixed long outstanding issues with API auto generated docs.
 
 ## 0.20.2
 
-- WOM-319: Fix timing issue with LRCInProgress and Abort
-- WOM-320: Do not directly call Tango operations while holding the CommandTracker lock
+- WOM-319: Fix timing issue with LRCInProgress and `Abort()`
+- WOM-320: Do not directly call Tango operations while holding the `CommandTracker` lock
 
 ## 0.20.1
 
 - WOM-273: Pin poetry version in readthedocs.yml
-- WOM-274: Mark tests where Abort is used as xfail
+- WOM-274: Mark tests where `Abort()` is used as xfail
 
 ## 0.20.0
 
-- [WOM-265]: Deprecate max_workers for TaskExecutorComponentManager
-- [WOM-266]: Revert LRC attribute size to 64 queued commands
-- [WOM-211]: Add commandedState and commandedObsState attributes
-- [MCCS-1993]: Update to use latest version of ska-control-model
-- [WOM-212]: Add longRunningCommandInProgress attribute
+- WOM-265: Deprecate `max_workers` for `TaskExecutorComponentManager`
+- WOM-266: Revert LRC attribute size to 64 queued commands
+- WOM-211: Add `commandedState` and `commandedObsState` attributes
+- MCCS-1993: Update to use latest version of ska-control-model
+- WOM-212: Add `longRunningCommandInProgress` attribute
 
 ## 0.19.3
 
-- [WOM-213] Limit input queue size for long running commands
-- [WOM-177] Fix push_change_event and push_archive_event to expose the official PyTango interface
+- WOM-213: Limit input queue size for long running commands
+- WOM-177: Fix `push_change_event` and `push_archive_event` to expose the official PyTango interface
 
 ## 0.19.2
 
-- [LOW-614] remove DevInt, removed in cppTango/PyTango 9.5.0
-- [KAR-585] Improve docs to reflect input queue updates
+- LOW-614: Remove `DevInt`, removed in cppTango/PyTango 9.5.0
+- KAR-585: Improve docs to reflect input queue updates
 
 ## 0.19.1
 
-- [MCCS-1695] workaround for pytango 9.4.2 logging interface change
+- MCCS-1695: Workaround for pytango 9.4.2 logging interface change
 
 ## 0.19.0
 
-- [MCCS-1636] Use ska-ser-sphinx-theme for documentation
-- [KAR-632] Unpinned numpy requirements. Bumped minimum Python version to 3.8
-- [KAR-587] Input queue updates
+- MCCS-1636: Use ska-ser-sphinx-theme for documentation
+- KAR-632: Unpinned numpy requirements. Bumped minimum Python version to 3.8
+- KAR-587: Input queue updates
 
 ## 0.18.1
 
-- [MCCS-1494] Bug fixes to subarray subclassing following addition of JSON validation support
-- [KAR-497] Further task callback parameters bug fixes
-- [MCCS-1579] Strict type-checking, leading to bug fixes in task callback parameters
+- MCCS-1494: Bug fixes to subarray subclassing following addition of JSON validation support
+- KAR-497: Further task callback parameters bug fixes
+- MCCS-1579: Strict type-checking, leading to bug fixes in task callback parameters
   and subarray resource pool checking
 
 ## 0.18.0
 
-- [MCCS-1424] JSON validation support
+- MCCS-1424: JSON validation support
 
 ## 0.17.0
 
-- [MCCS-1358] Remove CSP-specific content (into separate ska-csp-lmc-base repo)
+- MCCS-1358: Remove CSP-specific content (into separate ska-csp-lmc-base repo)
 
 ## 0.16.1
 
-- [LOW-418] Remove redundant production Dockerfile, relax pytango constraint
-- [LOW-415] Complete linting and type-hinting
+- LOW-418: Remove redundant production Dockerfile, relax pytango constraint
+- LOW-415: Complete linting and type-hinting
 
 ## 0.16.0
 
-- [MCCS-1312] Update to pytango 9.3.6
+- MCCS-1312: Update to pytango 9.3.6
 
 ## 0.15.0
 
-- [MCCS-1208] Allow Abort() from RESOURCING, Off() from FAULT
+- MCCS-1208: Allow `Abort()` from RESOURCING, `Off()` from FAULT
 
 ## 0.14.0
 
-- [LOW-346] Provide polling mechanism as alternive concurrency mechanism
+- LOW-346: Provide polling mechanism as alternive concurrency mechanism
   to task executor
 
 ## 0.13.6
@@ -83,41 +96,39 @@
 
 ## 0.13.5
 
-- Merge branch 'rel-275-v0-13-5' into 'main'
-- [REL-275] Prepare to release 0.13.5
-- [REL-275] Fix pipeline
+- REL-275: Fix pipeline
 
 ## 0.13.4
 
-- KAR-466 - Repository maintenance
-- MCCS-1072 - Type hint & static type check base class alarm_handler_device & utils
-- MCCS-934 - Type hint & Static type check base classes
-- LOW-330 Import control model definitions from ska-control-model
-- LOW-317 Allow Reset() from STANDBY and ON states, not just FAULT
+- KAR-466: Repository maintenance
+- MCCS-1072: Type hint & static type check base class alarm_handler_device & utils
+- MCCS-934: Type hint & Static type check base classes
+- LOW-330: Import control model definitions from ska-control-model
+- LOW-317: Allow `Reset()` from STANDBY and ON states, not just FAULT
 
 ## 0.13.3
 
-- KAR-403 Fixed exceptions in LRCs not updating  longRunningCommandResult accordingly
-- LOW-299 Fixed docs build in the CI pipeline
-- LOW-278 Now using ska-tango-testing
-- SAH-1156 Enable assigned_resources property inside SubarrayComponentManager.
+- KAR-403: Fixed exceptions in LRCs not updating  `longRunningCommandResult` accordingly
+- LOW-299: Fixed docs build in the CI pipeline
+- LOW-278: Now using ska-tango-testing
+- SAH-1156: Enable `assigned_resources` property inside `SubarrayComponentManager`.
 
 ## 0.13.2
 
-- CT-738 fix check long running status
-- AT3-140 fix base TANGO xmi files
-- MCCS-1053 Fix the problem of device in UNKNOWN state upon test startup
-- PERENTIE-1350 Remove misleading `CspSubarrayComponentManager.__init__` function
+- CT-738: fix check long running status
+- AT3-140: fix base TANGO xmi files
+- MCCS-1053: Fix the problem of device in UNKNOWN state upon test startup
+- PERENTIE-1350: Remove misleading `CspSubarrayComponentManager.__init__` function
 
 ## 0.13.1
 
-- KAR-399 Renamed SKAController command isCapabilityAchievable to IsCapabilityAchievable.
+- KAR-399: Renamed `SKAController` command `isCapabilityAchievable` to `IsCapabilityAchievable`.
 
 ## 0.13.0
 
-- MCCS-876 Updated implementation of long running commands
-  - SAR-341 Updated docs
-  - SAR-351 Updated tests
+- MCCS-876: Updated implementation of long running commands
+  - SAR-341: Updated docs
+  - SAR-351: Updated tests
 
 ## 0.12.1
 
@@ -196,14 +207,14 @@
 
 ## 0.7.1
 
-- Bugfix for Reset() command
+- Bugfix for `Reset()` command
 
 ## 0.7.0
 
-- Separate adminMode state machine from opState state machine
-- Add support for STANDBY opState
-- Add Standby() and Disable() commands to SKABaseDevice
-- Breaking behavioural changes to adminMode and opState state machines
+- Separate `adminMode` state machine from `opState` state machine
+- Add support for STANDBY `opState`
+- Add `Standby()` and `Disable()` commands to `SKABaseDevice`
+- Breaking behavioural changes to adminMode and `opState` state machines
 - Breaking change to `_straight_to_state` method signature
 
 ## 0.6.6
@@ -212,20 +223,20 @@
 
 ## 0.6.5
 
-- Fix to observation state machine: allow Abort() from RESETTING observation
+- Fix to observation state machine: allow `Abort()` from RESETTING observation
   state
 
 ## 0.6.4
 
 - Refactor state machine to use pytransitions library.
-- Minor behavioural change: Off() command is accepted in every obsState, rather
+- Minor behavioural change:` Off()` command is accepted in every obsState, rather
 than only EMPTY obsState.
 - support `_straight_to_state` shortcuts to simplify test setups
 - Refactor of state machine testing to make it more portable
 
 ## 0.6.3
 
-- Fix omission of fatal_error transition from base device state machine.
+- Fix omission of `fatal_error` transition from base device state machine.
 
 ## 0.6.2
 
@@ -235,8 +246,8 @@ than only EMPTY obsState.
 
 ## 0.6.1
 
-- Add ON state to SKABaseDeviceStateModel.
-- Move On() and Off() commands to SKABaseDevice.
+- Add `ON` state to `SKABaseDeviceStateModel`.
+- Move `On()` and `Off()` commands to `SKABaseDevice`.
 - Add event pushing for device state, device status, admin mode and obs state
   (change and archive events).
 - Disable all attribute polling.
@@ -244,10 +255,10 @@ than only EMPTY obsState.
 ## 0.6.0
 
 - Breaking change: State management
-  - SKABaseDevice implements a simple state machine with states
+  - `SKABaseDevice` implements a simple state machine with states
     `DISABLED`, `OFF`, `ON`, `INIT` and `FAULT`, along with transitions
     between them.
-  - SKASubarray implements full subarray state machine in accordance
+  - `SKASubarray` implements full subarray state machine in accordance
     with ADR-8 (the underlying state model supports all states and
     transitions, including transitions through transient states; the
     subarray device uses this state model but currently provide a
@@ -274,7 +285,7 @@ than only EMPTY obsState.
 
 ## 0.5.4
 
-- Remove `ObsState` command from SKACapability, SKAObsDevice and SKASubarray Pogo XMI files.  It should not
+- Remove `ObsState` command from `SKACapability`, `SKAObsDevice` and `SKASubarray` Pogo XMI files.  It should not
   have been included - the `obsState` attribute provides this information. The command was not in the Python
   files, so no change to usage.  It only affects future Pogo code generation.
 - Add new logging target, `"tango::logger"`, that forwards Python logs to the Tango Logging Service.  This

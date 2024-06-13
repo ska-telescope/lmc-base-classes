@@ -41,12 +41,11 @@ import functools
 import json
 import logging
 import warnings
-from typing import Any, Callable, Generic, TypeVar
+from typing import Any, Callable, Generic, Protocol, TypeVar
 
 import jsonschema
 from ska_control_model import ResultCode, TaskStatus
 from tango.server import Device
-from typing_extensions import Protocol
 
 from .base.base_component_manager import BaseComponentManager
 

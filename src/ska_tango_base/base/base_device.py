@@ -688,15 +688,17 @@ class SKABaseDevice(
             self._status_queue_size,
             self.longRunningCommandIDsInQueue,
         )
+        # use a bigger number for progress LRCs, dish lmc will need a bigger
+        # size than the default. Using the status queue size for now to test
         self._create_attribute(
             "longRunningCommandInProgress",
-            self.component_manager.max_executing_tasks,
+            self._status_queue_size,
             self.longRunningCommandInProgress,
         )
+        # cmd name and progress for each command
         self._create_attribute(
             "longRunningCommandProgress",
-            self.component_manager.max_executing_tasks
-            * 2,  # cmd name and progress for each command
+            self._status_queue_size * 2,
             self.longRunningCommandProgress,
         )
 

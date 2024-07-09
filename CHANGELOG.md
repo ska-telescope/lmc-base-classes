@@ -1,5 +1,10 @@
 # Changelog
 
+## unreleased
+
+- WOM-366: Update logging guide from README and add it to ReadTheDocs.
+- WOM-365: Remove unnecessary typing_extensions import.
+
 ## 1.0.0
 
 - Breaking changes:

@@ -47,7 +47,9 @@
         "ms-python.python",
         "ryanluker.vscode-coverage-gutters",
         "tamasfe.even-better-toml",
-        "trond-snekvik.simple-rst"
+        "trond-snekvik.simple-rst",
+        "swyddfa.esbonio",
+        "njpwerner.autodocstring"
       ]
     }
   },

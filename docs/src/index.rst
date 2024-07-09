@@ -18,6 +18,7 @@ Welcome to SKA Tango Base documentation!
   how-to/getting-started
   how-to/add-an-lrc
   how-to/invoke-an-lrc
+  how-to/logging
 
 .. toctree::
   :maxdepth: 1

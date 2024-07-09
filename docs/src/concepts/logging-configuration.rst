@@ -1,6 +1,6 @@
-========================
-How to configure logging
-========================
+=====================
+Logging configuration
+=====================
 
 In order to provide consistent logging across all Python Tango devices in SKA, the
 logging is configured in the LMC base class: ``SKABaseDevice``.
@@ -107,27 +107,7 @@ on this.
          self.set_logging_targets(value)
       ...
 
-Changing the logging level
---------------------------
-The ``loggingLevel`` attribute allows us to adjust the severity of logs being emitted.
-This attribute is an enumerated type. The default is currently INFO level, but it can be
-overridden by setting the ``LoggingLevelDefault`` property in the Tango database.
-
-Example:
-
-.. code:: python
-
-   proxy = tango.DeviceProxy('my/test/device')
-
-   # change to debug level using an enum
-   proxy.loggingLevel = ska.base.control_model.LoggingLevel.DEBUG
-
-   # change to info level using a string
-   proxy.loggingLevel = "INFO"
-
-Do not use ``proxy.set_logging_level()``. That method only applies to the Tango Logging
-Service (see section below). However, note that when the ``loggingLevel`` attribute is
-set, we internally update the TLS logging level as well.
+.. _additional-logging-targets:
 
 Additional logging targets
 --------------------------
@@ -252,32 +232,6 @@ PyTango is a wrapper around the C++ Tango library, and the admin device is imple
 C++. The admin device does not inherit from the ``SKABaseDevice`` and we cannot override its
 behaviour from the Python layer. Its logs can only be seen by configuring the TLS
 appropriately.
-
-What code should I write to log from my device?
------------------------------------------------
-You should always use the ``self.logger`` object within methods. This instance of the
-logger is the only one that knows the Tango device name. You can also use the PyTango
-`logging
-decorators <https://pytango.readthedocs.io/en/stable/server_api/logging.html#logging-decorators>`__
-like ``DebugIt``, since the monkey patching redirects them to that same logger.
-
-.. code:: python
-
-   class MyDevice(SKABaseDevice):
-       def my_method(self):
-           someone = "you"
-           self.logger.info("I have a message for %s", someone)
-
-       @tango.DebugIt(show_args=True, show_ret=True)
-       def my_handler(self):
-           # great, entry and exit of this method is automatically logged
-           # at debug level!
-           pass
-
-Yes, you could use f-strings. ``f"I have a message for {someone}"``. The only benefit of
-the ``%s`` type formatting is that the full string does not need to be created unless
-the log message will be emitted. This could provide a small performance gain, depending
-on what is being logged, and how often.
 
 When I set the logging level via command line it doesn't work
 -------------------------------------------------------------

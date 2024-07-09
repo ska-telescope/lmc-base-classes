@@ -18,13 +18,14 @@ Welcome to SKA Tango Base documentation!
   how-to/getting-started
   how-to/add-an-lrc
   how-to/invoke-an-lrc
-  how-to/logging
+  how-to/use-logger
 
 .. toctree::
   :maxdepth: 1
   :caption: Concepts
 
   concepts/component-managers
+  concepts/logging-configuration
   concepts/long-running-commands
   concepts/failure-guidelines
 

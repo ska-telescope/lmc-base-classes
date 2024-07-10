@@ -27,5 +27,6 @@ from .base_component_manager import (
     check_communicating,
     check_on,
 )
-from .base_device import CommandTracker, SKABaseDevice
+from .base_device import SKABaseDevice
+from .long_running_commands import CommandTracker
 from .op_state_model import OpStateModel

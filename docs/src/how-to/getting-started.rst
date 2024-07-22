@@ -241,8 +241,52 @@ Writing the Tango device involves the following steps:
 
      def create_component_manager(self):
          return AntennaComponentManager(
-             self.op_state_model, logger=self.logger
+             self.op_state_model,
+             logger=self.logger,
+             communication_state_callback=self._communication_state_callback,
+             component_state_callback=self._component_state_callback
          )
+   
+   When instantiating a component manager object that inherits directly
+   or indirectly from BaseComponentManager, two callbacks should be
+   provided by the Tango device, one for the communication state and the
+   other for the component state. These callbacks allow the component
+   manager to inform the Tango device of changes to the component while
+   staying decoupled from the device itself. At a minimum, both callbacks
+   should call the relevant *\<type\>_state_changed* SKABaseDevice method
+   that drives the op_state_model for the device.
+   
+      **Communication state** - Perform actions based on the input
+      communication_state (CommunicationStatus type from ska_control_model).
+
+      * Base class method: *_communication_state_changed*
+      * Op state actions: component_disconnected, component_unknown.
+      * Minimum example:
+
+      .. code-block:: py
+
+        def _communication_state_callback(communication_state: CommunicationStatus) -> None:
+             super()._communication_state_changed(communication_state)
+
+      **Component state** - Perform actions based on the input fault
+      (boolean) and/or power (PowerState type from ska_control_model).
+
+      * Base class method: *_component_state_changed*
+      * Op state actions: component_fault, component_no_fault, component_on,
+        component_standby, component_off.
+      * Minimum example:
+
+      .. code-block:: py
+
+        def _component_state_callback(
+            fault: Optional[bool] = None,
+            power: Optional[PowerState] = None
+         ) -> None:
+             super()._component_state_changed(fault=fault, power=power)
+
+   Additonal keyword arguments can be provided to the callbacks as
+   needed for the device.
+   
 
 3. **Implement commands.** You've already written the command classes.
    There is some boilerplate to ensure that the Tango command methods

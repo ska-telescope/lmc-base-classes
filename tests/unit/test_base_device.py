@@ -21,7 +21,6 @@ from typing import Any, Callable, cast
 from unittest import mock
 
 import pytest
-import tango
 from _pytest.fixtures import SubRequest
 from ska_control_model import (
     AdminMode,
@@ -34,10 +33,10 @@ from ska_control_model import (
     TestMode,
 )
 from ska_tango_testing.mock.tango import MockTangoEventCallbackGroup
-from tango import DevFailed, DevState
+from tango import DevError, DevFailed, DeviceProxy, DevState, EventType, Logger
 
 from ska_tango_base import SKABaseDevice
-from ska_tango_base.base import CommandTracker
+from ska_tango_base.base import CommandTracker, invoke_lrc
 from ska_tango_base.base.base_device import _DEBUGGER_PORT
 from ska_tango_base.base.logging import (
     _PYTHON_TO_TANGO_LOGGING_LEVEL,
@@ -66,7 +65,7 @@ class TestTangoLoggingServiceHandler:
 
         :return: a mock logger for a Tango device.
         """
-        tango_logger = mock.MagicMock(spec=tango.Logger)
+        tango_logger = mock.MagicMock(spec=Logger)
         # setup methods used for handler __repr__
         tango_logger.get_name.return_value = "unit/test/dev"
         tango_logger.get_level.return_value = _Log4TangoLoggingLevel.DEBUG
@@ -422,7 +421,7 @@ class TestLoggingUtils:
             return None
 
         mock_get_formatter.side_effect = get_formatter_if_tags_enabled
-        mock_tango_logger = mock.MagicMock(spec=tango.Logger)
+        mock_tango_logger = mock.MagicMock(spec=Logger)
 
         handler = LoggingUtils.create_logging_handler("console::cout")
         assert handler == mock_stream_handler()
@@ -470,13 +469,11 @@ class TestLoggingUtils:
     def test_update_logging_handlers(self: TestLoggingUtils) -> None:
         """Test that logging handlers can be updated."""
         logger = logging.getLogger("testing")
-        logger.tango_logger = mock.MagicMock(  # type: ignore[attr-defined]
-            spec=tango.Logger
-        )
+        logger.tango_logger = mock.MagicMock(spec=Logger)  # type: ignore[attr-defined]
 
         # The arguments of this method must match LoggingUtils.create_logging_handler
         def null_creator(
-            target: str, tango_logger: tango.Logger  # pylint: disable=unused-argument
+            target: str, tango_logger: Logger  # pylint: disable=unused-argument
         ) -> logging.NullHandler:
             handler = logging.NullHandler()
             handler.name = target
@@ -894,18 +891,16 @@ class TestSKABaseDevice:  # pylint: disable=too-many-public-methods
 
     @pytest.mark.skip("Not implemented")
     def test_properties(
-        self: TestSKABaseDevice, device_under_test: tango.DeviceProxy
+        self: TestSKABaseDevice, device_under_test: DeviceProxy
     ) -> None:
         """
         Test device properties.
 
         :param device_under_test: a DeviceProxy to the device under
-            test, running in a tango.DeviceTestContext
+            test, running in a DeviceTestContext
         """
 
-    def test_State(
-        self: TestSKABaseDevice, device_under_test: tango.DeviceProxy
-    ) -> None:
+    def test_State(self: TestSKABaseDevice, device_under_test: DeviceProxy) -> None:
         """
         Test for State.
 
@@ -915,7 +910,7 @@ class TestSKABaseDevice:  # pylint: disable=too-many-public-methods
 
     def test_commandedState(
         self: TestSKABaseDevice,
-        device_under_test: tango.DeviceProxy,
+        device_under_test: DeviceProxy,
         change_event_callbacks: MockTangoEventCallbackGroup,
     ) -> None:
         """
@@ -936,7 +931,7 @@ class TestSKABaseDevice:  # pylint: disable=too-many-public-methods
         ]:
             device_under_test.subscribe_event(
                 attribute,
-                tango.EventType.CHANGE_EVENT,
+                EventType.CHANGE_EVENT,
                 change_event_callbacks[attribute],
             )
         change_event_callbacks["state"].assert_change_event(DevState.OFF)
@@ -1014,9 +1009,7 @@ class TestSKABaseDevice:  # pylint: disable=too-many-public-methods
         ):
             device_under_test.Reset()
 
-    def test_Status(
-        self: TestSKABaseDevice, device_under_test: tango.DeviceProxy
-    ) -> None:
+    def test_Status(self: TestSKABaseDevice, device_under_test: DeviceProxy) -> None:
         """
         Test for Status.
 
@@ -1025,7 +1018,7 @@ class TestSKABaseDevice:  # pylint: disable=too-many-public-methods
         assert device_under_test.Status() == "The device is in OFF state."
 
     def test_GetVersionInfo(
-        self: TestSKABaseDevice, device_under_test: tango.DeviceProxy
+        self: TestSKABaseDevice, device_under_test: DeviceProxy
     ) -> None:
         """
         Test for GetVersionInfo.
@@ -1040,9 +1033,7 @@ class TestSKABaseDevice:  # pylint: disable=too-many-public-methods
         assert len(version_info) == 1
         assert re.match(version_pattern, version_info[0])
 
-    def test_Reset(
-        self: TestSKABaseDevice, device_under_test: tango.DeviceProxy
-    ) -> None:
+    def test_Reset(self: TestSKABaseDevice, device_under_test: DeviceProxy) -> None:
         """
         Test for Reset.
 
@@ -1058,9 +1049,74 @@ class TestSKABaseDevice:  # pylint: disable=too-many-public-methods
         ):
             _ = device_under_test.Reset()
 
+    def test_On_with_invoke_lrc(
+        self: TestSKABaseDevice,
+        device_under_test: DeviceProxy,
+        change_event_callbacks: MockTangoEventCallbackGroup,
+    ) -> None:
+        """
+        Test for On command.
+
+        :param device_under_test: a proxy to the device under test
+        :param change_event_callbacks: dictionary of mock change event
+            callbacks with asynchrony support.
+        """
+        assert device_under_test.state() == DevState.OFF
+
+        for attribute in [
+            "state",
+            "status",
+        ]:
+            device_under_test.subscribe_event(
+                attribute,
+                EventType.CHANGE_EVENT,
+                change_event_callbacks[attribute],
+            )
+
+        change_event_callbacks["state"].assert_change_event(DevState.OFF)
+        change_event_callbacks["status"].assert_change_event(
+            "The device is in OFF state."
+        )
+
+        def generic_lrc_callback(
+            status: TaskStatus | None = None,
+            progress: int | None = None,
+            result: dict[int, str] | None = None,
+            error: DevError | None = None,
+            **kwargs: Any,
+        ) -> None:
+            print("## lrc_callback ##")
+            print("##################")
+            print("status:", status)
+            print("progress:", progress)
+            print("result:", result)
+            print("error:", error)
+            print("kwargs:", kwargs)
+            if status is not None:
+                assert status in [
+                    TaskStatus.STAGING,
+                    TaskStatus.QUEUED,
+                    TaskStatus.IN_PROGRESS,
+                    TaskStatus.COMPLETED,
+                ]
+            if progress is not None:
+                assert progress in [33, 66]
+            if result is not None:
+                assert result[0] == str(ResultCode.OK.value)
+            if error is not None:
+                assert False, f"Received {error}"
+
+        _ = invoke_lrc(device_under_test, generic_lrc_callback, "On")
+
+        change_event_callbacks.assert_change_event("state", DevState.ON)
+        change_event_callbacks.assert_change_event(
+            "status", "The device is in ON state."
+        )
+        assert device_under_test.state() == DevState.ON
+
     def test_On(
         self: TestSKABaseDevice,
-        device_under_test: tango.DeviceProxy,
+        device_under_test: DeviceProxy,
         change_event_callbacks: MockTangoEventCallbackGroup,
     ) -> None:
         """
@@ -1082,7 +1138,7 @@ class TestSKABaseDevice:  # pylint: disable=too-many-public-methods
         ]:
             device_under_test.subscribe_event(
                 attribute,
-                tango.EventType.CHANGE_EVENT,
+                EventType.CHANGE_EVENT,
                 change_event_callbacks[attribute],
             )
 
@@ -1139,7 +1195,7 @@ class TestSKABaseDevice:  # pylint: disable=too-many-public-methods
 
     def test_Standby(
         self: TestSKABaseDevice,
-        device_under_test: tango.DeviceProxy,
+        device_under_test: DeviceProxy,
         change_event_callbacks: MockTangoEventCallbackGroup,
     ) -> None:
         """
@@ -1161,7 +1217,7 @@ class TestSKABaseDevice:  # pylint: disable=too-many-public-methods
         ]:
             device_under_test.subscribe_event(
                 attribute,
-                tango.EventType.CHANGE_EVENT,
+                EventType.CHANGE_EVENT,
                 change_event_callbacks[attribute],
             )
 
@@ -1221,7 +1277,7 @@ class TestSKABaseDevice:  # pylint: disable=too-many-public-methods
 
     def test_Off(
         self: TestSKABaseDevice,
-        device_under_test: tango.DeviceProxy,
+        device_under_test: DeviceProxy,
         change_event_callbacks: MockTangoEventCallbackGroup,
     ) -> None:
         """
@@ -1243,7 +1299,7 @@ class TestSKABaseDevice:  # pylint: disable=too-many-public-methods
         ]:
             device_under_test.subscribe_event(
                 attribute,
-                tango.EventType.CHANGE_EVENT,
+                EventType.CHANGE_EVENT,
                 change_event_callbacks[attribute],
             )
 
@@ -1265,7 +1321,7 @@ class TestSKABaseDevice:  # pylint: disable=too-many-public-methods
 
     def test_command_exception(
         self: TestSKABaseDevice,
-        device_under_test: tango.DeviceProxy,
+        device_under_test: DeviceProxy,
         change_event_callbacks: MockTangoEventCallbackGroup,
     ) -> None:
         """
@@ -1281,7 +1337,7 @@ class TestSKABaseDevice:  # pylint: disable=too-many-public-methods
         ]:
             device_under_test.subscribe_event(
                 attribute,
-                tango.EventType.CHANGE_EVENT,
+                EventType.CHANGE_EVENT,
                 change_event_callbacks[attribute],
             )
         change_event_callbacks["longRunningCommandStatus"].assert_change_event(())
@@ -1348,7 +1404,7 @@ class TestSKABaseDevice:  # pylint: disable=too-many-public-methods
 
     def test_lrcStatusQueue(
         self: TestSKABaseDevice,
-        device_under_test: tango.DeviceProxy,
+        device_under_test: DeviceProxy,
         change_event_callbacks: MockTangoEventCallbackGroup,
     ) -> None:
         """
@@ -1365,7 +1421,7 @@ class TestSKABaseDevice:  # pylint: disable=too-many-public-methods
 
         device_under_test.subscribe_event(
             "longRunningCommandResult",
-            tango.EventType.CHANGE_EVENT,
+            EventType.CHANGE_EVENT,
             change_event_callbacks["longRunningCommandResult"],
         )
 
@@ -1426,7 +1482,7 @@ class TestSKABaseDevice:  # pylint: disable=too-many-public-methods
             assert cmd_id in status_attribute.value
 
     def test_buildState(
-        self: TestSKABaseDevice, device_under_test: tango.DeviceProxy
+        self: TestSKABaseDevice, device_under_test: DeviceProxy
     ) -> None:
         """
         Test for buildState.
@@ -1439,9 +1495,7 @@ class TestSKABaseDevice:  # pylint: disable=too-many-public-methods
         )
         assert (re.match(build_pattern, device_under_test.buildState)) is not None
 
-    def test_versionId(
-        self: TestSKABaseDevice, device_under_test: tango.DeviceProxy
-    ) -> None:
+    def test_versionId(self: TestSKABaseDevice, device_under_test: DeviceProxy) -> None:
         """
         Test for versionId.
 
@@ -1451,7 +1505,7 @@ class TestSKABaseDevice:  # pylint: disable=too-many-public-methods
         assert (re.match(version_id_pattern, device_under_test.versionId)) is not None
 
     def test_loggingLevel(
-        self: TestSKABaseDevice, device_under_test: tango.DeviceProxy
+        self: TestSKABaseDevice, device_under_test: DeviceProxy
     ) -> None:
         """
         Test for loggingLevel.
@@ -1469,7 +1523,7 @@ class TestSKABaseDevice:  # pylint: disable=too-many-public-methods
             device_under_test.loggingLevel = LoggingLevel.FATAL + 100
 
     def test_loggingTargets(
-        self: TestSKABaseDevice, device_under_test: tango.DeviceProxy
+        self: TestSKABaseDevice, device_under_test: DeviceProxy
     ) -> None:
         """
         Test for loggingTargets.
@@ -1500,7 +1554,7 @@ class TestSKABaseDevice:  # pylint: disable=too-many-public-methods
             device_under_test.loggingTargets = ("invalid::type",)
 
     def test_healthState(
-        self: TestSKABaseDevice, device_under_test: tango.DeviceProxy
+        self: TestSKABaseDevice, device_under_test: DeviceProxy
     ) -> None:
         """
         Test for healthState.
@@ -1511,7 +1565,7 @@ class TestSKABaseDevice:  # pylint: disable=too-many-public-methods
 
     def test_adminMode(
         self: TestSKABaseDevice,
-        device_under_test: tango.DeviceProxy,
+        device_under_test: DeviceProxy,
         change_event_callbacks: MockTangoEventCallbackGroup,
     ) -> None:
         """
@@ -1526,7 +1580,7 @@ class TestSKABaseDevice:  # pylint: disable=too-many-public-methods
         for attribute in ["state", "status", "adminMode"]:
             device_under_test.subscribe_event(
                 attribute,
-                tango.EventType.CHANGE_EVENT,
+                EventType.CHANGE_EVENT,
                 change_event_callbacks[attribute],
             )
 
@@ -1574,7 +1628,7 @@ class TestSKABaseDevice:  # pylint: disable=too-many-public-methods
         assert device_under_test.state() == DevState.OFF
 
     def test_controlMode(
-        self: TestSKABaseDevice, device_under_test: tango.DeviceProxy
+        self: TestSKABaseDevice, device_under_test: DeviceProxy
     ) -> None:
         """
         Test for controlMode.
@@ -1584,7 +1638,7 @@ class TestSKABaseDevice:  # pylint: disable=too-many-public-methods
         assert device_under_test.controlMode == ControlMode.REMOTE
 
     def test_simulationMode(
-        self: TestSKABaseDevice, device_under_test: tango.DeviceProxy
+        self: TestSKABaseDevice, device_under_test: DeviceProxy
     ) -> None:
         """
         Test for simulationMode.
@@ -1593,9 +1647,7 @@ class TestSKABaseDevice:  # pylint: disable=too-many-public-methods
         """
         assert device_under_test.simulationMode == SimulationMode.FALSE
 
-    def test_testMode(
-        self: TestSKABaseDevice, device_under_test: tango.DeviceProxy
-    ) -> None:
+    def test_testMode(self: TestSKABaseDevice, device_under_test: DeviceProxy) -> None:
         """
         Test for testMode.
 
@@ -1605,7 +1657,7 @@ class TestSKABaseDevice:  # pylint: disable=too-many-public-methods
 
     def test_debugger_not_listening_by_default(
         self: TestSKABaseDevice,
-        device_under_test: tango.DeviceProxy,  # pylint: disable=unused-argument
+        device_under_test: DeviceProxy,  # pylint: disable=unused-argument
     ) -> None:
         """
         Test that DebugDevice is not active until enabled.
@@ -1622,7 +1674,7 @@ class TestSKABaseDevice:  # pylint: disable=too-many-public-methods
                 s.connect(("localhost", _DEBUGGER_PORT))
 
     def test_DebugDevice_starts_listening_on_default_port(
-        self: TestSKABaseDevice, device_under_test: tango.DeviceProxy
+        self: TestSKABaseDevice, device_under_test: DeviceProxy
     ) -> None:
         """
         Test that enabling DebugDevice makes it listen on its default port.
@@ -1637,7 +1689,7 @@ class TestSKABaseDevice:  # pylint: disable=too-many-public-methods
 
     @pytest.mark.usefixtures("patch_debugger_to_start_on_ephemeral_port")
     def test_DebugDevice_twice_does_not_raise(
-        self: TestSKABaseDevice, device_under_test: tango.DeviceProxy
+        self: TestSKABaseDevice, device_under_test: DeviceProxy
     ) -> None:
         """
         Test that it is safe to enable the DebugDevice when it is already enabled.
@@ -1652,7 +1704,7 @@ class TestSKABaseDevice:  # pylint: disable=too-many-public-methods
     @pytest.mark.usefixtures("patch_debugger_to_start_on_ephemeral_port")
     def test_DebugDevice_does_not_break_a_command(
         self: TestSKABaseDevice,
-        device_under_test: tango.DeviceProxy,
+        device_under_test: DeviceProxy,
         change_event_callbacks: MockTangoEventCallbackGroup,
     ) -> None:
         """
@@ -1667,7 +1719,7 @@ class TestSKABaseDevice:  # pylint: disable=too-many-public-methods
 
         device_under_test.subscribe_event(
             "state",
-            tango.EventType.CHANGE_EVENT,
+            EventType.CHANGE_EVENT,
             change_event_callbacks["state"],
         )
         change_event_callbacks.assert_change_event("state", DevState.OFF)

@@ -252,26 +252,43 @@ Writing the Tango device involves the following steps:
    provided by the Tango device, one for the communication state and the
    other for the component state. These callbacks allow the component
    manager to inform the Tango device of changes to the component while
-   staying decoupled from the device itself. At a minimum, both callbacks
-   should call the relevant *\<type\>_state_changed* SKABaseDevice method
-   that drives the op_state_model for the device.
+   staying decoupled from the device itself.
+   
+   For instance, the derived
+   component manager class will inherit *_update_communication_state*
+   from BaseComponentManager, which internally calls the supplied
+   *communication_state_callback*. The derived class will then use
+   *_update_communication_state* when overriding *start_communicating* and
+   *stop_communicating* to drive the op_state_model. Similarly when the
+   component manager determines that the power or fault status of the
+   component change it will use *_update_component_state* to drive the
+   op_state_model.
+
+   At a minimum, to ensure the actions are perfromed on the op_state_model,
+   both callbacks should call the relevant *\<type\>_state_changed*
+   SKABaseDevice method.
    
       **Communication state** - Perform actions based on the input
-      communication_state (CommunicationStatus type from ska_control_model).
+      communication_state
+      (:obj:`CommunicationStatus <ska_control_model.CommunicationStatus>`
+      type from ska_control_model).
 
-      * Base class method: *_communication_state_changed*
+      * SKABaseDevice method: *_communication_state_changed*
       * Op state actions: component_disconnected, component_unknown.
       * Minimum example:
 
       .. code-block:: py
 
-        def _communication_state_callback(communication_state: CommunicationStatus) -> None:
+        def _communication_state_callback(
+         communication_state: CommunicationStatus
+         ) -> None:
              super()._communication_state_changed(communication_state)
 
       **Component state** - Perform actions based on the input fault
-      (boolean) and/or power (PowerState type from ska_control_model).
+      (boolean) and/or power (:obj:`PowerState <ska_control_model.PowerState>`
+      type from ska_control_model).
 
-      * Base class method: *_component_state_changed*
+      * SKABaseDevice method: *_component_state_changed*
       * Op state actions: component_fault, component_no_fault, component_on,
         component_standby, component_off.
       * Minimum example:
@@ -284,8 +301,24 @@ Writing the Tango device involves the following steps:
          ) -> None:
              super()._component_state_changed(fault=fault, power=power)
 
-   Additonal keyword arguments can be provided to the callbacks as
-   needed for the device.
+   Information the component manager retrieves from the component needs to
+   be made available to the wider control system in the form of attributes
+   on the Tango device. This can be done with the use of additonal keyword
+   arguments provided to the callbacks above that are used to update said
+   attributes. However, a device with many different sensors could then end
+   up with a long list of keyword arguments, and a cumbersome callback. It is
+   recommended to split these additional arguments into their own callback(s)
+   by adding methods to the Tango device with corresponding parameters in the
+   derived component manager.
+
+   Components may be software instead of hardware. In this case the
+   *SKABaseDevice._component_state_changed* method should still be called with
+   a power argument to drive the op_state_model, e.g. PowerState.ON to arrive
+   in the ON operational state.
+   Alternatively *SKABaseDevice._communication_state_changed* could be
+   overridden so that a *communication_state* of
+   CommunicationStatus.ESTABLISHED instead transitions the operational state
+   to ON.
    
 
 3. **Implement commands.** You've already written the command classes.

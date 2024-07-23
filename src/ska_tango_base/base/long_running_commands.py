@@ -31,8 +31,8 @@ class LrcCallback(Protocol):
         self,
         status: TaskStatus | None = None,
         progress: int | None = None,
-        result: dict[int, str] | None = None,
-        error: DevError = None,
+        result: dict[str, Any] | list[Any] | None = None,  # TODO: To be decided later
+        error: tuple[DevError] | None = None,
         **kwargs: Any,
     ) -> None:
         raise NotImplementedError("LrcCallback is a protocol used only for typing.")
@@ -62,32 +62,31 @@ def invoke_lrc(
 
     def wrap_lrc_callback(event: EventData) -> None:
         if event.err:
-            lrc_callback(error=event.errors[0])
+            lrc_callback(error=event.errors)
             unsubscribe_lrc_events()
             return
         # TODO: Remove later. For debugging with pytest -rA
-        # print("event.attr_value:", event.attr_value)
-        if (
-            event.attr_value.value not in [(), ("", "")]
-            and command_id == event.attr_value.value[0]
-        ):
-            lrc_attr_value = event.attr_value.value[1]
-            match event.attr_value.name:
-                case "longrunningcommandstatus":
-                    status = TaskStatus[lrc_attr_value]
-                    lrc_callback(status=status)
-                    if status in [
-                        TaskStatus.ABORTED,
-                        TaskStatus.COMPLETED,
-                        TaskStatus.FAILED,
-                        TaskStatus.REJECTED,
-                    ]:
-                        unsubscribe_lrc_events()
-                case "longrunningcommandprogress":
-                    lrc_callback(progress=int(lrc_attr_value))
-                case "longrunningcommandresult":
-                    result = json.loads(lrc_attr_value)
-                    lrc_callback(result={i: str(result[i]) for i in range(len(result))})
+        # print("event.attr_value:", event.attr_value.value)
+        try:
+            cmd_idx = event.attr_value.value.index(command_id)
+            lrc_attr_value = event.attr_value.value[cmd_idx + 1]
+        except (ValueError, IndexError):
+            return
+        match event.attr_value.name:
+            case "longrunningcommandstatus":
+                status = TaskStatus[lrc_attr_value]
+                lrc_callback(status=status)
+                if status in [
+                    TaskStatus.ABORTED,
+                    TaskStatus.COMPLETED,
+                    TaskStatus.FAILED,
+                    TaskStatus.REJECTED,
+                ]:
+                    unsubscribe_lrc_events()
+            case "longrunningcommandprogress":
+                lrc_callback(progress=int(lrc_attr_value))
+            case "longrunningcommandresult":
+                lrc_callback(result=json.loads(lrc_attr_value))
 
     lrc_status_event = proxy.subscribe_event(
         "longRunningCommandStatus", EventType.CHANGE_EVENT, wrap_lrc_callback

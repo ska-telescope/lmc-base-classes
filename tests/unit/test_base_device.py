@@ -17,7 +17,7 @@ import re
 import socket
 import time
 import unittest
-from typing import Any, Callable, cast
+from typing import Any, cast
 from unittest import mock
 
 import pytest
@@ -51,8 +51,6 @@ from ska_tango_base.testing.reference import (
     ReferenceSkaBaseDevice,
 )
 from tests.conftest import Helpers
-
-CallableAnyNone = Callable[[Any], None]
 
 
 class TestTangoLoggingServiceHandler:
@@ -1081,7 +1079,7 @@ class TestSKABaseDevice:  # pylint: disable=too-many-public-methods
         def generic_lrc_callback(
             status: TaskStatus | None = None,
             progress: int | None = None,
-            result: dict[int, str] | None = None,
+            result: dict[str, Any] | list[Any] | None = None,
             error: DevError | None = None,
             **kwargs: Any,
         ) -> None:
@@ -1102,7 +1100,7 @@ class TestSKABaseDevice:  # pylint: disable=too-many-public-methods
             if progress is not None:
                 assert progress in [33, 66]
             if result is not None:
-                assert result[0] == str(ResultCode.OK.value)
+                assert isinstance(result, list) and result[0] == ResultCode.OK
             if error is not None:
                 assert False, f"Received {error}"
 

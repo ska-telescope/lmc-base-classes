@@ -44,6 +44,7 @@ from ska_tango_base.base.logging import (
     TangoLoggingServiceHandler,
     _Log4TangoLoggingLevel,
 )
+from ska_tango_base.base.long_running_commands import LrcCallback
 from ska_tango_base.faults import LoggingTargetError
 from ska_tango_base.testing.reference import (
     FakeBaseComponent,
@@ -857,6 +858,54 @@ class TestCommandTracker:
         )
 
 
+@pytest.fixture(name="successful_lrc_callback")
+def successful_lrc_callback_fixture() -> LrcCallback:  # type: ignore
+    """
+    Use this callback with invoke_lrc when the LRC should complete successfully.
+
+    :yields: successful_lrc_callback function.
+    :raises AssertionError: if unexpected status, progress, result or error is received.
+    """  # noqa DAR401,DAR402
+    assert_errors: list[AssertionError] = []
+
+    def _lrc_callback(
+        status: TaskStatus | None = None,
+        progress: int | None = None,
+        result: dict[str, Any] | list[Any] | None = None,
+        error: tuple[DevError] | None = None,
+        **kwargs: Any,
+    ) -> None:
+        print("## lrc_callback ##")
+        print("##################")
+        print("status:", status)
+        print("progress:", progress)
+        print("result:", result)
+        print("error:", error)
+        print("kwargs:", kwargs)
+        try:
+            if status is not None:
+                assert status in [
+                    TaskStatus.STAGING,
+                    TaskStatus.QUEUED,
+                    TaskStatus.IN_PROGRESS,
+                    TaskStatus.COMPLETED,
+                ], f"Unexpected status: {status}"
+            if progress is not None:
+                assert progress in [33, 66], f"Unexpected progress: {progress}"
+            if result is not None:
+                assert isinstance(result, list) and result[0] == ResultCode.OK, {
+                    f"Unexpected result: {result}"
+                }
+            if error is not None:
+                assert False, f"Received {error}"
+        except AssertionError as e:
+            assert_errors.append(e)
+
+    yield _lrc_callback
+    if assert_errors:
+        raise assert_errors[0]
+
+
 class TestSKABaseDevice:  # pylint: disable=too-many-public-methods
     """Test cases for SKABaseDevice."""
 
@@ -1051,6 +1100,7 @@ class TestSKABaseDevice:  # pylint: disable=too-many-public-methods
         self: TestSKABaseDevice,
         device_under_test: DeviceProxy,
         change_event_callbacks: MockTangoEventCallbackGroup,
+        successful_lrc_callback: LrcCallback,
     ) -> None:
         """
         Test for On command.
@@ -1058,6 +1108,7 @@ class TestSKABaseDevice:  # pylint: disable=too-many-public-methods
         :param device_under_test: a proxy to the device under test
         :param change_event_callbacks: dictionary of mock change event
             callbacks with asynchrony support.
+        :param successful_lrc_callback: callback fixture to use with invoke_lrc.
         """
         assert device_under_test.state() == DevState.OFF
 
@@ -1076,41 +1127,19 @@ class TestSKABaseDevice:  # pylint: disable=too-many-public-methods
             "The device is in OFF state."
         )
 
-        def generic_lrc_callback(
-            status: TaskStatus | None = None,
-            progress: int | None = None,
-            result: dict[str, Any] | list[Any] | None = None,
-            error: DevError | None = None,
-            **kwargs: Any,
-        ) -> None:
-            print("## lrc_callback ##")
-            print("##################")
-            print("status:", status)
-            print("progress:", progress)
-            print("result:", result)
-            print("error:", error)
-            print("kwargs:", kwargs)
-            if status is not None:
-                assert status in [
-                    TaskStatus.STAGING,
-                    TaskStatus.QUEUED,
-                    TaskStatus.IN_PROGRESS,
-                    TaskStatus.COMPLETED,
-                ]
-            if progress is not None:
-                assert progress in [33, 66]
-            if result is not None:
-                assert isinstance(result, list) and result[0] == ResultCode.OK
-            if error is not None:
-                assert False, f"Received {error}"
-
-        _ = invoke_lrc(device_under_test, generic_lrc_callback, "On")
-
+        _ = invoke_lrc(device_under_test, successful_lrc_callback, "On")
         change_event_callbacks.assert_change_event("state", DevState.ON)
         change_event_callbacks.assert_change_event(
             "status", "The device is in ON state."
         )
         assert device_under_test.state() == DevState.ON
+
+        # Check what happens if we call On() when the device is already ON.
+        [[result_code], [message]] = device_under_test.On()
+        assert result_code == ResultCode.REJECTED
+        assert message == "Device is already in ON state."
+
+        change_event_callbacks.assert_not_called()
 
     def test_On(
         self: TestSKABaseDevice,

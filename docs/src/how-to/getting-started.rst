@@ -248,33 +248,33 @@ Writing the Tango device involves the following steps:
          )
    
    When instantiating a component manager object that inherits directly
-   or indirectly from BaseComponentManager, two callbacks should be
+   or indirectly from ``BaseComponentManager``, two callbacks should be
    provided by the Tango device, one for the communication state and the
    other for the component state. These callbacks allow the component
    manager to inform the Tango device of changes to the component while
    staying decoupled from the device itself.
    
    For instance, the derived
-   component manager class will inherit *_update_communication_state*
-   from BaseComponentManager, which internally calls the supplied
-   *communication_state_callback*. The derived class will then use
-   *_update_communication_state* when overriding *start_communicating* and
-   *stop_communicating* to drive the op_state_model. Similarly when the
+   component manager class will inherit ``_update_communication_state``
+   from ``BaseComponentManager``, which internally calls the supplied
+   ``communication_state_callback``. The derived class will then use
+   ``_update_communication_state`` when overriding ``start_communicating`` and
+   ``stop_communicating`` to drive the ``op_state_model``. Similarly, when the
    component manager determines that the power or fault status of the
-   component change it will use *_update_component_state* to drive the
-   op_state_model.
+   component has changed, it will use ``_update_component_state`` to drive the
+   ``op_state_model``.
 
-   At a minimum, to ensure the actions are perfromed on the op_state_model,
+   At a minimum, to ensure the actions are perfromed on the ``op_state_model``,
    both callbacks should call the relevant *\<type\>_state_changed*
-   SKABaseDevice method.
+   ``SKABaseDevice`` method.
    
       **Communication state** - Perform actions based on the input
       communication_state
       (:obj:`CommunicationStatus <ska_control_model.CommunicationStatus>`
       type from ska_control_model).
 
-      * SKABaseDevice method: *_communication_state_changed*
-      * Op state actions: component_disconnected, component_unknown.
+      * ``SKABaseDevice`` method: ``_communication_state_changed``
+      * Op state actions: ``component_disconnected``, ``component_unknown``.
       * Minimum example:
 
       .. code-block:: py
@@ -288,9 +288,9 @@ Writing the Tango device involves the following steps:
       (boolean) and/or power (:obj:`PowerState <ska_control_model.PowerState>`
       type from ska_control_model).
 
-      * SKABaseDevice method: *_component_state_changed*
-      * Op state actions: component_fault, component_no_fault, component_on,
-        component_standby, component_off.
+      * ``SKABaseDevice`` method: ``_component_state_changed``
+      * Op state actions: ``component_fault``, ``component_no_fault``, ``component_on``,
+        ``component_standby``, ``component_off``.
       * Minimum example:
 
       .. code-block:: py
@@ -312,12 +312,12 @@ Writing the Tango device involves the following steps:
    derived component manager.
 
    Components may be software instead of hardware. In this case the
-   *SKABaseDevice._component_state_changed* method should still be called with
-   a power argument to drive the op_state_model, e.g. PowerState.ON to arrive
+   ``SKABaseDevice._component_state_changed`` method should still be called with
+   a power argument to drive the ``op_state_model``, e.g. ``PowerState.ON`` to arrive
    in the ON operational state.
-   Alternatively *SKABaseDevice._communication_state_changed* could be
-   overridden so that a *communication_state* of
-   CommunicationStatus.ESTABLISHED instead transitions the operational state
+   Alternatively ``SKABaseDevice._communication_state_changed`` could be
+   overridden so that a ``communication_state`` of
+   ``CommunicationStatus.ESTABLISHED`` instead transitions the operational state
    to ON.
    
 

@@ -56,8 +56,10 @@ def invoke_lrc(
     :param command: name to invoke.
     :param command_args: optional arguments for the command, defaults to None.
     :param timeout: for command, defaults to 10 seconds.
-    :return: the command ID.
+    :return: the command ID or rejection message.
     """
+    submitted = threading.Event()
+    result_code = None
     command_id = None
 
     def wrap_lrc_callback(event: EventData) -> None:
@@ -65,6 +67,13 @@ def invoke_lrc(
             lrc_callback(error=event.errors)
             unsubscribe_lrc_events()
             return
+
+        submitted.wait()  # Wait for the command to have an ID
+        # LRC can only publish events if it was successfully submitted.
+        if result_code != ResultCode.QUEUED:
+            unsubscribe_lrc_events()
+            return
+
         # TODO: Remove later. For debugging with pytest -rA
         # print("event.attr_value:", event.attr_value.value)
         try:
@@ -104,9 +113,13 @@ def invoke_lrc(
         proxy.unsubscribe_event(lrc_result_event)
 
     if command_args is None:
-        [[_], [command_id]] = proxy.command_inout(command)
+        [[result_code], [command_id]] = proxy.command_inout(command)
     else:
-        [[_], [command_id]] = proxy.command_inout(command, *command_args)
+        [[result_code], [command_id]] = proxy.command_inout(command, *command_args)
+
+    # Command ID known, proceed with all events
+    submitted.set()
+
     return str(command_id)
 
 

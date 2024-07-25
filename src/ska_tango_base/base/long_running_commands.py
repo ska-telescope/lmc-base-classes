@@ -61,7 +61,6 @@ def invoke_lrc(
     """
     calling_thread = threading.current_thread()
     submitted = threading.Event()
-    result_code = None
     command_id = None
 
     def wrap_lrc_callback(event: EventData) -> None:
@@ -77,9 +76,7 @@ def invoke_lrc(
         if threading.current_thread() != calling_thread:
             # Wait for the command to have an ID. Timeout is
             # command_inout timeout + 1.
-            submitted.wait(timeout=4)
-            # LRC can only publish events if it was successfully submitted.
-            if result_code != ResultCode.QUEUED or result_code != ResultCode.STARTED:
+            if not submitted.wait(timeout=4):
                 unsubscribe_lrc_events()
                 return
 
@@ -123,7 +120,7 @@ def invoke_lrc(
 
     try:
         inout_args = (command, command_args)
-        [[result_code], [command_id]] = proxy.command_inout(*inout_args)
+        [[_], [command_id]] = proxy.command_inout(*inout_args)
     except Exception:
         unsubscribe_lrc_events()
         raise

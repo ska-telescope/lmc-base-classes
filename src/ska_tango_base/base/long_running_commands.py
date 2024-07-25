@@ -56,8 +56,10 @@ def invoke_lrc(
     :param command: name to invoke.
     :param command_args: optional arguments for the command, defaults to None.
     :param timeout: for command, defaults to 10 seconds.
+    :raises Exception: Re-raises exceptions from command_inout.
     :return: the command ID or rejection message.
     """
+    calling_thread = threading.current_thread()
     submitted = threading.Event()
     result_code = None
     command_id = None
@@ -68,11 +70,18 @@ def invoke_lrc(
             unsubscribe_lrc_events()
             return
 
-        submitted.wait()  # Wait for the command to have an ID
-        # LRC can only publish events if it was successfully submitted.
-        if result_code != ResultCode.QUEUED:
-            unsubscribe_lrc_events()
-            return
+        # proxy.subscribe_event emits an event in the calling thread when
+        # first called. Their attr_value.value will be ('','') and therefore
+        # the index() call below will throw a ValueError.
+        # Subsequent events are from internal device thread.
+        if threading.current_thread() != calling_thread:
+            # Wait for the command to have an ID. Timeout is
+            # command_inout timeout + 1.
+            submitted.wait(timeout=4)
+            # LRC can only publish events if it was successfully submitted.
+            if result_code != ResultCode.QUEUED or result_code != ResultCode.STARTED:
+                unsubscribe_lrc_events()
+                return
 
         # TODO: Remove later. For debugging with pytest -rA
         # print("event.attr_value:", event.attr_value.value)
@@ -112,13 +121,15 @@ def invoke_lrc(
         proxy.unsubscribe_event(lrc_progress_event)
         proxy.unsubscribe_event(lrc_result_event)
 
-    if command_args is None:
-        [[result_code], [command_id]] = proxy.command_inout(command)
-    else:
-        [[result_code], [command_id]] = proxy.command_inout(command, *command_args)
-
-    # Command ID known, proceed with all events
-    submitted.set()
+    try:
+        inout_args = (command, command_args)
+        [[result_code], [command_id]] = proxy.command_inout(*inout_args)
+    except Exception:
+        unsubscribe_lrc_events()
+        raise
+    finally:
+        # Command submitted, proceed with "subsequent" events.
+        submitted.set()
 
     return str(command_id)
 

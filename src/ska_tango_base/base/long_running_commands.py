@@ -56,8 +56,11 @@ def invoke_lrc(
     :param command: name to invoke.
     :param command_args: optional arguments for the command, defaults to None.
     :param timeout: for command, defaults to 10 seconds.
-    :return: the command ID.
+    :raises Exception: Re-raises exceptions from command_inout.
+    :return: the command ID or rejection message.
     """
+    calling_thread = threading.current_thread()
+    submitted = threading.Event()
     command_id = None
 
     def wrap_lrc_callback(event: EventData) -> None:
@@ -65,6 +68,18 @@ def invoke_lrc(
             lrc_callback(error=event.errors)
             unsubscribe_lrc_events()
             return
+
+        # proxy.subscribe_event emits an event in the calling thread when
+        # first called. Their attr_value.value will be ('','') and therefore
+        # the index() call below will throw a ValueError.
+        # Subsequent events are from internal device thread.
+        if threading.current_thread() != calling_thread:
+            # Wait for the command to have an ID. Timeout is
+            # command_inout timeout + 1.
+            if not submitted.wait(timeout=4):
+                unsubscribe_lrc_events()
+                return
+
         # TODO: Remove later. For debugging with pytest -rA
         # print("event.attr_value:", event.attr_value.value)
         try:
@@ -103,10 +118,16 @@ def invoke_lrc(
         proxy.unsubscribe_event(lrc_progress_event)
         proxy.unsubscribe_event(lrc_result_event)
 
-    if command_args is None:
-        [[_], [command_id]] = proxy.command_inout(command)
-    else:
-        [[_], [command_id]] = proxy.command_inout(command, *command_args)
+    try:
+        inout_args = (command, command_args)
+        [[_], [command_id]] = proxy.command_inout(*inout_args)
+    except Exception:
+        unsubscribe_lrc_events()
+        raise
+    finally:
+        # Command submitted, proceed with "subsequent" events.
+        submitted.set()
+
     return str(command_id)
 
 

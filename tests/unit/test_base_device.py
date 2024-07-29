@@ -47,7 +47,6 @@ from ska_tango_base.base.logging import (
 from ska_tango_base.base.long_running_commands import LrcCallback
 from ska_tango_base.faults import CommandError, LoggingTargetError
 from ska_tango_base.testing.reference import (
-    FakeBaseComponent,
     ReferenceBaseComponentManager,
     ReferenceSkaBaseDevice,
 )
@@ -1032,10 +1031,15 @@ class TestSKABaseDevice:  # pylint: disable=too-many-public-methods
         assert len(version_info) == 1
         assert re.match(version_pattern, version_info[0])
 
-    def test_Reset(self: TestSKABaseDevice, device_under_test: DeviceProxy) -> None:
+    def test_Reset(
+        self: TestSKABaseDevice,
+        device_under_test: DeviceProxy,
+        successful_lrc_callback: LrcCallback,
+    ) -> None:
         """
         Test for Reset.
 
+        :param successful_lrc_callback: callback fixture to use with invoke_lrc.
         :param device_under_test: a proxy to the device under test
         """
         # The main test of this command is
@@ -1046,9 +1050,9 @@ class TestSKABaseDevice:  # pylint: disable=too-many-public-methods
             DevFailed,
             match="Command Reset not allowed when the device is in OFF state",
         ):
-            _ = device_under_test.Reset()
+            _ = invoke_lrc(device_under_test, successful_lrc_callback, "Reset")
 
-    def test_On_with_invoke_lrc(
+    def test_On(
         self: TestSKABaseDevice,
         device_under_test: DeviceProxy,
         change_event_callbacks: MockTangoEventCallbackGroup,
@@ -1069,6 +1073,7 @@ class TestSKABaseDevice:  # pylint: disable=too-many-public-methods
         for attribute in [
             "state",
             "status",
+            "longRunningCommandInProgress",
         ]:
             device_under_test.subscribe_event(
                 attribute,
@@ -1080,8 +1085,13 @@ class TestSKABaseDevice:  # pylint: disable=too-many-public-methods
         change_event_callbacks["status"].assert_change_event(
             "The device is in OFF state."
         )
+        change_event_callbacks["longRunningCommandInProgress"].assert_change_event(())
 
-        _ = invoke_lrc(device_under_test, successful_lrc_callback, "On")
+        lrc_token = invoke_lrc(device_under_test, successful_lrc_callback, "On")
+        on_command = lrc_token.command_id.split("_", 2)[2]
+        change_event_callbacks.assert_change_event(
+            "longRunningCommandInProgress", (on_command,)
+        )
         change_event_callbacks.assert_change_event("state", DevState.ON)
         change_event_callbacks.assert_change_event(
             "status", "The device is in ON state."
@@ -1099,6 +1109,7 @@ class TestSKABaseDevice:  # pylint: disable=too-many-public-methods
                 "successful_lrc_callback(status=COMPLETED)",
             ],
         )
+        change_event_callbacks["longRunningCommandInProgress"].assert_change_event(())
 
         # Check what happens if we call On() when the device is already ON.
         with pytest.raises(
@@ -1107,89 +1118,12 @@ class TestSKABaseDevice:  # pylint: disable=too-many-public-methods
             _ = invoke_lrc(device_under_test, successful_lrc_callback, "On")
         change_event_callbacks.assert_not_called()
 
-    def test_On(
-        self: TestSKABaseDevice,
-        device_under_test: DeviceProxy,
-        change_event_callbacks: MockTangoEventCallbackGroup,
-    ) -> None:
-        """
-        Test for On command.
-
-        :param device_under_test: a proxy to the device under test
-        :param change_event_callbacks: dictionary of mock change event
-            callbacks with asynchrony support.
-        """
-        assert device_under_test.state() == DevState.OFF
-
-        for attribute in [
-            "state",
-            "status",
-            "longRunningCommandProgress",
-            "longRunningCommandStatus",
-            "longRunningCommandResult",
-            "longRunningCommandInProgress",
-        ]:
-            device_under_test.subscribe_event(
-                attribute,
-                EventType.CHANGE_EVENT,
-                change_event_callbacks[attribute],
-            )
-
-        change_event_callbacks["state"].assert_change_event(DevState.OFF)
-        change_event_callbacks["status"].assert_change_event(
-            "The device is in OFF state."
-        )
-        change_event_callbacks["longRunningCommandProgress"].assert_change_event(())
-        change_event_callbacks["longRunningCommandStatus"].assert_change_event(())
-        change_event_callbacks["longRunningCommandInProgress"].assert_change_event(())
-        change_event_callbacks["longRunningCommandResult"].assert_change_event(("", ""))
-
-        [[result_code], [command_id]] = device_under_test.On()
-        assert result_code == ResultCode.QUEUED
-        Helpers.assert_lrcstatus_change_event_staging_queued_in_progress(
-            change_event_callbacks, command_id
-        )
-        on_command = command_id.split("_", 2)[2]
-        change_event_callbacks.assert_change_event(
-            "longRunningCommandInProgress", (on_command,)
-        )
-
-        for progress_point in FakeBaseComponent.PROGRESS_REPORTING_POINTS:
-            change_event_callbacks.assert_change_event(
-                "longRunningCommandProgress", (command_id, progress_point)
-            )
-
-        change_event_callbacks.assert_change_event("state", DevState.ON)
-        change_event_callbacks.assert_change_event(
-            "status", "The device is in ON state."
-        )
-
-        assert device_under_test.state() == DevState.ON
-
-        change_event_callbacks.assert_change_event(
-            "longRunningCommandResult",
-            (
-                command_id,
-                json.dumps([int(ResultCode.OK), "On command completed OK"]),
-            ),
-        )
-
-        change_event_callbacks.assert_change_event(
-            "longRunningCommandStatus", (command_id, "COMPLETED")
-        )
-        change_event_callbacks.assert_change_event("longRunningCommandInProgress", ())
-
-        # Check what happens if we call On() when the device is already ON.
-        [[result_code], [message]] = device_under_test.On()
-        assert result_code == ResultCode.REJECTED
-        assert message == "Device is already in ON state."
-
-        change_event_callbacks.assert_not_called()
-
     def test_Standby(
         self: TestSKABaseDevice,
         device_under_test: DeviceProxy,
         change_event_callbacks: MockTangoEventCallbackGroup,
+        successful_lrc_callback: LrcCallback,
+        caplog: pytest.LogCaptureFixture,
     ) -> None:
         """
         Test for Standby command.
@@ -1197,16 +1131,15 @@ class TestSKABaseDevice:  # pylint: disable=too-many-public-methods
         :param device_under_test: a proxy to the device under test
         :param change_event_callbacks: dictionary of mock change event
             callbacks with asynchrony support.
+        :param successful_lrc_callback: callback fixture to use with invoke_lrc.
+        :param caplog: pytest LogCaptureFixture
         """
         assert device_under_test.state() == DevState.OFF
 
         for attribute in [
             "state",
             "status",
-            "longRunningCommandProgress",
-            "longRunningCommandStatus",
             "longRunningCommandInProgress",
-            "longRunningCommandResult",
         ]:
             device_under_test.subscribe_event(
                 attribute,
@@ -1218,60 +1151,49 @@ class TestSKABaseDevice:  # pylint: disable=too-many-public-methods
         change_event_callbacks["status"].assert_change_event(
             "The device is in OFF state."
         )
-        change_event_callbacks["longRunningCommandProgress"].assert_change_event(())
-        change_event_callbacks["longRunningCommandStatus"].assert_change_event(())
         change_event_callbacks["longRunningCommandInProgress"].assert_change_event(())
-        change_event_callbacks["longRunningCommandResult"].assert_change_event(("", ""))
 
-        [[result_code], [command_id]] = device_under_test.Standby()
-        assert result_code == ResultCode.QUEUED
-        Helpers.assert_lrcstatus_change_event_staging_queued_in_progress(
-            change_event_callbacks, command_id
-        )
-        on_command = command_id.split("_", 2)[2]
+        lrc_token = invoke_lrc(device_under_test, successful_lrc_callback, "Standby")
+        standby_command = lrc_token.command_id.split("_", 2)[2]
         change_event_callbacks.assert_change_event(
-            "longRunningCommandInProgress", (on_command,)
+            "longRunningCommandInProgress", (standby_command,)
         )
-
-        for progress_point in FakeBaseComponent.PROGRESS_REPORTING_POINTS:
-            change_event_callbacks.assert_change_event(
-                "longRunningCommandProgress", (command_id, progress_point)
-            )
-
         change_event_callbacks.assert_change_event("state", DevState.STANDBY)
         change_event_callbacks.assert_change_event(
             "status", "The device is in STANDBY state."
         )
-
         assert device_under_test.state() == DevState.STANDBY
-
-        change_event_callbacks.assert_change_event(
-            "longRunningCommandResult",
-            (
-                command_id,
-                json.dumps([int(ResultCode.OK), "Standby command completed OK"]),
-            ),
-        )
-        change_event_callbacks.assert_change_event(
-            "longRunningCommandStatus", (command_id, "COMPLETED")
+        Helpers.assert_expected_logs(
+            caplog,
+            [  # Log messages must be in this exact order
+                "successful_lrc_callback(status=STAGING)",
+                "successful_lrc_callback(status=QUEUED)",
+                "successful_lrc_callback(status=IN_PROGRESS)",
+                "successful_lrc_callback(progress=33)",
+                "successful_lrc_callback(progress=66)",
+                "successful_lrc_callback(result=[0, 'Standby command completed OK'])",
+                "successful_lrc_callback(status=COMPLETED)",
+            ],
         )
         change_event_callbacks.assert_change_event("longRunningCommandInProgress", ())
-
         assert (
-            device_under_test.CheckLongRunningCommandStatus(command_id) == "COMPLETED"
+            device_under_test.CheckLongRunningCommandStatus(lrc_token.command_id)
+            == "COMPLETED"
         )
 
         # Check what happens if we call Standby() when the device is already STANDBY.
-        [[result_code], [message]] = device_under_test.Standby()
-        assert result_code == ResultCode.REJECTED
-        assert message == "Device is already in STANDBY state."
-
+        with pytest.raises(
+            CommandError,
+            match="Standby command rejected: Device is already in STANDBY state.",
+        ):
+            _ = invoke_lrc(device_under_test, successful_lrc_callback, "Standby")
         change_event_callbacks.assert_not_called()
 
     def test_Off(
         self: TestSKABaseDevice,
         device_under_test: DeviceProxy,
         change_event_callbacks: MockTangoEventCallbackGroup,
+        successful_lrc_callback: LrcCallback,
     ) -> None:
         """
         Test for Off command.
@@ -1279,16 +1201,13 @@ class TestSKABaseDevice:  # pylint: disable=too-many-public-methods
         :param device_under_test: a proxy to the device under test
         :param change_event_callbacks: dictionary of mock change event
             callbacks with asynchrony support
+        :param successful_lrc_callback: callback fixture to use with invoke_lrc.
         """
         assert device_under_test.state() == DevState.OFF
 
         for attribute in [
             "state",
             "status",
-            "longRunningCommandProgress",
-            "longRunningCommandStatus",
-            "longRunningCommandInProgress",
-            "longRunningCommandResult",
         ]:
             device_under_test.subscribe_event(
                 attribute,
@@ -1300,16 +1219,13 @@ class TestSKABaseDevice:  # pylint: disable=too-many-public-methods
         change_event_callbacks["status"].assert_change_event(
             "The device is in OFF state."
         )
-        change_event_callbacks["longRunningCommandProgress"].assert_change_event(())
-        change_event_callbacks["longRunningCommandStatus"].assert_change_event(())
-        change_event_callbacks["longRunningCommandInProgress"].assert_change_event(())
-        change_event_callbacks["longRunningCommandResult"].assert_change_event(("", ""))
 
         # Check what happens if we call Off() when the device is already OFF.
-        [[result_code], [message]] = device_under_test.Off()
-        assert result_code == ResultCode.REJECTED
-        assert message == "Device is already in OFF state."
-
+        with pytest.raises(
+            CommandError,
+            match="Off command rejected: Device is already in OFF state.",
+        ):
+            _ = invoke_lrc(device_under_test, successful_lrc_callback, "Off")
         change_event_callbacks.assert_not_called()
 
     def test_command_exception(

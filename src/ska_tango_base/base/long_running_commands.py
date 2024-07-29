@@ -13,11 +13,13 @@ from __future__ import annotations
 
 import json
 import threading
+from dataclasses import dataclass
 from typing import Any, Callable, Protocol, TypedDict
 
 from ska_control_model import ResultCode, TaskStatus
 from tango import DevError, DeviceProxy, EventData, EventType
 
+from ..faults import CommandError, ResultCodeError
 from ..utils import generate_command_id
 
 __all__ = ["CommandTracker"]
@@ -38,13 +40,22 @@ class LrcCallback(Protocol):
         raise NotImplementedError("LrcCallback is a protocol used only for typing.")
 
 
-def invoke_lrc(
+@dataclass
+class LrcToken:
+    """LRC token that is returned by invoke_lrc."""
+
+    command_id: str
+    result_code: ResultCode
+    abandon: Callable[[], None]
+
+
+def invoke_lrc(  # noqa: C901
     proxy: DeviceProxy,
     lrc_callback: LrcCallback,
     command: str,
     command_args: tuple[Any] | None = None,
     timeout: int = 10,  # TODO: pylint: disable=unused-argument
-) -> str:
+) -> LrcToken:
     """
     Invoke a long running command (LRC) and monitor its progress with callbacks.
 
@@ -56,8 +67,10 @@ def invoke_lrc(
     :param command: name to invoke.
     :param command_args: optional arguments for the command, defaults to None.
     :param timeout: for command, defaults to 10 seconds.
-    :raises Exception: Re-raises exceptions from command_inout.
-    :return: the command ID or rejection message.
+    :return: a LrcToken containing the command ID, result code and abandon method.
+    :raises CommandError: if the command is rejected.
+    :raises ResultCodeError: if the command returns an unexpected result code.
+    :raises Exception: Re-raises any exceptions from command_inout.
     """
     calling_thread = threading.current_thread()
     submitted = threading.Event()
@@ -103,24 +116,24 @@ def invoke_lrc(
             case "longrunningcommandresult":
                 lrc_callback(result=json.loads(lrc_attr_value))
 
-    lrc_status_event = proxy.subscribe_event(
+    lrc_status_event_id = proxy.subscribe_event(
         "longRunningCommandStatus", EventType.CHANGE_EVENT, wrap_lrc_callback
     )
-    lrc_progress_event = proxy.subscribe_event(
+    lrc_progress_event_id = proxy.subscribe_event(
         "longRunningCommandProgress", EventType.CHANGE_EVENT, wrap_lrc_callback
     )
-    lrc_result_event = proxy.subscribe_event(
+    lrc_result_event_id = proxy.subscribe_event(
         "longRunningCommandResult", EventType.CHANGE_EVENT, wrap_lrc_callback
     )
 
     def unsubscribe_lrc_events() -> None:
-        proxy.unsubscribe_event(lrc_status_event)
-        proxy.unsubscribe_event(lrc_progress_event)
-        proxy.unsubscribe_event(lrc_result_event)
+        proxy.unsubscribe_event(lrc_status_event_id)
+        proxy.unsubscribe_event(lrc_progress_event_id)
+        proxy.unsubscribe_event(lrc_result_event_id)
 
     try:
         inout_args = (command, command_args)
-        [[_], [command_id]] = proxy.command_inout(*inout_args)
+        [[result_code], [command_id]] = proxy.command_inout(*inout_args)
     except Exception:
         unsubscribe_lrc_events()
         raise
@@ -128,7 +141,15 @@ def invoke_lrc(
         # Command submitted, proceed with "subsequent" events.
         submitted.set()
 
-    return str(command_id)
+    if result_code == ResultCode.REJECTED:
+        unsubscribe_lrc_events()
+        raise CommandError(f"{command} command rejected: {command_id}")
+    if result_code not in [ResultCode.QUEUED, ResultCode.STARTED]:
+        unsubscribe_lrc_events()
+        raise ResultCodeError(
+            f"Unexpected result code for {command} command: {command_id}"
+        )
+    return LrcToken(command_id, result_code, unsubscribe_lrc_events)
 
 
 class _ThreadContextManager:

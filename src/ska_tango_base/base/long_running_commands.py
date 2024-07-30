@@ -54,7 +54,6 @@ def invoke_lrc(  # noqa: C901
     lrc_callback: LrcCallback,
     command: str,
     command_args: tuple[Any] | None = None,
-    timeout: int = 10,  # TODO: pylint: disable=unused-argument
 ) -> LrcToken:
     """
     Invoke a long running command (LRC) and monitor its progress with callbacks.
@@ -66,7 +65,6 @@ def invoke_lrc(  # noqa: C901
     :param lrc_callback: of client to wrap.
     :param command: name to invoke.
     :param command_args: optional arguments for the command, defaults to None.
-    :param timeout: for command completion, defaults to 10 seconds.
     :return: a LrcToken containing the command ID, result code and abandon method.
     :raises CommandError: if the command is rejected.
     :raises ResultCodeError: if the command returns an unexpected result code.

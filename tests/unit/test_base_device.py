@@ -1100,13 +1100,13 @@ class TestSKABaseDevice:  # pylint: disable=too-many-public-methods
         Helpers.assert_expected_logs(
             caplog,
             [  # Log messages must be in this exact order
-                "successful_lrc_callback(status=STAGING)",
-                "successful_lrc_callback(status=QUEUED)",
-                "successful_lrc_callback(status=IN_PROGRESS)",
-                "successful_lrc_callback(progress=33)",
-                "successful_lrc_callback(progress=66)",
-                "successful_lrc_callback(result=[0, 'On command completed OK'])",
-                "successful_lrc_callback(status=COMPLETED)",
+                "lrc_callback(status=STAGING)",
+                "lrc_callback(status=QUEUED)",
+                "lrc_callback(status=IN_PROGRESS)",
+                "lrc_callback(progress=33)",
+                "lrc_callback(progress=66)",
+                "lrc_callback(result=[0, 'On command completed OK'])",
+                "lrc_callback(status=COMPLETED)",
             ],
         )
         change_event_callbacks["longRunningCommandInProgress"].assert_change_event(())
@@ -1166,13 +1166,13 @@ class TestSKABaseDevice:  # pylint: disable=too-many-public-methods
         Helpers.assert_expected_logs(
             caplog,
             [  # Log messages must be in this exact order
-                "successful_lrc_callback(status=STAGING)",
-                "successful_lrc_callback(status=QUEUED)",
-                "successful_lrc_callback(status=IN_PROGRESS)",
-                "successful_lrc_callback(progress=33)",
-                "successful_lrc_callback(progress=66)",
-                "successful_lrc_callback(result=[0, 'Standby command completed OK'])",
-                "successful_lrc_callback(status=COMPLETED)",
+                "lrc_callback(status=STAGING)",
+                "lrc_callback(status=QUEUED)",
+                "lrc_callback(status=IN_PROGRESS)",
+                "lrc_callback(progress=33)",
+                "lrc_callback(progress=66)",
+                "lrc_callback(result=[0, 'Standby command completed OK'])",
+                "lrc_callback(status=COMPLETED)",
             ],
         )
         change_event_callbacks.assert_change_event("longRunningCommandInProgress", ())

@@ -66,7 +66,7 @@ def invoke_lrc(  # noqa: C901
     :param lrc_callback: of client to wrap.
     :param command: name to invoke.
     :param command_args: optional arguments for the command, defaults to None.
-    :param timeout: for command, defaults to 10 seconds.
+    :param timeout: for command completion, defaults to 10 seconds.
     :return: a LrcToken containing the command ID, result code and abandon method.
     :raises CommandError: if the command is rejected.
     :raises ResultCodeError: if the command returns an unexpected result code.
@@ -93,8 +93,6 @@ def invoke_lrc(  # noqa: C901
                 unsubscribe_lrc_events()
                 return
 
-        # TODO: Remove later. For debugging with pytest -rA
-        # print("event.attr_value:", event.attr_value.value)
         try:
             cmd_idx = event.attr_value.value.index(command_id)
             lrc_attr_value = event.attr_value.value[cmd_idx + 1]
@@ -132,7 +130,9 @@ def invoke_lrc(  # noqa: C901
         proxy.unsubscribe_event(lrc_result_event_id)
 
     try:
-        inout_args = (command, command_args)
+        inout_args = (
+            (command, *command_args) if command_args is not None else (command,)
+        )
         [[result_code], [command_id]] = proxy.command_inout(*inout_args)
     except Exception:
         unsubscribe_lrc_events()

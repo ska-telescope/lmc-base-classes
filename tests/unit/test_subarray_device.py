@@ -95,6 +95,10 @@ class TestSKASubarray:  # pylint: disable=too-many-public-methods
         """
 
         def _turn_on_device() -> None:
+            # TODO: Remove below SetCommandTrackerRemovalTime(0) -
+            # test_obsreset_from_resourcing_after_idle fails if its not set to 0,
+            # because longRunningCommandInProgress then has unexpected duplicate events.
+            device_under_test.SetCommandTrackerRemovalTime(0)
             assert device_under_test.state() == DevState.OFF
             for attribute in [
                 "state",
@@ -397,6 +401,7 @@ class TestSKASubarray:  # pylint: disable=too-many-public-methods
 
             abort_token = invoke_lrc(device_under_test, abort_callback, "Abort")
             abort_name = abort_token.command_id.split("_", 2)[2]
+            change_event_callbacks.assert_change_event("obsState", ObsState.ABORTING)
             Helpers.assert_expected_logs(
                 caplog,
                 [  # Log messages must be in this exact order
@@ -412,7 +417,6 @@ class TestSKASubarray:  # pylint: disable=too-many-public-methods
                 ],
             )
             # Abort is completed
-            change_event_callbacks.assert_change_event("obsState", ObsState.ABORTING)
             Helpers.print_change_event_queue(
                 change_event_callbacks, "longRunningCommandInProgress"
             )
@@ -761,7 +765,6 @@ class TestSKASubarray:  # pylint: disable=too-many-public-methods
         # Reset again from abort to empty state
         reset_subarray(ObsState.EMPTY, False)
 
-    @pytest.mark.xfail(reason="TODO longRunningCommandInProgress change events")
     def test_obsreset_from_resourcing_after_idle(
         self: TestSKASubarray,
         device_under_test: tango.DeviceProxy,

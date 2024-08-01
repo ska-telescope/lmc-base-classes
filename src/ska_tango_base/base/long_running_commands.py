@@ -68,29 +68,28 @@ def invoke_lrc(  # noqa: C901
     :return: a LrcToken containing the command ID, result code and abandon method.
     :raises CommandError: if the command is rejected.
     :raises ResultCodeError: if the command returns an unexpected result code.
-    :raises Exception: Re-raises any exceptions from command_inout.
+    :raises Exception: Any other tango exceptions from subscribe_event or command_inout.
     """
     calling_thread = threading.current_thread()
     submitted = threading.Event()
     command_id = None
 
     def wrap_lrc_callback(event: EventData) -> None:
+        # Check for tango error
         if event.err:
             lrc_callback(error=event.errors)
             unsubscribe_lrc_events()
             return
 
-        # proxy.subscribe_event emits an event in the calling thread when
-        # first called. Their attr_value.value will be ('','') and therefore
-        # the index() call below will throw a ValueError.
-        # Subsequent events are from internal device thread.
+        # Wait for the command to have an ID. Timeout is command_inout timeout + 1.
         if threading.current_thread() != calling_thread:
-            # Wait for the command to have an ID. Timeout is
-            # command_inout timeout + 1.
             if not submitted.wait(timeout=4):
                 unsubscribe_lrc_events()
                 return
 
+        # proxy.subscribe_event emits an event in the calling thread when first called.
+        # The attr_value.value will be ('','') and therefore the index() call below will
+        # throw a ValueError. Subsequent events are from internal device thread.
         try:
             cmd_idx = event.attr_value.value.index(command_id)
             lrc_attr_value = event.attr_value.value[cmd_idx + 1]
@@ -98,7 +97,13 @@ def invoke_lrc(  # noqa: C901
             return
         match event.attr_value.name:
             case "longrunningcommandstatus":
-                status = TaskStatus[lrc_attr_value]
+                try:
+                    status = TaskStatus[lrc_attr_value]
+                except KeyError as e:
+                    unsubscribe_lrc_events()
+                    raise KeyError(
+                        f"Received unknown TaskStatus from event: {lrc_attr_value}"
+                    ) from e
                 lrc_callback(status=status)
                 if status in [
                     TaskStatus.ABORTED,
@@ -139,6 +144,7 @@ def invoke_lrc(  # noqa: C901
         # Command submitted, proceed with "subsequent" events.
         submitted.set()
 
+    # Check for valid result codes
     if result_code == ResultCode.REJECTED:
         unsubscribe_lrc_events()
         raise CommandError(f"{command} command rejected: {command_id}")

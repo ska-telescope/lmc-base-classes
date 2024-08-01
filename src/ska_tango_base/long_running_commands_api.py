@@ -11,6 +11,7 @@ import json
 import threading
 from dataclasses import dataclass
 from logging import Logger
+from time import sleep
 from typing import Any, Callable, Protocol
 
 from ska_control_model import ResultCode, TaskStatus
@@ -43,7 +44,7 @@ class LrcToken:
     abandon: Callable[[], None]
 
 
-# pylint: disable=too-many-locals,too-many-statements
+# pylint: disable=too-many-statements,too-many-locals
 def invoke_lrc(  # noqa: C901
     proxy: DeviceProxy,
     logger: Logger,
@@ -70,6 +71,14 @@ def invoke_lrc(  # noqa: C901
     calling_thread = threading.current_thread()
     submitted = threading.Event()
     command_id = None
+    event_ids: list[int] = []
+
+    def unsubscribe_lrc_events() -> None:
+        for event_id in event_ids:
+            try:
+                _retry_tango_method(logger, proxy.unsubscribe_event, (event_id,))
+            except Exception:  # pylint: disable=broad-exception-caught
+                pass
 
     def wrap_lrc_callback(event: EventData) -> None:
         # Check for tango error
@@ -114,32 +123,35 @@ def invoke_lrc(  # noqa: C901
             case "longrunningcommandresult":
                 lrc_callback(result=json.loads(lrc_attr_value))
 
-    try:
-        lrc_status_event_id = proxy.subscribe_event(
-            "longRunningCommandStatus", EventType.CHANGE_EVENT, wrap_lrc_callback
-        )
-        lrc_progress_event_id = proxy.subscribe_event(
-            "longRunningCommandProgress", EventType.CHANGE_EVENT, wrap_lrc_callback
-        )
-        lrc_result_event_id = proxy.subscribe_event(
-            "longRunningCommandResult", EventType.CHANGE_EVENT, wrap_lrc_callback
-        )
-    except Exception:
-        logger.exception("Subscribing to change event failed")
-        raise
-
-    def unsubscribe_lrc_events() -> None:
-        proxy.unsubscribe_event(lrc_status_event_id)
-        proxy.unsubscribe_event(lrc_progress_event_id)
-        proxy.unsubscribe_event(lrc_result_event_id)
+    for attr in [
+        "longRunningCommandStatus",
+        "longRunningCommandProgress",
+        "longRunningCommandResult",
+    ]:
+        try:
+            event_id = _retry_tango_method(
+                logger,
+                proxy.subscribe_event,
+                (attr, EventType.CHANGE_EVENT, wrap_lrc_callback),
+            )
+            event_ids.append(event_id)
+        except Exception:
+            logger.exception(
+                f"Subscribing to '{attr}' change event failed. "
+                "Unsubscribing from other LRC attributes"
+            )
+            unsubscribe_lrc_events()
+            raise
 
     try:
         inout_args = (
             (command, *command_args) if command_args is not None else (command,)
         )
-        [[result_code], [command_id]] = proxy.command_inout(*inout_args)
+        [[result_code], [command_id]] = _retry_tango_method(
+            logger, proxy.command_inout, inout_args
+        )
     except Exception:
-        logger.exception("Tango command call failed")
+        logger.exception("Command call failed. Unsubscribing from LRC attributes")
         unsubscribe_lrc_events()
         raise
     finally:
@@ -158,3 +170,36 @@ def invoke_lrc(  # noqa: C901
         unsubscribe_lrc_events()
         raise ResultCodeError(msg)
     return LrcToken(command_id, result_code, unsubscribe_lrc_events)
+
+
+# pylint: disable=inconsistent-return-statements
+def _retry_tango_method(
+    logger: Logger,
+    method: Callable[..., Any],
+    args: tuple[Any, ...] = (),
+    max_retries: int = 3,
+    delay: int = 2,
+) -> Any:
+    """
+    Call a tango method on a device proxy, retrying if it raises an exception.
+
+    :param logger: to use for logging exceptions.
+    :param method: The method to call.
+    :param args: Positional arguments to pass to the method. Defaults to ().
+    :param max_retries: Maximum number of retry attempts. Defaults to 3.
+    :param delay: Delay in seconds between retry attempts. Defaults to 2.
+    :return: The result of the method if it succeeds.
+    :raises Exception: If the method fails after the maximum number of retries.
+    """
+    for attempt in range(1, max_retries + 1):
+        try:
+            return method(*args)  # Call the tango method with its arguments
+        except Exception as e:  # pylint: disable=broad-exception-caught
+            logger.warning(
+                f"proxy.{method.__name__}{args} failed attempt {attempt} with: {e}"
+            )
+            if attempt < max_retries:
+                sleep(delay)  # Wait before retrying
+            else:
+                logger.error(f"All retries of proxy.{method.__name__}{args} failed")
+                raise  # Re-raise the exception if max retries are reached

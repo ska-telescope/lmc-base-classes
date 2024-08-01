@@ -82,6 +82,7 @@ class TestSKASubarray:  # pylint: disable=too-many-public-methods
         device_under_test: tango.DeviceProxy,
         change_event_callbacks: MockTangoEventCallbackGroup,
         successful_lrc_callback: LrcCallback,
+        logger: logging.Logger,
         caplog: pytest.LogCaptureFixture,
     ) -> Callable[[], None]:
         """
@@ -90,6 +91,7 @@ class TestSKASubarray:  # pylint: disable=too-many-public-methods
         :param device_under_test: a proxy to the device under test
         :param change_event_callbacks: dictionary of mock change event callbacks
         :param successful_lrc_callback: callback fixture to use with invoke_lrc
+        :param logger: test logger
         :param caplog: pytest LogCaptureFixture
         :return: Callable helper function
         """
@@ -120,7 +122,7 @@ class TestSKASubarray:  # pylint: disable=too-many-public-methods
                 "commandedObsState", ObsState.EMPTY
             )
             # Call command
-            _ = invoke_lrc(device_under_test, successful_lrc_callback, "On")
+            _ = invoke_lrc(device_under_test, logger, successful_lrc_callback, "On")
             Helpers.assert_expected_logs(
                 caplog,
                 [  # Log messages must be in this exact order
@@ -149,6 +151,7 @@ class TestSKASubarray:  # pylint: disable=too-many-public-methods
         change_event_callbacks: MockTangoEventCallbackGroup,
         successful_lrc_callback: LrcCallback,
         aborted_lrc_callback: LrcCallback,
+        logger: logging.Logger,
         caplog: pytest.LogCaptureFixture,
     ) -> Callable[[list[str], bool], LrcToken]:
         """
@@ -158,6 +161,7 @@ class TestSKASubarray:  # pylint: disable=too-many-public-methods
         :param change_event_callbacks: dictionary of mock change event callbacks
         :param successful_lrc_callback: callback fixture to use with invoke_lrc
         :param aborted_lrc_callback: callback fixture to use with invoke_lrc
+        :param logger: test logger
         :param caplog: pytest LogCaptureFixture
         :return: Callable helper function
         """
@@ -176,6 +180,7 @@ class TestSKASubarray:  # pylint: disable=too-many-public-methods
             resources_to_assign = json.dumps({"resources": resources_list})
             assign_token = invoke_lrc(
                 device_under_test,
+                logger,
                 aborted_lrc_callback if to_be_aborted else successful_lrc_callback,
                 "AssignResources",
                 (resources_to_assign,),
@@ -217,6 +222,7 @@ class TestSKASubarray:  # pylint: disable=too-many-public-methods
         change_event_callbacks: MockTangoEventCallbackGroup,
         successful_lrc_callback: LrcCallback,
         aborted_lrc_callback: LrcCallback,
+        logger: logging.Logger,
         caplog: pytest.LogCaptureFixture,
     ) -> Callable[[dict[str, int], bool], LrcToken]:
         """
@@ -226,6 +232,7 @@ class TestSKASubarray:  # pylint: disable=too-many-public-methods
         :param change_event_callbacks: dictionary of mock change event callbacks
         :param successful_lrc_callback: callback fixture to use with invoke_lrc
         :param aborted_lrc_callback: callback fixture to use with invoke_lrc
+        :param logger: test logger
         :param caplog: pytest LogCaptureFixture
         :return: Callable helper function
         """
@@ -247,6 +254,7 @@ class TestSKASubarray:  # pylint: disable=too-many-public-methods
             # Call command
             configure_token = invoke_lrc(
                 device_under_test,
+                logger,
                 aborted_lrc_callback if to_be_aborted else successful_lrc_callback,
                 "Configure",
                 (json.dumps(configuration_to_apply),),
@@ -288,6 +296,7 @@ class TestSKASubarray:  # pylint: disable=too-many-public-methods
         change_event_callbacks: MockTangoEventCallbackGroup,
         successful_lrc_callback: LrcCallback,
         aborted_lrc_callback: LrcCallback,
+        logger: logging.Logger,
         caplog: pytest.LogCaptureFixture,
     ) -> Callable[[ObsState, bool], LrcToken]:
         """
@@ -297,6 +306,7 @@ class TestSKASubarray:  # pylint: disable=too-many-public-methods
         :param change_event_callbacks: dictionary of mock change event callbacks
         :param successful_lrc_callback: callback fixture to use with invoke_lrc
         :param aborted_lrc_callback: callback fixture to use with invoke_lrc
+        :param logger: test logger
         :param caplog: pytest LogCaptureFixture
         :return: Callable helper function
         """
@@ -314,6 +324,7 @@ class TestSKASubarray:  # pylint: disable=too-many-public-methods
             # Call command
             reset_token = invoke_lrc(
                 device_under_test,
+                logger,
                 aborted_lrc_callback if to_be_aborted else successful_lrc_callback,
                 "ObsReset",
             )
@@ -399,7 +410,7 @@ class TestSKASubarray:  # pylint: disable=too-many-public-methods
                 "longRunningCommandInProgress", (command_name,)
             )
 
-            abort_token = invoke_lrc(device_under_test, abort_callback, "Abort")
+            abort_token = invoke_lrc(device_under_test, logger, abort_callback, "Abort")
             abort_name = abort_token.command_id.split("_", 2)[2]
             change_event_callbacks.assert_change_event("obsState", ObsState.ABORTING)
             Helpers.assert_expected_logs(
@@ -491,6 +502,7 @@ class TestSKASubarray:  # pylint: disable=too-many-public-methods
         turn_on_device: Callable[[], None],
         assign_resources_to_empty_subarray: Callable[[list[str], bool], LrcToken],
         successful_lrc_callback: LrcCallback,
+        logger: logging.Logger,
         caplog: pytest.LogCaptureFixture,
     ) -> None:
         """
@@ -501,6 +513,7 @@ class TestSKASubarray:  # pylint: disable=too-many-public-methods
         :param turn_on_device: helper function
         :param assign_resources_to_empty_subarray: helper function
         :param successful_lrc_callback: callback fixture to use with invoke_lrc
+        :param logger: test logger
         :param caplog: pytest LogCaptureFixture
         """
         turn_on_device()
@@ -510,6 +523,7 @@ class TestSKASubarray:  # pylint: disable=too-many-public-methods
         resources_to_release = json.dumps({"resources": ["BAND1"]})
         _ = invoke_lrc(
             device_under_test,
+            logger,
             successful_lrc_callback,
             "ReleaseResources",
             (resources_to_release,),
@@ -533,7 +547,7 @@ class TestSKASubarray:  # pylint: disable=too-many-public-methods
 
         # Test release all
         _ = invoke_lrc(
-            device_under_test, successful_lrc_callback, "ReleaseAllResources"
+            device_under_test, logger, successful_lrc_callback, "ReleaseAllResources"
         )
         change_event_callbacks.assert_change_event("obsState", ObsState.RESOURCING)
         change_event_callbacks.assert_change_event("commandedObsState", ObsState.EMPTY)
@@ -561,6 +575,7 @@ class TestSKASubarray:  # pylint: disable=too-many-public-methods
         assign_resources_to_empty_subarray: Callable[[list[str], bool], LrcToken],
         configure_subarray: Callable[[dict[str, int], bool], LrcToken],
         successful_lrc_callback: LrcCallback,
+        logger: logging.Logger,
         caplog: pytest.LogCaptureFixture,
     ) -> None:
         """
@@ -572,6 +587,7 @@ class TestSKASubarray:  # pylint: disable=too-many-public-methods
         :param assign_resources_to_empty_subarray: helper function
         :param configure_subarray: helper function
         :param successful_lrc_callback: callback fixture to use with invoke_lrc
+        :param logger: test logger
         :param caplog: pytest LogCaptureFixture
         """
         turn_on_device()
@@ -583,7 +599,7 @@ class TestSKASubarray:  # pylint: disable=too-many-public-methods
         ]
 
         # Deconfigure (End)
-        _ = invoke_lrc(device_under_test, successful_lrc_callback, "End")
+        _ = invoke_lrc(device_under_test, logger, successful_lrc_callback, "End")
         change_event_callbacks.assert_change_event("commandedObsState", ObsState.IDLE)
         Helpers.assert_expected_logs(
             caplog,
@@ -612,6 +628,7 @@ class TestSKASubarray:  # pylint: disable=too-many-public-methods
         assign_resources_to_empty_subarray: Callable[[list[str], bool], LrcToken],
         configure_subarray: Callable[[dict[str, int], bool], LrcToken],
         successful_lrc_callback: LrcCallback,
+        logger: logging.Logger,
         caplog: pytest.LogCaptureFixture,
     ) -> None:
         """
@@ -623,6 +640,7 @@ class TestSKASubarray:  # pylint: disable=too-many-public-methods
         :param assign_resources_to_empty_subarray: helper function
         :param configure_subarray: helper function
         :param successful_lrc_callback: callback fixture to use with invoke_lrc
+        :param logger: test logger
         :param caplog: pytest LogCaptureFixture
         """
         turn_on_device()
@@ -637,6 +655,7 @@ class TestSKASubarray:  # pylint: disable=too-many-public-methods
         dummy_scan_arg = {"scan_id": "scan_25"}
         _ = invoke_lrc(
             device_under_test,
+            logger,
             successful_lrc_callback,
             "Scan",
             (json.dumps(dummy_scan_arg),),
@@ -657,7 +676,7 @@ class TestSKASubarray:  # pylint: disable=too-many-public-methods
         )
 
         # End scan
-        _ = invoke_lrc(device_under_test, successful_lrc_callback, "EndScan")
+        _ = invoke_lrc(device_under_test, logger, successful_lrc_callback, "EndScan")
         Helpers.assert_expected_logs(
             caplog,
             [  # Log messages must be in this exact order
@@ -774,6 +793,7 @@ class TestSKASubarray:  # pylint: disable=too-many-public-methods
         abort_subarray_command: Callable[[LrcToken], None],
         reset_subarray: Callable[[ObsState, bool], LrcToken],
         aborted_lrc_callback: LrcCallback,
+        logger: logging.Logger,
         caplog: pytest.LogCaptureFixture,
     ) -> None:
         """
@@ -786,6 +806,7 @@ class TestSKASubarray:  # pylint: disable=too-many-public-methods
         :param abort_subarray_command: helper function
         :param reset_subarray: helper function
         :param aborted_lrc_callback: callback fixture to use with invoke_lrc
+        :param logger: test logger
         :param caplog: pytest LogCaptureFixture
         """
         turn_on_device()
@@ -793,6 +814,7 @@ class TestSKASubarray:  # pylint: disable=too-many-public-methods
         # Assign more resources
         assign_token = invoke_lrc(
             device_under_test,
+            logger,
             aborted_lrc_callback,
             "AssignResources",
             (json.dumps({"resources": ["BAND2"]}),),

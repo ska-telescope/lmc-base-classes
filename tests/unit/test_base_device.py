@@ -1,4 +1,4 @@
-# pylint: disable=invalid-name, too-many-lines
+# pylint: disable=invalid-name,too-many-lines,too-many-arguments
 # TODO: Split logging service out from base_device module, then split these
 # tests the same way.
 
@@ -390,7 +390,7 @@ class TestLoggingUtils:
     @mock.patch("logging.handlers.RotatingFileHandler")
     @mock.patch("logging.StreamHandler")
     @mock.patch("ska_ser_logging.get_default_formatter")
-    def test_create_logging_handler(  # pylint: disable=too-many-arguments
+    def test_create_logging_handler(
         self: TestLoggingUtils,
         mock_get_formatter: mock.MagicMock,
         mock_stream_handler: mock.MagicMock,
@@ -1035,12 +1035,14 @@ class TestSKABaseDevice:  # pylint: disable=too-many-public-methods
         self: TestSKABaseDevice,
         device_under_test: DeviceProxy,
         successful_lrc_callback: LrcCallback,
+        logger: logging.Logger,
     ) -> None:
         """
         Test for Reset.
 
-        :param successful_lrc_callback: callback fixture to use with invoke_lrc.
         :param device_under_test: a proxy to the device under test
+        :param successful_lrc_callback: callback fixture to use with invoke_lrc.
+        :param logger: test logger
         """
         # The main test of this command is
         # TestSKABaseDevice_commands::test_ResetCommand
@@ -1050,13 +1052,14 @@ class TestSKABaseDevice:  # pylint: disable=too-many-public-methods
             DevFailed,
             match="Command Reset not allowed when the device is in OFF state",
         ):
-            _ = invoke_lrc(device_under_test, successful_lrc_callback, "Reset")
+            _ = invoke_lrc(device_under_test, logger, successful_lrc_callback, "Reset")
 
     def test_On(
         self: TestSKABaseDevice,
         device_under_test: DeviceProxy,
         change_event_callbacks: MockTangoEventCallbackGroup,
         successful_lrc_callback: LrcCallback,
+        logger: logging.Logger,
         caplog: pytest.LogCaptureFixture,
     ) -> None:
         """
@@ -1066,6 +1069,7 @@ class TestSKABaseDevice:  # pylint: disable=too-many-public-methods
         :param change_event_callbacks: dictionary of mock change event
             callbacks with asynchrony support.
         :param successful_lrc_callback: callback fixture to use with invoke_lrc.
+        :param logger: test logger
         :param caplog: pytest LogCaptureFixture
         """
         assert device_under_test.state() == DevState.OFF
@@ -1087,7 +1091,7 @@ class TestSKABaseDevice:  # pylint: disable=too-many-public-methods
         )
         change_event_callbacks["longRunningCommandInProgress"].assert_change_event(())
 
-        lrc_token = invoke_lrc(device_under_test, successful_lrc_callback, "On")
+        lrc_token = invoke_lrc(device_under_test, logger, successful_lrc_callback, "On")
         on_command = lrc_token.command_id.split("_", 2)[2]
         change_event_callbacks.assert_change_event(
             "longRunningCommandInProgress", (on_command,)
@@ -1115,7 +1119,10 @@ class TestSKABaseDevice:  # pylint: disable=too-many-public-methods
         with pytest.raises(
             CommandError, match="On command rejected: Device is already in ON state."
         ):
-            _ = invoke_lrc(device_under_test, successful_lrc_callback, "On")
+            _ = invoke_lrc(device_under_test, logger, successful_lrc_callback, "On")
+        Helpers.assert_expected_logs(
+            caplog, ["On command rejected: Device is already in ON state."]
+        )
         change_event_callbacks.assert_not_called()
 
     def test_Standby(
@@ -1123,6 +1130,7 @@ class TestSKABaseDevice:  # pylint: disable=too-many-public-methods
         device_under_test: DeviceProxy,
         change_event_callbacks: MockTangoEventCallbackGroup,
         successful_lrc_callback: LrcCallback,
+        logger: logging.Logger,
         caplog: pytest.LogCaptureFixture,
     ) -> None:
         """
@@ -1132,6 +1140,7 @@ class TestSKABaseDevice:  # pylint: disable=too-many-public-methods
         :param change_event_callbacks: dictionary of mock change event
             callbacks with asynchrony support.
         :param successful_lrc_callback: callback fixture to use with invoke_lrc.
+        :param logger: test logger
         :param caplog: pytest LogCaptureFixture
         """
         assert device_under_test.state() == DevState.OFF
@@ -1153,7 +1162,9 @@ class TestSKABaseDevice:  # pylint: disable=too-many-public-methods
         )
         change_event_callbacks["longRunningCommandInProgress"].assert_change_event(())
 
-        lrc_token = invoke_lrc(device_under_test, successful_lrc_callback, "Standby")
+        lrc_token = invoke_lrc(
+            device_under_test, logger, successful_lrc_callback, "Standby"
+        )
         standby_command = lrc_token.command_id.split("_", 2)[2]
         change_event_callbacks.assert_change_event(
             "longRunningCommandInProgress", (standby_command,)
@@ -1186,7 +1197,12 @@ class TestSKABaseDevice:  # pylint: disable=too-many-public-methods
             CommandError,
             match="Standby command rejected: Device is already in STANDBY state.",
         ):
-            _ = invoke_lrc(device_under_test, successful_lrc_callback, "Standby")
+            _ = invoke_lrc(
+                device_under_test, logger, successful_lrc_callback, "Standby"
+            )
+        Helpers.assert_expected_logs(
+            caplog, ["Standby command rejected: Device is already in STANDBY state."]
+        )
         change_event_callbacks.assert_not_called()
 
     def test_Off(
@@ -1194,6 +1210,7 @@ class TestSKABaseDevice:  # pylint: disable=too-many-public-methods
         device_under_test: DeviceProxy,
         change_event_callbacks: MockTangoEventCallbackGroup,
         successful_lrc_callback: LrcCallback,
+        logger: logging.Logger,
     ) -> None:
         """
         Test for Off command.
@@ -1202,6 +1219,7 @@ class TestSKABaseDevice:  # pylint: disable=too-many-public-methods
         :param change_event_callbacks: dictionary of mock change event
             callbacks with asynchrony support
         :param successful_lrc_callback: callback fixture to use with invoke_lrc.
+        :param logger: test logger
         """
         assert device_under_test.state() == DevState.OFF
 
@@ -1225,7 +1243,7 @@ class TestSKABaseDevice:  # pylint: disable=too-many-public-methods
             CommandError,
             match="Off command rejected: Device is already in OFF state.",
         ):
-            _ = invoke_lrc(device_under_test, successful_lrc_callback, "Off")
+            _ = invoke_lrc(device_under_test, logger, successful_lrc_callback, "Off")
         change_event_callbacks.assert_not_called()
 
     def test_command_exception(

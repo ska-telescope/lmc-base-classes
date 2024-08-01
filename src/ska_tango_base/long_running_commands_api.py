@@ -10,6 +10,7 @@ from __future__ import annotations
 import json
 import threading
 from dataclasses import dataclass
+from logging import Logger
 from typing import Any, Callable, Protocol
 
 from ska_control_model import ResultCode, TaskStatus
@@ -42,8 +43,10 @@ class LrcToken:
     abandon: Callable[[], None]
 
 
+# pylint: disable=too-many-locals,too-many-statements
 def invoke_lrc(  # noqa: C901
     proxy: DeviceProxy,
+    logger: Logger,
     lrc_callback: LrcCallback,
     command: str,
     command_args: tuple[Any] | None = None,
@@ -55,6 +58,7 @@ def invoke_lrc(  # noqa: C901
     via the provided lrc_callback with either the status, progress, result or error.
 
     :param proxy: Tango DeviceProxy.
+    :param logger: to use for logging exceptions.
     :param lrc_callback: of client to wrap.
     :param command: name to invoke.
     :param command_args: optional arguments for the command, defaults to None.
@@ -93,10 +97,10 @@ def invoke_lrc(  # noqa: C901
                 try:
                     status = TaskStatus[lrc_attr_value]
                 except KeyError as e:
+                    msg = f"Received unknown TaskStatus from event: {lrc_attr_value}"
+                    logger.exception(msg)
                     unsubscribe_lrc_events()
-                    raise KeyError(
-                        f"Received unknown TaskStatus from event: {lrc_attr_value}"
-                    ) from e
+                    raise KeyError(msg) from e
                 lrc_callback(status=status)
                 if status in [
                     TaskStatus.ABORTED,
@@ -110,15 +114,19 @@ def invoke_lrc(  # noqa: C901
             case "longrunningcommandresult":
                 lrc_callback(result=json.loads(lrc_attr_value))
 
-    lrc_status_event_id = proxy.subscribe_event(
-        "longRunningCommandStatus", EventType.CHANGE_EVENT, wrap_lrc_callback
-    )
-    lrc_progress_event_id = proxy.subscribe_event(
-        "longRunningCommandProgress", EventType.CHANGE_EVENT, wrap_lrc_callback
-    )
-    lrc_result_event_id = proxy.subscribe_event(
-        "longRunningCommandResult", EventType.CHANGE_EVENT, wrap_lrc_callback
-    )
+    try:
+        lrc_status_event_id = proxy.subscribe_event(
+            "longRunningCommandStatus", EventType.CHANGE_EVENT, wrap_lrc_callback
+        )
+        lrc_progress_event_id = proxy.subscribe_event(
+            "longRunningCommandProgress", EventType.CHANGE_EVENT, wrap_lrc_callback
+        )
+        lrc_result_event_id = proxy.subscribe_event(
+            "longRunningCommandResult", EventType.CHANGE_EVENT, wrap_lrc_callback
+        )
+    except Exception:
+        logger.exception("Subscribing to change event failed")
+        raise
 
     def unsubscribe_lrc_events() -> None:
         proxy.unsubscribe_event(lrc_status_event_id)
@@ -131,6 +139,7 @@ def invoke_lrc(  # noqa: C901
         )
         [[result_code], [command_id]] = proxy.command_inout(*inout_args)
     except Exception:
+        logger.exception("Tango command call failed")
         unsubscribe_lrc_events()
         raise
     finally:
@@ -139,11 +148,13 @@ def invoke_lrc(  # noqa: C901
 
     # Check for valid result codes
     if result_code == ResultCode.REJECTED:
+        msg = f"{command} command rejected: {command_id}"
+        logger.error(msg)
         unsubscribe_lrc_events()
-        raise CommandError(f"{command} command rejected: {command_id}")
+        raise CommandError(msg)
     if result_code not in [ResultCode.QUEUED, ResultCode.STARTED]:
+        msg = f"Unexpected result code for {command} command: {result_code}"
+        logger.error(msg)
         unsubscribe_lrc_events()
-        raise ResultCodeError(
-            f"Unexpected result code for {command} command: {command_id}"
-        )
+        raise ResultCodeError(msg)
     return LrcToken(command_id, result_code, unsubscribe_lrc_events)

@@ -17,7 +17,7 @@ from tango import DevError
 from tango.test_context import DeviceTestContext, MultiDeviceTestContext, get_host_ip
 
 import ska_tango_base.base.base_device
-from ska_tango_base.base.long_running_commands import LrcCallback
+from ska_tango_base.long_running_commands_api import LrcCallback
 
 
 @pytest.fixture(scope="class")

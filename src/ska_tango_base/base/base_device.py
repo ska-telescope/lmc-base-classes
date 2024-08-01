@@ -48,12 +48,12 @@ from ..faults import GroupDefinitionsError, LoggingLevelError
 from ..utils import get_groups_from_json
 from .admin_mode_model import AdminModeModel
 from .base_component_manager import BaseComponentManager
+from .command_tracker import CommandTracker
 from .logging import (
     _LMC_TO_PYTHON_LOGGING_LEVEL,
     _LMC_TO_TANGO_LOGGING_LEVEL,
     LoggingUtils,
 )
-from .long_running_commands import CommandTracker
 from .op_state_model import OpStateModel
 
 __all__ = ["SKABaseDevice", "main"]

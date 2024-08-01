@@ -28,7 +28,7 @@ from ska_control_model import (
 from ska_tango_testing.mock.tango import MockTangoEventCallbackGroup
 from tango import DevError, DevFailed, DevState
 
-from ska_tango_base.base.long_running_commands import LrcCallback, LrcToken, invoke_lrc
+from ska_tango_base.long_running_commands_api import LrcCallback, LrcToken, invoke_lrc
 from ska_tango_base.testing.reference import ReferenceSkaSubarray
 from tests.conftest import Helpers
 

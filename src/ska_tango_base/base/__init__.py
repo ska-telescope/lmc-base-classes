@@ -16,7 +16,6 @@ __all__ = (
     "TaskCallbackType",
     "check_communicating",
     "check_on",
-    "invoke_lrc",
 )
 
 # Note: order of imports is important - start with lowest in the hierarchy
@@ -29,5 +28,5 @@ from .base_component_manager import (
     check_on,
 )
 from .base_device import SKABaseDevice
-from .long_running_commands import CommandTracker, invoke_lrc
+from .command_tracker import CommandTracker
 from .op_state_model import OpStateModel

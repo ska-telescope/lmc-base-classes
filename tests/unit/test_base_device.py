@@ -36,7 +36,7 @@ from ska_tango_testing.mock.tango import MockTangoEventCallbackGroup
 from tango import DevFailed, DeviceProxy, DevState, EventType, Logger
 
 from ska_tango_base import SKABaseDevice
-from ska_tango_base.base import CommandTracker, invoke_lrc
+from ska_tango_base.base import CommandTracker
 from ska_tango_base.base.base_device import _DEBUGGER_PORT
 from ska_tango_base.base.logging import (
     _PYTHON_TO_TANGO_LOGGING_LEVEL,
@@ -44,8 +44,8 @@ from ska_tango_base.base.logging import (
     TangoLoggingServiceHandler,
     _Log4TangoLoggingLevel,
 )
-from ska_tango_base.base.long_running_commands import LrcCallback
 from ska_tango_base.faults import CommandError, LoggingTargetError
+from ska_tango_base.long_running_commands_api import LrcCallback, invoke_lrc
 from ska_tango_base.testing.reference import (
     ReferenceBaseComponentManager,
     ReferenceSkaBaseDevice,

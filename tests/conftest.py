@@ -289,6 +289,38 @@ def aborted_lrc_callback_fixture(
         raise assert_errors[0]
 
 
+@pytest.fixture(name="lrc_callback_log_only")
+def lrc_callback_log_only_fixture(
+    logger: logging.Logger,
+) -> LrcCallback:
+    """
+    Use this callback with invoke_lrc only to log the arguments.
+
+    :param logger: test logger
+    :return: lrc_callback_log_only function.
+    """
+
+    def _lrc_callback_log_only(
+        status: TaskStatus | None = None,
+        progress: int | None = None,
+        result: dict[str, Any] | list[Any] | None = None,
+        error: tuple[DevError] | None = None,
+        **kwargs: Any,
+    ) -> None:
+        if status is not None:
+            logger.info(f"lrc_callback(status={status.name})")
+        if progress is not None:
+            logger.info(f"lrc_callback(progress={progress})")
+        if result is not None:
+            logger.info(f"lrc_callback(result={result})")
+        if error is not None:
+            logger.error(f"lrc_callback(error={error})")
+        if kwargs:
+            logger.error(f"lrc_callback(kwargs={kwargs})")
+
+    return _lrc_callback_log_only
+
+
 class Helpers:
     """Static helper functions for tests."""
 

@@ -1,6 +1,5 @@
 # pylint: disable=invalid-name,too-many-lines,too-many-arguments
-# TODO: Split logging service out from base_device module, then split these
-# tests the same way.
+# TODO: Split the logging service and CommandTracker tests from this file.
 
 # -*- coding: utf-8 -*-
 #
@@ -45,7 +44,11 @@ from ska_tango_base.base.logging import (
     _Log4TangoLoggingLevel,
 )
 from ska_tango_base.faults import CommandError, LoggingTargetError
-from ska_tango_base.long_running_commands_api import LrcCallback, invoke_lrc
+from ska_tango_base.long_running_commands_api import (
+    LrcCallback,
+    _retry_tango_method,
+    invoke_lrc,
+)
 from ska_tango_base.testing.reference import (
     ReferenceBaseComponentManager,
     ReferenceSkaBaseDevice,
@@ -1092,6 +1095,7 @@ class TestSKABaseDevice:  # pylint: disable=too-many-public-methods
         change_event_callbacks["longRunningCommandInProgress"].assert_change_event(())
 
         lrc_token = invoke_lrc(device_under_test, logger, successful_lrc_callback, "On")
+        assert lrc_token.result_code == ResultCode.QUEUED
         on_command = lrc_token.command_id.split("_", 2)[2]
         change_event_callbacks.assert_change_event(
             "longRunningCommandInProgress", (on_command,)
@@ -1165,6 +1169,7 @@ class TestSKABaseDevice:  # pylint: disable=too-many-public-methods
         lrc_token = invoke_lrc(
             device_under_test, logger, successful_lrc_callback, "Standby"
         )
+        assert lrc_token.result_code == ResultCode.QUEUED
         standby_command = lrc_token.command_id.split("_", 2)[2]
         change_event_callbacks.assert_change_event(
             "longRunningCommandInProgress", (standby_command,)
@@ -1327,6 +1332,90 @@ class TestSKABaseDevice:  # pylint: disable=too-many-public-methods
                 command_allowed_error_id,
                 "REJECTED",
             ),
+        )
+
+    def test_command_exception_with_invoke_lrc(
+        self: TestSKABaseDevice,
+        device_under_test: DeviceProxy,
+        lrc_callback_log_only: LrcCallback,
+        logger: logging.Logger,
+        caplog: pytest.LogCaptureFixture,
+    ) -> None:
+        """
+        Test for when a command encounters an Exception.
+
+        :param device_under_test: a proxy to the device under test
+        :param lrc_callback_log_only: callback fixture to use with invoke_lrc.
+        :param logger: test logger
+        :param caplog: pytest LogCaptureFixture
+        """
+        # Queue On() followed by two commands that both raise exceptions
+        for cmd in ("On", "SimulateCommandError", "SimulateIsCmdAllowedError"):
+            token = invoke_lrc(device_under_test, logger, lrc_callback_log_only, cmd)
+            assert token.result_code == ResultCode.QUEUED
+
+        # Each command goes STAGING to QUEUED, then On() goes IN_PROGRESS to COMPLETED,
+        # and the other two commands go to FAILED/REJECTED.
+        Helpers.assert_expected_logs(
+            caplog,
+            [  # Log messages must be in this exact order
+                "lrc_callback(status=STAGING)",  # On (new)
+                "lrc_callback(status=QUEUED)",  # On (new)
+                "lrc_callback(status=QUEUED)",  # On
+                "lrc_callback(status=STAGING)",  # SimulateCommandError (new)
+                "lrc_callback(status=QUEUED)",  # On
+                "lrc_callback(status=QUEUED)",  # SimulateCommandError (new)
+                "lrc_callback(status=QUEUED)",  # On
+                "lrc_callback(status=QUEUED)",  # SimulateCommandError
+                "lrc_callback(status=STAGING)",  # SimulateIsCmdAllowedError (new)
+                "lrc_callback(status=QUEUED)",  # On
+                "lrc_callback(status=QUEUED)",  # SimulateCommandError
+                "lrc_callback(status=QUEUED)",  # SimulateIsCmdAllowedError (new)
+                "lrc_callback(status=IN_PROGRESS)",  # On (new)
+                "lrc_callback(status=QUEUED)",  # SimulateCommandError
+                "lrc_callback(status=QUEUED)",  # SimulateIsCmdAllowedError
+                "lrc_callback(progress=33)",
+                "lrc_callback(progress=66)",
+                "lrc_callback(result=[0, 'On command completed OK'])",
+                "lrc_callback(status=COMPLETED)",  # On (new)
+                "lrc_callback(status=QUEUED)",  # SimulateCommandError
+                "lrc_callback(status=QUEUED)",  # SimulateIsCmdAllowedError
+                "lrc_callback(result=[3, 'Unhandled exception during execution: "
+                "Command encountered unexpected error'])",  # SimulateCommandError
+                "lrc_callback(status=FAILED)",  # SimulateCommandError (new)
+                "lrc_callback(status=QUEUED)",  # SimulateIsCmdAllowedError
+                "lrc_callback(result=[5, \"Exception from 'is_cmd_allowed' method: "
+                "'is_cmd_allowed' method encountered unexpected error\"])",
+                "lrc_callback(status=REJECTED)",  # SimulateIsCmdAllowedError
+            ],
+        )
+
+    def test_lrc_api_retry_method(
+        self: TestSKABaseDevice,
+        device_under_test: DeviceProxy,
+        logger: logging.Logger,
+        caplog: pytest.LogCaptureFixture,
+    ) -> None:
+        """
+        Test for when a command encounters an Exception.
+
+        :param device_under_test: a proxy to the device under test
+        :param logger: test logger
+        :param caplog: pytest LogCaptureFixture
+        """
+        with pytest.raises(KeyError):
+            _retry_tango_method(logger, device_under_test.unsubscribe_event, (10,))
+        Helpers.assert_expected_logs(
+            caplog,
+            [  # Log messages must be in this exact order
+                "__DeviceProxy__unsubscribe_event(10,) failed attempt 1 with: "
+                "'This device proxy does not own this subscription 10'",
+                "__DeviceProxy__unsubscribe_event(10,) failed attempt 2 with: "
+                "'This device proxy does not own this subscription 10'",
+                "__DeviceProxy__unsubscribe_event(10,) failed attempt 3 with: "
+                "'This device proxy does not own this subscription 10'",
+                "All retries of __DeviceProxy__unsubscribe_event(10,) failed",
+            ],
         )
 
     def test_lrcStatusQueue(

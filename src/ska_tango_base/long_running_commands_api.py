@@ -99,8 +99,12 @@ def invoke_lrc(  # noqa: C901
         try:
             cmd_idx = event.attr_value.value.index(command_id)
             lrc_attr_value = event.attr_value.value[cmd_idx + 1]
-        except (ValueError, IndexError):
-            return
+        except ValueError:
+            return  # Do nothing, as will often be called for unrelated events
+        except IndexError as e:
+            msg = f"'{command_id}' command has no status/progress/result value"
+            logger.exception(msg)
+            raise IndexError(msg) from e
         match event.attr_value.name:
             case "longrunningcommandstatus":
                 try:
@@ -123,6 +127,7 @@ def invoke_lrc(  # noqa: C901
             case "longrunningcommandresult":
                 lrc_callback(result=json.loads(lrc_attr_value))
 
+    # Subscribe to LRC attributes' change events with above callback
     for attr in [
         "longRunningCommandStatus",
         "longRunningCommandProgress",
@@ -143,6 +148,7 @@ def invoke_lrc(  # noqa: C901
             unsubscribe_lrc_events()
             raise
 
+    # Try to execute LRC on device proxy
     try:
         inout_args = (
             (command, *command_args) if command_args is not None else (command,)
@@ -196,10 +202,10 @@ def _retry_tango_method(
             return method(*args)  # Call the tango method with its arguments
         except Exception as e:  # pylint: disable=broad-exception-caught
             logger.warning(
-                f"proxy.{method.__name__}{args} failed attempt {attempt} with: {e}"
+                f"{method.__name__}{args} failed attempt {attempt} with: {e}"
             )
             if attempt < max_retries:
                 sleep(delay)  # Wait before retrying
             else:
-                logger.error(f"All retries of proxy.{method.__name__}{args} failed")
+                logger.error(f"All retries of {method.__name__}{args} failed")
                 raise  # Re-raise the exception if max retries are reached

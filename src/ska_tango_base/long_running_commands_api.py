@@ -14,7 +14,14 @@ from time import sleep
 from typing import Any, Callable, Protocol
 
 from ska_control_model import ResultCode, TaskStatus
-from tango import DevError, DeviceProxy, EventData, EventSystemFailed, EventType
+from tango import (
+    CommunicationFailed,
+    DevError,
+    DeviceProxy,
+    EventData,
+    EventSystemFailed,
+    EventType,
+)
 
 from ska_tango_base.faults import CommandError, ResultCodeError
 
@@ -164,6 +171,7 @@ def invoke_lrc(  # noqa: C901
                 logger,
                 proxy.subscribe_event,
                 (attr, EventType.CHANGE_EVENT, wrap_lrc_callback),
+                EventSystemFailed,
             )
             event_ids.append(event_id)
         except Exception:
@@ -180,7 +188,10 @@ def invoke_lrc(  # noqa: C901
             (command, *command_args) if command_args is not None else (command,)
         )
         [[result_code], [command_id]] = _retry_tango_method(
-            logger, proxy.command_inout, inout_args
+            logger,
+            proxy.command_inout,
+            inout_args,
+            CommunicationFailed,
         )
     except Exception:
         logger.exception("Command call failed. Unsubscribing from LRC attributes")
@@ -204,29 +215,31 @@ def invoke_lrc(  # noqa: C901
     return LrcSubscriptions(command_id, unsubscribe_lrc_events)
 
 
-# pylint: disable=inconsistent-return-statements
+# pylint: disable=inconsistent-return-statements,too-many-arguments
 def _retry_tango_method(
     logger: Logger,
     method: Callable[..., Any],
     args: tuple[Any, ...] = (),
+    exception_type: type[Exception] | tuple[type[Exception], ...] = Exception,
     max_retries: int = 3,
     delay: int = 2,
-) -> Any:
+) -> Any:  # noqa: DAR401
     """
-    Call a tango method on a device proxy, retrying if it raises an exception.
+    Call a tango method on a device proxy, retrying if it raises the given exceptions.
 
-    :param logger: to use for logging exceptions.
+    :param logger: Logger to use for logging exceptions.
     :param method: The method to call.
     :param args: Positional arguments to pass to the method. Defaults to ().
+    :param exception_type: The type of exception(s) that will trigger a retry.
     :param max_retries: Maximum number of retry attempts. Defaults to 3.
     :param delay: Delay in seconds between retry attempts. Defaults to 2.
     :return: The result of the method if it succeeds.
     :raises Exception: If the method fails after the maximum number of retries.
-    """
+    """  # noqa: DAR402
     for attempt in range(1, max_retries + 1):
         try:
             return method(*args)  # Call the tango method with its arguments
-        except Exception as e:  # pylint: disable=broad-exception-caught
+        except exception_type as e:  # pylint: disable=broad-exception-caught
             logger.warning(
                 f"{method.__name__}{args} failed attempt {attempt} with: {e}"
             )

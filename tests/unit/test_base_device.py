@@ -1094,9 +1094,8 @@ class TestSKABaseDevice:  # pylint: disable=too-many-public-methods
         )
         change_event_callbacks["longRunningCommandInProgress"].assert_change_event(())
 
-        lrc_token = invoke_lrc(device_under_test, logger, successful_lrc_callback, "On")
-        assert lrc_token.result_code == ResultCode.QUEUED
-        on_command = lrc_token.command_id.split("_", 2)[2]
+        lrc = invoke_lrc(device_under_test, logger, successful_lrc_callback, "On")
+        on_command = lrc.command_id.split("_", 2)[2]
         change_event_callbacks.assert_change_event(
             "longRunningCommandInProgress", (on_command,)
         )
@@ -1166,11 +1165,8 @@ class TestSKABaseDevice:  # pylint: disable=too-many-public-methods
         )
         change_event_callbacks["longRunningCommandInProgress"].assert_change_event(())
 
-        lrc_token = invoke_lrc(
-            device_under_test, logger, successful_lrc_callback, "Standby"
-        )
-        assert lrc_token.result_code == ResultCode.QUEUED
-        standby_command = lrc_token.command_id.split("_", 2)[2]
+        lrc = invoke_lrc(device_under_test, logger, successful_lrc_callback, "Standby")
+        standby_command = lrc.command_id.split("_", 2)[2]
         change_event_callbacks.assert_change_event(
             "longRunningCommandInProgress", (standby_command,)
         )
@@ -1193,7 +1189,7 @@ class TestSKABaseDevice:  # pylint: disable=too-many-public-methods
         )
         change_event_callbacks.assert_change_event("longRunningCommandInProgress", ())
         assert (
-            device_under_test.CheckLongRunningCommandStatus(lrc_token.command_id)
+            device_under_test.CheckLongRunningCommandStatus(lrc.command_id)
             == "COMPLETED"
         )
 
@@ -1349,10 +1345,12 @@ class TestSKABaseDevice:  # pylint: disable=too-many-public-methods
         :param logger: test logger
         :param caplog: pytest LogCaptureFixture
         """
+        cmd_subscriptions = []
         # Queue On() followed by two commands that both raise exceptions
         for cmd in ("On", "SimulateCommandError", "SimulateIsCmdAllowedError"):
-            token = invoke_lrc(device_under_test, logger, lrc_callback_log_only, cmd)
-            assert token.result_code == ResultCode.QUEUED
+            cmd_subscriptions.append(
+                invoke_lrc(device_under_test, logger, lrc_callback_log_only, cmd)
+            )
 
         # Each command goes STAGING to QUEUED, then On() goes IN_PROGRESS to COMPLETED,
         # and the other two commands go to FAILED/REJECTED.

@@ -9,13 +9,12 @@ from __future__ import annotations
 
 import json
 import threading
-from dataclasses import dataclass
 from logging import Logger
 from time import sleep
 from typing import Any, Callable, Protocol
 
 from ska_control_model import ResultCode, TaskStatus
-from tango import DevError, DeviceProxy, EventData, EventType
+from tango import DevError, DeviceProxy, EventData, EventSystemFailed, EventType
 
 from ska_tango_base.faults import CommandError, ResultCodeError
 
@@ -35,13 +34,37 @@ class LrcCallback(Protocol):
         raise NotImplementedError("LrcCallback is a protocol used only for typing.")
 
 
-@dataclass
-class LrcToken:
-    """LRC token that is returned by invoke_lrc."""
+class LrcSubscriptions:
+    """
+    LRC event subscriptions that is returned by invoke_lrc.
 
-    command_id: str
-    result_code: ResultCode
-    abandon: Callable[[], None]
+    Unsubscribes from all events when the instance is deleted.
+    """
+
+    def __init__(
+        self, command_id: str, unsubscribe_lrc_events: Callable[[], None]
+    ) -> None:
+        """
+        Initialise a LrcSubscriptions instance.
+
+        :param command_id: Unique command identifier.
+        :param unsubscribe_lrc_events: Method to unsubscribe from all LRC change events.
+        """
+        self._command_id = command_id
+        self._unsubscribe_lrc_events = unsubscribe_lrc_events
+
+    def __del__(self) -> None:
+        """Delete the LrcSubscriptions instance."""
+        self._unsubscribe_lrc_events()
+
+    @property
+    def command_id(self) -> str:
+        """
+        The command ID.
+
+        :returns: the command ID.
+        """
+        return self._command_id
 
 
 # pylint: disable=too-many-statements,too-many-locals
@@ -51,7 +74,7 @@ def invoke_lrc(  # noqa: C901
     lrc_callback: LrcCallback,
     command: str,
     command_args: tuple[Any] | None = None,
-) -> LrcToken:
+) -> LrcSubscriptions:
     """
     Invoke a long running command (LRC) and monitor its progress with callbacks.
 
@@ -59,13 +82,16 @@ def invoke_lrc(  # noqa: C901
     via the provided lrc_callback with either the status, progress, result or error.
 
     :param proxy: Tango DeviceProxy.
-    :param logger: to use for logging exceptions.
-    :param lrc_callback: of client to wrap.
-    :param command: name to invoke.
-    :param command_args: optional arguments for the command, defaults to None.
-    :return: a LrcToken containing the command ID, result code and abandon method.
-    :raises CommandError: if the command is rejected.
-    :raises ResultCodeError: if the command returns an unexpected result code.
+    :param logger: Logger to use for logging exceptions.
+    :param lrc_callback: Client LRC callback to wrap.
+    :param command: Name of command to invoke.
+    :param command_args: Optional arguments for the command, defaults to None.
+    :return: LrcSubscriptions class instance, containing the command ID.
+        A reference to the instance must be kept until the command is completed or the
+        client is not interested in its events anymore, as deleting the instance
+        unsubscribes from the LRC change events and thus stops any further callbacks.
+    :raises CommandError: If the command is rejected.
+    :raises ResultCodeError: If the command returns an unexpected result code.
     :raises Exception: Any other tango exceptions from subscribe_event or command_inout.
     """
     calling_thread = threading.current_thread()
@@ -74,11 +100,12 @@ def invoke_lrc(  # noqa: C901
     event_ids: list[int] = []
 
     def unsubscribe_lrc_events() -> None:
-        for event_id in event_ids:
+        for event_id in event_ids.copy():
             try:
-                _retry_tango_method(logger, proxy.unsubscribe_event, (event_id,))
-            except Exception:  # pylint: disable=broad-exception-caught
-                pass
+                proxy.unsubscribe_event(event_id)
+                event_ids.remove(event_id)
+            except EventSystemFailed as e:
+                logger.warning(f"proxy.unsubscribe_event({event_id}) failed with: {e}")
 
     def wrap_lrc_callback(event: EventData) -> None:
         # Check for tango error
@@ -174,7 +201,7 @@ def invoke_lrc(  # noqa: C901
         logger.error(msg)
         unsubscribe_lrc_events()
         raise ResultCodeError(msg)
-    return LrcToken(command_id, result_code, unsubscribe_lrc_events)
+    return LrcSubscriptions(command_id, unsubscribe_lrc_events)
 
 
 # pylint: disable=inconsistent-return-statements

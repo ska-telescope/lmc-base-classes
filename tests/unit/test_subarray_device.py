@@ -28,7 +28,11 @@ from ska_control_model import (
 from ska_tango_testing.mock.tango import MockTangoEventCallbackGroup
 from tango import DevError, DevFailed, DevState
 
-from ska_tango_base.long_running_commands_api import LrcCallback, LrcToken, invoke_lrc
+from ska_tango_base.long_running_commands_api import (
+    LrcCallback,
+    LrcSubscriptions,
+    invoke_lrc,
+)
 from ska_tango_base.testing.reference import ReferenceSkaSubarray
 from tests.conftest import Helpers
 
@@ -153,7 +157,7 @@ class TestSKASubarray:  # pylint: disable=too-many-public-methods
         aborted_lrc_callback: LrcCallback,
         logger: logging.Logger,
         caplog: pytest.LogCaptureFixture,
-    ) -> Callable[[list[str], bool], LrcToken]:
+    ) -> Callable[[list[str], bool], LrcSubscriptions]:
         """
         Assign resources to the device and clear the queue attributes.
 
@@ -178,7 +182,7 @@ class TestSKASubarray:  # pylint: disable=too-many-public-methods
             """
             # Call command
             resources_to_assign = json.dumps({"resources": resources_list})
-            assign_token = invoke_lrc(
+            assign_command = invoke_lrc(
                 device_under_test,
                 logger,
                 aborted_lrc_callback if to_be_aborted else successful_lrc_callback,
@@ -198,7 +202,7 @@ class TestSKASubarray:  # pylint: disable=too-many-public-methods
                 "commandedObsState", ObsState.IDLE
             )
             if to_be_aborted:
-                return assign_token
+                return assign_command
             Helpers.assert_expected_logs(
                 caplog,
                 [  # Log messages must be in this exact order
@@ -211,7 +215,7 @@ class TestSKASubarray:  # pylint: disable=too-many-public-methods
             change_event_callbacks.assert_change_event("obsState", ObsState.IDLE)
             assert device_under_test.obsState == device_under_test.commandedObsState
             assert list(device_under_test.assignedResources) == resources_list
-            return assign_token
+            return assign_command
 
         return _assign_resources_to_empty_subarray
 
@@ -224,7 +228,7 @@ class TestSKASubarray:  # pylint: disable=too-many-public-methods
         aborted_lrc_callback: LrcCallback,
         logger: logging.Logger,
         caplog: pytest.LogCaptureFixture,
-    ) -> Callable[[dict[str, int], bool], LrcToken]:
+    ) -> Callable[[dict[str, int], bool], LrcSubscriptions]:
         """
         Configure the device and clear the queue attributes.
 
@@ -252,7 +256,7 @@ class TestSKASubarray:  # pylint: disable=too-many-public-methods
                 "channels:0",
             ]
             # Call command
-            configure_token = invoke_lrc(
+            configure_command = invoke_lrc(
                 device_under_test,
                 logger,
                 aborted_lrc_callback if to_be_aborted else successful_lrc_callback,
@@ -272,7 +276,7 @@ class TestSKASubarray:  # pylint: disable=too-many-public-methods
                 "commandedObsState", ObsState.READY
             )
             if to_be_aborted:
-                return configure_token
+                return configure_command
             Helpers.assert_expected_logs(
                 caplog,
                 [  # Log messages must be in this exact order
@@ -285,7 +289,7 @@ class TestSKASubarray:  # pylint: disable=too-many-public-methods
             # Command is completed
             change_event_callbacks.assert_change_event("obsState", ObsState.READY)
             assert device_under_test.obsState == device_under_test.commandedObsState
-            return configure_token
+            return configure_command
 
         return _configure_subarray
 
@@ -298,7 +302,7 @@ class TestSKASubarray:  # pylint: disable=too-many-public-methods
         aborted_lrc_callback: LrcCallback,
         logger: logging.Logger,
         caplog: pytest.LogCaptureFixture,
-    ) -> Callable[[ObsState, bool], LrcToken]:
+    ) -> Callable[[ObsState, bool], LrcSubscriptions]:
         """
         Reset the device and clear the queue attributes.
 
@@ -313,7 +317,7 @@ class TestSKASubarray:  # pylint: disable=too-many-public-methods
 
         def _reset_subarray(
             expected_obs_state: ObsState, to_be_aborted: bool
-        ) -> LrcToken:
+        ) -> LrcSubscriptions:
             """
             Reset the device and clear the queue attributes.
 
@@ -322,7 +326,7 @@ class TestSKASubarray:  # pylint: disable=too-many-public-methods
             :return: the executed ObsReset() command's unique ID
             """
             # Call command
-            reset_token = invoke_lrc(
+            reset_command = invoke_lrc(
                 device_under_test,
                 logger,
                 aborted_lrc_callback if to_be_aborted else successful_lrc_callback,
@@ -341,7 +345,7 @@ class TestSKASubarray:  # pylint: disable=too-many-public-methods
                 "commandedObsState", expected_obs_state
             )
             if to_be_aborted:
-                return reset_token
+                return reset_command
             Helpers.assert_expected_logs(
                 caplog,
                 [  # Log messages must be in this exact order
@@ -354,7 +358,7 @@ class TestSKASubarray:  # pylint: disable=too-many-public-methods
             # Command is completed
             change_event_callbacks.assert_change_event("obsState", expected_obs_state)
             assert device_under_test.obsState == device_under_test.commandedObsState
-            return reset_token
+            return reset_command
 
         return _reset_subarray
 
@@ -365,7 +369,7 @@ class TestSKASubarray:  # pylint: disable=too-many-public-methods
         change_event_callbacks: MockTangoEventCallbackGroup,
         logger: logging.Logger,
         caplog: pytest.LogCaptureFixture,
-    ) -> Callable[[LrcToken], None]:
+    ) -> Callable[[LrcSubscriptions], None]:
         """
         Abort the given command in progress and clear the queue attributes.
 
@@ -394,24 +398,24 @@ class TestSKASubarray:  # pylint: disable=too-many-public-methods
             if kwargs:
                 logger.error(f"abort_callback(kwargs={kwargs})")
 
-        def _abort_subarray_command(lrc_token: LrcToken) -> None:
+        def _abort_subarray_command(lrc: LrcSubscriptions) -> None:
             """
             Abort the given command in progress and clear the queue attributes.
 
-            :param lrc_token: of command in progress to abort
+            :param lrc: of command in progress to abort
             """
             event_id = device_under_test.subscribe_event(
                 "longRunningCommandInProgress",
                 tango.EventType.CHANGE_EVENT,
                 change_event_callbacks["longRunningCommandInProgress"],
             )
-            command_name = lrc_token.command_id.split("_", 2)[2]
+            command_name = lrc.command_id.split("_", 2)[2]
             change_event_callbacks.assert_change_event(
                 "longRunningCommandInProgress", (command_name,)
             )
 
-            abort_token = invoke_lrc(device_under_test, logger, abort_callback, "Abort")
-            abort_name = abort_token.command_id.split("_", 2)[2]
+            abort = invoke_lrc(device_under_test, logger, abort_callback, "Abort")
+            abort_name = abort.command_id.split("_", 2)[2]
             change_event_callbacks.assert_change_event("obsState", ObsState.ABORTING)
             Helpers.assert_expected_logs(
                 caplog,
@@ -500,7 +504,9 @@ class TestSKASubarray:  # pylint: disable=too-many-public-methods
         device_under_test: tango.DeviceProxy,
         change_event_callbacks: MockTangoEventCallbackGroup,
         turn_on_device: Callable[[], None],
-        assign_resources_to_empty_subarray: Callable[[list[str], bool], LrcToken],
+        assign_resources_to_empty_subarray: Callable[
+            [list[str], bool], LrcSubscriptions
+        ],
         successful_lrc_callback: LrcCallback,
         logger: logging.Logger,
         caplog: pytest.LogCaptureFixture,
@@ -572,8 +578,10 @@ class TestSKASubarray:  # pylint: disable=too-many-public-methods
         device_under_test: tango.DeviceProxy,
         change_event_callbacks: MockTangoEventCallbackGroup,
         turn_on_device: Callable[[], None],
-        assign_resources_to_empty_subarray: Callable[[list[str], bool], LrcToken],
-        configure_subarray: Callable[[dict[str, int], bool], LrcToken],
+        assign_resources_to_empty_subarray: Callable[
+            [list[str], bool], LrcSubscriptions
+        ],
+        configure_subarray: Callable[[dict[str, int], bool], LrcSubscriptions],
         successful_lrc_callback: LrcCallback,
         logger: logging.Logger,
         caplog: pytest.LogCaptureFixture,
@@ -625,8 +633,10 @@ class TestSKASubarray:  # pylint: disable=too-many-public-methods
         device_under_test: tango.DeviceProxy,
         change_event_callbacks: MockTangoEventCallbackGroup,
         turn_on_device: Callable[[], None],
-        assign_resources_to_empty_subarray: Callable[[list[str], bool], LrcToken],
-        configure_subarray: Callable[[dict[str, int], bool], LrcToken],
+        assign_resources_to_empty_subarray: Callable[
+            [list[str], bool], LrcSubscriptions
+        ],
+        configure_subarray: Callable[[dict[str, int], bool], LrcSubscriptions],
         successful_lrc_callback: LrcCallback,
         logger: logging.Logger,
         caplog: pytest.LogCaptureFixture,
@@ -695,9 +705,11 @@ class TestSKASubarray:  # pylint: disable=too-many-public-methods
     def test_abort_and_obsreset_from_resourcing(
         self: TestSKASubarray,
         turn_on_device: Callable[[], None],
-        assign_resources_to_empty_subarray: Callable[[list[str], bool], LrcToken],
-        abort_subarray_command: Callable[[LrcToken], None],
-        reset_subarray: Callable[[ObsState, bool], LrcToken],
+        assign_resources_to_empty_subarray: Callable[
+            [list[str], bool], LrcSubscriptions
+        ],
+        abort_subarray_command: Callable[[LrcSubscriptions], None],
+        reset_subarray: Callable[[ObsState, bool], LrcSubscriptions],
     ) -> None:
         """
         Test for Abort and Reset from AssignResources from EMPTY state.
@@ -718,10 +730,12 @@ class TestSKASubarray:  # pylint: disable=too-many-public-methods
         self: TestSKASubarray,
         device_under_test: tango.DeviceProxy,
         turn_on_device: Callable[[], None],
-        assign_resources_to_empty_subarray: Callable[[list[str], bool], LrcToken],
-        configure_subarray: Callable[[dict[str, int], bool], LrcToken],
-        abort_subarray_command: Callable[[LrcToken], None],
-        reset_subarray: Callable[[ObsState, bool], LrcToken],
+        assign_resources_to_empty_subarray: Callable[
+            [list[str], bool], LrcSubscriptions
+        ],
+        configure_subarray: Callable[[dict[str, int], bool], LrcSubscriptions],
+        abort_subarray_command: Callable[[LrcSubscriptions], None],
+        reset_subarray: Callable[[ObsState, bool], LrcSubscriptions],
     ) -> None:
         """
         Test for Abort and Reset from Configure.
@@ -750,9 +764,11 @@ class TestSKASubarray:  # pylint: disable=too-many-public-methods
         device_under_test: tango.DeviceProxy,
         change_event_callbacks: MockTangoEventCallbackGroup,
         turn_on_device: Callable[[], None],
-        assign_resources_to_empty_subarray: Callable[[list[str], bool], LrcToken],
-        abort_subarray_command: Callable[[LrcToken], None],
-        reset_subarray: Callable[[ObsState, bool], LrcToken],
+        assign_resources_to_empty_subarray: Callable[
+            [list[str], bool], LrcSubscriptions
+        ],
+        abort_subarray_command: Callable[[LrcSubscriptions], None],
+        reset_subarray: Callable[[ObsState, bool], LrcSubscriptions],
         caplog: pytest.LogCaptureFixture,
     ) -> None:
         """
@@ -767,7 +783,7 @@ class TestSKASubarray:  # pylint: disable=too-many-public-methods
         :param caplog: pytest LogCaptureFixture
         """
         turn_on_device()
-        assign_resources_to_empty_subarray(["BAND1"], True)
+        assign_command = assign_resources_to_empty_subarray(["BAND1"], True)
         # Simulate observation fault
         device_under_test.SimulateObsFault()
         change_event_callbacks.assert_change_event("obsState", ObsState.FAULT)
@@ -778,6 +794,7 @@ class TestSKASubarray:  # pylint: disable=too-many-public-methods
                 "lrc_callback(status=ABORTED)",
             ],
         )
+        del assign_command
         # Reset from fault state then abort reset
         reset_command = reset_subarray(ObsState.EMPTY, True)
         abort_subarray_command(reset_command)
@@ -789,9 +806,11 @@ class TestSKASubarray:  # pylint: disable=too-many-public-methods
         device_under_test: tango.DeviceProxy,
         change_event_callbacks: MockTangoEventCallbackGroup,
         turn_on_device: Callable[[], None],
-        assign_resources_to_empty_subarray: Callable[[list[str], bool], LrcToken],
-        abort_subarray_command: Callable[[LrcToken], None],
-        reset_subarray: Callable[[ObsState, bool], LrcToken],
+        assign_resources_to_empty_subarray: Callable[
+            [list[str], bool], LrcSubscriptions
+        ],
+        abort_subarray_command: Callable[[LrcSubscriptions], None],
+        reset_subarray: Callable[[ObsState, bool], LrcSubscriptions],
         aborted_lrc_callback: LrcCallback,
         logger: logging.Logger,
         caplog: pytest.LogCaptureFixture,
@@ -812,7 +831,7 @@ class TestSKASubarray:  # pylint: disable=too-many-public-methods
         turn_on_device()
         assign_resources_to_empty_subarray(["BAND1"], False)
         # Assign more resources
-        assign_token = invoke_lrc(
+        assign_command = invoke_lrc(
             device_under_test,
             logger,
             aborted_lrc_callback,
@@ -829,7 +848,7 @@ class TestSKASubarray:  # pylint: disable=too-many-public-methods
             ],
         )
         # Abort 2nd assign command
-        abort_subarray_command(assign_token)
+        abort_subarray_command(assign_command)
         # Reset from aborted state to idle state
         reset_subarray(ObsState.IDLE, False)
 

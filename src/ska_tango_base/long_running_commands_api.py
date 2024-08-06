@@ -112,7 +112,6 @@ def invoke_lrc(  # noqa: C901
                 except KeyError as e:
                     msg = f"Received unknown TaskStatus from event: {lrc_attr_value}"
                     logger.exception(msg)
-                    unsubscribe_lrc_events()
                     raise KeyError(msg) from e
                 lrc_callback(status=status)
                 if status in [

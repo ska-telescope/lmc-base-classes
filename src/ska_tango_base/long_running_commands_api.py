@@ -7,8 +7,10 @@
 """This module provides a convenience client API for invoking long running commands."""
 from __future__ import annotations
 
+import inspect
 import json
 import threading
+import traceback
 from logging import Logger
 from time import sleep
 from typing import Any, Callable, Protocol
@@ -16,11 +18,15 @@ from typing import Any, Callable, Protocol
 from ska_control_model import ResultCode, TaskStatus
 from tango import (
     CommunicationFailed,
+    ConnectionFailed,
     DevError,
+    DevFailed,
     DeviceProxy,
+    DeviceUnlocked,
     EventData,
     EventSystemFailed,
     EventType,
+    Except,
 )
 
 from ska_tango_base.faults import CommandError, ResultCodeError
@@ -99,20 +105,25 @@ def invoke_lrc(  # noqa: C901
         unsubscribes from the LRC change events and thus stops any further callbacks.
     :raises CommandError: If the command is rejected.
     :raises ResultCodeError: If the command returns an unexpected result code.
-    :raises Exception: Any other tango exceptions from subscribe_event or command_inout.
     """
     calling_thread = threading.current_thread()
     submitted = threading.Event()
+    lock = threading.Lock()
     command_id = None
     event_ids: list[int] = []
 
     def unsubscribe_lrc_events() -> None:
-        for event_id in event_ids.copy():
-            try:
-                proxy.unsubscribe_event(event_id)
-                event_ids.remove(event_id)
-            except EventSystemFailed as e:
-                logger.warning(f"proxy.unsubscribe_event({event_id}) failed with: {e}")
+        if event_ids:
+            with lock:
+                events = event_ids.copy()
+                event_ids.clear()
+            for event_id in events:
+                try:
+                    proxy.unsubscribe_event(event_id)
+                except EventSystemFailed as e:
+                    logger.warning(
+                        f"proxy.unsubscribe_event({event_id}) failed with: {e}"
+                    )
 
     def wrap_lrc_callback(event: EventData) -> None:
         # Check for tango error
@@ -135,18 +146,19 @@ def invoke_lrc(  # noqa: C901
             lrc_attr_value = event.attr_value.value[cmd_idx + 1]
         except ValueError:
             return  # Do nothing, as will often be called for unrelated events
-        except IndexError as e:
-            msg = f"'{command_id}' command has no status/progress/result value"
-            logger.exception(msg)
-            raise IndexError(msg) from e
+        except IndexError:
+            logger.exception(
+                f"'{command_id}' command has no status/progress/result value"
+            )
+            return
         match event.attr_value.name:
             case "longrunningcommandstatus":
                 try:
                     status = TaskStatus[lrc_attr_value]
-                except KeyError as e:
-                    msg = f"Received unknown TaskStatus from event: {lrc_attr_value}"
-                    logger.exception(msg)
-                    raise KeyError(msg) from e
+                except KeyError:
+                    logger.exception(
+                        f"Received unknown TaskStatus from event: {lrc_attr_value}"
+                    )
                 lrc_callback(status=status)
                 if status in [
                     TaskStatus.ABORTED,
@@ -167,36 +179,37 @@ def invoke_lrc(  # noqa: C901
         "longRunningCommandResult",
     ]:
         try:
-            event_id = _retry_tango_method(
-                logger,
-                proxy.subscribe_event,
-                (attr, EventType.CHANGE_EVENT, wrap_lrc_callback),
-                EventSystemFailed,
+            event_id = proxy.subscribe_event(
+                attr, EventType.CHANGE_EVENT, wrap_lrc_callback
             )
             event_ids.append(event_id)
-        except Exception:
-            logger.exception(
-                f"Subscribing to '{attr}' change event failed. "
-                "Unsubscribing from other LRC attributes"
-            )
+        except EventSystemFailed as exc:
             unsubscribe_lrc_events()
-            raise
+            calling_fn = inspect.getouterframes(inspect.currentframe())[1].function
+            frame = traceback.extract_tb(exc.__traceback__)[0]
+            Except.re_throw_exception(
+                exc,
+                "SKA_InvokeLrcFailed",
+                f"Subscribing to '{attr}' change event failed.",
+                f"{calling_fn}::{frame.name} at ({frame.filename}:{frame.lineno})",
+            )
 
     # Try to execute LRC on device proxy
     try:
         inout_args = (
             (command, *command_args) if command_args is not None else (command,)
         )
-        [[result_code], [command_id]] = _retry_tango_method(
-            logger,
-            proxy.command_inout,
-            inout_args,
-            CommunicationFailed,
-        )
-    except Exception:
-        logger.exception("Command call failed. Unsubscribing from LRC attributes")
+        [[result_code], [command_id]] = proxy.command_inout(*inout_args)
+    except (ConnectionFailed, CommunicationFailed, DeviceUnlocked, DevFailed) as exc:
         unsubscribe_lrc_events()
-        raise
+        calling_fn = inspect.getouterframes(inspect.currentframe())[1].function
+        frame = traceback.extract_tb(exc.__traceback__)[0]
+        Except.re_throw_exception(
+            exc,
+            "SKA_InvokeLrcFailed",
+            f"Invocation of command '{command}' failed with args: {command_args}",
+            f"{calling_fn}::{frame.name} at ({frame.filename}:{frame.lineno})",
+        )
     finally:
         # Command submitted, proceed with "subsequent" events.
         submitted.set()
@@ -212,7 +225,7 @@ def invoke_lrc(  # noqa: C901
         logger.error(msg)
         unsubscribe_lrc_events()
         raise ResultCodeError(msg)
-    return LrcSubscriptions(command_id, unsubscribe_lrc_events)
+    return LrcSubscriptions(str(command_id), unsubscribe_lrc_events)
 
 
 # pylint: disable=inconsistent-return-statements,too-many-arguments

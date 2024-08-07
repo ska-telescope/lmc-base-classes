@@ -1388,6 +1388,28 @@ class TestSKABaseDevice:  # pylint: disable=too-many-public-methods
             ],
         )
 
+    def test_lrc_api_exception(
+        self: TestSKABaseDevice,
+        device_under_test: DeviceProxy,
+        lrc_callback_log_only: LrcCallback,
+        logger: logging.Logger,
+    ) -> None:
+        """
+        Test for when invoke_lrc encounters a Tango exception.
+
+        :param device_under_test: a proxy to the device under test
+        :param lrc_callback_log_only: callback fixture to use with invoke_lrc.
+        :param logger: test logger
+        """
+        with pytest.raises(DevFailed) as exc_info:
+            invoke_lrc(
+                device_under_test, logger, lrc_callback_log_only, "DummyCmd", (1,)
+            )
+            assert (
+                "Invocation of command 'DummyCmd' failed with args: (1,)"
+                in exc_info.value
+            )
+
     def test_lrc_api_retry_method(
         self: TestSKABaseDevice,
         device_under_test: DeviceProxy,

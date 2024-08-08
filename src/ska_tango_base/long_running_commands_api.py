@@ -12,7 +12,6 @@ import json
 import threading
 import traceback
 from logging import Logger
-from time import sleep
 from typing import Any, Callable, Protocol
 
 from ska_control_model import ResultCode, TaskStatus
@@ -128,8 +127,8 @@ def invoke_lrc(  # noqa: C901
     def wrap_lrc_callback(event: EventData) -> None:
         # Check for tango error
         if event.err:
+            logger.error(f"'{command_id}' command encountered error(s): {event.errors}")
             lrc_callback(error=event.errors)
-            unsubscribe_lrc_events()
             return
 
         # Wait for the command to have an ID. Timeout is command_inout timeout + 1.
@@ -146,18 +145,27 @@ def invoke_lrc(  # noqa: C901
             lrc_attr_value = event.attr_value.value[cmd_idx + 1]
         except ValueError:
             return  # Do nothing, as will often be called for unrelated events
-        except IndexError:
+        except IndexError as exc:
             logger.exception(
                 f"'{command_id}' command has no status/progress/result value"
+            )
+            lrc_callback(
+                error=Except.to_dev_failed(type(exc), exc, exc.__traceback__).args
             )
             return
         match event.attr_value.name:
             case "longrunningcommandstatus":
                 try:
                     status = TaskStatus[lrc_attr_value]
-                except KeyError:
+                except KeyError as exc:
                     logger.exception(
-                        f"Received unknown TaskStatus from event: {lrc_attr_value}"
+                        f"Received unknown TaskStatus from '{command_id}' command: "
+                        f"{lrc_attr_value}"
+                    )
+                    lrc_callback(
+                        error=Except.to_dev_failed(
+                            type(exc), exc, exc.__traceback__
+                        ).args
                     )
                 lrc_callback(status=status)
                 if status in [
@@ -172,6 +180,17 @@ def invoke_lrc(  # noqa: C901
             case "longrunningcommandresult":
                 lrc_callback(result=json.loads(lrc_attr_value))
 
+    def re_throw_exception(exception: Exception, description: str) -> None:
+        calling_fn = inspect.getouterframes(inspect.currentframe())[2].function
+        frame = traceback.extract_tb(exception.__traceback__)[0]
+        Except.re_throw_exception(
+            exception,
+            "SKA_InvokeLrcFailed",  # Reason
+            description,
+            # Origin
+            f"{calling_fn}::{frame.name} at ({frame.filename}:{frame.lineno})",
+        )
+
     # Subscribe to LRC attributes' change events with above callback
     for attr in [
         "longRunningCommandStatus",
@@ -185,14 +204,7 @@ def invoke_lrc(  # noqa: C901
             event_ids.append(event_id)
         except EventSystemFailed as exc:
             unsubscribe_lrc_events()
-            calling_fn = inspect.getouterframes(inspect.currentframe())[1].function
-            frame = traceback.extract_tb(exc.__traceback__)[0]
-            Except.re_throw_exception(
-                exc,
-                "SKA_InvokeLrcFailed",
-                f"Subscribing to '{attr}' change event failed.",
-                f"{calling_fn}::{frame.name} at ({frame.filename}:{frame.lineno})",
-            )
+            re_throw_exception(exc, f"Subscribing to '{attr}' change event failed.")
 
     # Try to execute LRC on device proxy
     try:
@@ -202,13 +214,8 @@ def invoke_lrc(  # noqa: C901
         [[result_code], [command_id]] = proxy.command_inout(*inout_args)
     except (ConnectionFailed, CommunicationFailed, DeviceUnlocked, DevFailed) as exc:
         unsubscribe_lrc_events()
-        calling_fn = inspect.getouterframes(inspect.currentframe())[1].function
-        frame = traceback.extract_tb(exc.__traceback__)[0]
-        Except.re_throw_exception(
-            exc,
-            "SKA_InvokeLrcFailed",
-            f"Invocation of command '{command}' failed with args: {command_args}",
-            f"{calling_fn}::{frame.name} at ({frame.filename}:{frame.lineno})",
+        re_throw_exception(
+            exc, f"Invocation of command '{command}' failed with args: {command_args}"
         )
     finally:
         # Command submitted, proceed with "subsequent" events.
@@ -226,38 +233,3 @@ def invoke_lrc(  # noqa: C901
         unsubscribe_lrc_events()
         raise ResultCodeError(msg)
     return LrcSubscriptions(str(command_id), unsubscribe_lrc_events)
-
-
-# pylint: disable=inconsistent-return-statements,too-many-arguments
-def _retry_tango_method(
-    logger: Logger,
-    method: Callable[..., Any],
-    args: tuple[Any, ...] = (),
-    exception_type: type[Exception] | tuple[type[Exception], ...] = Exception,
-    max_retries: int = 3,
-    delay: int = 2,
-) -> Any:  # noqa: DAR401
-    """
-    Call a tango method on a device proxy, retrying if it raises the given exceptions.
-
-    :param logger: Logger to use for logging exceptions.
-    :param method: The method to call.
-    :param args: Positional arguments to pass to the method. Defaults to ().
-    :param exception_type: The type of exception(s) that will trigger a retry.
-    :param max_retries: Maximum number of retry attempts. Defaults to 3.
-    :param delay: Delay in seconds between retry attempts. Defaults to 2.
-    :return: The result of the method if it succeeds.
-    :raises Exception: If the method fails after the maximum number of retries.
-    """  # noqa: DAR402
-    for attempt in range(1, max_retries + 1):
-        try:
-            return method(*args)  # Call the tango method with its arguments
-        except exception_type as e:  # pylint: disable=broad-exception-caught
-            logger.warning(
-                f"{method.__name__}{args} failed attempt {attempt} with: {e}"
-            )
-            if attempt < max_retries:
-                sleep(delay)  # Wait before retrying
-            else:
-                logger.error(f"All retries of {method.__name__}{args} failed")
-                raise  # Re-raise the exception if max retries are reached

@@ -30,11 +30,7 @@ from tango import DevFailed, DeviceProxy, DevState, EventType
 from ska_tango_base import SKABaseDevice
 from ska_tango_base.base.base_device import _DEBUGGER_PORT
 from ska_tango_base.faults import CommandError
-from ska_tango_base.long_running_commands_api import (
-    LrcCallback,
-    _retry_tango_method,
-    invoke_lrc,
-)
+from ska_tango_base.long_running_commands_api import LrcCallback, invoke_lrc
 from ska_tango_base.testing.reference import (
     ReferenceBaseComponentManager,
     ReferenceSkaBaseDevice,
@@ -509,34 +505,6 @@ class TestSKABaseDevice:  # pylint: disable=too-many-public-methods
                 "Invocation of command 'DummyCmd' failed with args: (1,)"
                 in exc_info.value
             )
-
-    def test_lrc_api_retry_method(
-        self: TestSKABaseDevice,
-        device_under_test: DeviceProxy,
-        logger: logging.Logger,
-        caplog: pytest.LogCaptureFixture,
-    ) -> None:
-        """
-        Test for when a command encounters an Exception.
-
-        :param device_under_test: a proxy to the device under test
-        :param logger: test logger
-        :param caplog: pytest LogCaptureFixture
-        """
-        with pytest.raises(KeyError):
-            _retry_tango_method(logger, device_under_test.unsubscribe_event, (10,))
-        Helpers.assert_expected_logs(
-            caplog,
-            [  # Log messages must be in this exact order
-                "__DeviceProxy__unsubscribe_event(10,) failed attempt 1 with: "
-                "'This device proxy does not own this subscription 10'",
-                "__DeviceProxy__unsubscribe_event(10,) failed attempt 2 with: "
-                "'This device proxy does not own this subscription 10'",
-                "__DeviceProxy__unsubscribe_event(10,) failed attempt 3 with: "
-                "'This device proxy does not own this subscription 10'",
-                "All retries of __DeviceProxy__unsubscribe_event(10,) failed",
-            ],
-        )
 
     def test_lrcStatusQueue(
         self: TestSKABaseDevice,

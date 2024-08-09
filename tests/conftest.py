@@ -4,16 +4,20 @@ from __future__ import annotations
 
 import logging
 import socket
+import time
 from typing import Any, Generator, cast
 
 import pytest
 import pytest_mock
 import tango
+from ska_control_model import ResultCode, TaskStatus
 from ska_tango_testing.mock import MockCallableGroup
 from ska_tango_testing.mock.tango import MockTangoEventCallbackGroup
+from tango import DevError
 from tango.test_context import DeviceTestContext, MultiDeviceTestContext, get_host_ip
 
 import ska_tango_base.base.base_device
+from ska_tango_base.long_running_commands_api import LrcCallback
 
 
 @pytest.fixture(scope="class")
@@ -115,14 +119,16 @@ def change_event_callbacks_fixture() -> MockTangoEventCallbackGroup:
     )
 
 
-@pytest.fixture()
-def logger() -> logging.Logger:
+@pytest.fixture(name="logger")
+def logger_fixture() -> logging.Logger:
     """
     Return a default logger for tests.
 
     :return: a default logger for tests.
     """
-    return logging.Logger("Test logger")
+    logger = logging.getLogger("Test logger")
+    logger.setLevel(logging.INFO)
+    return logger
 
 
 # TODO: Placeholder for a better type specification
@@ -185,6 +191,136 @@ def patch_debugger_to_start_on_ephemeral_port() -> None:
     ska_tango_base.base.base_device._DEBUGGER_PORT = 0
 
 
+@pytest.fixture(name="successful_lrc_callback")
+def successful_lrc_callback_fixture(
+    logger: logging.Logger,
+) -> Generator[LrcCallback, None, None]:
+    """
+    Use this callback with invoke_lrc when the LRC should complete successfully.
+
+    :yields: successful_lrc_callback function.
+    :raises AssertionError: if unexpected status, progress, result or error is received.
+    """  # noqa DAR401,DAR402
+    assert_errors: list[AssertionError] = []
+
+    def _successful_lrc_callback(
+        status: TaskStatus | None = None,
+        progress: int | None = None,
+        result: dict[str, Any] | list[Any] | None = None,
+        error: tuple[DevError] | None = None,
+        **kwargs: Any,
+    ) -> None:
+        try:
+            if status is not None:
+                logger.info(f"lrc_callback(status={status.name})")
+                assert status in [
+                    TaskStatus.STAGING,
+                    TaskStatus.QUEUED,
+                    TaskStatus.IN_PROGRESS,
+                    TaskStatus.COMPLETED,
+                ], f"Unexpected status: {status.name}"
+            if progress is not None:
+                logger.info(f"lrc_callback(progress={progress})")
+                assert progress in [33, 66], f"Unexpected progress: {progress}"
+            if result is not None:
+                logger.info(f"lrc_callback(result={result})")
+                assert isinstance(result, list) and result[0] == ResultCode.OK, {
+                    f"Unexpected result: {result}"
+                }
+            if error is not None:
+                logger.error(f"lrc_callback(error={error})")
+                assert False, f"Received {error}"
+            if kwargs:
+                logger.error(f"lrc_callback(kwargs={kwargs})")
+        except AssertionError as e:
+            assert_errors.append(e)
+
+    yield _successful_lrc_callback
+    if assert_errors:
+        raise assert_errors[0]
+
+
+@pytest.fixture(name="aborted_lrc_callback")
+def aborted_lrc_callback_fixture(
+    logger: logging.Logger,
+) -> Generator[LrcCallback, None, None]:
+    """
+    Use this callback with invoke_lrc when the LRC should be aborted after starting.
+
+    :yields: aborted_lrc_callback function.
+    :raises AssertionError: if unexpected status, progress, result or error is received.
+    """  # noqa DAR401,DAR402
+    assert_errors: list[AssertionError] = []
+
+    def _aborted_lrc_callback(
+        status: TaskStatus | None = None,
+        progress: int | None = None,
+        result: dict[str, Any] | list[Any] | None = None,
+        error: tuple[DevError] | None = None,
+        **kwargs: Any,
+    ) -> None:
+        try:
+            if status is not None:
+                logger.info(f"lrc_callback(status={status.name})")
+                assert status in [
+                    TaskStatus.STAGING,
+                    TaskStatus.QUEUED,
+                    TaskStatus.IN_PROGRESS,
+                    TaskStatus.ABORTED,
+                ], f"Unexpected status: {status.name}"
+            if progress is not None:
+                logger.info(f"lrc_callback(progress={progress})")
+                assert False, f"Unexpected progress: {progress}"
+            if result is not None:
+                logger.info(f"lrc_callback(result={result})")
+                assert isinstance(result, list) and result[0] == ResultCode.ABORTED, {
+                    f"Unexpected result: {result}"
+                }
+            if error is not None:
+                logger.error(f"lrc_callback(error={error})")
+                assert False, f"Received {error}"
+            if kwargs:
+                logger.error(f"lrc_callback(kwargs={kwargs})")
+        except AssertionError as e:
+            assert_errors.append(e)
+
+    yield _aborted_lrc_callback
+    if assert_errors:
+        raise assert_errors[0]
+
+
+@pytest.fixture(name="lrc_callback_log_only")
+def lrc_callback_log_only_fixture(
+    logger: logging.Logger,
+) -> LrcCallback:
+    """
+    Use this callback with invoke_lrc only to log the arguments.
+
+    :param logger: test logger
+    :return: lrc_callback_log_only function.
+    """
+
+    def _lrc_callback_log_only(
+        status: TaskStatus | None = None,
+        progress: int | None = None,
+        result: dict[str, Any] | list[Any] | None = None,
+        error: tuple[DevError] | None = None,
+        **kwargs: Any,
+    ) -> None:
+        if status is not None:
+            logger.info(f"lrc_callback(status={status.name})")
+        if progress is not None:
+            logger.info(f"lrc_callback(progress={progress})")
+        if result is not None:
+            logger.info(f"lrc_callback(result={result})")
+        if error is not None:
+            logger.error(f"lrc_callback(error={error})")
+        if kwargs:
+            logger.error(f"lrc_callback(kwargs={kwargs})")
+
+    return _lrc_callback_log_only
+
+
 class Helpers:
     """Static helper functions for tests."""
 
@@ -220,3 +356,29 @@ class Helpers:
             attr_name
         ]._callable._consumer_view._iterable:
             print(node.payload["attribute_value"])
+
+    @staticmethod
+    def assert_expected_logs(
+        caplog: pytest.LogCaptureFixture,
+        expected_logs: list[str],
+        timeout: int = 2,
+    ) -> None:
+        """
+        Assert the expected log messages are in the captured logs.
+
+        The expected list of log messages must appear in the records in the same order.
+        The captured logs are cleared before returning for subsequent assertions.
+
+        :param caplog: pytest log capture fixture.
+        :param expected_logs: to assert are in the log capture fixture.
+        :param timeout: time to wait for the last log message to appear, default 2 secs.
+        """
+        start_time = time.time()
+        while time.time() - start_time < timeout:
+            if expected_logs[-1] in caplog.text:
+                break
+        else:
+            pytest.fail(f"'{expected_logs}' not found in logs within {timeout} seconds")
+        test_logs = [record.message for record in caplog.records]
+        assert test_logs == expected_logs
+        caplog.clear()

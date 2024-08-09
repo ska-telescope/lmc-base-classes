@@ -4,131 +4,17 @@
 #
 # Distributed under the terms of the BSD 3-clause new license.
 # See LICENSE.txt for more info.
-"""
-This module provides utils used by SKABaseDevice to keep track of long running commands.
-
-It implements the CommandTracker and its supporting classes/functions.
-"""
+"""This module implements the CommandTracker and its supporting classes/functions."""
 from __future__ import annotations
 
-import json
 import threading
-from typing import Any, Callable, Protocol, TypedDict
+from typing import Any, Callable, TypedDict
 
 from ska_control_model import ResultCode, TaskStatus
-from tango import DevError, DeviceProxy, EventData, EventType
 
 from ..utils import generate_command_id
 
 __all__ = ["CommandTracker"]
-
-
-# pylint: disable=too-few-public-methods
-class LrcCallback(Protocol):
-    """Expected LRC callback signature for typing."""
-
-    def __call__(
-        self,
-        status: TaskStatus | None = None,
-        progress: int | None = None,
-        result: dict[str, Any] | list[Any] | None = None,  # TODO: To be decided later
-        error: tuple[DevError] | None = None,
-        **kwargs: Any,
-    ) -> None:
-        raise NotImplementedError("LrcCallback is a protocol used only for typing.")
-
-
-def invoke_lrc(
-    proxy: DeviceProxy,
-    lrc_callback: LrcCallback,
-    command: str,
-    command_args: tuple[Any] | None = None,
-    timeout: int = 10,  # TODO: pylint: disable=unused-argument
-) -> str:
-    """
-    Invoke a long running command (LRC) and monitor its progress with callbacks.
-
-    Subscribe to the relevant LRC attributes and inform the client about change events
-    via the provided lrc_callback with either the status, progress, result or error.
-
-    :param proxy: Tango DeviceProxy.
-    :param lrc_callback: of client to wrap.
-    :param command: name to invoke.
-    :param command_args: optional arguments for the command, defaults to None.
-    :param timeout: for command, defaults to 10 seconds.
-    :raises Exception: Re-raises exceptions from command_inout.
-    :return: the command ID or rejection message.
-    """
-    calling_thread = threading.current_thread()
-    submitted = threading.Event()
-    command_id = None
-
-    def wrap_lrc_callback(event: EventData) -> None:
-        if event.err:
-            lrc_callback(error=event.errors)
-            unsubscribe_lrc_events()
-            return
-
-        # proxy.subscribe_event emits an event in the calling thread when
-        # first called. Their attr_value.value will be ('','') and therefore
-        # the index() call below will throw a ValueError.
-        # Subsequent events are from internal device thread.
-        if threading.current_thread() != calling_thread:
-            # Wait for the command to have an ID. Timeout is
-            # command_inout timeout + 1.
-            if not submitted.wait(timeout=4):
-                unsubscribe_lrc_events()
-                return
-
-        # TODO: Remove later. For debugging with pytest -rA
-        # print("event.attr_value:", event.attr_value.value)
-        try:
-            cmd_idx = event.attr_value.value.index(command_id)
-            lrc_attr_value = event.attr_value.value[cmd_idx + 1]
-        except (ValueError, IndexError):
-            return
-        match event.attr_value.name:
-            case "longrunningcommandstatus":
-                status = TaskStatus[lrc_attr_value]
-                lrc_callback(status=status)
-                if status in [
-                    TaskStatus.ABORTED,
-                    TaskStatus.COMPLETED,
-                    TaskStatus.FAILED,
-                    TaskStatus.REJECTED,
-                ]:
-                    unsubscribe_lrc_events()
-            case "longrunningcommandprogress":
-                lrc_callback(progress=int(lrc_attr_value))
-            case "longrunningcommandresult":
-                lrc_callback(result=json.loads(lrc_attr_value))
-
-    lrc_status_event = proxy.subscribe_event(
-        "longRunningCommandStatus", EventType.CHANGE_EVENT, wrap_lrc_callback
-    )
-    lrc_progress_event = proxy.subscribe_event(
-        "longRunningCommandProgress", EventType.CHANGE_EVENT, wrap_lrc_callback
-    )
-    lrc_result_event = proxy.subscribe_event(
-        "longRunningCommandResult", EventType.CHANGE_EVENT, wrap_lrc_callback
-    )
-
-    def unsubscribe_lrc_events() -> None:
-        proxy.unsubscribe_event(lrc_status_event)
-        proxy.unsubscribe_event(lrc_progress_event)
-        proxy.unsubscribe_event(lrc_result_event)
-
-    try:
-        inout_args = (command, command_args)
-        [[_], [command_id]] = proxy.command_inout(*inout_args)
-    except Exception:
-        unsubscribe_lrc_events()
-        raise
-    finally:
-        # Command submitted, proceed with "subsequent" events.
-        submitted.set()
-
-    return str(command_id)
 
 
 class _ThreadContextManager:

@@ -11,6 +11,7 @@ __all__ = (
     "faults",
     "release",
     "utils",
+    "long_running_commands_api",
     # direct imports
     "SKAAlarmHandler",
     "SKABaseDevice",

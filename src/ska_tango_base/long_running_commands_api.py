@@ -109,7 +109,7 @@ def invoke_lrc(  # noqa: C901
 
     :param proxy: Tango DeviceProxy.
     :param logger: Logger to use for logging exceptions.
-    :param lrc_callback: Client LRC callback to wrap.
+    :param lrc_callback: Client LRC callback to call whenever the LRC's state changes.
     :param command: Name of command to invoke.
     :param command_args: Optional arguments for the command, defaults to None.
     :return: LrcSubscriptions class instance, containing the command ID.

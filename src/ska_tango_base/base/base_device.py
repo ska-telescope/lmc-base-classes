@@ -24,6 +24,7 @@ import traceback
 from functools import partial
 from types import FunctionType, MethodType
 from typing import Any, Callable, Generic, TypeVar, cast
+from warnings import warn
 
 import debugpy
 import ska_ser_logging
@@ -1420,6 +1421,11 @@ class SKABaseDevice(
             :param logger: the logger to be used by this Command. If not
                 provided, then a default module logger will be used.
             """
+            warn(
+                "'AbortCommandsCommand' is deprecated and will be removed in the next "
+                "major release. Please use the 'AbortCommand' class instead.",
+                DeprecationWarning,
+            )
             self._component_manager = component_manager
             super().__init__(None, logger=logger)
 
@@ -1459,6 +1465,12 @@ class SKABaseDevice(
             message indicating status. The message is for
             information purpose only.
         """
+        warning_msg = (
+            "'AbortCommands' is deprecated and will be removed in the next major "
+            "release. Please use the tracked 'Abort' long running command instead."
+        )
+        warn(warning_msg, DeprecationWarning)
+        self.logger.warning(warning_msg)
         handler = self.get_command_object("AbortCommands")
         (return_code, message) = handler()
         return ([return_code], [message])

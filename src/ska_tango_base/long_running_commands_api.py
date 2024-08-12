@@ -118,7 +118,20 @@ def invoke_lrc(  # noqa: C901
         unsubscribes from the LRC change events and thus stops any further callbacks.
     :raises CommandError: If the command is rejected.
     :raises ResultCodeError: If the command returns an unexpected result code.
+    :raises ValueError: If the lrc_callback does not accept `**kwargs`
     """
+
+    def is_future_proof_lrc_callback() -> bool:
+        sig = inspect.signature(lrc_callback)
+        for param in sig.parameters.values():
+            if param.kind == inspect.Parameter.VAR_KEYWORD:
+                return True
+
+        return False
+
+    if not is_future_proof_lrc_callback():
+        raise ValueError("lrc_callback must accept **kwargs")
+
     calling_thread = threading.current_thread()
     submitted = threading.Event()
     lock = threading.Lock()

@@ -1396,7 +1396,7 @@ class SKABaseDevice(
     @DebugIt()  # type: ignore[misc]  # "Untyped decorator makes function untyped"
     def Abort(self: SKABaseDevice[ComponentManagerT]) -> DevVarLongStringArrayType:
         """
-        Abort any long-running command.
+        Abort any executing long running command(s) and empty the queue.
 
         :return: A tuple containing a result code and the unique ID of the command
         """

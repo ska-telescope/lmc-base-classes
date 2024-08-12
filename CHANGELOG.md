@@ -1,5 +1,12 @@
 # Changelog
 
+## unreleased
+
+- Added: (WOM-344)
+  - Copied `Abort` LRC from `SKASubArray` to `SKABaseDevice` that has a command ID and `TaskStatus`.
+- Deprecations:
+  - `SKABaseDevice.AbortCommands` is deprecated and replaced by new `Abort` LRC.
+
 ## 1.1.0
 
 - Added new `invoke_lrc` function as a callback API for LRCs (WOM-369, WOM-393, WOM-394, WOM-415).

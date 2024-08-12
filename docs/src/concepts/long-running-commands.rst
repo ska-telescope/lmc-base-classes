@@ -127,8 +127,8 @@ dequeued and is executed (provided it is allowed).
 
 .. note::
 
-   An exception to the use of the Input Queue is the Abort LRC from the
-   :class:`~ska_tango_base.subarray.subarray_device.SKASubarray` class.  This command
+   An exception to the use of the Input Queue is the `Abort` LRC from the
+   :class:`~ska_tango_base.base.base_device.SKABaseDevice` class.  This command
    **must** be executed immediately and cannot be queued.
 
 .. warning::

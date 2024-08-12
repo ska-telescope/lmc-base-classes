@@ -139,7 +139,7 @@ def test_abort(
     assert ResultCode(int(result_code)) == ResultCode.QUEUED
     assert command_id.endswith("AbortingLongRunning")
 
-    device_under_test.AbortCommands()
+    device_under_test.Abort()
 
     next_result = change_event_callbacks.assert_against_call("longRunningCommandResult")
     command_id, message = next_result["attribute_value"]

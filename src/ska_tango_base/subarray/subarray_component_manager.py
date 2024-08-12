@@ -42,15 +42,6 @@ class SubarrayComponentManager(ObsDeviceComponentManager):
         """
         super().__init__(*args, **kwargs)
 
-    @property
-    def max_executing_tasks(self) -> int:
-        """
-        Get the max number of tasks that can be executing at once.
-
-        :return: max number of simultaneously executing tasks.
-        """
-        return 2
-
     def assign(
         self: SubarrayComponentManager,
         task_callback: TaskCallbackType | None,
@@ -150,19 +141,6 @@ class SubarrayComponentManager(ObsDeviceComponentManager):
     ) -> tuple[TaskStatus, str]:
         """
         End scanning.
-
-        :param task_callback: callback to be called when the status of
-            the command changes
-
-        :raises NotImplementedError: This is an abstract class
-        """
-        raise NotImplementedError("SubarrayComponentManager is abstract.")
-
-    def abort(
-        self: SubarrayComponentManager, task_callback: TaskCallbackType | None
-    ) -> tuple[TaskStatus, str]:
-        """
-        Tell the component to abort whatever it was doing.
 
         :param task_callback: callback to be called when the status of
             the command changes

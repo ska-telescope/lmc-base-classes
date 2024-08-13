@@ -95,9 +95,9 @@ class LrcSubscriptions:
 
 # pylint: disable=too-many-statements,too-many-locals
 def invoke_lrc(  # noqa: C901
-    proxy: DeviceProxy,
     logger: Logger,
     lrc_callback: LrcCallback,
+    proxy: DeviceProxy,
     command: str,
     command_args: tuple[Any] | None = None,
 ) -> LrcSubscriptions:

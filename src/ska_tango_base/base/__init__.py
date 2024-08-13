@@ -16,6 +16,7 @@ __all__ = (
     "TaskCallbackType",
     "check_communicating",
     "check_on",
+    "overridable",
 )
 
 # Note: order of imports is important - start with lowest in the hierarchy

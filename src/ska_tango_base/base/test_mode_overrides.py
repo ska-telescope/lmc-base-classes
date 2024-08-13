@@ -8,6 +8,7 @@
 Support for overriding Tango attributes when TestMode is TEST.
 """
 from ska_control_model import TestMode, HealthState
+
 from .base_device import SKABaseDevice
 
 enum_attrs = { # TODO - confirm we can change this downstream, may need to refactor?

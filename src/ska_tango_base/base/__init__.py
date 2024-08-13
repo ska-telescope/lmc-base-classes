@@ -28,7 +28,6 @@ from .base_component_manager import (
     check_communicating,
     check_on,
 )
-from .test_mode_overrides import overridable
-from .base_device import SKABaseDevice
+from .base_device import SKABaseDevice, overridable
 from .command_tracker import CommandTracker
 from .op_state_model import OpStateModel

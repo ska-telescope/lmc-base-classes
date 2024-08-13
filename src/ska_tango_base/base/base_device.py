@@ -301,9 +301,9 @@ class SKABaseDevice(
         try:
             super().init_device()
 
-            self._omni_queue: queue.SimpleQueue[
-                tuple[str, Any, Any]
-            ] = queue.SimpleQueue()
+            self._omni_queue: queue.SimpleQueue[tuple[str, Any, Any]] = (
+                queue.SimpleQueue()
+            )
 
             # this can be removed when cppTango issue #935 is implemented
             self._init_active = True

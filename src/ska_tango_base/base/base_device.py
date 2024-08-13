@@ -23,7 +23,7 @@ import threading
 import traceback
 from functools import partial
 from types import FunctionType, MethodType
-from typing import Any, Callable, Generic, TypeVar, cast
+from typing import Any, Callable, Generic, Iterable, TypeVar, cast
 
 import debugpy
 import ska_ser_logging
@@ -39,7 +39,7 @@ from ska_control_model import (
     TaskStatus,
     TestMode,
 )
-from tango import DebugIt, DevState, Except, is_omni_thread
+from tango import AttReqType, AttributeProxy, DebugIt, DevState, Except, is_omni_thread
 from tango.server import Device, attribute, command, device_property
 
 from .. import release
@@ -55,7 +55,6 @@ from .logging import (
     LoggingUtils,
 )
 from .op_state_model import OpStateModel
-from .test_mode_overrides import _override_value_convert
 
 __all__ = ["SKABaseDevice", "main"]
 
@@ -316,10 +315,8 @@ class SKABaseDevice(
             self._control_mode = ControlMode.REMOTE
             self._simulation_mode = SimulationMode.FALSE
             self._test_mode = TestMode.NONE
-            self._test_mode_overrides = {}
-            """Overrides used in TestMode - attribute name: override value"""
-            self._test_mode_overrides_changed = None
-            """Optional callback to trigger when test mode overrides change."""
+            self._test_mode_overrides: dict[str, Any] = {}
+            self._test_mode_overrides_changed: Callable[[], None] | None = None
             self._commanded_state = "None"
             self._command_ids_in_queue: list[str] = []
             self._commands_in_queue: list[str] = []
@@ -463,7 +460,9 @@ class SKABaseDevice(
         )
         self.add_attribute(attr)
 
-    def _get_override_value(self: SKABaseDevice[ComponentManagerT], attr_name: str, default: Any=None) -> Any:
+    def _get_override_value(
+        self: SKABaseDevice[ComponentManagerT], attr_name: str, default: Any = None
+    ) -> Any:
         """
         Read a value from our overrides, use a default value when not overridden.
 
@@ -477,7 +476,10 @@ class SKABaseDevice(
         :param default: Default value to return if no override in effect.
         :returns: Active override value or ``default``.
         """
-        if self._test_mode != TestMode.TEST or attr_name not in self._test_mode_overrides:
+        if (
+            self._test_mode != TestMode.TEST
+            or attr_name not in self._test_mode_overrides
+        ):
             return default
         return _override_value_convert(attr_name, self._test_mode_overrides[attr_name])
 
@@ -1069,7 +1071,7 @@ class SKABaseDevice(
             self._test_mode_overrides = {}
             self._push_events_overrides_removed(overrides_being_removed)
             # call downstream callback function to deal with override changes
-            if self._test_mode_overrides_changed:
+            if self._test_mode_overrides_changed is not None:
                 self._test_mode_overrides_changed()
 
         self._test_mode = value
@@ -1077,7 +1079,7 @@ class SKABaseDevice(
     @attribute(
         dtype=str,
         doc="Attribute value overrides (JSON dict)",
-    )
+    )  # type: ignore[misc]
     def test_mode_overrides(self: SKABaseDevice[ComponentManagerT]) -> str:
         """
         Read the current override configuration.
@@ -1087,18 +1089,25 @@ class SKABaseDevice(
         return json.dumps(self._test_mode_overrides)
 
     # TODO @test_mode_overrides.is_allowed looks nice, check if it works here
-    def is_test_mode_overrides_allowed(self: SKABaseDevice[ComponentManagerT], request_type: AttReqType) -> bool:
+    def is_test_mode_overrides_allowed(
+        self: SKABaseDevice[ComponentManagerT], request_type: AttReqType
+    ) -> bool:
         """
         Control access to test_mode_overrides attribute.
 
         Writes to the attribute are allowed only if test mode is active.
+
+        :param request_type: Attribute request type
+        :returns: If in test mode
         """
         if request_type == AttReqType.READ_REQ:
             return True
         return self._test_mode == TestMode.TEST
 
-    @test_mode_overrides.write  # type: ignore[no-redef]
-    def test_mode_overrides(self: SKABaseDevice[ComponentManagerT], value_str: str) -> None:
+    @test_mode_overrides.write  # type: ignore[no-redef, misc]
+    def test_mode_overrides(
+        self: SKABaseDevice[ComponentManagerT], value_str: str
+    ) -> None:
         """
         Write new override configuration.
 
@@ -1106,9 +1115,7 @@ class SKABaseDevice(
         """
         value_dict = json.loads(value_str)
         assert isinstance(value_dict, dict), "expected JSON-encoded dict"
-        overrides_being_removed = (
-                self._test_mode_overrides.keys() - value_dict.keys()
-        )
+        overrides_being_removed = self._test_mode_overrides.keys() - value_dict.keys()
         # we could call _override_value_convert on incoming values here, but I prefer to
         # leave as-is, so the user can read back the same thing they wrote in
         self._test_mode_overrides = value_dict
@@ -1126,10 +1133,12 @@ class SKABaseDevice(
                 self.push_archive_event(attr_name, value)
 
         # call downstream callback function to deal with override changes
-        if self._test_mode_overrides_changed:
+        if self._test_mode_overrides_changed is not None:
             self._test_mode_overrides_changed()
 
-    def _push_events_overrides_removed(self: SKABaseDevice[ComponentManagerT], attrs_to_refresh: Iterable[str]) -> None:
+    def _push_events_overrides_removed(
+        self: SKABaseDevice[ComponentManagerT], attrs_to_refresh: Iterable[str]
+    ) -> None:
         """
         Push true value events for attributes that were previously overridden.
 
@@ -2092,6 +2101,64 @@ class SKABaseDevice(
         while not self._omni_queue.empty():
             (command_name, args, kwargs) = self._omni_queue.get_nowait()
             getattr(super(), command_name)(*args, **kwargs)
+
+
+#################################################################
+# Support for overriding Tango attributes when TestMode is TEST #
+#################################################################
+enum_attrs = {  # TODO - confirm we can change this downstream, may need to refactor?
+    "healthState": HealthState,
+}
+"""Tango attribute and enum class, for string conversion in TestMode overrides."""
+
+
+def overridable(
+    func: Callable[[object, Any, Any], None]
+) -> Callable[[object, Any, Any], None] | Any:
+    """
+    Decorate attribute with test mode overrides.
+
+    :param func: Tango attribute
+    :return: Overridden value or original function
+    """
+    attr_name = func.__name__
+
+    def override_attr_in_test_mode(
+        self: SKABaseDevice[ComponentManagerT], *args: Any, **kwargs: Any
+    ) -> Callable[[object, Any, Any], None] | Any:
+        """
+        Override attribute when test mode is active and value specified.
+
+        :param self: SKABaseDevice
+        :param args: Any positional arguments
+        :param kwargs: Any keyword arguments
+        :return: Tango attribute
+        """
+        # pylint: disable=protected-access
+        if self._test_mode == TestMode.TEST and attr_name in self._test_mode_overrides:
+            return _override_value_convert(
+                attr_name, self._test_mode_overrides[attr_name]
+            )
+
+        # Test Mode not active, normal attribute behaviour
+        return func(self, *args, **kwargs)
+
+    return override_attr_in_test_mode
+
+
+def _override_value_convert(attr_name: str, value: Any) -> Any:
+    """
+    Automatically convert types for attr overrides (e.g. enum label -> int).
+
+    :param attr_name: Attribute name
+    :param value: Value to convert
+    :return: Converted value
+    """
+    if attr_name in enum_attrs and isinstance(value, str):
+        return enum_attrs[attr_name][value]
+
+    # default to no conversion
+    return value
 
 
 # ----------

@@ -33,13 +33,27 @@ from ska_tango_base.faults import CommandError, ResultCodeError
 
 # pylint: disable=too-few-public-methods
 class LrcCallback(Protocol):
-    """Expected LRC callback signature for typing."""
+    """Expected LRC callback signature for typing.
+
+    The LrcCallback will be called with some combination of the following arguments:
+
+        - ``status``: ``TaskStatus``
+        - ``progress``: ``int``
+        - ``result``: ``Any``
+        - ``error``: ``tuple[DevError]``
+
+    Each of the above arguments is optional and the callback must check which
+    are present by testing them again `None`.  The callback cannot assume
+    that only one argument will be provided per call.
+
+    It must accept a generic `**kwargs` parameter for forwards compatibility.
+    """
 
     def __call__(  # noqa: D102
         self,
         status: TaskStatus | None = None,
         progress: int | None = None,
-        result: dict[str, Any] | list[Any] | None = None,  # TODO: To be decided later
+        result: Any | None = None,  # TODO: To be decided later
         error: tuple[DevError] | None = None,
         **kwargs: Any,
     ) -> None:
@@ -81,9 +95,9 @@ class LrcSubscriptions:
 
 # pylint: disable=too-many-statements,too-many-locals
 def invoke_lrc(  # noqa: C901
-    proxy: DeviceProxy,
     logger: Logger,
     lrc_callback: LrcCallback,
+    proxy: DeviceProxy,
     command: str,
     command_args: tuple[Any] | None = None,
 ) -> LrcSubscriptions:
@@ -95,7 +109,7 @@ def invoke_lrc(  # noqa: C901
 
     :param proxy: Tango DeviceProxy.
     :param logger: Logger to use for logging exceptions.
-    :param lrc_callback: Client LRC callback to wrap.
+    :param lrc_callback: Client LRC callback to call whenever the LRC's state changes.
     :param command: Name of command to invoke.
     :param command_args: Optional arguments for the command, defaults to None.
     :return: LrcSubscriptions class instance, containing the command ID.
@@ -104,7 +118,20 @@ def invoke_lrc(  # noqa: C901
         unsubscribes from the LRC change events and thus stops any further callbacks.
     :raises CommandError: If the command is rejected.
     :raises ResultCodeError: If the command returns an unexpected result code.
+    :raises ValueError: If the lrc_callback does not accept `**kwargs`
     """
+
+    def is_future_proof_lrc_callback() -> bool:
+        sig = inspect.signature(lrc_callback)
+        for param in sig.parameters.values():
+            if param.kind == inspect.Parameter.VAR_KEYWORD:
+                return True
+
+        return False
+
+    if not is_future_proof_lrc_callback():
+        raise ValueError("lrc_callback must accept **kwargs")
+
     calling_thread = threading.current_thread()
     submitted = threading.Event()
     lock = threading.Lock()

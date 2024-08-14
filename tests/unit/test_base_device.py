@@ -233,7 +233,7 @@ class TestSKABaseDevice:  # pylint: disable=too-many-public-methods
             DevFailed,
             match="Command Reset not allowed when the device is in OFF state",
         ):
-            _ = invoke_lrc(device_under_test, logger, successful_lrc_callback, "Reset")
+            _ = invoke_lrc(logger, successful_lrc_callback, device_under_test, "Reset")
 
     def test_On(
         self: TestSKABaseDevice,
@@ -272,7 +272,7 @@ class TestSKABaseDevice:  # pylint: disable=too-many-public-methods
         )
         change_event_callbacks["longRunningCommandInProgress"].assert_change_event(())
 
-        lrc = invoke_lrc(device_under_test, logger, successful_lrc_callback, "On")
+        lrc = invoke_lrc(logger, successful_lrc_callback, device_under_test, "On")
         on_command = lrc.command_id.split("_", 2)[2]
         change_event_callbacks.assert_change_event(
             "longRunningCommandInProgress", (on_command,)
@@ -300,7 +300,7 @@ class TestSKABaseDevice:  # pylint: disable=too-many-public-methods
         with pytest.raises(
             CommandError, match="On command rejected: Device is already in ON state."
         ):
-            _ = invoke_lrc(device_under_test, logger, successful_lrc_callback, "On")
+            _ = invoke_lrc(logger, successful_lrc_callback, device_under_test, "On")
         Helpers.assert_expected_logs(
             caplog, ["On command rejected: Device is already in ON state."]
         )
@@ -343,7 +343,7 @@ class TestSKABaseDevice:  # pylint: disable=too-many-public-methods
         )
         change_event_callbacks["longRunningCommandInProgress"].assert_change_event(())
 
-        lrc = invoke_lrc(device_under_test, logger, successful_lrc_callback, "Standby")
+        lrc = invoke_lrc(logger, successful_lrc_callback, device_under_test, "Standby")
         standby_command = lrc.command_id.split("_", 2)[2]
         change_event_callbacks.assert_change_event(
             "longRunningCommandInProgress", (standby_command,)
@@ -377,7 +377,7 @@ class TestSKABaseDevice:  # pylint: disable=too-many-public-methods
             match="Standby command rejected: Device is already in STANDBY state.",
         ):
             _ = invoke_lrc(
-                device_under_test, logger, successful_lrc_callback, "Standby"
+                logger, successful_lrc_callback, device_under_test, "Standby"
             )
         Helpers.assert_expected_logs(
             caplog, ["Standby command rejected: Device is already in STANDBY state."]
@@ -422,7 +422,7 @@ class TestSKABaseDevice:  # pylint: disable=too-many-public-methods
             CommandError,
             match="Off command rejected: Device is already in OFF state.",
         ):
-            _ = invoke_lrc(device_under_test, logger, successful_lrc_callback, "Off")
+            _ = invoke_lrc(logger, successful_lrc_callback, device_under_test, "Off")
         change_event_callbacks.assert_not_called()
 
     def test_command_exception(
@@ -440,7 +440,7 @@ class TestSKABaseDevice:  # pylint: disable=too-many-public-methods
         :param logger: test logger
         :param caplog: pytest LogCaptureFixture
         """
-        cmd_subs = invoke_lrc(device_under_test, logger, lrc_callback_log_only, "On")
+        cmd_subs = invoke_lrc(logger, lrc_callback_log_only, device_under_test, "On")
         Helpers.assert_expected_logs(
             caplog,
             [  # Log messages must be in this exact order
@@ -454,7 +454,7 @@ class TestSKABaseDevice:  # pylint: disable=too-many-public-methods
             ],
         )
         cmd_subs = invoke_lrc(
-            device_under_test, logger, lrc_callback_log_only, "SimulateCommandError"
+            logger, lrc_callback_log_only, device_under_test, "SimulateCommandError"
         )
         Helpers.assert_expected_logs(
             caplog,
@@ -467,9 +467,9 @@ class TestSKABaseDevice:  # pylint: disable=too-many-public-methods
             ],
         )
         cmd_subs = invoke_lrc(
-            device_under_test,
             logger,
             lrc_callback_log_only,
+            device_under_test,
             "SimulateIsCmdAllowedError",
         )
         Helpers.assert_expected_logs(
@@ -499,7 +499,7 @@ class TestSKABaseDevice:  # pylint: disable=too-many-public-methods
         """
         with pytest.raises(DevFailed) as exc_info:
             invoke_lrc(
-                device_under_test, logger, lrc_callback_log_only, "DummyCmd", (1,)
+                logger, lrc_callback_log_only, device_under_test, "DummyCmd", (1,)
             )
             assert (
                 "Invocation of command 'DummyCmd' failed with args: (1,)"

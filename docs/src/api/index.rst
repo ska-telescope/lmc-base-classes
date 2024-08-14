@@ -32,4 +32,5 @@ API
   Commands<commands>
   Control Model<control-model>
   Faults<faults>
+  Long Running Commands API<long-running-commands-api>
   Utils<utils>

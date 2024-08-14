@@ -126,7 +126,7 @@ class TestSKASubarray:  # pylint: disable=too-many-public-methods
                 "commandedObsState", ObsState.EMPTY
             )
             # Call command
-            _ = invoke_lrc(device_under_test, logger, successful_lrc_callback, "On")
+            _ = invoke_lrc(logger, successful_lrc_callback, device_under_test, "On")
             Helpers.assert_expected_logs(
                 caplog,
                 [  # Log messages must be in this exact order
@@ -183,9 +183,9 @@ class TestSKASubarray:  # pylint: disable=too-many-public-methods
             # Call command
             resources_to_assign = json.dumps({"resources": resources_list})
             assign_command = invoke_lrc(
-                device_under_test,
                 logger,
                 aborted_lrc_callback if to_be_aborted else successful_lrc_callback,
+                device_under_test,
                 "AssignResources",
                 (resources_to_assign,),
             )
@@ -257,9 +257,9 @@ class TestSKASubarray:  # pylint: disable=too-many-public-methods
             ]
             # Call command
             configure_command = invoke_lrc(
-                device_under_test,
                 logger,
                 aborted_lrc_callback if to_be_aborted else successful_lrc_callback,
+                device_under_test,
                 "Configure",
                 (json.dumps(configuration_to_apply),),
             )
@@ -327,9 +327,9 @@ class TestSKASubarray:  # pylint: disable=too-many-public-methods
             """
             # Call command
             reset_command = invoke_lrc(
-                device_under_test,
                 logger,
                 aborted_lrc_callback if to_be_aborted else successful_lrc_callback,
+                device_under_test,
                 "ObsReset",
             )
             Helpers.assert_expected_logs(
@@ -414,7 +414,7 @@ class TestSKASubarray:  # pylint: disable=too-many-public-methods
                 "longRunningCommandInProgress", (command_name,)
             )
 
-            abort = invoke_lrc(device_under_test, logger, abort_callback, "Abort")
+            abort = invoke_lrc(logger, abort_callback, device_under_test, "Abort")
             abort_name = abort.command_id.split("_", 2)[2]
             change_event_callbacks.assert_change_event("obsState", ObsState.ABORTING)
             Helpers.assert_expected_logs(
@@ -528,9 +528,9 @@ class TestSKASubarray:  # pylint: disable=too-many-public-methods
         # Test partial release of resources
         resources_to_release = json.dumps({"resources": ["BAND1"]})
         _ = invoke_lrc(
-            device_under_test,
             logger,
             successful_lrc_callback,
+            device_under_test,
             "ReleaseResources",
             (resources_to_release,),
         )
@@ -553,7 +553,7 @@ class TestSKASubarray:  # pylint: disable=too-many-public-methods
 
         # Test release all
         _ = invoke_lrc(
-            device_under_test, logger, successful_lrc_callback, "ReleaseAllResources"
+            logger, successful_lrc_callback, device_under_test, "ReleaseAllResources"
         )
         change_event_callbacks.assert_change_event("obsState", ObsState.RESOURCING)
         change_event_callbacks.assert_change_event("commandedObsState", ObsState.EMPTY)
@@ -607,7 +607,7 @@ class TestSKASubarray:  # pylint: disable=too-many-public-methods
         ]
 
         # Deconfigure (End)
-        _ = invoke_lrc(device_under_test, logger, successful_lrc_callback, "End")
+        _ = invoke_lrc(logger, successful_lrc_callback, device_under_test, "End")
         change_event_callbacks.assert_change_event("commandedObsState", ObsState.IDLE)
         Helpers.assert_expected_logs(
             caplog,
@@ -664,9 +664,9 @@ class TestSKASubarray:  # pylint: disable=too-many-public-methods
         # Scan
         dummy_scan_arg = {"scan_id": "scan_25"}
         _ = invoke_lrc(
-            device_under_test,
             logger,
             successful_lrc_callback,
+            device_under_test,
             "Scan",
             (json.dumps(dummy_scan_arg),),
         )
@@ -686,7 +686,7 @@ class TestSKASubarray:  # pylint: disable=too-many-public-methods
         )
 
         # End scan
-        _ = invoke_lrc(device_under_test, logger, successful_lrc_callback, "EndScan")
+        _ = invoke_lrc(logger, successful_lrc_callback, device_under_test, "EndScan")
         Helpers.assert_expected_logs(
             caplog,
             [  # Log messages must be in this exact order
@@ -832,9 +832,9 @@ class TestSKASubarray:  # pylint: disable=too-many-public-methods
         assign_resources_to_empty_subarray(["BAND1"], False)
         # Assign more resources
         assign_command = invoke_lrc(
-            device_under_test,
             logger,
             aborted_lrc_callback,
+            device_under_test,
             "AssignResources",
             (json.dumps({"resources": ["BAND2"]}),),
         )

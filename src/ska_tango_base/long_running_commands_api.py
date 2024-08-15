@@ -9,9 +9,9 @@ from __future__ import annotations
 
 import inspect
 import json
+import logging
 import threading
 import traceback
-from logging import Logger
 from typing import Any, Callable, Protocol
 
 from ska_control_model import ResultCode, TaskStatus
@@ -29,6 +29,8 @@ from tango import (
 )
 
 from ska_tango_base.faults import CommandError, ResultCodeError
+
+module_logger = logging.getLogger(__name__)
 
 
 # pylint: disable=too-few-public-methods
@@ -95,11 +97,11 @@ class LrcSubscriptions:
 
 # pylint: disable=too-many-statements,too-many-locals
 def invoke_lrc(  # noqa: C901
-    logger: Logger,
     lrc_callback: LrcCallback,
     proxy: DeviceProxy,
     command: str,
     command_args: tuple[Any] | None = None,
+    logger: logging.Logger | None = None,
 ) -> LrcSubscriptions:
     """
     Invoke a long running command (LRC) and monitor its progress with callbacks.
@@ -107,11 +109,12 @@ def invoke_lrc(  # noqa: C901
     Subscribe to the relevant LRC attributes and inform the client about change events
     via the provided lrc_callback with either the status, progress, result or error.
 
-    :param proxy: Tango DeviceProxy.
-    :param logger: Logger to use for logging exceptions.
     :param lrc_callback: Client LRC callback to call whenever the LRC's state changes.
+    :param proxy: Tango DeviceProxy.
     :param command: Name of command to invoke.
     :param command_args: Optional arguments for the command, defaults to None.
+    :param logger: Logger to use for logging exceptions. If not provided, then a default
+        module logger will be used.
     :return: LrcSubscriptions class instance, containing the command ID.
         A reference to the instance must be kept until the command is completed or the
         client is not interested in its events anymore, as deleting the instance
@@ -132,6 +135,7 @@ def invoke_lrc(  # noqa: C901
     if not is_future_proof_lrc_callback():
         raise ValueError("lrc_callback must accept **kwargs")
 
+    logger = logger or module_logger
     calling_thread = threading.current_thread()
     submitted = threading.Event()
     lock = threading.Lock()

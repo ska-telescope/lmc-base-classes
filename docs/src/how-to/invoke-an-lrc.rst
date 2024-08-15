@@ -31,7 +31,7 @@ there are updates for the LRC.
         try:
             # We have to keep this lrc_subscriptions alive for as long as we are
             # interested in this LRC
-            lrc_subscriptions = invoke_lrc(self.logger, lrc_callback, device, "On")
+            lrc_subscriptions = invoke_lrc(lrc_callback, device, "On")
         except CommandError:
             # handle rejection
             return ResultCode.FAILED

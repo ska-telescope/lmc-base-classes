@@ -1,13 +1,14 @@
 # Changelog
 
-## unreleased
+## 1.1.0
 
-- Add new `invoke_lrc` function as a callback API for LRCs (WOM-369, WOM-393, WOM-394).
-- Documentation: (WOM-366, WOM-373)
-  - Update logging guide from README and add it to ReadTheDocs.
-  - Add documentation for the `communication_state_callback` and `component_state_callback` keyword arguments of a component manager.
-- Housekeeping:
-  - WOM-365: Remove unnecessary typing_extensions import.
+- Added new `invoke_lrc` function as a callback API for LRCs (WOM-369, WOM-393, WOM-394, WOM-415).
+- Documentation: (WOM-366, WOM-373, WOM-413)
+  - Updated logging guide from README and add it to ReadTheDocs.
+  - Added documentation for the `communication_state_callback` and `component_state_callback` keyword arguments of a component manager.
+  - Updated example of how to invoke a LRC using `invoke_lrc` and added its API to docs.
+- Housekeeping: (WOM-365)
+  - Removed unnecessary typing_extensions import.
 
 ## 1.0.0
 

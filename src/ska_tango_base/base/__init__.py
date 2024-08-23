@@ -14,6 +14,7 @@ __all__ = (
     "OpStateModel",
     "SKABaseDevice",
     "TaskCallbackType",
+    "TestModeOverrideMixin",
     "check_communicating",
     "check_on",
     "overridable",
@@ -28,6 +29,7 @@ from .base_component_manager import (
     check_communicating,
     check_on,
 )
-from .base_device import SKABaseDevice, overridable
+from .base_device import SKABaseDevice
 from .command_tracker import CommandTracker
 from .op_state_model import OpStateModel
+from .test_mode_overrides import TestModeOverrideMixin, overridable

@@ -130,7 +130,7 @@ class RacingComponentManager(TaskExecutorComponentManager, SubarrayComponentMana
 
         :returns: TaskStatus and helpful message
         """
-        return self.abort_commands(task_callback=task_callback)
+        return self.abort_tasks(task_callback=task_callback)
 
 
 class RacingSubarray(SKASubarray[RacingComponentManager]):

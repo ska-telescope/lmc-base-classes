@@ -4,8 +4,9 @@
 
 - Added: (WOM-344)
   - Copied `Abort` LRC from `SKASubArray` to `SKABaseDevice` that has a command ID and `TaskStatus`.
-- Deprecations:
+- Deprecations: (WOM-344)
   - `SKABaseDevice.AbortCommands` is deprecated and replaced by new `Abort` LRC.
+  - `BaseComponentManager.abort_commands` is deprecated and replaced by `abort_tasks`.
 
 ## 1.1.0
 

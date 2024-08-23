@@ -1384,7 +1384,7 @@ class SKABaseDevice(
             command_id = self._command_tracker.new_command(
                 "Abort", completed_callback=self._completed
             )
-            status, _ = self._component_manager.abort_commands(
+            status, _ = self._component_manager.abort_tasks(
                 partial(self._command_tracker.update_command_info, command_id)
             )
             assert status == TaskStatus.IN_PROGRESS
@@ -1422,11 +1422,21 @@ class SKABaseDevice(
             :param logger: the logger to be used by this Command. If not
                 provided, then a default module logger will be used.
             """
-            warn(
-                "'AbortCommandsCommand' is deprecated and will be removed in the next "
-                "major release. Please use the 'AbortCommand' class instead.",
-                DeprecationWarning,
-            )
+            self._abort_commands_overriden = False
+            if (
+                type(component_manager).abort_commands
+                != BaseComponentManager.abort_commands
+            ):
+                self._abort_commands_overriden = True
+                warning_msg = (
+                    "'abort_commands' is deprecated and will be removed in the "
+                    "next major release. Either rename 'abort_commands' in your "
+                    "component manager to 'abort_tasks' or override the "
+                    "'SKABaseDevice.Abort' command instead."
+                )
+                warn(warning_msg, DeprecationWarning)
+                if logger:
+                    logger.warning(warning_msg)
             self._component_manager = component_manager
             super().__init__(None, logger=logger)
 
@@ -1448,7 +1458,10 @@ class SKABaseDevice(
                 message indicating status. The message is for
                 information purpose only.
             """
-            self._component_manager.abort_commands()
+            if self._abort_commands_overriden:
+                self._component_manager.abort_commands()
+            else:
+                self._component_manager.abort_tasks()
             return (ResultCode.STARTED, "Aborting commands")
 
     # TODO: Deprecated command, remove in future release
@@ -1468,7 +1481,8 @@ class SKABaseDevice(
         """
         warning_msg = (
             "'AbortCommands' is deprecated and will be removed in the next major "
-            "release. Please use the tracked 'Abort' long running command instead."
+            "release. The client should call the tracked 'Abort' long running command "
+            "instead."
         )
         warn(warning_msg, DeprecationWarning)
         self.logger.warning(warning_msg)

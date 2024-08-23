@@ -8,6 +8,7 @@
 """
 This module implements Test Mode Overrides that can be added to an SKABaseDevice.
 """
+import json
 from typing import Any, Callable, Iterable
 
 from ska_control_model import HealthState, TestMode
@@ -21,7 +22,10 @@ class TestModeOverrideMixin:
     """Add Test Mode Attribute Overrides to an SKABaseDevice."""
 
     def __init_subclass__(cls: SKABaseDevice, **kwargs):
-        """Add our variables to the class we are extending."""
+        """Add our variables to the class we are extending.
+
+        :param kwargs: keyword arguments (passed to superclass).
+        """
         cls._test_mode_overrides: dict[str, Any] = {}
         """Overrides used in TestMode - attribute name: override value"""
         cls._test_mode_overrides_changed: Callable[[], None] | None = None
@@ -122,7 +126,7 @@ class TestModeOverrideMixin:
         # only *need* to send new or changed overrides but that's annoying to determine
         # i.e. premature optimisation
         for attr_name, value in value_dict.items():
-            value = _override_value_convert(attr_name, value)
+            value = self._override_value_convert(attr_name, value)
             attr_cfg = self.get_device_attr().get_attr_by_name(attr_name)
             if attr_cfg.is_change_event():
                 self.push_change_event(attr_name, value)

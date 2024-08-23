@@ -5,7 +5,7 @@
 #
 # Distributed under the terms of the BSD 3-clause new license.
 # See LICENSE.txt for more info.
-"""This module implements Test Mode Overrides that can be added to an SKABaseDevice."""
+"""This module implements Test Mode Overrides that can be added to an TestModeOverrideMixin."""
 import json
 from typing import Any, Callable, Iterable
 
@@ -17,7 +17,7 @@ from .base_device import SKABaseDevice
 
 
 class TestModeOverrideMixin:
-    """Add Test Mode Attribute Overrides to an SKABaseDevice."""
+    """Add Test Mode Attribute Overrides to an TestModeOverrideMixin."""
 
     def __init_subclass__(cls: SKABaseDevice, **kwargs):
         """Add our variables to the class we are extending.
@@ -36,7 +36,7 @@ class TestModeOverrideMixin:
         super().__init_subclass__(**kwargs)
 
     def _get_override_value(
-        self: SKABaseDevice, attr_name: str, default: Any = None
+        self: TestModeOverrideMixin, attr_name: str, default: Any = None
     ) -> Any:
         """
         Read a value from our overrides, use a default value when not overridden.
@@ -61,7 +61,7 @@ class TestModeOverrideMixin:
         )
 
     @attribute(dtype=TestMode, memorized=True, hw_memorized=True)
-    def testMode(self: SKABaseDevice) -> TestMode:
+    def testMode(self: TestModeOverrideMixin) -> TestMode:
         """
         Read the Test Mode of the device.
 
@@ -72,7 +72,7 @@ class TestModeOverrideMixin:
         return self._test_mode
 
     @testMode.write  # type: ignore[no-redef]
-    def testMode(self: SKABaseDevice, value: TestMode) -> None:
+    def testMode(self: TestModeOverrideMixin, value: TestMode) -> None:
         """
         Set the Test Mode of the device.
 
@@ -94,7 +94,7 @@ class TestModeOverrideMixin:
         dtype=str,
         doc="Attribute value overrides (JSON dict)",
     )  # type: ignore[misc]
-    def test_mode_overrides(self: SKABaseDevice) -> str:
+    def test_mode_overrides(self: TestModeOverrideMixin) -> str:
         """
         Read the current override configuration.
 
@@ -103,7 +103,7 @@ class TestModeOverrideMixin:
         return json.dumps(self._test_mode_overrides)
 
     def is_test_mode_overrides_allowed(
-        self: SKABaseDevice, request_type: AttReqType
+        self: TestModeOverrideMixin, request_type: AttReqType
     ) -> bool:
         """
         Control access to test_mode_overrides attribute.
@@ -118,7 +118,7 @@ class TestModeOverrideMixin:
         return self._test_mode == TestMode.TEST
 
     @test_mode_overrides.write  # type: ignore[no-redef, misc]
-    def test_mode_overrides(self: SKABaseDevice, value_str: str) -> None:
+    def test_mode_overrides(self: TestModeOverrideMixin, value_str: str) -> None:
         """
         Write new override configuration.
 
@@ -148,7 +148,7 @@ class TestModeOverrideMixin:
             self._test_mode_overrides_changed()
 
     def _push_events_overrides_removed(
-        self: SKABaseDevice, attrs_to_refresh: Iterable[str]
+        self: TestModeOverrideMixin, attrs_to_refresh: Iterable[str]
     ) -> None:
         """
         Push true value events for attributes that were previously overridden.
@@ -170,7 +170,9 @@ class TestModeOverrideMixin:
             if attr_cfg.is_archive_event():
                 self.push_archive_event(attr_name, attr.value, attr.time, attr.quality)
 
-    def _override_value_convert(self: SKABaseDevice, attr_name: str, value: Any) -> Any:
+    def _override_value_convert(
+        self: TestModeOverrideMixin, attr_name: str, value: Any
+    ) -> Any:
         """
         Automatically convert types for attr overrides (e.g. enum label -> int).
 
@@ -197,12 +199,12 @@ def overridable(
     attr_name = func.__name__
 
     def override_attr_in_test_mode(
-        self: SKABaseDevice, *args: Any, **kwargs: Any
+        self: TestModeOverrideMixin, *args: Any, **kwargs: Any
     ) -> Callable[[object, Any, Any], None] | Any:
         """
         Override attribute when test mode is active and value specified.
 
-        :param self: SKABaseDevice
+        :param self: Tango device with TestModeOverrideMixin
         :param args: Any positional arguments
         :param kwargs: Any keyword arguments
         :return: Tango attribute

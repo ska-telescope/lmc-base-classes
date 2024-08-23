@@ -1,4 +1,4 @@
-# pylint: disable=invalid-name, too-many-lines
+# pylint: disable=invalid-name,pointless-string-statement
 # -*- coding: utf-8 -*-
 #
 # This file is part of the SKA Tango Base project
@@ -59,6 +59,7 @@ class TestModeOverrideMixin:
             attr_name, self._test_mode_overrides[attr_name]
         )
 
+    # TODO - how to make this work for a mixin class?
     @SKABaseDevice.testMode.write  # type: ignore[no-redef]
     def testMode(self: SKABaseDevice, value: TestMode) -> None:
         """

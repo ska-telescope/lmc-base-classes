@@ -24,6 +24,7 @@ class TestModeOverrideMixin:
 
         :param kwargs: keyword arguments (passed to superclass).
         """
+        cls._test_mode = TestMode.NONE  # just in case base device changes...
         cls._test_mode_overrides: dict[str, Any] = {}
         """Overrides used in TestMode - attribute name: override value"""
         cls._test_mode_overrides_changed: Callable[[], None] | None = None
@@ -59,8 +60,18 @@ class TestModeOverrideMixin:
             attr_name, self._test_mode_overrides[attr_name]
         )
 
-    # TODO - how to make this work for a mixin class?
-    @SKABaseDevice.testMode.write  # type: ignore[no-redef]
+    @attribute(dtype=TestMode, memorized=True, hw_memorized=True)
+    def testMode(self: SKABaseDevice) -> TestMode:
+        """
+        Read the Test Mode of the device.
+
+        Either no test mode or an indication of the test mode.
+
+        :return: Test Mode of the device
+        """
+        return self._test_mode
+
+    @testMode.write  # type: ignore[no-redef]
     def testMode(self: SKABaseDevice, value: TestMode) -> None:
         """
         Set the Test Mode of the device.

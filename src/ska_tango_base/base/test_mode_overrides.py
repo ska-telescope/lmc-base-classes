@@ -5,7 +5,7 @@
 #
 # Distributed under the terms of the BSD 3-clause new license.
 # See LICENSE.txt for more info.
-""" This module implements Test Mode Overrides that can be added to an SKABaseDevice."""
+"""This module implements Test Mode Overrides that can be added to an SKABaseDevice."""
 import json
 from typing import Any, Callable, Iterable
 

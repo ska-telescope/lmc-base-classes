@@ -211,8 +211,8 @@ to a finished status.
 Specifically, for ska-tango-base 1.0.0 the following changes have been made to the 
 :class:`~ska_tango_base.executor.executor.TaskExecutor`:
 
-- When a command is aborted with :func:`TaskExecutorComponentManager.abort_commands 
-  <ska_tango_base.executor.executor_component_manager.TaskExecutorComponentManager.abort_commands>`, 
+- When a command is aborted with :func:`TaskExecutorComponentManager.abort_tasks 
+  <ska_tango_base.executor.executor_component_manager.TaskExecutorComponentManager.abort_tasks>`, 
   its result will be set to ``(ResultCode.ABORTED, "Command has been aborted")``.
 - When a command is rejected because the queue is busy aborting, its result will be set 
   to ``(ResultCode.REJECTED, "Queue is being aborted")``.

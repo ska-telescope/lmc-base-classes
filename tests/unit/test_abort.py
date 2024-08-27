@@ -119,8 +119,8 @@ class RacingComponentManager(TaskExecutorComponentManager, SubarrayComponentMana
             self._assign, [in_omnithread], task_callback=task_callback
         )
 
-    def abort(
-        self: RacingComponentManager, task_callback: TaskCallbackType | None
+    def abort_commands(
+        self: RacingComponentManager, task_callback: TaskCallbackType | None = None
     ) -> tuple[TaskStatus, str]:
         """
         Tell the component to abort whatever it was doing.
@@ -193,7 +193,7 @@ def test_abort_in_omnithread(
     assert result_code == ResultCode.QUEUED
     print_change_event_queue(change_event_callbacks, attribute)
     change_event_callbacks.assert_change_event(attribute, (cmd_id, "0"))
-    device_under_test.abort()
+    device_under_test.Abort()
 
 
 @pytest.mark.skipif(
@@ -224,4 +224,32 @@ def test_abort_not_omnithread(
     assert result_code == ResultCode.QUEUED
     print_change_event_queue(change_event_callbacks, attribute)
     change_event_callbacks.assert_change_event(attribute, (cmd_id, "0"))
-    device_under_test.abort()
+    device_under_test.Abort()
+
+
+def test_abort_commands_deprecation(
+    device_under_test: tango.DeviceProxy,
+    change_event_callbacks: MockTangoEventCallbackGroup,
+) -> None:
+    """
+    Test if deprecation warnings are raised for using 'AbortCommands'.
+
+    Also checks the warning for overriding 'abort_commands'.
+
+    :param device_under_test: proxy to device we are testing
+    :param change_event_callbacks: callback dictionary
+    """
+    attribute = "longRunningCommandProgress"
+    device_under_test.subscribe_event(
+        attribute,
+        tango.EventType.CHANGE_EVENT,
+        change_event_callbacks[attribute],
+    )
+    change_event_callbacks.assert_change_event(attribute, ())
+    [
+        [result_code],
+        [cmd_id],
+    ] = device_under_test.assignresources("{}")
+    assert result_code == ResultCode.QUEUED
+    change_event_callbacks.assert_change_event(attribute, (cmd_id, "0"))
+    device_under_test.AbortCommands()

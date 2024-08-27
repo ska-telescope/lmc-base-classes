@@ -1357,8 +1357,8 @@ class SKABaseDevice(
             :param command_tracker: the device's command tracker
             :param component_manager: the device's component manager
             :param callback: callback to be called when this command
-                states and finishes
-            :param logger: a logger for this command object to yuse
+                starts and finishes
+            :param logger: a logger for this command object to use
             """
             self._command_tracker = command_tracker
             self._component_manager = component_manager

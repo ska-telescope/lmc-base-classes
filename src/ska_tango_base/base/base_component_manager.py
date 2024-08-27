@@ -35,6 +35,7 @@ import functools
 import logging
 import threading
 from typing import Any, Callable, Protocol, TypeVar, cast
+from warnings import warn
 
 from ska_control_model import CommunicationStatus, PowerState, TaskStatus
 
@@ -374,6 +375,25 @@ class BaseComponentManager:
 
     @check_communicating
     def abort_commands(
+        self: BaseComponentManager, task_callback: TaskCallbackType | None = None
+    ) -> tuple[TaskStatus, str]:
+        """
+        Abort all tasks queued & running.
+
+        :param task_callback: callback to be called whenever the status
+            of the task changes.
+
+        :return: tuple of TaskStatus & message
+        """
+        warn(
+            "'abort_commands' is deprecated and will be removed in the next major "
+            "release. Please use 'abort_tasks' instead.",
+            DeprecationWarning,
+        )
+        return self.abort_tasks(task_callback)
+
+    @check_communicating
+    def abort_tasks(
         self: BaseComponentManager, task_callback: TaskCallbackType | None = None
     ) -> tuple[TaskStatus, str]:
         """

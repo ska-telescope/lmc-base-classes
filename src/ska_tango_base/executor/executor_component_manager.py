@@ -76,7 +76,7 @@ class TaskExecutorComponentManager(BaseComponentManager):
             f"Input queue supports a maximum of {self.max_queued_tasks} commands",
         )
 
-    def abort_commands(
+    def abort_tasks(
         self: TaskExecutorComponentManager,
         task_callback: TaskCallbackType | None = None,
     ) -> tuple[TaskStatus, str]:

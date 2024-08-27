@@ -24,6 +24,7 @@ import traceback
 from functools import partial
 from types import FunctionType, MethodType
 from typing import Any, Callable, Generic, TypeVar, cast
+from warnings import warn
 
 import debugpy
 import ska_ser_logging
@@ -414,7 +415,8 @@ class SKABaseDevice(
         ), "max_executing_tasks property must be equal to or greater than 1."
         self._status_queue_size = max(
             self.component_manager.max_queued_tasks * 2
-            + self.component_manager.max_executing_tasks,
+            + self.component_manager.max_executing_tasks
+            + 1,  # for Abort command
             _MINIMUM_STATUS_QUEUE_SIZE,
         )
         self._create_attribute(
@@ -434,12 +436,12 @@ class SKABaseDevice(
         )
         self._create_attribute(
             "longRunningCommandInProgress",
-            self.component_manager.max_executing_tasks,
+            self.component_manager.max_executing_tasks + 1,  # for Abort command
             self.longRunningCommandInProgress,
         )
         self._create_attribute(
             "longRunningCommandProgress",
-            self.component_manager.max_executing_tasks
+            (self.component_manager.max_executing_tasks + 1)  # for Abort command
             * 2,  # cmd name and progress for each command
             self.longRunningCommandProgress,
         )
@@ -832,6 +834,13 @@ class SKABaseDevice(
                 ),
             )
 
+        self.register_command_object(
+            "Abort",
+            self.AbortCommand(
+                self._command_tracker, self.component_manager, None, self.logger
+            ),
+        )
+        # TODO: Deprecated command, remove in future release
         self.register_command_object(
             "AbortCommands",
             self.AbortCommandsCommand(self.component_manager, self.logger),
@@ -1332,6 +1341,71 @@ class SKABaseDevice(
         result_code, unique_id = handler()
         return ([result_code], [unique_id])
 
+    class AbortCommand(SlowCommand[tuple[ResultCode, str]]):
+        """A class for SKASubarray's Abort() command."""
+
+        def __init__(
+            self: SKABaseDevice.AbortCommand,
+            command_tracker: CommandTracker,
+            component_manager: BaseComponentManager,
+            callback: Callable[[bool], None] | None,
+            logger: logging.Logger | None = None,
+        ) -> None:
+            """
+            Initialise a new AbortCommand instance.
+
+            :param command_tracker: the device's command tracker
+            :param component_manager: the device's component manager
+            :param callback: callback to be called when this command
+                starts and finishes
+            :param logger: a logger for this command object to use
+            """
+            self._command_tracker = command_tracker
+            self._component_manager = component_manager
+            super().__init__(callback=callback, logger=logger)
+
+        def do(
+            self: SKABaseDevice.AbortCommand,
+            *args: Any,
+            **kwargs: Any,
+        ) -> tuple[ResultCode, str]:
+            """
+            Stateless hook for Abort() command functionality.
+
+            :param args: positional arguments to the command. This
+                command does not take any, so this should be empty.
+            :param kwargs: keyword arguments to the command. This
+                command does not take any, so this should be empty.
+
+            :return: A tuple containing a return code and a string
+                message indicating status. The message is for
+                information purpose only.
+            """
+            command_id = self._command_tracker.new_command(
+                "Abort", completed_callback=self._completed
+            )
+            status, _ = self._component_manager.abort_tasks(
+                partial(self._command_tracker.update_command_info, command_id)
+            )
+            assert status == TaskStatus.IN_PROGRESS
+
+            return ResultCode.STARTED, command_id
+
+    @command(  # type: ignore[misc]  # "Untyped decorator makes function untyped"
+        dtype_out="DevVarLongStringArray"
+    )
+    @DebugIt()  # type: ignore[misc]  # "Untyped decorator makes function untyped"
+    def Abort(self: SKABaseDevice[ComponentManagerT]) -> DevVarLongStringArrayType:
+        """
+        Abort any executing long running command(s) and empty the queue.
+
+        :return: A tuple containing a result code and the unique ID of the command
+        """
+        handler = self.get_command_object("Abort")
+        (result_code, message) = handler()
+        return ([result_code], [message])
+
+    # TODO: Deprecated command, remove in future release
     class AbortCommandsCommand(SlowCommand[tuple[ResultCode, str]]):
         """The command class for the AbortCommand command."""
 
@@ -1348,6 +1422,21 @@ class SKABaseDevice(
             :param logger: the logger to be used by this Command. If not
                 provided, then a default module logger will be used.
             """
+            self._abort_commands_overriden = False
+            if (
+                type(component_manager).abort_commands
+                != BaseComponentManager.abort_commands
+            ):
+                self._abort_commands_overriden = True
+                warning_msg = (
+                    "'abort_commands' is deprecated and will be removed in the "
+                    "next major release. Either rename 'abort_commands' in your "
+                    "component manager to 'abort_tasks' or override the "
+                    "'SKABaseDevice.Abort' command instead."
+                )
+                warn(warning_msg, DeprecationWarning)
+                if logger:
+                    logger.warning(warning_msg)
             self._component_manager = component_manager
             super().__init__(None, logger=logger)
 
@@ -1369,9 +1458,13 @@ class SKABaseDevice(
                 message indicating status. The message is for
                 information purpose only.
             """
-            self._component_manager.abort_commands()
+            if self._abort_commands_overriden:
+                self._component_manager.abort_commands()
+            else:
+                self._component_manager.abort_tasks()
             return (ResultCode.STARTED, "Aborting commands")
 
+    # TODO: Deprecated command, remove in future release
     @command(  # type: ignore[misc]  # "Untyped decorator makes function untyped"
         dtype_out="DevVarLongStringArray"
     )
@@ -1386,6 +1479,13 @@ class SKABaseDevice(
             message indicating status. The message is for
             information purpose only.
         """
+        warning_msg = (
+            "'AbortCommands' is deprecated and will be removed in the next major "
+            "release. The client should call the tracked 'Abort' long running command "
+            "instead."
+        )
+        warn(warning_msg, DeprecationWarning)
+        self.logger.warning(warning_msg)
         handler = self.get_command_object("AbortCommands")
         (return_code, message) = handler()
         return ([return_code], [message])

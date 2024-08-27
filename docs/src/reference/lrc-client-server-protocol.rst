@@ -100,7 +100,7 @@ interacting with Long Running Commands.
 | CheckLongRunningCommandStatus | Check the status of a long   |
 |                               | running command by ID        |
 +-------------------------------+------------------------------+
-| AbortCommands                 | Abort the currently executing|
+| Abort                         | Abort the currently executing|
 |                               | LRC and remove all enqueued  |
 |                               | LRCs                         |
 +-------------------------------+------------------------------+

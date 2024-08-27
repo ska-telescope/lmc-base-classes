@@ -1,4 +1,4 @@
-# pylint: disable=invalid-name, too-many-lines
+# pylint: disable=invalid-name
 # -*- coding: utf-8 -*-
 #
 # This file is part of the SKA Tango Base project
@@ -20,18 +20,12 @@ import logging
 from collections import namedtuple
 from typing import Any, Callable, TypeVar, cast
 
-from ska_control_model import (
-    ObsState,
-    ObsStateModel,
-    PowerState,
-    ResultCode,
-    TaskStatus,
-)
+from ska_control_model import ObsState, ObsStateModel, PowerState, ResultCode
 from tango import DebugIt
 from tango.server import attribute, command, device_property
 
 from ..base import CommandTracker
-from ..commands import JsonValidator, SlowCommand, SubmittedSlowCommand
+from ..commands import JsonValidator, SubmittedSlowCommand
 from ..faults import StateModelError
 from ..obs import SKAObsDevice
 from .subarray_component_manager import SubarrayComponentManager
@@ -336,56 +330,6 @@ class SKASubarray(SKAObsDevice[ComponentManagerT]):
                 callback=callback,
                 logger=logger,
             )
-
-    class AbortCommand(SlowCommand[tuple[ResultCode, str]]):
-        """A class for SKASubarray's Abort() command."""
-
-        def __init__(
-            self: SKASubarray.AbortCommand,
-            command_tracker: CommandTracker,
-            component_manager: SubarrayComponentManager,
-            callback: Callable[[bool], None],
-            logger: logging.Logger | None = None,
-        ) -> None:
-            """
-            Initialise a new AbortCommand instance.
-
-            :param command_tracker: the device's command tracker
-            :param component_manager: the device's component manager
-            :param callback: callback to be called when this command
-                states and finishes
-            :param logger: a logger for this command object to yuse
-            """
-            self._command_tracker = command_tracker
-            self._component_manager = component_manager
-            super().__init__(callback=callback, logger=logger)
-
-        def do(
-            self: SKASubarray.AbortCommand,
-            *args: Any,
-            **kwargs: Any,
-        ) -> tuple[ResultCode, str]:
-            """
-            Stateless hook for Abort() command functionality.
-
-            :param args: positional arguments to the command. This
-                command does not take any, so this should be empty.
-            :param kwargs: keyword arguments to the command. This
-                command does not take any, so this should be empty.
-
-            :return: A tuple containing a return code and a string
-                message indicating status. The message is for
-                information purpose only.
-            """
-            command_id = self._command_tracker.new_command(
-                "Abort", completed_callback=self._completed
-            )
-            status, _ = self._component_manager.abort(
-                functools.partial(self._command_tracker.update_command_info, command_id)
-            )
-            assert status == TaskStatus.IN_PROGRESS
-
-            return ResultCode.STARTED, command_id
 
     class ObsResetCommand(SubmittedSlowCommand):
         """A class for SKASubarray's ObsReset() command."""
@@ -906,23 +850,6 @@ class SKASubarray(SKAObsDevice[ComponentManagerT]):
                 f"{self._obs_state.name}"
             )
         return True
-
-    @command(  # type: ignore[misc]  # "Untyped decorator makes function untyped"
-        dtype_out="DevVarLongStringArray"
-    )
-    @DebugIt()  # type: ignore[misc]  # "Untyped decorator makes function untyped"
-    def Abort(self: SKASubarray[ComponentManagerT]) -> DevVarLongStringArrayType:
-        """
-        Abort any long-running command such as ``Configure()`` or ``Scan()``.
-
-        To modify behaviour for this command, modify the do() method of
-        the command class.
-
-        :return: A tuple containing a result code and the unique ID of the command
-        """
-        handler = self.get_command_object("Abort")
-        (result_code, message) = handler()
-        return ([result_code], [message])
 
     def is_ObsReset_allowed(self: SKASubarray[ComponentManagerT]) -> bool:
         """

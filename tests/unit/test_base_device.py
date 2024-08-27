@@ -414,6 +414,69 @@ class TestSKABaseDevice:  # pylint: disable=too-many-public-methods
             _ = invoke_lrc(successful_lrc_callback, device_under_test, "Off")
         change_event_callbacks.assert_not_called()
 
+    def test_Abort(
+        self: TestSKABaseDevice,
+        device_under_test: DeviceProxy,
+        change_event_callbacks: MockTangoEventCallbackGroup,
+        lrc_callback_log_only: LrcCallback,
+        caplog: pytest.LogCaptureFixture,
+    ) -> None:
+        """
+        Test for Abort command.
+
+        :param device_under_test: a proxy to the device under test
+        :param change_event_callbacks: dictionary of mock change event
+            callbacks with asynchrony support.
+        :param lrc_callback_log_only: callback fixture to use with invoke_lrc.
+        :param caplog: pytest LogCaptureFixture
+        """
+        assert device_under_test.state() == DevState.OFF
+
+        device_under_test.subscribe_event(
+            "longRunningCommandInProgress",
+            EventType.CHANGE_EVENT,
+            change_event_callbacks["longRunningCommandInProgress"],
+        )
+        change_event_callbacks["longRunningCommandInProgress"].assert_change_event(())
+
+        on_subs = invoke_lrc(lrc_callback_log_only, device_under_test, "On")
+        on_command = on_subs.command_id.split("_", 2)[2]
+        change_event_callbacks.assert_change_event(
+            "longRunningCommandInProgress", (on_command,)
+        )
+        Helpers.assert_expected_logs(
+            caplog,
+            [  # Log messages must be in this exact order
+                "lrc_callback(status=STAGING)",
+                "lrc_callback(status=QUEUED)",
+                "lrc_callback(status=IN_PROGRESS)",
+            ],
+        )
+
+        abort_subs = invoke_lrc(lrc_callback_log_only, device_under_test, "Abort")
+        abort_command = abort_subs.command_id.split("_", 2)[2]
+        change_event_callbacks["longRunningCommandInProgress"].assert_change_event(
+            (on_command, abort_command)
+        )
+        Helpers.assert_expected_logs(
+            caplog,
+            [  # Log messages must be in this exact order
+                "lrc_callback(status=IN_PROGRESS)",  # On
+                "lrc_callback(status=STAGING)",  # Abort
+                "lrc_callback(status=IN_PROGRESS)",  # On
+                "lrc_callback(status=IN_PROGRESS)",  # Abort
+                "lrc_callback(result=[7, 'Command has been aborted'])",  # On
+                "lrc_callback(status=ABORTED)",  # On
+                "lrc_callback(status=IN_PROGRESS)",  # Abort
+                "lrc_callback(result=[0, 'Abort completed OK'])",  # Abort
+                "lrc_callback(status=COMPLETED)",  # Abort
+            ],
+        )
+        change_event_callbacks["longRunningCommandInProgress"].assert_change_event(
+            (abort_command,)
+        )
+        change_event_callbacks["longRunningCommandInProgress"].assert_change_event(())
+
     def test_command_exception(
         self: TestSKABaseDevice,
         device_under_test: DeviceProxy,
@@ -555,11 +618,11 @@ class TestSKABaseDevice:  # pylint: disable=too-many-public-methods
             command_ids.append(cmd_id[0])
 
         # max_queued_tasks = 32 and max_executing_tasks = 1,
-        # so the attribute bounds are 32*2 + 1 = 65
-        # Since we have submitted 74 commands, the first nine
+        # so the attribute bounds are 32*2 + 1 + 1 (for Abort) = 66
+        # Since we have submitted 74 commands, the first eight
         # completed commands should have been removed
-        expected_removed_items = command_ids[:9]
-        expected_present_items = command_ids[9:]
+        expected_removed_items = command_ids[:8]
+        expected_present_items = command_ids[8:]
         status_attribute = device_under_test.read_attribute("longRunningCommandStatus")
 
         for cmd_id in expected_removed_items:

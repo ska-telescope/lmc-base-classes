@@ -395,7 +395,7 @@ class TestReferenceBaseComponentManager:
         component_manager.off(callbacks["off_task"])
         callbacks.assert_call("off_task", status=TaskStatus.QUEUED)
 
-        component_manager.abort_commands(callbacks["abort_task"])
+        component_manager.abort_tasks(callbacks["abort_task"])
         callbacks.assert_call("abort_task", status=TaskStatus.IN_PROGRESS)
 
     def test_queue_full(

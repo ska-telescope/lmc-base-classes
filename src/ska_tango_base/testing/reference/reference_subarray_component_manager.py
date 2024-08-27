@@ -656,21 +656,6 @@ class ReferenceSubarrayComponentManager(
         return self.submit_task(self._component.end_scan, task_callback=task_callback)
 
     @check_communicating
-    def abort(
-        self: ReferenceSubarrayComponentManager,
-        task_callback: TaskCallbackType | None,
-    ) -> tuple[TaskStatus, str]:
-        """
-        Tell the component to abort the observation.
-
-        :param task_callback: a callback to be called whenever the
-            status of this task changes.
-
-        :return: task status and message
-        """
-        return self.abort_commands(task_callback=task_callback)
-
-    @check_communicating
     def obsreset(
         self: ReferenceSubarrayComponentManager,
         task_callback: TaskCallbackType | None,

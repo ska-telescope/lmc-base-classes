@@ -36,7 +36,7 @@ class TestModeOverrideMixin:
         super().__init_subclass__(**kwargs)
 
     def _get_override_value(
-        self: TestModeOverrideMixin, attr_name: str, default: Any = None
+        self, attr_name: str, default: Any = None
     ) -> Any:
         """
         Read a value from our overrides, use a default value when not overridden.
@@ -61,7 +61,7 @@ class TestModeOverrideMixin:
         )
 
     @attribute(dtype=TestMode, memorized=True, hw_memorized=True)
-    def testMode(self: TestModeOverrideMixin) -> TestMode:
+    def testMode(self) -> TestMode:
         """
         Read the Test Mode of the device.
 
@@ -72,7 +72,7 @@ class TestModeOverrideMixin:
         return self._test_mode
 
     @testMode.write  # type: ignore[no-redef]
-    def testMode(self: TestModeOverrideMixin, value: TestMode) -> None:
+    def testMode(self, value: TestMode) -> None:
         """
         Set the Test Mode of the device.
 
@@ -94,7 +94,7 @@ class TestModeOverrideMixin:
         dtype=str,
         doc="Attribute value overrides (JSON dict)",
     )  # type: ignore[misc]
-    def test_mode_overrides(self: TestModeOverrideMixin) -> str:
+    def test_mode_overrides(self) -> str:
         """
         Read the current override configuration.
 
@@ -103,7 +103,7 @@ class TestModeOverrideMixin:
         return json.dumps(self._test_mode_overrides)
 
     def is_test_mode_overrides_allowed(
-        self: TestModeOverrideMixin, request_type: AttReqType
+        self, request_type: AttReqType
     ) -> bool:
         """
         Control access to test_mode_overrides attribute.
@@ -118,7 +118,7 @@ class TestModeOverrideMixin:
         return self._test_mode == TestMode.TEST
 
     @test_mode_overrides.write  # type: ignore[no-redef, misc]
-    def test_mode_overrides(self: TestModeOverrideMixin, value_str: str) -> None:
+    def test_mode_overrides(self, value_str: str) -> None:
         """
         Write new override configuration.
 
@@ -148,7 +148,7 @@ class TestModeOverrideMixin:
             self._test_mode_overrides_changed()
 
     def _push_events_overrides_removed(
-        self: TestModeOverrideMixin, attrs_to_refresh: Iterable[str]
+        self, attrs_to_refresh: Iterable[str]
     ) -> None:
         """
         Push true value events for attributes that were previously overridden.
@@ -171,7 +171,7 @@ class TestModeOverrideMixin:
                 self.push_archive_event(attr_name, attr.value, attr.time, attr.quality)
 
     def _override_value_convert(
-        self: TestModeOverrideMixin, attr_name: str, value: Any
+        self, attr_name: str, value: Any
     ) -> Any:
         """
         Automatically convert types for attr overrides (e.g. enum label -> int).

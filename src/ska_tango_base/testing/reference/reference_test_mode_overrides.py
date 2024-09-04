@@ -10,14 +10,14 @@ A reference implementation of an SKA base device using Test Mode Overrides.
 It inherits from ReferenceSkaBaseDevice so we can run the same tests, ensuring that
 adding TestModeOverrideMixin doesn't break anything too badly.
 """
-# pylint: disable=invalid-name
 from __future__ import annotations
 
-from src.ska_tango_base.testing.reference import ReferenceSkaBaseDevice
+from typing import cast
+
 from ...base import TestModeOverrideMixin
+from .reference_base_device import ReferenceSkaBaseDevice
 
-
-__all__ = ["SKABaseDevice", "main"]
+__all__ = ["TestModeOverrideMixin", "main"]
 
 
 class ReferenceTestModeOverrides(ReferenceSkaBaseDevice, TestModeOverrideMixin):

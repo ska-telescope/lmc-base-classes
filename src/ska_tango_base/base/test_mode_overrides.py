@@ -1,4 +1,3 @@
-# pylint: disable=invalid-name,pointless-string-statement
 # -*- coding: utf-8 -*-
 #
 # This file is part of the SKA Tango Base project
@@ -6,37 +5,86 @@
 # Distributed under the terms of the BSD 3-clause new license.
 # See LICENSE.txt for more info.
 """This module implements Test Mode Overrides that can be added to an SKABaseDevice."""
+from __future__ import annotations
+
 import json
-from typing import Any, Callable, Iterable
+from typing import Any, Callable, Iterable, Protocol
 
 from ska_control_model import HealthState, TestMode
-from tango import AttReqType, AttributeProxy
+from tango import AttReqType, AttributeProxy, MultiAttribute
 from tango.server import attribute
 
 from .base_device import SKABaseDevice
 
 
+class TestModeOverrideMixinInterface(Protocol):
+    """Structurally match classes inheriting from SKABaseDevice and the mixin."""
+
+    _test_mode: TestMode
+    _test_mode_overrides: dict[str, Any]
+    _test_mode_overrides_changed: Callable[[], None] | None
+    _test_mode_enum_attrs: dict[str, Any]
+
+    def push_change_event(self, *args: Any, **kwargs: Any) -> None:
+        """Push a change event.
+
+        :param args: positional arguments
+        :param kwargs: keyword arguments
+        """
+
+    def push_archive_event(self, *args: Any, **kwargs: Any) -> None:
+        """Push a archive event.
+
+        :param args: positional arguments
+        :param kwargs: keyword arguments
+        """
+
+    def get_device_attr(self) -> MultiAttribute:
+        """Get device multi attribute."""
+
+    def get_name(self) -> str:
+        """Get device name."""
+
+    def _push_events_overrides_removed(
+        self: TestModeOverrideMixinInterface, attrs_to_refresh: Iterable[str]
+    ) -> None:
+        """
+        Push true value events for attributes that were previously overridden.
+
+        :param attrs_to_refresh: Names of our attributes that are no longer overridden
+        """
+
+    def _override_value_convert(self, attr_name: str, value: Any) -> Any:
+        """
+        Automatically convert types for attr overrides (e.g. enum label -> int).
+
+        :param attr_name: Attribute name
+        :param value: Value to convert
+        """
+
+
 class TestModeOverrideMixin:
     """Add Test Mode Attribute Overrides to an TestModeOverrideMixin."""
 
-    def __init_subclass__(cls: SKABaseDevice, **kwargs):
-        """Add our variables to the class we are extending.
+    def __init__(self: TestModeOverrideMixin, **kwargs: Any):
+        """Initialise TestModeOverrideMixin object.
 
-        :param kwargs: keyword arguments (passed to superclass).
+        :param kwargs: Additional arguments to pass to super().__init__
         """
-        cls._test_mode = TestMode.NONE  # just in case base device changes...
-        cls._test_mode_overrides: dict[str, Any] = {}
-        """Overrides used in TestMode - attribute name: override value"""
-        cls._test_mode_overrides_changed: Callable[[], None] | None = None
-        """Optional callback to trigger when test mode overrides change."""
-        cls._test_mode_enum_attrs = {
+        assert isinstance(self, SKABaseDevice)
+
+        self._test_mode: TestMode = TestMode.NONE
+        self._test_mode_overrides: dict[str, Any] = {}
+        self._test_mode_overrides_changed: Callable[[], None] | None = None
+        self._test_mode_enum_attrs = {
             "healthState": HealthState,
         }
-        """Tango attribute and enum class, for str conversion in TestMode overrides."""
-        super().__init_subclass__(**kwargs)
+        super().__init__(**kwargs)
 
     def _get_override_value(
-        self, attr_name: str, default: Any = None
+        self,
+        attr_name: str,
+        default: Any = None,
     ) -> Any:
         """
         Read a value from our overrides, use a default value when not overridden.
@@ -61,7 +109,7 @@ class TestModeOverrideMixin:
         )
 
     @attribute(dtype=TestMode, memorized=True, hw_memorized=True)
-    def testMode(self) -> TestMode:
+    def testMode(self) -> TestMode:  # pylint: disable=invalid-name
         """
         Read the Test Mode of the device.
 
@@ -72,7 +120,7 @@ class TestModeOverrideMixin:
         return self._test_mode
 
     @testMode.write  # type: ignore[no-redef]
-    def testMode(self, value: TestMode) -> None:
+    def testMode(self, value: TestMode) -> None:  # pylint: disable=invalid-name
         """
         Set the Test Mode of the device.
 
@@ -102,9 +150,7 @@ class TestModeOverrideMixin:
         """
         return json.dumps(self._test_mode_overrides)
 
-    def is_test_mode_overrides_allowed(
-        self, request_type: AttReqType
-    ) -> bool:
+    def is_test_mode_overrides_allowed(self, request_type: AttReqType) -> bool:
         """
         Control access to test_mode_overrides attribute.
 
@@ -118,7 +164,9 @@ class TestModeOverrideMixin:
         return self._test_mode == TestMode.TEST
 
     @test_mode_overrides.write  # type: ignore[no-redef, misc]
-    def test_mode_overrides(self, value_str: str) -> None:
+    def test_mode_overrides(
+        self: TestModeOverrideMixinInterface, value_str: str
+    ) -> None:
         """
         Write new override configuration.
 
@@ -148,7 +196,7 @@ class TestModeOverrideMixin:
             self._test_mode_overrides_changed()
 
     def _push_events_overrides_removed(
-        self, attrs_to_refresh: Iterable[str]
+        self: TestModeOverrideMixinInterface, attrs_to_refresh: Iterable[str]
     ) -> None:
         """
         Push true value events for attributes that were previously overridden.
@@ -170,9 +218,7 @@ class TestModeOverrideMixin:
             if attr_cfg.is_archive_event():
                 self.push_archive_event(attr_name, attr.value, attr.time, attr.quality)
 
-    def _override_value_convert(
-        self, attr_name: str, value: Any
-    ) -> Any:
+    def _override_value_convert(self, attr_name: str, value: Any) -> Any:
         """
         Automatically convert types for attr overrides (e.g. enum label -> int).
 

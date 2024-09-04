@@ -35,15 +35,21 @@ from ska_tango_base.testing.reference import (
     ReferenceBaseComponentManager,
     ReferenceSkaBaseDevice,
 )
+
+from src.ska_tango_base.testing.reference.reference_test_mode_overrides import (
+    ReferenceTestModeOverrides,
+)
 from tests.conftest import Helpers
 
 
 class TestSKABaseDevice:  # pylint: disable=too-many-public-methods
     """Test cases for SKABaseDevice."""
 
-    @pytest.fixture(scope="class")
+    @pytest.fixture(
+        scope="class", params=[ReferenceSkaBaseDevice, ReferenceTestModeOverrides]
+    )
     def device_test_config(
-        self: TestSKABaseDevice, device_properties: dict[str, str]
+        self: TestSKABaseDevice, request, device_properties: dict[str, str]
     ) -> dict[str, Any]:
         """
         Specify device configuration, including properties and memorized attributes.
@@ -58,7 +64,7 @@ class TestSKABaseDevice:  # pylint: disable=too-many-public-methods
             configured
         """
         return {
-            "device": ReferenceSkaBaseDevice,
+            "device": request.param,
             "component_manager_patch": lambda self: ReferenceBaseComponentManager(
                 self.logger,
                 self._communication_state_changed,

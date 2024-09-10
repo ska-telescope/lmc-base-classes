@@ -35,7 +35,7 @@ from ska_tango_base.testing.reference import (
     ReferenceBaseComponentManager,
     ReferenceSkaBaseDevice,
 )
-from src.ska_tango_base.testing.reference.reference_test_mode_overrides import (
+from ska_tango_base.testing.reference.reference_test_mode_overrides import (
     ReferenceTestModeOverrides,
 )
 from tests.conftest import Helpers

@@ -35,9 +35,7 @@ class TestModeOverrideMixin:
         """Tango attribute and enum class, for str conversion in TestMode overrides."""
         super().__init_subclass__(**kwargs)
 
-    def _get_override_value(
-        self, attr_name: str, default: Any = None
-    ) -> Any:
+    def _get_override_value(self, attr_name: str, default: Any = None) -> Any:
         """
         Read a value from our overrides, use a default value when not overridden.
 
@@ -102,9 +100,7 @@ class TestModeOverrideMixin:
         """
         return json.dumps(self._test_mode_overrides)
 
-    def is_test_mode_overrides_allowed(
-        self, request_type: AttReqType
-    ) -> bool:
+    def is_test_mode_overrides_allowed(self, request_type: AttReqType) -> bool:
         """
         Control access to test_mode_overrides attribute.
 
@@ -147,9 +143,7 @@ class TestModeOverrideMixin:
         if self._test_mode_overrides_changed is not None:
             self._test_mode_overrides_changed()
 
-    def _push_events_overrides_removed(
-        self, attrs_to_refresh: Iterable[str]
-    ) -> None:
+    def _push_events_overrides_removed(self, attrs_to_refresh: Iterable[str]) -> None:
         """
         Push true value events for attributes that were previously overridden.
 
@@ -170,9 +164,7 @@ class TestModeOverrideMixin:
             if attr_cfg.is_archive_event():
                 self.push_archive_event(attr_name, attr.value, attr.time, attr.quality)
 
-    def _override_value_convert(
-        self, attr_name: str, value: Any
-    ) -> Any:
+    def _override_value_convert(self, attr_name: str, value: Any) -> Any:
         """
         Automatically convert types for attr overrides (e.g. enum label -> int).
 

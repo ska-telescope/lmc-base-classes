@@ -15,9 +15,8 @@ from __future__ import annotations
 
 from typing import cast
 
-from .reference_base_device import ReferenceSkaBaseDevice
-
 from ...base import TestModeOverrideMixin
+from .reference_base_device import ReferenceSkaBaseDevice
 
 __all__ = ["TestModeOverrideMixin", "main"]
 

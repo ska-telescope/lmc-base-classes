@@ -58,6 +58,7 @@ class TestSKABaseDevice:  # pylint: disable=too-many-public-methods
 
         :param device_properties: fixture that returns device properties
             of the device under test
+        :param request: pytest request fixture
 
         :return: specification of how the device under test should be
             configured

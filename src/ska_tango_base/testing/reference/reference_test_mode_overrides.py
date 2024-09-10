@@ -13,11 +13,13 @@ adding TestModeOverrideMixin doesn't break anything too badly.
 # pylint: disable=invalid-name
 from __future__ import annotations
 
+from typing import cast
+
 from src.ska_tango_base.testing.reference import ReferenceSkaBaseDevice
 
 from ...base import TestModeOverrideMixin
 
-__all__ = ["SKABaseDevice", "main"]
+__all__ = ["TestModeOverrideMixin", "main"]
 
 
 class ReferenceTestModeOverrides(ReferenceSkaBaseDevice, TestModeOverrideMixin):

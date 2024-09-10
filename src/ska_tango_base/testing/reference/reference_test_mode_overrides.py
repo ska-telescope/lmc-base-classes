@@ -15,7 +15,7 @@ from __future__ import annotations
 
 from typing import cast
 
-from ska_tango_base.testing.reference import ReferenceSkaBaseDevice
+from .reference_base_device import ReferenceSkaBaseDevice
 
 from ...base import TestModeOverrideMixin
 

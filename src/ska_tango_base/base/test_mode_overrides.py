@@ -7,7 +7,7 @@
 # See LICENSE.txt for more info.
 """This module implements Test Mode Overrides that can be added to an SKABaseDevice."""
 import json
-from typing import Any, Callable, Iterable
+from typing import Any, Callable, Iterable, Union
 
 from ska_control_model import HealthState, TestMode
 from tango import AttReqType, AttributeProxy
@@ -24,7 +24,7 @@ class TestModeOverrideMixin:
 
         :param kwargs: keyword arguments (passed to superclass).
         """
-        cls._test_mode = TestMode.NONE  # just in case base device changes...
+        cls._test_mode: TestMode = TestMode.NONE  # just in case base device changes...
         cls._test_mode_overrides: dict[str, Any] = {}
         """Overrides used in TestMode - attribute name: override value"""
         cls._test_mode_overrides_changed: Callable[[], None] | None = None
@@ -35,7 +35,11 @@ class TestModeOverrideMixin:
         """Tango attribute and enum class, for str conversion in TestMode overrides."""
         super().__init_subclass__(**kwargs)
 
-    def _get_override_value(self, attr_name: str, default: Any = None) -> Any:
+    def _get_override_value(
+        self: Union[SKABaseDevice, "TestModeOverrideMixin"],
+        attr_name: str,
+        default: Any = None,
+    ) -> Any:
         """
         Read a value from our overrides, use a default value when not overridden.
 
@@ -114,7 +118,9 @@ class TestModeOverrideMixin:
         return self._test_mode == TestMode.TEST
 
     @test_mode_overrides.write  # type: ignore[no-redef, misc]
-    def test_mode_overrides(self, value_str: str) -> None:
+    def test_mode_overrides(
+        self: Union[SKABaseDevice, "TestModeOverrideMixin"], value_str: str
+    ) -> None:
         """
         Write new override configuration.
 

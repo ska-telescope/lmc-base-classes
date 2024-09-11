@@ -7,7 +7,7 @@
 # See LICENSE.txt for more info.
 """This module implements Test Mode Overrides that can be added to an SKABaseDevice."""
 import json
-from typing import Any, Callable, Iterable, Union
+from typing import Any, Callable, Iterable, TypeAlias
 
 from ska_control_model import HealthState, TestMode
 from tango import AttReqType, AttributeProxy
@@ -18,6 +18,13 @@ from .base_device import SKABaseDevice
 
 class TestModeOverrideMixin:
     """Add Test Mode Attribute Overrides to an TestModeOverrideMixin."""
+    _test_mode: TestMode = None
+    _test_mode_overrides: dict[str, Any] = None
+    _test_mode_overrides_changed: Callable[[], None] | None = None
+    _test_mode_enum_attrs = None
+    push_change_event: Callable[[], None] | None = None
+    push_archive_event: Callable[[], None] | None = None
+    get_device_attr: Callable[[], None] | None = None
 
     def __init_subclass__(cls: SKABaseDevice, **kwargs):
         """Add our variables to the class we are extending.
@@ -36,7 +43,7 @@ class TestModeOverrideMixin:
         super().__init_subclass__(**kwargs)
 
     def _get_override_value(
-        self: Union[SKABaseDevice, "TestModeOverrideMixin"],
+        self,
         attr_name: str,
         default: Any = None,
     ) -> Any:
@@ -118,9 +125,7 @@ class TestModeOverrideMixin:
         return self._test_mode == TestMode.TEST
 
     @test_mode_overrides.write  # type: ignore[no-redef, misc]
-    def test_mode_overrides(
-        self: Union[SKABaseDevice, "TestModeOverrideMixin"], value_str: str
-    ) -> None:
+    def test_mode_overrides(self, value_str: str) -> None:
         """
         Write new override configuration.
 

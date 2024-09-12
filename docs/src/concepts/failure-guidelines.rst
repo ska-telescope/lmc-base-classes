@@ -2,11 +2,6 @@
 Guidelines on reporting failure of long running commands
 ========================================================
 
-.. warning::
-
-   These guidelines are still under consideration by the wider SKA community and
-   may be changed in the future.
-
 In general, long running commands are fallible. ska-tango-base provides several
 different mechanisms for reporting such failures, this corresponds to the
 several ways that an LRC can fail. This subsection provides guidelines of when
@@ -86,9 +81,20 @@ Reporting a failure from the initial Tango command
 
 An LRC is initiated by a client invoking a Tango command of the same name. The
 Tango command can fail to either start or enqueue the task corresponding to the
-LRC. In our taxonomy this would be a normal failure. A Tango command must return a 
-:obj:`ResultCode.REJECTED <ska_control_model.ResultCode.REJECTED>` in this case, 
-which is following our rule of thumb above.
+LRC. In our taxonomy this would be a normal failure and so if following the rule
+of thumb above we should aim to report these failures by returning a
+:obj:`ResultCode.REJECTED <ska_control_model.ResultCode.REJECTED>`.
+
+However, the :func:`~ska_tango_base.long_running_commands_api.invoke_lrc`
+function, which clients use to start and monitor an LRC, does **not** use a
+``ResultCode`` to communicate if the command was successfully started or not.
+Instead it will raise a :class:`~ska_tango_base.faults.CommandError` if the
+initial Tango command returned :obj:`ResultCode.REJECTED
+<ska_control_model.ResultCode.REJECTED>`. The reasoning behind this is that
+there are additional normal failures, such as a network timeout, which Tango
+itself reports as a ``tango.DevFailed`` exception and so the client can handle
+all these failures together by catching the exceptions instead of needing to
+also check the result code.
 
 In the presence of a bug in a Tango command, python will raise an ``Exception``
 and Tango will forward this on to the client and raise an exception there. This
@@ -102,7 +108,7 @@ provided by ska_tango_base will raise an ``Exception`` in this case, following
 our rule of thumb.
 
 It is useful to contrast the invalid JSON failure, with an invalid value for the
-argument. A client program is often not in a position to determine if the value for an 
+argument. A client program is often not in a position to determine if the value for an
 argument is valid, because this value could come from a user and the client program
 might not have the context to know if the user has made a mistake or not. As such,
 in general, it cannot be a bug for the client program to invoke a
@@ -118,22 +124,21 @@ Reporting a failure from the task
 
 Once the initial Tango command has returned, there is no mechanism for the LRC
 to send a python ``Exception`` to the client. All that can be sent to the client is
-the result associated with the task via the ``longRunningCommandResult``
-attribute. In this case, it is recommended to use the task's associated status
-to distinguish between normal and abnormal failures. When following this
-recommendation, in the presence of any failure (abnormal or otherwise) the
+the result associated with the task via the LRC client/server protocol. In this
+case, it is recommended to use the task's associated status to distinguish
+between normal and abnormal failures. When following this recommendation, in the
+presence of any failure (abnormal or otherwise) the
 :class:`~ska_control_model.ResultCode` associated with the task should be
 :obj:`ResultCode.FAILED <ska_control_model.ResultCode.FAILED>`. If the failure
 is normal, the status of the task itself should be :obj:`TaskStatus.COMPLETED
 <ska_control_model.TaskStatus.COMPLETED>`, otherwise it should be
 :obj:`TaskStatus.FAILED <ska_control_model.TaskStatus.FAILED>`.
 
-In the case of an abnormal failure, if there is an associated ``Exception``, it should 
-be logged before the task is completed. The ``task_callback`` provides an exception 
-convenience argument which logs the ``Exception`` that is passed in and sets the task's 
-associated result by default to the tuple ``(ResultCode.FAILED, str(exception))``. If 
-you want a different result, the default can be overridden by using the result argument 
-together with the exception argument. There is no requirement to use the ``task_callback`` 
-with the exception argument, but it's still recommended to always log the exception for 
+In the case of an abnormal failure, if there is an associated ``Exception``, it should
+be logged before the task is completed. The ``task_callback`` provides an exception
+convenience argument which logs the ``Exception`` that is passed in and sets the task's
+associated result by default to the tuple ``(ResultCode.FAILED, str(exception))``. If
+you want a different result, the default can be overridden by using the result argument
+together with the exception argument. There is no requirement to use the ``task_callback``
+with the exception argument, but it's still recommended to always log the exception for
 abnormal failures, even if supplying a different result.
-

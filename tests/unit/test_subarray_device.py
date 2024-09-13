@@ -376,12 +376,12 @@ class TestSKASubarray:  # pylint: disable=too-many-public-methods
             error: tuple[DevError] | None = None,
             **kwargs: Any,
         ) -> None:
-            if status is not None:
-                logger.info(f"abort_callback(status={status.name})")
             if progress is not None:
                 logger.info(f"abort_callback(progress={progress})")
             if result is not None:
                 logger.info(f"abort_callback(result={result})")
+            if status is not None:
+                logger.info(f"abort_callback(status={status.name})")
             if error is not None:
                 logger.error(f"abort_callback(error={error})")
             if kwargs:

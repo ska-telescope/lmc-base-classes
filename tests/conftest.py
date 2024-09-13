@@ -211,14 +211,6 @@ def successful_lrc_callback_fixture(
         **kwargs: Any,
     ) -> None:
         try:
-            if status is not None:
-                logger.info(f"lrc_callback(status={status.name})")
-                assert status in [
-                    TaskStatus.STAGING,
-                    TaskStatus.QUEUED,
-                    TaskStatus.IN_PROGRESS,
-                    TaskStatus.COMPLETED,
-                ], f"Unexpected status: {status.name}"
             if progress is not None:
                 logger.info(f"lrc_callback(progress={progress})")
                 assert progress in [33, 66], f"Unexpected progress: {progress}"
@@ -227,6 +219,14 @@ def successful_lrc_callback_fixture(
                 assert isinstance(result, list) and result[0] == ResultCode.OK, {
                     f"Unexpected result: {result}"
                 }
+            if status is not None:
+                logger.info(f"lrc_callback(status={status.name})")
+                assert status in [
+                    TaskStatus.STAGING,
+                    TaskStatus.QUEUED,
+                    TaskStatus.IN_PROGRESS,
+                    TaskStatus.COMPLETED,
+                ], f"Unexpected status: {status.name}"
             if error is not None:
                 logger.error(f"lrc_callback(error={error})")
                 assert False, f"Received {error}"
@@ -260,14 +260,6 @@ def aborted_lrc_callback_fixture(
         **kwargs: Any,
     ) -> None:
         try:
-            if status is not None:
-                logger.info(f"lrc_callback(status={status.name})")
-                assert status in [
-                    TaskStatus.STAGING,
-                    TaskStatus.QUEUED,
-                    TaskStatus.IN_PROGRESS,
-                    TaskStatus.ABORTED,
-                ], f"Unexpected status: {status.name}"
             if progress is not None:
                 logger.info(f"lrc_callback(progress={progress})")
                 assert False, f"Unexpected progress: {progress}"
@@ -276,6 +268,14 @@ def aborted_lrc_callback_fixture(
                 assert isinstance(result, list) and result[0] == ResultCode.ABORTED, {
                     f"Unexpected result: {result}"
                 }
+            if status is not None:
+                logger.info(f"lrc_callback(status={status.name})")
+                assert status in [
+                    TaskStatus.STAGING,
+                    TaskStatus.QUEUED,
+                    TaskStatus.IN_PROGRESS,
+                    TaskStatus.ABORTED,
+                ], f"Unexpected status: {status.name}"
             if error is not None:
                 logger.error(f"lrc_callback(error={error})")
                 assert False, f"Received {error}"
@@ -307,12 +307,12 @@ def lrc_callback_log_only_fixture(
         error: tuple[DevError] | None = None,
         **kwargs: Any,
     ) -> None:
-        if status is not None:
-            logger.info(f"lrc_callback(status={status.name})")
         if progress is not None:
             logger.info(f"lrc_callback(progress={progress})")
         if result is not None:
             logger.info(f"lrc_callback(result={result})")
+        if status is not None:
+            logger.info(f"lrc_callback(status={status.name})")
         if error is not None:
             logger.error(f"lrc_callback(error={error})")
         if kwargs:

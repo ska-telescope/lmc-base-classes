@@ -185,6 +185,31 @@ def invoke_lrc(  # noqa: C901
             )
             return
         match event.attr_value.name:
+            # Protocol v2
+            case "_lrcevents":
+                events = json.loads(lrc_attr_value)
+                if "status" in events:
+                    try:
+                        events["status"] = TaskStatus(events["status"])
+                    except KeyError as exc:
+                        logger.exception(
+                            f"Received unknown TaskStatus from '{command_id}' command: "
+                            f"{lrc_attr_value}"
+                        )
+                        lrc_callback(
+                            error=Except.to_dev_failed(
+                                type(exc), exc, exc.__traceback__
+                            ).args
+                        )
+                    if events["status"] in [
+                        TaskStatus.ABORTED,
+                        TaskStatus.COMPLETED,
+                        TaskStatus.FAILED,
+                        TaskStatus.REJECTED,
+                    ]:
+                        unsubscribe_lrc_events()
+                lrc_callback(**events)
+            # Protocol v1
             case "longrunningcommandstatus":
                 try:
                     status = TaskStatus[lrc_attr_value]
@@ -223,11 +248,15 @@ def invoke_lrc(  # noqa: C901
         )
 
     # Subscribe to LRC attributes' change events with above callback
-    for attr in [
-        "longRunningCommandStatus",
-        "longRunningCommandProgress",
-        "longRunningCommandResult",
-    ]:
+    if "_lrcEvents" in proxy.get_attribute_list():  # Use protocol v2
+        attributes = ["_lrcEvents"]
+    else:  # Use protocol v1
+        attributes = [
+            "longRunningCommandStatus",
+            "longRunningCommandProgress",
+            "longRunningCommandResult",
+        ]
+    for attr in attributes:
         try:
             event_id = proxy.subscribe_event(
                 attr, EventType.CHANGE_EVENT, wrap_lrc_callback

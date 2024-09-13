@@ -42,6 +42,7 @@ Welcome to SKA Tango Base documentation!
   :caption: Releases
 
   releases/migrating-to-1.0
+  releases/migrating-to-1.2
   releases/changelog
 
 Indices and tables

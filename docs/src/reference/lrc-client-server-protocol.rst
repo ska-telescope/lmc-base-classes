@@ -35,7 +35,8 @@ Associate task data of ``status``, ``progress`` and ``result`` can be obtained
 corresponding to the command ID they were returned from the initiating Tango
 command.
 
-**LRC Attributes**
+LRC Attributes
+~~~~~~~~~~~~~~
 
 +-----------------------------+-------------------------------------------+----------------------+
 | Attribute                   | Example Value                             |  Description         |
@@ -80,14 +81,15 @@ command.
 |                             | '1')                                      |                      |
 +-----------------------------+-------------------------------------------+----------------------+
 | longRunningCommandResult    | ('1636438076.6105473_101143779281769_On', | ID,                  |
-|                             | ('0', 'On command completed OK'))         | JSON encoded result  |
+|                             | '[0, "On command completed OK"]')         | JSON encoded result  |
 |                             |                                           | of the               |
 |                             |                                           | completed command    |
 +-----------------------------+-------------------------------------------+----------------------+
-
-The device has change events configured for all the LRC attributes which clients can use to track
-their requests. **The client has the responsibility of subscribing to events to receive changes on
-command status and results**.
+| _lrcEvents                  | ('1636438076.6105473_101143779281769_On', | ID, JSON encoded dict|
+|                             | '{"status": 5, "result":                  | of status, progress  |
+|                             | [0, "On command completed OK"]}')         | and/or result of all |
+|                             |                                           | executing commands   |
++-----------------------------+-------------------------------------------+----------------------+
 
 Associated data for a command will remain present in the above attributes for
 (by default) at most 10 seconds after it has reached a terminal
@@ -102,10 +104,33 @@ that associated data for a command may be evicted earlier than 10 seconds after
 reaching a terminal :class:`~ska_control_model.TaskStatus` to make room for
 other commands.
 
+The device has change events configured for all the LRC attributes which clients can use to track
+their requests. **The client has the responsibility of subscribing to events to receive changes on
+command status and results**, unless using the new
+:func:`~ska_tango_base.long_running_commands_api.invoke_lrc` function, which handles the
+events for you. The ``longRunningCommandStatus``, ``longRunningCommandProgress`` and 
+``longRunningCommandResult`` is considered as v1 of the LRC client-server protocol.
+
+New LRC client-server protocol (v2)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The ``_lrcEvents`` attribute is only meant for internal use by the 
+:func:`~ska_tango_base.long_running_commands_api.invoke_lrc` function. Reading it 
+directly just returns an empty list. For each currently executing command, ``_lrcEvents`` 
+pushes a change event containing the command ID and a json encoded dictionary of the 
+status and/or progress and/or result received by the 
+:func:`CommandTracker.update_command_info() <ska_tango_base.base.command_tracker.CommandTracker.update_command_info>` 
+callback in a single call. Now 
+:func:`~ska_tango_base.long_running_commands_api.invoke_lrc` rather subscribes to 
+``_lrcEvents`` (if it's available on the device server) and then a client can know if a 
+change to the status and result of a command are related via the callback the client 
+passed to :func:`~ska_tango_base.long_running_commands_api.invoke_lrc`.
+
+LRC commands
+~~~~~~~~~~~~
+
 In addition to the above attributes, the following commands are provided for
 interacting with Long Running Commands.
-
-**LRC commands**
 
 +-------------------------------+------------------------------+
 | Command                       | Description                  |

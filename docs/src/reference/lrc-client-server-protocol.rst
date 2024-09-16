@@ -63,9 +63,9 @@ command.
 +-----------------------------+-------------------------------------------+----------------------+
 | longRunningCommandStatus    | ('1636437568.0723004_235210334802782_On', | ID, status pair of   |
 |                             | 'IN_PROGRESS',                            | the currently        |
-|                             |                                           | executing commands   |
+|                             |                                           | allocated commands   |
 |                             | '1636437789.493874_116219429722764_Off',  |                      |
-|                             | 'IN_PROGRESS')                            |                      |
+|                             | 'QUEUED')                                 |                      |
 +-----------------------------+-------------------------------------------+----------------------+
 | longRunningCommandInProgress| ('On')                                    | Name of all commands |
 |                             |                                           | currently executing  |
@@ -88,6 +88,19 @@ command.
 The device has change events configured for all the LRC attributes which clients can use to track
 their requests. **The client has the responsibility of subscribing to events to receive changes on
 command status and results**.
+
+Associated data for a command will remain present in the above attributes for
+(by default) at most 10 seconds after it has reached a terminal
+:class:`~ska_control_model.TaskStatus` (one of
+:obj:`TaskStatus.COMPLETED <ska_control_model.TaskStatus.COMPLETED>`
+:obj:`TaskStatus.FAILED <ska_control_model.TaskStatus.FAILED>`
+:obj:`TaskStatus.ABORTED <ska_control_model.TaskStatus.ABORTED>`
+:obj:`TaskStatus.REJECTED <ska_control_model.TaskStatus.REJECTED>`) .  This is
+controlled by the ``removal_time`` passed to the
+:class:`~ska_tango_base.base.command_tracker.CommandTracker` initialiser. Note
+that associated data for a command may be evicted earlier than 10 seconds after
+reaching a terminal :class:`~ska_control_model.TaskStatus` to make room for
+other commands.
 
 In addition to the above attributes, the following commands are provided for
 interacting with Long Running Commands.

@@ -7,7 +7,7 @@
 # See LICENSE.txt for more info.
 """This module implements Test Mode Overrides that can be added to an SKABaseDevice."""
 import json
-from typing import Any, Callable, Iterable, TypeAlias
+from typing import Any, Callable, Iterable
 
 from ska_control_model import HealthState, TestMode
 from tango import AttReqType, AttributeProxy

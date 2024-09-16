@@ -34,6 +34,7 @@ DOCS_SPHINXOPTS=-W --keep-going
 
 ifdef CI_JOB_TOKEN
 docs-pre-build:
+	apt-get install --assume-yes --quiet -- plantuml
 	poetry config virtualenvs.create false
 	poetry install --no-root --with docs
 endif

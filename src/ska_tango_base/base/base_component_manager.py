@@ -373,6 +373,19 @@ class BaseComponentManager:
         """
         raise NotImplementedError("BaseComponentManager is abstract.")
 
+    def abort(
+        self: BaseComponentManager, task_callback: TaskCallbackType | None = None
+    ) -> tuple[TaskStatus, str]:
+        """
+        Abort activities on the device.
+
+        :param task_callback: callback to be called whenever the status
+            of the task changes.
+
+        :return: tuple of TaskStatus & message
+        """
+        return self.abort_tasks(task_callback)
+
     @check_communicating
     def abort_commands(
         self: BaseComponentManager, task_callback: TaskCallbackType | None = None
@@ -392,7 +405,6 @@ class BaseComponentManager:
         )
         return self.abort_tasks(task_callback)
 
-    @check_communicating
     def abort_tasks(
         self: BaseComponentManager, task_callback: TaskCallbackType | None = None
     ) -> tuple[TaskStatus, str]:

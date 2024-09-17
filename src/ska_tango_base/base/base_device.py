@@ -1401,7 +1401,7 @@ class SKABaseDevice(
             command_id = self._command_tracker.new_command(
                 "Abort", completed_callback=self._completed
             )
-            status, _ = self._component_manager.abort_tasks(
+            status, _ = self._component_manager.abort(
                 partial(self._command_tracker.update_command_info, command_id)
             )
             assert status == TaskStatus.IN_PROGRESS

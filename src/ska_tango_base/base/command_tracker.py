@@ -54,7 +54,7 @@ class CommandTracker:  # pylint: disable=too-many-instance-attributes
         progress_changed_callback: Callable[[list[tuple[str, int]]], None],
         result_callback: Callable[[str, tuple[ResultCode, str]], None],
         exception_callback: Callable[[str, Exception], None] | None = None,
-        all_events_callback: Callable[[list[tuple[str, str]]], None] | None = None,
+        event_callback: Callable[[tuple[str, str]], None] | None = None,
         removal_time: float = 10.0,
     ) -> None:
         """
@@ -65,7 +65,7 @@ class CommandTracker:  # pylint: disable=too-many-instance-attributes
         :param progress_changed_callback: called when the progress changes
         :param result_callback: called when command finishes
         :param exception_callback: called in the event of an exception
-        :param all_events_callback: called for all change events
+        :param event_callback: called for any and all change events
         :param removal_time: timer
         """
         self.__lock = threading.RLock()
@@ -79,8 +79,7 @@ class CommandTracker:  # pylint: disable=too-many-instance-attributes
         )
         self._exception_callback = exception_callback
         self._most_recent_exception: tuple[str, Exception] | None = None
-        self._all_events_callback = all_events_callback
-        self._most_recent_events: dict[str, str] = {}
+        self._event_callback = event_callback
         self._commands: dict[str, _CommandData] = {}
         self._removal_time = removal_time
 
@@ -110,13 +109,15 @@ class CommandTracker:  # pylint: disable=too-many-instance-attributes
             "progress": None,
             "completed_callback": completed_callback,
         }
-        self._most_recent_events[command_id] = json.dumps(
-            {"status": TaskStatus.STAGING}
-        )
         self._queue_changed_callback(self.commands_in_queue)
         self._status_changed_callback(self.command_statuses)
-        if self._all_events_callback is not None:
-            self._all_events_callback(self.commands_most_recent_events)
+        if self._event_callback is not None:
+            self._event_callback(
+                (
+                    command_id,
+                    json.dumps({"status": self._commands[command_id]["status"]}),
+                )
+            )
         return command_id
 
     def _schedule_removal(self: CommandTracker, command_id: str) -> None:
@@ -153,17 +154,17 @@ class CommandTracker:  # pylint: disable=too-many-instance-attributes
                 # Set a default result for an exception if one is not provided
                 if result is None:
                     result = (ResultCode.FAILED, str(exception))
-            events: dict[str, Any] = {}
+            event: dict[str, Any] = {}
             if result is not None:
-                events["result"] = result
+                event["result"] = result
                 self._most_recent_result = (command_id, result)
                 self._result_callback(command_id, result)
             if progress is not None:
-                events["progress"] = int(progress)
+                event["progress"] = int(progress)
                 self._commands[command_id]["progress"] = progress
                 self._progress_changed_callback(self.command_progresses)
             if status is not None:
-                events["status"] = status.value
+                event["status"] = status.value
                 self._commands[command_id]["status"] = status
                 self._status_changed_callback(self.command_statuses)
 
@@ -181,9 +182,8 @@ class CommandTracker:  # pylint: disable=too-many-instance-attributes
                 ]:
                     self._commands[command_id]["progress"] = None
                     self._schedule_removal(command_id)
-            self._most_recent_events[command_id] = json.dumps(events)
-            if self._all_events_callback is not None:
-                self._all_events_callback(self.commands_most_recent_events)
+            if self._event_callback is not None:
+                self._event_callback((command_id, json.dumps(event)))
 
     def has_current_thread_locked(self: CommandTracker) -> bool:
         """
@@ -259,21 +259,6 @@ class CommandTracker:  # pylint: disable=too-many-instance-attributes
             raised an uncaught exception, then None.
         """
         return self._most_recent_exception
-
-    @property
-    def commands_most_recent_events(
-        self: CommandTracker,
-    ) -> list[tuple[str, str]]:
-        """
-        Return a list of the most recent command events for commands in the queue.
-
-        :return: a list of (command_id, list of events) tuples, ordered by when invoked.
-        """
-        with self.__lock:
-            return list(
-                (command_id, events)
-                for command_id, events in self._most_recent_events.items()
-            )
 
     def get_command_status(self: CommandTracker, command_id: str) -> TaskStatus:
         """

@@ -354,7 +354,7 @@ class SKABaseDevice(
             ]:
                 self.set_change_event(attribute_name, True)
                 self.set_archive_event(attribute_name, True)
-            self.set_change_event("_lrcEvents", True)
+            self.set_change_event("_lrcEvent", True)
 
             try:
                 # create Tango Groups dict, according to property
@@ -420,11 +420,7 @@ class SKABaseDevice(
             + 1,  # for Abort command
             _MINIMUM_STATUS_QUEUE_SIZE,
         )
-        self._create_attribute(
-            "_lrcEvents",
-            self._status_queue_size * 2,  # 2 per command
-            self._lrcEvents,
-        )
+        self._create_attribute("_lrcEvent", 2, self._lrcEvent)
         self._create_attribute(
             "longRunningCommandStatus",
             self._status_queue_size * 2,  # 2 per command
@@ -474,7 +470,7 @@ class SKABaseDevice(
             progress_changed_callback=self._update_command_progresses,
             result_callback=self._update_command_result,
             exception_callback=self._log_command_exception,
-            all_events_callback=self._update_lrc_events,
+            event_callback=self._update_lrc_event,
         )
         self.op_state_model = OpStateModel(
             logger=self.logger,
@@ -679,13 +675,11 @@ class SKABaseDevice(
         self.push_change_event("longRunningCommandResult", self._command_result)
         self.push_archive_event("longRunningCommandResult", self._command_result)
 
-    def _update_lrc_events(
+    def _update_lrc_event(
         self: SKABaseDevice[ComponentManagerT],
-        command_events: list[tuple[str, str]],
+        command_event: tuple[str, str],
     ) -> None:
-        self.push_change_event(
-            "_lrcEvents", [item for tup in command_events for item in tup]
-        )
+        self.push_change_event("_lrcEvent", list(command_event))
 
     def _log_command_exception(
         self: SKABaseDevice[ComponentManagerT],
@@ -1068,7 +1062,7 @@ class SKABaseDevice(
     # The following LRC attributes are instantiated in init_device() to make use of the
     # max_queued_tasks and max_executing_tasks properties to compute their max_dim_x
 
-    def _lrcEvents(self: SKABaseDevice[ComponentManagerT], attr: attribute) -> None:
+    def _lrcEvent(self: SKABaseDevice[ComponentManagerT], attr: attribute) -> None:
         """
         Read the long running commands events. Always returns an empty list.
 

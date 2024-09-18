@@ -409,13 +409,13 @@ class TestSKASubarray:  # pylint: disable=too-many-public-methods
             Helpers.assert_expected_logs(
                 caplog,
                 [  # Log messages must be in this exact order
-                    "lrc_callback(status=IN_PROGRESS)",
+                    # "lrc_callback(status=IN_PROGRESS)",
                     "abort_callback(status=STAGING)",
-                    "lrc_callback(status=IN_PROGRESS)",
+                    # "lrc_callback(status=IN_PROGRESS)",
                     "abort_callback(status=IN_PROGRESS)",
                     "lrc_callback(result=[7, 'Command has been aborted'])",
                     "lrc_callback(status=ABORTED)",
-                    "abort_callback(status=IN_PROGRESS)",
+                    # "abort_callback(status=IN_PROGRESS)",
                     "abort_callback(result=[0, 'Abort completed OK'])",
                     "abort_callback(status=COMPLETED)",
                 ],

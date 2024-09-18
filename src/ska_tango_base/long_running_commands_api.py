@@ -186,11 +186,11 @@ def invoke_lrc(  # noqa: C901
             return
         match event.attr_value.name:
             # Protocol v2
-            case "_lrcevents":
-                events = json.loads(lrc_attr_value)
-                if "status" in events:
+            case "_lrcevent":
+                event = json.loads(lrc_attr_value)
+                if "status" in event:
                     try:
-                        events["status"] = TaskStatus(events["status"])
+                        event["status"] = TaskStatus(event["status"])
                     except KeyError as exc:
                         logger.exception(
                             f"Received unknown TaskStatus from '{command_id}' command: "
@@ -201,14 +201,14 @@ def invoke_lrc(  # noqa: C901
                                 type(exc), exc, exc.__traceback__
                             ).args
                         )
-                    if events["status"] in [
+                    if event["status"] in [
                         TaskStatus.ABORTED,
                         TaskStatus.COMPLETED,
                         TaskStatus.FAILED,
                         TaskStatus.REJECTED,
                     ]:
                         unsubscribe_lrc_events()
-                lrc_callback(**events)
+                lrc_callback(**event)
             # Protocol v1
             case "longrunningcommandstatus":
                 try:
@@ -248,8 +248,8 @@ def invoke_lrc(  # noqa: C901
         )
 
     # Subscribe to LRC attributes' change events with above callback
-    if "_lrcEvents" in proxy.get_attribute_list():  # Use protocol v2
-        attributes = ["_lrcEvents"]
+    if "_lrcEvent" in proxy.get_attribute_list():  # Use protocol v2
+        attributes = ["_lrcEvent"]
     else:  # Use protocol v1
         attributes = [
             "longRunningCommandStatus",

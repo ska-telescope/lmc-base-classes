@@ -461,13 +461,13 @@ class TestSKABaseDevice:  # pylint: disable=too-many-public-methods
         Helpers.assert_expected_logs(
             caplog,
             [  # Log messages must be in this exact order
-                "lrc_callback(status=IN_PROGRESS)",  # On
+                # "lrc_callback(status=IN_PROGRESS)",  # On
                 "lrc_callback(status=STAGING)",  # Abort
-                "lrc_callback(status=IN_PROGRESS)",  # On
+                # "lrc_callback(status=IN_PROGRESS)",  # On
                 "lrc_callback(status=IN_PROGRESS)",  # Abort
                 "lrc_callback(result=[7, 'Command has been aborted'])",  # On
                 "lrc_callback(status=ABORTED)",  # On
-                "lrc_callback(status=IN_PROGRESS)",  # Abort
+                # "lrc_callback(status=IN_PROGRESS)",  # Abort
                 "lrc_callback(result=[0, 'Abort completed OK'])",  # Abort
                 "lrc_callback(status=COMPLETED)",  # Abort
             ],

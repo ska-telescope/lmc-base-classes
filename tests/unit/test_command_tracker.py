@@ -39,7 +39,7 @@ class TestCommandTracker:
             "progress": mocker.Mock(),
             "result": mocker.Mock(),
             "exception": mocker.Mock(),
-            "events": mocker.Mock(),
+            "event": mocker.Mock(),
         }
 
     @pytest.fixture
@@ -72,7 +72,7 @@ class TestCommandTracker:
             progress_changed_callback=callbacks["progress"],
             result_callback=callbacks["result"],
             exception_callback=callbacks["exception"],
-            all_events_callback=callbacks["events"],
+            event_callback=callbacks["event"],
             removal_time=removal_time,
         )
 
@@ -100,7 +100,7 @@ class TestCommandTracker:
         callbacks["progress"].assert_not_called()
         callbacks["result"].assert_not_called()
         callbacks["exception"].assert_not_called()
-        callbacks["events"].assert_not_called()
+        callbacks["event"].assert_not_called()
 
         first_command_id = command_tracker.new_command("first_command")
         assert command_tracker.commands_in_queue == [
@@ -112,9 +112,6 @@ class TestCommandTracker:
         assert command_tracker.command_progresses == []
         assert command_tracker.command_result is None
         assert command_tracker.command_exception is None
-        assert command_tracker.commands_most_recent_events == [
-            (first_command_id, '{"status": 0}')
-        ]
 
         callbacks["queue"].assert_called_once_with(
             [(first_command_id, "first_command")]
@@ -127,10 +124,8 @@ class TestCommandTracker:
         callbacks["progress"].assert_not_called()
         callbacks["result"].assert_not_called()
         callbacks["exception"].assert_not_called()
-        callbacks["events"].assert_called_once_with(
-            [(first_command_id, '{"status": 0}')]
-        )
-        callbacks["events"].reset_mock()
+        callbacks["event"].assert_called_once_with((first_command_id, '{"status": 0}'))
+        callbacks["event"].reset_mock()
 
         command_tracker.update_command_info(
             first_command_id, status=TaskStatus.IN_PROGRESS
@@ -144,9 +139,6 @@ class TestCommandTracker:
         assert command_tracker.command_progresses == []
         assert command_tracker.command_result is None
         assert command_tracker.command_exception is None
-        assert command_tracker.commands_most_recent_events == [
-            (first_command_id, '{"status": 2}')
-        ]
 
         callbacks["queue"].assert_not_called()
         callbacks["status"].assert_called_once_with(
@@ -156,10 +148,8 @@ class TestCommandTracker:
         callbacks["progress"].assert_not_called()
         callbacks["result"].assert_not_called()
         callbacks["exception"].assert_not_called()
-        callbacks["events"].assert_called_once_with(
-            [(first_command_id, '{"status": 2}')]
-        )
-        callbacks["events"].reset_mock()
+        callbacks["event"].assert_called_once_with((first_command_id, '{"status": 2}'))
+        callbacks["event"].reset_mock()
 
         second_command_id = command_tracker.new_command("second_command")
         assert command_tracker.commands_in_queue == [
@@ -191,7 +181,8 @@ class TestCommandTracker:
         callbacks["progress"].assert_not_called()
         callbacks["result"].assert_not_called()
         callbacks["exception"].assert_not_called()
-        callbacks["events"].reset_mock()
+        callbacks["event"].assert_called_once_with((second_command_id, '{"status": 0}'))
+        callbacks["event"].reset_mock()
 
         command_tracker.update_command_info(first_command_id, progress=50)
         assert command_tracker.commands_in_queue == [
@@ -205,10 +196,6 @@ class TestCommandTracker:
         assert command_tracker.command_progresses == [(first_command_id, 50)]
         assert command_tracker.command_result is None
         assert command_tracker.command_exception is None
-        assert command_tracker.commands_most_recent_events == [
-            (first_command_id, '{"progress": 50}'),
-            (second_command_id, '{"status": 0}'),
-        ]
 
         callbacks["queue"].assert_not_called()
         callbacks["status"].assert_not_called()
@@ -216,13 +203,10 @@ class TestCommandTracker:
         callbacks["progress"].reset_mock()
         callbacks["result"].assert_not_called()
         callbacks["exception"].assert_not_called()
-        callbacks["events"].assert_called_once_with(
-            [
-                (first_command_id, '{"progress": 50}'),
-                (second_command_id, '{"status": 0}'),
-            ]
+        callbacks["event"].assert_called_once_with(
+            (first_command_id, '{"progress": 50}')
         )
-        callbacks["events"].reset_mock()
+        callbacks["event"].reset_mock()
 
         command_tracker.update_command_info(
             first_command_id, result=(ResultCode.OK, "a message string")

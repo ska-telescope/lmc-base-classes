@@ -7,6 +7,7 @@
 """This module implements the CommandTracker and its supporting classes/functions."""
 from __future__ import annotations
 
+import json
 import threading
 from typing import Any, Callable, TypedDict
 
@@ -53,6 +54,7 @@ class CommandTracker:  # pylint: disable=too-many-instance-attributes
         progress_changed_callback: Callable[[list[tuple[str, int]]], None],
         result_callback: Callable[[str, tuple[ResultCode, str]], None],
         exception_callback: Callable[[str, Exception], None] | None = None,
+        event_callback: Callable[[tuple[str, str]], None] | None = None,
         removal_time: float = 10.0,
     ) -> None:
         """
@@ -63,6 +65,7 @@ class CommandTracker:  # pylint: disable=too-many-instance-attributes
         :param progress_changed_callback: called when the progress changes
         :param result_callback: called when command finishes
         :param exception_callback: called in the event of an exception
+        :param event_callback: called for any and all change events
         :param removal_time: timer
         """
         self.__lock = threading.RLock()
@@ -76,6 +79,7 @@ class CommandTracker:  # pylint: disable=too-many-instance-attributes
         )
         self._exception_callback = exception_callback
         self._most_recent_exception: tuple[str, Exception] | None = None
+        self._event_callback = event_callback
         self._commands: dict[str, _CommandData] = {}
         self._removal_time = removal_time
 
@@ -107,6 +111,13 @@ class CommandTracker:  # pylint: disable=too-many-instance-attributes
         }
         self._queue_changed_callback(self.commands_in_queue)
         self._status_changed_callback(self.command_statuses)
+        if self._event_callback is not None:
+            self._event_callback(
+                (
+                    command_id,
+                    json.dumps({"status": self._commands[command_id]["status"]}),
+                )
+            )
         return command_id
 
     def _schedule_removal(self: CommandTracker, command_id: str) -> None:
@@ -143,13 +154,17 @@ class CommandTracker:  # pylint: disable=too-many-instance-attributes
                 # Set a default result for an exception if one is not provided
                 if result is None:
                     result = (ResultCode.FAILED, str(exception))
+            event: dict[str, Any] = {}
             if result is not None:
+                event["result"] = result
                 self._most_recent_result = (command_id, result)
                 self._result_callback(command_id, result)
             if progress is not None:
+                event["progress"] = int(progress)
                 self._commands[command_id]["progress"] = progress
                 self._progress_changed_callback(self.command_progresses)
             if status is not None:
+                event["status"] = status.value
                 self._commands[command_id]["status"] = status
                 self._status_changed_callback(self.command_statuses)
 
@@ -167,6 +182,8 @@ class CommandTracker:  # pylint: disable=too-many-instance-attributes
                 ]:
                     self._commands[command_id]["progress"] = None
                     self._schedule_removal(command_id)
+            if self._event_callback is not None:
+                self._event_callback((command_id, json.dumps(event)))
 
     def has_current_thread_locked(self: CommandTracker) -> bool:
         """

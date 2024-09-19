@@ -35,7 +35,8 @@ Associate task data of ``status``, ``progress`` and ``result`` can be obtained
 corresponding to the command ID they were returned from the initiating Tango
 command.
 
-**LRC Attributes**
+LRC Attributes
+~~~~~~~~~~~~~~
 
 +-----------------------------+-------------------------------------------+----------------------+
 | Attribute                   | Example Value                             |  Description         |
@@ -80,14 +81,10 @@ command.
 |                             | '1')                                      |                      |
 +-----------------------------+-------------------------------------------+----------------------+
 | longRunningCommandResult    | ('1636438076.6105473_101143779281769_On', | ID,                  |
-|                             | ('0', 'On command completed OK'))         | JSON encoded result  |
+|                             | '[0, "On command completed OK"]')         | JSON encoded result  |
 |                             |                                           | of the               |
 |                             |                                           | completed command    |
 +-----------------------------+-------------------------------------------+----------------------+
-
-The device has change events configured for all the LRC attributes which clients can use to track
-their requests. **The client has the responsibility of subscribing to events to receive changes on
-command status and results**.
 
 Associated data for a command will remain present in the above attributes for
 (by default) at most 10 seconds after it has reached a terminal
@@ -102,10 +99,49 @@ that associated data for a command may be evicted earlier than 10 seconds after
 reaching a terminal :class:`~ska_control_model.TaskStatus` to make room for
 other commands.
 
+The device has change events configured for all the LRC attributes which clients can use to track
+their requests. The client has the responsibility of subscribing to events to receive changes on
+command status and results, unless using the new
+:func:`~ska_tango_base.long_running_commands_api.invoke_lrc` function, which handles the
+events for you. The :attr:`~ska_tango_base.base.base_device.SKABaseDevice.longRunningCommandStatus`, 
+:attr:`~ska_tango_base.base.base_device.SKABaseDevice.longRunningCommandProgress` and 
+:attr:`~ska_tango_base.base.base_device.SKABaseDevice.longRunningCommandResult` is 
+considered as v1 of the LRC client-server protocol.
+
+New LRC client-server protocol (v2)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The **_lrcEvent** attribute is only meant for internal use by the 
+:func:`~ska_tango_base.long_running_commands_api.invoke_lrc` function. Reading it 
+directly just returns an empty list. For any currently executing command, **_lrcEvent** 
+pushes a change event containing the command ID and a JSON encoded dictionary of all  
+task updates received by the 
+:func:`CommandTracker.update_command_info() <ska_tango_base.base.command_tracker.CommandTracker.update_command_info>` 
+callback in a single call.
+
+**_lrcEvent** example:
+
+.. code-block::
+  
+  ('1636438076.6105473_101143779281769_On', '{"status": 5, "result": [0, "On command completed OK"]}')
+
+The JSON encoded dictionary can be loaded with ``json.loads()``, and contains at least
+one or more key-value pairs of ``status``, ``progress`` and ``result``. The value of 
+``status`` and ``progress`` is an integer, with the ``status`` corresponding to a 
+:class:`~ska_control_model.TaskStatus`. The ``result`` value can by anything, but is 
+typically a list contaning the command's :class:`~ska_control_model.ResultCode` as an 
+integer and a message.
+
+Now :func:`~ska_tango_base.long_running_commands_api.invoke_lrc` rather subscribes to 
+**_lrcEvent** (if it's available on the device server) and then a client can know if a 
+change to the status and result of a command are related via the callback the client 
+passed to :func:`~ska_tango_base.long_running_commands_api.invoke_lrc`.
+
+LRC commands
+~~~~~~~~~~~~
+
 In addition to the above attributes, the following commands are provided for
 interacting with Long Running Commands.
-
-**LRC commands**
 
 +-------------------------------+------------------------------+
 | Command                       | Description                  |

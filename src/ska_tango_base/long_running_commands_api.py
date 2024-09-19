@@ -185,6 +185,31 @@ def invoke_lrc(  # noqa: C901
             )
             return
         match event.attr_value.name:
+            # Protocol v2
+            case "_lrcevent":
+                event = json.loads(lrc_attr_value)
+                if "status" in event:
+                    try:
+                        event["status"] = TaskStatus(event["status"])
+                    except KeyError as exc:
+                        logger.exception(
+                            f"Received unknown TaskStatus from '{command_id}' command: "
+                            f"{lrc_attr_value}"
+                        )
+                        lrc_callback(
+                            error=Except.to_dev_failed(
+                                type(exc), exc, exc.__traceback__
+                            ).args
+                        )
+                    if event["status"] in [
+                        TaskStatus.ABORTED,
+                        TaskStatus.COMPLETED,
+                        TaskStatus.FAILED,
+                        TaskStatus.REJECTED,
+                    ]:
+                        unsubscribe_lrc_events()
+                lrc_callback(**event)
+            # Protocol v1
             case "longrunningcommandstatus":
                 try:
                     status = TaskStatus[lrc_attr_value]
@@ -223,11 +248,15 @@ def invoke_lrc(  # noqa: C901
         )
 
     # Subscribe to LRC attributes' change events with above callback
-    for attr in [
-        "longRunningCommandStatus",
-        "longRunningCommandProgress",
-        "longRunningCommandResult",
-    ]:
+    if "_lrcEvent" in proxy.get_attribute_list():  # Use protocol v2
+        attributes = ["_lrcEvent"]
+    else:  # Use protocol v1
+        attributes = [
+            "longRunningCommandStatus",
+            "longRunningCommandProgress",
+            "longRunningCommandResult",
+        ]
+    for attr in attributes:
         try:
             event_id = proxy.subscribe_event(
                 attr, EventType.CHANGE_EVENT, wrap_lrc_callback

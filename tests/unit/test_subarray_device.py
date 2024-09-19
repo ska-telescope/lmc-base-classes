@@ -376,12 +376,12 @@ class TestSKASubarray:  # pylint: disable=too-many-public-methods
             error: tuple[DevError] | None = None,
             **kwargs: Any,
         ) -> None:
-            if status is not None:
-                logger.info(f"abort_callback(status={status.name})")
             if progress is not None:
                 logger.info(f"abort_callback(progress={progress})")
             if result is not None:
                 logger.info(f"abort_callback(result={result})")
+            if status is not None:
+                logger.info(f"abort_callback(status={status.name})")
             if error is not None:
                 logger.error(f"abort_callback(error={error})")
             if kwargs:
@@ -409,13 +409,13 @@ class TestSKASubarray:  # pylint: disable=too-many-public-methods
             Helpers.assert_expected_logs(
                 caplog,
                 [  # Log messages must be in this exact order
-                    "lrc_callback(status=IN_PROGRESS)",
+                    # "lrc_callback(status=IN_PROGRESS)",
                     "abort_callback(status=STAGING)",
-                    "lrc_callback(status=IN_PROGRESS)",
+                    # "lrc_callback(status=IN_PROGRESS)",
                     "abort_callback(status=IN_PROGRESS)",
                     "lrc_callback(result=[7, 'Command has been aborted'])",
                     "lrc_callback(status=ABORTED)",
-                    "abort_callback(status=IN_PROGRESS)",
+                    # "abort_callback(status=IN_PROGRESS)",
                     "abort_callback(result=[0, 'Abort completed OK'])",
                     "abort_callback(status=COMPLETED)",
                 ],

@@ -412,12 +412,11 @@ class SKABaseDevice(
             self.component_manager.max_queued_tasks >= 0
         ), "max_queued_tasks property must be equal to or greater than 0."
         assert (
-            self.component_manager.max_executing_tasks >= 1
-        ), "max_executing_tasks property must be equal to or greater than 1."
+            self.component_manager.max_executing_tasks >= 2
+        ), "max_executing_tasks property must be equal to or greater than 2."
         self._status_queue_size = max(
             self.component_manager.max_queued_tasks * 2
-            + self.component_manager.max_executing_tasks
-            + 1,  # for Abort command
+            + self.component_manager.max_executing_tasks,
             _MINIMUM_STATUS_QUEUE_SIZE,
         )
         self._create_attribute("_lrcEvent", 2, self._lrcEvent)
@@ -438,12 +437,12 @@ class SKABaseDevice(
         )
         self._create_attribute(
             "longRunningCommandInProgress",
-            self.component_manager.max_executing_tasks + 1,  # for Abort command
+            self.component_manager.max_executing_tasks,
             self.longRunningCommandInProgress,
         )
         self._create_attribute(
             "longRunningCommandProgress",
-            (self.component_manager.max_executing_tasks + 1)  # for Abort command
+            self.component_manager.max_executing_tasks
             * 2,  # cmd name and progress for each command
             self.longRunningCommandProgress,
         )

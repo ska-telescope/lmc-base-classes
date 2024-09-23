@@ -219,7 +219,7 @@ class BaseComponentManager:
 
         :return: max number of simultaneously executing tasks.
         """
-        return 1
+        return 2
 
     def start_communicating(self: BaseComponentManager) -> None:
         """

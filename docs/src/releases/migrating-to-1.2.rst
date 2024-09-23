@@ -76,7 +76,12 @@ running command and must be started immediately without being queued.
 
 Other than it being a long running command, the ``SKABaseDevice.Abort()`` command
 is intended to have the same behaviour as ``SKABaseDevice.AbortCommands()``, that
-is it should interrupt all the executing and queued long running commands.
+is, it should interrupt all the executing and queued long running commands.
+
+The :obj:`BaseComponentManager.max_executing_tasks
+<ska_tango_base.base.base_component_manager.BaseComponentManager.max_executing_tasks>`
+property now has a default value of 2 as a device should support ``Abort()`` and
+at least one other command.
 
 There are two reasons a subclass of
 :class:`~ska_tango_base.base.base_component_manager.BaseComponentManager`
@@ -156,6 +161,15 @@ when previously it was overriding the ``abort_commands()`` method then the
 of the ``abort_commands()`` method calls ``abort_tasks()`` and in this case the
 ``SKABaseDevice`` will emit a deprecation warning to call the ``Abort()``
 command if a client calls the ``AbortCommands()`` command.
+
+When the ``AbortCommands()`` command is removed, ``SKABaseDevice`` will require
+that :obj:`BaseComponentManager.max_executing_tasks
+<ska_tango_base.base.base_component_manager.BaseComponentManager.max_executing_tasks>`
+be at least 2.  Component managers which are not overriding the
+``max_executing_tasks`` property will not have to change, however, if a
+component manager is currently overriding ``max_executing_tasks`` to 1 it will
+need to be updated.  ska-tango-base 1.2.0 will emitted a ``FutureWarning`` if
+``max_executing_tasks`` has been overridden to 1.
 
 Long Running Command attributes
 -------------------------------

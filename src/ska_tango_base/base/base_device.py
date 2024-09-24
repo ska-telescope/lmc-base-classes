@@ -414,10 +414,23 @@ class SKABaseDevice(
         assert (
             self.component_manager.max_executing_tasks >= 1
         ), "max_executing_tasks property must be equal to or greater than 1."
+
+        max_executing_tasks = self.component_manager.max_executing_tasks
+        if max_executing_tasks == 1:
+            warning_msg = (
+                "'max_executing_tasks' will be required to be at least 2 in a future "
+                "release of ska-tango-base (found 1).  A device must support the "
+                "'Abort()' command and at least one other command executing "
+                "simulanteously."
+            )
+            warn(warning_msg, FutureWarning)
+            if self.logger:
+                self.logger.warning(warning_msg)
+
+            max_executing_tasks = 2
+
         self._status_queue_size = max(
-            self.component_manager.max_queued_tasks * 2
-            + self.component_manager.max_executing_tasks
-            + 1,  # for Abort command
+            self.component_manager.max_queued_tasks * 2 + max_executing_tasks,
             _MINIMUM_STATUS_QUEUE_SIZE,
         )
         self._create_attribute("_lrcEvent", 2, self._lrcEvent)
@@ -438,13 +451,12 @@ class SKABaseDevice(
         )
         self._create_attribute(
             "longRunningCommandInProgress",
-            self.component_manager.max_executing_tasks + 1,  # for Abort command
+            self.component_manager.max_executing_tasks,
             self.longRunningCommandInProgress,
         )
         self._create_attribute(
             "longRunningCommandProgress",
-            (self.component_manager.max_executing_tasks + 1)  # for Abort command
-            * 2,  # cmd name and progress for each command
+            max_executing_tasks * 2,  # cmd name and progress for each command
             self.longRunningCommandProgress,
         )
 
@@ -1401,7 +1413,7 @@ class SKABaseDevice(
             command_id = self._command_tracker.new_command(
                 "Abort", completed_callback=self._completed
             )
-            status, _ = self._component_manager.abort_tasks(
+            status, _ = self._component_manager.abort(
                 partial(self._command_tracker.update_command_info, command_id)
             )
             assert status == TaskStatus.IN_PROGRESS

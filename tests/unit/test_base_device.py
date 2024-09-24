@@ -617,8 +617,8 @@ class TestSKABaseDevice:  # pylint: disable=too-many-public-methods
             assert ResultCode(int(result_code)) == ResultCode.QUEUED
             command_ids.append(cmd_id[0])
 
-        # max_queued_tasks = 32 and max_executing_tasks = 1,
-        # so the attribute bounds are 32*2 + 1 + 1 (for Abort) = 66
+        # max_queued_tasks = 32 and max_executing_tasks = 2,
+        # so the attribute bounds are 32*2 + 2 = 66
         # Since we have submitted 74 commands, the first eight
         # completed commands should have been removed
         expected_removed_items = command_ids[:8]

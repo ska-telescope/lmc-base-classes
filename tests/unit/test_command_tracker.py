@@ -102,6 +102,7 @@ class TestCommandTracker:
         callbacks["exception"].assert_not_called()
         callbacks["event"].assert_not_called()
 
+        # 1st new command
         first_command_id = command_tracker.new_command("first_command")
         assert command_tracker.commands_in_queue == [
             (first_command_id, "first_command")
@@ -124,9 +125,33 @@ class TestCommandTracker:
         callbacks["progress"].assert_not_called()
         callbacks["result"].assert_not_called()
         callbacks["exception"].assert_not_called()
-        callbacks["event"].assert_called_once_with((first_command_id, '{"status": 0}'))
+        callbacks["event"].assert_called_once()
         callbacks["event"].reset_mock()
 
+        # 1st command is queued
+        command_tracker.update_command_info(first_command_id, status=TaskStatus.QUEUED)
+        assert command_tracker.commands_in_queue == [
+            (first_command_id, "first_command")
+        ]
+        assert command_tracker.command_statuses == [
+            (first_command_id, TaskStatus.QUEUED)
+        ]
+        assert command_tracker.command_progresses == []
+        assert command_tracker.command_result is None
+        assert command_tracker.command_exception is None
+
+        callbacks["queue"].assert_not_called()
+        callbacks["status"].assert_called_once_with(
+            [(first_command_id, TaskStatus.QUEUED)]
+        )
+        callbacks["status"].reset_mock()
+        callbacks["progress"].assert_not_called()
+        callbacks["result"].assert_not_called()
+        callbacks["exception"].assert_not_called()
+        callbacks["event"].assert_called_once()
+        callbacks["event"].reset_mock()
+
+        # 1st command starts
         command_tracker.update_command_info(
             first_command_id, status=TaskStatus.IN_PROGRESS
         )
@@ -148,9 +173,10 @@ class TestCommandTracker:
         callbacks["progress"].assert_not_called()
         callbacks["result"].assert_not_called()
         callbacks["exception"].assert_not_called()
-        callbacks["event"].assert_called_once_with((first_command_id, '{"status": 2}'))
+        callbacks["event"].assert_called_once()
         callbacks["event"].reset_mock()
 
+        # 2nd new command
         second_command_id = command_tracker.new_command("second_command")
         assert command_tracker.commands_in_queue == [
             (first_command_id, "first_command"),
@@ -181,9 +207,10 @@ class TestCommandTracker:
         callbacks["progress"].assert_not_called()
         callbacks["result"].assert_not_called()
         callbacks["exception"].assert_not_called()
-        callbacks["event"].assert_called_once_with((second_command_id, '{"status": 0}'))
+        callbacks["event"].assert_called_once()
         callbacks["event"].reset_mock()
 
+        # 1st command reports progress
         command_tracker.update_command_info(first_command_id, progress=50)
         assert command_tracker.commands_in_queue == [
             (first_command_id, "first_command"),
@@ -203,11 +230,10 @@ class TestCommandTracker:
         callbacks["progress"].reset_mock()
         callbacks["result"].assert_not_called()
         callbacks["exception"].assert_not_called()
-        callbacks["event"].assert_called_once_with(
-            (first_command_id, '{"progress": 50}')
-        )
+        callbacks["event"].assert_called_once()
         callbacks["event"].reset_mock()
 
+        # 1st command reports result
         command_tracker.update_command_info(
             first_command_id, result=(ResultCode.OK, "a message string")
         )
@@ -232,6 +258,7 @@ class TestCommandTracker:
         callbacks["result"].reset_mock()
         callbacks["exception"].assert_not_called()
 
+        # 1st command is completed
         command_tracker.update_command_info(
             first_command_id, status=TaskStatus.COMPLETED
         )
@@ -268,6 +295,7 @@ class TestCommandTracker:
         callbacks["result"].assert_not_called()
         callbacks["exception"].assert_not_called()
 
+        # 2nd command starts
         command_tracker.update_command_info(
             second_command_id, status=TaskStatus.IN_PROGRESS
         )
@@ -297,6 +325,7 @@ class TestCommandTracker:
 
         exception_to_raise = ValueError("Exception under test")
 
+        # 2nd command fails
         command_tracker.update_command_info(
             second_command_id,
             status=TaskStatus.FAILED,

@@ -116,6 +116,8 @@ def change_event_callbacks_fixture() -> MockTangoEventCallbackGroup:
         "longRunningCommandResult",
         "longRunningCommandStatus",
         "longRunningCommandInProgress",
+        "longRunningCommandsInQueue",
+        "longRunningCommandIDsInQueue",
     )
 
 

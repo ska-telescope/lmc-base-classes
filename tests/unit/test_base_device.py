@@ -232,6 +232,80 @@ class TestSKABaseDevice:  # pylint: disable=too-many-public-methods
         ):
             _ = invoke_lrc(successful_lrc_callback, device_under_test, "Reset")
 
+    def test_deprecated_LRC_attributes(
+        self: TestSKABaseDevice,
+        device_under_test: DeviceProxy,
+        change_event_callbacks: MockTangoEventCallbackGroup,
+    ) -> None:
+        """
+        Test for deprecated long running command attributes.
+
+        :param device_under_test: a proxy to the device under test
+        :param change_event_callbacks: dictionary of mock change event
+            callbacks with asynchrony support.
+        """
+        assert device_under_test.state() == DevState.OFF
+
+        for attribute in [
+            "state",
+            "longRunningCommandStatus",
+            "longRunningCommandProgress",
+            "longRunningCommandInProgress",
+            "longRunningCommandsInQueue",
+            "longRunningCommandIDsInQueue",
+            "longRunningCommandResult",
+        ]:
+            device_under_test.subscribe_event(
+                attribute,
+                EventType.CHANGE_EVENT,
+                change_event_callbacks[attribute],
+            )
+
+        change_event_callbacks.assert_change_event("state", DevState.OFF)
+        change_event_callbacks.assert_change_event("longRunningCommandStatus", ())
+        change_event_callbacks.assert_change_event("longRunningCommandProgress", ())
+        change_event_callbacks.assert_change_event("longRunningCommandInProgress", ())
+        change_event_callbacks.assert_change_event("longRunningCommandsInQueue", ())
+        change_event_callbacks.assert_change_event("longRunningCommandIDsInQueue", ())
+        change_event_callbacks.assert_change_event("longRunningCommandResult", ("", ""))
+
+        # ON command
+        [[result_code], [on_command_id]] = device_under_test.On()
+        assert result_code == ResultCode.QUEUED
+        on_command = on_command_id.split("_", 2)[2]
+        change_event_callbacks.assert_change_event(
+            "longRunningCommandsInQueue", (on_command,)
+        )
+        change_event_callbacks.assert_change_event(
+            "longRunningCommandIDsInQueue", (on_command_id,)
+        )
+        Helpers.assert_lrcstatus_change_event_staging_queued_in_progress(
+            change_event_callbacks, on_command_id
+        )
+        change_event_callbacks.assert_change_event(
+            "longRunningCommandInProgress", (on_command,)
+        )
+        change_event_callbacks.assert_change_event(
+            "longRunningCommandProgress", (on_command_id, "33")
+        )
+        change_event_callbacks.assert_change_event(
+            "longRunningCommandProgress", (on_command_id, "66")
+        )
+        change_event_callbacks.assert_change_event("state", DevState.ON)
+        change_event_callbacks.assert_change_event(
+            "longRunningCommandResult",
+            (
+                on_command_id,
+                json.dumps([int(ResultCode.OK), "On command completed OK"]),
+            ),
+        )
+        change_event_callbacks.assert_change_event(
+            "longRunningCommandStatus", (on_command_id, "COMPLETED")
+        )
+        change_event_callbacks.assert_change_event("longRunningCommandInProgress", ())
+        assert device_under_test.longRunningCommandsInQueue == (on_command,)
+        assert device_under_test.longRunningCommandIDsInQueue == (on_command_id,)
+
     def test_On(
         self: TestSKABaseDevice,
         device_under_test: DeviceProxy,

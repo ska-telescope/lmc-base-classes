@@ -49,7 +49,7 @@ from ..faults import GroupDefinitionsError, LoggingLevelError
 from ..utils import get_groups_from_json
 from .admin_mode_model import AdminModeModel
 from .base_component_manager import BaseComponentManager
-from .command_tracker import CommandTracker
+from .command_tracker import CommandTracker, LrcAttrType
 from .logging import (
     _LMC_TO_PYTHON_LOGGING_LEVEL,
     _LMC_TO_TANGO_LOGGING_LEVEL,
@@ -64,6 +64,7 @@ ComponentManagerT = TypeVar("ComponentManagerT", bound=BaseComponentManager)
 
 _DEBUGGER_PORT = 5678
 _MINIMUM_STATUS_QUEUE_SIZE = 32
+_LRC_FINISHED_LIST_LENGTH = 100
 
 
 # pylint: disable-next=too-many-instance-attributes, too-many-public-methods
@@ -323,6 +324,9 @@ class SKABaseDevice(
             self._commands_in_progress: list[str] = []
             self._command_progresses: list[str] = []
             self._command_result: tuple[str, str] = ("", "")
+            self._lrc_queue: list[str] = []
+            self._lrc_executing: list[str] = []
+            self._lrc_finished: list[str] = []
 
             self._build_state = (
                 f"{release.name}, {release.version}, {release.description}"
@@ -351,6 +355,9 @@ class SKABaseDevice(
                 "longRunningCommandInProgress",
                 "longRunningCommandProgress",
                 "longRunningCommandResult",
+                "lrcQueue",
+                "lrcExecuting",
+                "lrcFinished",
             ]:
                 self.set_change_event(attribute_name, True)
                 self.set_archive_event(attribute_name, True)
@@ -433,7 +440,16 @@ class SKABaseDevice(
             self.component_manager.max_queued_tasks * 2 + max_executing_tasks,
             _MINIMUM_STATUS_QUEUE_SIZE,
         )
-        self._create_attribute("_lrcEvent", 2, self._lrcEvent)
+        self._create_attribute(
+            "lrcQueue",
+            self._status_queue_size,
+            self.lrcQueue,
+        )
+        self._create_attribute(
+            "lrcExecuting",
+            self.component_manager.max_executing_tasks + 1,  # for Abort command
+            self.lrcExecuting,
+        )
         self._create_attribute(
             "longRunningCommandStatus",
             self._status_queue_size * 2,  # 2 per command
@@ -483,6 +499,7 @@ class SKABaseDevice(
             result_callback=self._update_command_result,
             exception_callback=self._log_command_exception,
             event_callback=self._update_lrc_event,
+            update_user_attributes_callback=self._update_user_lrc_attributes,
         )
         self.op_state_model = OpStateModel(
             logger=self.logger,
@@ -689,9 +706,33 @@ class SKABaseDevice(
 
     def _update_lrc_event(
         self: SKABaseDevice[ComponentManagerT],
-        command_event: tuple[str, str],
+        command_id: str,
+        event: dict[str, Any],
     ) -> None:
-        self.push_change_event("_lrcEvent", list(command_event))
+        lrc_event = json.dumps(
+            {
+                k: v
+                for k, v in event.items()
+                if v is not None and k in ["status", "progress", "result"]
+            }
+        )
+        self.push_change_event("_lrcEvent", [command_id, lrc_event])
+
+    def _update_user_lrc_attributes(
+        self: SKABaseDevice[ComponentManagerT],
+        lrc_queue: LrcAttrType,
+        lrc_executing: LrcAttrType,
+        lrc_finished: LrcAttrType,
+    ) -> None:
+        self._lrc_queue = self._get_json_list_of_lrc_attributes(lrc_queue)
+        self.push_change_event("lrcQueue", self._lrc_queue)
+        self.push_archive_event("lrcQueue", self._lrc_queue)
+        self._lrc_executing = self._get_json_list_of_lrc_attributes(lrc_executing)
+        self.push_change_event("lrcExecuting", self._lrc_executing)
+        self.push_archive_event("lrcExecuting", self._lrc_executing)
+        self._lrc_finished = self._get_json_list_of_lrc_attributes(lrc_finished)
+        self.push_change_event("lrcFinished", self._lrc_finished)
+        self.push_archive_event("lrcFinished", self._lrc_finished)
 
     def _log_command_exception(
         self: SKABaseDevice[ComponentManagerT],
@@ -876,6 +917,28 @@ class SKABaseDevice(
             "DebugDevice",
             self.DebugDeviceCommand(self, logger=self.logger),
         )
+
+    @staticmethod
+    def _get_json_list_of_lrc_attributes(lrc_attr: LrcAttrType) -> list[str]:
+        """
+        Get a list of JSON formatted strings representing the LRC attribute.
+
+        Serialises each key-value pair of the LRC's data dict to a flat JSON dict.
+
+        :param lrc_attr: Dict of LRC IDs as keys and their nested CommandData dicts.
+        :return: A list of JSON strings containing a serialised info dict for each LRC.
+        """
+        if lrc_attr:  # Check for empty dict
+            return [
+                json.dumps(
+                    {
+                        "uid": command_id,
+                        **{k: v for k, v in data.items() if k != "completed_callback"},
+                    }
+                )
+                for command_id, data in lrc_attr.items()
+            ]
+        return []
 
     # ----------
     # Attributes
@@ -1074,13 +1137,47 @@ class SKABaseDevice(
     # The following LRC attributes are instantiated in init_device() to make use of the
     # max_queued_tasks and max_executing_tasks properties to compute their max_dim_x
 
-    def _lrcEvent(self: SKABaseDevice[ComponentManagerT], attr: attribute) -> None:
+    def lrcQueue(self: SKABaseDevice[ComponentManagerT], attr: attribute) -> None:
         """
-        Read the long running commands events. Always returns an empty list.
+        Read info of the long running commands in queue.
+
+        Returns a list of info JSON blobs of the commands in queue.
 
         :param attr: Tango attribute being read
         """
-        attr.set_value([])
+        attr.set_value(self._lrc_queue)
+
+    def lrcExecuting(self: SKABaseDevice[ComponentManagerT], attr: attribute) -> None:
+        """
+        Read info of the currently executing long running commands.
+
+        Returns a list of info JSON blobs of the currently executing commands.
+
+        :param attr: Tango attribute being read
+        """
+        attr.set_value(self._lrc_executing)
+
+    @attribute(  # type: ignore[misc]  # "Untyped decorator makes function untyped"
+        dtype=("str",), max_dim_x=_LRC_FINISHED_LIST_LENGTH
+    )
+    def lrcFinished(self: SKABaseDevice[ComponentManagerT]) -> list[str]:
+        """
+        Read info of the finished long running commands.
+
+        :return: a list of info JSON blobs of the finished long running commands.
+        """
+        return self._lrc_finished
+
+    @attribute(  # type: ignore[misc]  # "Untyped decorator makes function untyped"
+        dtype=("str",), max_dim_x=2
+    )
+    def _lrcEvent(self: SKABaseDevice[ComponentManagerT]) -> list[str]:
+        """
+        Read the long running commands events. Always returns an empty list.
+
+        :return: empty list.
+        """
+        return []
 
     def longRunningCommandsInQueue(
         self: SKABaseDevice[ComponentManagerT], attr: attribute

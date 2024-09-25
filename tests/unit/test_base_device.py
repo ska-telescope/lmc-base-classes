@@ -1,4 +1,4 @@
-# pylint: disable=invalid-name
+# pylint: disable=invalid-name, too-many-lines
 # -*- coding: utf-8 -*-
 #
 # This file is part of the SKA Tango Base project
@@ -23,6 +23,7 @@ from ska_control_model import (
     SimulationMode,
     TestMode,
 )
+from ska_tango_testing.mock.placeholders import Anything
 from ska_tango_testing.mock.tango import MockTangoEventCallbackGroup
 from tango import DevFailed, DeviceProxy, DevState, EventType
 
@@ -305,6 +306,58 @@ class TestSKABaseDevice:  # pylint: disable=too-many-public-methods
         change_event_callbacks.assert_change_event("longRunningCommandInProgress", ())
         assert device_under_test.longRunningCommandsInQueue == (on_command,)
         assert device_under_test.longRunningCommandIDsInQueue == (on_command_id,)
+
+    def test_new_user_facing_LRC_attributes(
+        self: TestSKABaseDevice,
+        device_under_test: DeviceProxy,
+        change_event_callbacks: MockTangoEventCallbackGroup,
+    ) -> None:
+        """
+        Test for the new user (human) facing LRC attributes.
+
+        :param device_under_test: a proxy to the device under test
+        :param change_event_callbacks: dictionary of mock change event
+            callbacks with asynchrony support.
+        """
+        assert device_under_test.state() == DevState.OFF
+
+        for attribute in [
+            "state",
+            "lrcQueue",
+            "lrcExecuting",
+            "lrcFinished",
+        ]:
+            device_under_test.subscribe_event(
+                attribute,
+                EventType.CHANGE_EVENT,
+                change_event_callbacks[attribute],
+            )
+
+        change_event_callbacks["state"].assert_change_event(DevState.OFF)
+        change_event_callbacks["lrcQueue"].assert_change_event(())
+        change_event_callbacks["lrcExecuting"].assert_change_event(())
+        change_event_callbacks["lrcFinished"].assert_change_event(())
+
+        [[result_code], [_]] = device_under_test.On()
+        assert result_code == ResultCode.QUEUED
+
+        Helpers.print_change_event_queue(change_event_callbacks, "lrcQueue")
+        change_event_callbacks["lrcExecuting"].assert_change_event(())  # TODO: ??
+        change_event_callbacks["lrcFinished"].assert_change_event(())  # TODO: ??
+        change_event_callbacks["lrcQueue"].assert_change_event(Anything)
+        change_event_callbacks["lrcQueue"].assert_change_event(Anything)
+
+        Helpers.print_change_event_queue(change_event_callbacks, "lrcExecuting")
+        change_event_callbacks["lrcExecuting"].assert_change_event(Anything)
+        change_event_callbacks["lrcExecuting"].assert_change_event(Anything)
+        change_event_callbacks["lrcExecuting"].assert_change_event(Anything)
+
+        change_event_callbacks.assert_change_event("state", DevState.ON)
+        assert device_under_test.state() == DevState.ON
+
+        Helpers.print_change_event_queue(change_event_callbacks, "lrcFinished")
+        change_event_callbacks["lrcExecuting"].assert_change_event(Anything)
+        change_event_callbacks["lrcFinished"].assert_change_event(Anything)
 
     def test_On(
         self: TestSKABaseDevice,

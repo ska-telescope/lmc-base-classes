@@ -21,6 +21,7 @@ import queue
 import sys
 import threading
 import traceback
+from enum import Enum
 from functools import partial
 from types import FunctionType, MethodType
 from typing import Any, Callable, Generic, TypeVar, cast
@@ -943,7 +944,11 @@ class SKABaseDevice(
                 json.dumps(
                     {
                         "uid": command_id,
-                        **{k: v for k, v in data.items() if k != "completed_callback"},
+                        **{
+                            key: val.name if isinstance(val, Enum) else val
+                            for key, val in data.items()
+                            if key != "completed_callback"
+                        },
                     }
                 )
                 for command_id, data in lrc_attr.items()

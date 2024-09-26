@@ -50,6 +50,7 @@ class _CommandData(TypedDict, total=False):
 
 
 LrcAttrType = dict[str, _CommandData]
+LRC_FINISHED_LENGTH = 100
 
 
 class CommandTracker:  # pylint: disable=too-many-instance-attributes
@@ -97,6 +98,9 @@ class CommandTracker:  # pylint: disable=too-many-instance-attributes
         self._lrc_executing: LrcAttrType = {}
         self._lrc_finished: LrcAttrType = {}
         self._removal_time = removal_time
+        # TODO: This private variable may be overridden by SKABaseDevice to support
+        # a longer length of the deprecated LRC attributes, until they are removed.
+        self._lrc_finished_length = LRC_FINISHED_LENGTH
 
         # Keep track of the command IDs which have been evicted from the list
         # being reported by the LRC attributes because we have run out of space
@@ -244,6 +248,9 @@ class CommandTracker:  # pylint: disable=too-many-instance-attributes
                     self._schedule_removal(command_id)
             if self._event_callback is not None:
                 self._event_callback(command_id, event)
+            if len(self._lrc_finished) > self._lrc_finished_length:
+                oldest = next(iter(self._lrc_finished))
+                self._lrc_finished.pop(oldest)
             if self._update_user_attributes_callback is not None:
                 self._update_user_attributes_callback(
                     self._lrc_queue, self._lrc_executing, self._lrc_finished

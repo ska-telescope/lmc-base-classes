@@ -74,6 +74,7 @@ class SKABaseDevice(
     # pylint: disable=attribute-defined-outside-init  # Tango devices have init_device
     """A generic base device for SKA."""
 
+    _supported_lrc_protocol_versions = (1, 2)
     _global_debugger_listening = False
     _global_debugger_allocated_port = 0
 
@@ -1070,6 +1071,23 @@ class SKABaseDevice(
         :param value: Test Mode
         """
         self._test_mode = value
+
+    # ---------------------
+    # Long Running Commands
+    # ---------------------
+    @attribute(  # type: ignore[misc]  # "Untyped decorator makes function untyped"
+        dtype=("int",), max_dim_x=2
+    )
+    def lrcProtocolVersions(
+        self: SKABaseDevice[ComponentManagerT],
+    ) -> tuple[int, int]:
+        """
+        Return supported protocol versions.
+
+        :return: A tuple containing the lower and upper bounds of supported long running
+            command protocol versions.
+        """
+        return self._supported_lrc_protocol_versions
 
     # The following LRC attributes are instantiated in init_device() to make use of the
     # max_queued_tasks and max_executing_tasks properties to compute their max_dim_x

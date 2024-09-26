@@ -86,6 +86,16 @@ class TestSKABaseDevice:  # pylint: disable=too-many-public-methods
         """
         assert device_under_test.state() == DevState.OFF
 
+    def test_lrcProtocolVersions(
+        self: TestSKABaseDevice, device_under_test: DeviceProxy
+    ) -> None:
+        """
+        Test for lrcProtocolVersions.
+
+        :param device_under_test: a proxy to the device under test
+        """
+        assert (device_under_test.lrcProtocolVersions == (1, 2)).all()
+
     def test_commandedState(
         self: TestSKABaseDevice,
         device_under_test: DeviceProxy,

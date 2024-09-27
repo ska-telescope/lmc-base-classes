@@ -746,7 +746,7 @@ class SKABaseDevice(
         self.push_archive_event("lrcExecuting", self._lrc_executing)
         self._lrc_finished = self._get_json_list_of_lrc_attributes(
             lrc_finished,
-            exclude_keys=["completed_callback"],
+            exclude_keys=["completed_callback", "removed"],
         )[
             -LRC_FINISHED_LENGTH:
         ]  # TODO: The passed dict should be the correct max length in future after the

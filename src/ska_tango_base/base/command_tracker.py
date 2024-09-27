@@ -47,6 +47,8 @@ class _CommandData(TypedDict, total=False):
     result: Any  # Optional
     finished_time: str  # Optional
     completed_callback: Callable[[], None]  # Optional
+    removed: bool  # TODO: This key is needed for the deprecated LRC attributes to
+    #                      retain the removal timer functionality.
 
 
 LrcAttrType = dict[str, _CommandData]
@@ -143,7 +145,8 @@ class CommandTracker:  # pylint: disable=too-many-instance-attributes
 
     def _schedule_removal(self: CommandTracker, command_id: str) -> None:
         def remove(command_id: str) -> None:
-            del self._lrc_finished[command_id]
+            if command_id in self._lrc_finished:
+                self._lrc_finished[command_id]["removed"] = True
             if command_id in self._evicted_commands_logged:
                 self._evicted_commands_logged.remove(command_id)
             self._queue_changed_callback(self.commands_in_queue)
@@ -280,7 +283,7 @@ class CommandTracker:  # pylint: disable=too-many-instance-attributes
                     self._lrc_executing.items(),
                     self._lrc_queue.items(),
                 )
-                if command.get("name") is not None
+                if "removed" not in command
             )
 
     @property
@@ -299,7 +302,7 @@ class CommandTracker:  # pylint: disable=too-many-instance-attributes
                     self._lrc_executing.items(),
                     self._lrc_queue.items(),
                 )
-                if command.get("status") is not None
+                if "removed" not in command
             )
 
     @property
@@ -318,7 +321,7 @@ class CommandTracker:  # pylint: disable=too-many-instance-attributes
                     self._lrc_executing.items(),
                     self._lrc_queue.items(),
                 )
-                if command.get("progress") is not None
+                if "progress" in command and "removed" not in command
             )
 
     @property
@@ -352,7 +355,7 @@ class CommandTracker:  # pylint: disable=too-many-instance-attributes
         :return: a status of the asynchronous task.
         """
         for lrc_dict in self._lrc_queue, self._lrc_executing, self._lrc_finished:
-            if command_id in lrc_dict:
+            if command_id in lrc_dict and "removed" not in lrc_dict[command_id]:
                 return lrc_dict[command_id]["status"]
         return TaskStatus.NOT_FOUND
 

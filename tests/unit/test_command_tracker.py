@@ -77,7 +77,7 @@ class TestCommandTracker:
         )
 
     # TODO pylint: disable=too-many-statements
-    def test_command_tracker(
+    def test_tracking_and_callbacks(
         self: TestCommandTracker,
         command_tracker: CommandTracker,
         removal_time: float,
@@ -360,4 +360,52 @@ class TestCommandTracker:
         )
         callbacks["exception"].assert_called_once_with(
             second_command_id, exception_to_raise
+        )
+
+    def test_command_removal(
+        self: TestCommandTracker,
+        command_tracker: CommandTracker,
+        removal_time: float,
+        callbacks: dict[str, Mock],
+    ) -> None:
+        """
+        Test how the command tracker removes old commands.
+
+        :param command_tracker: the command tracker under test
+        :param removal_time: how long completed command is retained
+        :param callbacks: a dictionary of mocks, passed as callbacks to
+            the command tracker under test
+        """
+        # pylint: disable=protected-access
+        assert command_tracker.commands_in_queue == []
+        assert command_tracker.command_statuses == []
+
+        command_tracker._lrc_finished_length = 3
+        extra_no_of_cmds = 2
+
+        command_ids = []
+        for i in range(1, command_tracker._lrc_finished_length + 1 + extra_no_of_cmds):
+            command_ids.append(command_tracker.new_command(str(i)))
+            command_tracker.update_command_info(command_ids[-1], TaskStatus.QUEUED)
+            command_tracker.update_command_info(command_ids[-1], TaskStatus.IN_PROGRESS)
+            command_tracker.update_command_info(command_ids[-1], TaskStatus.COMPLETED)
+
+        assert (
+            len(command_tracker.commands_in_queue)
+            == command_tracker._lrc_finished_length
+        )
+        assert (
+            len(command_tracker.command_statuses)
+            == command_tracker._lrc_finished_length
+        )
+        assert (
+            len(command_tracker._lrc_finished) == command_tracker._lrc_finished_length
+        )
+        callbacks["queue"].reset_mock()
+        time.sleep(removal_time + 0.1)
+        callbacks["queue"].assert_called()
+        assert command_tracker.commands_in_queue == []
+        assert command_tracker.command_statuses == []
+        assert (
+            len(command_tracker._lrc_finished) == command_tracker._lrc_finished_length
         )

@@ -1,4 +1,4 @@
-# pylint: disable=invalid-name, too-many-lines
+# pylint: disable=invalid-name
 # -*- coding: utf-8 -*-
 #
 # This file is part of the SKA Tango Base project
@@ -280,6 +280,7 @@ class TestSKABaseDevice:  # pylint: disable=too-many-public-methods
         self: TestSKABaseDevice,
         device_under_test: DeviceProxy,
         change_event_callbacks: MockTangoEventCallbackGroup,
+        successful_lrc_callback: LrcCallback,
     ) -> None:
         """
         Test for the new user (human) facing LRC attributes.
@@ -287,6 +288,7 @@ class TestSKABaseDevice:  # pylint: disable=too-many-public-methods
         :param device_under_test: a proxy to the device under test
         :param change_event_callbacks: dictionary of mock change event
             callbacks with asynchrony support.
+        :param successful_lrc_callback: callback fixture to use with invoke_lrc.
         """
         assert device_under_test.state() == DevState.OFF
 
@@ -307,26 +309,43 @@ class TestSKABaseDevice:  # pylint: disable=too-many-public-methods
         change_event_callbacks["lrcExecuting"].assert_change_event(())
         change_event_callbacks["lrcFinished"].assert_change_event(())
 
-        [[result_code], [_]] = device_under_test.On()
-        assert result_code == ResultCode.QUEUED
+        lrc = invoke_lrc(successful_lrc_callback, device_under_test, "On")
+        lrc_queue = json.loads(device_under_test.lrcQueue[0])
+        assert lrc_queue["uid"] == lrc.command_id
+        assert lrc_queue["name"] == "On"
 
         Helpers.print_change_event_queue(change_event_callbacks, "lrcQueue")
-        change_event_callbacks["lrcExecuting"].assert_change_event(())  # TODO: ??
-        change_event_callbacks["lrcFinished"].assert_change_event(())  # TODO: ??
-        change_event_callbacks["lrcQueue"].assert_change_event(Anything)
-        change_event_callbacks["lrcQueue"].assert_change_event(Anything)
+        change_event_callbacks["lrcExecuting"].assert_change_event(())  # TODO: why?
+        change_event_callbacks["lrcFinished"].assert_change_event(())  # TODO: why?
+        change_event_callbacks["lrcQueue"].assert_change_event(Anything)  # queued
+        change_event_callbacks["lrcQueue"].assert_change_event(Anything)  # moved
 
+        lrc_executing = []
+        # pylint: disable=protected-access
+        for node in change_event_callbacks[
+            "lrcExecuting"
+        ]._callable._consumer_view._iterable:
+            lrc_executing.extend(list(node.payload["attribute_value"]))
+        lrc_executing = [json.loads(command) for command in lrc_executing]
+        for command in lrc_executing:
+            assert command["uid"] == lrc.command_id and command["name"] == "On"
+        assert "progress" not in lrc_executing[0]
+        assert lrc_executing[1]["progress"] == 33
+        assert lrc_executing[2]["progress"] == 66
         Helpers.print_change_event_queue(change_event_callbacks, "lrcExecuting")
-        change_event_callbacks["lrcExecuting"].assert_change_event(Anything)
-        change_event_callbacks["lrcExecuting"].assert_change_event(Anything)
-        change_event_callbacks["lrcExecuting"].assert_change_event(Anything)
+        change_event_callbacks["lrcExecuting"].assert_change_event(Anything)  # started
+        change_event_callbacks["lrcExecuting"].assert_change_event(Anything)  # progress
+        change_event_callbacks["lrcExecuting"].assert_change_event(Anything)  # progress
 
         change_event_callbacks.assert_change_event("state", DevState.ON)
         assert device_under_test.state() == DevState.ON
+        lrc_finished = json.loads(device_under_test.lrcFinished[0])
+        assert lrc_finished["uid"] == lrc.command_id
+        assert lrc_finished["name"] == "On"
 
         Helpers.print_change_event_queue(change_event_callbacks, "lrcFinished")
-        change_event_callbacks["lrcExecuting"].assert_change_event(Anything)
-        change_event_callbacks["lrcFinished"].assert_change_event(Anything)
+        change_event_callbacks["lrcExecuting"].assert_change_event(Anything)  # moved
+        change_event_callbacks["lrcFinished"].assert_change_event(Anything)  # finished
 
     def test_On(
         self: TestSKABaseDevice,

@@ -157,6 +157,32 @@ def invoke_lrc(  # noqa: C901
                         f"proxy.unsubscribe_event({event_id}) failed with: {e}"
                     )
 
+    def convert_and_check_status(
+        raw_status: str | int,
+    ) -> TaskStatus | None:
+        try:
+            if isinstance(raw_status, str):
+                status = TaskStatus[raw_status]  # Protocol v1
+            else:
+                status = TaskStatus(raw_status)  # Protocol v2
+        except KeyError as exc:
+            status = None
+            logger.exception(
+                f"Received unknown TaskStatus from '{command_id}' command: "
+                f"{raw_status}"
+            )
+            lrc_callback(
+                error=Except.to_dev_failed(type(exc), exc, exc.__traceback__).args
+            )
+        if status in [
+            TaskStatus.ABORTED,
+            TaskStatus.COMPLETED,
+            TaskStatus.FAILED,
+            TaskStatus.REJECTED,
+        ]:
+            unsubscribe_lrc_events()
+        return status
+
     def wrap_lrc_callback(event: EventData) -> None:
         # Check for tango error
         if event.err:
@@ -191,48 +217,12 @@ def invoke_lrc(  # noqa: C901
             case "_lrcevent":
                 event = json.loads(lrc_attr_value)
                 if "status" in event:
-                    try:
-                        event["status"] = TaskStatus(event["status"])
-                    except KeyError as exc:
-                        logger.exception(
-                            f"Received unknown TaskStatus from '{command_id}' command: "
-                            f"{lrc_attr_value}"
-                        )
-                        lrc_callback(
-                            error=Except.to_dev_failed(
-                                type(exc), exc, exc.__traceback__
-                            ).args
-                        )
-                    if event["status"] in [
-                        TaskStatus.ABORTED,
-                        TaskStatus.COMPLETED,
-                        TaskStatus.FAILED,
-                        TaskStatus.REJECTED,
-                    ]:
-                        unsubscribe_lrc_events()
+                    event["status"] = convert_and_check_status(event["status"])
                 lrc_callback(**event)
             # Protocol v1
             case "longrunningcommandstatus":
-                try:
-                    status = TaskStatus[lrc_attr_value]
-                except KeyError as exc:
-                    logger.exception(
-                        f"Received unknown TaskStatus from '{command_id}' command: "
-                        f"{lrc_attr_value}"
-                    )
-                    lrc_callback(
-                        error=Except.to_dev_failed(
-                            type(exc), exc, exc.__traceback__
-                        ).args
-                    )
+                status = convert_and_check_status(lrc_attr_value)
                 lrc_callback(status=status)
-                if status in [
-                    TaskStatus.ABORTED,
-                    TaskStatus.COMPLETED,
-                    TaskStatus.FAILED,
-                    TaskStatus.REJECTED,
-                ]:
-                    unsubscribe_lrc_events()
             case "longrunningcommandprogress":
                 lrc_callback(progress=int(lrc_attr_value))
             case "longrunningcommandresult":

@@ -380,11 +380,13 @@ class TestCommandTracker:
         assert command_tracker.commands_in_queue == []
         assert command_tracker.command_statuses == []
 
-        command_tracker._lrc_finished_length = 3
+        command_tracker._lrc_finished_max_length = 3
         extra_no_of_cmds = 2
 
         command_ids = []
-        for i in range(1, command_tracker._lrc_finished_length + 1 + extra_no_of_cmds):
+        for i in range(
+            1, command_tracker._lrc_finished_max_length + 1 + extra_no_of_cmds
+        ):
             command_ids.append(command_tracker.new_command(str(i)))
             command_tracker.update_command_info(command_ids[-1], TaskStatus.QUEUED)
             command_tracker.update_command_info(command_ids[-1], TaskStatus.IN_PROGRESS)
@@ -392,14 +394,15 @@ class TestCommandTracker:
 
         assert (
             len(command_tracker.commands_in_queue)
-            == command_tracker._lrc_finished_length
+            == command_tracker._lrc_finished_max_length
         )
         assert (
             len(command_tracker.command_statuses)
-            == command_tracker._lrc_finished_length
+            == command_tracker._lrc_finished_max_length
         )
         assert (
-            len(command_tracker._lrc_finished) == command_tracker._lrc_finished_length
+            len(command_tracker._lrc_finished)
+            == command_tracker._lrc_finished_max_length
         )
         callbacks["queue"].reset_mock()
         time.sleep(removal_time + 0.1)
@@ -407,5 +410,6 @@ class TestCommandTracker:
         assert command_tracker.commands_in_queue == []
         assert command_tracker.command_statuses == []
         assert (
-            len(command_tracker._lrc_finished) == command_tracker._lrc_finished_length
+            len(command_tracker._lrc_finished)
+            == command_tracker._lrc_finished_max_length
         )

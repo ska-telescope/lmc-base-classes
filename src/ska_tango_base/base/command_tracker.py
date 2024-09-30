@@ -52,7 +52,7 @@ class _CommandData(TypedDict, total=False):
 
 
 LrcAttrType = dict[str, _CommandData]
-LRC_FINISHED_LENGTH = 100
+LRC_FINISHED_MAX_LENGTH = 100
 
 
 class CommandTracker:  # pylint: disable=too-many-instance-attributes
@@ -96,13 +96,13 @@ class CommandTracker:  # pylint: disable=too-many-instance-attributes
         self._most_recent_exception: tuple[str, Exception] | None = None
         self._event_callback = event_callback
         self._update_user_attributes_callback = update_user_attributes_callback
-        self._lrc_queue: LrcAttrType = {}
+        self._lrc_stage_queue: LrcAttrType = {}
         self._lrc_executing: LrcAttrType = {}
         self._lrc_finished: LrcAttrType = {}
         self._removal_time = removal_time
         # TODO: This private variable may be overridden by SKABaseDevice to support
         # a longer length of the deprecated LRC attributes, until they are removed.
-        self._lrc_finished_length = LRC_FINISHED_LENGTH
+        self._lrc_finished_max_length = LRC_FINISHED_MAX_LENGTH
 
         # Keep track of the command IDs which have been evicted from the list
         # being reported by the LRC attributes because we have run out of space
@@ -124,23 +124,17 @@ class CommandTracker:  # pylint: disable=too-many-instance-attributes
         """
         command_id = generate_command_id(command_name)
 
-        self._lrc_queue[command_id] = {
+        self._lrc_stage_queue[command_id] = {
             "name": command_name,
             "status": TaskStatus.STAGING,
             "submitted_time": datetime.now(timezone.utc).isoformat(),
         }
         if completed_callback is not None:
-            self._lrc_queue[command_id]["completed_callback"] = completed_callback
+            self._lrc_stage_queue[command_id]["completed_callback"] = completed_callback
         self._queue_changed_callback(self.commands_in_queue)
         self._status_changed_callback(self.command_statuses)
         if self._event_callback is not None:
-            self._event_callback(
-                command_id,
-                {
-                    "status": self._lrc_queue[command_id]["status"],
-                    "submitted_time": datetime.now(timezone.utc).isoformat(),
-                },
-            )
+            self._event_callback(command_id, dict(self._lrc_stage_queue[command_id]))
         return command_id
 
     def _schedule_removal(self: CommandTracker, command_id: str) -> None:
@@ -171,6 +165,31 @@ class CommandTracker:  # pylint: disable=too-many-instance-attributes
         :param result: the result of the completed asynchronous task
         :param exception: any exception caught in the running task
         """
+        # All changes to the _lrc_stage_queue, _lrc_executing and _lrc_finished dicts
+        # are made here while the CommandTracker has a lock, as well as the callbacks
+        # updating the deprecated and new LRC attributes. This is to ensure any events
+        # received by this method (used as a callback in commands) are completely
+        # processed before subsequent events, thereby preventing race conditions.
+        #
+        # A command can only be in one of the three dicts at a time, given its status:
+        # STAGING       -> _lrc_stage_queue
+        # QUEUED        -> _lrc_stage_queue
+        # IN_PROGRESS   -> _lrc_executing
+        # ABORTED       -> _lrc_finished
+        # COMPLETED     -> _lrc_finished
+        # REJECTED      -> _lrc_finished
+        # FAILED        -> _lrc_finished
+        # The update_user_attributes_callback() is called for all status changes except
+        # the initial STAGING status, therefore the lrcQueue tango attribute only
+        # contain commands in QUEUED status. A new command can go from _lrc_stage_queue
+        # to _lrc_executing or straight to _lrc_finished if REJECTED or ABORTED.
+        #
+        # TODO: At the time of writing, this method is overly complex because the
+        # deprecated LRC attributes and the order of their change events must be
+        # preserved while supporting the newer user facing LRC attributes: lrcQueue,
+        # lrcExecuting and lrcFinished that correspond to the three private LRC dicts.
+        # When the deprecated LRC attributes are eventually removed, this method
+        # (and the rest of the CommandTracker) can be simplified.
         with self.__lock, self.__thread_with_lock:
             if exception is not None:
                 self._most_recent_exception = (command_id, exception)
@@ -182,17 +201,19 @@ class CommandTracker:  # pylint: disable=too-many-instance-attributes
             event: dict[str, Any] = {}
             if status is not None:
                 event["status"] = status
-                if command_id in self._lrc_queue:
-                    self._lrc_queue[command_id]["status"] = status
-                if status == TaskStatus.IN_PROGRESS and command_id in self._lrc_queue:
+                if command_id in self._lrc_stage_queue:
+                    self._lrc_stage_queue[command_id]["status"] = status
+                if (
+                    status == TaskStatus.IN_PROGRESS
+                    and command_id in self._lrc_stage_queue
+                ):
                     event["started_time"] = datetime.now(timezone.utc).isoformat()
-                    self._lrc_executing[command_id] = self._lrc_queue.pop(command_id)
-                    self._lrc_executing[command_id].update(
-                        {
-                            "started_time": event["started_time"],
-                            "status": status,
-                        }
+                    self._lrc_executing[command_id] = self._lrc_stage_queue.pop(
+                        command_id
                     )
+                    self._lrc_executing[command_id]["started_time"] = event[
+                        "started_time"
+                    ]
                 elif status in [
                     TaskStatus.ABORTED,
                     TaskStatus.COMPLETED,
@@ -200,9 +221,11 @@ class CommandTracker:  # pylint: disable=too-many-instance-attributes
                     TaskStatus.FAILED,
                 ]:
                     event["finished_time"] = datetime.now(timezone.utc).isoformat()
-                    if command_id in self._lrc_queue:
-                        self._lrc_finished[command_id] = self._lrc_queue.pop(command_id)
-                    if command_id in self._lrc_executing:
+                    if command_id in self._lrc_stage_queue:
+                        self._lrc_finished[command_id] = self._lrc_stage_queue.pop(
+                            command_id
+                        )
+                    elif command_id in self._lrc_executing:
                         self._lrc_finished[command_id] = self._lrc_executing.pop(
                             command_id
                         )
@@ -217,7 +240,7 @@ class CommandTracker:  # pylint: disable=too-many-instance-attributes
                 event["result"] = result
                 if command_id in self._lrc_executing:
                     self._lrc_executing[command_id]["result"] = result
-                if command_id in self._lrc_finished:
+                elif command_id in self._lrc_finished:
                     self._lrc_finished[command_id]["result"] = result
                 self._most_recent_result = (command_id, result)
                 self._result_callback(command_id, result)
@@ -226,20 +249,15 @@ class CommandTracker:  # pylint: disable=too-many-instance-attributes
                 if command_id in self._lrc_executing:
                     self._lrc_executing[command_id]["progress"] = int(progress)
                 self._progress_changed_callback(self.command_progresses)
+            # The status related callbacks are called after result/progress to preserve
+            # the order of change events for the deprecated LRC attributes.
             if status is not None:
-                # The callback must be after the timestamps have been updated
                 self._status_changed_callback(self.command_statuses)
 
                 if status == TaskStatus.COMPLETED:
-                    completed_callback = None
-                    if command_id in self._lrc_executing:
-                        completed_callback = self._lrc_executing[command_id].get(
-                            "completed_callback"
-                        )
-                    elif command_id in self._lrc_finished:
-                        completed_callback = self._lrc_finished[command_id].get(
-                            "completed_callback"
-                        )
+                    completed_callback = self._lrc_finished[command_id].get(
+                        "completed_callback"
+                    )
                     if completed_callback is not None:
                         completed_callback()
                 if status in [
@@ -251,12 +269,14 @@ class CommandTracker:  # pylint: disable=too-many-instance-attributes
                     self._schedule_removal(command_id)
             if self._event_callback is not None:
                 self._event_callback(command_id, event)
-            if len(self._lrc_finished) > self._lrc_finished_length:
+            # Prune oldest finished commands
+            if len(self._lrc_finished) > self._lrc_finished_max_length:
                 oldest = next(iter(self._lrc_finished))
                 self._lrc_finished.pop(oldest)
+            # This callback must always be last to ensure all required updates are done
             if self._update_user_attributes_callback is not None:
                 self._update_user_attributes_callback(
-                    self._lrc_queue, self._lrc_executing, self._lrc_finished
+                    self._lrc_stage_queue, self._lrc_executing, self._lrc_finished
                 )
 
     def has_current_thread_locked(self: CommandTracker) -> bool:
@@ -281,7 +301,7 @@ class CommandTracker:  # pylint: disable=too-many-instance-attributes
                 for command_id, command in chain(
                     self._lrc_finished.items(),
                     self._lrc_executing.items(),
-                    self._lrc_queue.items(),
+                    self._lrc_stage_queue.items(),
                 )
                 if "removed" not in command
             )
@@ -300,7 +320,7 @@ class CommandTracker:  # pylint: disable=too-many-instance-attributes
                 for command_id, command in chain(
                     self._lrc_finished.items(),
                     self._lrc_executing.items(),
-                    self._lrc_queue.items(),
+                    self._lrc_stage_queue.items(),
                 )
                 if "removed" not in command
             )
@@ -319,7 +339,7 @@ class CommandTracker:  # pylint: disable=too-many-instance-attributes
                 for command_id, command in chain(
                     self._lrc_finished.items(),
                     self._lrc_executing.items(),
-                    self._lrc_queue.items(),
+                    self._lrc_stage_queue.items(),
                 )
                 if "progress" in command and "removed" not in command
             )
@@ -354,7 +374,7 @@ class CommandTracker:  # pylint: disable=too-many-instance-attributes
 
         :return: a status of the asynchronous task.
         """
-        for lrc_dict in self._lrc_queue, self._lrc_executing, self._lrc_finished:
+        for lrc_dict in self._lrc_stage_queue, self._lrc_executing, self._lrc_finished:
             if command_id in lrc_dict and "removed" not in lrc_dict[command_id]:
                 return lrc_dict[command_id]["status"]
         return TaskStatus.NOT_FOUND

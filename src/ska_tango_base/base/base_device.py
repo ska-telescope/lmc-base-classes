@@ -50,7 +50,7 @@ from ..faults import GroupDefinitionsError, LoggingLevelError
 from ..utils import get_groups_from_json
 from .admin_mode_model import AdminModeModel
 from .base_component_manager import BaseComponentManager
-from .command_tracker import LRC_FINISHED_LENGTH, CommandTracker, LrcAttrType
+from .command_tracker import LRC_FINISHED_MAX_LENGTH, CommandTracker, LrcAttrType
 from .logging import (
     _LMC_TO_PYTHON_LOGGING_LEVEL,
     _LMC_TO_TANGO_LOGGING_LEVEL,
@@ -443,9 +443,9 @@ class SKABaseDevice(
         )
         # TODO: This private variable may be overridden by SKABaseDevice to support
         # a longer length of the deprecated LRC attributes, until they are removed.
-        if self._status_queue_size > LRC_FINISHED_LENGTH:
+        if self._status_queue_size > LRC_FINISHED_MAX_LENGTH:
             # pylint: disable=protected-access
-            self._command_tracker._lrc_finished_length = self._status_queue_size
+            self._command_tracker._lrc_finished_max_length = self._status_queue_size
         self._create_attribute(
             "lrcQueue",
             self._status_queue_size,
@@ -748,7 +748,7 @@ class SKABaseDevice(
             lrc_finished,
             exclude_keys=["completed_callback", "removed"],
         )[
-            -LRC_FINISHED_LENGTH:
+            -LRC_FINISHED_MAX_LENGTH:
         ]  # TODO: The passed dict should be the correct max length in future after the
         #          deprecated LRC attributes have been removed.
         self.push_change_event("lrcFinished", self._lrc_finished)
@@ -1185,7 +1185,7 @@ class SKABaseDevice(
         attr.set_value(self._lrc_executing)
 
     @attribute(  # type: ignore[misc]  # "Untyped decorator makes function untyped"
-        dtype=("str",), max_dim_x=LRC_FINISHED_LENGTH
+        dtype=("str",), max_dim_x=LRC_FINISHED_MAX_LENGTH
     )
     def lrcFinished(self: SKABaseDevice[ComponentManagerT]) -> list[str]:
         """

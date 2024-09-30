@@ -46,6 +46,7 @@ from tango.server import Device, attribute, command, device_property
 from .. import release
 from ..commands import DeviceInitCommand, FastCommand, SlowCommand, SubmittedSlowCommand
 from ..faults import GroupDefinitionsError, LoggingLevelError
+from ..long_running_commands_api import _SUPPORTED_LRC_PROTOCOL_VERSIONS
 from ..utils import get_groups_from_json
 from .admin_mode_model import AdminModeModel
 from .base_component_manager import BaseComponentManager
@@ -1070,6 +1071,23 @@ class SKABaseDevice(
         :param value: Test Mode
         """
         self._test_mode = value
+
+    # ---------------------
+    # Long Running Commands
+    # ---------------------
+    @attribute(  # type: ignore[misc]  # "Untyped decorator makes function untyped"
+        dtype=("int",), max_dim_x=2
+    )
+    def lrcProtocolVersions(
+        self: SKABaseDevice[ComponentManagerT],
+    ) -> tuple[int, int]:
+        """
+        Return supported protocol versions.
+
+        :return: A tuple containing the lower and upper bounds of supported long running
+            command protocol versions.
+        """
+        return _SUPPORTED_LRC_PROTOCOL_VERSIONS
 
     # The following LRC attributes are instantiated in init_device() to make use of the
     # max_queued_tasks and max_executing_tasks properties to compute their max_dim_x

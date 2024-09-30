@@ -32,6 +32,8 @@ from ska_tango_base.faults import CommandError, ResultCodeError
 
 module_logger = logging.getLogger(__name__)
 
+_SUPPORTED_LRC_PROTOCOL_VERSIONS = (1, 2)
+
 
 # pylint: disable=too-few-public-methods
 class LrcCallback(Protocol):

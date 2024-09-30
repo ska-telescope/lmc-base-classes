@@ -390,7 +390,8 @@ class TestSKABaseDevice:  # pylint: disable=too-many-public-methods
             "The device is in OFF state."
         )
 
-        _ = invoke_lrc(successful_lrc_callback, device_under_test, "On")
+        lrc = invoke_lrc(successful_lrc_callback, device_under_test, "On")
+        assert lrc.protocol_version == 2
         change_event_callbacks.assert_change_event("state", DevState.ON)
         change_event_callbacks.assert_change_event(
             "status", "The device is in ON state."
@@ -452,6 +453,7 @@ class TestSKABaseDevice:  # pylint: disable=too-many-public-methods
         )
 
         lrc = invoke_lrc(successful_lrc_callback, device_under_test, "Standby")
+        assert lrc.protocol_version == 2
         change_event_callbacks.assert_change_event("state", DevState.STANDBY)
         change_event_callbacks.assert_change_event(
             "status", "The device is in STANDBY state."
@@ -550,6 +552,7 @@ class TestSKABaseDevice:  # pylint: disable=too-many-public-methods
         change_event_callbacks["longRunningCommandInProgress"].assert_change_event(())
 
         on_subs = invoke_lrc(lrc_callback_log_only, device_under_test, "On")
+        assert on_subs.protocol_version == 2
         on_command = on_subs.command_id.split("_", 2)[2]
         change_event_callbacks.assert_change_event(
             "longRunningCommandInProgress", (on_command,)

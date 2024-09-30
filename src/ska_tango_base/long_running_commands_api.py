@@ -72,16 +72,21 @@ class LrcSubscriptions:
     """
 
     def __init__(
-        self, command_id: str, unsubscribe_lrc_events: Callable[[], None]
+        self,
+        command_id: str,
+        unsubscribe_lrc_events: Callable[[], None],
+        protocol_version: int,
     ) -> None:
         """
         Initialise a LrcSubscriptions instance.
 
         :param command_id: Unique command identifier.
         :param unsubscribe_lrc_events: Method to unsubscribe from all LRC change events.
+        :param protocol_version: The LRC client-server protocol version used.
         """
         self._command_id = command_id
         self._unsubscribe_lrc_events = unsubscribe_lrc_events
+        self._protocol_version = protocol_version
 
     def __del__(self) -> None:
         """Delete the LrcSubscriptions instance."""
@@ -95,6 +100,15 @@ class LrcSubscriptions:
         :returns: the command ID.
         """
         return self._command_id
+
+    @property
+    def protocol_version(self) -> int:
+        """
+        The LRC client-server protocol version used.
+
+        :returns: the protocol version.
+        """
+        return self._protocol_version
 
 
 # pylint: disable=too-many-statements,too-many-locals
@@ -143,6 +157,7 @@ def invoke_lrc(  # noqa: C901
     lock = threading.Lock()
     command_id = None
     event_ids: list[int] = []
+    protocol_version: int
 
     def unsubscribe_lrc_events() -> None:
         if event_ids:
@@ -240,9 +255,14 @@ def invoke_lrc(  # noqa: C901
         )
 
     # Subscribe to LRC attributes' change events with above callback
-    if "_lrcEvent" in proxy.get_attribute_list():  # Use protocol v2
+    if (
+        "lrcProtocolVersions" in proxy.get_attribute_list()
+        and proxy.lrcProtocolVersions[1] >= 2
+    ):  # Use protocol v2
+        protocol_version = 2
         attributes = ["_lrcEvent"]
     else:  # Use protocol v1
+        protocol_version = 1
         attributes = [
             "longRunningCommandStatus",
             "longRunningCommandProgress",
@@ -284,4 +304,4 @@ def invoke_lrc(  # noqa: C901
         logger.error(msg)
         unsubscribe_lrc_events()
         raise ResultCodeError(msg)
-    return LrcSubscriptions(str(command_id), unsubscribe_lrc_events)
+    return LrcSubscriptions(str(command_id), unsubscribe_lrc_events, protocol_version)

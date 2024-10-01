@@ -134,7 +134,7 @@ class CommandTracker:  # pylint: disable=too-many-instance-attributes
         self._queue_changed_callback(self.commands_in_queue)
         self._status_changed_callback(self.command_statuses)
         if self._event_callback is not None:
-            self._event_callback(command_id, dict(self._lrc_stage_queue[command_id]))
+            self._event_callback(command_id, {"status": TaskStatus.STAGING})
         return command_id
 
     def _schedule_removal(self: CommandTracker, command_id: str) -> None:
@@ -207,20 +207,18 @@ class CommandTracker:  # pylint: disable=too-many-instance-attributes
                     status == TaskStatus.IN_PROGRESS
                     and command_id in self._lrc_stage_queue
                 ):
-                    event["started_time"] = datetime.now(timezone.utc).isoformat()
                     self._lrc_executing[command_id] = self._lrc_stage_queue.pop(
                         command_id
                     )
-                    self._lrc_executing[command_id]["started_time"] = event[
-                        "started_time"
-                    ]
+                    self._lrc_executing[command_id]["started_time"] = datetime.now(
+                        timezone.utc
+                    ).isoformat()
                 elif status in [
                     TaskStatus.ABORTED,
                     TaskStatus.COMPLETED,
                     TaskStatus.REJECTED,
                     TaskStatus.FAILED,
                 ]:
-                    event["finished_time"] = datetime.now(timezone.utc).isoformat()
                     if command_id in self._lrc_stage_queue:
                         self._lrc_finished[command_id] = self._lrc_stage_queue.pop(
                             command_id
@@ -232,7 +230,7 @@ class CommandTracker:  # pylint: disable=too-many-instance-attributes
                     self._lrc_finished[command_id].pop("progress", None)
                     self._lrc_finished[command_id].update(
                         {
-                            "finished_time": event["finished_time"],
+                            "finished_time": datetime.now(timezone.utc).isoformat(),
                             "status": status,
                         }
                     )

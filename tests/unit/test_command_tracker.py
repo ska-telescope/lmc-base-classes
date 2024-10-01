@@ -125,7 +125,9 @@ class TestCommandTracker:
         callbacks["progress"].assert_not_called()
         callbacks["result"].assert_not_called()
         callbacks["exception"].assert_not_called()
-        callbacks["event"].assert_called_once()
+        callbacks["event"].assert_called_once_with(
+            first_command_id, {"status": TaskStatus.STAGING}
+        )
         callbacks["event"].reset_mock()
 
         # 1st command is queued
@@ -173,7 +175,9 @@ class TestCommandTracker:
         callbacks["progress"].assert_not_called()
         callbacks["result"].assert_not_called()
         callbacks["exception"].assert_not_called()
-        callbacks["event"].assert_called_once()
+        callbacks["event"].assert_called_once_with(
+            first_command_id, {"status": TaskStatus.IN_PROGRESS}
+        )
         callbacks["event"].reset_mock()
 
         # 2nd new command
@@ -207,7 +211,9 @@ class TestCommandTracker:
         callbacks["progress"].assert_not_called()
         callbacks["result"].assert_not_called()
         callbacks["exception"].assert_not_called()
-        callbacks["event"].assert_called_once()
+        callbacks["event"].assert_called_once_with(
+            second_command_id, {"status": TaskStatus.STAGING}
+        )
         callbacks["event"].reset_mock()
 
         # 1st command reports progress
@@ -230,7 +236,7 @@ class TestCommandTracker:
         callbacks["progress"].reset_mock()
         callbacks["result"].assert_not_called()
         callbacks["exception"].assert_not_called()
-        callbacks["event"].assert_called_once()
+        callbacks["event"].assert_called_once_with(first_command_id, {"progress": 50})
         callbacks["event"].reset_mock()
 
         # 1st command reports result

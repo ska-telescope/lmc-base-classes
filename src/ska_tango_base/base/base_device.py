@@ -717,14 +717,7 @@ class SKABaseDevice(
         command_id: str,
         event: dict[str, Any],
     ) -> None:
-        lrc_event = json.dumps(
-            {
-                k: v
-                for k, v in event.items()
-                if v is not None and k in ["status", "progress", "result"]
-            }
-        )
-        self.push_change_event("_lrcEvent", [command_id, lrc_event])
+        self.push_change_event("_lrcEvent", [command_id, json.dumps(event)])
 
     def _update_user_lrc_attributes(
         self: SKABaseDevice[ComponentManagerT],

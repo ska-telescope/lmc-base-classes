@@ -2,10 +2,12 @@
 
 ## unreleased
 
-- Added: (WOM-344, WOM-367)
+- Added: (WOM-344, WOM-367, WOM-457, WOM-466)
   - Copied `Abort` LRC from `SKASubArray` to `SKABaseDevice` that has a command ID and `TaskStatus`.
   - New user facing LRC attributes `lrcQueue`, `lrcExecuting` and `lrcFinished`. (WOM-372) 
   - New private `_lrcEvents` attribute that is meant to be only used by `invoke_lrc`.
+  - Added `lrcProtocolVersions` attribute indicating the range of versions of the LRC client-server protocol supported by `SKABaseDevice`. 
+    - It is read in `invoke_lrc` to check compatibility between the client and server and to decide which version to use.
 - Deprecations: (WOM-344)
   - `SKABaseDevice.AbortCommands` is deprecated and replaced by new `Abort` LRC.
   - `BaseComponentManager.abort_commands` is deprecated and replaced by `abort_tasks`.

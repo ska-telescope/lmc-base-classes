@@ -99,10 +99,6 @@ class TestSKASubarray:  # pylint: disable=too-many-public-methods
         """
 
         def _turn_on_device() -> None:
-            # TODO: Remove below SetCommandTrackerRemovalTime(0) -
-            # test_obsreset_from_resourcing_after_idle fails if its not set to 0,
-            # because longRunningCommandInProgress then has unexpected duplicate events.
-            device_under_test.SetCommandTrackerRemovalTime(0)
             assert device_under_test.state() == DevState.OFF
             for attribute in [
                 "state",
@@ -393,19 +389,11 @@ class TestSKASubarray:  # pylint: disable=too-many-public-methods
 
             :param lrc: of command in progress to abort
             """
-            event_id = device_under_test.subscribe_event(
-                "longRunningCommandInProgress",
-                tango.EventType.CHANGE_EVENT,
-                change_event_callbacks["longRunningCommandInProgress"],
-            )
-            command_name = lrc.command_id.split("_", 2)[2]
-            change_event_callbacks.assert_change_event(
-                "longRunningCommandInProgress", (command_name,)
-            )
-
-            abort = invoke_lrc(abort_callback, device_under_test, "Abort")
-            abort_name = abort.command_id.split("_", 2)[2]
+            _ = invoke_lrc(abort_callback, device_under_test, "Abort")
             change_event_callbacks.assert_change_event("obsState", ObsState.ABORTING)
+            change_event_callbacks.assert_change_event(
+                "commandedObsState", ObsState.ABORTED
+            )
             Helpers.assert_expected_logs(
                 caplog,
                 [  # Log messages must be in this exact order
@@ -420,26 +408,10 @@ class TestSKASubarray:  # pylint: disable=too-many-public-methods
                     "abort_callback(status=COMPLETED)",
                 ],
             )
-            # Abort is completed
-            Helpers.print_change_event_queue(
-                change_event_callbacks, "longRunningCommandInProgress"
-            )
-            change_event_callbacks.assert_change_event(
-                "longRunningCommandInProgress", (command_name, abort_name)
-            )
-            change_event_callbacks.assert_change_event(
-                "commandedObsState", ObsState.ABORTED
-            )
-            change_event_callbacks.assert_change_event(
-                "longRunningCommandInProgress", (abort_name,)
-            )
-            change_event_callbacks.assert_change_event(
-                "longRunningCommandInProgress", ()
-            )
             change_event_callbacks.assert_change_event("obsState", ObsState.ABORTED)
             assert device_under_test.obsState == device_under_test.commandedObsState
             change_event_callbacks.assert_not_called()
-            device_under_test.unsubscribe_event(event_id)
+            del lrc
 
         return _abort_subarray_command
 

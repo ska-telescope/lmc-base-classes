@@ -237,20 +237,6 @@ class ReferenceSkaSubarray(SKASubarray[ReferenceSubarrayComponentManager]):
         self.component_manager.abort_tasks()
         self.component_manager._component.simulate_obsfault()
 
-    @command(dtype_in=float)  # type: ignore[misc]
-    def SetCommandTrackerRemovalTime(
-        self: ReferenceSkaSubarray, seconds: float
-    ) -> None:
-        """Set the CommandTracker's removal time.
-
-        Setting the command removal time lower than the default 10s simplifies tests'
-        assertions of some LRC attributes.
-
-        :param seconds: of removal timer.
-        """
-        # pylint: disable=protected-access
-        self._command_tracker._removal_time = seconds
-
 
 # ----------
 # Run server

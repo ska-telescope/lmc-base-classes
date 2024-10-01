@@ -9,6 +9,8 @@
 - Deprecations: (WOM-344)
   - `SKABaseDevice.AbortCommands` is deprecated and replaced by new `Abort` LRC.
   - `BaseComponentManager.abort_commands` is deprecated and replaced by `abort_tasks`.
+- Bug fixes:
+  - WOM-488: The `On`, `Off`, `Reset` and `Standby` commands are allowed while the device is in `DevState.ALARM`.
 
 ## 1.1.0
 

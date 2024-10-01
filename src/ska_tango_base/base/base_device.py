@@ -1356,6 +1356,7 @@ class SKABaseDevice(
         return self.get_state() in [
             DevState.STANDBY,
             DevState.ON,
+            DevState.ALARM,
             DevState.FAULT,
         ]
 
@@ -1417,6 +1418,7 @@ class SKABaseDevice(
             DevState.OFF,
             DevState.STANDBY,
             DevState.ON,
+            DevState.ALARM,
             DevState.UNKNOWN,
         ]
 
@@ -1453,6 +1455,7 @@ class SKABaseDevice(
             DevState.OFF,
             DevState.STANDBY,
             DevState.ON,
+            DevState.ALARM,
             DevState.UNKNOWN,
             DevState.FAULT,
         ]
@@ -1490,6 +1493,7 @@ class SKABaseDevice(
             DevState.OFF,
             DevState.STANDBY,
             DevState.ON,
+            DevState.ALARM,
             DevState.UNKNOWN,
         ]
 

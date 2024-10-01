@@ -236,7 +236,9 @@ class CommandTracker:  # pylint: disable=too-many-instance-attributes
                     )
             if result is not None:
                 event["result"] = result
-                if command_id in self._lrc_executing:
+                if command_id in self._lrc_stage_queue:
+                    self._lrc_stage_queue[command_id]["result"] = result
+                elif command_id in self._lrc_executing:
                     self._lrc_executing[command_id]["result"] = result
                 elif command_id in self._lrc_finished:
                     self._lrc_finished[command_id]["result"] = result
@@ -244,8 +246,12 @@ class CommandTracker:  # pylint: disable=too-many-instance-attributes
                 self._result_callback(command_id, result)
             if progress is not None:
                 event["progress"] = int(progress)
-                if command_id in self._lrc_executing:
+                if command_id in self._lrc_stage_queue:
+                    self._lrc_stage_queue[command_id]["progress"] = int(progress)
+                elif command_id in self._lrc_executing:
                     self._lrc_executing[command_id]["progress"] = int(progress)
+                elif command_id in self._lrc_finished:
+                    self._lrc_finished[command_id]["progress"] = int(progress)
                 self._progress_changed_callback(self.command_progresses)
             # The status related callbacks are called after result/progress to preserve
             # the order of change events for the deprecated LRC attributes.

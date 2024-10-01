@@ -727,19 +727,28 @@ class SKABaseDevice(
     ) -> None:
         self._lrc_queue = self._get_json_list_of_lrc_attributes(
             lrc_queue,
-            exclude_keys=["status", "completed_callback"],
+            allowed_keys=["uid", "name", "sumbitted_time"],
         )
         self.push_change_event("lrcQueue", self._lrc_queue)
         self.push_archive_event("lrcQueue", self._lrc_queue)
         self._lrc_executing = self._get_json_list_of_lrc_attributes(
             lrc_executing,
-            exclude_keys=["status", "completed_callback"],
+            allowed_keys=["uid", "name", "sumbitted_time", "started_time", "progress"],
         )
         self.push_change_event("lrcExecuting", self._lrc_executing)
         self.push_archive_event("lrcExecuting", self._lrc_executing)
         self._lrc_finished = self._get_json_list_of_lrc_attributes(
             lrc_finished,
-            exclude_keys=["completed_callback", "removed"],
+            allowed_keys=[
+                "uid",
+                "name",
+                "sumbitted_time",
+                "started_time",
+                "finished_time",
+                "status",
+                "result",
+                "progress",
+            ],
         )[
             -LRC_FINISHED_MAX_LENGTH:
         ]  # TODO: The passed dict should be the correct max length in future after the
@@ -933,15 +942,16 @@ class SKABaseDevice(
 
     @staticmethod
     def _get_json_list_of_lrc_attributes(
-        lrc_attr: LrcAttrType, exclude_keys: list[str]
+        lrc_attr: LrcAttrType, allowed_keys: list[str]
     ) -> list[str]:
         """
         Get a list of JSON formatted strings representing the LRC attribute.
 
-        Serialises each key-value pair of the LRC's data dict to a flat JSON dict.
+        Serialises each key-value pair that's in the allowed_keys list of the LRC's data
+        dict to a flat JSON dict.
 
         :param lrc_attr: Dict of LRC IDs as keys and their nested CommandData dicts.
-        :param exclude_keys: List of keys to exclude from the returned JSON dicts.
+        :param allowed_keys: List of allowed keys to include from the JSON dicts.
         :return: A list of JSON strings containing a serialised info dict for each LRC.
         """
         if lrc_attr:  # Check for empty dict
@@ -952,7 +962,7 @@ class SKABaseDevice(
                         **{
                             key: val.name if isinstance(val, Enum) else val
                             for key, val in data.items()
-                            if key not in exclude_keys
+                            if key in allowed_keys
                         },
                     }
                 )

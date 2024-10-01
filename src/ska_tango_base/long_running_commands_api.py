@@ -137,7 +137,9 @@ def invoke_lrc(  # noqa: C901
         unsubscribes from the LRC change events and thus stops any further callbacks.
     :raises CommandError: If the command is rejected.
     :raises ResultCodeError: If the command returns an unexpected result code.
-    :raises ValueError: If the lrc_callback does not accept `**kwargs`
+    :raises ValueError: If the lrc_callback does not accept `**kwargs`.
+    :raises RuntimeError: If the supported client-server protocol versions do not
+        overlap.
     """
 
     def is_future_proof_lrc_callback() -> bool:
@@ -254,12 +256,36 @@ def invoke_lrc(  # noqa: C901
             f"{calling_fn}::{frame.name} at ({frame.filename}:{frame.lineno})",
         )
 
-    # Subscribe to LRC attributes' change events with above callback
+    if "lrcProtocolVersions" in proxy.get_attribute_list():
+        # Check compatibility between the client's and server's supported protocols
+        server_first, server_last = proxy.lrcProtocolVersions
+        client_first, client_last = _SUPPORTED_LRC_PROTOCOL_VERSIONS
+        if not (server_first <= client_last and client_first <= server_last):
+            msg = (
+                "This version of invoke_lrc() is not compatible with any of the "
+                "server's supported LRC protocols! Client version min, max = "
+                f"{_SUPPORTED_LRC_PROTOCOL_VERSIONS} - Server version min, max = "
+                f"{tuple(proxy.lrcProtocolVersions)}"
+            )
+            logger.error(msg)
+            raise RuntimeError(msg)
+
+        # Convert the client's and server's supported protocol versions to range objects
+        server_protocol_versions = range(
+            proxy.lrcProtocolVersions[0], proxy.lrcProtocolVersions[1] + 1
+        )
+    else:  # Assume the server supports only the 1st version of the protocol
+        server_protocol_versions = range(1, 2)
+    client_protocol_versions = range(
+        _SUPPORTED_LRC_PROTOCOL_VERSIONS[0], _SUPPORTED_LRC_PROTOCOL_VERSIONS[1] + 1
+    )
+
+    # Decide which version of the client-server protocol to use
+    protocol_version = 2
     if (
-        "lrcProtocolVersions" in proxy.get_attribute_list()
-        and proxy.lrcProtocolVersions[1] >= 2
-    ):  # Use protocol v2
-        protocol_version = 2
+        protocol_version in client_protocol_versions
+        and protocol_version in server_protocol_versions
+    ):
         attributes = ["_lrcEvent"]
     else:  # Use protocol v1
         protocol_version = 1
@@ -268,6 +294,8 @@ def invoke_lrc(  # noqa: C901
             "longRunningCommandProgress",
             "longRunningCommandResult",
         ]
+
+    # Subscribe to LRC attributes' change events with above callback
     for attr in attributes:
         try:
             event_id = proxy.subscribe_event(

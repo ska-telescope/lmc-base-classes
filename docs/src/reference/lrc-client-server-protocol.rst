@@ -137,15 +137,29 @@ Now :func:`~ska_tango_base.long_running_commands_api.invoke_lrc` rather subscrib
 change to the status and result of a command are related via the callback the client 
 passed to :func:`~ska_tango_base.long_running_commands_api.invoke_lrc`.
 
-New user facing LRC attributes
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+User facing LRC attributes
+~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Three new user (human) facing LRC attributes have been added that contain the same 
-information as the other existing LRC attributes, but in a more concise and consistent 
-form. The attributes are called :attr:`~ska_tango_base.base.base_device.SKABaseDevice.lrcQueue`,
+:class:`~ska_tango_base.base.base_device.SKABaseDevice` has three user facing LRC 
+attributes that provide information to operators/engineers about the current state of 
+the device's long running commands. The attributes are called 
+:attr:`~ska_tango_base.base.base_device.SKABaseDevice.lrcQueue`,
 :attr:`~ska_tango_base.base.base_device.SKABaseDevice.lrcExecuting` and
 :attr:`~ska_tango_base.base.base_device.SKABaseDevice.lrcFinished`. Each attribute is a 
 list of commands and their data encoded as JSON blobs. 
+
+For providing information to users about LRCs, the following attributes have been 
+deprecated in favour of the user facing attributes mentioned above:
+
+- longRunningCommandsInQueue
+- longRunningCommandIDsInQueue
+- longRunningCommandStatus
+- longRunningCommandInProgress
+- longRunningCommandProgress
+- longRunningCommandResult
+
+The user facing attributes provide all the same information as those that have been 
+deprecated, but in a more concise and consistent form.
 
 Each LRC can only appear in one of the attributes at a time, and will transition
 from one attribute to the next depending on its :class:`~ska_control_model.TaskStatus`. 
@@ -176,25 +190,25 @@ and ``finished_time`` are strings in the ISO 8601 date and time format.
 
 **Key value pairs matrix:**
 
-+----------------+------+--------------+------------------+-----------------+
-| Key            | Type | In lrcQueue? | In lrcExecuting? | In lrcFinished? |
-+================+======+==============+==================+=================+
-| uid            | str  | Always       | Always           | Always          |
-+----------------+------+--------------+------------------+-----------------+
-| name           | str  | Always       | Always           | Always          |
-+----------------+------+--------------+------------------+-----------------+
-| submitted_time | str  | Always       | Always           | Always          |
-+----------------+------+--------------+------------------+-----------------+
-| progress       | int  | No           | Not guaranteed   | No              |
-+----------------+------+--------------+------------------+-----------------+
-| started_time   | str  | No           | Always           | Not guaranteed  |
-+----------------+------+--------------+------------------+-----------------+
-| finished_time  | str  | No           | No               | Always          |
-+----------------+------+--------------+------------------+-----------------+
-| status         | str  | No           | No               | Always          |
-+----------------+------+--------------+------------------+-----------------+
-| result         | Any  | No           | No               | Not guaranteed  |
-+----------------+------+--------------+------------------+-----------------+
++----------------+------+--------------+------------------+------------------------------------+
+| Key            | Type | In lrcQueue? | In lrcExecuting? | In lrcFinished?                    |
++================+======+==============+==================+====================================+
+| uid            | str  | Always       | Always           | Always                             |
++----------------+------+--------------+------------------+------------------------------------+
+| name           | str  | Always       | Always           | Always                             |
++----------------+------+--------------+------------------+------------------------------------+
+| submitted_time | str  | Always       | Always           | Always                             |
++----------------+------+--------------+------------------+------------------------------------+
+| started_time   | str  | No           | Always           | Not if rejected/aborted from queue |
++----------------+------+--------------+------------------+------------------------------------+
+| finished_time  | str  | No           | No               | Always                             |
++----------------+------+--------------+------------------+------------------------------------+
+| status         | str  | No           | No               | Always                             |
++----------------+------+--------------+------------------+------------------------------------+
+| progress       | int  | No           | Optional         | Optional                           |
++----------------+------+--------------+------------------+------------------------------------+
+| result         | Any  | No           | No               | Optional                           |
++----------------+------+--------------+------------------+------------------------------------+
 
 LRC commands
 ~~~~~~~~~~~~

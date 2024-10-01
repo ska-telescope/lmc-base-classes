@@ -321,6 +321,7 @@ class SKABaseDevice(
             self._command_ids_in_queue: list[str] = []
             self._commands_in_queue: list[str] = []
             self._command_statuses: list[str] = []
+            self._commands_ids_in_progress: list[str] = []
             self._commands_in_progress: list[str] = []
             self._command_progresses: list[str] = []
             self._command_result: tuple[str, str] = ("", "")
@@ -633,14 +634,13 @@ class SKABaseDevice(
         self.push_archive_event("longRunningCommandStatus", self._command_statuses)
 
         # Check for commands starting and ending execution
-        for uid, status in command_statuses:
-            command_name = uid.split("_", 2)[2]
+        for command_id, status in command_statuses:
             if (
                 status == TaskStatus.IN_PROGRESS
-                and command_name not in self._commands_in_progress
+                and command_id not in self._commands_ids_in_progress
             ):
-                self._update_commands_in_progress(command_name, True)
-                self._update_commanded_state(command_name)
+                self._update_commands_in_progress(command_id, True)
+                self._update_commanded_state(command_id.split("_")[-1])
             elif (
                 status
                 in [
@@ -648,21 +648,24 @@ class SKABaseDevice(
                     TaskStatus.COMPLETED,
                     TaskStatus.FAILED,
                 ]
-                and command_name in self._commands_in_progress
+                and command_id in self._commands_ids_in_progress
             ):
-                self._update_commands_in_progress(command_name, False)
+                self._update_commands_in_progress(command_id, False)
 
     def _update_commands_in_progress(
-        self: SKABaseDevice[ComponentManagerT], command_name: str, in_progress: bool
+        self: SKABaseDevice[ComponentManagerT], command_id: str, in_progress: bool
     ) -> None:
         # Pass a reference to a new object for the push events, as this callback can be
         # called multiple times before the event is pushed in the tango omni thread.
-        commands_in_progress = self._commands_in_progress.copy()
+        commands_ids_in_progress = self._commands_ids_in_progress.copy()
         if in_progress:
-            commands_in_progress.append(command_name)
-        elif command_name in commands_in_progress:
-            commands_in_progress.remove(command_name)
-        self._commands_in_progress = commands_in_progress
+            commands_ids_in_progress.append(command_id)
+        elif command_id in commands_ids_in_progress:
+            commands_ids_in_progress.remove(command_id)
+        self._commands_ids_in_progress = commands_ids_in_progress
+        self._commands_in_progress = [
+            uid.split("_")[-1] for uid in commands_ids_in_progress
+        ]
         self.push_change_event(
             "longRunningCommandInProgress", self._commands_in_progress
         )

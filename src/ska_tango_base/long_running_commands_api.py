@@ -141,16 +141,7 @@ def invoke_lrc(  # noqa: C901
     :raises RuntimeError: If the supported client-server protocol versions do not
         overlap.
     """
-
-    def is_future_proof_lrc_callback() -> bool:
-        sig = inspect.signature(lrc_callback)
-        for param in sig.parameters.values():
-            if param.kind == inspect.Parameter.VAR_KEYWORD:
-                return True
-
-        return False
-
-    if not is_future_proof_lrc_callback():
+    if not _is_future_proof_lrc_callback(lrc_callback):
         raise ValueError("lrc_callback must accept **kwargs")
 
     logger = logger or module_logger
@@ -159,7 +150,7 @@ def invoke_lrc(  # noqa: C901
     lock = threading.Lock()
     command_id = None
     event_ids: list[int] = []
-    protocol_version: int
+    protocol_version = _find_latest_compatible_protocol_version(proxy)
 
     def unsubscribe_lrc_events() -> None:
         if event_ids:
@@ -179,9 +170,9 @@ def invoke_lrc(  # noqa: C901
     ) -> TaskStatus | None:
         try:
             if isinstance(raw_status, str):
-                status = TaskStatus[raw_status]  # Protocol v1
+                status = TaskStatus[raw_status]
             else:
-                status = TaskStatus(raw_status)  # Protocol v2
+                status = TaskStatus(raw_status)
         except KeyError as exc:
             status = None
             logger.exception(
@@ -245,22 +236,17 @@ def invoke_lrc(  # noqa: C901
             case "longrunningcommandresult":
                 lrc_callback(result=json.loads(lrc_attr_value))
 
-    def re_throw_exception(exception: Exception, description: str) -> None:
-        calling_fn = inspect.getouterframes(inspect.currentframe())[2].function
-        frame = traceback.extract_tb(exception.__traceback__)[0]
-        Except.re_throw_exception(
-            exception,
-            "SKA_InvokeLrcFailed",  # Reason
-            description,
-            # Origin
-            f"{calling_fn}::{frame.name} at ({frame.filename}:{frame.lineno})",
-        )
-
-    if "lrcProtocolVersions" in proxy.get_attribute_list():
-        # Check compatibility between the client's and server's supported protocols
-        server_first, server_last = proxy.lrcProtocolVersions
-        client_first, client_last = _SUPPORTED_LRC_PROTOCOL_VERSIONS
-        if not (server_first <= client_last and client_first <= server_last):
+    # Decide which version of the client-server protocol to use
+    match protocol_version:
+        case 2:
+            attributes = ["_lrcEvent"]
+        case 1:
+            attributes = [
+                "longRunningCommandStatus",
+                "longRunningCommandProgress",
+                "longRunningCommandResult",
+            ]
+        case _:
             msg = (
                 "This version of invoke_lrc() is not compatible with any of the "
                 "server's supported LRC protocols! Client version min, max = "
@@ -269,31 +255,6 @@ def invoke_lrc(  # noqa: C901
             )
             logger.error(msg)
             raise RuntimeError(msg)
-
-        # Convert the client's and server's supported protocol versions to range objects
-        server_protocol_versions = range(
-            proxy.lrcProtocolVersions[0], proxy.lrcProtocolVersions[1] + 1
-        )
-    else:  # Assume the server supports only the 1st version of the protocol
-        server_protocol_versions = range(1, 2)
-    client_protocol_versions = range(
-        _SUPPORTED_LRC_PROTOCOL_VERSIONS[0], _SUPPORTED_LRC_PROTOCOL_VERSIONS[1] + 1
-    )
-
-    # Decide which version of the client-server protocol to use
-    protocol_version = 2
-    if (
-        protocol_version in client_protocol_versions
-        and protocol_version in server_protocol_versions
-    ):
-        attributes = ["_lrcEvent"]
-    else:  # Use protocol v1
-        protocol_version = 1
-        attributes = [
-            "longRunningCommandStatus",
-            "longRunningCommandProgress",
-            "longRunningCommandResult",
-        ]
 
     # Subscribe to LRC attributes' change events with above callback
     for attr in attributes:
@@ -304,7 +265,7 @@ def invoke_lrc(  # noqa: C901
             event_ids.append(event_id)
         except EventSystemFailed as exc:
             unsubscribe_lrc_events()
-            re_throw_exception(exc, f"Subscribing to '{attr}' change event failed.")
+            _re_throw_exception(exc, f"Subscribing to '{attr}' change event failed.")
 
     # Try to execute LRC on device proxy
     try:
@@ -314,7 +275,7 @@ def invoke_lrc(  # noqa: C901
         [[result_code], [command_id]] = proxy.command_inout(*inout_args)
     except (ConnectionFailed, CommunicationFailed, DeviceUnlocked, DevFailed) as exc:
         unsubscribe_lrc_events()
-        re_throw_exception(
+        _re_throw_exception(
             exc, f"Invocation of command '{command}' failed with args: {command_args}"
         )
     finally:
@@ -333,3 +294,44 @@ def invoke_lrc(  # noqa: C901
         unsubscribe_lrc_events()
         raise ResultCodeError(msg)
     return LrcSubscriptions(str(command_id), unsubscribe_lrc_events, protocol_version)
+
+
+###############################################
+# Private static functions used in invoke_lrc #
+###############################################
+def _is_future_proof_lrc_callback(lrc_callback: LrcCallback) -> bool:
+    sig = inspect.signature(lrc_callback)
+    for param in sig.parameters.values():
+        if param.kind == inspect.Parameter.VAR_KEYWORD:
+            return True
+    return False
+
+
+def _find_latest_compatible_protocol_version(server_proxy: DeviceProxy) -> int | None:
+    """
+    Find latest compatible protocol between client's and server's supported versions.
+
+    :param server_proxy: Server proxy to queury lrcProtocolVersions.
+    :return: Highest compatible version, or None if there is no overlap.
+    """
+    server_min, server_max = (
+        server_proxy.lrcProtocolVersions
+        if "lrcProtocolVersions" in server_proxy.get_attribute_list()
+        else (1, 1)  # Assume server supports only the 1st version of the protocol
+    )
+    client_min, client_max = _SUPPORTED_LRC_PROTOCOL_VERSIONS
+    if server_min <= client_max and client_min <= server_max:
+        return min(server_max, client_max)  # type: ignore
+    return None
+
+
+def _re_throw_exception(exception: Exception, description: str) -> None:
+    calling_fn = inspect.getouterframes(inspect.currentframe())[2].function
+    frame = traceback.extract_tb(exception.__traceback__)[0]
+    Except.re_throw_exception(
+        exception,
+        "SKA_InvokeLrcFailed",  # Reason
+        description,
+        # Origin
+        f"{calling_fn}::{frame.name} at ({frame.filename}:{frame.lineno})",
+    )

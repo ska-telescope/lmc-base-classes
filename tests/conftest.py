@@ -112,10 +112,15 @@ def change_event_callbacks_fixture() -> MockTangoEventCallbackGroup:
         "state",
         "commandedState",
         "status",
+        "lrcQueue",
+        "lrcExecuting",
+        "lrcFinished",
         "longRunningCommandProgress",
         "longRunningCommandResult",
         "longRunningCommandStatus",
         "longRunningCommandInProgress",
+        "longRunningCommandsInQueue",
+        "longRunningCommandIDsInQueue",
     )
 
 

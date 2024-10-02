@@ -35,7 +35,7 @@ Associate task data of ``status``, ``progress`` and ``result`` can be obtained
 corresponding to the command ID they were returned from the initiating Tango
 command.
 
-LRC Attributes
+LRC attributes
 ~~~~~~~~~~~~~~
 
 +-----------------------------+-------------------------------------------+----------------------+
@@ -136,6 +136,79 @@ Now :func:`~ska_tango_base.long_running_commands_api.invoke_lrc` rather subscrib
 **_lrcEvent** (if it's available on the device server) and then a client can know if a 
 change to the status and result of a command are related via the callback the client 
 passed to :func:`~ska_tango_base.long_running_commands_api.invoke_lrc`.
+
+User facing LRC attributes
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+:class:`~ska_tango_base.base.base_device.SKABaseDevice` has three user facing LRC 
+attributes that provide information to operators/engineers about the current state of 
+the device's long running commands. The attributes are called 
+:attr:`~ska_tango_base.base.base_device.SKABaseDevice.lrcQueue`,
+:attr:`~ska_tango_base.base.base_device.SKABaseDevice.lrcExecuting` and
+:attr:`~ska_tango_base.base.base_device.SKABaseDevice.lrcFinished`. Each attribute is a 
+list of commands and their data encoded as JSON blobs. 
+
+For providing information to users about LRCs, the following attributes have been 
+deprecated in favour of the user facing attributes mentioned above:
+
+- longRunningCommandsInQueue
+- longRunningCommandIDsInQueue
+- longRunningCommandStatus
+- longRunningCommandInProgress
+- longRunningCommandProgress
+- longRunningCommandResult
+
+The user facing attributes provide all the same information as those that have been 
+deprecated, but in a more concise and consistent form.
+
+Each LRC can only appear in one of the attributes at a time, and will transition
+from one attribute to the next depending on its :class:`~ska_control_model.TaskStatus`. 
+When a LRC is successfully queued, it will appear in
+:attr:`~ska_tango_base.base.base_device.SKABaseDevice.lrcQueue`, and can then transition
+to :attr:`~ska_tango_base.base.base_device.SKABaseDevice.lrcExecuting` if it starts, or 
+:attr:`~ska_tango_base.base.base_device.SKABaseDevice.lrcFinished` after it has reached 
+a terminal status. Up to the last 100 finished LRCs are kept in 
+:attr:`~ska_tango_base.base.base_device.SKABaseDevice.lrcFinished`, with no removal time.
+
+The JSON blob of each command in :attr:`~ska_tango_base.base.base_device.SKABaseDevice.lrcQueue`
+will always contain key value pairs for ``uid``, ``name`` and ``submitted_time``. When a
+command transitions to :attr:`~ska_tango_base.base.base_device.SKABaseDevice.lrcExecuting`, 
+a ``started_time`` and optional ``progress`` key is added, and when it transitions to 
+:attr:`~ska_tango_base.base.base_device.SKABaseDevice.lrcFinished`, a ``finished_time``,
+``status`` and optional ``result`` key is added. The ``submitted_time``, ``started_time`` 
+and ``finished_time`` are strings in the ISO 8601 date and time format.
+
++--------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| Attribute    | Example value                                                                                                                                                                                                                                                                                     |
++==============+===================================================================================================================================================================================================================================================================================================+
+| lrcQueue     | ('{"uid": "1727445658.30851_110382742366161_On", "name": "On", "submitted_time": "2024-09-27T14:00:58.308597+00:00"}',)                                                                                                                                                                           |
++--------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| lrcExecuting | ('{"uid": "1727445658.30851_110382742366161_On", "name": "On", "submitted_time": "2024-09-27T14:00:58.308597+00:00", "started_time": "2024-09-27T14:00:58.360072+00:00", "progress": 33}',)                                                                                                       |
++--------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| lrcFinished  | ('{"uid": "1727445658.30851_110382742366161_On", "name": "On", "status": "COMPLETED", "submitted_time": "2024-09-27T14:00:58.308597+00:00", "started_time": "2024-09-27T14:00:58.360072+00:00", "finished_time": "2024-09-27T14:00:58.761918+00:00", "result": [0, "On command completed OK"]}',) |
++--------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+
+**Key value pairs matrix:**
+
++----------------+------+--------------+------------------+------------------------------------+
+| Key            | Type | In lrcQueue? | In lrcExecuting? | In lrcFinished?                    |
++================+======+==============+==================+====================================+
+| uid            | str  | Always       | Always           | Always                             |
++----------------+------+--------------+------------------+------------------------------------+
+| name           | str  | Always       | Always           | Always                             |
++----------------+------+--------------+------------------+------------------------------------+
+| submitted_time | str  | Always       | Always           | Always                             |
++----------------+------+--------------+------------------+------------------------------------+
+| started_time   | str  | No           | Always           | Not if rejected/aborted from queue |
++----------------+------+--------------+------------------+------------------------------------+
+| finished_time  | str  | No           | No               | Always                             |
++----------------+------+--------------+------------------+------------------------------------+
+| status         | str  | No           | No               | Always                             |
++----------------+------+--------------+------------------+------------------------------------+
+| progress       | int  | No           | Optional         | Optional                           |
++----------------+------+--------------+------------------+------------------------------------+
+| result         | Any  | No           | No               | Optional                           |
++----------------+------+--------------+------------------+------------------------------------+
 
 LRC commands
 ~~~~~~~~~~~~

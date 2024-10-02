@@ -77,7 +77,7 @@ class TestCommandTracker:
         )
 
     # TODO pylint: disable=too-many-statements
-    def test_command_tracker(
+    def test_tracking_and_callbacks(
         self: TestCommandTracker,
         command_tracker: CommandTracker,
         removal_time: float,
@@ -102,6 +102,7 @@ class TestCommandTracker:
         callbacks["exception"].assert_not_called()
         callbacks["event"].assert_not_called()
 
+        # 1st new command
         first_command_id = command_tracker.new_command("first_command")
         assert command_tracker.commands_in_queue == [
             (first_command_id, "first_command")
@@ -124,9 +125,35 @@ class TestCommandTracker:
         callbacks["progress"].assert_not_called()
         callbacks["result"].assert_not_called()
         callbacks["exception"].assert_not_called()
-        callbacks["event"].assert_called_once_with((first_command_id, '{"status": 0}'))
+        callbacks["event"].assert_called_once_with(
+            first_command_id, {"status": TaskStatus.STAGING}
+        )
         callbacks["event"].reset_mock()
 
+        # 1st command is queued
+        command_tracker.update_command_info(first_command_id, status=TaskStatus.QUEUED)
+        assert command_tracker.commands_in_queue == [
+            (first_command_id, "first_command")
+        ]
+        assert command_tracker.command_statuses == [
+            (first_command_id, TaskStatus.QUEUED)
+        ]
+        assert command_tracker.command_progresses == []
+        assert command_tracker.command_result is None
+        assert command_tracker.command_exception is None
+
+        callbacks["queue"].assert_not_called()
+        callbacks["status"].assert_called_once_with(
+            [(first_command_id, TaskStatus.QUEUED)]
+        )
+        callbacks["status"].reset_mock()
+        callbacks["progress"].assert_not_called()
+        callbacks["result"].assert_not_called()
+        callbacks["exception"].assert_not_called()
+        callbacks["event"].assert_called_once()
+        callbacks["event"].reset_mock()
+
+        # 1st command starts
         command_tracker.update_command_info(
             first_command_id, status=TaskStatus.IN_PROGRESS
         )
@@ -148,9 +175,12 @@ class TestCommandTracker:
         callbacks["progress"].assert_not_called()
         callbacks["result"].assert_not_called()
         callbacks["exception"].assert_not_called()
-        callbacks["event"].assert_called_once_with((first_command_id, '{"status": 2}'))
+        callbacks["event"].assert_called_once_with(
+            first_command_id, {"status": TaskStatus.IN_PROGRESS}
+        )
         callbacks["event"].reset_mock()
 
+        # 2nd new command
         second_command_id = command_tracker.new_command("second_command")
         assert command_tracker.commands_in_queue == [
             (first_command_id, "first_command"),
@@ -181,9 +211,12 @@ class TestCommandTracker:
         callbacks["progress"].assert_not_called()
         callbacks["result"].assert_not_called()
         callbacks["exception"].assert_not_called()
-        callbacks["event"].assert_called_once_with((second_command_id, '{"status": 0}'))
+        callbacks["event"].assert_called_once_with(
+            second_command_id, {"status": TaskStatus.STAGING}
+        )
         callbacks["event"].reset_mock()
 
+        # 1st command reports progress
         command_tracker.update_command_info(first_command_id, progress=50)
         assert command_tracker.commands_in_queue == [
             (first_command_id, "first_command"),
@@ -203,11 +236,10 @@ class TestCommandTracker:
         callbacks["progress"].reset_mock()
         callbacks["result"].assert_not_called()
         callbacks["exception"].assert_not_called()
-        callbacks["event"].assert_called_once_with(
-            (first_command_id, '{"progress": 50}')
-        )
+        callbacks["event"].assert_called_once_with(first_command_id, {"progress": 50})
         callbacks["event"].reset_mock()
 
+        # 1st command reports result
         command_tracker.update_command_info(
             first_command_id, result=(ResultCode.OK, "a message string")
         )
@@ -232,6 +264,7 @@ class TestCommandTracker:
         callbacks["result"].reset_mock()
         callbacks["exception"].assert_not_called()
 
+        # 1st command is completed
         command_tracker.update_command_info(
             first_command_id, status=TaskStatus.COMPLETED
         )
@@ -268,6 +301,7 @@ class TestCommandTracker:
         callbacks["result"].assert_not_called()
         callbacks["exception"].assert_not_called()
 
+        # 2nd command starts
         command_tracker.update_command_info(
             second_command_id, status=TaskStatus.IN_PROGRESS
         )
@@ -297,6 +331,7 @@ class TestCommandTracker:
 
         exception_to_raise = ValueError("Exception under test")
 
+        # 2nd command fails
         command_tracker.update_command_info(
             second_command_id,
             status=TaskStatus.FAILED,
@@ -331,4 +366,56 @@ class TestCommandTracker:
         )
         callbacks["exception"].assert_called_once_with(
             second_command_id, exception_to_raise
+        )
+
+    def test_command_removal(
+        self: TestCommandTracker,
+        command_tracker: CommandTracker,
+        removal_time: float,
+        callbacks: dict[str, Mock],
+    ) -> None:
+        """
+        Test how the command tracker removes old commands.
+
+        :param command_tracker: the command tracker under test
+        :param removal_time: how long completed command is retained
+        :param callbacks: a dictionary of mocks, passed as callbacks to
+            the command tracker under test
+        """
+        # pylint: disable=protected-access
+        assert command_tracker.commands_in_queue == []
+        assert command_tracker.command_statuses == []
+
+        command_tracker._lrc_finished_max_length = 3
+        extra_no_of_cmds = 2
+
+        command_ids = []
+        for i in range(
+            1, command_tracker._lrc_finished_max_length + 1 + extra_no_of_cmds
+        ):
+            command_ids.append(command_tracker.new_command(str(i)))
+            command_tracker.update_command_info(command_ids[-1], TaskStatus.QUEUED)
+            command_tracker.update_command_info(command_ids[-1], TaskStatus.IN_PROGRESS)
+            command_tracker.update_command_info(command_ids[-1], TaskStatus.COMPLETED)
+
+        assert (
+            len(command_tracker.commands_in_queue)
+            == command_tracker._lrc_finished_max_length
+        )
+        assert (
+            len(command_tracker.command_statuses)
+            == command_tracker._lrc_finished_max_length
+        )
+        assert (
+            len(command_tracker._lrc_finished)
+            == command_tracker._lrc_finished_max_length
+        )
+        callbacks["queue"].reset_mock()
+        time.sleep(removal_time + 0.1)
+        callbacks["queue"].assert_called()
+        assert command_tracker.commands_in_queue == []
+        assert command_tracker.command_statuses == []
+        assert (
+            len(command_tracker._lrc_finished)
+            == command_tracker._lrc_finished_max_length
         )

@@ -1,4 +1,4 @@
-# pylint: disable=invalid-name
+# pylint: disable=invalid-name,too-many-lines
 # -*- coding: utf-8 -*-
 #
 # This file is part of the SKA Tango Base project
@@ -130,6 +130,15 @@ class TestSKABaseDevice:  # pylint: disable=too-many-public-methods
         change_event_callbacks["state"].assert_change_event(DevState.ON)
         assert device_under_test.commandedState == device_under_test.state().name
 
+        # Simulate alarm
+        device_under_test.SimulateAlarm()
+        assert device_under_test.state() == DevState.ALARM
+        # TODO: Why does it not trigger a change event?
+        # change_event_callbacks["state"].assert_change_event(DevState.ALARM)
+        [[result_code], [result_msg]] = device_under_test.On()
+        assert result_code == ResultCode.REJECTED
+        assert result_msg == "Device is in ALARM state."
+
         # Simulate fault
         device_under_test.SimulateFault()
         change_event_callbacks["state"].assert_change_event(DevState.FAULT)
@@ -150,11 +159,19 @@ class TestSKABaseDevice:  # pylint: disable=too-many-public-methods
         change_event_callbacks["state"].assert_change_event(DevState.ON)
         assert device_under_test.commandedState == device_under_test.state().name
 
+        # Simulate alarm
+        device_under_test.SimulateAlarm()
+        assert device_under_test.state() == DevState.ALARM
+
         # STANDBY command
         device_under_test.Standby()
         change_event_callbacks["commandedState"].assert_change_event("STANDBY")
         change_event_callbacks["state"].assert_change_event(DevState.STANDBY)
         assert device_under_test.commandedState == device_under_test.state().name
+
+        # Simulate alarm
+        device_under_test.SimulateAlarm()
+        assert device_under_test.state() == DevState.ALARM
 
         # OFF command
         device_under_test.Off()

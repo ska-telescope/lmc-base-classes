@@ -1514,6 +1514,8 @@ class SKABaseDevice(
         """
         if self.get_state() == DevState.ON:
             return ([ResultCode.REJECTED], ["Device is already in ON state."])
+        if self.get_state() == DevState.ALARM:
+            return ([ResultCode.REJECTED], ["Device is in ALARM state."])
 
         handler = self.get_command_object("On")
         result_code, unique_id = handler()

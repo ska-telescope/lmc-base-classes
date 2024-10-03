@@ -15,6 +15,7 @@ from __future__ import annotations
 from typing import cast
 
 from ska_control_model import ResultCode
+from tango import DevState
 from tango.server import command
 
 from ...base import SKABaseDevice
@@ -98,6 +99,11 @@ class ReferenceSkaBaseDevice(SKABaseDevice[ReferenceBaseComponentManager]):
         """Simulate a fault state."""
         # pylint: disable=protected-access
         self.component_manager._component.simulate_fault(True)
+
+    @command()  # type: ignore[misc]
+    def SimulateAlarm(self: ReferenceSkaBaseDevice) -> None:
+        """Simulate an alarm state."""
+        self.set_state(DevState.ALARM)
 
     @command(dtype_in=float)  # type: ignore[misc]
     def SetCommandTrackerRemovalTime(

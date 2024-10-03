@@ -14,16 +14,30 @@ from __future__ import annotations
 
 from typing import cast
 
-from ...base import TestModeOverrideMixin
+from ska_control_model import HealthState
+from tango.server import attribute
+
+from ...base import TestModeOverrideMixin, overridable
 from .reference_base_device import ReferenceSkaBaseDevice
 
 __all__ = ["TestModeOverrideMixin", "main"]
 
 
-class ReferenceTestModeOverrides(ReferenceSkaBaseDevice, TestModeOverrideMixin):
+class ReferenceTestModeOverrides(
+    ReferenceSkaBaseDevice,
+    TestModeOverrideMixin,  # type: ignore[misc]
+):
     """Implements a reference SKA base device with Test Mode Overrides."""
 
-    # TODO
+    @attribute(dtype=HealthState)  # type: ignore[misc]
+    @overridable  # type: ignore[misc]
+    def health_hardware(self: ReferenceTestModeOverrides) -> HealthState:
+        """
+        Read the Health State of the device hardware.
+
+        :return: Health State of the device hardware
+        """
+        return HealthState.OK
 
 
 # ----------

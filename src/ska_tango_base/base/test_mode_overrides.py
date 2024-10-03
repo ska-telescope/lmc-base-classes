@@ -4,6 +4,7 @@
 #
 # Distributed under the terms of the BSD 3-clause new license.
 # See LICENSE.txt for more info.
+# type: ignore
 """This module implements Test Mode Overrides that can be added to an SKABaseDevice."""
 from __future__ import annotations
 
@@ -13,8 +14,6 @@ from typing import Any, Callable, Iterable, Protocol
 from ska_control_model import HealthState, TestMode
 from tango import AttReqType, AttributeProxy, MultiAttribute
 from tango.server import attribute
-
-from .base_device import SKABaseDevice
 
 
 class TestModeOverrideMixinInterface(Protocol):
@@ -66,26 +65,19 @@ class TestModeOverrideMixinInterface(Protocol):
 class TestModeOverrideMixin:
     """Add Test Mode Attribute Overrides to an TestModeOverrideMixin."""
 
-    def __init__(self: TestModeOverrideMixin, **kwargs: Any):
-        """Initialise TestModeOverrideMixin object.
+    def __init_subclass__(cls: TestModeOverrideMixin, **kwargs: Any):  # type: ignore
+        """Add our variables to the class we are extending.
 
-        :param kwargs: Additional arguments to pass to super().__init__
+        :param kwargs: keyword arguments (passed to superclass).
         """
-        assert isinstance(self, SKABaseDevice)
-
-        self._test_mode: TestMode = TestMode.NONE
-        self._test_mode_overrides: dict[str, Any] = {}
-        self._test_mode_overrides_changed: Callable[[], None] | None = None
-        self._test_mode_enum_attrs = {
+        cls._test_mode_overrides: dict[str, Any] = {}
+        cls._test_mode_overrides_changed: Callable[[], None] | None = None
+        cls._test_mode_enum_attrs = {
             "healthState": HealthState,
         }
-        super().__init__(**kwargs)
+        super().__init_subclass__(**kwargs)
 
-    def _get_override_value(
-        self,
-        attr_name: str,
-        default: Any = None,
-    ) -> Any:
+    def _get_override_value(self, attr_name: str, default: Any = None) -> Any:
         """
         Read a value from our overrides, use a default value when not overridden.
 

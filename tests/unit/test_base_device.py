@@ -1,4 +1,4 @@
-# pylint: disable=invalid-name
+# pylint: disable=invalid-name,too-many-lines
 # -*- coding: utf-8 -*-
 #
 # This file is part of the SKA Tango Base project
@@ -27,10 +27,10 @@ from ska_tango_testing.mock.placeholders import Anything
 from ska_tango_testing.mock.tango import MockTangoEventCallbackGroup
 from tango import DevFailed, DeviceProxy, DevState, EventType
 
+import ska_tango_base.long_running_commands_api as lrc_api
 from ska_tango_base import SKABaseDevice
 from ska_tango_base.base.base_device import _DEBUGGER_PORT
 from ska_tango_base.faults import CommandError
-from ska_tango_base.long_running_commands_api import LrcCallback, invoke_lrc
 from ska_tango_base.testing.reference import (
     ReferenceBaseComponentManager,
     ReferenceSkaBaseDevice,
@@ -194,7 +194,7 @@ class TestSKABaseDevice:  # pylint: disable=too-many-public-methods
     def test_Reset(
         self: TestSKABaseDevice,
         device_under_test: DeviceProxy,
-        successful_lrc_callback: LrcCallback,
+        successful_lrc_callback: lrc_api.LrcCallback,
     ) -> None:
         """
         Test for Reset.
@@ -210,7 +210,7 @@ class TestSKABaseDevice:  # pylint: disable=too-many-public-methods
             DevFailed,
             match="Command Reset not allowed when the device is in OFF state",
         ):
-            _ = invoke_lrc(successful_lrc_callback, device_under_test, "Reset")
+            _ = lrc_api.invoke_lrc(successful_lrc_callback, device_under_test, "Reset")
 
     def test_deprecated_LRC_attributes(
         self: TestSKABaseDevice,
@@ -290,7 +290,7 @@ class TestSKABaseDevice:  # pylint: disable=too-many-public-methods
         self: TestSKABaseDevice,
         device_under_test: DeviceProxy,
         change_event_callbacks: MockTangoEventCallbackGroup,
-        successful_lrc_callback: LrcCallback,
+        successful_lrc_callback: lrc_api.LrcCallback,
     ) -> None:
         """
         Test for the new user (human) facing LRC attributes.
@@ -319,7 +319,7 @@ class TestSKABaseDevice:  # pylint: disable=too-many-public-methods
         change_event_callbacks["lrcExecuting"].assert_change_event(())
         change_event_callbacks["lrcFinished"].assert_change_event(())
 
-        lrc = invoke_lrc(successful_lrc_callback, device_under_test, "On")
+        lrc = lrc_api.invoke_lrc(successful_lrc_callback, device_under_test, "On")
         lrc_queue = json.loads(device_under_test.lrcQueue[0])
         assert lrc_queue["uid"] == lrc.command_id
         assert lrc_queue["name"] == "On"
@@ -357,12 +357,16 @@ class TestSKABaseDevice:  # pylint: disable=too-many-public-methods
         change_event_callbacks["lrcExecuting"].assert_change_event(Anything)  # moved
         change_event_callbacks["lrcFinished"].assert_change_event(Anything)  # finished
 
+    # pylint: disable=too-many-arguments
+    @pytest.mark.parametrize("protocol_versions", [(1, 1), (1, 2)])
     def test_On(
         self: TestSKABaseDevice,
         device_under_test: DeviceProxy,
         change_event_callbacks: MockTangoEventCallbackGroup,
-        successful_lrc_callback: LrcCallback,
+        successful_lrc_callback: lrc_api.LrcCallback,
         caplog: pytest.LogCaptureFixture,
+        protocol_versions: tuple[int, int],
+        monkeypatch: pytest.MonkeyPatch,
     ) -> None:
         """
         Test for On command.
@@ -372,7 +376,12 @@ class TestSKABaseDevice:  # pylint: disable=too-many-public-methods
             callbacks with asynchrony support.
         :param successful_lrc_callback: callback fixture to use with invoke_lrc.
         :param caplog: pytest LogCaptureFixture
+        :param protocol_versions: LRC client-server protocol version range to use.
+        :param monkeypatch: pytest MonkeyPatch fixture.
         """
+        monkeypatch.setattr(
+            lrc_api, "_SUPPORTED_LRC_PROTOCOL_VERSIONS", protocol_versions
+        )
         assert device_under_test.state() == DevState.OFF
 
         for attribute in [
@@ -390,7 +399,10 @@ class TestSKABaseDevice:  # pylint: disable=too-many-public-methods
             "The device is in OFF state."
         )
 
-        _ = invoke_lrc(successful_lrc_callback, device_under_test, "On")
+        lrc = lrc_api.invoke_lrc(successful_lrc_callback, device_under_test, "On")
+        assert lrc.protocol_version in range(
+            protocol_versions[0], protocol_versions[1] + 1
+        )
         change_event_callbacks.assert_change_event("state", DevState.ON)
         change_event_callbacks.assert_change_event(
             "status", "The device is in ON state."
@@ -412,7 +424,7 @@ class TestSKABaseDevice:  # pylint: disable=too-many-public-methods
         with pytest.raises(
             CommandError, match="On command rejected: Device is already in ON state."
         ):
-            _ = invoke_lrc(successful_lrc_callback, device_under_test, "On")
+            _ = lrc_api.invoke_lrc(successful_lrc_callback, device_under_test, "On")
         Helpers.assert_expected_logs(
             caplog, ["On command rejected: Device is already in ON state."]
         )
@@ -422,7 +434,7 @@ class TestSKABaseDevice:  # pylint: disable=too-many-public-methods
         self: TestSKABaseDevice,
         device_under_test: DeviceProxy,
         change_event_callbacks: MockTangoEventCallbackGroup,
-        successful_lrc_callback: LrcCallback,
+        successful_lrc_callback: lrc_api.LrcCallback,
         caplog: pytest.LogCaptureFixture,
     ) -> None:
         """
@@ -451,7 +463,8 @@ class TestSKABaseDevice:  # pylint: disable=too-many-public-methods
             "The device is in OFF state."
         )
 
-        lrc = invoke_lrc(successful_lrc_callback, device_under_test, "Standby")
+        lrc = lrc_api.invoke_lrc(successful_lrc_callback, device_under_test, "Standby")
+        assert lrc.protocol_version == 2
         change_event_callbacks.assert_change_event("state", DevState.STANDBY)
         change_event_callbacks.assert_change_event(
             "status", "The device is in STANDBY state."
@@ -479,7 +492,9 @@ class TestSKABaseDevice:  # pylint: disable=too-many-public-methods
             CommandError,
             match="Standby command rejected: Device is already in STANDBY state.",
         ):
-            _ = invoke_lrc(successful_lrc_callback, device_under_test, "Standby")
+            _ = lrc_api.invoke_lrc(
+                successful_lrc_callback, device_under_test, "Standby"
+            )
         Helpers.assert_expected_logs(
             caplog, ["Standby command rejected: Device is already in STANDBY state."]
         )
@@ -489,7 +504,7 @@ class TestSKABaseDevice:  # pylint: disable=too-many-public-methods
         self: TestSKABaseDevice,
         device_under_test: DeviceProxy,
         change_event_callbacks: MockTangoEventCallbackGroup,
-        successful_lrc_callback: LrcCallback,
+        successful_lrc_callback: lrc_api.LrcCallback,
     ) -> None:
         """
         Test for Off command.
@@ -521,15 +536,49 @@ class TestSKABaseDevice:  # pylint: disable=too-many-public-methods
             CommandError,
             match="Off command rejected: Device is already in OFF state.",
         ):
-            _ = invoke_lrc(successful_lrc_callback, device_under_test, "Off")
+            _ = lrc_api.invoke_lrc(successful_lrc_callback, device_under_test, "Off")
         change_event_callbacks.assert_not_called()
 
+    # pylint: disable=too-many-arguments
+    @pytest.mark.parametrize(
+        "protocol_versions, expected_logs",
+        [
+            (
+                (1, 1),
+                [  # Log messages must be in this exact order
+                    "lrc_callback(status=IN_PROGRESS)",  # On
+                    "lrc_callback(status=STAGING)",  # Abort
+                    "lrc_callback(status=IN_PROGRESS)",  # On
+                    "lrc_callback(status=IN_PROGRESS)",  # Abort
+                    "lrc_callback(result=[7, 'Command has been aborted'])",  # On
+                    "lrc_callback(status=ABORTED)",  # On
+                    "lrc_callback(status=IN_PROGRESS)",  # Abort
+                    "lrc_callback(result=[0, 'Abort completed OK'])",  # Abort
+                    "lrc_callback(status=COMPLETED)",  # Abort
+                ],
+            ),
+            (
+                (1, 2),
+                [  # Log messages must be in this exact order
+                    "lrc_callback(status=STAGING)",  # Abort
+                    "lrc_callback(status=IN_PROGRESS)",  # Abort
+                    "lrc_callback(result=[7, 'Command has been aborted'])",  # On
+                    "lrc_callback(status=ABORTED)",  # On
+                    "lrc_callback(result=[0, 'Abort completed OK'])",  # Abort
+                    "lrc_callback(status=COMPLETED)",  # Abort
+                ],
+            ),
+        ],
+    )
     def test_Abort(
         self: TestSKABaseDevice,
         device_under_test: DeviceProxy,
         change_event_callbacks: MockTangoEventCallbackGroup,
-        lrc_callback_log_only: LrcCallback,
+        lrc_callback_log_only: lrc_api.LrcCallback,
         caplog: pytest.LogCaptureFixture,
+        protocol_versions: tuple[int, int],
+        expected_logs: list[str],
+        monkeypatch: pytest.MonkeyPatch,
     ) -> None:
         """
         Test for Abort command.
@@ -539,7 +588,13 @@ class TestSKABaseDevice:  # pylint: disable=too-many-public-methods
             callbacks with asynchrony support.
         :param lrc_callback_log_only: callback fixture to use with invoke_lrc.
         :param caplog: pytest LogCaptureFixture
+        :param protocol_versions: LRC client-server protocol version range to use.
+        :param expected_logs: Expected list of log messages from callback.
+        :param monkeypatch: pytest MonkeyPatch fixture.
         """
+        monkeypatch.setattr(
+            lrc_api, "_SUPPORTED_LRC_PROTOCOL_VERSIONS", protocol_versions
+        )
         assert device_under_test.state() == DevState.OFF
 
         device_under_test.subscribe_event(
@@ -549,7 +604,10 @@ class TestSKABaseDevice:  # pylint: disable=too-many-public-methods
         )
         change_event_callbacks["longRunningCommandInProgress"].assert_change_event(())
 
-        on_subs = invoke_lrc(lrc_callback_log_only, device_under_test, "On")
+        on_subs = lrc_api.invoke_lrc(lrc_callback_log_only, device_under_test, "On")
+        assert on_subs.protocol_version in range(
+            protocol_versions[0], protocol_versions[1] + 1
+        )
         on_command = on_subs.command_id.split("_", 2)[2]
         change_event_callbacks.assert_change_event(
             "longRunningCommandInProgress", (on_command,)
@@ -563,25 +621,14 @@ class TestSKABaseDevice:  # pylint: disable=too-many-public-methods
             ],
         )
 
-        abort_subs = invoke_lrc(lrc_callback_log_only, device_under_test, "Abort")
+        abort_subs = lrc_api.invoke_lrc(
+            lrc_callback_log_only, device_under_test, "Abort"
+        )
         abort_command = abort_subs.command_id.split("_", 2)[2]
         change_event_callbacks["longRunningCommandInProgress"].assert_change_event(
             (on_command, abort_command)
         )
-        Helpers.assert_expected_logs(
-            caplog,
-            [  # Log messages must be in this exact order
-                # "lrc_callback(status=IN_PROGRESS)",  # On
-                "lrc_callback(status=STAGING)",  # Abort
-                # "lrc_callback(status=IN_PROGRESS)",  # On
-                "lrc_callback(status=IN_PROGRESS)",  # Abort
-                "lrc_callback(result=[7, 'Command has been aborted'])",  # On
-                "lrc_callback(status=ABORTED)",  # On
-                # "lrc_callback(status=IN_PROGRESS)",  # Abort
-                "lrc_callback(result=[0, 'Abort completed OK'])",  # Abort
-                "lrc_callback(status=COMPLETED)",  # Abort
-            ],
-        )
+        Helpers.assert_expected_logs(caplog, expected_logs)
         change_event_callbacks["longRunningCommandInProgress"].assert_change_event(
             (abort_command,)
         )
@@ -590,7 +637,7 @@ class TestSKABaseDevice:  # pylint: disable=too-many-public-methods
     def test_command_exception(
         self: TestSKABaseDevice,
         device_under_test: DeviceProxy,
-        lrc_callback_log_only: LrcCallback,
+        lrc_callback_log_only: lrc_api.LrcCallback,
         caplog: pytest.LogCaptureFixture,
     ) -> None:
         """
@@ -600,7 +647,7 @@ class TestSKABaseDevice:  # pylint: disable=too-many-public-methods
         :param lrc_callback_log_only: callback fixture to use with invoke_lrc.
         :param caplog: pytest LogCaptureFixture
         """
-        cmd_subs = invoke_lrc(lrc_callback_log_only, device_under_test, "On")
+        cmd_subs = lrc_api.invoke_lrc(lrc_callback_log_only, device_under_test, "On")
         Helpers.assert_expected_logs(
             caplog,
             [  # Log messages must be in this exact order
@@ -613,7 +660,7 @@ class TestSKABaseDevice:  # pylint: disable=too-many-public-methods
                 "lrc_callback(status=COMPLETED)",
             ],
         )
-        cmd_subs = invoke_lrc(
+        cmd_subs = lrc_api.invoke_lrc(
             lrc_callback_log_only, device_under_test, "SimulateCommandError"
         )
         Helpers.assert_expected_logs(
@@ -626,7 +673,7 @@ class TestSKABaseDevice:  # pylint: disable=too-many-public-methods
                 "lrc_callback(status=FAILED)",
             ],
         )
-        cmd_subs = invoke_lrc(
+        cmd_subs = lrc_api.invoke_lrc(
             lrc_callback_log_only,
             device_under_test,
             "SimulateIsCmdAllowedError",
@@ -646,7 +693,7 @@ class TestSKABaseDevice:  # pylint: disable=too-many-public-methods
     def test_invoke_lrc_exception(
         self: TestSKABaseDevice,
         device_under_test: DeviceProxy,
-        lrc_callback_log_only: LrcCallback,
+        lrc_callback_log_only: lrc_api.LrcCallback,
     ) -> None:
         """
         Test for when invoke_lrc encounters a Tango exception.
@@ -655,7 +702,9 @@ class TestSKABaseDevice:  # pylint: disable=too-many-public-methods
         :param lrc_callback_log_only: callback fixture to use with invoke_lrc.
         """
         with pytest.raises(DevFailed) as exc_info:
-            invoke_lrc(lrc_callback_log_only, device_under_test, "DummyCmd", (1,))
+            lrc_api.invoke_lrc(
+                lrc_callback_log_only, device_under_test, "DummyCmd", (1,)
+            )
             assert (
                 "Invocation of command 'DummyCmd' failed with args: (1,)"
                 in exc_info.value

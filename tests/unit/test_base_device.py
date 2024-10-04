@@ -137,7 +137,9 @@ class TestSKABaseDevice:  # pylint: disable=too-many-public-methods
         # change_event_callbacks["state"].assert_change_event(DevState.ALARM)
         [[result_code], [result_msg]] = device_under_test.On()
         assert result_code == ResultCode.REJECTED
-        assert result_msg == "Device is in ALARM state."
+        assert (
+            result_msg == "Device is in ALARM state, which is already a substate of ON."
+        )
 
         # Simulate fault
         device_under_test.SimulateFault()

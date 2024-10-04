@@ -1356,6 +1356,7 @@ class SKABaseDevice(
         return self.get_state() in [
             DevState.STANDBY,
             DevState.ON,
+            DevState.ALARM,
             DevState.FAULT,
         ]
 
@@ -1417,6 +1418,7 @@ class SKABaseDevice(
             DevState.OFF,
             DevState.STANDBY,
             DevState.ON,
+            DevState.ALARM,
             DevState.UNKNOWN,
         ]
 
@@ -1453,6 +1455,7 @@ class SKABaseDevice(
             DevState.OFF,
             DevState.STANDBY,
             DevState.ON,
+            DevState.ALARM,
             DevState.UNKNOWN,
             DevState.FAULT,
         ]
@@ -1490,6 +1493,7 @@ class SKABaseDevice(
             DevState.OFF,
             DevState.STANDBY,
             DevState.ON,
+            DevState.ALARM,
             DevState.UNKNOWN,
         ]
 
@@ -1510,6 +1514,11 @@ class SKABaseDevice(
         """
         if self.get_state() == DevState.ON:
             return ([ResultCode.REJECTED], ["Device is already in ON state."])
+        if self.get_state() == DevState.ALARM:
+            return (
+                [ResultCode.REJECTED],
+                ["Device is in ALARM state, which is already a substate of ON."],
+            )
 
         handler = self.get_command_object("On")
         result_code, unique_id = handler()

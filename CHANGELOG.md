@@ -11,6 +11,8 @@
 - Deprecations: (WOM-344)
   - `SKABaseDevice.AbortCommands` is deprecated and replaced by new `Abort` LRC.
   - `BaseComponentManager.abort_commands` is deprecated and replaced by `abort_tasks`.
+- Bug fixes:
+  - WOM-488: The `Off`, `Reset` and `Standby` commands are allowed while the device is in `DevState.ALARM`, but the `On` command is rejected. This device state is equivalent to `DevState.ON`, but is forcefully set by cppTango when at least one attribute has its quality factor set to `AttrQuality.ATTR_WARNING` or `AttrQuality.ATTR_ALARM`.
 
 ## 1.1.0
 

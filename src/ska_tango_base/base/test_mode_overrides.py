@@ -4,12 +4,20 @@
 #
 # Distributed under the terms of the BSD 3-clause new license.
 # See LICENSE.txt for more info.
-# type: ignore
 """This module implements Test Mode Overrides that can be added to an SKABaseDevice."""
 from __future__ import annotations
 
 import json
-from typing import Any, Callable, Iterable, Protocol
+from typing import (
+    Any,
+    Callable,
+    Concatenate,
+    Iterable,
+    ParamSpec,
+    Protocol,
+    TypeVar,
+    cast,
+)
 
 from ska_control_model import HealthState, TestMode
 from tango import AttReqType, AttributeProxy, MultiAttribute
@@ -65,19 +73,22 @@ class TestModeOverrideMixinInterface(Protocol):
 class TestModeOverrideMixin:
     """Add Test Mode Attribute Overrides to an TestModeOverrideMixin."""
 
-    def __init_subclass__(cls: TestModeOverrideMixin, **kwargs: Any):  # type: ignore
-        """Add our variables to the class we are extending.
+    _test_mode: TestMode
+    _test_mode_overrides: dict[str, Any]
+    _test_mode_overrides_changed: Callable[[], None] | None
+    _test_mode_enum_attrs: dict[str, Any]
 
-        :param kwargs: keyword arguments (passed to superclass).
-        """
-        cls._test_mode_overrides: dict[str, Any] = {}
-        cls._test_mode_overrides_changed: Callable[[], None] | None = None
-        cls._test_mode_enum_attrs = {
+    def init_mixin(self: TestModeOverrideMixin) -> None:
+        """Add our variables to the class we are extending."""
+        self._test_mode_overrides: dict[str, Any] = {}
+        self._test_mode_overrides_changed: Callable[[], None] | None = None
+        self._test_mode_enum_attrs = {
             "healthState": HealthState,
         }
-        super().__init_subclass__(**kwargs)
 
-    def _get_override_value(self, attr_name: str, default: Any = None) -> Any:
+    def _get_override_value(
+        self: TestModeOverrideMixinInterface, attr_name: str, default: Any = None
+    ) -> Any:
         """
         Read a value from our overrides, use a default value when not overridden.
 
@@ -101,7 +112,10 @@ class TestModeOverrideMixin:
         )
 
     @attribute(dtype=TestMode, memorized=True, hw_memorized=True)
-    def testMode(self) -> TestMode:  # pylint: disable=invalid-name
+    # pylint: disable=invalid-name
+    def testMode(
+        self: TestModeOverrideMixinInterface,
+    ) -> TestMode:
         """
         Read the Test Mode of the device.
 
@@ -112,7 +126,8 @@ class TestModeOverrideMixin:
         return self._test_mode
 
     @testMode.write  # type: ignore[no-redef]
-    def testMode(self, value: TestMode) -> None:  # pylint: disable=invalid-name
+    # pylint: disable=invalid-name
+    def testMode(self: TestModeOverrideMixinInterface, value: TestMode) -> None:
         """
         Set the Test Mode of the device.
 
@@ -134,7 +149,7 @@ class TestModeOverrideMixin:
         dtype=str,
         doc="Attribute value overrides (JSON dict)",
     )  # type: ignore[misc]
-    def test_mode_overrides(self) -> str:
+    def test_mode_overrides(self: TestModeOverrideMixinInterface) -> str:
         """
         Read the current override configuration.
 
@@ -142,7 +157,9 @@ class TestModeOverrideMixin:
         """
         return json.dumps(self._test_mode_overrides)
 
-    def is_test_mode_overrides_allowed(self, request_type: AttReqType) -> bool:
+    def is_test_mode_overrides_allowed(
+        self: TestModeOverrideMixinInterface, request_type: AttReqType
+    ) -> bool:
         """
         Control access to test_mode_overrides attribute.
 
@@ -225,9 +242,13 @@ class TestModeOverrideMixin:
         return value
 
 
+C = TypeVar("C")
+P = ParamSpec("P")
+
+
 def overridable(
-    func: Callable[[object, Any, Any], None]
-) -> Callable[[object, Any, Any], None] | Any:
+    func: Callable[Concatenate[C, P], Any]
+) -> Callable[Concatenate[C, P], Any]:
     """
     Decorate attribute with test mode overrides.
 
@@ -237,8 +258,8 @@ def overridable(
     attr_name = func.__name__
 
     def override_attr_in_test_mode(
-        self: TestModeOverrideMixin, *args: Any, **kwargs: Any
-    ) -> Callable[[object, Any, Any], None] | Any:
+        self: C, /, *args: P.args, **kwargs: P.kwargs
+    ) -> Any:
         """
         Override attribute when test mode is active and value specified.
 
@@ -247,10 +268,11 @@ def overridable(
         :param kwargs: Any keyword arguments
         :return: Tango attribute
         """
+        this = cast(TestModeOverrideMixinInterface, self)
         # pylint: disable=protected-access
-        if self._test_mode == TestMode.TEST and attr_name in self._test_mode_overrides:
-            return self._override_value_convert(
-                attr_name, self._test_mode_overrides[attr_name]
+        if this._test_mode == TestMode.TEST and attr_name in this._test_mode_overrides:
+            return this._override_value_convert(
+                attr_name, this._test_mode_overrides[attr_name]
             )
 
         # Test Mode not active, normal attribute behaviour

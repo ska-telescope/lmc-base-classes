@@ -25,12 +25,12 @@ __all__ = ["TestModeOverrideMixin", "main"]
 
 class ReferenceTestModeOverrides(
     ReferenceSkaBaseDevice,
-    TestModeOverrideMixin,  # type: ignore[misc]
+    TestModeOverrideMixin,
 ):
     """Implements a reference SKA base device with Test Mode Overrides."""
 
     @attribute(dtype=HealthState)  # type: ignore[misc]
-    @overridable  # type: ignore[misc]
+    @overridable
     def health_hardware(self: ReferenceTestModeOverrides) -> HealthState:
         """
         Read the Health State of the device hardware.

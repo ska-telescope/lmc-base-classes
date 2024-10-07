@@ -14,8 +14,10 @@ __all__ = (
     "OpStateModel",
     "SKABaseDevice",
     "TaskCallbackType",
+    "TestModeOverrideMixin",
     "check_communicating",
     "check_on",
+    "overridable",
 )
 
 # Note: order of imports is important - start with lowest in the hierarchy
@@ -30,3 +32,4 @@ from .base_component_manager import (
 from .base_device import SKABaseDevice
 from .command_tracker import CommandTracker
 from .op_state_model import OpStateModel
+from .test_mode_overrides import TestModeOverrideMixin, overridable

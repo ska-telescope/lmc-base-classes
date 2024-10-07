@@ -291,7 +291,10 @@ class SKABaseDevice(
     # -----------
     # Init device
     # -----------
-    def init_device(self: SKABaseDevice[ComponentManagerT]) -> None:
+    # pylint: disable=too-many-statements
+    def init_device(
+        self: SKABaseDevice[ComponentManagerT],
+    ) -> None:
         """
         Initialise the tango device after startup.
 
@@ -380,6 +383,16 @@ class SKABaseDevice(
             )()
 
             self.init_command_objects()
+
+            # Initialisation hook for mixins, this is currently a private
+            # mechanism for creating mixins in ska-tango-base only. Changes to
+            # this mechanism will not be consider breaking.  Rely on this at
+            # your own risk.
+            for cls in type(self).mro():
+                init_mixin = cls.__dict__.get("init_mixin", None)
+                if init_mixin is not None:
+                    init_mixin(self)
+
         except Exception as exc:  # pylint: disable=broad-except
             # Deliberately catching all exceptions here, because an uncaught
             # exception would take our execution thread down.

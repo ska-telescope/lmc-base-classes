@@ -13,6 +13,7 @@ __all__ = (
     "CommunicationStatusCallbackType",
     "OpStateModel",
     "SKABaseDevice",
+    "JSONData",
     "TaskCallbackType",
     "TestModeOverrideMixin",
     "check_communicating",
@@ -25,6 +26,7 @@ from .admin_mode_model import AdminModeModel
 from .base_component_manager import (
     BaseComponentManager,
     CommunicationStatusCallbackType,
+    JSONData,
     TaskCallbackType,
     check_communicating,
     check_on,

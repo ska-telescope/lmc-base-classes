@@ -24,6 +24,7 @@ from ska_tango_testing.mock import MockCallableGroup
 
 from ...base import (
     CommunicationStatusCallbackType,
+    JSONData,
     TaskCallbackType,
     check_communicating,
 )
@@ -162,7 +163,7 @@ class FakeBaseComponent:
         self: FakeBaseComponent,
         task_callback: TaskCallbackType | None,
         task_abort_event: threading.Event,
-        result: Any,
+        result: JSONData,
         **state_kwargs: Any,
     ) -> None:
         # Simulate the synchronous latency cost of communicating with this component.

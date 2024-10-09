@@ -29,6 +29,7 @@ from tango import (
     Except,
 )
 
+from ska_tango_base.base import JSONData
 from ska_tango_base.faults import CommandError, ResultCodeError
 
 module_logger = logging.getLogger(__name__)
@@ -58,7 +59,7 @@ class LrcCallback(Protocol):
         self,
         status: TaskStatus | None = None,
         progress: int | None = None,
-        result: Any | None = None,  # TODO: To be decided later
+        result: JSONData | None = None,
         error: tuple[DevError] | None = None,
         **kwargs: Any,
     ) -> None:

@@ -139,6 +139,17 @@ def check_on(func: Wrapped) -> Wrapped:
 
 CommunicationStatusCallbackType = Callable[[CommunicationStatus], None]
 
+JSONData = (  # Type hint for any JSON-encodable data
+    None
+    | bool
+    | int
+    | float
+    | str
+    | list["JSONData"]  # A list can contain more JSON-encodable data
+    | dict[str, "JSONData"]  # A dict must have str keys and JSON-encodable data
+    | tuple["JSONData", ...]  # A tuple can contain more JSON-encodable data
+)
+
 
 class TaskCallbackType(Protocol):  # pylint: disable=too-few-public-methods
     """Structural subtyping protocol for a TaskCallback."""
@@ -154,8 +165,8 @@ class TaskCallbackType(Protocol):  # pylint: disable=too-few-public-methods
         Call the callback with an update on the task.
 
         :param status: status of the task.
-        :param progress: progress of the task.
-        :param result: result of the task.
+        :param progress: integer percentage progress of the task.
+        :param result: JSON serialisable result of the task.
         :param exception: an exception raised from the task.
         """
 

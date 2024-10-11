@@ -467,6 +467,11 @@ class TestSKABaseDevice:  # pylint: disable=too-many-public-methods
         """
         assert device_under_test.state() == DevState.OFF
 
+        # Set the removal time so that we can verify that
+        # CheckLongRunningCommandStatus returns information about "removed"
+        # commands.
+        device_under_test.SetCommandTrackerRemovalTime(0)
+
         for attribute in [
             "state",
             "status",

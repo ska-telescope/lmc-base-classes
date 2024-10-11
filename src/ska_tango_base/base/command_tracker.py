@@ -83,6 +83,8 @@ class CommandTracker:  # pylint: disable=too-many-instance-attributes
         :param update_user_attributes_callback: called for any and all change events
         :param removal_time: timer
         """
+        # Take __thread_with_lock if you are going to do a Tango operation
+        # while holding __lock
         self.__lock = threading.RLock()
         self.__thread_with_lock = _ThreadContextManager()
         self._queue_changed_callback = queue_changed_callback

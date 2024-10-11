@@ -143,7 +143,7 @@ class _LrcProtocol(ABC):
         self._calling_thread = threading.current_thread()
         self._submitted = threading.Event()
         self._lock = threading.Lock()
-        self._command_id: str
+        self._command_id: str = ""
         self._event_ids: list[int] = []
 
     @abstractmethod

@@ -384,7 +384,7 @@ class CommandTracker:  # pylint: disable=too-many-instance-attributes
                 self._lrc_executing,
                 self._lrc_finished,
             ):
-                if command_id in lrc_dict and "removed" not in lrc_dict[command_id]:
+                if command_id in lrc_dict:
                     return lrc_dict[command_id]["status"]
         return TaskStatus.NOT_FOUND
 

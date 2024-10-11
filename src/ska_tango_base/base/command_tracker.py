@@ -378,9 +378,14 @@ class CommandTracker:  # pylint: disable=too-many-instance-attributes
 
         :return: a status of the asynchronous task.
         """
-        for lrc_dict in self._lrc_stage_queue, self._lrc_executing, self._lrc_finished:
-            if command_id in lrc_dict and "removed" not in lrc_dict[command_id]:
-                return lrc_dict[command_id]["status"]
+        with self.__lock:
+            for lrc_dict in (
+                self._lrc_stage_queue,
+                self._lrc_executing,
+                self._lrc_finished,
+            ):
+                if command_id in lrc_dict and "removed" not in lrc_dict[command_id]:
+                    return lrc_dict[command_id]["status"]
         return TaskStatus.NOT_FOUND
 
     def evict_command(self: CommandTracker, command_id: str) -> bool:

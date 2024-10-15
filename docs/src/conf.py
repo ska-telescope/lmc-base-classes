@@ -89,6 +89,9 @@ autodoc_default_options = {
     "member-order": "bysource",
 }
 
+autodoc_type_aliases = {
+    "JSONData": "ska_tango_base.base.JSONData",
+}
 
 # Both the class’ and the __init__ method’s docstring are concatenated and inserted.
 autoclass_content = "both"
@@ -381,6 +384,7 @@ nitpick_ignore = [
     # ska-control-model API docs don't document the root package
     ("py:mod", "ska_control_model"),
     # TODO: Can't figure this one out
+    ("py:class", "ska_tango_base.base.JSONData"),
     ("py:class", "ska_tango_base.base.base_component_manager.Wrapped"),
     # These ones look like sphinx bugs
     ("py:class", "types.MethodType"),

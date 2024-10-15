@@ -83,6 +83,8 @@ class CommandTracker:  # pylint: disable=too-many-instance-attributes
         :param update_user_attributes_callback: called for any and all change events
         :param removal_time: timer
         """
+        # Take __thread_with_lock if you are going to do a Tango operation
+        # while holding __lock
         self.__lock = threading.RLock()
         self.__thread_with_lock = _ThreadContextManager()
         self._queue_changed_callback = queue_changed_callback
@@ -378,9 +380,14 @@ class CommandTracker:  # pylint: disable=too-many-instance-attributes
 
         :return: a status of the asynchronous task.
         """
-        for lrc_dict in self._lrc_stage_queue, self._lrc_executing, self._lrc_finished:
-            if command_id in lrc_dict and "removed" not in lrc_dict[command_id]:
-                return lrc_dict[command_id]["status"]
+        with self.__lock:
+            for lrc_dict in (
+                self._lrc_stage_queue,
+                self._lrc_executing,
+                self._lrc_finished,
+            ):
+                if command_id in lrc_dict:
+                    return lrc_dict[command_id]["status"]
         return TaskStatus.NOT_FOUND
 
     def evict_command(self: CommandTracker, command_id: str) -> bool:

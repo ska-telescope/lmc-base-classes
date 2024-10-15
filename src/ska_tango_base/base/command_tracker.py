@@ -7,10 +7,12 @@
 """This module implements the CommandTracker and its supporting classes/functions."""
 from __future__ import annotations
 
+import json
 import threading
 from datetime import datetime, timezone
 from itertools import chain
 from typing import Any, Callable, TypedDict
+from warnings import warn
 
 from ska_control_model import ResultCode, TaskStatus
 
@@ -165,6 +167,7 @@ class CommandTracker:  # pylint: disable=too-many-instance-attributes
         :param progress: the progress of the asynchronous task
         :param result: the result of the completed asynchronous task
         :param exception: any exception caught in the running task
+        :raises TypeError: if status is not the TaskStatus enum type
         """
         # All changes to the _lrc_stage_queue, _lrc_executing and _lrc_finished dicts
         # are made here while the CommandTracker has a lock, as well as the callbacks
@@ -201,6 +204,11 @@ class CommandTracker:  # pylint: disable=too-many-instance-attributes
                     result = (ResultCode.FAILED, str(exception))
             event: dict[str, Any] = {}
             if status is not None:
+                if not isinstance(status, TaskStatus):
+                    raise TypeError(
+                        f"'{command_id}' command's status is invalid type: "
+                        f"{type(status)}. Must be 'TaskStatus' enum!"
+                    )
                 event["status"] = status
                 if command_id in self._lrc_stage_queue:
                     self._lrc_stage_queue[command_id]["status"] = status
@@ -236,23 +244,42 @@ class CommandTracker:  # pylint: disable=too-many-instance-attributes
                         }
                     )
             if result is not None:
-                event["result"] = result
+                try:
+                    json.dumps(result)
+                    event["result"] = result
+                except TypeError:
+                    warn(
+                        f"'{command_id}' command's result is not JSON serialisable: "
+                        "Converting it to a str. "
+                        "Its type(s) may be checked and enforced in the future.",
+                        FutureWarning,
+                    )
+                    event["result"] = str(result)
                 if command_id in self._lrc_stage_queue:
-                    self._lrc_stage_queue[command_id]["result"] = result
+                    self._lrc_stage_queue[command_id]["result"] = event["result"]
                 elif command_id in self._lrc_executing:
-                    self._lrc_executing[command_id]["result"] = result
+                    self._lrc_executing[command_id]["result"] = event["result"]
                 elif command_id in self._lrc_finished:
-                    self._lrc_finished[command_id]["result"] = result
-                self._most_recent_result = (command_id, result)
-                self._result_callback(command_id, result)
+                    self._lrc_finished[command_id]["result"] = event["result"]
+                self._most_recent_result = (command_id, event["result"])
+                self._result_callback(command_id, event["result"])
             if progress is not None:
-                event["progress"] = int(progress)
+                try:
+                    event["progress"] = int(progress)
+                except (ValueError, TypeError):
+                    warn(
+                        f"'{command_id}' command's progress is not an int, "
+                        f"but {type(progress)}: Converting it to a str. "
+                        "Its type may be checked and enforced in the future.",
+                        FutureWarning,
+                    )
+                    event["progress"] = str(progress)
                 if command_id in self._lrc_stage_queue:
-                    self._lrc_stage_queue[command_id]["progress"] = int(progress)
+                    self._lrc_stage_queue[command_id]["progress"] = event["progress"]
                 elif command_id in self._lrc_executing:
-                    self._lrc_executing[command_id]["progress"] = int(progress)
+                    self._lrc_executing[command_id]["progress"] = event["progress"]
                 elif command_id in self._lrc_finished:
-                    self._lrc_finished[command_id]["progress"] = int(progress)
+                    self._lrc_finished[command_id]["progress"] = event["progress"]
                 self._progress_changed_callback(self.command_progresses)
             # The status related callbacks are called after result/progress to preserve
             # the order of change events for the deprecated LRC attributes.

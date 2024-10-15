@@ -753,6 +753,38 @@ class TestSKABaseDevice:  # pylint: disable=too-many-public-methods
         )
         del cmd_subs
 
+    def test_LRC_callback_type_warnings(
+        self: TestSKABaseDevice,
+        device_under_test: DeviceProxy,
+        lrc_callback_log_only: lrc_api.LrcCallback,
+        caplog: pytest.LogCaptureFixture,
+    ) -> None:
+        """
+        Test for when a command encounters an Exception.
+
+        :param device_under_test: a proxy to the device under test
+        :param lrc_callback_log_only: callback fixture to use with invoke_lrc.
+        :param caplog: pytest LogCaptureFixture
+        """
+        cmd_subs = lrc_api.invoke_lrc(
+            lrc_callback_log_only,
+            device_under_test,
+            "ProgressMsg",
+        )
+        Helpers.assert_expected_logs(
+            caplog,
+            [  # Log messages must be in this exact order
+                "lrc_callback(status=STAGING)",
+                "lrc_callback(status=QUEUED)",
+                "'ProgressMsg' command's progress is not an int, but <class 'str'>. "
+                "Its type may be checked and enforced in the future.",
+                "lrc_callback(progress=ProgressMsg command has started)",
+                "lrc_callback(status=IN_PROGRESS)",
+                "lrc_callback(status=COMPLETED)",
+            ],
+        )
+        del cmd_subs
+
     def test_invoke_lrc_exception(
         self: TestSKABaseDevice,
         device_under_test: DeviceProxy,

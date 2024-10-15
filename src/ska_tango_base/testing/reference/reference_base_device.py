@@ -52,6 +52,7 @@ class ReferenceSkaBaseDevice(SKABaseDevice[ReferenceBaseComponentManager]):
         for command_name, method_name in [
             ("SimulateCommandError", "simulate_command_error"),
             ("SimulateIsCmdAllowedError", "simulate_is_cmd_allowed_error"),
+            ("ProgressMsg", "report_progress_message"),
         ]:
             self.register_command_object(
                 command_name,
@@ -91,6 +92,19 @@ class ReferenceSkaBaseDevice(SKABaseDevice[ReferenceBaseComponentManager]):
             information purpose only.
         """
         handler = self.get_command_object("SimulateIsCmdAllowedError")
+        result_code, message = handler()
+        return ([result_code], [message])
+
+    @command(dtype_out="DevVarLongStringArray")  # type: ignore[misc]
+    def ProgressMsg(self: ReferenceSkaBaseDevice) -> tuple[list[ResultCode], list[str]]:
+        """
+        LRC that reports its progress as a string message.
+
+        :return: A tuple containing a return code and a string
+            message indicating status. The message is for
+            information purpose only.
+        """
+        handler = self.get_command_object("ProgressMsg")
         result_code, message = handler()
         return ([result_code], [message])
 

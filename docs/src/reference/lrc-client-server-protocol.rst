@@ -151,12 +151,12 @@ list of commands and their data encoded as JSON blobs.
 For providing information to users about LRCs, the following attributes have been 
 deprecated in favour of the user facing attributes mentioned above:
 
-- longRunningCommandsInQueue
-- longRunningCommandIDsInQueue
-- longRunningCommandStatus
-- longRunningCommandInProgress
-- longRunningCommandProgress
-- longRunningCommandResult
+- :any:`longRunningCommandsInQueue`
+- :any:`longRunningCommandIDsInQueue`
+- :any:`longRunningCommandStatus`
+- :any:`longRunningCommandInProgress`
+- :any:`longRunningCommandProgress`
+- :any:`longRunningCommandResult`
 
 The user facing attributes provide all the same information as those that have been 
 deprecated, but in a more concise and consistent form.
@@ -190,25 +190,25 @@ and ``finished_time`` are strings in the ISO 8601 date and time format.
 
 **Key value pairs matrix:**
 
-+----------------+------+--------------+------------------+------------------------------------+
-| Key            | Type | In lrcQueue? | In lrcExecuting? | In lrcFinished?                    |
-+================+======+==============+==================+====================================+
-| uid            | str  | Always       | Always           | Always                             |
-+----------------+------+--------------+------------------+------------------------------------+
-| name           | str  | Always       | Always           | Always                             |
-+----------------+------+--------------+------------------+------------------------------------+
-| submitted_time | str  | Always       | Always           | Always                             |
-+----------------+------+--------------+------------------+------------------------------------+
-| started_time   | str  | No           | Always           | Not if rejected/aborted from queue |
-+----------------+------+--------------+------------------+------------------------------------+
-| finished_time  | str  | No           | No               | Always                             |
-+----------------+------+--------------+------------------+------------------------------------+
-| status         | str  | No           | No               | Always                             |
-+----------------+------+--------------+------------------+------------------------------------+
-| progress       | int  | No           | Optional         | Optional                           |
-+----------------+------+--------------+------------------+------------------------------------+
-| result         | Any  | No           | No               | Optional                           |
-+----------------+------+--------------+------------------+------------------------------------+
++----------------+---------+--------------+------------------+------------------------------------+
+| Key            | Type    | In lrcQueue? | In lrcExecuting? | In lrcFinished?                    |
++================+=========+==============+==================+====================================+
+| uid            | str     | Always       | Always           | Always                             |
++----------------+---------+--------------+------------------+------------------------------------+
+| name           | str     | Always       | Always           | Always                             |
++----------------+---------+--------------+------------------+------------------------------------+
+| submitted_time | str     | Always       | Always           | Always                             |
++----------------+---------+--------------+------------------+------------------------------------+
+| started_time   | str     | No           | Always           | Not if rejected/aborted from queue |
++----------------+---------+--------------+------------------+------------------------------------+
+| finished_time  | str     | No           | No               | Always                             |
++----------------+---------+--------------+------------------+------------------------------------+
+| status         | str     | No           | No               | Always                             |
++----------------+---------+--------------+------------------+------------------------------------+
+| progress       | int/str | No           | Optional         | Optional                           |
++----------------+---------+--------------+------------------+------------------------------------+
+| result         | JSON    | No           | No               | Optional                           |
++----------------+---------+--------------+------------------+------------------------------------+
 
 LRC commands
 ~~~~~~~~~~~~

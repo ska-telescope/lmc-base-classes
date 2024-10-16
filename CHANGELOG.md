@@ -5,13 +5,14 @@
 - Added: (PERENTIE-2592, WOM-344, WOM-367, WOM-372, WOM-457, WOM-466)
   - `TestModeOverrideMixin` class that adds a `test_mode_overrides` attribute and `@overridable` decorator, with logic to apply overrides to Tango attributes when `TestMode` is active. 
   - Copied `Abort` LRC from `SKASubArray` to `SKABaseDevice` that has a command ID and `TaskStatus`.
-  - New user facing LRC attributes `lrcQueue`, `lrcExecuting` and `lrcFinished`. () 
+  - New user facing LRC attributes `lrcQueue`, `lrcExecuting` and `lrcFinished`.
   - New private `_lrcEvents` attribute that is meant to be only used by `invoke_lrc`.
   - Added `lrcProtocolVersions` attribute indicating the range of versions of the LRC client-server protocol supported by `SKABaseDevice`. 
     - It is read in `invoke_lrc` to check compatibility between the client and server and to decide which version to use.
-- Deprecations: (WOM-344)
+- Deprecations: (WOM-344, WOM-377)
   - `SKABaseDevice.AbortCommands` is deprecated and replaced by new `Abort` LRC.
   - `BaseComponentManager.abort_commands` is deprecated and replaced by `abort_tasks`.
+  - `longRunningCommandStatus`, `longRunningCommandProgress`, `longRunningCommandInProgress`, `longRunningCommandsInQueue`, `longRunningCommandIDsInQueue` and `longRunningCommandResult` is deprecated in favour of new user facing LRC attributes.
 - Bug fixes:
   - WOM-488: The `Off`, `Reset` and `Standby` commands are allowed while the device is in `DevState.ALARM`, but the `On` command is rejected. This device state is equivalent to `DevState.ON`, but is forcefully set by cppTango when at least one attribute has its quality factor set to `AttrQuality.ATTR_WARNING` or `AttrQuality.ATTR_ALARM`.
 

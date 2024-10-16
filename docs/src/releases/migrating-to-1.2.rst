@@ -204,8 +204,11 @@ the changes to the behaviour of this attribute will not be considered breaking.
    client/server LRC protocol.  The version of the protocol is considered to be
    an implementation detail and is hidden from the users of ska-tango-base.
 
-Long Running Command task callback types
-----------------------------------------
+Long Running Command task update checks
+---------------------------------------
+
+Progress and result types
+^^^^^^^^^^^^^^^^^^^^^^^^^
 
 The :any:`TaskCallbackType` protocol should be used as type annotation for all 
 ``task_callback`` functions, but this is not strictly enforced. The :any:`CommandTracker`
@@ -216,7 +219,18 @@ Therefore, from ska-tango-base 1.2.0, the :any:`CommandTracker` will emit a
 JSON serialisable, and in both cases convert the progress/result to a ``str`` and continue.
 It will also raise a :any:`TypeError` if a command's status is not a :any:`TaskStatus` enum.
 
+Task status transitions
+^^^^^^^^^^^^^^^^^^^^^^^
+
+The :any:`CommandTracker` does not enforce the :any:`TaskStatus` state machine as 
+detailed in :ref:`lrc-concept-tasks`. It is possible for a device to implement a LRC
+that sends a status update with its ``task_callback`` that does not follow the state 
+machine. Therefore the :any:`CommandTracker` will also emit a :any:`FutureWarning` for
+invalid status transitions. The :any:`TaskStatus` state machine may be enforced in a 
+future release.
+
 .. note::
 
    Users must please make a request for new features to support their use case if they 
-   are generating these warnings.
+   are generating any of these warnings.
+

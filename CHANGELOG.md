@@ -2,7 +2,7 @@
 
 ## unreleased
 
-- Added: (PERENTIE-2592, WOM-344, WOM-367, WOM-372, WOM-457, WOM-466, WOM-495)
+- Added: (PERENTIE-2592, WOM-344, WOM-367, WOM-372, WOM-457, WOM-466, WOM-495, WOM-497)
   - `TestModeOverrideMixin` class that adds a `test_mode_overrides` attribute and `@overridable` decorator, with logic to apply overrides to Tango attributes when `TestMode` is active. 
   - Copied `Abort` LRC from `SKASubArray` to `SKABaseDevice` that has a command ID and `TaskStatus`.
   - New user facing LRC attributes `lrcQueue`, `lrcExecuting` and `lrcFinished`.
@@ -12,6 +12,7 @@
   - Do not assume the `TaskCallbackType` annotation is used by all `task_callback` implementations:
     - `CommandTracker.update_command_info` emits a `FutureWarning` when the progress/result does not match their types specified by `TaskCallbackType`, and raises a `TypeError` if the status is not a `TaskStatus` enum.
     - `invoke_lrc` protocol V2 logs a warning if the progress is not an integer.
+  - Emit warnings for invalid `TaskStatus` transitions.
 - Deprecations: (WOM-344, WOM-377)
   - `SKABaseDevice.AbortCommands` is deprecated and replaced by new `Abort` LRC.
   - `BaseComponentManager.abort_commands` is deprecated and replaced by `abort_tasks`.

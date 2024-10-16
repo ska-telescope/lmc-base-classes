@@ -486,3 +486,53 @@ class TestCommandTracker:
                 command_id,
                 status=10,  # type: ignore[arg-type]
             )
+
+    def test_invalid_status_transitions(
+        self: TestCommandTracker,
+        command_tracker: CommandTracker,
+        recwarn: pytest.WarningsRecorder,
+    ) -> None:
+        """
+        Test that the command tracker emits warnings for invalid status transitions.
+
+        :param command_tracker: the command tracker under test
+        :param recwarn: pytest WarningsRecorder
+        """
+        command_id = command_tracker.new_command("Dummy")
+        command_tracker.update_command_info(command_id, status=TaskStatus.ABORTED)
+        assert (
+            f"'{command_id}' command's status is transitioning from STAGING to ABORTED"
+            ", which is not a valid TaskStatus transition."
+            in str(recwarn.pop(FutureWarning).message)
+        )
+        command_tracker.update_command_info(command_id, status=TaskStatus.QUEUED)
+        assert (
+            f"'{command_id}' command's status is attempting to transition from ABORTED"
+            " to QUEUED, which will be ignored, since the command has already "
+            "terminated and is scheduled for removal."
+            in str(recwarn.pop(UserWarning).message)
+        )
+        command_id = command_tracker.new_command("Dummy")
+        command_tracker.update_command_info(command_id, status=TaskStatus.QUEUED)
+        command_tracker.update_command_info(command_id, status=TaskStatus.IN_PROGRESS)
+        command_tracker.update_command_info(command_id, status=TaskStatus.REJECTED)
+        assert (
+            f"'{command_id}' command's status is transitioning from IN_PROGRESS to "
+            "REJECTED, which is not a valid TaskStatus transition."
+            in str(recwarn.pop(FutureWarning).message)
+        )
+        command_tracker.update_command_info(command_id, status=TaskStatus.QUEUED)
+        assert (
+            f"'{command_id}' command's status is attempting to transition from REJECTED"
+            " to QUEUED, which will be ignored, since the command has already "
+            "terminated and is scheduled for removal."
+            in str(recwarn.pop(UserWarning).message)
+        )
+        assert command_tracker.get_command_status(command_id) == TaskStatus.REJECTED
+        command_tracker.update_command_info(command_id, status=TaskStatus.COMPLETED)
+        assert (
+            f"'{command_id}' command's status is transitioning from REJECTED to "
+            "COMPLETED, which is not a valid TaskStatus transition."
+            in str(recwarn.pop(FutureWarning).message)
+        )
+        assert command_tracker.get_command_status(command_id) == TaskStatus.COMPLETED

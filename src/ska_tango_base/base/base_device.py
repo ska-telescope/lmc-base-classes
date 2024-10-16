@@ -1252,6 +1252,13 @@ class SKABaseDevice(
 
         :param attr: Tango attribute being read
         """
+        warning_msg = (
+            "'longRunningCommandsInQueue' is deprecated and will be removed in the "
+            "next major release. The client should check for the queued command(s) in "
+            "the 'lrcQueue' attribute instead."
+        )
+        warn(warning_msg, DeprecationWarning)
+        self.logger.warning(warning_msg)
         attr.set_value(self._commands_in_queue)
 
     def longRunningCommandIDsInQueue(
@@ -1267,6 +1274,13 @@ class SKABaseDevice(
 
         :param attr: Tango attribute being read
         """
+        warning_msg = (
+            "'longRunningCommandIDsInQueue' is deprecated and will be removed in the "
+            "next major release. The client should check for the queued command(s) in "
+            "the 'lrcQueue' attribute instead."
+        )
+        warn(warning_msg, DeprecationWarning)
+        self.logger.warning(warning_msg)
         attr.set_value(self._command_ids_in_queue)
 
     def longRunningCommandStatus(
@@ -1282,6 +1296,13 @@ class SKABaseDevice(
 
         :param attr: Tango attribute being read
         """
+        warning_msg = (
+            "'longRunningCommandStatus' is deprecated and will be removed in the next "
+            "major release. The client should check for the status of a command in the "
+            "'lrcQueue', 'lrcExecuting' and 'lrcFinished' attributes instead."
+        )
+        warn(warning_msg, DeprecationWarning)
+        self.logger.warning(warning_msg)
         attr.set_value(self._command_statuses)
 
     def longRunningCommandInProgress(
@@ -1294,6 +1315,13 @@ class SKABaseDevice(
         Name(s) of command and possible abort in progress or empty string(s).
         :param attr: Tango attribute being read
         """
+        warning_msg = (
+            "'longRunningCommandInProgress' is deprecated and will be removed in the "
+            "next major release. The client should check for the command(s) in progress"
+            "in the 'lrcExecuting' attribute instead."
+        )
+        warn(warning_msg, DeprecationWarning)
+        self.logger.warning(warning_msg)
         attr.set_value(self._commands_in_progress)
 
     def longRunningCommandProgress(
@@ -1308,6 +1336,13 @@ class SKABaseDevice(
 
         :param attr: Tango attribute being read
         """
+        warning_msg = (
+            "'longRunningCommandProgress' is deprecated and will be removed in the next"
+            " major release. The client should check for the progress of a command in "
+            "the 'lrcExecuting' attribute instead."
+        )
+        warn(warning_msg, DeprecationWarning)
+        self.logger.warning(warning_msg)
         attr.set_value(self._command_progresses)
 
     @attribute(  # type: ignore[misc]  # "Untyped decorator makes function untyped"
@@ -1326,6 +1361,13 @@ class SKABaseDevice(
 
         :return: ID, result.
         """
+        warning_msg = (
+            "'longRunningCommandResult' is deprecated and will be removed in the next "
+            "major release. The client should check for the result of a command in the "
+            "'lrcFinished' attribute instead."
+        )
+        warn(warning_msg, DeprecationWarning)
+        self.logger.warning(warning_msg)
         return self._command_result
 
     @attribute(dtype=str)  # type: ignore[misc]

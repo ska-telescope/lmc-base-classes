@@ -9,6 +9,7 @@
 from __future__ import annotations
 
 import json
+import logging
 import re
 import socket
 from typing import Any
@@ -231,20 +232,23 @@ class TestSKABaseDevice:  # pylint: disable=too-many-public-methods
         ):
             _ = lrc_api.invoke_lrc(successful_lrc_callback, device_under_test, "Reset")
 
+    @pytest.mark.forked
     def test_deprecated_LRC_attributes(
         self: TestSKABaseDevice,
-        device_under_test: DeviceProxy,
+        device_under_test_thread: DeviceProxy,
         change_event_callbacks: MockTangoEventCallbackGroup,
+        caplog: pytest.LogCaptureFixture,
     ) -> None:
         """
         Test for deprecated long running command attributes.
 
-        :param device_under_test: a proxy to the device under test
+        :param device_under_test_thread: a proxy to the device under test
         :param change_event_callbacks: dictionary of mock change event
             callbacks with asynchrony support.
+        :param caplog: pytest LogCaptureFixture
         """
-        assert device_under_test.state() == DevState.OFF
-
+        caplog.set_level(logging.WARNING)
+        assert device_under_test_thread.state() == DevState.OFF
         for attribute in [
             "state",
             "longRunningCommandStatus",
@@ -254,12 +258,11 @@ class TestSKABaseDevice:  # pylint: disable=too-many-public-methods
             "longRunningCommandIDsInQueue",
             "longRunningCommandResult",
         ]:
-            device_under_test.subscribe_event(
+            device_under_test_thread.subscribe_event(
                 attribute,
                 EventType.CHANGE_EVENT,
                 change_event_callbacks[attribute],
             )
-
         change_event_callbacks.assert_change_event("state", DevState.OFF)
         change_event_callbacks.assert_change_event("longRunningCommandStatus", ())
         change_event_callbacks.assert_change_event("longRunningCommandProgress", ())
@@ -267,9 +270,33 @@ class TestSKABaseDevice:  # pylint: disable=too-many-public-methods
         change_event_callbacks.assert_change_event("longRunningCommandsInQueue", ())
         change_event_callbacks.assert_change_event("longRunningCommandIDsInQueue", ())
         change_event_callbacks.assert_change_event("longRunningCommandResult", ("", ""))
+        Helpers.assert_expected_logs(
+            caplog,
+            [  # Log messages must be in this exact order
+                "'longRunningCommandStatus' is deprecated and will be removed in the "
+                "next major release. The client should check for the status of a "
+                "command in the 'lrcQueue', 'lrcExecuting' and 'lrcFinished' "
+                "attributes instead.",
+                "'longRunningCommandProgress' is deprecated and will be removed in the "
+                "next major release. The client should check for the progress of a "
+                "command in the 'lrcExecuting' attribute instead.",
+                "'longRunningCommandInProgress' is deprecated and will be removed in "
+                "the next major release. The client should check for the command(s) in "
+                "progressin the 'lrcExecuting' attribute instead.",
+                "'longRunningCommandsInQueue' is deprecated and will be removed in the "
+                "next major release. The client should check for the queued command(s) "
+                "in the 'lrcQueue' attribute instead.",
+                "'longRunningCommandIDsInQueue' is deprecated and will be removed in "
+                "the next major release. The client should check for the queued "
+                "command(s) in the 'lrcQueue' attribute instead.",
+                "'longRunningCommandResult' is deprecated and will be removed in the "
+                "next major release. The client should check for the result of a "
+                "command in the 'lrcFinished' attribute instead.",
+            ],
+        )
 
         # ON command
-        [[result_code], [on_command_id]] = device_under_test.On()
+        [[result_code], [on_command_id]] = device_under_test_thread.On()
         assert result_code == ResultCode.QUEUED
         on_command = on_command_id.split("_", 2)[2]
         change_event_callbacks.assert_change_event(
@@ -302,8 +329,8 @@ class TestSKABaseDevice:  # pylint: disable=too-many-public-methods
             "longRunningCommandStatus", (on_command_id, "COMPLETED")
         )
         change_event_callbacks.assert_change_event("longRunningCommandInProgress", ())
-        assert device_under_test.longRunningCommandsInQueue == (on_command,)
-        assert device_under_test.longRunningCommandIDsInQueue == (on_command_id,)
+        assert device_under_test_thread.longRunningCommandsInQueue == (on_command,)
+        assert device_under_test_thread.longRunningCommandIDsInQueue == (on_command_id,)
 
     def test_new_user_facing_LRC_attributes(
         self: TestSKABaseDevice,

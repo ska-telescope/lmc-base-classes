@@ -212,8 +212,9 @@ The :any:`TaskCallbackType` protocol should be used as type annotation for all
 assumes it will receive the correct types for status, progress and result updates.
 
 Therefore, from ska-tango-base 1.2.0, the :any:`CommandTracker` will emit a 
-:any:`FutureWarning` if a command's progress is not an ``int``, or if it's result is not
-JSON serialisable, and in both cases convert the progress/result to a ``str`` and continue. 
+:any:`FutureWarning` if a command's progress is not an ``int``, or if its result is not
+JSON serialisable, and in both cases convert the progress/result to a ``str`` and continue.
+It will also raise a :any:`TypeError` if a command's status is not a :any:`TaskStatus` enum.
 
 .. note::
 

@@ -418,7 +418,7 @@ class TaskCallbackType(Protocol):  # pylint: disable=too-few-public-methods
     A ``task_callback`` will be called with some combination of the following arguments:
 
         - ``status``: ``TaskStatus`` of the task.
-        - ``progress``: ``int`` percentage progress of the task.
+        - ``progress``: ``int`` progress of the task.
         - ``result``: ``Any`` JSON serialisable result of the task.
         - ``exception``: ``Exception`` raised from the task.
 

@@ -207,7 +207,7 @@ class CommandTracker:  # pylint: disable=too-many-instance-attributes
                 if not isinstance(status, TaskStatus):
                     raise TypeError(
                         f"'{command_id}' command's status is invalid type: "
-                        f"{type(status)}. Must be 'TaskStatus' enum!"
+                        f"{type(status)}. Must be 'TaskStatus' enum! status = {status}"
                     )
                 event["status"] = status
                 if command_id in self._lrc_stage_queue:
@@ -247,11 +247,12 @@ class CommandTracker:  # pylint: disable=too-many-instance-attributes
                 try:
                     json.dumps(result)
                     event["result"] = result
-                except TypeError:
+                except TypeError as e:
                     warn(
-                        f"'{command_id}' command's result is not JSON serialisable: "
-                        "Converting it to a str. "
-                        "Its type(s) may be checked and enforced in the future.",
+                        f"'{command_id}' command has invalid result: {e}. "
+                        "Converting it to a str. Its type(s) may be checked and "
+                        "enforced in the future, which will break your device code. "
+                        f"result = '{result}'",
                         FutureWarning,
                     )
                     event["result"] = str(result)
@@ -269,8 +270,9 @@ class CommandTracker:  # pylint: disable=too-many-instance-attributes
                 except (ValueError, TypeError):
                     warn(
                         f"'{command_id}' command's progress is not an int, "
-                        f"but {type(progress)}: Converting it to a str. "
-                        "Its type may be checked and enforced in the future.",
+                        f"but {type(progress)}. Converting it to a str. Its type may "
+                        "be checked and enforced in the future, which will break your "
+                        f"device code. progress = '{progress}'",
                         FutureWarning,
                     )
                     event["progress"] = str(progress)

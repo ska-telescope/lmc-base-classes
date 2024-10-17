@@ -442,8 +442,9 @@ class TestCommandTracker:
             progress="Command has started",  # type: ignore[arg-type]
         )
         assert (
-            f"'{command_id}' command's progress is not an int, but <class 'str'>: "
+            f"'{command_id}' command's progress is not an int, but <class 'str'>. "
             "Converting it to a str. Its type may be checked and enforced in the future"
+            f", which will break your device code. progress = 'Command has started'"
             in str(recwarn.pop(FutureWarning).message)
         )
         callbacks["progress"].assert_called_once_with(
@@ -454,17 +455,32 @@ class TestCommandTracker:
             result=command_tracker.get_command_status,  # type: ignore[arg-type]
         )
         assert (
-            f"'{command_id}' command's result is not JSON serialisable: Converting it "
-            "to a str. Its type(s) may be checked and enforced in the future."
+            f"'{command_id}' command has invalid result: Object of type method is not "
+            "JSON serializable. Converting it to a str. Its type(s) may be checked and "
+            "enforced in the future, which will break your device code. "
+            "result = '<bound method CommandTracker.get_command_status"
             in str(recwarn.pop(FutureWarning).message)
         )
         callbacks["result"].assert_called_once_with(
             command_id, str(command_tracker.get_command_status)
         )
+        callbacks["result"].reset_mock()
+        command_tracker.update_command_info(
+            command_id,
+            result=set([1, 2, 3]),  # type: ignore[arg-type]
+        )
+        assert (
+            f"'{command_id}' command has invalid result: Object of type set is not "
+            "JSON serializable. Converting it to a str. Its type(s) may be checked and "
+            "enforced in the future, which will break your device code. "
+            "result = '{1, 2, 3}'" in str(recwarn.pop(FutureWarning).message)
+        )
+        callbacks["result"].assert_called_once_with(command_id, str({1, 2, 3}))
+        callbacks["result"].reset_mock()
         with pytest.raises(
             TypeError,
-            match="command's status is invalid type: <class 'int'>. "
-            "Must be 'TaskStatus' enum!",
+            match=f"'{command_id}' command's status is invalid type: <class 'int'>. "
+            "Must be 'TaskStatus' enum! status = 10",
         ):
             command_tracker.update_command_info(
                 command_id,

@@ -29,6 +29,7 @@ from tango import (
     Except,
 )
 
+from ska_tango_base.base.base_component_manager import JSONData
 from ska_tango_base.faults import CommandError, ResultCodeError
 
 module_logger = logging.getLogger(__name__)
@@ -58,7 +59,7 @@ class LrcCallback(Protocol):
         self,
         status: TaskStatus | None = None,
         progress: int | None = None,
-        result: Any | None = None,  # TODO: To be decided later
+        result: JSONData | None = None,
         error: tuple[DevError] | None = None,
         **kwargs: Any,
     ) -> None:
@@ -268,7 +269,7 @@ class _LrcProtocol(ABC):
                 status = TaskStatus[raw_status]
             else:
                 status = TaskStatus(raw_status)
-        except KeyError as exc:
+        except (KeyError, ValueError, TypeError) as exc:
             status = None
             self._logger.exception(
                 f"Received unknown TaskStatus from '{self._command_id}' command: "
@@ -403,6 +404,12 @@ class _LrcProtocolV2(_LrcProtocol):
             event = json.loads(lrc_attr_value)
             if "status" in event:
                 event["status"] = self._convert_and_check_status(event["status"])
+            if "progress" in event and not isinstance(event["progress"], int):
+                self._logger.warning(
+                    f"'{self._command}' command's progress is not an int, but "
+                    f"{type(event['progress'])}. "
+                    "Its type may be checked and enforced in the future."
+                )
             self._lrc_callback(**event)
 
 

@@ -24,6 +24,7 @@ from ska_tango_testing.mock import MockCallableGroup
 
 from ...base import (
     CommunicationStatusCallbackType,
+    JSONData,
     TaskCallbackType,
     check_communicating,
 )
@@ -162,7 +163,7 @@ class FakeBaseComponent:
         self: FakeBaseComponent,
         task_callback: TaskCallbackType | None,
         task_abort_event: threading.Event,
-        result: Any,
+        result: JSONData,
         **state_kwargs: Any,
     ) -> None:
         # Simulate the synchronous latency cost of communicating with this component.
@@ -351,6 +352,26 @@ class FakeBaseComponent:
             task_abort_event,
             (ResultCode.OK, "SimulateIsCmdAllowedError command completed OK"),
         )
+
+    def report_progress_message(
+        self: FakeBaseComponent,
+        task_callback: TaskCallbackType,
+        task_abort_event: threading.Event,  # pylint: disable=unused-argument
+    ) -> None:
+        """
+        Simulate a command that reports its progress as a string message.
+
+        :param task_callback: a callback to be called whenever the
+            status of this task changes.
+        :param task_abort_event: a threading.Event that can be checked
+            for whether this task has been aborted.
+        """
+        task_callback(
+            status=TaskStatus.IN_PROGRESS,
+            progress="ProgressMsg command has started",  # type: ignore
+        )
+        sleep(self._time_to_complete)
+        task_callback(status=TaskStatus.COMPLETED)
 
     def simulate_fault(self: FakeBaseComponent, fault_state: bool) -> None:
         """
@@ -631,6 +652,23 @@ class GenericBaseComponentManager(TaskExecutorComponentManager, Generic[Componen
         if self.power_state == PowerState.ON:
             raise ValueError("'is_cmd_allowed' method encountered unexpected error")
         return False
+
+    @check_communicating
+    def report_progress_message(
+        self: GenericBaseComponentManager[ComponentT],
+        task_callback: TaskCallbackType | None = None,
+    ) -> tuple[TaskStatus, str]:
+        """
+        Simulate a command that reports its progress as a string message.
+
+        :param task_callback: a callback to be called whenever the
+            status of this task changes.
+        :return: TaskStatus and message
+        """
+        return self.submit_task(
+            self._component.report_progress_message,
+            task_callback=task_callback,
+        )
 
 
 class ReferenceBaseComponentManager(GenericBaseComponentManager[FakeBaseComponent]):

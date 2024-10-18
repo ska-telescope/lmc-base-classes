@@ -7,14 +7,17 @@
 """This module implements the CommandTracker and its supporting classes/functions."""
 from __future__ import annotations
 
+import json
 import threading
 from datetime import datetime, timezone
 from itertools import chain
 from typing import Any, Callable, TypedDict
+from warnings import warn
 
 from ska_control_model import ResultCode, TaskStatus
 
 from ..utils import generate_command_id
+from .base_component_manager import JSONData
 
 __all__ = ["CommandTracker"]
 
@@ -44,14 +47,14 @@ class _CommandData(TypedDict, total=False):
     submitted_time: str
     started_time: str  # Optional
     progress: int  # Optional
-    result: Any  # Optional
+    result: JSONData  # Optional
     finished_time: str  # Optional
     completed_callback: Callable[[], None]  # Optional
     removed: bool  # TODO: This key is needed for the deprecated LRC attributes to
     #                      retain the removal timer functionality.
 
 
-LrcAttrType = dict[str, _CommandData]
+UserLrcAttr = dict[str, _CommandData]
 LRC_FINISHED_MAX_LENGTH = 100
 
 
@@ -63,11 +66,11 @@ class CommandTracker:  # pylint: disable=too-many-instance-attributes
         queue_changed_callback: Callable[[list[tuple[str, str]]], None],
         status_changed_callback: Callable[[list[tuple[str, TaskStatus]]], None],
         progress_changed_callback: Callable[[list[tuple[str, int]]], None],
-        result_callback: Callable[[str, tuple[ResultCode, str]], None],
+        result_callback: Callable[[str, JSONData], None],
         exception_callback: Callable[[str, Exception], None] | None = None,
-        event_callback: Callable[[str, dict[str, Any]], None] | None = None,
+        event_callback: Callable[[str, JSONData], None] | None = None,
         update_user_attributes_callback: (
-            Callable[[LrcAttrType, LrcAttrType, LrcAttrType], None] | None
+            Callable[[UserLrcAttr, UserLrcAttr, UserLrcAttr], None] | None
         ) = None,
         removal_time: float = 10.0,
     ) -> None:
@@ -91,16 +94,14 @@ class CommandTracker:  # pylint: disable=too-many-instance-attributes
         self._status_changed_callback = status_changed_callback
         self._progress_changed_callback = progress_changed_callback
         self._result_callback = result_callback
-        self._most_recent_result: tuple[str, tuple[ResultCode, str] | None] | None = (
-            None
-        )
+        self._most_recent_result: tuple[str, JSONData] | None = None
         self._exception_callback = exception_callback
         self._most_recent_exception: tuple[str, Exception] | None = None
         self._event_callback = event_callback
         self._update_user_attributes_callback = update_user_attributes_callback
-        self._lrc_stage_queue: LrcAttrType = {}
-        self._lrc_executing: LrcAttrType = {}
-        self._lrc_finished: LrcAttrType = {}
+        self._lrc_stage_queue: UserLrcAttr = {}
+        self._lrc_executing: UserLrcAttr = {}
+        self._lrc_finished: UserLrcAttr = {}
         self._removal_time = removal_time
         # TODO: This private variable may be overridden by SKABaseDevice to support
         # a longer length of the deprecated LRC attributes, until they are removed.
@@ -155,7 +156,7 @@ class CommandTracker:  # pylint: disable=too-many-instance-attributes
         command_id: str,
         status: TaskStatus | None = None,
         progress: int | None = None,
-        result: tuple[ResultCode, str] | None = None,
+        result: JSONData = None,
         exception: Exception | None = None,
     ) -> None:
         """
@@ -166,6 +167,7 @@ class CommandTracker:  # pylint: disable=too-many-instance-attributes
         :param progress: the progress of the asynchronous task
         :param result: the result of the completed asynchronous task
         :param exception: any exception caught in the running task
+        :raises TypeError: if status is not the TaskStatus enum type
         """
         # All changes to the _lrc_stage_queue, _lrc_executing and _lrc_finished dicts
         # are made here while the CommandTracker has a lock, as well as the callbacks
@@ -202,6 +204,11 @@ class CommandTracker:  # pylint: disable=too-many-instance-attributes
                     result = (ResultCode.FAILED, str(exception))
             event: dict[str, Any] = {}
             if status is not None:
+                if not isinstance(status, TaskStatus):
+                    raise TypeError(
+                        f"'{command_id}' command's status is invalid type: "
+                        f"{type(status)}. Must be 'TaskStatus' enum! status = {status}"
+                    )
                 event["status"] = status
                 if command_id in self._lrc_stage_queue:
                     self._lrc_stage_queue[command_id]["status"] = status
@@ -237,23 +244,44 @@ class CommandTracker:  # pylint: disable=too-many-instance-attributes
                         }
                     )
             if result is not None:
-                event["result"] = result
+                try:
+                    json.dumps(result)
+                    event["result"] = result
+                except TypeError as e:
+                    warn(
+                        f"'{command_id}' command has invalid result: {e}. "
+                        "Converting it to a str. Its type(s) may be checked and "
+                        "enforced in the future, which will break your device code. "
+                        f"result = '{result}'",
+                        FutureWarning,
+                    )
+                    event["result"] = str(result)
                 if command_id in self._lrc_stage_queue:
-                    self._lrc_stage_queue[command_id]["result"] = result
+                    self._lrc_stage_queue[command_id]["result"] = event["result"]
                 elif command_id in self._lrc_executing:
-                    self._lrc_executing[command_id]["result"] = result
+                    self._lrc_executing[command_id]["result"] = event["result"]
                 elif command_id in self._lrc_finished:
-                    self._lrc_finished[command_id]["result"] = result
-                self._most_recent_result = (command_id, result)
-                self._result_callback(command_id, result)
+                    self._lrc_finished[command_id]["result"] = event["result"]
+                self._most_recent_result = (command_id, event["result"])
+                self._result_callback(command_id, event["result"])
             if progress is not None:
-                event["progress"] = int(progress)
+                try:
+                    event["progress"] = int(progress)
+                except (ValueError, TypeError):
+                    warn(
+                        f"'{command_id}' command's progress is not an int, "
+                        f"but {type(progress)}. Converting it to a str. Its type may "
+                        "be checked and enforced in the future, which will break your "
+                        f"device code. progress = '{progress}'",
+                        FutureWarning,
+                    )
+                    event["progress"] = str(progress)
                 if command_id in self._lrc_stage_queue:
-                    self._lrc_stage_queue[command_id]["progress"] = int(progress)
+                    self._lrc_stage_queue[command_id]["progress"] = event["progress"]
                 elif command_id in self._lrc_executing:
-                    self._lrc_executing[command_id]["progress"] = int(progress)
+                    self._lrc_executing[command_id]["progress"] = event["progress"]
                 elif command_id in self._lrc_finished:
-                    self._lrc_finished[command_id]["progress"] = int(progress)
+                    self._lrc_finished[command_id]["progress"] = event["progress"]
                 self._progress_changed_callback(self.command_progresses)
             # The status related callbacks are called after result/progress to preserve
             # the order of change events for the deprecated LRC attributes.
@@ -353,7 +381,7 @@ class CommandTracker:  # pylint: disable=too-many-instance-attributes
     @property
     def command_result(
         self: CommandTracker,
-    ) -> tuple[str, tuple[ResultCode, str] | None] | None:
+    ) -> tuple[str, JSONData] | None:
         """
         Return the result of the most recently completed command.
 

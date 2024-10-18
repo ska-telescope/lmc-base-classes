@@ -50,8 +50,8 @@ from ..faults import GroupDefinitionsError, LoggingLevelError
 from ..long_running_commands_api import _SUPPORTED_LRC_PROTOCOL_VERSIONS
 from ..utils import get_groups_from_json
 from .admin_mode_model import AdminModeModel
-from .base_component_manager import BaseComponentManager
-from .command_tracker import LRC_FINISHED_MAX_LENGTH, CommandTracker, LrcAttrType
+from .base_component_manager import BaseComponentManager, JSONData
+from .command_tracker import LRC_FINISHED_MAX_LENGTH, CommandTracker, UserLrcAttr
 from .logging import (
     _LMC_TO_PYTHON_LOGGING_LEVEL,
     _LMC_TO_TANGO_LOGGING_LEVEL,
@@ -720,7 +720,7 @@ class SKABaseDevice(
     def _update_command_result(
         self: SKABaseDevice[ComponentManagerT],
         command_id: str,
-        command_result: tuple[ResultCode, str],
+        command_result: JSONData,
     ) -> None:
         self._command_result = (command_id, json.dumps(command_result))
         self.push_change_event("longRunningCommandResult", self._command_result)
@@ -729,15 +729,15 @@ class SKABaseDevice(
     def _update_lrc_event(
         self: SKABaseDevice[ComponentManagerT],
         command_id: str,
-        event: dict[str, Any],
+        event: JSONData,
     ) -> None:
         self.push_change_event("_lrcEvent", [command_id, json.dumps(event)])
 
     def _update_user_lrc_attributes(
         self: SKABaseDevice[ComponentManagerT],
-        lrc_queue: LrcAttrType,
-        lrc_executing: LrcAttrType,
-        lrc_finished: LrcAttrType,
+        lrc_queue: UserLrcAttr,
+        lrc_executing: UserLrcAttr,
+        lrc_finished: UserLrcAttr,
     ) -> None:
         self._lrc_queue = self._get_json_list_of_lrc_attributes(
             lrc_queue,
@@ -956,7 +956,7 @@ class SKABaseDevice(
 
     @staticmethod
     def _get_json_list_of_lrc_attributes(
-        lrc_attr: LrcAttrType, allowed_keys: list[str]
+        lrc_attr: UserLrcAttr, allowed_keys: list[str]
     ) -> list[str]:
         """
         Get a list of JSON formatted strings representing the LRC attribute.

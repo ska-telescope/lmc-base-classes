@@ -17,6 +17,7 @@ from tango import DevError
 from tango.test_context import DeviceTestContext, MultiDeviceTestContext, get_host_ip
 
 import ska_tango_base.base.base_device
+from ska_tango_base.base import JSONData
 from ska_tango_base.long_running_commands_api import LrcCallback
 
 
@@ -248,7 +249,7 @@ def successful_lrc_callback_fixture(
     def _successful_lrc_callback(
         status: TaskStatus | None = None,
         progress: int | None = None,
-        result: dict[str, Any] | list[Any] | None = None,
+        result: JSONData | None = None,
         error: tuple[DevError] | None = None,
         **kwargs: Any,
     ) -> None:
@@ -297,7 +298,7 @@ def aborted_lrc_callback_fixture(
     def _aborted_lrc_callback(
         status: TaskStatus | None = None,
         progress: int | None = None,
-        result: dict[str, Any] | list[Any] | None = None,
+        result: JSONData | None = None,
         error: tuple[DevError] | None = None,
         **kwargs: Any,
     ) -> None:
@@ -345,7 +346,7 @@ def lrc_callback_log_only_fixture(
     def _lrc_callback_log_only(
         status: TaskStatus | None = None,
         progress: int | None = None,
-        result: dict[str, Any] | list[Any] | None = None,
+        result: JSONData | None = None,
         error: tuple[DevError] | None = None,
         **kwargs: Any,
     ) -> None:

@@ -28,6 +28,7 @@ from ska_control_model import (
 from ska_tango_testing.mock.tango import MockTangoEventCallbackGroup
 from tango import DevError, DevFailed, DevState
 
+from ska_tango_base.base import JSONData
 from ska_tango_base.long_running_commands_api import (
     LrcCallback,
     LrcSubscriptions,
@@ -368,7 +369,7 @@ class TestSKASubarray:  # pylint: disable=too-many-public-methods
         def abort_callback(
             status: TaskStatus | None = None,
             progress: int | None = None,
-            result: dict[str, Any] | list[Any] | None = None,
+            result: JSONData | None = None,
             error: tuple[DevError] | None = None,
             **kwargs: Any,
         ) -> None:

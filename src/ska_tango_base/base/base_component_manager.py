@@ -140,26 +140,6 @@ def check_on(func: Wrapped) -> Wrapped:
 CommunicationStatusCallbackType = Callable[[CommunicationStatus], None]
 
 
-class TaskCallbackType(Protocol):  # pylint: disable=too-few-public-methods
-    """Structural subtyping protocol for a TaskCallback."""
-
-    def __call__(
-        self: TaskCallbackType,
-        status: TaskStatus | None = None,
-        progress: int | None = None,
-        result: Any = None,
-        exception: Exception | None = None,
-    ) -> None:
-        """
-        Call the callback with an update on the task.
-
-        :param status: status of the task.
-        :param progress: progress of the task.
-        :param result: result of the task.
-        :param exception: an exception raised from the task.
-        """
-
-
 class BaseComponentManager:
     """
     An abstract base class for a component manager for SKA Tango devices.
@@ -417,3 +397,41 @@ class BaseComponentManager:
         :raises NotImplementedError: Not implemented it's an abstract class
         """
         raise NotImplementedError("BaseComponentManager is abstract.")
+
+
+JSONData = (  # Type hint for any JSON-encodable data
+    None
+    | bool
+    | int
+    | float
+    | str
+    | list["JSONData"]  # A list can contain more JSON-encodable data
+    | dict[str, "JSONData"]  # A dict must have str keys and JSON-encodable data
+    | tuple["JSONData", ...]  # A tuple can contain more JSON-encodable data
+)
+
+
+class TaskCallbackType(Protocol):  # pylint: disable=too-few-public-methods
+    """
+    Structural subtyping protocol for a ``task_callback``.
+
+    A ``task_callback`` will be called with some combination of the following arguments:
+
+        - ``status``: ``TaskStatus`` of the task.
+        - ``progress``: ``int`` progress of the task.
+        - ``result``: ``Any`` JSON serialisable result of the task.
+        - ``exception``: ``Exception`` raised from the task.
+
+    Each of the above arguments is optional and the callback must check which
+    are present by testing them for `None`.  The callback cannot assume
+    that only one argument will be provided per call.
+    """
+
+    def __call__(  # noqa: D102
+        self: TaskCallbackType,
+        status: TaskStatus | None = None,
+        progress: int | None = None,
+        result: Any = None,
+        exception: Exception | None = None,
+    ) -> None:
+        raise NotImplementedError("TaskCallbackType is used only for typing.")

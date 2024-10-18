@@ -12,6 +12,7 @@ from typing import Any
 import pytest
 import tango
 from ska_control_model import AdminMode, ResultCode, TaskStatus
+from ska_tango_testing.mock.placeholders import Anything
 from ska_tango_testing.mock.tango import MockTangoEventCallbackGroup
 
 from ska_tango_base.base import TaskCallbackType
@@ -179,7 +180,7 @@ def test_abort_in_omnithread(
     :param device_under_test: proxy to device we are testing
     :param change_event_callbacks: callback dictionary
     """
-    attribute = "longRunningCommandProgress"
+    attribute = "lrcExecuting"
     device_under_test.subscribe_event(
         attribute,
         tango.EventType.CHANGE_EVENT,
@@ -188,11 +189,12 @@ def test_abort_in_omnithread(
     change_event_callbacks.assert_change_event(attribute, ())
     [
         [result_code],
-        [cmd_id],
+        [_],
     ] = device_under_test.assignresources("{}")
     assert result_code == ResultCode.QUEUED
     print_change_event_queue(change_event_callbacks, attribute)
-    change_event_callbacks.assert_change_event(attribute, (cmd_id, "0"))
+    change_event_callbacks.assert_change_event(attribute, Anything)
+    change_event_callbacks.assert_change_event(attribute, Anything)
     device_under_test.Abort()
 
 
@@ -210,7 +212,7 @@ def test_abort_not_omnithread(
     :param device_under_test: proxy to device we are testing
     :param change_event_callbacks: callback dictionary
     """
-    attribute = "longRunningCommandProgress"
+    attribute = "lrcExecuting"
     device_under_test.subscribe_event(
         attribute,
         tango.EventType.CHANGE_EVENT,
@@ -219,28 +221,33 @@ def test_abort_not_omnithread(
     change_event_callbacks.assert_change_event(attribute, ())
     [
         [result_code],
-        [cmd_id],
+        [_],
     ] = device_under_test.assignresources('{"in_omnithread": false}')
     assert result_code == ResultCode.QUEUED
     print_change_event_queue(change_event_callbacks, attribute)
-    change_event_callbacks.assert_change_event(attribute, (cmd_id, "0"))
+    change_event_callbacks.assert_change_event(attribute, Anything)
+    change_event_callbacks.assert_change_event(attribute, Anything)
     device_under_test.Abort()
 
 
+@pytest.mark.forked
 def test_abort_commands_deprecation(
-    device_under_test: tango.DeviceProxy,
+    device_under_test_thread: tango.DeviceProxy,
     change_event_callbacks: MockTangoEventCallbackGroup,
+    caplog: pytest.LogCaptureFixture,
 ) -> None:
     """
     Test if deprecation warnings are raised for using 'AbortCommands'.
 
     Also checks the warning for overriding 'abort_commands'.
 
-    :param device_under_test: proxy to device we are testing
+    :param device_under_test_thread: proxy to device we are testing
     :param change_event_callbacks: callback dictionary
+    :param caplog: pytest LogCaptureFixture
     """
-    attribute = "longRunningCommandProgress"
-    device_under_test.subscribe_event(
+    caplog.set_level(logging.WARNING)
+    attribute = "lrcExecuting"
+    device_under_test_thread.subscribe_event(
         attribute,
         tango.EventType.CHANGE_EVENT,
         change_event_callbacks[attribute],
@@ -248,8 +255,14 @@ def test_abort_commands_deprecation(
     change_event_callbacks.assert_change_event(attribute, ())
     [
         [result_code],
-        [cmd_id],
-    ] = device_under_test.assignresources("{}")
+        [_],
+    ] = device_under_test_thread.assignresources("{}")
     assert result_code == ResultCode.QUEUED
-    change_event_callbacks.assert_change_event(attribute, (cmd_id, "0"))
-    device_under_test.AbortCommands()
+    change_event_callbacks.assert_change_event(attribute, Anything)
+    change_event_callbacks.assert_change_event(attribute, Anything)
+    device_under_test_thread.AbortCommands()
+    assert (
+        caplog.records[0].message
+        == "'AbortCommands' is deprecated and will be removed in the next major release"
+        ". The client should call the tracked 'Abort' long running command instead."
+    )

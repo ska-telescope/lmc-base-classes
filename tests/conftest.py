@@ -67,6 +67,43 @@ def device_under_test(tango_context: DeviceTestContext) -> tango.DeviceProxy:
     return tango_context.device
 
 
+@pytest.fixture(name="tango_context_thread")
+def fixture_tango_context_thread(
+    device_test_config: dict[str, Any],
+) -> Generator[DeviceTestContext, None, None]:
+    """
+    Return Tango test context in which the device under test is running in same thread.
+
+    :param device_test_config: specification of the device under test,
+        including its properties and memorized attributes.
+
+    :yields: a Tango test context in which the device under test is running.
+    """
+    component_manager_patch = device_test_config.pop("component_manager_patch", None)
+    if component_manager_patch is not None:
+        device_test_config["device"].create_component_manager = component_manager_patch
+
+    tango_context = DeviceTestContext(**device_test_config, process=False)
+    tango_context.start()
+    yield tango_context
+    tango_context.stop()
+
+
+@pytest.fixture()
+def device_under_test_thread(
+    tango_context_thread: DeviceTestContext,
+) -> tango.DeviceProxy:
+    """
+    Return a device proxy to the device under test in the same thread as test runner.
+
+    :param tango_context_thread: a Tango test context with the specified device
+        running in the same thread as the test runner.
+
+    :return: a proxy to the device under test
+    """
+    return tango_context_thread.device
+
+
 def pytest_itemcollected(item: pytest.Item) -> None:
     """
     Modify a test after it has been collected by pytest.

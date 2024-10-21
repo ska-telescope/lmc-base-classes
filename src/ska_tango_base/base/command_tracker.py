@@ -209,6 +209,7 @@ class CommandTracker:  # pylint: disable=too-many-instance-attributes
                         f"'{command_id}' command's status is invalid type: "
                         f"{type(status)}. Must be 'TaskStatus' enum! status = {status}"
                     )
+                self._validate_command_status_transition(command_id, status)
                 event["status"] = status
                 if command_id in self._lrc_stage_queue:
                     self._lrc_stage_queue[command_id]["status"] = status
@@ -312,6 +313,65 @@ class CommandTracker:  # pylint: disable=too-many-instance-attributes
                 self._update_user_attributes_callback(
                     self._lrc_stage_queue, self._lrc_executing, self._lrc_finished
                 )
+
+    def _validate_command_status_transition(
+        self: CommandTracker, command_id: str, to_status: TaskStatus
+    ) -> None:
+        """
+        Validate status transition and emit warnings for invalid cases.
+
+        :param command_id: the unique command id
+        :param to_status: the new status the task is transitioning to
+        """
+        current_status = self.get_command_status(command_id)
+
+        def emit_future_warning() -> None:
+            warn(
+                f"'{command_id}' command's status is transitioning from "
+                f"{current_status.name} to {to_status.name}, which is not a valid "
+                "TaskStatus transition. Only valid status transitions may be allowed "
+                "in the future, which will break your device code.",
+                FutureWarning,
+            )
+
+        match current_status:
+            case TaskStatus.STAGING:
+                if to_status not in [
+                    TaskStatus.QUEUED,
+                    TaskStatus.IN_PROGRESS,
+                    TaskStatus.REJECTED,
+                ]:
+                    emit_future_warning()
+            case TaskStatus.QUEUED:
+                if to_status not in [
+                    TaskStatus.IN_PROGRESS,
+                    TaskStatus.ABORTED,
+                    TaskStatus.REJECTED,
+                ]:
+                    emit_future_warning()
+            case TaskStatus.IN_PROGRESS:
+                if to_status not in [
+                    TaskStatus.ABORTED,
+                    TaskStatus.COMPLETED,
+                    TaskStatus.FAILED,
+                ]:
+                    emit_future_warning()
+            case _:  # Finished (terminal) statuses
+                if to_status in [
+                    TaskStatus.ABORTED,
+                    TaskStatus.COMPLETED,
+                    TaskStatus.REJECTED,
+                    TaskStatus.FAILED,
+                ]:
+                    emit_future_warning()
+                else:
+                    warn(
+                        f"'{command_id}' command's status is attempting to transition "
+                        f"from {current_status.name} to {to_status.name}, which will "
+                        "be ignored, since the command has already terminated and is "
+                        "scheduled for removal. Please check your LRC implementation.",
+                        UserWarning,
+                    )
 
     def has_current_thread_locked(self: CommandTracker) -> bool:
         """

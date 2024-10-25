@@ -1666,12 +1666,13 @@ class SKABaseDevice(
             :param logger: the logger to be used by this Command. If not
                 provided, then a default module logger will be used.
             """
-            self._abort_commands_overriden = False
+            self._abort_commands_overridden = False
             if (
-                type(component_manager).abort_commands
+                hasattr(component_manager, "abort_commands")
+                and type(component_manager).abort_commands
                 != BaseComponentManager.abort_commands
             ):
-                self._abort_commands_overriden = True
+                self._abort_commands_overridden = True
                 warning_msg = (
                     "'abort_commands' is deprecated and will be removed in the "
                     "next major release. Either rename 'abort_commands' in your "
@@ -1702,7 +1703,7 @@ class SKABaseDevice(
                 message indicating status. The message is for
                 information purpose only.
             """
-            if self._abort_commands_overriden:
+            if self._abort_commands_overridden:
                 self._component_manager.abort_commands()
             else:
                 self._component_manager.abort_tasks()

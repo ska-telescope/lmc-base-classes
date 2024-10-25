@@ -1666,21 +1666,22 @@ class SKABaseDevice(
             :param logger: the logger to be used by this Command. If not
                 provided, then a default module logger will be used.
             """
-            self._abort_commands_overriden = False
-            if (
-                type(component_manager).abort_commands
-                != BaseComponentManager.abort_commands
-            ):
-                self._abort_commands_overriden = True
-                warning_msg = (
-                    "'abort_commands' is deprecated and will be removed in the "
-                    "next major release. Either rename 'abort_commands' in your "
-                    "component manager to 'abort_tasks' or override the "
-                    "'SKABaseDevice.Abort' command instead."
-                )
-                warn(warning_msg, DeprecationWarning)
-                if logger:
-                    logger.warning(warning_msg)
+            self._abort_commands_overridden = False
+            if hasattr(component_manager, "abort_commands"):
+                if (
+                    type(component_manager).abort_commands
+                    != BaseComponentManager.abort_commands
+                ):
+                    self._abort_commands_overridden = True
+                    warning_msg = (
+                        "'abort_commands' is deprecated and will be removed in the "
+                        "next major release. Either rename 'abort_commands' in your "
+                        "component manager to 'abort_tasks' or override the "
+                        "'SKABaseDevice.Abort' command instead."
+                    )
+                    warn(warning_msg, DeprecationWarning)
+                    if logger:
+                        logger.warning(warning_msg)
             self._component_manager = component_manager
             super().__init__(None, logger=logger)
 
@@ -1702,7 +1703,7 @@ class SKABaseDevice(
                 message indicating status. The message is for
                 information purpose only.
             """
-            if self._abort_commands_overriden:
+            if self._abort_commands_overridden:
                 self._component_manager.abort_commands()
             else:
                 self._component_manager.abort_tasks()

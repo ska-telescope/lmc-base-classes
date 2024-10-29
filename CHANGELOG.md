@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.2.1
+
+- WOM-507: Fixed the `BaseComponentManager.abort_commands` deprecation check to be compatible with a `Mock` object in tests.
+
 ## 1.2.0
 
 ### Added

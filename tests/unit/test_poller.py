@@ -17,6 +17,7 @@ import pytest
 from ska_tango_testing.mock import MockCallableGroup
 
 from ska_tango_base.poller import Poller, PollModel
+from tests.conftest import Helpers
 
 
 @pytest.fixture(name="config")
@@ -111,9 +112,11 @@ def fixture_poll_model(
 
         def polling_started(self: _FakePollModel) -> None:
             self._callbacks["started"]()
+            raise RuntimeError("polling_started exception.")
 
         def polling_stopped(self: _FakePollModel) -> None:
             self._callbacks["stopped"]()
+            raise RuntimeError("polling_stopped exception.")
 
         def poll_succeeded(self: _FakePollModel, poll_response: int) -> None:
             self._callbacks["succeeded"](poll_response)
@@ -145,6 +148,7 @@ def test_poller(
     callbacks: MockCallableGroup,
     barrier: Barrier,
     config: dict[str, int],
+    caplog: pytest.LogCaptureFixture,
 ) -> None:  # noqa: DAR401
     """
     Test the poller.
@@ -160,6 +164,7 @@ def test_poller(
     :param barrier: a barrier, shared by the poll model and this test,
         used to coordinate timings.
     :param config: configuration for this test.
+    :param caplog: pytest LogCaptureFixture
     """
     callbacks.assert_not_called()
     poller.start_polling()
@@ -190,3 +195,14 @@ def test_poller(
                 raise call_details["call_args"][0]
         else:
             callbacks.assert_call("succeeded", -iteration)
+
+    Helpers.assert_expected_logs(
+        caplog,
+        [  # Log messages must be in this exact order
+            "polling_started raised an exception.",
+            "poll_failed raised an exception.",
+            "poll_failed raised an exception.",
+            "polling_stopped raised an exception.",
+            "polling_started raised an exception.",
+        ],
+    )

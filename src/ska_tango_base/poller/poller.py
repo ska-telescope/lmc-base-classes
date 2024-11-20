@@ -9,10 +9,13 @@
 from __future__ import annotations
 
 import enum
+import logging
 import threading
 from typing import Generic, TypeVar
 
 __all__ = ["Poller", "PollModel", "PollRequestT", "PollResponseT"]
+
+module_logger = logging.getLogger(__name__)
 
 PollRequestT = TypeVar("PollRequestT")
 """Type variable for object specifying what the poller should do next poll."""
@@ -111,6 +114,7 @@ class Poller(Generic[PollRequestT, PollResponseT]):
         self: Poller[PollRequestT, PollResponseT],
         poll_model: PollModel[PollRequestT, PollResponseT],
         poll_rate: float = 1.0,
+        logger: logging.Logger | None = None,
     ) -> None:
         """
         Initialise a new instance.
@@ -119,9 +123,11 @@ class Poller(Generic[PollRequestT, PollResponseT]):
             execute polls and provide with results
         :param poll_rate: how long (in seconds) to wait after polling,
             before polling again
+        :param logger: a logger for this poller to use for logging
         """
         self._poll_model = poll_model
         self._poll_rate = poll_rate
+        self._logger = logger or module_logger
 
         self._state = self._State.STOPPED
         self._condition = threading.Condition()
@@ -155,7 +161,7 @@ class Poller(Generic[PollRequestT, PollResponseT]):
             self._state = self._State.STOPPED
             self._condition.notify()
 
-    def _polling_loop(self: Poller[PollRequestT, PollResponseT]) -> None:
+    def _polling_loop(self: Poller[PollRequestT, PollResponseT]) -> None:  # noqa: C901
         """Loop forever, either polling the hardware, or waiting to do so."""
         while self._state != self._State.KILLED:
             # state is STOPPED
@@ -165,7 +171,10 @@ class Poller(Generic[PollRequestT, PollResponseT]):
                     continue
 
             # state is POLLING
-            self._poll_model.polling_started()
+            try:
+                self._poll_model.polling_started()
+            except Exception:  # pylint: disable=broad-except
+                self._logger.exception("polling_started raised an exception.")
             while self._state == self._State.POLLING:
                 try:
                     request = self._poll_model.get_request()
@@ -176,11 +185,14 @@ class Poller(Generic[PollRequestT, PollResponseT]):
                     try:
                         self._poll_model.poll_failed(exception)
                     except Exception:  # pylint: disable=broad-except
-                        pass  # TODO: What can be done?
+                        self._logger.exception("poll_failed raised an exception.")
 
                 with self._condition:
                     self._condition.wait(self._poll_rate)
 
             # "stop" event received; update state, then back to top of
             # loop i.e. block on "start" event
-            self._poll_model.polling_stopped()
+            try:
+                self._poll_model.polling_stopped()
+            except Exception:  # pylint: disable=broad-except
+                self._logger.exception("polling_stopped raised an exception.")

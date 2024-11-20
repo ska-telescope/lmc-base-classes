@@ -173,7 +173,10 @@ class Poller(Generic[PollRequestT, PollResponseT]):
                         response = self._poll_model.poll(request)
                         self._poll_model.poll_succeeded(response)
                 except Exception as exception:  # pylint: disable=broad-except
-                    self._poll_model.poll_failed(exception)
+                    try:
+                        self._poll_model.poll_failed(exception)
+                    except Exception:  # pylint: disable=broad-except
+                        pass  # TODO: What can be done?
 
                 with self._condition:
                     self._condition.wait(self._poll_rate)

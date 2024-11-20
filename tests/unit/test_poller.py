@@ -123,6 +123,7 @@ def fixture_poll_model(
 
         def poll_failed(self: _FakePollModel, exception: Exception) -> None:
             self._callbacks["failed"](exception)
+            raise RuntimeError("poll_failed exception.")
 
     return _FakePollModel(callbacks, barrier, config)
 

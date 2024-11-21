@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.2.2
+
+- WOM-522: Handle and log any exceptions from `PollModel` methods in polling loop.
+
 ## 1.2.1
 
 - WOM-507: Fixed the `BaseComponentManager.abort_commands` deprecation check to be compatible with a `Mock` object in tests.

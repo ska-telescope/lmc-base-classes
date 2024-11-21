@@ -45,7 +45,7 @@ class PollingComponentManager(
         :param poll_rate: how often to poll, in seconds
         :param kwargs: initial values for additional attributes.
         """
-        self._poller = Poller(self, poll_rate)
+        self._poller = Poller(self, poll_rate, logger)
 
         super().__init__(
             logger,

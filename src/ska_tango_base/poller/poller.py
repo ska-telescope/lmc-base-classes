@@ -63,14 +63,16 @@ class PollModel(Generic[PollRequestT, PollResponseT]):
         """
         Respond to polling having started.
 
-        This is a hook called by the poller when it starts polling.
+        This is a hook called by the poller when it starts polling,
+        and should not raise any exceptions.
         """
 
     def polling_stopped(self: PollModel[PollRequestT, PollResponseT]) -> None:
         """
         Respond to polling having stopped.
 
-        This is a hook called by the poller when it stops polling.
+        This is a hook called by the poller when it stops polling,
+        and should not raise any exceptions.
         """
 
     def poll_succeeded(
@@ -95,7 +97,7 @@ class PollModel(Generic[PollRequestT, PollResponseT]):
         This is a hook called by the poller when an exception occurs.
         The polling loop itself never raises exceptions. It catches
         everything and simply calls this hook to let the polling model
-        know what it caught.
+        know what it caught. This hook may not raise an exception itself.
 
         :param exception: the exception that was raised by a recent poll
             attempt.
@@ -174,7 +176,11 @@ class Poller(Generic[PollRequestT, PollResponseT]):
             try:
                 self._poll_model.polling_started()
             except Exception:  # pylint: disable=broad-except
-                self._logger.exception("polling_started raised an exception.")
+                self._logger.exception(
+                    "polling_started raised an unexpected exception. "
+                    "Please report this bug to a software team. "
+                    "Attempting to continue polling."
+                )
             while self._state == self._State.POLLING:
                 try:
                     request = self._poll_model.get_request()
@@ -185,7 +191,11 @@ class Poller(Generic[PollRequestT, PollResponseT]):
                     try:
                         self._poll_model.poll_failed(exception)
                     except Exception:  # pylint: disable=broad-except
-                        self._logger.exception("poll_failed raised an exception.")
+                        self._logger.exception(
+                            "poll_failed raised an unexpected exception. "
+                            "Please report this bug to a software team. "
+                            "Attempting to continue polling."
+                        )
 
                 with self._condition:
                     self._condition.wait(self._poll_rate)
@@ -195,4 +205,7 @@ class Poller(Generic[PollRequestT, PollResponseT]):
             try:
                 self._poll_model.polling_stopped()
             except Exception:  # pylint: disable=broad-except
-                self._logger.exception("polling_stopped raised an exception.")
+                self._logger.exception(
+                    "polling_stopped raised an unexpected exception. "
+                    "Please report this bug to a software team."
+                )

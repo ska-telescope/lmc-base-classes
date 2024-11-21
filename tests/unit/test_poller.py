@@ -199,10 +199,19 @@ def test_poller(
     Helpers.assert_expected_logs(
         caplog,
         [  # Log messages must be in this exact order
-            "polling_started raised an exception.",
-            "poll_failed raised an exception.",
-            "poll_failed raised an exception.",
-            "polling_stopped raised an exception.",
-            "polling_started raised an exception.",
+            "polling_started raised an unexpected exception. "
+            "Please report this bug to a software team. "
+            "Attempting to continue polling.",
+            "poll_failed raised an unexpected exception. "
+            "Please report this bug to a software team. "
+            "Attempting to continue polling.",
+            "poll_failed raised an unexpected exception. "
+            "Please report this bug to a software team. "
+            "Attempting to continue polling.",
+            "polling_stopped raised an unexpected exception. "
+            "Please report this bug to a software team.",
+            "polling_started raised an unexpected exception. "
+            "Please report this bug to a software team. "
+            "Attempting to continue polling.",
         ],
     )

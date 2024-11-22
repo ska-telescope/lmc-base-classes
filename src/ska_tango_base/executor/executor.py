@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import concurrent.futures
 import threading
+import traceback
 from typing import Any, Callable
 
 from ska_control_model import ResultCode, TaskStatus
@@ -88,6 +89,7 @@ class TaskExecutor:
                     status=TaskStatus.REJECTED,
                     result=(ResultCode.REJECTED, "Queue is being aborted"),
                 )
+                print(traceback.format_exc())
                 return TaskStatus.REJECTED, "Queue is being aborted"
             except Exception as exc:  # pylint: disable=broad-except
                 self._call_task_callback(

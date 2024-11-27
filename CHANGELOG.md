@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.2.3
+
+- SKB-663: Fixed the `BaseComponentManager.abort_commands` deprecation check to be compatible with a `Mock` component manager that mocks `abort_commands`.
+
 ## 1.2.2
 
 - WOM-522: Handle and log any exceptions from `PollModel` methods in polling loop.

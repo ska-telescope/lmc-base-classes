@@ -965,8 +965,39 @@ class TestSKASubarray:  # pylint: disable=too-many-public-methods
 
         :param device_under_test: a proxy to the device under test
         """
-        version_id_pattern = re.compile(r"[0-9]+.[0-9]+.[0-9]+")
+        version_id_pattern = re.compile(r"[0-9]+\.[0-9]+\.[0-9]+")
         assert (re.match(version_id_pattern, device_under_test.versionId)) is not None
+
+    def test_version_info(
+        self: TestSKASubarray, device_under_test: tango.DeviceProxy
+    ) -> None:
+        """
+        Test for Device version info.
+
+        :param device_under_test: a proxy to the device under test
+        """
+        version_id_pattern = re.compile(r"[0-9]+\.[0-9]+\.[0-9]+")
+        assert (
+            re.match(
+                version_id_pattern,
+                device_under_test.info().version_info["ska_tango_base"],
+            )
+            is not None
+        )
+        assert (
+            re.match(
+                version_id_pattern,
+                device_under_test.info().version_info["ska_control_model"],
+            )
+            is not None
+        )
+        assert (
+            re.match(
+                version_id_pattern,
+                device_under_test.info().version_info["ReferenceSkaSubarray"],
+            )
+            is not None
+        )
 
     def test_is_cmd_allowed_exceptions(
         self: TestSKASubarray,

@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- WOM-573: Include the versions of the device, ska-tango-base and ska-control-model in the `tango.DeviceInfo.version_info` dict if using PyTango 10.0.0 or newer.
+
 ## 1.2.3
 
 - SKB-663: Fixed the `BaseComponentManager.abort_commands` deprecation check to be compatible with a `Mock` component manager that mocks `abort_commands`.

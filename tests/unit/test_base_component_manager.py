@@ -304,37 +304,6 @@ class TestReferenceBaseComponentManager:
         else:
             callbacks.assert_call("component_state", power=power_state)
 
-    def test_simulate_fault(
-        self: TestReferenceBaseComponentManager,
-        component_manager: ReferenceBaseComponentManager,
-        component: FakeBaseComponent,
-        callbacks: MockCallableGroup,
-    ) -> None:
-        """
-        Test how changes to the components result in actions on the state model.
-
-        For example, when we tell the component to simulate power off,
-        does the state model receive an action that informs it that the
-        component is off?
-
-        :param component_manager: the component manager under test
-        :param component: a base component for testing purposes
-        :param callbacks: a dictionary of mocks, passed as callbacks to
-            the command tracker under test
-        """
-        component_manager.start_communicating()
-        callbacks.assert_call(
-            "communication_state", CommunicationStatus.NOT_ESTABLISHED
-        )
-        callbacks.assert_call("communication_state", CommunicationStatus.ESTABLISHED)
-        callbacks.assert_call("component_state", power=PowerState.OFF)
-
-        component.simulate_fault(True)
-        callbacks.assert_call("component_state", fault=True)
-
-        component.simulate_fault(False)
-        callbacks.assert_call("component_state", fault=False)
-
     def test_reset_from_fault(
         self: TestReferenceBaseComponentManager,
         component_manager: ReferenceBaseComponentManager,
@@ -356,7 +325,7 @@ class TestReferenceBaseComponentManager:
         callbacks.assert_call("communication_state", CommunicationStatus.ESTABLISHED)
         callbacks.assert_call("component_state", power=PowerState.OFF)
 
-        component.simulate_fault(True)
+        component.set_fault()
         callbacks.assert_call("component_state", fault=True)
 
         component_manager.reset()

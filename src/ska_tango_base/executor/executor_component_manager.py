@@ -23,6 +23,7 @@ class TaskExecutorComponentManager(BaseComponentManager):
         self: TaskExecutorComponentManager,
         *args: Any,
         max_queue_size: int = 32,
+        task_exception_callback: Callable[[Exception], None] | None = None,
         **kwargs: Any,
     ) -> None:
         """
@@ -31,8 +32,12 @@ class TaskExecutorComponentManager(BaseComponentManager):
         :param args: additional positional arguments
         :param max_queue_size: optional maximum size of the tasks input queue
         :param kwargs: additional keyword arguments
+        :param task_exception_callback: callback to be called when a task raises an
+            unhandled exception.
         """
-        self._task_executor = TaskExecutor()
+        self._task_executor = TaskExecutor(
+            task_exception_callback=task_exception_callback
+        )
         super().__init__(*args, **kwargs)
         self._max_queued_tasks = max_queue_size
 

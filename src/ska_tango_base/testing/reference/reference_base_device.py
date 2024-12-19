@@ -114,7 +114,7 @@ class ReferenceSkaBaseDevice(SKABaseDevice[ReferenceBaseComponentManager]):
     def SimulateFault(self: ReferenceSkaBaseDevice) -> None:
         """Simulate a fault state."""
         # pylint: disable=protected-access
-        self.component_manager._component.simulate_fault(True)
+        self.component_manager._component.set_fault()
 
     @command()  # type: ignore[misc]
     def SimulateAlarm(self: ReferenceSkaBaseDevice) -> None:

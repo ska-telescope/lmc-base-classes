@@ -230,7 +230,7 @@ class ReferenceSkaSubarray(SKASubarray[ReferenceSubarrayComponentManager]):
     def SimulateFault(self: ReferenceSkaSubarray) -> None:
         """Simulate a fault state."""
         # pylint: disable=protected-access
-        self.component_manager._component.simulate_fault(True)
+        self.component_manager._component.set_fault()
 
     @command()  # type: ignore[misc]
     def SimulateObsFault(self: ReferenceSkaSubarray) -> None:

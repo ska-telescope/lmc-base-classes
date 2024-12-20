@@ -58,6 +58,45 @@ if you want to use this concurrency mechanism.
         """A sample subarray component manager"""
         # ...
 
+
+Optionally pass a "task_exception_callback" method
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+An optional callback can be passed to the :class:`~ska_tango_base.executor.executor_component_manager.TaskExecutorComponentManager`, 
+which is called when the :class:`~ska_tango_base.executor.executor.TaskExecutor` catches 
+any unhandled exceptions during execution of a LRC. It implies a bug in the device code, 
+and the callback should be used to notify users thereof. Here is an example where the 
+callback logs the exception and sets the device's state to ``FAULT``.
+
+.. code-block:: py
+
+    class SampleComponentManager(TaskExecutorComponentManager):
+        """A sample component manager"""
+
+        def __init__(
+            self,
+            *args,
+            logger: logging.Logger = None,
+            **kwargs,
+        ):
+            """Init SampleComponentManager."""
+
+            # Set up your class
+            self._logger = logger
+            super().__init__(
+                *args, 
+                logger=logger, 
+                task_exception_callback=self._task_exception_callback, 
+                **kwargs,
+            )
+
+        def _task_exception_callback(self, exception: Exception):
+            self._logger.error(
+                f"TaskExecutor caught an unhandled exception: {exception}. "
+                "Setting the device to fault state!"
+            )
+            self._update_component_state(fault=True)
+
 Add a task method to fulfil the long running command
 ----------------------------------------------------
 

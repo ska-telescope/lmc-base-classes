@@ -31,7 +31,7 @@ ska-control-model = "^1.0.0"
 jsonschema = "^4.17.3"
 
 [tool.poetry.group.dev.dependencies]
-pytango = "9.5.0"
+pytango = "10.0.0"
 black = "^24.2.0"
 darglint = "^1.8.1"
 flake8 = "^7.0.0"

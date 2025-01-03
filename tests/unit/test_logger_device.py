@@ -121,7 +121,8 @@ class TestSKALogger:
         """
         version_pattern = (
             f"{device_under_test.info().dev_class}, ska_tango_base, "
-            "[0-9]+.[0-9]+.[0-9]+, A set of generic base devices for SKA Telescope."
+            "[0-9]+.[0-9]+.[0-9]+(rc[0-9]+)?, A set of generic base devices for SKA "
+            "Telescope."
         )
         version_info = device_under_test.GetVersionInfo()
         assert len(version_info) == 1
@@ -136,7 +137,7 @@ class TestSKALogger:
         :param device_under_test: a proxy to the device under test
         """
         build_pattern = re.compile(
-            r"ska_tango_base, [0-9]+.[0-9]+.[0-9]+, "
+            r"ska_tango_base, [0-9]+.[0-9]+.[0-9]+(rc[0-9]+)?, "
             r"A set of generic base devices for SKA Telescope"
         )
         assert (re.match(build_pattern, device_under_test.buildState)) is not None
@@ -149,7 +150,7 @@ class TestSKALogger:
 
         :param device_under_test: a proxy to the device under test
         """
-        version_id_pattern = re.compile(r"[0-9]+.[0-9]+.[0-9]+")
+        version_id_pattern = re.compile(r"[0-9]+.[0-9]+.[0-9]+(rc[0-9]+)?")
         assert (re.match(version_id_pattern, device_under_test.versionId)) is not None
 
     def test_loggingLevel(

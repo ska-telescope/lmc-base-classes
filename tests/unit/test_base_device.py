@@ -207,7 +207,8 @@ class TestSKABaseDevice:  # pylint: disable=too-many-public-methods
         """
         version_pattern = (
             f"{device_under_test.info().dev_class}, ska_tango_base, "
-            "[0-9]+.[0-9]+.[0-9]+, A set of generic base devices for SKA Telescope."
+            "[0-9]+.[0-9]+.[0-9]+(rc[0-9]+)?, A set of generic base devices for SKA "
+            "Telescope."
         )
         version_info = device_under_test.GetVersionInfo()
         assert len(version_info) == 1
@@ -893,7 +894,7 @@ class TestSKABaseDevice:  # pylint: disable=too-many-public-methods
         :param device_under_test: a proxy to the device under test
         """
         build_pattern = re.compile(
-            r"ska_tango_base, [0-9]+.[0-9]+.[0-9]+, "
+            r"ska_tango_base, [0-9]+.[0-9]+.[0-9]+(rc[0-9]+)?, "
             r"A set of generic base devices for SKA Telescope"
         )
         assert (re.match(build_pattern, device_under_test.buildState)) is not None
@@ -904,8 +905,41 @@ class TestSKABaseDevice:  # pylint: disable=too-many-public-methods
 
         :param device_under_test: a proxy to the device under test
         """
-        version_id_pattern = re.compile(r"[0-9]+.[0-9]+.[0-9]+")
+        version_id_pattern = re.compile(r"[0-9]+\.[0-9]+\.[0-9]+(rc[0-9]+)?")
         assert (re.match(version_id_pattern, device_under_test.versionId)) is not None
+
+    def test_version_info(
+        self: TestSKABaseDevice, device_under_test: DeviceProxy
+    ) -> None:
+        """
+        Test for Device version info.
+
+        :param device_under_test: a proxy to the device under test
+        """
+        version_id_pattern = re.compile(r"[0-9]+\.[0-9]+\.[0-9]+(rc[0-9]+)?")
+        device_info = device_under_test.info()
+        if hasattr(device_info, "version_info"):
+            assert (
+                re.match(
+                    version_id_pattern,
+                    device_info.version_info["ska_tango_base"],
+                )
+                is not None
+            )
+            assert (
+                re.match(
+                    version_id_pattern,
+                    device_info.version_info["ska_control_model"],
+                )
+                is not None
+            )
+            assert (
+                re.match(
+                    version_id_pattern,
+                    device_info.version_info["ReferenceSkaBaseDevice"],
+                )
+                is not None
+            )
 
     def test_loggingLevel(
         self: TestSKABaseDevice, device_under_test: DeviceProxy

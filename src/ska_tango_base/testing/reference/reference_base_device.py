@@ -31,6 +31,8 @@ __all__ = ["SKABaseDevice", "main"]
 class ReferenceSkaBaseDevice(SKABaseDevice[ReferenceBaseComponentManager]):
     """Implements a reference SKA base device."""
 
+    __version__ = "1.0.0"
+
     def create_component_manager(
         self: ReferenceSkaBaseDevice,
     ) -> ReferenceBaseComponentManager:

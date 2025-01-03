@@ -30,6 +30,8 @@ __all__ = ["SKASubarray", "main"]
 class ReferenceSkaSubarray(SKASubarray[ReferenceSubarrayComponentManager]):
     """Implements a reference SKA Subarray device."""
 
+    __version__ = "1.0.0"
+
     def create_component_manager(
         self: ReferenceSkaSubarray,
     ) -> ReferenceSubarrayComponentManager:

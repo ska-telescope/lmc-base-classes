@@ -41,6 +41,8 @@ from ska_control_model import (
     TaskStatus,
     TestMode,
 )
+from ska_control_model import __name__ as control_model_name
+from ska_control_model import __version__ as control_model_version
 from tango import DebugIt, DevState, Except, is_omni_thread
 from tango.server import Device, attribute, command, device_property
 
@@ -339,6 +341,12 @@ class SKABaseDevice(
             self._version_id = release.version
             self._methods_patched_for_debugger = False
             self._status_queue_size = 0
+
+            if hasattr(self, "add_version_info"):
+                self.add_version_info(release.name, release.version)
+                self.add_version_info(control_model_name, control_model_version)
+                if hasattr(self, "__version__"):
+                    self.add_version_info(self.__class__.__name__, self.__version__)
 
             self._init_state_model()
 

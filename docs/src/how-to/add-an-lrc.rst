@@ -74,23 +74,7 @@ callback logs the exception and sets the device's state to ``FAULT``.
     class SampleComponentManager(TaskExecutorComponentManager):
         """A sample component manager"""
 
-        def __init__(
-            self,
-            logger: logging.Logger,
-            *args,
-            **kwargs,
-        ):
-            """Init SampleComponentManager."""
-
-            # Set up your class
-            self._logger = logger
-            super().__init__(logger, *args, **kwargs)
-
         def _on_unhandled_exception(self, exception: Exception):
-            self._logger.error(
-                f"TaskExecutor caught an unhandled exception: {exception}. "
-                "Setting the device to fault state!"
-            )
             self._update_component_state(fault=True)
 
 Add a task method to fulfil the long running command

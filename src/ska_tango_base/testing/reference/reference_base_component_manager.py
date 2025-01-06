@@ -465,11 +465,10 @@ class GenericBaseComponentManager(TaskExecutorComponentManager, Generic[Componen
             *args,
             power=PowerState.UNKNOWN,
             fault=None,
-            task_exception_callback=self._task_exception_callback,
             **kwargs,
         )
 
-    def _task_exception_callback(
+    def _on_unhandled_exception(
         self: GenericBaseComponentManager[ComponentT], exception: Exception
     ) -> None:
         self._logger.error(

@@ -30,7 +30,7 @@ class TaskExecutor:
     def __init__(
         self: TaskExecutor,
         max_workers: int | None = 1,
-        task_exception_callback: Callable[[Exception], None] | None = None,
+        unhandled_exception_callback: Callable[[Exception], None] | None = None,
     ) -> None:
         """
         Initialise a new instance.
@@ -38,11 +38,11 @@ class TaskExecutor:
         :param max_workers: the maximum number of worker threads
             This is meant to be kept at the default value to allow
             the sequential execution of LRC except for special cases
-        :param task_exception_callback: callback to be called when a task raises an
+        :param unhandled_exception_callback: callback to be called when a task raises an
             unhandled exception.
         """
         self._max_workers = max_workers
-        self._task_exception_callback = task_exception_callback
+        self._unhandled_exception_callback = unhandled_exception_callback
         self._executor = concurrent.futures.ThreadPoolExecutor(
             max_workers=max_workers,
         )
@@ -105,8 +105,8 @@ class TaskExecutor:
                     ),
                     exception=exc,
                 )
-                if self._task_exception_callback is not None:
-                    self._task_exception_callback(exc)
+                if self._unhandled_exception_callback is not None:
+                    self._unhandled_exception_callback(exc)
                 return (
                     TaskStatus.FAILED,
                     f"Unhandled exception submitting task: {str(exc)}",
@@ -198,8 +198,8 @@ class TaskExecutor:
                     ),
                     exception=exc,
                 )
-                if self._task_exception_callback is not None:
-                    self._task_exception_callback(exc)
+                if self._unhandled_exception_callback is not None:
+                    self._unhandled_exception_callback(exc)
                 return
 
         # Don't set the task to IN_PROGRESS yet, in case func is itself implemented
@@ -227,8 +227,8 @@ class TaskExecutor:
                 ),
                 exception=exc,
             )
-            if self._task_exception_callback is not None:
-                self._task_exception_callback(exc)
+            if self._unhandled_exception_callback is not None:
+                self._unhandled_exception_callback(exc)
 
     # This method is for linter to not complain about too many nested ifs
     def _call_task_callback(

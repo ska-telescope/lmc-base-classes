@@ -58,6 +58,25 @@ if you want to use this concurrency mechanism.
         """A sample subarray component manager"""
         # ...
 
+
+Optionally implement the "_on_unhandled_exception" callback method
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+If your device inherits from the :class:`~ska_tango_base.executor.executor_component_manager.TaskExecutorComponentManager`, 
+you should implement the ``_on_unhandled_exception`` method,
+which is called when the :class:`~ska_tango_base.executor.executor.TaskExecutor` catches 
+any unhandled exceptions during execution of a LRC. It implies a bug in the device code, 
+and the callback should be used to notify users thereof. Here is an example where the 
+callback logs the exception and sets the device's state to ``FAULT``.
+
+.. code-block:: py
+
+    class SampleComponentManager(TaskExecutorComponentManager):
+        """A sample component manager"""
+
+        def _on_unhandled_exception(self, exception: Exception):
+            self._update_component_state(fault=True)
+
 Add a task method to fulfil the long running command
 ----------------------------------------------------
 

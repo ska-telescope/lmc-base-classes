@@ -373,13 +373,9 @@ class FakeBaseComponent:
         sleep(self._time_to_complete)
         task_callback(status=TaskStatus.COMPLETED)
 
-    def simulate_fault(self: FakeBaseComponent, fault_state: bool) -> None:
-        """
-        Tell the component to simulate (or stop simulating) a fault.
-
-        :param fault_state: whether faulty or not.
-        """
-        self._update_state(fault=fault_state)
+    def set_fault(self: FakeBaseComponent) -> None:
+        """Tell the component to set a fault state."""
+        self._update_state(fault=True)
 
     def _update_state(self: FakeBaseComponent, **kwargs: Any) -> None:
         callback_kwargs = {}
@@ -459,8 +455,8 @@ class GenericBaseComponentManager(TaskExecutorComponentManager, Generic[Componen
         :param kwargs: extra keyword arguments
         """
         self._fail_communicate = False
-
         self._component = component
+        self._logger = logger
 
         super().__init__(
             logger,
@@ -471,6 +467,15 @@ class GenericBaseComponentManager(TaskExecutorComponentManager, Generic[Componen
             fault=None,
             **kwargs,
         )
+
+    def _on_unhandled_exception(
+        self: GenericBaseComponentManager[ComponentT], exception: Exception
+    ) -> None:
+        self._logger.error(
+            f"TaskExecutor caught an unhandled exception: {exception}. "
+            "Setting the device to fault state!"
+        )
+        self._component.set_fault()
 
     def start_communicating(self: GenericBaseComponentManager[ComponentT]) -> None:
         """Establish communication with the component, then start monitoring."""

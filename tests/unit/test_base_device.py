@@ -711,6 +711,7 @@ class TestSKABaseDevice:  # pylint: disable=too-many-public-methods
         :param lrc_callback_log_only: callback fixture to use with invoke_lrc.
         :param caplog: pytest LogCaptureFixture
         """
+        assert device_under_test.state() == DevState.OFF
         cmd_subs = lrc_api.invoke_lrc(lrc_callback_log_only, device_under_test, "On")
         Helpers.assert_expected_logs(
             caplog,
@@ -724,6 +725,7 @@ class TestSKABaseDevice:  # pylint: disable=too-many-public-methods
                 "lrc_callback(status=COMPLETED)",
             ],
         )
+        assert device_under_test.state() == DevState.ON
         cmd_subs = lrc_api.invoke_lrc(
             lrc_callback_log_only, device_under_test, "SimulateCommandError"
         )
@@ -737,6 +739,7 @@ class TestSKABaseDevice:  # pylint: disable=too-many-public-methods
                 "lrc_callback(status=FAILED)",
             ],
         )
+        assert device_under_test.state() == DevState.FAULT
         cmd_subs = lrc_api.invoke_lrc(
             lrc_callback_log_only,
             device_under_test,
@@ -752,6 +755,7 @@ class TestSKABaseDevice:  # pylint: disable=too-many-public-methods
                 "lrc_callback(status=REJECTED)",
             ],
         )
+        assert device_under_test.state() == DevState.FAULT
         del cmd_subs
 
     def test_LRC_callback_type_warnings(

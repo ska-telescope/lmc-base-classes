@@ -32,9 +32,20 @@ class TaskExecutorComponentManager(BaseComponentManager):
         :param max_queue_size: optional maximum size of the tasks input queue
         :param kwargs: additional keyword arguments
         """
-        self._task_executor = TaskExecutor()
+        self._task_executor = TaskExecutor(
+            unhandled_exception_callback=self._on_unhandled_exception
+        )
         super().__init__(*args, **kwargs)
         self._max_queued_tasks = max_queue_size
+
+    def _on_unhandled_exception(
+        self: BaseComponentManager, exception: Exception
+    ) -> None:
+        """
+        Do something when a task raises an unhandled exception.
+
+        :param exception: the unhandled exception that was caught.
+        """
 
     @property
     def max_queued_tasks(self) -> int:

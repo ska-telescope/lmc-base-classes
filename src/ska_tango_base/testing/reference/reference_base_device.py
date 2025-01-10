@@ -18,9 +18,9 @@ from ska_control_model import ResultCode
 from tango import DevState
 from tango.server import command
 
-from ...base import SKABaseDevice
-from ...commands import SubmittedSlowCommand
-from .reference_base_component_manager import (
+from ska_tango_base.base import SKABaseDevice
+from ska_tango_base.commands import SubmittedSlowCommand
+from ska_tango_base.testing.reference.reference_base_component_manager import (
     FakeBaseComponent,
     ReferenceBaseComponentManager,
 )

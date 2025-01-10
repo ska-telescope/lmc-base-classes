@@ -603,7 +603,7 @@ class TestSKABaseDevice:  # pylint: disable=too-many-public-methods
             _ = lrc_api.invoke_lrc(successful_lrc_callback, device_under_test, "Off")
         change_event_callbacks.assert_not_called()
 
-    # pylint: disable=too-many-arguments
+    # pylint: disable=too-many-arguments,too-many-positional-arguments
     @pytest.mark.parametrize(
         "protocol_versions, expected_logs",
         [

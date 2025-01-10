@@ -57,7 +57,8 @@ class TaskExecutor:
         """
         return self._executor._work_queue.qsize()  # pylint: disable=protected-access
 
-    def submit(  # pylint: disable=too-many-arguments
+    # pylint: disable=too-many-arguments,too-many-positional-arguments
+    def submit(
         self: TaskExecutor,
         func: TaskFunctionType,
         args: Any = None,

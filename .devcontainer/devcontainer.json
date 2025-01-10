@@ -53,7 +53,7 @@
       ]
     }
   },
-  "postCreateCommand": "sudo poetry config virtualenvs.create false && sudo poetry install",
+  "postCreateCommand": "sudo poetry config virtualenvs.create false && sudo poetry install -E telemetry",
   "remoteUser": "tango",
   "remoteEnv": {
     "PATH": "/home/tango/.local/bin:${containerEnv:PATH}"

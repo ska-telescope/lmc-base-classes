@@ -442,7 +442,7 @@ class SubmittedSlowCommand(SlowCommand[tuple[ResultCode, str]]):
     :param logger: a logger for this command to log with.
     """
 
-    def __init__(  # pylint: disable=too-many-arguments
+    def __init__(  # pylint: disable=too-many-arguments,too-many-positional-arguments
         self: SubmittedSlowCommand,
         command_name: str,
         command_tracker: CommandTrackerProtocol,

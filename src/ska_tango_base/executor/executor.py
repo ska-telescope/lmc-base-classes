@@ -11,9 +11,24 @@ import concurrent.futures
 import threading
 from typing import Any, Callable
 
+from packaging import version
 from ska_control_model import ResultCode, TaskStatus
+from tango import __version__ as tango_version
 
 from ..base import TaskCallbackType
+
+if version.parse(tango_version) >= version.parse("10.0.0"):
+    try:
+        from opentelemetry.trace.propagation.tracecontext import (
+            TraceContextTextMapPropagator,
+        )
+
+        OPENTELEMETRY_INSTALLED = True
+    except ImportError:
+        OPENTELEMETRY_INSTALLED = False
+else:
+    OPENTELEMETRY_INSTALLED = False
+
 
 __all__ = ["TaskExecutor", "TaskStatus"]
 
@@ -58,6 +73,7 @@ class TaskExecutor:
         return self._executor._work_queue.qsize()  # pylint: disable=protected-access
 
     # pylint: disable=too-many-arguments,too-many-positional-arguments
+    # pylint: disable=possibly-used-before-assignment
     def submit(
         self: TaskExecutor,
         func: TaskFunctionType,
@@ -78,6 +94,9 @@ class TaskExecutor:
 
         :return: (TaskStatus, message)
         """
+        thread_trace: dict[str, str] = {}
+        if OPENTELEMETRY_INSTALLED:
+            TraceContextTextMapPropagator().inject(thread_trace)
         with self._submit_lock:
             try:
                 self._executor.submit(
@@ -88,6 +107,7 @@ class TaskExecutor:
                     is_cmd_allowed,
                     task_callback,
                     self._abort_event,
+                    thread_trace,
                 )
             except RuntimeError:
                 self._call_task_callback(
@@ -162,7 +182,11 @@ class TaskExecutor:
         is_cmd_allowed: Callable[[], bool] | None,
         task_callback: TaskCallbackType | None,
         abort_event: threading.Event,
+        thread_trace: dict[str, str],
     ) -> None:
+        if OPENTELEMETRY_INSTALLED:
+            TraceContextTextMapPropagator().extract(thread_trace)
+
         # Let the submit method finish before we start. This prevents this thread from
         # calling back with "IN PROGRESS" before the submit method has called back with
         # "QUEUED".

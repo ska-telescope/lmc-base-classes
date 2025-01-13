@@ -26,7 +26,7 @@ def test_open_telemetry() -> None:
         client_log_path, "w", encoding="utf-8"
     ) as client_log:
         # Run the device server in a separate process
-        server_p = subprocess.Popen(  # pylint: disable=consider-using-with
+        server1_p = subprocess.Popen(  # pylint: disable=consider-using-with
             [
                 "python",
                 "src/ska_tango_base/testing/reference/reference_base_device.py",
@@ -36,6 +36,22 @@ def test_open_telemetry() -> None:
                 "45678",
                 "-dlist",
                 "foo/bar/1",
+            ],
+            stdout=server_log,
+            stderr=subprocess.STDOUT,  # Redirect stderr to the same file
+            env=env,
+            start_new_session=True,  # Start in a new process group
+        )
+        server2_p = subprocess.Popen(  # pylint: disable=consider-using-with
+            [
+                "python",
+                "src/ska_tango_base/testing/reference/reference_base_device.py",
+                "test",
+                "-nodb",
+                "-port",
+                "45679",
+                "-dlist",
+                "foo/bar/2",
             ],
             stdout=server_log,
             stderr=subprocess.STDOUT,  # Redirect stderr to the same file
@@ -56,35 +72,39 @@ def test_open_telemetry() -> None:
             env=env,
         )
         client_p.wait()  # Wait for the client script to complete
-        time.sleep(0.5)  # Wait for any LRCs to complete (not strictly necessary)
-        os.killpg(os.getpgid(server_p.pid), signal.SIGTERM)  # Kill the device server
+        time.sleep(1)  # Wait for any LRCs to complete (not strictly necessary)
+        os.killpg(os.getpgid(server1_p.pid), signal.SIGTERM)  # Kill the device server
+        os.killpg(os.getpgid(server2_p.pid), signal.SIGTERM)  # Kill the device server
 
     if (
         version.parse(tango_version) >= version.parse("10.0.0")
         and importlib.util.find_spec("opentelemetry") is not None
     ):
         # Compare the telemetry logs of the server and client
-        with open(server_log_path, "r", encoding="utf-8") as server_log, open(
-            client_log_path, "r", encoding="utf-8"
-        ) as client_log:
+        with open(server_log_path, "r", encoding="utf-8") as server_log:
             server_out = server_log.readlines()
-            client_out = client_log.readlines()
+            trace_id = ""
+            on_span_id = ""
+            on_parent_id = ""
             for i, line in enumerate(server_out):
+                if "ReferenceSkaBaseDevice.TestTelemetryTracing" in line:
+                    trace_id = server_out[i + 3].split(":")[1].strip(' ",\n')
+                if "TaskExecutor._run.test_telemetry_tracing" in line:
+                    # assert command span ID matches parent ID of command func
+                    assert trace_id == server_out[i + 7].split(":")[1].strip(' ",\n')
                 if "SKABaseDevice.On" in line:
-                    trace_id = server_out[i + 2].split('"')[3][2:]
-                    span_id = server_out[i + 3].split('"')[3][2:]
+                    on_span_id = server_out[i + 3].split(":")[1].strip(' ",\n')
+                    on_parent_id = server_out[i + 7].split(":")[1].strip(' ",\n')
+                if "TaskExecutor._run.on" in line:
+                    # assert command span ID matches parent ID of command func
+                    assert on_span_id == server_out[i + 7].split(":")[1].strip(' ",\n')
                     break
 
-            print("Trace ID of On command:", trace_id)
-            print("Server span ID:", span_id)
-
-            for i, line in enumerate(client_out):
-                if trace_id in line:
-                    print(
-                        "Client span ID:",
-                        client_out[i + 1].split()[-1].strip('",').strip("0x"),
+            for i, line in enumerate(server_out):
+                if "span_id" in line and on_parent_id[2:] in line:
+                    # assert matching parent tango operation
+                    assert (
+                        server_out[i + 9].split(":")[1].strip()
+                        == "TestTelemetryTracing"
                     )
-                    print(
-                        "Client span parent ID:",
-                        client_out[i + 3].split()[-1].strip('",'),
-                    )
+                    break

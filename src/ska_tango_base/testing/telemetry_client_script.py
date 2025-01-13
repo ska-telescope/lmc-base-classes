@@ -5,7 +5,7 @@
 # Distributed under the terms of the BSD 3-clause new license.
 # See LICENSE.txt for more info.
 """This contains a script for connecting a client to a test device without a db."""
-from ska_control_model.admin_mode import AdminMode
+from ska_control_model import AdminMode
 from tango import DeviceProxy
 
 
@@ -18,7 +18,7 @@ def main() -> None:
     print("Device state:", device.state())
     device.adminMode = AdminMode.ONLINE
     print("Device state:", device.state())
-    device.On()
+    device.TestTelemetryTracing()
 
 
 if __name__ == "__main__":

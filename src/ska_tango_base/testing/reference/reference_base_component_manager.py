@@ -380,23 +380,31 @@ class FakeBaseComponent:
         sleep(self._time_to_complete)
         task_callback(status=TaskStatus.COMPLETED)
 
-    def test_telemetry_tracing(
+    def call_command_on_device(  # pylint: disable=too-many-arguments,unused-argument
         self: FakeBaseComponent,
-        task_callback: TaskCallbackType,  # pylint: disable=unused-argument
-        task_abort_event: threading.Event,  # pylint: disable=unused-argument
+        command: str,
+        device_address: str,
+        task_callback: TaskCallbackType,
+        task_abort_event: threading.Event,
+        database: bool = True,
     ) -> None:
         """
         LRC that calls a LRC on another tango device to test telemetry tracing.
 
+        :param command: name of the command to call.
+        :param device_address: address of the tango device to connect to.
         :param task_callback: a callback to be called whenever the
             status of this task changes.
         :param task_abort_event: a threading.Event that can be checked
             for whether this task has been aborted.
-        :raises CommandError: simulating an invalid argument.
+        :param database: if a tango db is available, defaults to True.
         """
-        device = DeviceProxy("tango://localhost:45679/foo/bar/2#dbase=no")
+        if database:
+            device = DeviceProxy(device_address)
+        else:
+            device = DeviceProxy(device_address + "#dbase=no")
         device.adminMode = AdminMode.ONLINE
-        device.On()
+        getattr(device, command)()
 
     def set_fault(self: FakeBaseComponent) -> None:
         """Tell the component to set a fault state."""
@@ -713,7 +721,10 @@ class GenericBaseComponentManager(TaskExecutorComponentManager, Generic[Componen
         :return: TaskStatus and message
         """
         return self.submit_task(
-            self._component.test_telemetry_tracing, task_callback=task_callback
+            self._component.call_command_on_device,
+            args=["On", "tango://localhost:45679/foo/bar/2"],
+            kwargs={"database": False},
+            task_callback=task_callback,
         )
 
 

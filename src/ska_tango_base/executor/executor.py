@@ -248,7 +248,10 @@ class TaskExecutor:
                 with tracer.start_as_current_span(
                     f"{self.__class__.__name__}._run.{func.__name__}",
                     context,
-                    attributes={"function_args": args} | kwargs,
+                    attributes={
+                        "function_args": args,
+                        "function_kwargs": [f"{k}={v}" for k, v in kwargs.items()],
+                    },
                 ):
                     func(
                         *args,

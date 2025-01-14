@@ -67,7 +67,7 @@ you should implement the ``_on_unhandled_exception`` method,
 which is called when the :class:`~ska_tango_base.executor.executor.TaskExecutor` catches 
 any unhandled exceptions during execution of a LRC. It implies a bug in the device code, 
 and the callback should be used to notify users thereof. Here is an example where the 
-callback logs the exception and sets the device's state to ``FAULT``.
+callback sets the device's state to ``FAULT``.
 
 .. code-block:: py
 
@@ -231,12 +231,19 @@ supply your own concurrency mechanism to schedule the task.
             :param task_callback: Update task state, defaults to None
             """
             task_status, response = self.submit_task(
-                self._a_very_slow_method, args=[],
+                func=self._a_very_slow_method, 
+                args=[],
+                kwargs={},
                 is_cmd_allowed=self._is_very_slow_method_allowed,
-                task_callback=task_callback
+                task_callback=task_callback,
             )
             return task_status, response
 
+Any positional or keyword arguments for the task method must be passed as a list and 
+dictionary respectively, as shown in the example above. In other words, ``args`` and
+``kwargs`` do not behave like conventional ``*args`` and ``**kwargs`` for 
+:meth:`~ska_tango_base.executor.executor_component_manager.TaskExecutorComponentManager.submit_task`
+itself, but are expanded as such when the task method is called.
 
 Initialise and register the command object
 ------------------------------------------

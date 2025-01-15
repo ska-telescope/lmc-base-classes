@@ -61,7 +61,7 @@ LRC_FINISHED_MAX_LENGTH = 100
 class CommandTracker:  # pylint: disable=too-many-instance-attributes
     """A class for keeping track of the state and progress of long runnning commands."""
 
-    def __init__(  # pylint: disable=too-many-arguments
+    def __init__(  # pylint: disable=too-many-arguments,too-many-positional-arguments
         self: CommandTracker,
         queue_changed_callback: Callable[[list[tuple[str, str]]], None],
         status_changed_callback: Callable[[list[tuple[str, TaskStatus]]], None],

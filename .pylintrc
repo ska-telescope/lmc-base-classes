@@ -10,3 +10,6 @@ enable=
 [SIMILARITIES]
 min-similarity-lines=7
 ignore-imports=yes
+
+[DESIGN]
+max-positional-arguments=7

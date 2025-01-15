@@ -120,7 +120,7 @@ class FakeSubarrayComponent(FakeBaseComponent):
             """
             return self._resources.issuperset(resources)
 
-    def __init__(  # pylint: disable=too-many-arguments
+    def __init__(  # pylint: disable=too-many-arguments,too-many-positional-arguments
         self: FakeSubarrayComponent,
         capability_types: list[str],
         time_to_return: float = 0.05,

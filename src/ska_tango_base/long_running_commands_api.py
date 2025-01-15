@@ -490,5 +490,5 @@ def _find_latest_compatible_protocol_version(server_proxy: DeviceProxy) -> int |
     )
     client_min, client_max = _SUPPORTED_LRC_PROTOCOL_VERSIONS
     if server_min <= client_max and client_min <= server_max:
-        return min(server_max, client_max)  # type: ignore
+        return min(server_max, client_max)
     return None

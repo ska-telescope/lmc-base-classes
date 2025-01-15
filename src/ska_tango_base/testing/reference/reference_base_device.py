@@ -12,10 +12,13 @@ It inherits from SKABaseDevice.
 # pylint: disable=invalid-name
 from __future__ import annotations
 
+import importlib.util
 from typing import cast
 
+from packaging import version
 from ska_control_model import ResultCode
 from tango import DevState
+from tango import __version__ as tango_version
 from tango.server import command
 
 from ska_tango_base.base import SKABaseDevice
@@ -122,6 +125,17 @@ class ReferenceSkaBaseDevice(SKABaseDevice[ReferenceBaseComponentManager]):
             message indicating status. The message is for
             information purpose only.
         """
+        if (
+            version.parse(tango_version) >= version.parse("10.0.0")
+            and importlib.util.find_spec("opentelemetry") is not None
+        ):
+            # pylint: disable=import-outside-toplevel
+            from opentelemetry.trace import get_current_span
+
+            print(
+                "ReferenceSkaBaseDevice.TestTelemetryTracing trace ID:",
+                hex(get_current_span().get_span_context().trace_id),
+            )
         handler = self.get_command_object("TestTelemetryTracing")
         result_code, message = handler()
         return ([result_code], [message])

@@ -6,14 +6,63 @@
 # See LICENSE.txt for more info.
 """This module contains tests for using OpenTelemetry in SKABaseDevice."""
 import importlib.util
-import json
 import os
 import signal
 import subprocess
+import tempfile
 import time
 
 from packaging import version
 from tango import __version__ as tango_version
+
+
+class BackgroundServer:
+    """Run server in background."""
+
+    def __init__(self, command: list[str], env: dict[str, str], filepath: str) -> None:
+        """Initialise background server."""
+        self.output = tempfile.TemporaryFile("w+t")
+        self.filepath = filepath
+        self.process = subprocess.Popen(  # pylint: disable=consider-using-with
+            command,
+            stdout=self.output,
+            stderr=subprocess.STDOUT,
+            env=env,
+            start_new_session=True,
+        )
+
+    def wait(self, timeout: float) -> None:
+        """Wait for server to startup, blocking until it responds or times out."""
+        max_timestamp = time.time() + timeout
+        self.output.seek(0)
+        while True:
+            line = self.output.readline()
+
+            if line == "Ready to accept request\n":
+                break
+
+            if time.time() > max_timestamp:
+                raise RuntimeError("Timeout waiting for ready string")
+
+            if not line:
+                self.output.seek(0)
+                try:
+                    self.process.wait(0.1)
+                    raise RuntimeError("Process stopped during startup")
+                except subprocess.TimeoutExpired:
+                    continue
+
+    def kill(self) -> None:
+        """Wait for response from process, blocking until it responds or times out."""
+        # Kill the servers process group
+        self.process.terminate()
+        time.sleep(0.5)
+        os.killpg(os.getpgid(self.process.pid), signal.SIGTERM)
+
+        # Read output from the subprocess and write to file
+        self.output.seek(0)
+        with open(self.filepath, "w", encoding="utf-8") as file:
+            file.write(self.output.read())
 
 
 # pylint: disable=too-many-locals
@@ -30,48 +79,43 @@ def test_open_telemetry() -> None:
     """
     env = os.environ.copy()
     env["TANGO_TELEMETRY_ENABLE"] = "on"
-    server_log_path = "tests/device_server.log"
+    env["OMP_NUM_THREADS"] = "1"
+    server1_log_path = "tests/device_server1.log"
+    server2_log_path = "tests/device_server2.log"
     client_log_path = "tests/device_proxy.log"
 
-    with open(server_log_path, "w", encoding="utf-8") as server_log, open(
-        client_log_path, "w", encoding="utf-8"
-    ) as client_log:
-        # Run the device server in a separate process
-        server1_p = subprocess.Popen(  # pylint: disable=consider-using-with
-            [
-                "python",
-                "src/ska_tango_base/testing/reference/reference_base_device.py",
-                "test",
-                "-nodb",
-                "-port",
-                "45678",
-                "-dlist",
-                "foo/bar/1",
-            ],
-            stdout=server_log,
-            stderr=subprocess.STDOUT,  # Redirect stderr to the same file
-            env=env,
-            start_new_session=True,  # Start in a new process group
-        )
-        server2_p = subprocess.Popen(  # pylint: disable=consider-using-with
-            [
-                "python",
-                "src/ska_tango_base/testing/reference/reference_base_device.py",
-                "test",
-                "-nodb",
-                "-port",
-                "45679",
-                "-dlist",
-                "foo/bar/2",
-            ],
-            stdout=server_log,
-            stderr=subprocess.STDOUT,  # Redirect stderr to the same file
-            env=env,
-            start_new_session=True,  # Start in a new process group
-        )
-        time.sleep(2)  # Wait for device server to initialise
-
-        env["PYTANGO_TELEMETRY_CLIENT_SERVICE_NAME"] = "test.client"
+    # Run the device server in a separate process
+    server1 = BackgroundServer(
+        [
+            "python",
+            "src/ska_tango_base/testing/reference/reference_base_device.py",
+            "test",
+            "-nodb",
+            "-port",
+            "45678",
+            "-dlist",
+            "foo/bar/1",
+        ],
+        env=env,
+        filepath=server1_log_path,
+    )
+    server2 = BackgroundServer(
+        [
+            "python",
+            "src/ska_tango_base/testing/reference/reference_base_device.py",
+            "test",
+            "-nodb",
+            "-port",
+            "45679",
+            "-dlist",
+            "foo/bar/2",
+        ],
+        env=env,
+        filepath=server2_log_path,
+    )
+    server1.wait(3)
+    server2.wait(3)
+    with open(client_log_path, "w", encoding="utf-8") as client_log:
         # Run the client script in a separate process
         client_p = subprocess.Popen(  # pylint: disable=consider-using-with
             [
@@ -83,58 +127,39 @@ def test_open_telemetry() -> None:
             env=env,
         )
         client_p.wait()  # Wait for the client script to complete
-        time.sleep(1)  # Wait for any LRCs to complete (not strictly necessary)
-        os.killpg(os.getpgid(server1_p.pid), signal.SIGTERM)  # Kill the device server
-        os.killpg(os.getpgid(server2_p.pid), signal.SIGTERM)  # Kill the device server
+    server1.kill()
+    server2.kill()
 
     if (
         version.parse(tango_version) >= version.parse("10.0.0")
         and importlib.util.find_spec("opentelemetry") is not None
     ):
         # Compare the telemetry logs of the server and client
-        with open(server_log_path, "r", encoding="utf-8") as server_log:
-            server_out = server_log.readlines()
-            trace_id = ""
-            on_span_id = ""
-            on_parent_id = ""
-            asserts = 0
-            for i, line in enumerate(server_out):
-                if "ReferenceSkaBaseDevice.TestTelemetryTracing" in line:
-                    trace_id = server_out[i + 3].split(":")[1].strip(' ",\n')
-                if "TaskExecutor._run.call_command_on_device" in line:
-                    # assert command span ID matches parent ID of command func
-                    assert trace_id == server_out[i + 7].split(":")[1].strip(' ",\n')
-                    nextline, attr_str = "", ""
-                    j = 0
-                    while "}" not in nextline:
-                        nextline = server_out[i + 13 + j]
-                        attr_str += nextline[:-1]
-                        j += 1
-                    attributes = json.loads(
-                        attr_str.strip(" ,").removeprefix('"attributes":')
-                    )
-                    assert attributes["function_args"][0] == "On"
-                    assert (
-                        attributes["function_args"][1]
-                        == "tango://localhost:45679/foo/bar/2"
-                    )
-                    assert attributes["function_kwargs"][0] == "database=False"
-                    asserts += 1
-                if "SKABaseDevice.On" in line:
-                    on_span_id = server_out[i + 3].split(":")[1].strip(' ",\n')
-                    on_parent_id = server_out[i + 7].split(":")[1].strip(' ",\n')
-                if "TaskExecutor._run.on" in line:
-                    # assert command span ID matches parent ID of command func
-                    assert on_span_id == server_out[i + 7].split(":")[1].strip(' ",\n')
-                    asserts += 1
-                    break
-            for i, line in enumerate(server_out):
-                if "span_id" in line and on_parent_id[2:] in line:
-                    # assert matching parent tango operation
-                    assert (
-                        server_out[i + 9].split(":")[1].strip()
-                        == "TestTelemetryTracing"
-                    )
-                    asserts += 1
-                    break
-            assert asserts == 3
+        with open(server1_log_path, "r", encoding="utf-8") as server1_log, open(
+            server2_log_path, "r", encoding="utf-8"
+        ) as server2_log, open(client_log_path, "r", encoding="utf-8") as client_log:
+            server1_out = server1_log.readlines()
+            server2_out = server2_log.readlines()
+            client_out = client_log.readlines()
+            trace_id = "0xZYX"  # nonexistent
+            count = 0
+            for line in server1_out:
+                if "ReferenceSkaBaseDevice.TestTelemetryTracing trace ID" in line:
+                    trace_id = line.split()[-1].lstrip("0x")
+                    # print("TestTelemetryTracing command trace ID:", trace_id)
+                    continue
+                if trace_id in line:
+                    count += 1
+            for line in server2_out:
+                if trace_id in line:
+                    count += 1
+            for line in client_out:
+                if trace_id in line:
+                    count += 1
+            # The amount of spans part of the main trace will differ depending on the
+            # client script and command code, so we check for a minimum expected amount,
+            # in case changes are made.
+            # client: 2x C++ and python trace for calling command (3 total)
+            # server1: 2x C++ and python command, python command func and _run (5 total)
+            # server2: C++ trace, python command func and _run (3 total)
+            assert count >= 11

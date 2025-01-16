@@ -533,7 +533,7 @@ class TestSKASubarray:  # pylint: disable=too-many-public-methods
         assert device_under_test.obsState == device_under_test.commandedObsState
         assert not device_under_test.assignedResources
 
-    def test_configure_and_end(
+    def test_configure_and_end(  # pylint: disable=too-many-positional-arguments
         self: TestSKASubarray,
         device_under_test: tango.DeviceProxy,
         change_event_callbacks: MockTangoEventCallbackGroup,
@@ -586,7 +586,7 @@ class TestSKASubarray:  # pylint: disable=too-many-public-methods
             "channels:0",
         ]
 
-    def test_scan_and_end_scan(
+    def test_scan_and_end_scan(  # pylint: disable=too-many-positional-arguments
         self: TestSKASubarray,
         device_under_test: tango.DeviceProxy,
         change_event_callbacks: MockTangoEventCallbackGroup,
@@ -714,6 +714,7 @@ class TestSKASubarray:  # pylint: disable=too-many-public-methods
             "channels:0",
         ]
 
+    # pylint: disable=too-many-positional-arguments
     def test_fault_obsreset_abort_from_resourcing(
         self: TestSKASubarray,
         device_under_test: tango.DeviceProxy,
@@ -756,6 +757,7 @@ class TestSKASubarray:  # pylint: disable=too-many-public-methods
         # Reset again from abort to empty state
         reset_subarray(ObsState.EMPTY, False)
 
+    # pylint: disable=too-many-positional-arguments
     def test_obsreset_from_resourcing_after_idle(
         self: TestSKASubarray,
         device_under_test: tango.DeviceProxy,

@@ -11,9 +11,28 @@ import concurrent.futures
 import threading
 from typing import Any, Callable
 
+from packaging import version
 from ska_control_model import ResultCode, TaskStatus
+from tango import __version__ as tango_version
 
 from ..base import TaskCallbackType
+
+if version.parse(tango_version) >= version.parse("10.0.0"):
+    try:
+        from opentelemetry.trace import get_tracer
+        from opentelemetry.trace.propagation.tracecontext import (
+            TraceContextTextMapPropagator,
+        )
+
+        # pylint: disable=ungrouped-imports
+        from tango.utils import get_telemetry_tracer_provider_factory
+
+        OPENTELEMETRY_INSTALLED = True
+    except ImportError:
+        OPENTELEMETRY_INSTALLED = False
+else:
+    OPENTELEMETRY_INSTALLED = False
+
 
 __all__ = ["TaskExecutor", "TaskStatus"]
 
@@ -57,7 +76,9 @@ class TaskExecutor:
         """
         return self._executor._work_queue.qsize()  # pylint: disable=protected-access
 
-    def submit(  # pylint: disable=too-many-arguments
+    # pylint: disable=too-many-arguments,too-many-positional-arguments
+    # pylint: disable=possibly-used-before-assignment
+    def submit(
         self: TaskExecutor,
         func: TaskFunctionType,
         args: Any = None,
@@ -77,6 +98,9 @@ class TaskExecutor:
 
         :return: (TaskStatus, message)
         """
+        thread_trace: dict[str, str] = {}
+        if OPENTELEMETRY_INSTALLED:
+            TraceContextTextMapPropagator().inject(thread_trace)
         with self._submit_lock:
             try:
                 self._executor.submit(
@@ -87,6 +111,7 @@ class TaskExecutor:
                     is_cmd_allowed,
                     task_callback,
                     self._abort_event,
+                    thread_trace,
                 )
             except RuntimeError:
                 self._call_task_callback(
@@ -153,7 +178,8 @@ class TaskExecutor:
         ).start()
         return TaskStatus.IN_PROGRESS, "Aborting tasks"
 
-    def _run(  # pylint: disable=too-many-arguments
+    # pylint: disable=too-many-arguments
+    def _run(  # noqa: C901
         self: TaskExecutor,
         func: TaskFunctionType,
         args: Any,
@@ -161,7 +187,17 @@ class TaskExecutor:
         is_cmd_allowed: Callable[[], bool] | None,
         task_callback: TaskCallbackType | None,
         abort_event: threading.Event,
+        thread_trace: dict[str, str],
     ) -> None:
+        # pylint: disable=possibly-used-before-assignment
+        if OPENTELEMETRY_INSTALLED:
+            context = TraceContextTextMapPropagator().extract(thread_trace)
+            tracer_provider_factory = get_telemetry_tracer_provider_factory()
+            tracer_provider = tracer_provider_factory(self.__class__.__name__)
+            tracer = get_tracer(
+                instrumenting_module_name=self.__class__.__name__,
+                tracer_provider=tracer_provider,
+            )
         # Let the submit method finish before we start. This prevents this thread from
         # calling back with "IN PROGRESS" before the submit method has called back with
         # "QUEUED".
@@ -208,12 +244,28 @@ class TaskExecutor:
         try:
             args = args or []
             kwargs = kwargs or {}
-            func(
-                *args,
-                task_callback=task_callback,
-                task_abort_event=abort_event,
-                **kwargs,
-            )
+            if OPENTELEMETRY_INSTALLED:
+                with tracer.start_as_current_span(
+                    f"{self.__class__.__name__}._run.{func.__name__}",
+                    context,
+                    attributes={
+                        "function_args": args,
+                        "function_kwargs": [f"{k}={v}" for k, v in kwargs.items()],
+                    },
+                ):
+                    func(
+                        *args,
+                        task_callback=task_callback,
+                        task_abort_event=abort_event,
+                        **kwargs,
+                    )
+            else:
+                func(
+                    *args,
+                    task_callback=task_callback,
+                    task_abort_event=abort_event,
+                    **kwargs,
+                )
         except Exception as exc:  # pylint: disable=broad-except
             # Catching all exceptions because we're on a thread. Any
             # uncaught exception will take down the thread without giving

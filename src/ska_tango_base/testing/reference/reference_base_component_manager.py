@@ -19,8 +19,15 @@ import threading
 from time import sleep
 from typing import Any, Callable, Generic, TypeVar, cast
 
-from ska_control_model import CommunicationStatus, PowerState, ResultCode, TaskStatus
+from ska_control_model import (
+    AdminMode,
+    CommunicationStatus,
+    PowerState,
+    ResultCode,
+    TaskStatus,
+)
 from ska_tango_testing.mock import MockCallableGroup
+from tango import DeviceProxy
 
 from ...base import (
     CommunicationStatusCallbackType,
@@ -373,6 +380,32 @@ class FakeBaseComponent:
         sleep(self._time_to_complete)
         task_callback(status=TaskStatus.COMPLETED)
 
+    def call_command_on_device(  # pylint: disable=too-many-arguments,unused-argument
+        self: FakeBaseComponent,
+        command: str,
+        device_address: str,
+        task_callback: TaskCallbackType,
+        task_abort_event: threading.Event,
+        database: bool = True,
+    ) -> None:
+        """
+        LRC that calls a LRC on another tango device to test telemetry tracing.
+
+        :param command: name of the command to call.
+        :param device_address: address of the tango device to connect to.
+        :param task_callback: a callback to be called whenever the
+            status of this task changes.
+        :param task_abort_event: a threading.Event that can be checked
+            for whether this task has been aborted.
+        :param database: if a tango db is available, defaults to True.
+        """
+        if database:
+            device = DeviceProxy(device_address)
+        else:
+            device = DeviceProxy(device_address + "#dbase=no")
+        device.adminMode = AdminMode.ONLINE
+        getattr(device, command)()
+
     def set_fault(self: FakeBaseComponent) -> None:
         """Tell the component to set a fault state."""
         self._update_state(fault=True)
@@ -672,6 +705,25 @@ class GenericBaseComponentManager(TaskExecutorComponentManager, Generic[Componen
         """
         return self.submit_task(
             self._component.report_progress_message,
+            task_callback=task_callback,
+        )
+
+    @check_communicating
+    def test_telemetry_tracing(
+        self: GenericBaseComponentManager[ComponentT],
+        task_callback: TaskCallbackType | None = None,
+    ) -> tuple[TaskStatus, str]:
+        """
+        LRC that calls a LRC on another tango device to test telemetry tracing.
+
+        :param task_callback: a callback to be called whenever the
+            status of this task changes.
+        :return: TaskStatus and message
+        """
+        return self.submit_task(
+            self._component.call_command_on_device,
+            args=["On", "tango://localhost:45679/foo/bar/2"],
+            kwargs={"database": False},
             task_callback=task_callback,
         )
 

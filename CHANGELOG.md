@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- WOM-572: Added OpenTelemetry support as optional poetry extra: 'telemetry'. It only works with PyTango 10.0.0 or newer.
 - WOM-571: Added an optional callback method to the `TaskExecutorComponentManager`, which is called when the `TaskExecutor` catches any unhandled exceptions during execution of a LRC. It implies a bug in the device code, and the callback should be used to notify users thereof.
 - WOM-573: Include the versions of the device, ska-tango-base and ska-control-model in the `tango.DeviceInfo.version_info` dict if using PyTango 10.0.0 or newer.
 

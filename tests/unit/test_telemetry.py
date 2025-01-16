@@ -142,24 +142,27 @@ def test_open_telemetry() -> None:
             server2_out = server2_log.readlines()
             client_out = client_log.readlines()
             trace_id = "0xZYX"  # nonexistent
-            count = 0
+            # The amount of spans part of the main trace will differ depending on the
+            # client script and command code, so we check for a minimum expected amount,
+            # in case changes are made.
+            # server1: 2x C++ and python command, python command func and _run (5 total)
+            # server2: C++ trace, python command func and _run (3 total)
+            # client: 2x C++ and python trace for calling command (3 total)
+            server1_count, server2_count, client_count = 0, 0, 0
             for line in server1_out:
+                # Find trace ID in log printed by command itself
                 if "ReferenceSkaBaseDevice.TestTelemetryTracing trace ID" in line:
                     trace_id = line.split()[-1].lstrip("0x")
                     # print("TestTelemetryTracing command trace ID:", trace_id)
                     continue
                 if trace_id in line:
-                    count += 1
+                    server1_count += 1
+            assert server1_count >= 5
             for line in server2_out:
                 if trace_id in line:
-                    count += 1
+                    server2_count += 1
+            assert server2_count >= 3
             for line in client_out:
                 if trace_id in line:
-                    count += 1
-            # The amount of spans part of the main trace will differ depending on the
-            # client script and command code, so we check for a minimum expected amount,
-            # in case changes are made.
-            # client: 2x C++ and python trace for calling command (3 total)
-            # server1: 2x C++ and python command, python command func and _run (5 total)
-            # server2: C++ trace, python command func and _run (3 total)
-            assert count >= 11
+                    client_count += 1
+            assert client_count >= 3

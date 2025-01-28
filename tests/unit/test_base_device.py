@@ -90,6 +90,16 @@ class TestSKABaseDevice:  # pylint: disable=too-many-public-methods
         """
         assert device_under_test.state() == DevState.OFF
 
+    def test_StateAtInit(
+        self: TestSKABaseDevice, device_under_test: DeviceProxy
+    ) -> None:
+        """
+        Test for the device state while the InitCommand is executing.
+
+        :param device_under_test: a proxy to the device under test
+        """
+        assert device_under_test.stateAtInit == DevState.INIT
+
     def test_lrcProtocolVersions(
         self: TestSKABaseDevice, device_under_test: DeviceProxy
     ) -> None:
@@ -115,14 +125,14 @@ class TestSKABaseDevice:  # pylint: disable=too-many-public-methods
         assert device_under_test.adminMode == AdminMode.ONLINE
         assert device_under_test.state() == DevState.OFF
 
-        for attribute in [
+        for attr in [
             "state",
             "commandedState",
         ]:
             device_under_test.subscribe_event(
-                attribute,
+                attr,
                 EventType.CHANGE_EVENT,
-                change_event_callbacks[attribute],
+                change_event_callbacks[attr],
             )
         change_event_callbacks["state"].assert_change_event(DevState.OFF)
         change_event_callbacks["commandedState"].assert_change_event("None")

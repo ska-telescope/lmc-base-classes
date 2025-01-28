@@ -1,5 +1,15 @@
 # Changelog
 
+## 1.3.1:
+
+- SKB-742: Add SlowDeviceInitCommand
+
+  SlowDeviceInitCommand is a fixed version of DeviceInitCommand, which does not perform the
+  "init_completed" action before invoking the user supplied `do()` method.
+  Users requiring control over when the "init_completed" action is performed can inherit from
+  SlowDeviceInitCommand but are then responsible for calling `self._completed()`
+  in order to perform the "init_completed" action themselves.
+
 ## 1.3.0
 
 - WOM-572: Added OpenTelemetry support as optional poetry extra: 'telemetry'. It only works with PyTango 10.0.0 or newer.

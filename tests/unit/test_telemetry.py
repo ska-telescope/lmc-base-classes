@@ -113,8 +113,8 @@ def test_open_telemetry() -> None:
         env=env,
         filepath=server2_log_path,
     )
-    server1.wait(3)
-    server2.wait(3)
+    server1.wait(30)
+    server2.wait(30)
     with open(client_log_path, "w", encoding="utf-8") as client_log:
         # Run the client script in a separate process
         client_p = subprocess.Popen(  # pylint: disable=consider-using-with

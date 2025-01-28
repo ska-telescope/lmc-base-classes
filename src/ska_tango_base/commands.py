@@ -15,9 +15,13 @@ The following command classes are provided:
   their do hook, and then immediately call their callback to indicate
   that they have completed.
 
-* **DeviceInitCommand**: Implements the common pattern for device Init
-    commands. This is just a FastCommands, with a fixed signature for
-    the ``__init__`` method.
+* **SlowDeviceInitCommand**:  implements the common pattern for device Init
+  commands. This is just a SlowCommand, with a fixed signature for
+  the ``__init__`` method.
+
+* **DeviceInitCommand**:  is a broken version of SlowDeviceInitCommand, which
+  is kept for backwards compatibility.  Those wishing to override their
+  devices InitCommand should use SlowDeviceInitCommand.
 
 * **SlowCommand**: implements the common pattern for slow commands; that
   is, commands that need to perform a blocking action, such as file I/O,
@@ -29,11 +33,10 @@ The following command classes are provided:
   responsibility of that asynchronous context to call the command's
   ``completed`` method when it finishes.
 
-
 * **SubmittedSlowCommand**: ``whereas SlowCommand`` makes no assumptions
-    about how the command will be implemented, ``SubmittedSlowCommand``
-    assumes the current device structure: i.e. a command tracker, and a
-    component manager with support for submitting tasks.
+  about how the command will be implemented, ``SubmittedSlowCommand``
+  assumes the current device structure: i.e. a command tracker, and a
+  component manager with support for submitting tasks.
 """
 from __future__ import annotations
 
@@ -54,6 +57,7 @@ __all__ = [
     "FastCommand",
     "SlowCommand",
     "DeviceInitCommand",
+    "SlowDeviceInitCommand",
     "SubmittedSlowCommand",
     "CommandTrackerProtocol",
     "ArgumentValidator",
@@ -400,11 +404,11 @@ class DeviceInitCommand(SlowCommand[tuple[ResultCode, str]]):
 
         The logic of this class is wrong such that the "init_completed" action
         is performed _before_ the command is executed.  To avoid breaking
-        devices which are relying on this behaviour `SlowDeviceInitCommand` has
+        devices which are relying on this behaviour ``SlowDeviceInitCommand`` has
         been provided as an alternative. If you need control over when the
         initialisation is marked as completed, inherit from the
         ``SlowDeviceInitCommand`` class.  Note, that for this fixed class
-        it is your responsibility to arrange for `self._completed()` to be
+        it is your responsibility to arrange for ``self._completed()`` to be
         called once your device has been initialised.
     """
 

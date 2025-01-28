@@ -395,6 +395,17 @@ class DeviceInitCommand(SlowCommand[tuple[ResultCode, str]]):
     instances should inherit from this command, rather than directly
     from ``SlowCommand``, to ensure that their initialisation signature
     is correct.
+
+    .. warning::
+
+        The logic of this class is wrong such that the "init_completed" action
+        is performed _before_ the command is executed.  To avoid breaking
+        devices which are relying on this behaviour `SlowDeviceInitCommand` has
+        been provided as an alternative. If you need control over when the
+        initialisation is marked as completed, inherit from the
+        ``SlowDeviceInitCommand`` class.  Note, that for this fixed class
+        it is your responsibility to arrange for `self._completed()` to be
+        called once your device has been initialised.
     """
 
     def __init__(
@@ -415,6 +426,39 @@ class DeviceInitCommand(SlowCommand[tuple[ResultCode, str]]):
 
         def _callback(running: bool) -> None:
             if running:
+                device.op_state_model.perform_action("init_completed")
+
+        super().__init__(callback=_callback, logger=logger, validator=validator)
+
+
+# pylint: disable-next=abstract-method
+class SlowDeviceInitCommand(SlowCommand[tuple[ResultCode, str]]):
+    """
+    A ``SlowCommand`` with a fixed initialisation interface.
+
+    Classes inheriting from this interface must call `self._completed()`
+    once the initialisation has completed.  This is not done automatically
+    to allow subclasses to perform asynchronous initialisation.
+    """
+
+    def __init__(
+        self: SlowDeviceInitCommand,
+        device: Device,
+        logger: logging.Logger | None = None,
+        validator: ArgumentValidator | None = None,
+    ) -> None:
+        """
+        Initialise a new instance.
+
+        :param device: the device that this command will initialise
+        :param logger: a logger for this command to log with.
+        :param validator: an optional validator to use to parse,
+            validate and/or unpack command arguments.
+        """
+        self._device = device
+
+        def _callback(running: bool) -> None:
+            if not running:
                 device.op_state_model.perform_action("init_completed")
 
         super().__init__(callback=_callback, logger=logger, validator=validator)

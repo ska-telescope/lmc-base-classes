@@ -13,16 +13,16 @@ It inherits from SKABaseDevice.
 from __future__ import annotations
 
 import importlib.util
-from typing import cast
+from typing import Any, cast
 
 from packaging import version
 from ska_control_model import ResultCode
 from tango import DevState
 from tango import __version__ as tango_version
-from tango.server import command
+from tango.server import attribute, command
 
 from ska_tango_base.base import SKABaseDevice
-from ska_tango_base.commands import SubmittedSlowCommand
+from ska_tango_base.commands import SlowDeviceInitCommand, SubmittedSlowCommand
 from ska_tango_base.testing.reference.reference_base_component_manager import (
     FakeBaseComponent,
     ReferenceBaseComponentManager,
@@ -35,6 +35,32 @@ class ReferenceSkaBaseDevice(SKABaseDevice[ReferenceBaseComponentManager]):
     """Implements a reference SKA base device."""
 
     __version__ = "1.0.0"
+
+    class InitCommand(SlowDeviceInitCommand):
+        """A device init command with better time.
+
+        This command performs the "init_completed" action after it has run.
+        """
+
+        def do(self, *args: Any, **kwargs: Any) -> tuple[ResultCode, str]:
+            """
+            Stateless hook for device initialisation.
+
+            :param args: positional arguments to this do method
+            :param kwargs: keyword arguments to this do method
+
+            :return: A tuple containing a return code and a string
+                message indicating status. The message is for
+                information purpose only.
+            """
+            self._device.state_at_init = self._device.get_state()
+            self._completed()
+            return ResultCode.OK, "Init completed"
+
+    @attribute  # type: ignore[misc]
+    def stateAtInit(self: ReferenceSkaBaseDevice) -> DevState:
+        """Return the state when InitCommand ran."""
+        return self.state_at_init
 
     def create_component_manager(
         self: ReferenceSkaBaseDevice,

@@ -58,9 +58,9 @@ toml = "^0.10.2"
 types-jsonschema = "^4.17.0.7"
 
 [tool.poetry.group.docs.dependencies]
-Sphinx = "^7.2.6"
+Sphinx = "<8.2"
 sphinx-autodoc-typehints = "^2.0.0"
-ska-ser-sphinx-theme = "^0.1.2"
+ska-ser-sphinx-theme = "^0.2.1"
 ska-control-model = "^1.0.0"
 sphinxcontrib-plantuml = "^0.29"
 recommonmark = "^0.7.1"

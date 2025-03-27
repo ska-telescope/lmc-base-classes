@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased:
+
+- THORN-99: Remove successful poll debug log.
+
 ## 1.3.1:
 
 - SKB-742: Add SlowDeviceInitCommand

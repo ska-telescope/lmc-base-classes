@@ -47,6 +47,8 @@ def test_attribute_from_mixin() -> None:
         pass
 
     with DeviceTestContext(MyDevice) as dp:
+        info = dp.attribute_query("myAttr")
+        assert info.description == "My attribute description."
         assert dp.myAttr == 0
 
 
@@ -147,12 +149,18 @@ def test_attribute_override_with_mixin() -> None:
     )
     with MultiDeviceTestContext(devices_info) as context:
         proxy1 = context.get_device("test/device/1")
+        info1 = proxy1.attribute_query("myAttr")
+        assert info1.description == "Return default value."
         assert proxy1.myAttr == 0
 
         proxy2 = context.get_device("test/device/2")
+        info2 = proxy2.attribute_query("myAttr")
+        assert info2.description == "First override."
         assert proxy2.myAttr == 2
 
         proxy3 = context.get_device("test/device/3")
+        info3 = proxy3.attribute_query("myAttr")
+        assert info3.description == "Second override."
         assert proxy3.myAttr == 3
 
 

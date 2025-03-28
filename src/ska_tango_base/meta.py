@@ -4,7 +4,54 @@ from __future__ import annotations
 
 from typing import Any, Protocol
 
+import tango
 from tango.server import DeviceMeta
+
+# Here we are monkey-patching the pytango attribute
+# read method patching function so that when we provide
+# a "read_<x>" method we use the docstring.  In other
+# words, if we have the following:
+#
+# class MyDevice(Device):
+#     myAttr = attribute()
+#
+#     def read_myAttr(self) -> int:
+#         """A description."""
+#
+# Then `myAttr` will have description "A description.".
+#
+# pylint: disable=protected-access
+__patch_read_method_original = tango.server.__patch_read_method
+
+
+def __patch_read_method(
+    tango_device_klass: type, attribute_obj: tango.AttrData
+) -> None:
+    """Find read method for attribute and add to device dict.
+
+    This has been monkey-patched by SKA to update attribute documentation
+    from read method __doc__ string, if there is no attribute documentation
+    already.
+
+    :param tango_device_klass: a DeviceImpl class
+    :param attribute: the attribute data information
+    """
+    __patch_read_method_original(tango_device_klass, attribute_obj)
+
+    method_name = attribute_obj.read_method_name
+    read_method = getattr(tango_device_klass, method_name)
+
+    if read_method.__doc__ is not None:
+        if attribute_obj.att_prop is None:
+            attribute_obj.att_prop = tango.UserDefaultAttrProp()
+
+        if len(attribute_obj.att_prop.description) == 0:
+            attribute_obj.att_prop.set_description(read_method.__doc__)
+
+
+tango.server.__patch_read_method = (  # pylint: disable=protected-access
+    __patch_read_method
+)
 
 # Metaclass primer for dealing with this file.
 #

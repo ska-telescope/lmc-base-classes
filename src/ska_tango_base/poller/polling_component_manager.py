@@ -132,7 +132,6 @@ class PollingComponentManager(
         """
         # Reiterate that communication is established, just in case it
         # had dropped out.
-        self.logger.debug("Setting communications ESTABLISHED")
         self._update_communication_state(CommunicationStatus.ESTABLISHED)
 
     def get_request(

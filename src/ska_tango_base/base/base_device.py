@@ -1261,8 +1261,8 @@ class SKABaseDevice(
         :param attr: Tango attribute being read
         """
         warning_msg = (
-            "'longRunningCommandsInQueue' is deprecated in ska-tango-base "
-            f"{self._version_id} and will be removed in the 2.0.0 major release. "
+            "'longRunningCommandsInQueue' is deprecated since ska-tango-base "
+            "1.2.0 and will be removed in a future major release. "
             "The client should check for the queued command(s) in the 'lrcQueue' "
             "attribute instead."
         )
@@ -1284,8 +1284,8 @@ class SKABaseDevice(
         :param attr: Tango attribute being read
         """
         warning_msg = (
-            "'longRunningCommandIDsInQueue' is deprecated in ska-tango-base "
-            f"{self._version_id} and will be removed in the 2.0.0 major release. "
+            "'longRunningCommandIDsInQueue' is deprecated since ska-tango-base "
+            "1.2.0 and will be removed in a future major release. "
             "The client should check for the queued command(s) in the 'lrcQueue' "
             "attribute instead."
         )
@@ -1307,8 +1307,8 @@ class SKABaseDevice(
         :param attr: Tango attribute being read
         """
         warning_msg = (
-            "'longRunningCommandStatus' is deprecated in ska-tango-base "
-            f"{self._version_id} and will be removed in the 2.0.0 major release. "
+            "'longRunningCommandStatus' is deprecated since ska-tango-base "
+            "1.2.0 and will be removed in a future major release. "
             "The client should check for the status of a command in the 'lrcQueue', "
             "'lrcExecuting' and 'lrcFinished' attributes instead."
         )
@@ -1327,8 +1327,8 @@ class SKABaseDevice(
         :param attr: Tango attribute being read
         """
         warning_msg = (
-            "'longRunningCommandInProgress' is deprecated in ska-tango-base "
-            f"{self._version_id} and will be removed in the 2.0.0 major release. "
+            "'longRunningCommandInProgress' is deprecated since ska-tango-base "
+            "1.2.0 and will be removed in a future major release. "
             "The client should check for the command(s) in progress in the "
             "'lrcExecuting' attribute instead."
         )
@@ -1349,8 +1349,8 @@ class SKABaseDevice(
         :param attr: Tango attribute being read
         """
         warning_msg = (
-            "'longRunningCommandProgress' is deprecated in ska-tango-base "
-            f"{self._version_id} and will be removed in the 2.0.0 major release. "
+            "'longRunningCommandProgress' is deprecated since ska-tango-base "
+            "1.2.0 and will be removed in a future major release. "
             "The client should check for the progress of a command in the "
             "'lrcExecuting' attribute instead."
         )
@@ -1375,8 +1375,8 @@ class SKABaseDevice(
         :return: ID, result.
         """
         warning_msg = (
-            "'longRunningCommandResult' is deprecated in ska-tango-base "
-            f"{self._version_id} and will be removed in the 2.0.0 major release. "
+            "'longRunningCommandResult' is deprecated since ska-tango-base "
+            "1.2.0 and will be removed in a future major release. "
             "The client should check for the result of a command in the 'lrcFinished' "
             "attribute instead."
         )

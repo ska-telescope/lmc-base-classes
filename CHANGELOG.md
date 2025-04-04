@@ -4,6 +4,7 @@
 
 - THORN-99: Remove successful poll debug log
 - DPPT-987: Update sphinx and documentation theme
+- WOM-701: Fix long running command attribute deprecation warnings
 
 ## 1.3.1:
 

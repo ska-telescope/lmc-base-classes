@@ -128,10 +128,16 @@ def test_abort(
         callbacks with asynchrony support
     """
     device_under_test.subscribe_event(
+        "longRunningCommandStatus",
+        tango.EventType.CHANGE_EVENT,
+        change_event_callbacks["longRunningCommandStatus"],
+    )
+    device_under_test.subscribe_event(
         "longRunningCommandResult",
         tango.EventType.CHANGE_EVENT,
         change_event_callbacks["longRunningCommandResult"],
     )
+    change_event_callbacks.assert_change_event("longRunningCommandStatus", ())
     change_event_callbacks.assert_change_event("longRunningCommandResult", ("", ""))
 
     # AbortingLongRunning
@@ -139,9 +145,28 @@ def test_abort(
     assert ResultCode(int(result_code)) == ResultCode.QUEUED
     assert command_id.endswith("AbortingLongRunning")
 
+    next_status = change_event_callbacks.assert_against_call("longRunningCommandStatus")
+    command_id, status = next_status["attribute_value"]
+    assert command_id.endswith("AbortingLongRunning")
+    assert status == "STAGING"
+
+    next_status = change_event_callbacks.assert_against_call("longRunningCommandStatus")
+    command_id, status = next_status["attribute_value"]
+    assert command_id.endswith("AbortingLongRunning")
+    assert status == "QUEUED"
+
+    next_status = change_event_callbacks.assert_against_call("longRunningCommandStatus")
+    command_id, status = next_status["attribute_value"]
+    assert command_id.endswith("AbortingLongRunning")
+    assert status == "IN_PROGRESS"
+
     device_under_test.Abort()
 
-    next_result = change_event_callbacks.assert_against_call("longRunningCommandResult")
+    # We need to skip over up to 3 statuses before we get to the result:
+    # Abort() STAGING, Abort() IN_PROGRESS and AbortingLongRunning() ABORTED
+    next_result = change_event_callbacks.assert_against_call(
+        "longRunningCommandResult", lookahead=4
+    )
     command_id, message = next_result["attribute_value"]
     assert command_id.endswith("AbortingLongRunning")
     assert message == '"AbortingTask Aborted 0.1"'

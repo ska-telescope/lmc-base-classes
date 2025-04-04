@@ -105,6 +105,9 @@ class MultiDeviceComponentManager(TaskExecutorComponentManager):
         """
         retries = 45
         self.logger.info("AbortingTask started")
+        if task_callback is not None:
+            task_callback(status=TaskStatus.IN_PROGRESS)
+
         while (not task_abort_event.is_set()) and retries > 0:
             retries -= 1
             time.sleep(sleep_time)  # This command takes long

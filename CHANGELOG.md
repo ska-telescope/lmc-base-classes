@@ -1,8 +1,9 @@
 # Changelog
 
-## Unreleased:
+## 1.3.2:
 
-- THORN-99: Remove successful poll debug log.
+- THORN-99: Remove successful poll debug log
+- DPPT-987: Update sphinx and documentation theme
 
 ## 1.3.1:
 

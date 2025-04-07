@@ -72,5 +72,21 @@ The ``SkaMixin`` class will ensure that your mix-in class appears in the method
 resolution order before :py:class:`~tango.server.Device` so that this
 `init_device()` chain will definitely end.
 
+Similarly, if using :py:class:`~ska_tango_base.software_bus.BusOwnerMixin`,
+always call ``super().init_bus_sharers()``.
+
 This is similar to the usual advice around always calling ``super().__init__()``
 in your ``__init__()`` method.
+
+Use Protocols for type checking
+-------------------------------
+
+Type checking a mix-in class can be a bit of a pain because we are expecting
+the subclass to also inherit from :py:class:`~tango.server.Device`.  To get
+around this, create a :py:class:`typing.Protocol` class to use as a type hint
+for ``self``.
+
+The protocol should provide methods for all the :py:class:`~tango.server.Device`
+methods that the mix-in is required to use, as well as all the methods defined
+by the mix-in itself.  This protocol should be marked private.  You could give
+it a punny name like "_MyMixedIn" for the mix-in "MyMixin".

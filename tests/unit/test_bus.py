@@ -3,10 +3,13 @@
 from threading import Event
 from typing import Any, Optional
 
+import pytest
+
 from ska_tango_base.software_bus import (
     NoValue,
     Observer,
     ObserverProtocol,
+    SharingObserver,
     SignalBus,
     listen_to_signal,
 )
@@ -101,3 +104,44 @@ def test_listener() -> None:
 
     finally:
         bus.shutdown_thread()
+
+
+class _TestSharingObserver(_TestObserver, SharingObserver):
+    pass
+
+
+class _TestParent(_TestSharingObserver):
+    def __init__(self) -> None:
+        super().__init__()
+        self.sub_obj = _TestSharingObserver()
+
+
+def test_sharing() -> None:
+    """Test that buses are shared."""
+    parent = _TestParent()
+    with pytest.raises(RuntimeError, match="The bus has not been shared!"):
+        parent.shared_bus.emit("foo", "bar")
+
+    with pytest.raises(RuntimeError, match="The bus has not been shared!"):
+        parent.sub_obj.shared_bus.emit("foo", "bar")
+
+    bus = SignalBus()
+    parent.shared_bus = bus
+    assert parent.shared_bus is parent.sub_obj.shared_bus
+    bus.start_thread()
+
+    try:
+        bus.emit("foo", "bar")
+        parent.event.wait()
+
+        assert parent.old_value is NoValue
+        assert parent.new_value == "bar"
+
+        bus.emit("sub_obj.foo", "bar")
+        parent.sub_obj.event.wait()
+
+        assert parent.sub_obj.old_value is NoValue
+        assert parent.sub_obj.new_value == "bar"
+
+    finally:
+        parent.shared_bus.shutdown_thread()

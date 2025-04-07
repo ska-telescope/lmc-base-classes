@@ -16,7 +16,7 @@ include .make/python.mk
 PYTHON_LINE_LENGTH = 88
 PYTHON_VARS_AFTER_PYTEST = --forked
 
-python-post-lint:
+python-pre-lint:
 	$(PYTHON_RUNNER) mypy --config-file mypy.ini $(PYTHON_LINT_TARGET)
 
 python-pre-test:

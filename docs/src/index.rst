@@ -36,6 +36,7 @@ Welcome to SKA Tango Base documentation!
 
   reference/lrc-client-server-protocol
   reference/commanded-state-attributes
+  reference/mixin-guidelines
   api/index
 
 .. toctree::

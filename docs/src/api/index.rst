@@ -33,4 +33,6 @@ API
   Control Model<control-model>
   Faults<faults>
   Long Running Commands API<long-running-commands-api>
+  Metaclass<meta>
+  Mix-in Base class<mixin>
   Utils<utils>

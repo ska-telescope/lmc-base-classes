@@ -1,17 +1,25 @@
 """Tests for SignalBus class."""
 
 from threading import Event
-from typing import Any, Optional
+from typing import Any, Callable, Optional, Protocol
 
 import pytest
+import tango
+from ska_tango_testing.mock.tango import MockTangoEventCallbackGroup
+from tango.server import Device, attribute, command
+from tango.test_context import DeviceTestContext
 
+from ska_tango_base.meta import SkaDeviceMeta
+from ska_tango_base.mixin import SkaMixin
 from ska_tango_base.software_bus import (
+    BusOwnerMixin,
     NoValue,
     Observer,
     ObserverProtocol,
     SharingObserver,
     Signal,
     SignalBus,
+    _BusOwnerMixedIn,
     listen_to_signal,
 )
 
@@ -179,3 +187,87 @@ def test_signal() -> None:
         assert obs.new_value == "new"
     finally:
         emitter.shared_bus.shutdown_thread()
+
+
+class _CommandTracker(SharingObserver):
+    lrc_event = Signal[int]()
+
+    def on_new_shared_bus(self) -> None:
+        super().on_new_shared_bus()
+        self.lrc_event = 0
+
+    def task_callback(self) -> None:
+        """Push an lrcEvent."""
+        self.lrc_event = 1
+
+
+class _LrcMixedIn(_BusOwnerMixedIn, Protocol):
+    init_device: Callable[[], None]
+
+    command_tracker: _CommandTracker
+
+    def set_change_event(self, name: str, impl: bool, detect: bool = True) -> None:
+        """Mark that this device manual pushes change events for an attribute."""
+
+    def set_archive_event(self, name: str, impl: bool, detect: bool = True) -> None:
+        """Mark that this device manual pushes archive events for an attribute."""
+
+    def push_change_event(self, name: str, value: Any) -> None:
+        """Push a change event for an attribute."""
+
+    def push_archive_event(self, name: str, value: Any) -> None:
+        """Push a change event for an attribute."""
+
+
+class _LrcMixin(BusOwnerMixin, SkaMixin):
+    lrcEvent = attribute(abs_change=1)  # noqa: N815
+
+    # pylint: disable=invalid-name
+    def read_lrcEvent(self: _LrcMixedIn) -> int:
+        """Read the attribute."""
+        return self.command_tracker.lrc_event
+
+    @listen_to_signal("command_tracker.lrc_event")
+    def update_lrc_event(self: _LrcMixedIn, old_value: int, new_value: int) -> None:
+        """Update the attribute."""
+        _ = old_value
+        self.push_change_event("lrcEvent", new_value)
+
+    def init_bus_sharers(self: _LrcMixedIn) -> None:
+        """Initialise command tracker."""
+        super().init_bus_sharers()
+
+        self.command_tracker = _CommandTracker()
+
+    def init_device(self: _LrcMixedIn) -> None:
+        """Initialise device."""
+        super().init_device()
+
+        self.set_change_event("lrcEvent", True, True)
+
+
+class _MyDevice(  # pylint: disable=too-many-ancestors
+    _LrcMixin,
+    Device,  # type: ignore[misc]
+    metaclass=SkaDeviceMeta,
+):
+    @command  # type: ignore[misc]
+    def do_something(self) -> None:
+        """Call task callback."""
+        self.command_tracker.task_callback()
+
+
+def test_bus_owner_mixin() -> None:
+    """Test for BusOwnerMixin."""
+    callbacks = MockTangoEventCallbackGroup("lrcEvent")
+    with DeviceTestContext(_MyDevice) as dp:
+        dp.subscribe_event(
+            "lrcEvent", tango.EventType.CHANGE_EVENT, callbacks["lrcEvent"]
+        )
+        callbacks.assert_change_event("lrcEvent", 0)
+        dp.do_something()
+        callbacks.assert_change_event("lrcEvent", 1)
+        dp.init()
+        callbacks.assert_change_event("lrcEvent", 0)
+        dp.do_something()
+        callbacks.assert_change_event("lrcEvent", 1)

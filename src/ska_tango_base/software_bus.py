@@ -497,3 +497,47 @@ class Signal(Generic[T]):
         """Emit the signal."""
         name = self._get_name(obj)
         obj.shared_bus.emit(name, value)
+
+
+class _BusOwnerMixedIn(Protocol):  # pylint: disable=too-few-public-methods
+    """Protocol for a Tango device that also inherits from BusMixin."""
+
+    shared_bus: SignalBus
+    init_device: Callable[[], None]
+    init_bus_sharers: Callable[[], None]
+    delete_device: Callable[[], None]
+
+
+class BusOwnerMixin(SharingObserver):
+    """A base class for mix-ins to use the shared bus.
+
+    This class is not intended to be inherited from directly by users.  Instead, it
+    is intended to be used by mix-ins to utilities the bus.
+    """
+
+    shared_bus: SignalBus
+
+    def init_bus_sharers(self: _BusOwnerMixedIn) -> None:
+        """Initialise :py:func:`SharingObserver` objects.
+
+        Sub-classes must override this to initialise their `SharingObserver` objects,
+        before the `SignalBus` background thread is started.
+
+        This is called during :py:func:`BusOwnerMixin.init_device()`.
+        """
+
+    def init_device(self: _BusOwnerMixedIn) -> None:
+        """Initialise the shared bus."""
+        super().init_device()
+        self.init_bus_sharers()
+        try:
+            logger = self.logger  # type: ignore[attr-defined]
+        except AttributeError:
+            logger = None
+        self.shared_bus = SignalBus(logger=logger)
+        self.shared_bus.start_thread()
+
+    def delete_device(self: _BusOwnerMixedIn) -> None:
+        """Shutdown the bus background thread."""
+        self.shared_bus.shutdown_thread()
+        super().delete_device()

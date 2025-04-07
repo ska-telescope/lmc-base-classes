@@ -1,0 +1,239 @@
+"""Internal software bus implementation."""
+
+from __future__ import annotations
+
+import logging
+import threading
+import time
+from copy import deepcopy
+from queue import Full, Queue
+from threading import Lock, Thread
+from typing import Any, Protocol
+from weakref import WeakSet
+
+from tango import EnsureOmniThread
+
+module_logger = logging.getLogger(__name__)
+
+
+# We are using a protocol here, rather than a function signature, to make it easier to
+# avoid circular references.  If we just used a single function as an observer,
+# then users would have to be careful to make sure closures only hold weak
+# references to objects holding a reference to the bus.  By making the observer
+# a class, we can manage this problem in the SignalBus ourselves.
+class ObserverProtocol(Protocol):  # pylint: disable=too-few-public-methods
+    """An object which observers signals being emitted on a bus.
+
+    The observer must be registered with the bus first with
+    :py:func:`BusProtocol.register_observer`.
+    """
+
+    def notify_emission(self, signal: str, old_value: Any, new_value: Any) -> None:
+        """Notify the observer of an emission asynchronously."""
+
+
+NoValue = object()
+"""Used to signal that there is no value stored.
+
+Required as None is a valid value.
+"""
+
+
+class SignalBus:
+    """A software bus that notifies observers listening to signals.
+
+    The bus can :py:func:`emit()` values for a given signal.  In order to
+    get notified when a value is emitted for any signals, a :py:class:`Observer`
+    can be registered with :py:func:`register_observer()`.  Observers are stored
+    in a class :py:class:`weakref.WeakSet` and so must be kept alive by the
+    caller.
+
+    Each signal is identified by a user-provided string.  The most recently
+    emitted value for a signal is stored by the ``SignalBus`` and can be
+    retrieved with :py:meth:`get_last_value()`.
+
+    When a value is emitted for a given signal, the last value is immediately
+    updated and an "emission" is added to an internal queue.  This queue is
+    serviced by a separate background thread, which must be started with
+    `start_thread()`.
+
+    Once :py:func:`start_thread()` has been called, you can no longer call
+    :py:func:`register_observer()` until the thread has been shutdown
+    again with :py:func:`shutdown_thread()`.
+
+    When background thread receives an emission from the internal queue it
+    will notify all the registered :py:class:`Observer` objects that still exist by
+    calling :py:func:`Observer.notify_emission`. This notification occurs in an
+    unspecified order. Emissions are processed in the order they are received, however,
+    additional emissions generated during a call :py:func:`Observer.notify_emission` are
+    processed immediately.
+
+    The internal queue has a maximum size and attempting to `emit()` while the
+    queue is full will log a warning message before blocking until the queue has room.
+    The expectation is that observers should return quickly compared to the rate
+    that signals are emitted, so the internal queue filling up should be considered
+    a misuse of ``SignalBus``. The limit is in place so that the failure mode is more
+    explicit than some queue growing and eating up all the memory on the system.
+    """
+
+    def __init__(
+        self,
+        logger: logging.Logger | None = None,
+        max_queue_size: int = 256,
+    ) -> None:
+        """Initialise the object.
+
+        :param logger: to use to for logging
+        :param max_queue_size: maximum number of emissions that can be stored
+                               in the internal queue
+        """
+        self._logger = module_logger if logger is None else logger
+
+        # We don't want to create circular references with this bus, so we only
+        # ever hold on to observers with weak references.  If the observer goes
+        # away, we don't care and will just stop notifying it.
+        self._observers = WeakSet[ObserverProtocol]()
+
+        # Held during emit to atomically update last_values and add to
+        # _emission_queue
+        self._value_lock = Lock()
+        self._last_values: dict[str, Any] = {}
+
+        self._last_emission_queue_full_log = 0.0
+        self._emission_queue = Queue[tuple[str, Any, Any] | None](
+            maxsize=max_queue_size
+        )
+        self._thread = Thread(target=self._run_bus_thread)
+
+    def get_last_value(self, signal: str) -> Any:
+        """Return the last value emitted for a signal.
+
+        :param signal: name of the signal
+        :raises KeyError: if no value has been emitted for the signal
+        :returns: last value emitted
+        """
+        # We don't need to synchronise read access to the `_last_values` as
+        # the GIL will ensure that the python dictionary is always in a coherent
+        # state.  If some other thread is in the middle of calling `emit()` we
+        # either get the value before the emission or the value after, however,
+        # both these are valid answers if this read wasn't synchronised with the
+        # `emit()`.
+        return self._last_values[signal]
+
+    def register_observer(self, observer: ObserverProtocol) -> None:
+        """Register the observer to be notified is emitted for the signal.
+
+        If the observer is destroyed it will automatically be unregistered.
+
+        :param signal: name of the signal
+        :param slot: callback to invoke
+
+        :raises RuntimeError: if the background thread has already been started
+        """
+        if self._thread.is_alive():
+            raise RuntimeError("Cannot connect new slots while the thread is running.")
+
+        self._observers.add(observer)
+
+    _LOG_QUEUE_FULL_PERIOD = 10.0
+
+    def emit(self, signal: str, value: Any) -> None:
+        """Emit a new value for the signal.
+
+        The bus will hold a deep copy of value after this function returns.
+
+        When this function returns the last value will be updated with ``value``.  That
+        is, provided no other thread is emitting values for this signal, the following
+        assert will never fire for any ``value`` and ``signal``:
+
+        .. code:: python
+
+            bus.emit(signal, value)
+            assert bus.get_last_value(signal) == value
+
+        Any observes registered for this signal are notified asynchronously in by the
+        background thread which is started by :py:func:`start_thread()`.
+
+        :param signal: name of the signal
+        :param value: new value to emit
+        """
+        value = deepcopy(value)
+        with self._value_lock:
+            old_value = self._last_values.get(signal, NoValue)
+            self._last_values[signal] = value
+
+        # We have elected for the failure mode in the case of too many
+        # emissions to be the bus slows down.  That is, we wait for
+        # there to be room in the queue again.  This means we cannot
+        # add things to the queue from the background thread, otherwise
+        # we could potentially have a deadlock, as the background thread
+        # is the only thing pulling things from the queue.
+        #
+        # This is fine in terms of having a consistent ordering for the
+        # processing of emissions as, from the perspective of
+        # a sequence of `emit()` calls from the other thread, it is as
+        # if the background thread grabs the GIL and immediately processes
+        # the emission after each call to `emit()`.  This is a valid execution
+        # order for two threads which aren't synchronised and so should not
+        # be surprising for users.
+        if threading.current_thread() == self._thread:
+            self._process_emission(signal, old_value, value)
+        else:
+            try:
+                self._emission_queue.put((signal, old_value, value), block=False)
+            except Full:
+                now = time.time()
+                if (
+                    now - self._last_emission_queue_full_log
+                    > self._LOG_QUEUE_FULL_PERIOD
+                ):
+                    self._logger.warning(
+                        "Observers cannot keep up with rate signals are being emitted. "
+                        "Siganl bus performance is degraded as the "
+                        "internal queue is full. Blocking until there is room in "
+                        "the queue."
+                    )
+                    self._last_emission_queue_full_log = now
+
+                self._emission_queue.put((signal, old_value, value))
+
+    def start_thread(self) -> None:
+        """Start the background thread to notify observers about emissions."""
+        self._thread.start()
+
+    def shutdown_thread(self) -> None:
+        """Shutdown the background thread.
+
+        This waits for the thread to finish processing remaining emissions.
+        """
+        # TODO: Should we wait for processing to finish, or flush the queue
+        # first?
+        self._emission_queue.put(None)
+        self._thread.join()
+
+    def __del__(self) -> None:
+        """Delete the object."""
+        if self._thread.is_alive():
+            self.shutdown_thread()
+
+    def _process_emission(self, signal: str, old_value: Any, new_value: Any) -> None:
+        for obs in self._observers:
+            try:
+                obs.notify_emission(signal, old_value, new_value)
+            except Exception:  # pylint: disable=broad-exception-caught
+                self._logger.exception(
+                    (
+                        "Observer %r threw an unexpected exception while "
+                        + "processing emission %r. Continuing with remaining observers."
+                    ),
+                    obs,
+                    (signal, old_value, new_value),
+                )
+
+    def _run_bus_thread(self) -> None:
+        with EnsureOmniThread():
+            while True:
+                emission = self._emission_queue.get()
+                if emission is None:
+                    break
+                self._process_emission(*emission)

@@ -2,13 +2,16 @@
 
 from __future__ import annotations
 
+import functools
+import inspect
 import logging
 import threading
 import time
+from collections import defaultdict
 from copy import deepcopy
 from queue import Full, Queue
 from threading import Lock, Thread
-from typing import Any, Protocol
+from typing import Any, Callable, ClassVar, Protocol, TypeAlias, cast, overload
 from weakref import WeakSet
 
 from tango import EnsureOmniThread
@@ -237,3 +240,105 @@ class SignalBus:
                 if emission is None:
                     break
                 self._process_emission(*emission)
+
+
+class BusProtocol(Protocol):
+    """A bus which emits signals and stores the most recently emitted value."""
+
+    def get_last_value(self, signal: str) -> Any:
+        """Return last value emitted for signal."""
+
+    def register_observer(self, observer: ObserverProtocol) -> None:
+        """Register the observer to be notified is emitted for any signal."""
+
+    def emit(self, signal: str, value: Any) -> None:
+        """Emit a new value for the signal."""
+
+
+ListenerMethod: TypeAlias = Callable[[Any, Any, Any], None]
+"""Method on an :py:class:`Observer` which can receive a signal."""
+
+
+class Observer:
+    """An observer that handles different signals with different methods.
+
+    Sub-classes can be mark method as a :py:const:`ListenerMethod` using the
+    :py:func:`listen_to_signal()` decorator.  :py:const:`ListenerMethod` will
+    only be called for signals they are registered to.
+
+    A subclass can override :py:attr:`observer_prefix` to provide a dynamic prefix
+    to be applied to the signals passed to :py:func:`listen_to_signal`.
+    """
+
+    __listener_methods: ClassVar[dict[str, list[ListenerMethod]]] = {}
+
+    def __init__(
+        self, *args: Any, logger: logging.Logger | None = None, **kwargs: Any
+    ) -> None:
+        """Initialise object."""
+        super().__init__(*args, **kwargs)
+        self._logger = module_logger if logger is None else logger
+
+    @property
+    def observer_prefix(self) -> str:
+        """Return prefix to for signals when looking up listener methods."""
+        return ""
+
+    @classmethod
+    def __init_subclass__(cls, **kwargs: Any) -> None:
+        """Gather all the listener methods on subclasses."""
+        super().__init_subclass__(**kwargs)
+        listeners = defaultdict[str, list[ListenerMethod]](lambda: [])
+        for key in dir(cls):
+            obj = getattr(cls, key)
+            if inspect.isroutine(obj) and hasattr(obj, "__listen_to_signal__"):
+                listeners[obj.__listen_to_signal__].append(cast(ListenerMethod, obj))
+        cls.__listener_methods = dict(listeners)
+
+    def notify_emission(self, signal: str, old_value: Any, new_value: Any) -> None:
+        """Call all the listener methods for the given signal."""
+        if not signal.startswith(self.observer_prefix):
+            return
+
+        signal = signal.removeprefix(self.observer_prefix)
+
+        for unbound_method in self.__listener_methods.get(signal, []):
+            try:
+                unbound_method(self, old_value, new_value)
+            except Exception:  # pylint: disable=broad-exception-caught
+                self._logger.exception(
+                    (
+                        "Listener method %r threw an unexpected exception for %r. "
+                        + "Continuing with remaining listeners."
+                    ),
+                    unbound_method,
+                    (old_value, new_value),
+                )
+
+
+_ListenerDecorator: TypeAlias = Callable[[ListenerMethod], ListenerMethod]
+
+
+@overload
+def listen_to_signal(signal: str) -> _ListenerDecorator:
+    """Return a decorator."""
+
+
+@overload
+def listen_to_signal(signal: str, listener: ListenerMethod) -> ListenerMethod:
+    """Decorate the listener."""
+
+
+def listen_to_signal(
+    signal: str, listener: ListenerMethod | None = None
+) -> _ListenerDecorator | ListenerMethod:
+    """Mark a method as listening to a signal.
+
+    This function will be called asynchronously whenever a value is emitted
+    for the signal.
+    """
+    if listener is None:
+        return cast(_ListenerDecorator, functools.partial(listen_to_signal, signal))
+
+    listener.__listen_to_signal__ = signal  # type: ignore[attr-defined]
+    return listener

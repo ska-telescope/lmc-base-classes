@@ -11,7 +11,17 @@ from collections import defaultdict
 from copy import deepcopy
 from queue import Full, Queue
 from threading import Lock, Thread
-from typing import Any, Callable, ClassVar, Protocol, TypeAlias, cast, overload
+from typing import (
+    Any,
+    Callable,
+    ClassVar,
+    Generic,
+    Protocol,
+    TypeAlias,
+    TypeVar,
+    cast,
+    overload,
+)
 from weakref import WeakSet
 
 from tango import EnsureOmniThread
@@ -414,3 +424,76 @@ class SharingObserver(Observer):
 
     def on_new_shared_bus(self) -> None:
         """Notify that a new bus is available."""
+
+
+class HasSharedBusProtocol(Protocol):  # pylint: disable=too-few-public-methods
+    """An object with access to an shared bus."""
+
+    shared_bus: BusProtocol
+    """Bus to emit signals on."""
+
+    _path_from_root: str
+    """Path from the root of the bus to this object."""
+
+
+T = TypeVar("T")
+
+
+class Signal(Generic[T]):
+    """Descriptor to provide access to signal on a shared bus.
+
+    Can only be used on classes which model :py:class:`HasSharedBusProtocol`.
+
+    Whenever a ``Signal`` is set, a signal is emitted with the value provided.
+
+    The relative name of the signal is taken from the name of the ``Signal`` on
+    the owner class, and can be overridden by providing ``name`` kwarg to the
+    initialiser.
+
+    The relative name is prefixed by the name of the owner object before being
+    emitted on the bus.
+    """
+
+    def __init__(self: Signal[T], /, name: str | None = None) -> None:
+        """Initialise the object."""
+        self._basename = name
+
+    def __set_name__(self: Signal[T], owner: Any, name: str) -> None:
+        """Set the name of the descriptor."""
+        if self._basename is None:
+            self._basename = name
+
+    def _get_name(self, obj: HasSharedBusProtocol) -> str:
+        basename = cast(str, self._basename)
+        # pylint: disable=protected-access
+        return f"{obj._path_from_root}{basename}"
+
+    @overload
+    def __get__(self: Signal[T], obj: None, objtype: None) -> Signal[T]:
+        """Return self."""
+
+    @overload
+    def __get__(self: Signal[T], obj: HasSharedBusProtocol, objtype: type) -> T:
+        """Return the last emitted value."""
+
+    def __get__(
+        self: Signal[T],
+        obj: HasSharedBusProtocol | None,
+        objtype: type | None = None,
+    ) -> T | Signal[T]:
+        """Return the last emitted value or self.
+
+        :raises KeyError: If the signal has never been emitted.
+        """
+        if obj is None:
+            return self
+
+        name = self._get_name(obj)
+        value = obj.shared_bus.get_last_value(name)
+
+        return cast(T, value)
+
+    def __set__(self: Signal[T], obj: HasSharedBusProtocol, value: T) -> None:
+        """Emit the signal."""
+        name = self._get_name(obj)
+        obj.shared_bus.emit(name, value)

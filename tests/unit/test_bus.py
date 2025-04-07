@@ -10,6 +10,7 @@ from ska_tango_base.software_bus import (
     Observer,
     ObserverProtocol,
     SharingObserver,
+    Signal,
     SignalBus,
     listen_to_signal,
 )
@@ -145,3 +146,36 @@ def test_sharing() -> None:
 
     finally:
         parent.shared_bus.shutdown_thread()
+
+
+def test_signal() -> None:
+    """Test the Signal descriptor class."""
+    # pylint: disable=disallowed-name
+
+    class _Emitter(SharingObserver):
+        foo = Signal[str]()
+
+    obs = _TestObsProtocol()
+    emitter = _Emitter()
+    emitter.shared_bus = SignalBus()
+    emitter.shared_bus.register_observer(obs)
+    emitter.shared_bus.start_thread()
+
+    try:
+        emitter.foo = "old"
+        obs.event.wait()
+
+        assert obs.signal == "foo"
+        assert obs.old_value is NoValue
+        assert obs.new_value == "old"
+
+        obs.event.clear()
+
+        emitter.foo = "new"
+        obs.event.wait()
+
+        assert obs.signal == "foo"
+        assert obs.old_value == "old"
+        assert obs.new_value == "new"
+    finally:
+        emitter.shared_bus.shutdown_thread()

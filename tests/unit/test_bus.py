@@ -261,7 +261,7 @@ def test_bus_owner_mixin() -> None:
     """Test for BusOwnerMixin."""
     callbacks = MockTangoEventCallbackGroup("lrcEvent")
     with DeviceTestContext(_MyDevice) as dp:
-        dp.subscribe_event(
+        eid = dp.subscribe_event(
             "lrcEvent", tango.EventType.CHANGE_EVENT, callbacks["lrcEvent"]
         )
         callbacks.assert_change_event("lrcEvent", 0)
@@ -271,3 +271,4 @@ def test_bus_owner_mixin() -> None:
         callbacks.assert_change_event("lrcEvent", 0)
         dp.do_something()
         callbacks.assert_change_event("lrcEvent", 1)
+        dp.unsubscribe_event(eid)

@@ -247,9 +247,12 @@ def test_attribute_storage_mixin() -> None:  # noqa: C901
 
     callbacks = MockTangoEventCallbackGroup("myAttr")
     with DeviceTestContext(MyDevice) as dp:
-        dp.subscribe_event("myAttr", tango.EventType.CHANGE_EVENT, callbacks["myAttr"])
+        eid = dp.subscribe_event(
+            "myAttr", tango.EventType.CHANGE_EVENT, callbacks["myAttr"]
+        )
         callbacks.assert_change_event("myAttr", 0)
         dp.myAttr = 1
         callbacks.assert_change_event("myAttr", 1)
         dp.do_something()
         callbacks.assert_change_event("myAttr", 7)
+        dp.unsubscribe_event(eid)

@@ -35,4 +35,5 @@ API
   Long Running Commands API<long-running-commands-api>
   Metaclass<meta>
   Mix-in Base class<mixin>
+  Software Bus<software_bus>
   Utils<utils>
